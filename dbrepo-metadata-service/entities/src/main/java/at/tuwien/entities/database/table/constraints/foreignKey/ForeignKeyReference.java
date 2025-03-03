@@ -3,7 +3,10 @@ package at.tuwien.entities.database.table.constraints.foreignKey;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.UUID;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -21,9 +24,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class ForeignKeyReference {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -44,5 +47,12 @@ public class ForeignKeyReference {
             @JoinColumn(name = "rcid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn referencedColumn;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

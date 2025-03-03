@@ -8,8 +8,6 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.service.AuthenticationService;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -43,12 +41,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private DatabaseService databaseService;
-
-    @MockBean
-    private AuthenticationService authenticationService;
 
     @Autowired
     private UserEndpoint userEndpoint;

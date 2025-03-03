@@ -24,7 +24,8 @@ public class TableHistoryDto {
     private Instant timestamp;
 
     @NotNull
-    private String event;
+    @Schema(example = "INSERT")
+    private HistoryEventTypeDto event;
 
     @NotNull
     @Schema(example = "1")

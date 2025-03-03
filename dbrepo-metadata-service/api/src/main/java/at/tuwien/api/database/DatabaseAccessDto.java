@@ -26,7 +26,7 @@ public class DatabaseAccessDto {
 
     @NotNull
     @JsonIgnore
-    private Long hdbid;
+    private UUID hdbid;
 
     @NotNull
     private UserBriefDto user;

@@ -32,7 +32,8 @@
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.query.title')">
-                <pre>{{ view.query }}</pre>
+                <pre
+                  class="line-break">{{ view.query }}</pre>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.owner.title')">
@@ -72,7 +73,7 @@ if (data.value && data.value.length > 0) {
   useServerHead(identifierService.identifiersToServerHead(data.value))
   useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
 }
-const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === pid).length > 0 ? data.value.filter(i => i.id === pid)[0] : data.value[0]) : null)
 
 const cacheStore = useCacheStore()
 cacheStore.setIdentifier(identifier)
@@ -143,7 +144,7 @@ export default {
       if (!this.view || !this.view.identifiers) {
         return []
       }
-      return this.view.identifiers.filter(i => i.query_id === Number(this.$route.params.subset_id))
+      return this.view.identifiers.filter(i => i.query_id === this.$route.params.subset_id)
     },
     views () {
       if (!this.database) {

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,7 +42,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     @Transactional
-    public ContainerImage find(Long imageId) throws ImageNotFoundException {
+    public ContainerImage find(UUID imageId) throws ImageNotFoundException {
         final Optional<ContainerImage> image = imageRepository.findById(imageId);
         if (image.isEmpty()) {
             log.error("Failed to find image with id {}", imageId);

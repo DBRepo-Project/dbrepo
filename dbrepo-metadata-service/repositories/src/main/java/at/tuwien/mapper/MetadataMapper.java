@@ -318,7 +318,7 @@ public interface MetadataMapper {
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "databaseId", source = "database.id")
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
@@ -563,17 +563,13 @@ public interface MetadataMapper {
                 .name(data.getName())
                 .internalName(data.getInternalName())
                 .owner(userToUserBriefDto(data.getOwner()))
-                .tdbid(data.getTdbid())
+                .databaseId(data.getTdbid())
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isVersioned(true)
                 .description(data.getDescription())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
-                .database(databaseToDatabaseDto(data.getDatabase()
-                        .toBuilder()
-                        .tables(null)
-                        .build()))
                 .constraints(constraintsToConstraintsDto(data.getConstraints()))
                 .build();
         if (data.getIdentifiers() != null) {
@@ -600,15 +596,15 @@ public interface MetadataMapper {
             table.getConstraints()
                     .getForeignKeys()
                     .forEach(fk -> {
-                        fk.getTable().setDatabaseId(table.getTdbid());
-                        fk.getReferencedTable().setDatabaseId(table.getTdbid());
+                        fk.getTable().setDatabaseId(table.getDatabaseId());
+                        fk.getReferencedTable().setDatabaseId(table.getDatabaseId());
                         fk.getReferences()
                                 .forEach(ref -> {
                                     ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
                                     ref.getColumn().setTableId(table.getId());
-                                    ref.getColumn().setDatabaseId(table.getTdbid());
+                                    ref.getColumn().setDatabaseId(table.getDatabaseId());
                                     ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
-                                    ref.getReferencedColumn().setDatabaseId(table.getTdbid());
+                                    ref.getReferencedColumn().setDatabaseId(table.getDatabaseId());
                                 });
                     });
             table.getConstraints()
@@ -766,6 +762,8 @@ public interface MetadataMapper {
             @Mapping(target = "isNullAllowed", source = "data.nullAllowed"),
             @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
+            @Mapping(target = "enums", ignore = true),
+            @Mapping(target = "sets", ignore = true),
     })
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
@@ -821,16 +819,18 @@ public interface MetadataMapper {
     }
 
     @Mappings({
-            @Mapping(target = "database.views", ignore = true),
-            @Mapping(target = "database.tables", ignore = true)
+            @Mapping(target = "databaseId", source = "database.id")
     })
     ViewDto viewToViewDto(View data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "view.vdbid"),
+            @Mapping(target = "databaseId", source = "view.database.id"),
     })
     ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 
+    @Mappings({
+            @Mapping(target = "vdbid", source = "database.id")
+    })
     ViewBriefDto viewToViewBriefDto(View data);
 
     @Mappings({

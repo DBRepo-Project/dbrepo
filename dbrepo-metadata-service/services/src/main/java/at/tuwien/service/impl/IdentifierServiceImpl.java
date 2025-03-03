@@ -31,10 +31,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -69,13 +66,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    public List<Identifier> findAll(Long databaseId) {
+    public List<Identifier> findAll(UUID databaseId) {
         return identifierRepository.findByDatabaseId(databaseId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Identifier find(Long identifierId) throws IdentifierNotFoundException {
+    public Identifier find(UUID identifierId) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findById(identifierId);
         if (optional.isEmpty()) {
             log.error("Failed to find identifier with id: {}", identifierId);
@@ -97,7 +94,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId) {
+    public List<Identifier> findByDatabaseIdAndQueryId(UUID databaseId, UUID queryId) {
         return identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
     }
 
@@ -113,7 +110,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId) {
+    public List<Identifier> findAll(IdentifierTypeDto type, UUID databaseId, UUID queryId, UUID viewId, UUID tableId) {
         final List<Identifier> identifiers = this.identifierRepository.findAll();
         log.trace("found {} identifiers before applying filter(s)", identifiers.size());
         Stream<Identifier> stream = identifiers.stream();

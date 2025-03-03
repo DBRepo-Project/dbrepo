@@ -46,7 +46,7 @@ data:
       "duplicateEmailsAllowed" : false,
       "resetPasswordAllowed" : false,
       "editUsernameAllowed" : false,
-      "bruteForceProtected" : false,
+      "bruteForceProtected" : true,
       "permanentLockout" : false,
       "maxTemporaryLockouts" : 0,
       "bruteForceStrategy" : "MULTIPLE",
@@ -54,8 +54,8 @@ data:
       "minimumQuickLoginWaitSeconds" : 60,
       "waitIncrementSeconds" : 60,
       "quickLoginCheckMilliSeconds" : 1000,
-      "maxDeltaTimeSeconds" : 43200,
-      "failureFactor" : 30,
+      "maxDeltaTimeSeconds" : 1036800,
+      "failureFactor" : 10,
       "roles" : {
         "realm" : [ {
           "id" : "48f38342-1e3f-427a-995d-c436eaee65cb",
@@ -3714,6 +3714,7 @@ data:
         "containerId" : "afe47bd0-61f8-40c3-95cb-04930407ebdd"
       },
       "requiredCredentials" : [ "password" ],
+      "passwordPolicy" : "length(8) and maxLength(64) and specialChars(1) and lowerCase(1) and upperCase(1) and digits(1)",
       "otpPolicyType" : "totp",
       "otpPolicyAlgorithm" : "HmacSHA1",
       "otpPolicyInitialCounter" : 0,

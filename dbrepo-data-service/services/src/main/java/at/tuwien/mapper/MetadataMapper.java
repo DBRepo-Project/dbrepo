@@ -12,11 +12,15 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
+import org.keycloak.representations.AccessTokenResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+
+import java.util.UUID;
 
 @Mapper(componentModel = "spring", imports = {DatabaseDto.class, ContainerDto.class, ImageDto.class})
 public interface MetadataMapper {
@@ -43,16 +47,18 @@ public interface MetadataMapper {
 
     UserDto userDtoToUserDto(UserDto data);
 
+    @Mappings({
+            @Mapping(target = "accessToken", source = "token")
+    })
+    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
+
     UserBriefDto userDtoToUserBriefDto(UserDto data);
 
-    @Mappings({
-            @Mapping(target = "databaseId", source = "tdbid")
-    })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
 
-    default String metricToUri(String baseUrl, Long databaseId, Long tableId, Long subsetId, Long viewId) {
+    default String metricToUri(String baseUrl, UUID databaseId, UUID tableId, UUID subsetId, UUID viewId) {
         final StringBuilder uri = new StringBuilder(baseUrl)
                 .append("/database/")
                 .append(databaseId);

@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.mapper.DataMapper;
@@ -30,13 +31,14 @@ public class QueueServiceRabbitMqImpl extends DataConnector implements QueueServ
     }
 
     @Override
-    public void insert(TableDto table, Map<String, Object> data) throws SQLException {
-        final ComboPooledDataSource dataSource = getDataSource(table);
+    public void insert(DatabaseDto database, TableDto table, Map<String, Object> data) throws SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final int[] idx = new int[]{1};
             final PreparedStatement preparedStatement = connection.prepareStatement(
-                    dataMapper.rabbitMqTupleToInsertOrUpdateQuery(metadataMapper.tableDtoToTableDto(table), data));
+                    dataMapper.rabbitMqTupleToInsertOrUpdateQuery(database.getInternalName(),
+                            metadataMapper.tableDtoToTableDto(table), data));
             for (Map.Entry<String, Object> entry : data.entrySet()) {
                 final Optional<ColumnDto> optional = table.getColumns().stream().filter(c -> c.getInternalName().equals(entry.getKey())).findFirst();
                 if (optional.isEmpty()) {

@@ -27,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @CrossOrigin(origins = "*")
@@ -83,7 +84,7 @@ public class MessageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("messageId") Long messageId)
+    public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("messageId") UUID messageId)
             throws MessageNotFoundException {
         log.debug("endpoint find one maintenance message, messageId={}", messageId);
         return ResponseEntity.ok(metadataMapper.bannerMessageToBannerMessageDto(
@@ -128,7 +129,7 @@ public class MessageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("messageId") Long messageId,
+    public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("messageId") UUID messageId,
                                                    @Valid @RequestBody BannerMessageUpdateDto data)
             throws MessageNotFoundException {
         log.debug("endpoint update maintenance message, messageId={}, data={}", messageId, data);
@@ -154,7 +155,7 @@ public class MessageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("messageId") Long messageId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("messageId") UUID messageId)
             throws MessageNotFoundException {
         log.debug("endpoint delete maintenance message, messageId={}", messageId);
         final BannerMessage message = bannerMessageService.find(messageId);

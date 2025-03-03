@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.CreateViewDto;
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
@@ -15,7 +15,6 @@ import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,7 +25,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -75,7 +74,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                       Principal principal) throws UserNotFoundException,
             DatabaseNotFoundException {
         log.debug("endpoint find all views, databaseId={}", databaseId);
@@ -120,6 +119,11 @@ public class ViewEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "View exists with name",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "423",
                     description = "Create view resulted in an invalid query statement",
                     content = {@Content(
@@ -136,16 +140,21 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @Valid @RequestBody CreateViewDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
-            UserNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            UserNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
+            ImageNotFoundException, ViewExistsException {
         log.debug("endpoint create view, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
+        }
+        if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(metadataMapper.nameToInternalName(data.getName())))) {
+            log.error("Failed to create view: name exists");
+            throw new ViewExistsException("Failed to create view: name exists");
         }
         log.trace("create view for database {}", database);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -162,14 +171,6 @@ public class ViewEndpoint extends AbstractEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find view successfully",
-                    headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Host", description = "The database hostname", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Port", description = "The database port number", schema = @Schema(implementation = Integer.class)),
-                            @Header(name = "X-Type", description = "The JDBC connection type", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Database", description = "The database internal name", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-View", description = "The view internal name", schema = @Schema(implementation = String.class)),
-                            @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ViewDto.class))}),
@@ -184,31 +185,15 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
-                                        @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                        @NotNull @PathVariable("viewId") UUID viewId,
                                         Principal principal) throws DatabaseNotFoundException,
             ViewNotFoundException {
         log.debug("endpoint find view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);
-        final HttpHeaders headers = new HttpHeaders();
-        if (isSystem(principal)) {
-            headers.set("X-Username", database.getContainer().getPrivilegedUsername());
-            headers.set("X-Password", database.getContainer().getPrivilegedPassword());
-            headers.set("X-Host", database.getContainer().getHost());
-            headers.set("X-Port", "" + database.getContainer().getPort());
-            headers.set("X-Type", database.getContainer().getImage().getJdbcMethod());
-            headers.set("X-Database", database.getInternalName());
-            headers.set("X-View", view.getInternalName());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View");
-        }
-        final ViewDto dto = metadataMapper.viewToViewDto(view);
-        if (!isSystem(principal)) {
-            removeInternalData(dto.getDatabase().getContainer());
-        }
         return ResponseEntity.status(HttpStatus.OK)
-                .headers(headers)
-                .body(dto);
+                .body(metadataMapper.viewToViewDto(view));
     }
 
     @DeleteMapping("/{viewId}")
@@ -252,8 +237,8 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                       @NotNull @PathVariable("viewId") UUID viewId,
                                        @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, UserNotFoundException {
@@ -305,8 +290,8 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                               @NotNull @PathVariable("viewId") UUID viewId,
                                                @NotNull @Valid @RequestBody ViewUpdateDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,

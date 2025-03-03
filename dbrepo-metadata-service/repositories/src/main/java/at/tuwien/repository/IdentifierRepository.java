@@ -6,9 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
+public interface IdentifierRepository extends JpaRepository<Identifier, UUID> {
 
     /**
      * Finds identifiers by given database id.
@@ -16,7 +17,7 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
      * @param databaseId The database id.
      * @return List of matching identifiers.
      */
-    List<Identifier> findByDatabaseId(Long databaseId);
+    List<Identifier> findByDatabaseId(UUID databaseId);
 
     /**
      * Finds identifiers by given database id and query id.
@@ -25,11 +26,11 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
      * @param queryId    The query id.
      * @return List of matching identifiers.
      */
-    List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
+    List<Identifier> findByDatabaseIdAndQueryId(UUID databaseId, UUID queryId);
 
-    List<Identifier> findDatabaseIdentifier(Long databaseId);
+    List<Identifier> findDatabaseIdentifier(UUID databaseId);
 
-    List<Identifier> findSubsetIdentifier(Long databaseId, Long queryId);
+    List<Identifier> findSubsetIdentifier(UUID databaseId, UUID queryId);
 
     List<Identifier> findAllDatabaseIdentifiers();
 

@@ -41,7 +41,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void createAccess(Long databaseId, UUID userId, AccessTypeDto access)
+    public void createAccess(UUID databaseId, UUID userId, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/access/" + userId;
@@ -66,7 +66,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void updateAccess(Long databaseId, UUID userId, AccessTypeDto access)
+    public void updateAccess(UUID databaseId, UUID userId, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, AccessNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/access/" + userId;
@@ -91,7 +91,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void deleteAccess(Long databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
+    public void deleteAccess(UUID databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/access/" + userId;
@@ -140,7 +140,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void updateDatabase(Long databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
+    public void updateDatabase(UUID databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId;
@@ -164,7 +164,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void updateTable(Long databaseId, Long tableId, TableUpdateDto data) throws DataServiceConnectionException,
+    public void updateTable(UUID databaseId, UUID tableId, TableUpdateDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/table/" + tableId;
@@ -188,7 +188,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void createTable(Long databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
+    public void createTable(UUID databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/table";
@@ -215,7 +215,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void deleteTable(Long databaseId, Long tableId) throws DataServiceConnectionException, DataServiceException,
+    public void deleteTable(UUID databaseId, UUID tableId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/table/" + tableId;
@@ -239,7 +239,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public ViewDto createView(Long databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException {
+    public ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException {
         final ResponseEntity<ViewDto> response;
         final String path = "/api/database/" + databaseId + "/view";
         log.trace("create view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
@@ -264,7 +264,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void deleteView(Long databaseId, Long viewId) throws DataServiceConnectionException, DataServiceException,
+    public void deleteView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/view/" + viewId;
@@ -288,7 +288,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public QueryDto findQuery(Long databaseId, Long queryId) throws DataServiceConnectionException, DataServiceException,
+    public QueryDto findQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException {
         final ResponseEntity<QueryDto> response;
         final String path = "/api/database/" + databaseId + "/subset/" + queryId;
@@ -316,7 +316,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public ExportResourceDto exportQuery(Long databaseId, Long queryId) throws DataServiceConnectionException,
+    public ExportResourceDto exportQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException,
             DataServiceException, QueryNotFoundException {
         final ResponseEntity<ExportResourceDto> response;
         final String path = "/api/database/" + databaseId + "/subset/" + queryId;
@@ -341,7 +341,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public List<TableDto> getTableSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
+    public List<TableDto> getTableSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException {
         final ResponseEntity<TableDto[]> response;
         final String path = "/api/database/" + databaseId + "/table";
@@ -372,7 +372,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public List<ViewDto> getViewSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
+    public List<ViewDto> getViewSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException {
         final ResponseEntity<ViewDto[]> response;
         final String path = "/api/database/" + databaseId + "/view";
@@ -403,7 +403,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws DataServiceConnectionException,
+    public TableStatisticDto getTableStatistics(UUID databaseId, UUID tableId) throws DataServiceConnectionException,
             DataServiceException, TableNotFoundException {
         final ResponseEntity<TableStatisticDto> response;
         final String path = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
@@ -424,7 +424,12 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             log.error("Failed to analyse table statistic: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to analyse table statistic: wrong http code: " + response.getStatusCode());
         }
-        return response.getBody();
+        final TableStatisticDto body = response.getBody();
+        if (body == null) {
+            log.error("Failed to analyse table statistic: empty body: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to analyse table statistic: empty body");
+        }
+        return body;
     }
 
 }

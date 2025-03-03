@@ -1,13 +1,13 @@
 package at.tuwien.service;
 
-import at.tuwien.repository.DatabaseRepository;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
+import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,10 +50,11 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
+            ImageNotFoundException {
         final CreateViewDto request = CreateViewDto.builder()
                 .name(VIEW_1_NAME)
-                .query(VIEW_1_QUERY)
+                .query(VIEW_1_SUBSET_DTO)
                 .isPublic(VIEW_1_PUBLIC)
                 .build();
 
@@ -88,7 +90,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
-            viewService.findById(DATABASE_1, 9999L);
+            viewService.findById(DATABASE_1, UUID.randomUUID());
         });
     }
 

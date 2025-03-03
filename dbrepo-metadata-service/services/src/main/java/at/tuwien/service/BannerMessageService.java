@@ -6,6 +6,7 @@ import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.exception.MessageNotFoundException;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface BannerMessageService {
 
@@ -30,7 +31,7 @@ public interface BannerMessageService {
      * @return The message, if successful.
      * @throws MessageNotFoundException The message was not found in the metadata database.
      */
-    BannerMessage find(Long id) throws MessageNotFoundException;
+    BannerMessage find(UUID id) throws MessageNotFoundException;
 
     /**
      * Creates a new maintenance message in the metadata database.

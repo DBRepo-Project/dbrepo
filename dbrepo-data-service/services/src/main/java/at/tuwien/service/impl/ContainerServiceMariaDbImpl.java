@@ -71,10 +71,6 @@ public class ContainerServiceMariaDbImpl extends DataConnector implements Contai
         try {
             /* create query store */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateSequenceRawQuery())
-                    .execute();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
                     .execute();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);

@@ -167,8 +167,8 @@ export default {
             // labels: history ? history.map(d => format(new UTCDate(d.timestamp), 'yyyy-MM-dd HH:mm:ss.SSS')) : [],
             labels: history ? history.map(d => format(new UTCDate(d.timestamp), 'yyyy-MM-dd HH:mm:ss')) : [],
             datasets: [
-              { backgroundColor: this.$vuetify.theme.current.colors.success, data: this.filterHistoryEventType(history, 'INSERT') },
-              { backgroundColor: this.$vuetify.theme.current.colors.error, data: this.filterHistoryEventType(history, 'DELETE') }
+              { backgroundColor: this.$vuetify.theme.current.colors.success, data: this.filterHistoryEventType(history, 'insert') },
+              { backgroundColor: this.$vuetify.theme.current.colors.error, data: this.filterHistoryEventType(history, 'delete') }
             ]
           }
         })

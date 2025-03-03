@@ -3,7 +3,7 @@ import {axiosErrorToApiError} from '@/utils'
 
 export const useTableService = (): any => {
 
-  function findAll(databaseId: number): Promise<TableBriefDto> {
+  function findAll(databaseId: string): Promise<TableBriefDto> {
     const axios = useAxiosInstance()
     console.debug('find tables')
     return new Promise<TableBriefDto>((resolve, reject) => {
@@ -19,7 +19,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function findOne(databaseId: number, tableId: number): Promise<TableDto> {
+  async function findOne(databaseId: string, tableId: string): Promise<TableDto> {
     const axios = useAxiosInstance()
     console.debug('find table with id', tableId, 'in database with id', databaseId);
     return new Promise<TableDto>((resolve, reject) => {
@@ -35,7 +35,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function updateSemantics(databaseId: number, tableId: number, columnId: number, data: ColumnSemanticsUpdateDto): Promise<ColumnDto> {
+  async function updateSemantics(databaseId: string, tableId: string, columnId: string, data: ColumnSemanticsUpdateDto): Promise<ColumnDto> {
     const axios = useAxiosInstance()
     console.debug('update column with id', columnId, 'table with id', tableId, 'in database with id', databaseId);
     return new Promise<ColumnDto>((resolve, reject) => {
@@ -51,7 +51,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function update(databaseId: number, tableId: number, data: TableUpdateDto): Promise<TableDto> {
+  async function update(databaseId: string, tableId: string, data: TableUpdateDto): Promise<TableDto> {
     const axios = useAxiosInstance()
     console.debug('update table with id', tableId, 'in database with id', databaseId);
     return new Promise<TableDto>((resolve, reject) => {
@@ -67,7 +67,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function importCsv(databaseId: number, tableId: number, data: ImportCsv): Promise<ImportDto> {
+  async function importCsv(databaseId: string, tableId: string, data: ImportCsv): Promise<ImportDto> {
     const axios = useAxiosInstance()
     console.debug('import csv to table with id', tableId, 'in database with id', databaseId);
     return new Promise<ImportDto>((resolve, reject) => {
@@ -83,7 +83,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function getData(databaseId: number, tableId: number, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
+  async function getData(databaseId: string, tableId: string, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
@@ -104,7 +104,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function getCount(databaseId: number, tableId: number, timestamp: Date): Promise<number> {
+  async function getCount(databaseId: string, tableId: string, timestamp: Date): Promise<number> {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
@@ -121,7 +121,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function exportData(databaseId: number, tableId: number, timestamp: Date): Promise<QueryResultDto> {
+  async function exportData(databaseId: string, tableId: string, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
       params: (timestamp && {timestamp}),
@@ -144,7 +144,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function create(databaseId: number, data: TableCreateDto): Promise<TableDto> {
+  async function create(databaseId: string, data: TableCreateDto): Promise<TableDto> {
     const axios = useAxiosInstance()
     console.debug('create table in database with id', databaseId, data)
     return new Promise<TableDto>((resolve, reject) => {
@@ -160,7 +160,7 @@ export const useTableService = (): any => {
     });
   }
 
-  async function remove(databaseId: number, tableId: number): Promise<void> {
+  async function remove(databaseId: string, tableId: string): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
@@ -176,7 +176,7 @@ export const useTableService = (): any => {
     });
   }
 
-  async function removeTuple(databaseId: number, tableId: number, data: TableCsvDeleteDto): Promise<void> {
+  async function removeTuple(databaseId: string, tableId: string, data: TableCsvDeleteDto): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
@@ -192,7 +192,7 @@ export const useTableService = (): any => {
     });
   }
 
-  async function history(databaseId: number, tableId: number): Promise<TableHistoryDto[]> {
+  async function history(databaseId: string, tableId: string): Promise<TableHistoryDto[]> {
     const axios = useAxiosInstance()
     console.debug('Load history of table with id', tableId, 'in database with id', databaseId)
     return new Promise<TableHistoryDto[]>((resolve, reject) => {
@@ -208,7 +208,7 @@ export const useTableService = (): any => {
     });
   }
 
-  async function suggest(databaseId: number, tableId: number, columnId: number): Promise<TableColumnEntityDto[]> {
+  async function suggest(databaseId: string, tableId: string, columnId: string): Promise<TableColumnEntityDto[]> {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {

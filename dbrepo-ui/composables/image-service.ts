@@ -1,7 +1,7 @@
 import {axiosErrorToApiError} from '@/utils'
 
 export const useImageService = (): any => {
-  async function findById(id: number): Promise<ImageDto> {
+  async function findById(id: string): Promise<ImageDto> {
     const axios = useAxiosInstance();
     console.debug('find image by id', id);
     return new Promise<ImageDto>((resolve, reject) => {

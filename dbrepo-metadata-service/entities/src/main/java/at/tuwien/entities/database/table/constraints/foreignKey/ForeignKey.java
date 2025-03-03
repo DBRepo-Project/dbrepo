@@ -3,11 +3,11 @@ package at.tuwien.entities.database.table.constraints.foreignKey;
 import at.tuwien.entities.database.table.Table;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
-
-import static jakarta.persistence.GenerationType.IDENTITY;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -21,9 +21,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class ForeignKey {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "fkid", updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "fkid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
+    private UUID id;
 
     @Column(updatable = false, nullable = false)
     private String name;
@@ -54,4 +54,11 @@ public class ForeignKey {
     @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)
     private ReferenceType onDelete;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 }

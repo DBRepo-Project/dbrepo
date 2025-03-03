@@ -67,7 +67,7 @@ export default {
       if (!this.table) {
         return false
       }
-      const filter = this.table.identifiers.filter(i => i.id === Number(this.$route.params.identifier_id))
+      const filter = this.table.identifiers.filter(i => i.id === this.$route.params.identifier_id)
       return filter.length === 1 ? filter[0] : null
     },
     canPersistIdentifier () {

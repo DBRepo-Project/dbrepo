@@ -8,6 +8,8 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -19,8 +21,8 @@ import org.springframework.data.annotation.Id;
 public class IdentifierTitleDto {
 
     @NotNull
-    @Schema(example = "4")
-    private Long id;
+    @Schema(example = "70ce5164-fd74-413f-8712-f996b91defbf")
+    private UUID id;
 
     @Schema(example = "Airquality Demonstrator")
     private String title;

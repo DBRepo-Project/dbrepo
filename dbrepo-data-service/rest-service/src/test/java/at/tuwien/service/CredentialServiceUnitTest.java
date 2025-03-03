@@ -8,7 +8,7 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.service.impl.CredentialServiceImpl;
+import at.tuwien.service.impl.CacheServiceImpl;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 public class CredentialServiceUnitTest extends AbstractUnitTest {
 
     @Autowired
-    private CredentialServiceImpl credentialService;
+    private CacheServiceImpl credentialService;
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
@@ -48,7 +48,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
 
         /* test */
         final DatabaseDto response = credentialService.getDatabase(DATABASE_1_ID);
@@ -62,7 +62,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO)
+                .thenReturn(DATABASE_1_DTO)
                 .thenThrow(RuntimeException.class) /* should never be thrown */;
         credentialService.getDatabase(DATABASE_1_ID);
 
@@ -78,8 +78,8 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-                .thenReturn(DATABASE_2_PRIVILEGED_DTO) /* needs to be different id for test case */
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_2_DTO) /* needs to be different id for test case */
+                .thenReturn(DATABASE_1_DTO);
 
         /* pre-condition */
         final DatabaseDto tmp = credentialService.getDatabase(DATABASE_1_ID);
@@ -98,7 +98,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
+                .thenReturn(CONTAINER_1_DTO);
 
         /* test */
         final ContainerDto response = credentialService.getContainer(CONTAINER_1_ID);
@@ -127,9 +127,9 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
             InterruptedException, ContainerNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(DATABASE_1_ID))
-                .thenReturn(CONTAINER_2_PRIVILEGED_DTO) /* needs to be different id for test case */
-                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
+        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_2_DTO) /* needs to be different id for test case */
+                .thenReturn(CONTAINER_1_DTO);
 
         /* pre-condition */
         final ContainerDto tmp = credentialService.getContainer(CONTAINER_1_ID);
@@ -251,7 +251,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_PRIVILEGED_DTO);
+                .thenReturn(TABLE_1_DTO);
 
         /* test */
         final TableDto response = credentialService.getTable(DATABASE_1_ID, TABLE_1_ID);
@@ -265,7 +265,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_PRIVILEGED_DTO)
+                .thenReturn(TABLE_1_DTO)
                 .thenThrow(RuntimeException.class) /* should never be thrown */;
         credentialService.getTable(DATABASE_1_ID, TABLE_1_ID);
 
@@ -281,8 +281,8 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_2_PRIVILEGED_DTO) /* needs to be different id for test case */
-                .thenReturn(TABLE_1_PRIVILEGED_DTO);
+                .thenReturn(TABLE_2_DTO) /* needs to be different id for test case */
+                .thenReturn(TABLE_1_DTO);
 
         /* pre-condition */
         final TableDto tmp = credentialService.getTable(DATABASE_1_ID, TABLE_1_ID);
@@ -301,7 +301,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
         final ViewDto response = credentialService.getView(DATABASE_1_ID, VIEW_1_ID);
@@ -314,7 +314,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO)
+                .thenReturn(VIEW_1_DTO)
                 .thenThrow(RuntimeException.class) /* should never be thrown */;
         credentialService.getView(DATABASE_1_ID, VIEW_1_ID);
 
@@ -330,8 +330,8 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_2_PRIVILEGED_DTO) /* needs to be different id for test case */
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_2_DTO) /* needs to be different id for test case */
+                .thenReturn(VIEW_1_DTO);
 
         /* pre-condition */
         final ViewDto tmp = credentialService.getView(DATABASE_1_ID, VIEW_1_ID);
@@ -342,28 +342,6 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
         final ViewDto response = credentialService.getView(DATABASE_1_ID, VIEW_1_ID);
         assertNotNull(response);
         assertEquals(VIEW_1_ID, response.getId());
-    }
-
-    @Test
-    public void invalidateAccess_succeeds() throws NotAllowedException, RemoteUnavailableException,
-            MetadataServiceException {
-
-        /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID))
-                .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO)
-                .thenThrow(RuntimeException.class);
-
-        /* pre-condition */
-        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
-        assertNotNull(response);
-
-        /* test */
-        credentialService.invalidateAccess(DATABASE_1_ID);
-
-        /* post-condition */
-        assertThrows(RuntimeException.class, () -> {
-            credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
-        });
     }
 
 }

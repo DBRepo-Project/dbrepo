@@ -122,7 +122,7 @@ public class MetadataEndpointMvcTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=oai:1"))
+        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=oai:" + IDENTIFIER_1_ID))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='GetRecord']").exists())

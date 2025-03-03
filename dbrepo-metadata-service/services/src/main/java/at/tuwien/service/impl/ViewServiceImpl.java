@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -42,14 +43,14 @@ public class ViewServiceImpl implements ViewService {
     }
 
     @Override
-    public View findById(Database database, Long viewId) throws ViewNotFoundException {
+    public View findById(Database database, UUID viewId) throws ViewNotFoundException {
         final Optional<View> optional = database.getViews()
                 .stream()
                 .filter(v -> v.getId().equals(viewId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {}", viewId);
-            throw new ViewNotFoundException("Failed to find view with id " + viewId);
+            log.error("Failed to find view with id: {}", viewId);
+            throw new ViewNotFoundException("Failed to find view with id: " + viewId);
         }
         return optional.get();
     }
@@ -89,20 +90,15 @@ public class ViewServiceImpl implements ViewService {
     @Transactional
     public View create(Database database, User creator, CreateViewDto data) throws MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, TableNotFoundException, ImageNotFoundException {
         /* create in metadata database */
         final View view = View.builder()
-                .vdbid(database.getId())
                 .database(database)
                 .name(data.getName())
                 .internalName(metadataMapper.nameToInternalName(data.getName()))
                 .ownedBy(creator.getId())
                 .owner(creator)
                 .identifiers(new LinkedList<>())
-                .query(data.getQuery())
-                .queryHash(Hashing.sha256()
-                        .hashString(data.getQuery(), StandardCharsets.UTF_8)
-                        .toString())
                 .columns(new LinkedList<>())
                 .isInitialView(false)
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -117,6 +113,10 @@ public class ViewServiceImpl implements ViewService {
                 .toList());
         view.getColumns()
                 .forEach(column -> column.setView(view));
+        view.setQuery(rawView.getQuery());
+        view.setQueryHash(Hashing.sha256()
+                .hashString(rawView.getQuery(), StandardCharsets.UTF_8)
+                .toString());
         database.getViews()
                 .add(view);
         database = databaseRepository.save(database);

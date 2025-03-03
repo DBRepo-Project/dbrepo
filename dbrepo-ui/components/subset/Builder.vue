@@ -19,30 +19,19 @@
         :text="$t('navigation.create')"
         @click="execute" />
     </v-toolbar>
-    <v-toolbar flat>
-      <v-tabs
-        v-model="tabs"
-        color="primary">
-        <v-tab
-          value="0"
-          :text="$t('pages.subset.subpages.create.simple.text')" />
-        <v-tab
-          value="1"
-          :text="$t('pages.subset.subpages.create.expert.text')" />
-      </v-tabs>
-    </v-toolbar>
     <v-card
       rounded="0"
       variant="flat">
       <v-card-text>
         <v-form
           ref="form"
-          @submit.prevent>
+          @submit.prevent="$refs.form.validate()">
           <v-row
             v-if="isView"
             class="mt-1"
             dense>
-            <v-col lg="8">
+            <v-col
+              lg="8">
               <v-text-field
                 v-model="view.name"
                 :disabled="isExecuted"
@@ -63,7 +52,7 @@
             v-if="isView"
             dense>
             <v-col
-              md="4">
+              lg="4">
               <v-select
                 v-model="view.is_public"
                 :items="dataOptions"
@@ -78,7 +67,7 @@
                 :hint="$t('pages.database.resource.data.hint')" />
             </v-col>
             <v-col
-              md="4">
+              lg="4">
               <v-select
                 v-model="view.is_schema_public"
                 :items="schemaOptions"
@@ -99,7 +88,8 @@
             <v-window-item
               value="0">
               <v-row dense>
-                <v-col lg="4">
+                <v-col
+                  lg="4">
                   <v-select
                     v-model="table"
                     :disabled="isExecuted"
@@ -113,22 +103,23 @@
                     :hint="$t('pages.view.subpages.create.table.hint')"
                     :rules="[v => !!v || $t('validation.required')]" />
                 </v-col>
-                <v-col lg="4">
+                <v-col
+                  lg="4">
                   <v-select
                     v-model="select"
                     item-title="internal_name"
                     :disabled="!table || isExecuted"
                     :items="columns"
+                    :rules="[v => !!v || $t('validation.required')]"
+                    required
                     persistent-hint
                     clearable
                     :variant="inputVariant"
                     :label="$t('pages.view.subpages.create.columns.label')"
                     :hint="$t('pages.view.subpages.create.columns.hint')"
-                    :rules="[v => !!v || $t('validation.required')]"
                     :loading="loadingColumns"
                     return-object
-                    multiple
-                    @update:model-value="buildQuery">
+                    multiple>
                     <template
                       v-slot:prepend-item>
                       <v-list-item
@@ -147,20 +138,33 @@
                   </v-select>
                 </v-col>
               </v-row>
-              <v-row v-if="select.length > 0">
-                <v-col lg="8">
+              <v-row
+                v-if="select.length > 0">
+                <v-col
+                  lg="8">
                   <v-btn
                     v-if="clauses.length === 0"
                     size="small"
-                    color="secondary"
+                    color="tertiary"
                     variant="flat"
                     :text="$t('pages.subset.subpages.create.filter.text')"
                     :disabled="clausesDisabled"
-                    @click="addFirst" />
+                    @click="addFirstFilter" />
+                  <v-btn
+                    v-if="clauses.length === 0 && sorts.length === 0"
+                    class="ml-2"
+                    size="small"
+                    color="tertiary"
+                    variant="flat"
+                    :text="$t('pages.subset.subpages.create.order.text')"
+                    :disabled="clausesDisabled"
+                    @click="addFirstSort" />
                 </v-col>
               </v-row>
-              <div class="mb-5">
-                <v-row v-if="clauses.length > 0">
+              <div
+                class="mb-5">
+                <v-row
+                  v-if="clauses.length > 0">
                   <v-col
                     lg="8"
                     class="text-center">
@@ -170,27 +174,35 @@
                 <div v-for="(clause, idx) in clauses" :key="idx">
                   <v-row
                     v-if="clause.type === 'where'">
-                    <v-col lg="3">
+                    <v-col
+                      lg="3">
                       <v-select
                         v-model="clause.params[0]"
                         :disabled="clausesDisabled"
                         item-title="internal_name"
                         item-value="internal_name"
                         variant="underlined"
+                        :rules="[v => !!v || $t('validation.required')]"
+                        required
+                        clearable
                         persistent-hint
                         :label="$t('pages.subset.subpages.create.filter.column.label')"
                         :hint="$t('pages.subset.subpages.create.filter.column.hint')"
                         :items="select" />
                     </v-col>
-                    <v-col lg="2">
+                    <v-col
+                      lg="2">
                       <v-select
                         v-model="clause.params[1]"
                         :disabled="clausesDisabled"
                         item-title="value"
                         item-value="value"
+                        :rules="[v => !!v || $t('validation.required')]"
+                        required
+                        clearable
                         persistent-hint
-                        :label="operatorHint(clause.params[1])"
-                        :hint="$t('pages.subset.subpages.create.filter.operator.label')"
+                        :label="$t('pages.subset.subpages.create.filter.operator.label')"
+                        :hint="operatorHint(clause.params[1])"
                         :items="operators">
                         <template
                           v-slot:append>
@@ -211,15 +223,20 @@
                         </template>
                       </v-select>
                     </v-col>
-                    <v-col lg="3">
+                    <v-col
+                      lg="3">
                       <v-text-field
                         v-model="clause.params[2]"
                         :disabled="clausesDisabled"
+                        :rules="[v => !!v || $t('validation.required')]"
+                        required
+                        clearable
                         persistent-hint
                         :label="$t('pages.subset.subpages.create.filter.value.label')"
                         :hint="$t('pages.subset.subpages.create.filter.value.hint')" />
                     </v-col>
-                    <v-col lg="1">
+                    <v-col
+                      lg="1">
                       <v-btn
                         :disabled="clausesDisabled"
                         class="mt-4"
@@ -227,7 +244,7 @@
                         color="error"
                         variant="flat"
                         :text="$t('pages.subset.subpages.create.filter.remove.text')"
-                        @click="remove(idx)" />
+                        @click="removeFilter(idx)" />
                     </v-col>
                   </v-row>
                   <v-row
@@ -247,7 +264,7 @@
                           :disabled="!canAdd(idx) || clausesDisabled"
                           class="mt-2 mr-1"
                           variant="flat"
-                          color="secondary"
+                          color="tertiary"
                           size="small"
                           :text="$t('pages.subset.subpages.create.filter.and.text')"
                           @click="addAnd" />
@@ -255,7 +272,7 @@
                           :disabled="!canAdd(idx) || clausesDisabled"
                           class="mt-2"
                           variant="flat"
-                          color="secondary"
+                          color="tertiary"
                           size="small"
                           :text="$t('pages.subset.subpages.create.filter.or.text')"
                           @click="addOr" />
@@ -264,33 +281,70 @@
                   </div>
                 </div>
               </div>
-            </v-window-item>
-            <v-window-item
-              value="1">
+              <div class="mb-5">
+                <v-row
+                  v-if="sorts.length > 0">
+                  <v-col
+                    lg="8"
+                    class="text-center">
+                    <pre>SORT BY</pre>
+                  </v-col>
+                </v-row>
+                <v-row
+                  v-for="(sort, idx) in sorts"
+                  key="idx">
+                  <v-col
+                    lg="4">
+                    <v-select
+                      v-model="sort.column_id"
+                      :disabled="clausesDisabled"
+                      item-title="internal_name"
+                      item-value="id"
+                      :rules="[v => !!v || $t('validation.required')]"
+                      required
+                      clearable
+                      variant="underlined"
+                      persistent-hint
+                      :label="$t('pages.subset.subpages.create.filter.column.label')"
+                      :hint="$t('pages.subset.subpages.create.filter.column.hint')"
+                      :items="columns" />
+                  </v-col>
+                  <v-col
+                    lg="4">
+                    <v-select
+                      v-model="sort.direction"
+                      :disabled="clausesDisabled"
+                      item-title="title"
+                      item-value="value"
+                      clearable
+                      persistent-hint
+                      :label="$t('pages.subset.subpages.create.order.direction.label')"
+                      :items="sortings" />
+                  </v-col>
+                  <v-col
+                    lg="1">
+                    <v-btn
+                      :disabled="clausesDisabled"
+                      class="mt-4"
+                      size="small"
+                      color="error"
+                      variant="flat"
+                      :text="$t('pages.subset.subpages.create.order.remove.text')"
+                      @click="removeSort(idx)" />
+                  </v-col>
+                </v-row>
+              </div>
               <v-row
-                v-if="hasUnsupported"
-                dense>
-                <v-col>
-                  <v-alert
-                    border="start"
-                    color="warning">
-                    <span>
-                      {{ $t('pages.subset.subpages.create.expert.warn') }}
-                    </span>
-                    <pre style="white-space:inherit;">{{ unsupported.join(', ') }}</pre>
-                  </v-alert>
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col>
-                  {{ $t('pages.subset.subpages.create.subtitle') }}
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col>
-                  <Raw
-                    class="mt-2"
-                    @sql="updateSql" />
+                v-if="(sorts.length > 0 || clauses.length > 0) && select.length > 0">
+                <v-col
+                  lg="8">
+                  <v-btn
+                    size="small"
+                    color="tertiary"
+                    variant="flat"
+                    :text="$t('pages.subset.subpages.create.order.text')"
+                    :disabled="clausesDisabled"
+                    @click="addFirstSort" />
                 </v-col>
               </v-row>
             </v-window-item>
@@ -305,7 +359,6 @@
 import Raw from '@/components/subset/Raw.vue'
 import Results from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache.js'
-import { format } from 'sql-formatter'
 
 export default {
   components: {
@@ -325,6 +378,7 @@ export default {
       table: null,
       views: [],
       columns: [],
+      sorts: [],
       timestamp: null,
       executeDifferentTimestamp: false,
       dataOptions: [
@@ -337,21 +391,24 @@ export default {
       ],
       tableDetails: null,
       resultId: null,
-      valid: false,
       errorKeyword: null,
       query: {
-        raw: null,
-        formatted: null
+        table_id: null,
+        columns: [],
+        filter: null
       },
       view: {
         is_public: true,
         is_schema_public: true,
-        name: null,
-        query: null
+        name: null
       },
       select: [],
       clauses: [],
       tabs: 0,
+      sortings: [
+        { title: 'Ascending ↓', value: 'asc' },
+        { title: 'Descening ↑', value: 'desc' },
+      ],
       loadingQuery: false,
       loadingColumns: false,
       cacheStore: useCacheStore()
@@ -388,14 +445,6 @@ export default {
       }
       return this.database.views.map(v => v.internal_name)
     },
-    sql () {
-      if (!this.query.raw) {
-        return ''
-      }
-      return this.query.raw.replaceAll('\n', ' ') /* remove newline */
-        .replaceAll(/\s+/g, ' ') /* remove whitespace */
-        .trim()
-    },
     clausesDisabled () {
       return this.isExecuted
     },
@@ -411,36 +460,49 @@ export default {
     isExecuted () {
       return this.resultId !== null
     },
-    valid () {
-      if (this.isView) {
-        return this.valid && !this.hasUnsupported
-      }
-      return this.sql.length > 0 && !this.hasUnsupported
-    },
     unsupported () {
       if (!this.$config.public.database.unsupported) {
         return []
       }
       return this.$config.public.database.unsupported.split(',')
     },
-    hasUnsupported () {
-      if (!this.sql) {
-        return false
+    subset () {
+      if (!this.table || !this.select) {
+        return null
       }
-      const unsupported = this.unsupported.map(k => k.toLowerCase())
-      for (let i = 0; i < unsupported.length; i++) {
-        if (this.sql.toLowerCase().includes(unsupported[i])) {
-          console.warn('query contains unsupported keyword', unsupported[i])
-          return true
-        }
+      return {
+        table_id: this.table.id,
+        columns: this.select.map(column => column.id),
+        filter: this.clauses ? this.clauses.map(clause => {
+          if (clause.type === 'or' || clause.type === 'and') {
+            return {
+              type: clause.type
+            }
+          }
+          const filtered_column = this.table.columns.filter(column => column.internal_name === clause.params[0])
+          const filtered_operator = this.database.container.image.operators.filter(operator => operator.value === clause.params[1])
+          if (!filtered_column || filtered_column.length === 0 || !filtered_operator || filtered_operator.length === 0) {
+            return null
+          }
+          const json = {
+            type: clause.type,
+            column_id: filtered_column[0].id,
+            operator_id: filtered_operator[0].id,
+            value: clause.params[2]
+          }
+          return json
+        }) : null,
+        order: this.sorts
       }
-      return this.sql.includes(';')
     },
     canExecute () {
-      if (this.isView) {
-        return this.view.name !== null && this.view.is_public !== null && this.view.query !== null
+      if (this.subset === null || !this.subset.columns || this.subset.columns.length === 0 || !this.$refs.form.isValid) {
+        return false
       }
-      return this.sql !== null && this.sql !== '' && !this.sql.includes(';')
+      if (!this.isView) {
+        return true
+      }
+      return this.view.name !== null && this.view.is_public !== null
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -452,13 +514,6 @@ export default {
     }
   },
   watch: {
-    clauses: {
-      deep: true,
-      immediate: true,
-      handler () {
-        this.buildQuery()
-      }
-    },
     table () {
       this.select = []
       if (!this.table) {
@@ -469,6 +524,7 @@ export default {
   },
   mounted () {
     this.selectTable()
+    this.initViewVisibility()
   },
   methods: {
     fetchTableColumns (tableId) {
@@ -488,6 +544,13 @@ export default {
           toast.error(this.$t(code))
         })
     },
+    initViewVisibility () {
+      if (!this.database) {
+        return
+      }
+      this.view.is_public = this.database.is_public
+      this.view.is_schema_public = this.database.is_schema_public
+    },
     validViewName (name) {
       if (!name) {
         return false
@@ -499,7 +562,7 @@ export default {
       if (this.$route.query.tid === undefined) {
         return
       }
-      const tid = parseInt(this.$route.query.tid)
+      const tid = this.$route.query.tid
       const selection = this.tables.filter(t => t.id === tid)
       if (selection.length > 0) {
         this.table = selection[0]
@@ -509,9 +572,9 @@ export default {
         console.warn('Failed to find table with id', tid)
       }
     },
-    async execute () {
+    execute () {
       if (this.isView) {
-        await this.createView()
+        this.createView()
         return
       }
       if (this.timestamp === '') {
@@ -520,7 +583,7 @@ export default {
       /* pre-check */
       this.loadingQuery = true
       const queryService = useQueryService()
-      queryService.execute(this.$route.params.database_id, { statement: this.sql }, this.timestamp, 0, 1)
+      queryService.execute(this.$route.params.database_id, this.subset, this.timestamp, 0, 1)
         .then(async (subset) => {
           const toast = useToastInstance()
           toast.success(this.$t('success.subset.create'))
@@ -531,6 +594,7 @@ export default {
           this.loadingQuery = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(this.$t('error.query.invalid'))
             return
           }
           toast.error(`${this.$t(code)}: ${message}`)
@@ -538,7 +602,7 @@ export default {
     },
     createView () {
       this.loadingQuery = true
-      this.view.query = this.sql
+      this.view.query = this.subset
       const viewService = useViewService()
       viewService.create(this.$route.params.database_id, this.view)
         .then((simpleView) => {
@@ -569,39 +633,32 @@ export default {
           toast.error(this.$t(code))
         })
     },
-    buildQuery () {
-      if (!this.table) {
-        return
-      }
-      const queryService = useQueryService()
-      const { error, reason, column, raw, formatted } = queryService.build(this.table.internal_name, this.select, this.columnTypes, this.clauses)
-      if (error) {
-        const toast = useToastInstance()
-        toast.error(this.$t('error.query.' + reason) + ' ' + column)
-        return
-      }
-      this.query.raw = raw
-      if (this.isView) {
-        this.view.query = raw
-      }
-      this.query.formatted = formatted
-    },
     canAdd (idx) {
       return idx === this.clauses.length - 1
     },
-    addFirst () {
+    addFirstFilter () {
       const column = (this.columnNames && this.columnNames.length) ? this.columnNames[0] : ''
       this.clauses.push({ type: 'where', params: [column, '=', ''] })
+      this.$refs.form.validate()
+    },
+    addFirstSort () {
+      if (this.sorts.length === 0) {
+        this.columns.filter(c => this.table.constraints.primary_key.map(pk =>
+          pk.column.id).includes(c.id)).forEach(pk => this.sorts.push({ column_id: pk.id, direction: 'asc' }))
+      } else {
+        this.sorts.push({ column_id: null, direction: null})
+      }
+      this.$refs.form.validate()
     },
     addAnd () {
       this.clauses.push({ type: 'and' })
-      this.addFirst()
+      this.addFirstFilter()
     },
     addOr () {
       this.clauses.push({ type: 'or' })
-      this.addFirst()
+      this.addFirstFilter()
     },
-    remove (idx) {
+    removeFilter (idx) {
       if (idx === 0) {
         if (this.clauses.length === 1) {
           this.clauses.splice(idx, 1)
@@ -613,23 +670,17 @@ export default {
         this.clauses.splice(idx - 1, 2)
       }
     },
-    updateSql (event) {
-      const { raw } = event
-      if (raw) {
-        this.query.raw = raw
-        if (this.isView) {
-          this.view.query = raw
-        }
-        this.query.formatted = format(raw, {
-          language: 'mysql',
-          keywordCase: 'upper'
-        })
+    removeSort (idx) {
+      if (idx === 0) {
+        this.sorts.splice(idx, 1)
+      } else {
+        // remove current and previous
+        this.sorts.splice(idx - 1, 1)
       }
     },
     toggleColumns () {
       if (this.select.length !== this.columns.length) {
         this.select = this.columns
-        this.buildQuery()
       } else {
         this.select = []
       }
@@ -643,7 +694,7 @@ export default {
     },
     operatorHint (value) {
       const filter = this.operators.filter(o => o.value === value)
-      if (filter.length !== 1) {
+      if (filter.length !== 1 || filter[0].display_name === filter[0].value) {
         return null
       }
       return filter[0].display_name

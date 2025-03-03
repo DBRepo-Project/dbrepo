@@ -20,7 +20,8 @@
               <v-row
                 v-if="previewImage"
                 dense>
-                <v-col md="8">
+                <v-col
+                  lg="8">
                   <v-alert
                     v-if="file"
                     border="start"
@@ -45,8 +46,10 @@
                     @click="removeDatabaseImage" />
                 </v-col>
               </v-row>
-              <v-row dense>
-                <v-col md="8">
+              <v-row
+                dense>
+                <v-col
+                  lg="8">
                   <v-file-input
                     v-model="file"
                     accept="image/*"
@@ -134,7 +137,7 @@
             <v-row
               dense>
               <v-col
-                md="4">
+                lg="4">
                 <v-select
                   v-model="modifyVisibility.is_public"
                   :items="dataOptions"
@@ -148,7 +151,7 @@
                   :hint="$t('pages.database.resource.data.hint', { resource: 'database' })" />
               </v-col>
               <v-col
-                md="4">
+                lg="4">
                 <v-select
                   v-model="modifyVisibility.is_schema_public"
                   :items="schemaOptions"
@@ -184,7 +187,8 @@
           rounded="0">
           <v-card-text>
             <v-row>
-              <v-col md="8">
+              <v-col
+                lg="8">
                 <v-select
                   v-model="modifyOwner.id"
                   :items="users"
@@ -480,13 +484,13 @@ export default {
       this.loadingUpload = true
       const uploadService = useUploadService()
       uploadService.create(this.file)
-        .then((s3key) => {
-          console.debug('uploaded image', s3key)
+        .then(({s3_key}) => {
+          console.debug('uploaded image', s3_key)
           const cacheStore = useCacheStore()
           cacheStore.setUploadProgress(null)
           const toast = useToastInstance()
           toast.success(this.$t('success.database.upload'))
-          this.modifyImage.key = s3key
+          this.modifyImage.key = s3_key
           this.loadingUpload = false
         })
         .catch((error) => {

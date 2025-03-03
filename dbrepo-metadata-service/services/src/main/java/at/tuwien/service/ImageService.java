@@ -9,6 +9,7 @@ import at.tuwien.exception.ImageNotFoundException;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 public interface ImageService {
 
@@ -25,7 +26,7 @@ public interface ImageService {
      * @param imageId The image id.
      * @return The image, if successful.
      */
-    ContainerImage find(Long imageId) throws ImageNotFoundException;
+    ContainerImage find(UUID imageId) throws ImageNotFoundException;
 
     /**
      * Creates a new container image in the metadata database.

@@ -19,7 +19,7 @@
     <v-btn
       v-if="canCreatePid"
       class="mr-2"
-      :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-content-save-outline' : null"
+      :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
       variant="flat"
       color="primary"
       :text="($vuetify.display.mdAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
@@ -145,12 +145,12 @@ export default {
       if (!this.view) {
         return []
       }
-      return this.view.identifiers.filter(s => s.view_id === Number(this.$route.params.view_id))
+      return this.view.identifiers.filter(s => s.view_id === this.$route.params.view_id)
     },
     identifier () {
       /* mount pid */
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.identifiers.filter(i => i.id === this.pid)
         if (filter.length > 0) {
           const identifier = filter[0]
           console.debug('identifier set according to route pid', identifier)

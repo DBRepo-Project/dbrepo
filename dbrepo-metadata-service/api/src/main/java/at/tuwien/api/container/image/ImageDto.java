@@ -1,5 +1,6 @@
 package at.tuwien.api.container.image;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,12 +22,8 @@ import java.util.List;
 public class ImageDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
-
-    @NotBlank
-    @Schema(example = "docker.io/library")
-    private String registry;
+    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dcce")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "mariadb")
@@ -36,16 +34,7 @@ public class ImageDto {
     private String version;
 
     @NotBlank
-    @JsonProperty("driver_class")
-    @Schema(example = "org.mariadb.jdbc.Driver")
-    private String driverClass;
-
-    @NotBlank
-    @Schema(example = "org.hibernate.dialect.MariaDBDialect")
-    private String dialect;
-
-    @NotBlank
-    @JsonProperty("jdbc_method")
+    @JsonIgnore
     @Schema(example = "mariadb")
     private String jdbcMethod;
 
@@ -53,11 +42,6 @@ public class ImageDto {
     @JsonProperty("default")
     @Schema(example = "false")
     private Boolean isDefault;
-
-    @NotNull
-    @JsonProperty("default_port")
-    @Schema(example = "3306")
-    private Integer defaultPort;
 
     @NotNull
     @JsonProperty("data_types")

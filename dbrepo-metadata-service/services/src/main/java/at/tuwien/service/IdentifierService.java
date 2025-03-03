@@ -12,6 +12,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public interface IdentifierService {
@@ -29,7 +30,7 @@ public interface IdentifierService {
      * @param databaseId The database id.
      * @return The list of identifiers.
      */
-    List<Identifier> findAll(Long databaseId);
+    List<Identifier> findAll(UUID databaseId);
 
     /**
      * Finds an identifier by given id.
@@ -38,7 +39,7 @@ public interface IdentifierService {
      * @return The identifier, if successful.
      * @throws IdentifierNotFoundException The identifier does not exist.
      */
-    Identifier find(Long id) throws IdentifierNotFoundException;
+    Identifier find(UUID id) throws IdentifierNotFoundException;
 
     /**
      * Finds an identifier by given doi.
@@ -56,7 +57,7 @@ public interface IdentifierService {
      * @param queryId    The query id.
      * @return The list of identifiers.
      */
-    List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
+    List<Identifier> findByDatabaseIdAndQueryId(UUID databaseId, UUID queryId);
 
     /**
      * Finds all identifiers in the metadata database which are identifying databases.
@@ -83,7 +84,7 @@ public interface IdentifierService {
      * @param tableId    Optional. The table id.
      * @return The list of identifiers.
      */
-    List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId);
+    List<Identifier> findAll(IdentifierTypeDto type, UUID databaseId, UUID queryId, UUID viewId, UUID tableId);
 
     /**
      * Publishes a draft identifier with DataCite.
@@ -95,7 +96,6 @@ public interface IdentifierService {
      * @throws SearchServiceConnectionException
      * @throws MalformedException
      * @throws DataServiceConnectionException
-     * @throws IdentifierNotFoundException
      */
     Identifier publish(Identifier identifier) throws SearchServiceException, DatabaseNotFoundException,
             SearchServiceConnectionException, MalformedException, DataServiceConnectionException,

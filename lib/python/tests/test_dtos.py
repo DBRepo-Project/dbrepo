@@ -35,9 +35,10 @@ dictConfig({
 })
 
 
-class AnalyseUnitTest(unittest.TestCase):
+class DtoUnitTest(unittest.TestCase):
     schemas = None
     models: [()] = []
+    exclusions: [str] = ['EnumType']
     found: int = 0
     skipped: [str] = []
 
@@ -48,7 +49,7 @@ class AnalyseUnitTest(unittest.TestCase):
                 self.found += 1
                 if not inspect.isclass(obj):
                     continue
-                if f'{name}Dto' not in self.schemas:
+                if f'{name}Dto' not in self.schemas or name not in self.exclusions:
                     logging.debug(f'skip model {name}: OpenAPI schema definition {name}Dto not found')
                     self.skipped.append(f'{name}Dto')
                     continue

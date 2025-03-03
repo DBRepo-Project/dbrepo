@@ -8,10 +8,10 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: 1.6.2
+  version: 1.7.0
 externalDocs:
   description: Sourcecode Documentation
-  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6.2/system-services-metadata/
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7.0/system-services-metadata/
 servers:
 - url: http://localhost
   description: Development instance
@@ -24,22 +24,21 @@ paths:
       - view-endpoint
       summary: Get view data
       description: "Gets data from a view of a database. For private databases, the\
-        \ user needs at least *READ* access to the associated database. Requires role\
-        \ `view-database-view-data`."
+        \ user needs at least *READ* access to the associated database."
       operationId: getData
       parameters:
       - name: databaseId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: viewId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: page
         in: query
         required: false
@@ -59,6 +58,27 @@ paths:
           type: string
           format: date-time
       responses:
+        "200":
+          description: Retrieved view data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
+          content:
+            application/json:
+              schema:
+                type: string
+        "409":
+          description: View schema could not be mapped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to establish connection with the metadata service
           content:
@@ -67,12 +87,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find view in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "409":
-          description: View schema could not be mapped
           content:
             application/json:
               schema:
@@ -89,21 +103,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Retrieved view data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              required: true
-              style: simple
-          content:
-            application/json:
-              schema:
-                type: string
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -112,22 +111,21 @@ paths:
       - view-endpoint
       summary: Get view data
       description: "Gets data from a view of a database. For private databases, the\
-        \ user needs at least *READ* access to the associated database. Requires role\
-        \ `view-database-view-data`."
+        \ user needs at least *READ* access to the associated database."
       operationId: getData_1
       parameters:
       - name: databaseId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: viewId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: page
         in: query
         required: false
@@ -147,6 +145,27 @@ paths:
           type: string
           format: date-time
       responses:
+        "200":
+          description: Retrieved view data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
+          content:
+            application/json:
+              schema:
+                type: string
+        "409":
+          description: View schema could not be mapped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to establish connection with the metadata service
           content:
@@ -155,12 +174,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find view in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "409":
-          description: View schema could not be mapped
           content:
             application/json:
               schema:
@@ -177,21 +190,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Retrieved view data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              required: true
-              style: simple
-          content:
-            application/json:
-              schema:
-                type: string
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -210,14 +208,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -237,24 +235,6 @@ paths:
           type: integer
           format: int64
       responses:
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Get table data
           headers:
@@ -270,8 +250,26 @@ paths:
             application/json:
               schema:
                 type: string
+        "503":
+          description: Failed to establish connection with the metadata service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to get table data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
@@ -292,14 +290,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: Authorization
         in: header
         required: true
@@ -312,8 +310,8 @@ paths:
               $ref: "#/components/schemas/TupleUpdateDto"
         required: true
       responses:
-        "400":
-          description: Request pagination or table data select query is malformed
+        "403":
+          description: Update table data not allowed
           content:
             application/json:
               schema:
@@ -332,8 +330,8 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Updated table data
-        "403":
-          description: Update table data not allowed
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
@@ -354,14 +352,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: Authorization
         in: header
         required: true
@@ -381,12 +379,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "201":
           description: Created table data
         "503":
@@ -398,6 +390,12 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Create table data not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
@@ -418,14 +416,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: Authorization
         in: header
         required: true
@@ -438,26 +436,26 @@ paths:
               $ref: "#/components/schemas/TupleDeleteDto"
         required: true
       responses:
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Deleted table data
         "404":
           description: Failed to find table in metadata database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Deleted table data
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Delete table data not allowed
           content:
@@ -481,14 +479,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -508,24 +506,6 @@ paths:
           type: integer
           format: int64
       responses:
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Get table data
           headers:
@@ -541,8 +521,26 @@ paths:
             application/json:
               schema:
                 type: string
+        "503":
+          description: Failed to establish connection with the metadata service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to get table data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
@@ -565,14 +563,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: subsetId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -592,6 +590,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "400":
+          description: Invalid pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to communicate with database
           content:
@@ -619,12 +623,6 @@ paths:
             application/json:
               schema:
                 type: string
-        "400":
-          description: Invalid pagination
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find database in metadata database or query in query
             store of the data database
@@ -655,14 +653,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: subsetId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -682,6 +680,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "400":
+          description: Invalid pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to communicate with database
           content:
@@ -709,12 +713,6 @@ paths:
             application/json:
               schema:
                 type: string
-        "400":
-          description: Invalid pagination
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find database in metadata database or query in query
             store of the data database
@@ -743,14 +741,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: queryId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       requestBody:
         content:
           application/json:
@@ -758,20 +756,14 @@ paths:
               $ref: "#/components/schemas/QueryPersistDto"
         required: true
       responses:
-        "503":
-          description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Persisted subset
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/QueryDto"
-        "403":
-          description: Not allowed to persist subset
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
@@ -789,6 +781,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to persist subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "400":
           description: Malformed select query
           content:
@@ -798,6 +796,42 @@ paths:
       security:
       - bearerAuth: []
       - basicAuth: []
+  /api/upload:
+    post:
+      tags:
+      - upload-endpoint
+      summary: Uploads a multipart file
+      description: Uploads a multipart file to the Storage Service. Requires role
+        `upload-file`.
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        "201":
+          description: Uploaded the file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewDto"
+        "503":
+          description: Failed to establish connection with the storage service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+      security:
+      - basicAuth: []
+      - bearerAuth: []
   /api/database/{databaseId}/table/{tableId}/data/import:
     post:
       tags:
@@ -813,14 +847,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: Authorization
         in: header
         required: true
@@ -835,6 +869,12 @@ paths:
       responses:
         "202":
           description: Imported dataset successfully
+        "403":
+          description: Import table dataset not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to establish connection with the metadata service
           content:
@@ -843,12 +883,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Import table dataset not allowed
           content:
             application/json:
               schema:
@@ -878,8 +912,8 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: persisted
         in: query
         required: false
@@ -888,13 +922,6 @@ paths:
       responses:
         "503":
           description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
           content:
             application/json:
               schema:
@@ -913,6 +940,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -924,14 +958,14 @@ paths:
         be used without authentication if (and only if) the database is marked as
         public (i.e. when `is_public` = `is_schema_public` is set to `true`). Otherwise
         at least read access is required.
-      operationId: create
+      operationId: create_1
       parameters:
       - name: databaseId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -954,23 +988,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ExecuteStatementDto"
+              $ref: "#/components/schemas/SubsetDto"
         required: true
       responses:
-        "201":
-          description: Created subset
-          content:
-            application/json:
-              schema:
-                type: string
-        "503":
-          description: Failed to communicate with database
+        "417":
+          description: Failed to insert query into query store of data database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "501":
           description: Failed to execute query as it contains non-supported keywords
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
@@ -988,14 +1022,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Malformed select query
+        "201":
+          description: Created subset
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "417":
-          description: Failed to insert query into query store of data database
+                type: string
+        "400":
+          description: Malformed select query
           content:
             application/json:
               schema:
@@ -1017,14 +1051,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: viewId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -1032,6 +1066,12 @@ paths:
           type: string
           format: date-time
       responses:
+        "404":
+          description: Failed to find view in metadata database or export dataset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to establish connection with the metadata service
           content:
@@ -1040,12 +1080,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Export view data not allowed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find view in metadata database or export dataset
           content:
             application/json:
               schema:
@@ -1080,14 +1114,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: size
         in: query
         required: false
@@ -1095,8 +1129,16 @@ paths:
           type: integer
           format: int64
       responses:
-        "403":
-          description: Find table history not allowed
+        "200":
+          description: Found table history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TableHistoryDto"
+        "404":
+          description: Failed to find table history in data database
           content:
             application/json:
               schema:
@@ -1107,8 +1149,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find table history in data database
+        "403":
+          description: Find table history not allowed
           content:
             application/json:
               schema:
@@ -1119,14 +1161,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Found table history
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/TableHistoryDto"
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -1144,14 +1178,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: tableId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: timestamp
         in: query
         required: false
@@ -1159,25 +1193,12 @@ paths:
           type: string
           format: date-time
       responses:
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Exported table data
-          content:
-            application/json:
-              schema:
-                type: string
-                format: binary
         "404":
           description: Failed to find table in metadata database
           content:
@@ -1190,6 +1211,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Exported table data
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -1209,14 +1243,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: subsetId
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
       - name: Accept
         in: header
         required: true
@@ -1247,13 +1281,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Found subset
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QueryDto"
-            text/csv: {}
         "404":
           description: Failed to find database in metadata database or query in query
             store of the data database
@@ -1261,6 +1288,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Found subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryDto"
+            text/csv: {}
         "400":
           description: Malformed select query
           content:
@@ -1395,9 +1429,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-          example: 11
+          type: string
+          format: uuid
+          example: e41f94a6-2b94-4a12-ac0e-678684e1c070
         affiliation:
           type: string
           example: Brown University
@@ -1435,6 +1469,7 @@ components:
       required:
       - creators
       - database_id
+      - descriptions
       - id
       - owned_by
       - publication_year
@@ -1445,9 +1480,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-          example: 2
+          type: string
+          format: uuid
+          example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
         type:
           type: string
           example: database
@@ -1464,6 +1499,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/IdentifierTitleDto"
+        descriptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentifierDescriptionDto"
         doi:
           type: string
           example: 10.1038/nphys1170
@@ -1477,21 +1516,18 @@ components:
           - draft
           - published
         database_id:
-          type: integer
-          format: int64
-          example: 1
+          type: string
+          format: uuid
+          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
         query_id:
-          type: integer
-          format: int64
-          example: 1
+          type: string
+          format: uuid
         table_id:
-          type: integer
-          format: int64
-          example: 1
+          type: string
+          format: uuid
         view_id:
-          type: integer
-          format: int64
-          example: 1
+          type: string
+          format: uuid
         publication_year:
           type: integer
           format: int32
@@ -1500,15 +1536,225 @@ components:
           type: string
           format: uuid
           example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
+    IdentifierDescriptionDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: e0e9692c-910b-4b60-b53a-fc7c358a917d
+        description:
+          type: string
+          example: "Air quality reports at Stephansplatz, Vienna"
+        language:
+          type: string
+          example: en
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        type:
+          type: string
+          example: Abstract
+          enum:
+          - Abstract
+          - Methods
+          - SeriesInformation
+          - TableOfContents
+          - TechnicalInfo
+          - Other
     IdentifierTitleDto:
       required:
       - id
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-          example: 4
+          type: string
+          format: uuid
+          example: 70ce5164-fd74-413f-8712-f996b91defbf
         title:
           type: string
           example: Airquality Demonstrator
@@ -1721,9 +1967,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-          example: 4
+          type: string
+          format: uuid
+          example: 83ea2326-f8f6-4263-baf8-cdf88a54efc7
         owner:
           $ref: "#/components/schemas/UserBriefDto"
         execution:
@@ -1744,9 +1990,9 @@ components:
           items:
             $ref: "#/components/schemas/IdentifierBriefDto"
         database_id:
-          type: integer
-          format: int64
-          example: 1
+          type: string
+          format: uuid
+          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
         query_normalized:
           type: string
           example: SELECT `id` FROM `air_quality`
@@ -1792,6 +2038,638 @@ components:
         family_name:
           type: string
           example: Carberry
+    CreatorDto:
+      required:
+      - creator_name
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: e41f94a6-2b94-4a12-ac0e-678684e1c070
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: "Carberry, Josiah"
+        name_type:
+          type: string
+          example: Personal
+          enum:
+          - Personal
+          - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+          - ORCID
+          - ROR
+          - ISNI
+          - GRID
+        name_identifier_scheme_uri:
+          type: string
+          example: https://orcid.org/
+        affiliation_identifier:
+          type: string
+          example: https://ror.org/05gq02987
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+          - ROR
+          - GRID
+          - ISNI
+        affiliation_identifier_scheme_uri:
+          type: string
+          example: https://ror.org/
+    IdentifierDto:
+      required:
+      - creators
+      - database_id
+      - descriptions
+      - funders
+      - id
+      - language
+      - licenses
+      - owner
+      - publication_year
+      - publisher
+      - query
+      - query_hash
+      - query_normalized
+      - status
+      - titles
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
+        type:
+          type: string
+          example: database
+          enum:
+          - database
+          - subset
+          - table
+          - view
+        titles:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentifierTitleDto"
+        descriptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentifierDescriptionDto"
+        funders:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentifierFunderDto"
+        query:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        execution:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        owner:
+          $ref: "#/components/schemas/UserBriefDto"
+        language:
+          type: string
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        licenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/LicenseDto"
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreatorDto"
+        status:
+          type: string
+          example: draft
+          enum:
+          - draft
+          - published
+        database_id:
+          type: string
+          format: uuid
+        query_id:
+          type: string
+          format: uuid
+        table_id:
+          type: string
+          format: uuid
+        view_id:
+          type: string
+          format: uuid
+        query_normalized:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        related_identifiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/RelatedIdentifierDto"
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+    IdentifierFunderDto:
+      required:
+      - funder_name
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 39693413-e0ce-46da-ad5e-029c0556d439
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: http://doi.org/10.13039/501100000780
+        funder_identifier_type:
+          type: string
+          example: Crossref Funder ID
+          enum:
+          - Crossref Funder ID
+          - ROR
+          - GND
+          - ISNI
+          - Other
+        scheme_uri:
+          type: string
+          example: http://doi.org/
+        award_number:
+          type: string
+          example: "824087"
+        award_title:
+          type: string
+          example: EOSC-Life
+    LicenseDto:
+      required:
+      - identifier
+      - uri
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: MIT
+        uri:
+          type: string
+          example: https://opensource.org/licenses/MIT
+        description:
+          type: string
+          example: "A short and simple permissive license with conditions only requiring\
+            \ preservation of copyright and license notices. Licensed works, modifications,\
+            \ and larger works may be distributed under different terms and without\
+            \ source code."
+    RelatedIdentifierDto:
+      required:
+      - id
+      - relation
+      - type
+      - value
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ce9d11f0-60a2-448d-a3e4-44719a443e8a
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          example: DOI
+          enum:
+          - DOI
+          - URL
+          - URN
+          - ARK
+          - arXiv
+          - bibcode
+          - EAN13
+          - EISSN
+          - Handle
+          - IGSN
+          - ISBN
+          - ISTC
+          - LISSN
+          - LSID
+          - PMID
+          - PURL
+          - UPC
+          - w3id
+        relation:
+          type: string
+          example: Cites
+          enum:
+          - IsCitedBy
+          - Cites
+          - IsSupplementTo
+          - IsSupplementedBy
+          - IsContinuedBy
+          - Continues
+          - IsDescribedBy
+          - Describes
+          - HasMetadata
+          - IsMetadataFor
+          - HasVersion
+          - IsVersionOf
+          - IsNewVersionOf
+          - IsPreviousVersionOf
+          - IsPartOf
+          - HasPart
+          - IsPublishedIn
+          - IsReferencedBy
+          - References
+          - IsDocumentedBy
+          - Documents
+          - IsCompiledBy
+          - Compiles
+          - IsVariantFormOf
+          - IsOriginalFormOf
+          - IsIdenticalTo
+          - IsReviewedBy
+          - Reviews
+          - IsDerivedFrom
+          - IsSourceOf
+          - IsRequiredBy
+          - Requires
+          - IsObsoletedBy
+          - Obsoletes
+    ViewColumnDto:
+      required:
+      - database_id
+      - id
+      - internal_name
+      - is_null_allowed
+      - name
+      - ord
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
+        name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: Given Name
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        description:
+          maxLength: 2048
+          minLength: 0
+          type: string
+          example: Column comment
+        database_id:
+          type: string
+          format: uuid
+          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
+        ord:
+          type: integer
+          format: int32
+          example: 0
+        internal_name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: given_name
+        index_length:
+          type: integer
+          format: int64
+          example: 255
+        length:
+          type: integer
+          format: int64
+          example: 255
+        type:
+          type: string
+          example: varchar
+          enum:
+          - char
+          - varchar
+          - binary
+          - varbinary
+          - tinyblob
+          - tinytext
+          - text
+          - blob
+          - mediumtext
+          - mediumblob
+          - longtext
+          - longblob
+          - enum
+          - set
+          - serial
+          - bit
+          - tinyint
+          - bool
+          - smallint
+          - mediumint
+          - int
+          - bigint
+          - float
+          - double
+          - decimal
+          - date
+          - datetime
+          - timestamp
+          - time
+          - year
+        is_null_allowed:
+          type: boolean
+          example: false
+    ViewDto:
+      required:
+      - columns
+      - database_id
+      - id
+      - identifiers
+      - internal_name
+      - name
+      - owner
+      - query
+      - query_hash
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 787439d0-e85e-400c-a7e6-996a023bfad9
+        name:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentifierDto"
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        owner:
+          $ref: "#/components/schemas/UserBriefDto"
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/ViewColumnDto"
+        last_retrieved:
+          type: string
+          format: date-time
+        database_id:
+          type: string
+          format: uuid
+          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        query_hash:
+          type: string
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
     TupleDto:
       required:
       - data
@@ -1829,14 +2707,72 @@ components:
         line_termination:
           type: string
           example: \r\n
-    ExecuteStatementDto:
+    FilterDto:
       required:
-      - statement
+      - column_id
+      - operator_id
+      - type
+      - value
       type: object
       properties:
-        statement:
+        type:
           type: string
-          example: SELECT `id` FROM `air_quality`
+          example: where
+          enum:
+          - where
+          - or
+          - and
+        value:
+          type: string
+          example: "1"
+        column_id:
+          type: string
+          format: uuid
+          example: 14128033-54b5-4818-a489-21b0dded86e2
+        operator_id:
+          type: string
+          format: uuid
+          example: 67c5b54d-2eb0-4f42-8dc1-a504562e9f32
+    OrderDto:
+      required:
+      - column_id
+      type: object
+      properties:
+        direction:
+          type: string
+          example: asc
+          enum:
+          - asc
+          - desc
+        column_id:
+          type: string
+          format: uuid
+          example: e891ba86-0258-41a6-a8d9-ff58bc10b618
+    SubsetDto:
+      required:
+      - columns
+      - table_id
+      type: object
+      properties:
+        columns:
+          type: array
+          example:
+          - e891ba86-0258-41a6-a8d9-ff58bc10b618
+          items:
+            type: string
+            format: uuid
+        filter:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilterDto"
+        order:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderDto"
+        table_id:
+          type: string
+          format: uuid
+          example: f7df2a7d-4ade-4c78-97b0-7c744d0893c7
     TableHistoryDto:
       required:
       - event
@@ -1850,6 +2786,10 @@ components:
           example: 2021-03-12T15:26:21Z
         event:
           type: string
+          example: INSERT
+          enum:
+          - insert
+          - delete
         total:
           type: integer
           format: int64

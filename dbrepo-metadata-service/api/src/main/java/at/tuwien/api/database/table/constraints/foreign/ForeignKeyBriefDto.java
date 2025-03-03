@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -13,6 +15,6 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class ForeignKeyBriefDto {
 
-    @Schema(example = "8")
-    private Long id;
+    @Schema(example = "f2b740ec-0b13-4d07-88a9-529d354bba6a")
+    private UUID id;
 }

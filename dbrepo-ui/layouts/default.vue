@@ -313,14 +313,14 @@ export default {
           return
         }
         if (this.identifier) {
-          if (newObj.query_id && this.identifier.query_id !== Number(newObj.query_id)) {
+          if (newObj.query_id && this.identifier.query_id !== newObj.query_id) {
             this.cacheStore.setIdentifier(null)
-          } else if (newObj.table_id && this.identifier.table_id !== Number(newObj.table_id)) {
+          } else if (newObj.table_id && this.identifier.table_id !== newObj.table_id) {
             this.cacheStore.setIdentifier(null)
-          } else if (newObj.view_id && this.identifier.view_id !== Number(newObj.view_id)) {
+          } else if (newObj.view_id && this.identifier.view_id !== newObj.view_id) {
             this.cacheStore.setIdentifier(null)
           }
-          if (this.$route.query.pid && this.identifier.id !== Number(this.$route.query.pid)) {
+          if (this.$route.query.pid && this.identifier.id !== this.$route.query.pid) {
             this.cacheStore.setIdentifier(null)
           }
         }

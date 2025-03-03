@@ -7,6 +7,7 @@ import at.tuwien.exception.OntologyNotFoundException;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 public interface OntologyService {
 
@@ -31,7 +32,7 @@ public interface OntologyService {
      * @return The ontology, if successful.
      * @throws OntologyNotFoundException The ontology was not found in the metadata database.
      */
-    Ontology find(Long ontologyId) throws OntologyNotFoundException;
+    Ontology find(UUID ontologyId) throws OntologyNotFoundException;
 
     Ontology find(String entityUri) throws OntologyNotFoundException;
 

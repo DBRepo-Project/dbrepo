@@ -34,7 +34,7 @@
         color="primary"
         variant="flat"
         class="mr-2"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
         :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/persist`">
         {{ ($vuetify.display.lgAndUp ? $t('toolbars.subset.pid.xl') + ' ' : '') + $t('toolbars.subset.pid.permanent') }}
       </v-btn>
@@ -110,7 +110,7 @@ export default {
     identifier () {
       /* mount pid */
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.identifiers.filter(i => i.id === this.pid)
         if (filter.length > 0) {
           return filter[0]
         }

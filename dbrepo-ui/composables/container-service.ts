@@ -17,7 +17,7 @@ export const useContainerService = (): any => {
     })
   }
 
-  async function findOne(containerId: number): Promise<ContainerDto> {
+  async function findOne(containerId: string): Promise<ContainerDto> {
     const axios = useAxiosInstance();
     console.debug('find containers');
     return new Promise<ContainerDto>((resolve, reject) => {

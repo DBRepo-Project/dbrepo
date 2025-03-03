@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -19,8 +21,8 @@ public class CreateDatabaseDto {
 
     @NotNull
     @JsonProperty("container_id")
-    @Schema(example = "1")
-    private Long cid;
+    @Schema(example = "0888e108-d521-46e2-9d3e-82099185305b")
+    private UUID cid;
 
     @NotBlank
     @Schema(example = "Air Quality")

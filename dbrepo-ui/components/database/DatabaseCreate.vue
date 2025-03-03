@@ -46,7 +46,7 @@
                 return-object
                 required>
                 <template
-                  v-if="engine"
+                  v-if="engine && engine.quota"
                   v-slot:details>
                   {{ $t('pages.database.subpages.create.utilization.label') }} {{ engine.count }}/{{ engine.quota }}
                 </template>
@@ -139,7 +139,7 @@ export default {
       this.loadingContainers = true
       containerService.findAll()
         .then((containers) => {
-          const freeContainers = containers.filter(c => c.count < c.quota)
+          const freeContainers = containers.filter(c => c.quota === null || c.count < c.quota)
           const defaultContainers = freeContainers.filter(c => c.image.default)
           defaultContainers.sort(this.compareContainerUtilization)
           this.engines = defaultContainers

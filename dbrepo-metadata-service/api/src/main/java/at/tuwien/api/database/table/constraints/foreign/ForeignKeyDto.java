@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,8 +21,8 @@ import java.util.List;
 @ToString
 public class ForeignKeyDto {
 
-    @Schema(example = "4")
-    private Long id;
+    @Schema(example = "f2b740ec-0b13-4d07-88a9-529d354bba6a")
+    private UUID id;
 
     @NotNull
     @Schema(example = "fk_name")

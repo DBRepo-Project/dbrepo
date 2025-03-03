@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -19,18 +21,18 @@ import lombok.extern.jackson.Jacksonized;
 public class ColumnBriefDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
+    @Schema(example = "a453e444-e00d-41ca-902c-11e9c54b39f1")
+    private UUID id;
 
     @NotNull
-    @Schema(example = "2")
     @JsonProperty("database_id")
-    private Long databaseId;
+    @Schema(example = "911f9052-c58c-4e1c-b3f2-66af2107be16")
+    private UUID databaseId;
 
     @NotNull
-    @Schema(example = "3")
     @JsonProperty("table_id")
-    private Long tableId;
+    @Schema(example = "bfffa915-a547-4466-9c65-ddc0d38fdb08")
+    private UUID tableId;
 
     @NotBlank
     @Size(max = 64)

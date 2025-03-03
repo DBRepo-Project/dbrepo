@@ -22,7 +22,9 @@
         :loading="loadingData"
         @click="reload" />
     </v-toolbar>
-    <v-card tile>
+    <v-card
+      rounded="0"
+      variant="flat">
       <QueryResults
         id="query-results"
         ref="queryResults"
@@ -104,8 +106,8 @@ export default {
   },
   methods: {
     reload () {
-      this.$refs.queryResults.reExecute(Number(this.$route.params.view_id))
-      this.$refs.queryResults.reExecuteCount(Number(this.$route.params.view_id))
+      this.$refs.queryResults.reExecute(this.$route.params.view_id)
+      this.$refs.queryResults.reExecuteCount(this.$route.params.view_id)
     },
     download () {
       this.downloadLoading = true

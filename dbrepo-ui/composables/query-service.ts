@@ -1,9 +1,8 @@
-import {format} from 'sql-formatter'
 import type {AxiosRequestConfig} from 'axios'
 import {axiosErrorToApiError} from '@/utils'
 
 export const useQueryService = (): any => {
-  async function findAll(databaseId: number, persisted: boolean): Promise<QueryDto[]> {
+  async function findAll(databaseId: string, persisted: boolean): Promise<QueryDto[]> {
     const axios = useAxiosInstance()
     console.debug('find queries')
     return new Promise<QueryDto[]>((resolve, reject) => {
@@ -23,7 +22,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function findOne(databaseId: number, queryId: number): Promise<QueryDto> {
+  async function findOne(databaseId: string, queryId: string): Promise<QueryDto> {
     const axios = useAxiosInstance()
     console.debug('find query with id', queryId, 'in database with id', databaseId)
     return new Promise<QueryDto>((resolve, reject) => {
@@ -39,7 +38,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function update(databaseId: number, queryId: number, data: QueryPersistDto): Promise<QueryDto> {
+  async function update(databaseId: string, queryId: string, data: QueryPersistDto): Promise<QueryDto> {
     const axios = useAxiosInstance()
     console.debug('update query with id', queryId, 'in database with id', databaseId)
     return new Promise<QueryDto>((resolve, reject) => {
@@ -55,7 +54,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function exportCsv(databaseId: number, queryId: number): Promise<any> {
+  async function exportCsv(databaseId: string, queryId: string): Promise<any> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
       responseType: 'blob',
@@ -77,15 +76,15 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function execute(databaseId: number, data: ExecuteStatementDto, timestamp: Date | null, page: number, size: number): Promise<QueryResultDto> {
+  async function execute(databaseId: string, subset: SubsetDto, timestamp: Date | null, page: number, size: number): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.post<QueryResultDto>(`/api/database/${databaseId}/subset`, data, {params: mapFilter(timestamp, page, size), timeout: 600_000})
+      axios.post<QueryResultDto>(`/api/database/${databaseId}/subset`, subset, {params: mapFilter(timestamp, page, size), timeout: 600_000})
         .then((response) => {
           console.info('Executed query with id', response.data.id, ' in database with id', databaseId)
           const result: QueryResultDto = {
-            id: 1,
+            id: response.headers['x-id'],
             headers: [],
             result: response.data
           }
@@ -98,7 +97,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function reExecuteData(databaseId: number, queryId: number, page: number, size: number): Promise<QueryResultDto> {
+  async function reExecuteData(databaseId: string, queryId: string, page: number, size: number): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
@@ -106,7 +105,7 @@ export const useQueryService = (): any => {
         .then((response) => {
           console.info('Re-executed query in database with id', databaseId)
           const result: QueryResultDto = {
-            id: Number(response.headers['x-id']),
+            id: response.headers['x-id'],
             headers: response.headers['x-headers'] ? response.headers['x-headers'].split(',') : [],
             result: response.data
           }
@@ -119,7 +118,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function reExecuteCount(databaseId: number, queryId: number): Promise<number> {
+  async function reExecuteCount(databaseId: string, queryId: string): Promise<number> {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {
@@ -136,69 +135,6 @@ export const useQueryService = (): any => {
     })
   }
 
-  function build(table: TableDto, columns: ColumnDto[], types: DataTypeDto[], clauses: any[]): QueryBuildResultDto {
-    var sql = 'SELECT'
-    for (let i = 0; i < columns.length; i++) {
-      sql += `${i > 0 ? ',' : ''} \`${columns[i].internal_name}\``
-    }
-    sql += ` FROM \`${table}\``
-    if (clauses.length > 0) {
-      sql += ' WHERE'
-      for (let i = 0; i < clauses.length; i++) {
-        const clause = clauses[i]
-        if (clause.type === 'and' || clause.type === 'or') {
-          sql += ` ${clause.type.toUpperCase()} `
-          continue
-        }
-        const filteredColumn = columns.filter(c => c.internal_name === clause.params[0])
-        if (filteredColumn.length === 0) {
-          return {
-            error: true,
-            reason: 'column.exists',
-            column: clause.params[0],
-            raw: null,
-            formatted: null
-          }
-        }
-        sql += ` \`${clause.params[0]}\` ${clause.params[1]} `
-        const filteredType = types.filter(t => t.value === filteredColumn[0].type)
-        if (filteredType.length === 0) {
-          return {
-            error: true,
-            reason: 'exists',
-            column: filteredColumn[0].type,
-            raw: null,
-            formatted: null
-          }
-        }
-        if (!filteredType[0].is_buildable) {
-          return {
-            error: true,
-            reason: 'build',
-            column: filteredColumn[0].type,
-            raw: null,
-            formatted: null
-          }
-        }
-        if (filteredType[0].is_quoted) {
-          sql += `'${clause.params[2]}'`
-        } else {
-          sql += `${clause.params[2]}`
-        }
-      }
-    }
-    return {
-      error: false,
-      reason: null,
-      column: null,
-      raw: sql,
-      formatted: format(sql, {
-        language: 'mysql',
-        keywordCase: 'upper'
-      })
-    }
-  }
-
   function mapFilter(timestamp: Date | null, page: number, size: number) {
     if (!timestamp) {
       return {page, size}
@@ -206,5 +142,5 @@ export const useQueryService = (): any => {
     return {timestamp, page, size}
   }
 
-  return {findAll, findOne, update, exportCsv, execute, reExecuteData, reExecuteCount, build}
+  return {findAll, findOne, update, exportCsv, execute, reExecuteData, reExecuteCount}
 }

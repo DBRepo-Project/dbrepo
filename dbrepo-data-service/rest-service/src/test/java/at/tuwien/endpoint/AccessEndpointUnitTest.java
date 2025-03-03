@@ -6,7 +6,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     private AccessEndpoint accessEndpoint;
 
     @MockBean
-    private CredentialService credentialService;
+    private CacheService credentialService;
 
     @MockBean
     private AccessService accessService;

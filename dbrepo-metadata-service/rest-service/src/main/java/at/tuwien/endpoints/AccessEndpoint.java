@@ -38,15 +38,15 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
     private final AccessService accessService;
-    private final MetadataMapper databaseMapper;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public AccessEndpoint(UserService userService, AccessService accessService, MetadataMapper databaseMapper,
+    public AccessEndpoint(UserService userService, AccessService accessService, MetadataMapper metadataMapper,
                           DatabaseService databaseService) {
         this.userService = userService;
         this.accessService = accessService;
-        this.databaseMapper = databaseMapper;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
     }
 
@@ -89,7 +89,7 @@ public class AccessEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                     @PathVariable("userId") UUID userId,
                                                     @Valid @RequestBody CreateAccessDto data,
                                                     @NotNull Principal principal) throws NotAllowedException, DataServiceException,
@@ -151,7 +151,7 @@ public class AccessEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody CreateAccessDto data,
                                        @NotNull Principal principal) throws NotAllowedException,
@@ -203,7 +203,7 @@ public class AccessEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                   @PathVariable("userId") UUID userId,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
@@ -219,7 +219,7 @@ public class AccessEndpoint extends AbstractEndpoint {
         final Database database = databaseService.findById(databaseId);
         final User user = userService.findById(userId);
         final DatabaseAccess access = accessService.find(database, user);
-        return ResponseEntity.ok(databaseMapper.databaseAccessToDatabaseAccessDto(access));
+        return ResponseEntity.ok(metadataMapper.databaseAccessToDatabaseAccessDto(access));
     }
 
     @DeleteMapping("/{userId}")
@@ -258,7 +258,7 @@ public class AccessEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
                                        @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,

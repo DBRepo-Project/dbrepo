@@ -3,8 +3,8 @@ import unittest
 import requests_mock
 
 from dbrepo.RestClient import RestClient
-
 from dbrepo.api.dto import License
+from dbrepo.api.exceptions import ResponseCodeError
 
 
 class LicenseUnitTest(unittest.TestCase):
@@ -26,6 +26,16 @@ class LicenseUnitTest(unittest.TestCase):
             # test
             response = RestClient().get_licenses()
             self.assertEqual(exp, response)
+
+    def test_get_licenses_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/license', status_code=202)
+            # test
+            try:
+                RestClient().get_licenses()
+            except ResponseCodeError:
+                pass
 
 
 if __name__ == "__main__":

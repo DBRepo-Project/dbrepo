@@ -4,9 +4,10 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -20,9 +21,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class PrimaryKey {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "pkid", updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "pkid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
+    private UUID id;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -41,4 +42,11 @@ public class PrimaryKey {
             @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn column;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 }

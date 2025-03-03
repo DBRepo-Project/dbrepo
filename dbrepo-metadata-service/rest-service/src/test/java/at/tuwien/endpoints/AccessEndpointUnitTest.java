@@ -347,7 +347,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
         assertNull(response.getBody());
     }
 
-    protected void generic_find(Long databaseId, Database database, DatabaseAccess access, Principal principal,
+    protected void generic_find(UUID databaseId, Database database, DatabaseAccess access, Principal principal,
                                 User caller, UUID userId, User user) throws UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, NotAllowedException {
 

@@ -29,7 +29,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void createAccess(Long databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
+    void createAccess(UUID databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
 
     /**
@@ -42,7 +42,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws AccessNotFoundException        Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void updateAccess(Long databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
+    void updateAccess(UUID databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
             DataServiceException, AccessNotFoundException;
 
     /**
@@ -54,7 +54,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws AccessNotFoundException        Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void deleteAccess(Long databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
+    void deleteAccess(UUID databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException;
 
     /**
@@ -78,10 +78,10 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void updateDatabase(Long databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
+    void updateDatabase(UUID databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
 
-    void updateTable(Long databaseId, Long tableId, TableUpdateDto data) throws DataServiceConnectionException,
+    void updateTable(UUID databaseId, UUID tableId, TableUpdateDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
 
     /**
@@ -94,7 +94,7 @@ public interface DataServiceGateway {
      * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      * @throws TableExistsException           A table with this internal name exists already in the database.
      */
-    void createTable(Long databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
+    void createTable(UUID databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException;
 
     /**
@@ -106,7 +106,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws TableNotFoundException         The given table was not found in the database.
      */
-    void deleteTable(Long databaseId, Long tableId) throws DataServiceConnectionException, DataServiceException,
+    void deleteTable(UUID databaseId, UUID tableId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException;
 
     /**
@@ -118,7 +118,7 @@ public interface DataServiceGateway {
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
      */
-    ViewDto createView(Long databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException;
+    ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException;
 
     /**
      * Deletes a given view in the given database.
@@ -129,7 +129,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws ViewNotFoundException          The given view was not found in the database.
      */
-    void deleteView(Long databaseId, Long viewId) throws DataServiceConnectionException, DataServiceException,
+    void deleteView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException;
 
     /**
@@ -142,7 +142,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws QueryNotFoundException         The given query was not found in the query store.
      */
-    QueryDto findQuery(Long databaseId, Long queryId) throws DataServiceConnectionException, DataServiceException,
+    QueryDto findQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException;
 
     /**
@@ -155,7 +155,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws QueryNotFoundException         The given query was not found in the query store.
      */
-    ExportResourceDto exportQuery(Long databaseId, Long queryId) throws DataServiceConnectionException,
+    ExportResourceDto exportQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException,
             DataServiceException, QueryNotFoundException;
 
     /**
@@ -167,7 +167,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws TableNotFoundException         The table was not found in the database.
      */
-    List<TableDto> getTableSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
+    List<TableDto> getTableSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException;
 
     /**
@@ -179,7 +179,7 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws ViewNotFoundException          The table was not found in the database.
      */
-    List<ViewDto> getViewSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
+    List<ViewDto> getViewSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException;
 
     /**
@@ -192,6 +192,6 @@ public interface DataServiceGateway {
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws TableNotFoundException         The table was not found in the database.
      */
-    TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws DataServiceConnectionException,
+    TableStatisticDto getTableStatistics(UUID databaseId, UUID tableId) throws DataServiceConnectionException,
             DataServiceException, TableNotFoundException;
 }

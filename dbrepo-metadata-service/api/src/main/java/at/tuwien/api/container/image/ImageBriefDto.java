@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -18,8 +20,8 @@ import lombok.extern.jackson.Jacksonized;
 public class ImageBriefDto {
 
     @NotNull
-    @Schema(example = "5")
-    private Long id;
+    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dcce")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "mariadb")
@@ -28,11 +30,6 @@ public class ImageBriefDto {
     @NotBlank
     @Schema(example = "10.5")
     private String version;
-
-    @NotBlank
-    @JsonProperty("jdbc_method")
-    @Schema(example = "mariadb")
-    private String jdbcMethod;
 
     @NotNull
     @JsonProperty("default")

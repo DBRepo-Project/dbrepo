@@ -8,6 +8,8 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -19,8 +21,8 @@ import org.springframework.data.annotation.Id;
 public class IdentifierFunderDto {
 
     @NotNull
-    @Schema(example = "2")
-    private Long id;
+    @Schema(example = "39693413-e0ce-46da-ad5e-029c0556d439")
+    private UUID id;
 
     @NotBlank
     @JsonProperty("funder_name")

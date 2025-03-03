@@ -8,10 +8,15 @@
         <version>3.3.5</version>
     </parent>
 
+    <organization>
+        <name>TU Wien</name>
+        <url>https://www.tuwien.ac.at</url>
+    </organization>
+
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.6.5</version>
+    <version>1.7.0</version>
 
     <description>Service that manages the data</description>
 
@@ -23,7 +28,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -54,14 +59,37 @@
         <minio.version>8.5.7</minio.version>
         <guava.version>33.3.0-jre</guava.version>
         <spark.version>4.0.0-preview2</spark.version>
+        <keycloak.version>26.0.4</keycloak.version>
         <scala.version>2.13</scala.version>
         <antlr-runtime.version>3.5.2</antlr-runtime.version>
         <micrometer.version>1.10.0</micrometer.version>
         <!-- see https://github.com/apache/spark/blob/cde8e4a82e20a363861f451ebd5138efb3194ab8/pom.xml -->
         <hadoop.version>3.4.0</hadoop.version>
         <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
-        <sonar.coverage.jacoco.xmlReportPaths>./report/target/site/jacoco-aggregate/jacoco.xml
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
+        <CodeCacheSize>128m</CodeCacheSize>
+        <extraJavaTestArgs>
+            -XX:+IgnoreUnrecognizedVMOptions
+            --add-modules=jdk.incubator.vector
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.net=ALL-UNNAMED
+            --add-opens=java.base/java.nio=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+            --add-opens=java.base/sun.security.action=ALL-UNNAMED
+            --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+            -Djdk.reflect.useDirectMethodHandle=false
+            -Dio.netty.tryReflectionSetAccessible=true
+        </extraJavaTestArgs>
     </properties>
 
     <dependencies>
@@ -209,6 +237,22 @@
             <version>${commons-validator.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+        <!-- Authentication -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-common</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-hibernate6</artifactId>
             <version>${jackson-datatype.version}</version>
@@ -323,7 +367,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Surefire runs all Java tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!-- Note config is repeated in scalatest config -->
+                <configuration>
+                    <argLine>@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g -XX:ReservedCodeCacheSize=${CodeCacheSize}
+                        ${extraJavaTestArgs}
+                    </argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
 </project>
