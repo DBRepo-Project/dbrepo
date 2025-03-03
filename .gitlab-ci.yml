@@ -601,12 +601,6 @@ scan-sonarqube:
   only:
     refs:
       - master
-  needs:
-    - build-data-service
-    - build-metadata-service
-  dependencies:
-    - build-data-service
-    - build-metadata-service
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
   allow_failure: true
