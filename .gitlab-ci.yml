@@ -253,7 +253,7 @@ test-metadata-service:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   needs:
     - build-metadata-service
   dependencies:
@@ -276,7 +276,7 @@ test-data-service:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   needs:
     - build-data-service
   dependencies:
@@ -300,7 +300,7 @@ test-analyse-service:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -327,7 +327,7 @@ test-auth-service-init:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
   before_script:
@@ -352,7 +352,7 @@ test-search-service:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
@@ -386,7 +386,7 @@ test-search-service-init:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
   needs:
@@ -413,7 +413,7 @@ test-lib:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -440,7 +440,7 @@ test-ui:
   stage: test
   only:
     - merge_requests
-    - $CI_DEFAULT_BRANCH
+    - master
   needs:
     - build-ui
   dependencies:
@@ -601,7 +601,7 @@ scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}
   stage: scan
   only:
-    - $CI_DEFAULT_BRANCH
+    - master
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
   allow_failure: true
