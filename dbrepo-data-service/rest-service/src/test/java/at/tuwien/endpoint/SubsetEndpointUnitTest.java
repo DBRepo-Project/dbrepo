@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.query.SubsetDto;
 import at.tuwien.endpoints.SubsetEndpoint;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StorageService;
@@ -64,6 +65,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private CacheService credentialService;
+
+    @MockBean
+    private MetadataServiceGateway metadataServiceGateway;
 
     @BeforeEach
     public void beforeEach() {
@@ -328,6 +332,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_5_ID);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
+        when(metadataServiceGateway.getIdentifiers(DATABASE_3_ID, QUERY_5_ID))
+                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -358,6 +364,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_5_VIEW_DTO);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
+        when(metadataServiceGateway.getIdentifiers(DATABASE_3_ID, QUERY_5_ID))
+                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -432,6 +440,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);
+        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
+                .thenReturn(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO));
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -453,6 +463,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_8_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
+        when(metadataServiceGateway.getIdentifiers(DATABASE_2_ID, QUERY_8_ID))
+                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -480,6 +492,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
+        when(metadataServiceGateway.getIdentifiers(DATABASE_3_ID, QUERY_5_ID))
+                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -532,6 +546,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);
+        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
+                .thenReturn(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO));
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
