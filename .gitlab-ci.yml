@@ -223,27 +223,6 @@ build-helm:
   script:
     - make build-helm
 
-deploy-staging:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: deploy
-  variables:
-    KUBECONFIG: ./kubecfg
-  environment:
-    name: staging/datalab
-    url: ${CI_ENV_STAGING_URL}
-  before_script:
-    - apk add --no-cache helm kubectl make
-    - echo ${CI_K8S_CONFIG} | base64 -d > ./kubecfg
-    - make build-helm
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME} --ignore-not-found
-    - kubectl -n ${CI_ENV_STAGING_NAMESPACE} delete pvc --all
-  script:
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} upgrade --install ${CI_ENV_STAGING_RELEASE_NAME} ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace -f ./.gitlab/agents/dev/values.yaml
-  only:
-    refs:
-      - dev
-      - master
-
 test-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
