@@ -234,6 +234,8 @@ build-helm:
 test-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
+  only:
+    - merge_requests
   needs:
     - build-metadata-service
   dependencies:
@@ -254,6 +256,8 @@ test-metadata-service:
 test-data-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
+  only:
+    - merge_requests
   needs:
     - build-data-service
   dependencies:
@@ -275,6 +279,8 @@ test-data-service:
 test-analyse-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
+  only:
+    - merge_requests
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -299,6 +305,8 @@ test-analyse-service:
 test-auth-service-init:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
+  only:
+    - merge_requests
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
   before_script:
@@ -321,6 +329,8 @@ test-auth-service-init:
 test-search-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
+  only:
+    - merge_requests
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
@@ -352,6 +362,8 @@ test-search-service:
 test-search-service-init:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
+  only:
+    - merge_requests
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
   needs:
@@ -376,6 +388,8 @@ test-search-service-init:
 test-lib:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
+  only:
+    - merge_requests
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -398,8 +412,10 @@ test-lib:
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-ui:
-  stage: test
   image: docker.io/docker:${DOCKER_VERSION}-dind
+  stage: test
+  only:
+    - merge_requests
   needs:
     - build-ui
   dependencies:
