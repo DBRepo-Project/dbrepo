@@ -33,7 +33,6 @@ cache:
 stages:
   - lint
   - build
-  - deploy
   - test
   - docs
   - release
