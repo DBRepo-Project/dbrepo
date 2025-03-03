@@ -253,6 +253,7 @@ test-metadata-service:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   needs:
     - build-metadata-service
   dependencies:
@@ -275,6 +276,7 @@ test-data-service:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   needs:
     - build-data-service
   dependencies:
@@ -298,6 +300,7 @@ test-analyse-service:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -324,6 +327,7 @@ test-auth-service-init:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
   before_script:
@@ -348,6 +352,7 @@ test-search-service:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
@@ -381,6 +386,7 @@ test-search-service-init:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
   needs:
@@ -407,6 +413,7 @@ test-lib:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -433,6 +440,7 @@ test-ui:
   stage: test
   only:
     - merge_requests
+    - $CI_DEFAULT_BRANCH
   needs:
     - build-ui
   dependencies:
