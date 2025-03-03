@@ -1,5 +1,5 @@
 interface DatabaseDto {
-  id: number;
+  id: string;
   name: string;
   creator: UserDto;
   owner: UserDto;
@@ -20,9 +20,13 @@ interface DatabaseDto {
   exchange_type: string | null;
 }
 
+interface UploadResponseDto {
+  s3_key: string;
+}
+
 interface DatabaseCreateDto {
   name: string;
-  container_id: number;
+  container_id: string;
   is_public: boolean;
 }
 
@@ -69,7 +73,7 @@ interface ContainerBriefDto {
 }
 
 interface ImageDto {
-  id: number;
+  id: string;
   registry: string;
   name: string;
   version: string;
@@ -82,15 +86,15 @@ interface ImageDto {
 }
 
 interface OperatorDto {
-  id: number;
-  image_id: number;
+  id: string;
+  image_id: string;
   display_name: string;
   documentation: string;
   value: string;
 }
 
 interface TableBriefDto {
-  id: number;
+  id: string;
   name: string;
   description: string;
   internal_name: string;
@@ -107,18 +111,18 @@ interface TableUpdateDto {
 }
 
 interface ColumnBriefDto {
-  id: number;
+  id: string;
   name: string;
   alias: string;
-  database_id: number;
-  table_id: number;
+  database_id: string;
+  table_id: string;
   internal_name: string;
   column_type: string;
 }
 
 interface TableDto {
-  id: number;
-  database_id: number;
+  id: string;
+  database_id: string;
   name: string;
   identifiers: IdentifierDto[];
   creator: UserDto;
@@ -170,18 +174,18 @@ interface DataTypesDto {
 }
 
 interface UniqueDto {
-  uid: number;
+  uid: string;
   table: TableBriefDto;
   columns: ColumnDto[];
 }
 
 interface IdentifierCreateDto {
-  database_id: number;
+  database_id: string;
   doi: string | null;
 }
 
 interface IdentifierSaveDto {
-  id: number;
+  id: string;
   type: string;
   doi: string | null;
   titles: IdentifierSaveTitleDto[] | [];
@@ -191,10 +195,10 @@ interface IdentifierSaveDto {
   publisher: string | null;
   language: string | null;
   creators: CreatorSaveDto[] | [];
-  database_id: number | null;
-  query_id: number | null;
-  view_id: number | null;
-  table_id: number | null;
+  database_id: string | null;
+  query_id: string | null;
+  view_id: string | null;
+  table_id: string | null;
   publication_day: number | null;
   publication_month: number | null;
   publication_year: number | null;
@@ -223,11 +227,11 @@ interface IdentifierFunderSaveDto {
 }
 
 interface IdentifierDto {
-  id: number;
-  database_id: number | null;
-  query_id: number | null;
-  table_id: number | null;
-  view_id: number | null;
+  id: string;
+  database_id: string;
+  query_id: string | null;
+  table_id: string | null;
+  view_id: string | null;
   type: IdentifierTypeDto;
   titles: IdentifierTitleDto[] | [];
   descriptions: IdentifierDescriptionDto[] | [];
@@ -263,11 +267,11 @@ enum IdentifierStatusTypeDto {
 }
 
 interface IdentifierBriefDto {
-  id: number;
-  database_id: number | null;
-  query_id: number | null;
-  table_id: number | null;
-  view_id: number | null;
+  id: string;
+  database_id: string | null;
+  query_id: string | null;
+  table_id: string | null;
+  view_id: string | null;
   type: IdentifierTypeDto;
   creators: CreatorBriefDto[] | [];
   titles: IdentifierTitleDto[] | [];
@@ -280,21 +284,21 @@ interface IdentifierBriefDto {
 }
 
 interface IdentifierTitleDto {
-  id: number;
+  id: string;
   title: string;
   language: string;
   type: string;
 }
 
 interface IdentifierDescriptionDto {
-  id: number;
+  id: string;
   description: string;
   language: string;
   type: string;
 }
 
 interface IdentifierFunderDto {
-  id: number;
+  id: string;
   funder_name: string;
   funder_identifier: string;
   funder_identifier_type: string;
@@ -309,7 +313,7 @@ enum NameTypeDto {
 }
 
 interface CreatorDto {
-  id: number;
+  id: string;
   firstname: string;
   lastname: string;
   affiliation: string;
@@ -324,7 +328,7 @@ interface CreatorDto {
 }
 
 interface CreatorBriefDto {
-  id: number;
+  id: string;
   affiliation: string;
   creator_name: string;
   name_type: NameTypeDto | null;
@@ -335,7 +339,7 @@ interface CreatorBriefDto {
 }
 
 interface RelatedIdentifierDto {
-  id: number;
+  id: string;
   value: string;
   type: string;
   relation: string;
@@ -362,7 +366,7 @@ interface RelatedIdentifierSaveDto {
 }
 
 interface ColumnDto {
-  id: number;
+  id: string;
   name: string;
   alias: string;
   size: number;
@@ -379,8 +383,8 @@ interface ColumnDto {
   unit: UnitDto;
   enums: string[];
   sets: string[];
-  database_id: number;
-  table_id: number;
+  database_id: string;
+  table_id: string;
   internal_name: string;
   is_primary_key: boolean;
   index_length: number;
@@ -391,7 +395,7 @@ interface ColumnDto {
 }
 
 interface ConceptDto {
-  id: number;
+  id: string;
   uri: string;
   name: string;
   description: string;
@@ -400,7 +404,7 @@ interface ConceptDto {
 }
 
 interface UnitDto {
-  id: number;
+  id: string;
   uri: string;
   name: string;
   description: string;
@@ -437,8 +441,9 @@ interface DatabaseModifyImageDto {
 
 interface ViewCreateDto {
   name: string;
-  query: string;
+  query: SubsetDto;
   is_public: boolean;
+  is_schema_public: boolean;
 }
 
 interface ViewUpdateDto {
@@ -446,14 +451,14 @@ interface ViewUpdateDto {
 }
 
 interface QueryDto {
-  id: number;
+  id: string;
   creator: UserDto;
   execution: Date;
   query: string;
   type: string | null;
   identifiers: IdentifierDto[];
   created: Date;
-  database_id: number;
+  database_id: string;
   query_normalized: string | null;
   query_hash: string;
   is_persisted: boolean;
@@ -475,10 +480,6 @@ interface TableCsvDto {
 
 interface TableCsvDeleteDto {
   keys: Map<string, string>;
-}
-
-interface ExecuteStatementDto {
-  statement: string;
 }
 
 interface ApiErrorDto {
@@ -515,8 +516,8 @@ interface KeycloakErrorDto {
 }
 
 interface ViewBriefDto {
-  id: number;
-  database_id: number;
+  id: string;
+  database_id: string;
   name: string;
   identifier: any[];
   query: string;
@@ -530,8 +531,8 @@ interface ViewBriefDto {
 }
 
 interface ViewDto {
-  id: number;
-  database_id: number;
+  id: string;
+  database_id: string;
   name: string;
   identifiers: IdentifierDto[];
   query: string;
@@ -545,14 +546,14 @@ interface ViewDto {
 }
 
 interface ImageBriefDto {
-  id: number;
+  id: string;
   name: string;
   version: string;
   jdbc_method: string;
 }
 
 interface ImageDto {
-  id: number;
+  id: string;
   registry: string;
   name: string;
   version: string;
@@ -599,8 +600,27 @@ interface ImportCsv {
   line_termination: string;
 }
 
+interface FilterDto {
+  type: string;
+  value: string;
+  column_id: string;
+  operator_id: string;
+}
+
+interface OrderDto {
+  column_id: string;
+  direction: string;
+}
+
+interface SubsetDto {
+  table_id: string;
+  columns: string[];
+  filter: FilterDto[] | null;
+  order: OrderDto[] | null;
+}
+
 interface QueryResultDto {
-  id: number | null;
+  id: string | null;
   result: any;
   headers: string[];
 }
@@ -660,7 +680,7 @@ interface ForeignKeyCreateDto {
 }
 
 interface OntologyDto {
-  id: number;
+  id: string;
   uri: string;
   prefix: string;
   sparql: boolean;
@@ -686,7 +706,7 @@ interface OntologyCreateDto {
 }
 
 interface UnitDto {
-  id: number;
+  id: string;
   uri: string;
   name: string;
   description: string;
@@ -695,7 +715,7 @@ interface UnitDto {
 }
 
 interface ConceptDto {
-  id: number;
+  id: string;
   uri: string;
   name: string;
   description: string;
@@ -704,9 +724,9 @@ interface ConceptDto {
 }
 
 interface TableColumnEntityDto {
-  database_id: number;
-  table_id: number;
-  column_id: number;
+  database_id: string;
+  table_id: string;
+  column_id: string;
   uri: string;
   label: string;
   description: string;
@@ -739,7 +759,7 @@ interface BannerMessageUpdateDto {
 }
 
 interface BannerMessageDto {
-  id: number;
+  id: string;
   type: string;
   message: string;
   link: string;

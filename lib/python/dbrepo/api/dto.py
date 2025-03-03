@@ -12,52 +12,45 @@ Timestamp = Annotated[
 ]
 
 
-class JwtAuth(BaseModel):
-    access_token: str
-    refresh_token: str
-    id_token: str
-    expires_in: int
-    refresh_expires_in: int
-    not_before_policy: int
-    scope: str
-    session_state: str
-    token_type: str
+class Operator(BaseModel):
+    id: str
+    display_name: str
+    value: str
+    documentation: str
 
 
 class Image(BaseModel):
-    id: int
-    registry: str
+    id: str
     name: str
     version: str
-    dialect: str
-    driver_class: str
-    jdbc_method: str
-    default_port: int
+    default: bool
     data_types: List[DataType] = field(default_factory=list)
+    operators: List[Operator] = field(default_factory=list)
 
 
 class ImageBrief(BaseModel):
-    id: int
+    id: str
     name: str
     version: str
-    jdbc_method: str
+    default: bool
 
 
 class CreateDatabase(BaseModel):
     name: str
-    container_id: int
+    container_id: str
     is_public: bool
     is_schema_public: bool
 
 
 class UpdateView(BaseModel):
     is_public: bool
+    is_schema_public: bool
 
 
 class CreateContainer(BaseModel):
     name: str
     host: str
-    image_id: int
+    image_id: str
     privileged_username: str
     privileged_password: str
     ui_host: Optional[str] = None
@@ -91,18 +84,16 @@ class UserBrief(BaseModel):
 
 
 class Container(BaseModel):
-    id: int
+    id: str
     name: str
     internal_name: str
-    host: str
-    port: int
     image: Image
     ui_host: Optional[str] = None
     ui_port: Optional[int] = None
 
 
 class ContainerBrief(BaseModel):
-    id: int
+    id: str
     name: str
     image: ImageBrief
     internal_name: str
@@ -111,18 +102,18 @@ class ContainerBrief(BaseModel):
 
 
 class ColumnBrief(BaseModel):
-    id: int
+    id: str
     name: str
-    database_id: int
-    table_id: int
+    database_id: str
+    table_id: str
     internal_name: str
     type: ColumnType
     alias: Optional[str] = None
 
 
 class TableBrief(BaseModel):
-    id: int
-    database_id: int
+    id: str
+    database_id: str
     name: str
     description: Optional[str] = None
     internal_name: str
@@ -134,6 +125,7 @@ class TableBrief(BaseModel):
 
 class UserAttributes(BaseModel):
     theme: str
+    language: str
     orcid: Optional[str] = None
     affiliation: Optional[str] = None
 
@@ -413,33 +405,41 @@ class IdentifierTitle(BaseModel):
     """
     Title of an identifier. See external documentation: https://support.datacite.org/docs/datacite-metadata-schema-v44-mandatory-properties#3-title.
     """
-    id: int
+    id: str
     title: str
     language: Optional[Language] = None
     type: Optional[TitleType] = None
 
 
-class SaveIdentifierTitle(BaseModel):
+class CreateIdentifierTitle(BaseModel):
     title: str
     language: Optional[Language] = None
     type: Optional[TitleType] = None
+
+
+class SaveIdentifierTitle(CreateIdentifierTitle):
+    id: str
 
 
 class IdentifierDescription(BaseModel):
-    id: int
+    id: str
     description: str
     language: Optional[Language] = None
     type: Optional[DescriptionType] = None
 
 
-class SaveIdentifierDescription(BaseModel):
+class CreateIdentifierDescription(BaseModel):
     description: str
     language: Optional[Language] = None
     type: Optional[DescriptionType] = None
+
+
+class SaveIdentifierDescription(CreateIdentifierDescription):
+    id: str
 
 
 class IdentifierFunder(BaseModel):
-    id: int
+    id: str
     funder_name: str
     funder_identifier: Optional[str] = None
     funder_identifier_type: Optional[str] = None
@@ -448,19 +448,32 @@ class IdentifierFunder(BaseModel):
     award_title: Optional[str] = None
 
 
-class SaveIdentifierFunder(BaseModel):
+class CreateIdentifierFunder(BaseModel):
     funder_name: str
     funder_identifier: Optional[str] = None
     funder_identifier_type: Optional[str] = None
     scheme_uri: Optional[str] = None
     award_number: Optional[str] = None
     award_title: Optional[str] = None
+
+
+class SaveIdentifierFunder(CreateIdentifierFunder):
+    id: str
 
 
 class License(BaseModel):
     identifier: str
     uri: str
     description: str
+
+
+class OntologyBrief(BaseModel):
+    id: str
+    uri: str
+    prefix: str
+    sparql: bool
+    rdf: bool
+    uri_pattern: Optional[str] = None
 
 
 class Tuple(BaseModel):
@@ -548,7 +561,7 @@ class AffiliationIdentifierSchemeType(str, Enum):
 
 
 class Creator(BaseModel):
-    id: int
+    id: str
     creator_name: str
     firstname: Optional[str] = None
     lastname: Optional[str] = None
@@ -563,7 +576,7 @@ class Creator(BaseModel):
 
 
 class CreatorBrief(BaseModel):
-    id: int
+    id: str
     creator_name: str
     affiliation: Optional[str] = None
     name_type: Optional[str] = None
@@ -587,47 +600,59 @@ class CreateIdentifierCreator(BaseModel):
     affiliation_identifier_scheme_uri: Optional[str] = None
 
 
+class SaveIdentifierCreator(CreateIdentifierCreator):
+    id: str
+
+
 class RelatedIdentifier(BaseModel):
-    id: int
+    id: str
     value: str
     type: RelatedIdentifierType
     relation: RelatedIdentifierRelation
 
 
-class SaveRelatedIdentifier(BaseModel):
+class CreateRelatedIdentifier(BaseModel):
     value: str
     type: RelatedIdentifierType
     relation: RelatedIdentifierRelation
+
+
+class SaveRelatedIdentifier(CreateRelatedIdentifier):
+    id: str
 
 
 class CreateIdentifier(BaseModel):
-    database_id: int
+    database_id: str
     type: IdentifierType
     creators: List[CreateIdentifierCreator]
     publication_year: int
     publisher: str
-    titles: List[SaveIdentifierTitle]
-    descriptions: List[SaveIdentifierDescription]
-    funders: Optional[List[SaveIdentifierFunder]] = field(default_factory=list)
+    titles: List[CreateIdentifierTitle]
+    descriptions: List[CreateIdentifierDescription]
+    funders: Optional[List[CreateIdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
     language: Optional[str] = None
     licenses: Optional[List[License]] = field(default_factory=list)
-    query_id: Optional[int] = None
-    table_id: Optional[int] = None
-    view_id: Optional[int] = None
+    query_id: Optional[str] = None
+    table_id: Optional[str] = None
+    view_id: Optional[str] = None
     query: Optional[str] = None
     query_normalized: Optional[str] = None
     execution: Optional[str] = None
-    related_identifiers: Optional[List[SaveRelatedIdentifier]] = field(default_factory=list)
+    related_identifiers: Optional[List[CreateRelatedIdentifier]] = field(default_factory=list)
     result_hash: Optional[str] = None
     result_number: Optional[int] = None
     publication_day: Optional[int] = None
     publication_month: Optional[int] = None
 
 
+class IdentifierSave(CreateIdentifier):
+    id: str
+
+
 class Identifier(BaseModel):
-    id: int
-    database_id: int
+    id: str
+    database_id: str
     type: IdentifierType
     owner: UserBrief
     status: IdentifierStatusType
@@ -640,9 +665,9 @@ class Identifier(BaseModel):
     doi: Optional[str] = None
     language: Optional[str] = None
     licenses: Optional[List[License]] = field(default_factory=list)
-    query_id: Optional[int] = None
-    table_id: Optional[int] = None
-    view_id: Optional[int] = None
+    query_id: Optional[str] = None
+    table_id: Optional[str] = None
+    view_id: Optional[str] = None
     query: Optional[str] = None
     query_normalized: Optional[str] = None
     execution: Optional[str] = None
@@ -653,9 +678,18 @@ class Identifier(BaseModel):
     publication_month: Optional[int] = None
 
 
+class Message(BaseModel):
+    id: str
+    type: str
+    link: Optional[str] = None
+    link_text: Optional[str] = None
+    display_start: Optional[Timestamp] = None
+    display_end: Optional[Timestamp] = None
+
+
 class IdentifierBrief(BaseModel):
-    id: int
-    database_id: int
+    id: str
+    database_id: str
     type: IdentifierType
     owned_by: str
     status: IdentifierStatusType
@@ -663,16 +697,16 @@ class IdentifierBrief(BaseModel):
     publisher: str
     titles: List[IdentifierTitle]
     doi: Optional[str] = None
-    query_id: Optional[int] = None
-    table_id: Optional[int] = None
-    view_id: Optional[int] = None
+    query_id: Optional[str] = None
+    table_id: Optional[str] = None
+    view_id: Optional[str] = None
 
 
 class View(BaseModel):
-    id: int
-    database_id: int
+    id: str
     name: str
     query: str
+    database_id: str
     query_hash: str
     owner: UserBrief
     internal_name: str
@@ -685,14 +719,20 @@ class View(BaseModel):
 
 class CreateView(BaseModel):
     name: str
-    query: str
+    query: Subset
     is_public: bool
     is_schema_public: bool
 
 
+class History(BaseModel):
+    event: HistoryEventType
+    total: int
+    timestamp: Timestamp
+
+
 class ViewBrief(BaseModel):
-    id: int
-    database_id: int
+    id: str
+    database_id: str
     name: str
     internal_name: str
     is_public: bool
@@ -704,7 +744,7 @@ class ViewBrief(BaseModel):
 
 
 class ConceptBrief(BaseModel):
-    id: int
+    id: str
     uri: str
     name: Optional[str] = None
     description: Optional[str] = None
@@ -739,14 +779,65 @@ class TableStatistics(BaseModel):
 
 
 class UnitBrief(BaseModel):
-    id: int
+    id: str
     uri: str
     name: Optional[str] = None
     description: Optional[str] = None
 
 
-class ExecuteQuery(BaseModel):
-    statement: str
+class FilterType(str, Enum):
+    """
+    Enumeration of filter types.
+    """
+    WHERE = "where"
+    OR = "or"
+    AND = "and"
+
+
+class OrderType(str, Enum):
+    """
+    Enumeration of order types.
+    """
+    ASC = "asc"
+    DESC = "desc"
+
+
+class Filter(BaseModel):
+    type: FilterType
+    column_id: str
+    operator_id: str
+    value: str
+
+
+class FilterDefinition(BaseModel):
+    type: FilterType
+    column: str
+    operator: str
+    value: str
+
+
+class Order(BaseModel):
+    column_id: str
+    direction: Optional[OrderType] = None
+
+
+class OrderDefinition(BaseModel):
+    column: str
+    direction: Optional[OrderType] = None
+
+
+class Subset(BaseModel):
+    table_id: str
+    columns: List[str]
+    filter: Optional[List[Filter]] = None
+    order: Optional[List[Order]] = None
+
+
+class QueryDefinition(BaseModel):
+    table: str
+    columns: List[str]
+    filter: Optional[List[FilterDefinition]] = None
+    order: Optional[List[OrderDefinition]] = None
 
 
 class TitleType(str, Enum):
@@ -757,6 +848,14 @@ class TitleType(str, Enum):
     SUBTITLE = "Subtitle"
     TRANSLATED_TITLE = "TranslatedTitle"
     OTHER = "Other"
+
+
+class HistoryEventType(str, Enum):
+    """
+    Enumeration of history event types.
+    """
+    INSERT = "insert"
+    DELETE = "delete"
 
 
 class RelatedIdentifierType(str, Enum):
@@ -874,30 +973,13 @@ class IdentifierStatusType(str, Enum):
     """The identifier is a draft and can still be edited."""
 
 
-class IdentifierType(str, Enum):
-    """
-    Enumeration of identifier types.
-    """
-    TABLE = "table"
-    """The identifier identifies a table."""
-
-    DATABASE = "database"
-    """The identifier identifies a database."""
-
-    VIEW = "view"
-    """The identifier identifies a view."""
-
-    SUBSET = "subset"
-    """The identifier identifies a subset."""
-
-
 class Query(BaseModel):
-    id: int
+    id: str
     owner: UserBrief
     execution: Timestamp
     query: str
     type: QueryType
-    database_id: int
+    database_id: str
     query_hash: str
     is_persisted: bool
     result_hash: str
@@ -910,7 +992,22 @@ class UpdateQuery(BaseModel):
     persist: bool
 
 
+class ColumnEnum(BaseModel):
+    id: str
+    value: str
+
+
+class ColumnSet(BaseModel):
+    id: str
+    value: str
+
+
+class UploadResponse(BaseModel):
+    s3_key: str
+
+
 class DataType(BaseModel):
+    id: str
     display_name: str
     value: str
     documentation: str
@@ -929,10 +1026,10 @@ class DataType(BaseModel):
 
 
 class Column(BaseModel):
-    id: int
+    id: str
     name: str
-    database_id: int
-    table_id: int
+    database_id: str
+    table_id: str
     ord: int
     internal_name: str
     is_null_allowed: bool
@@ -945,8 +1042,8 @@ class Column(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
-    enums: Optional[List[str]] = field(default_factory=list)
-    sets: Optional[List[str]] = field(default_factory=list)
+    enums: Optional[List[ColumnEnum]] = field(default_factory=list)
+    sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
     length: Optional[int] = None
     data_length: Optional[int] = None
@@ -958,10 +1055,10 @@ class Column(BaseModel):
 
 
 class ViewColumn(BaseModel):
-    id: int
+    id: str
     name: str
     ord: int
-    database_id: int
+    database_id: str
     internal_name: str
     type: ColumnType
     is_null_allowed: bool
@@ -977,8 +1074,8 @@ class ViewColumn(BaseModel):
 
 
 class Table(BaseModel):
-    id: int
-    database_id: int
+    id: str
+    database_id: str
     name: str
     owner: UserBrief
     columns: List[Column]
@@ -999,7 +1096,7 @@ class Table(BaseModel):
 
 
 class DatabaseBrief(BaseModel):
-    id: int
+    id: str
     name: str
     contact: UserBrief
     owner_id: str
@@ -1012,7 +1109,7 @@ class DatabaseBrief(BaseModel):
 
 
 class Database(BaseModel):
-    id: int
+    id: str
     name: str
     owner: UserBrief
     contact: UserBrief
@@ -1032,13 +1129,13 @@ class Database(BaseModel):
 
 
 class Unique(BaseModel):
-    id: int
+    id: str
     table: TableBrief
     columns: List[ColumnBrief]
 
 
 class ForeignKeyReference(BaseModel):
-    id: int
+    id: str
     foreign_key: ForeignKeyBrief
     column: ColumnBrief
     referenced_column: ColumnBrief
@@ -1056,11 +1153,11 @@ class ReferenceType(str, Enum):
 
 
 class ForeignKeyBrief(BaseModel):
-    id: int
+    id: str
 
 
 class ForeignKey(BaseModel):
-    id: int
+    id: str
     name: str
     references: List[ForeignKeyReference]
     table: TableBrief
@@ -1078,7 +1175,7 @@ class CreateForeignKey(BaseModel):
 
 
 class PrimaryKey(BaseModel):
-    id: int
+    id: str
     table: TableBrief
     column: ColumnBrief
 

@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.CreateTableDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -17,7 +17,6 @@ import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,7 +27,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -89,7 +88,7 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                     Principal principal) throws NotAllowedException,
             DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException {
         log.debug("endpoint list tables, databaseId={}", databaseId);
@@ -98,7 +97,7 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-tables");
         return ResponseEntity.ok(database.getTables()
                 .stream()
-                .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
+                .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || (principal != null && isSystem(principal)))
                 .map(metadataMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
     }
@@ -142,8 +141,8 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                        @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                        @NotNull @PathVariable("tableId") UUID tableId,
                                                         @NotNull Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
@@ -194,8 +193,8 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                 @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, SearchServiceException, NotAllowedException,
             SearchServiceConnectionException, MalformedException, DataServiceException, DataServiceConnectionException {
@@ -251,9 +250,9 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ColumnDto> updateColumn(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                  @NotNull @PathVariable("tableId") Long tableId,
-                                                  @NotNull @PathVariable("columnId") Long columnId,
+    public ResponseEntity<ColumnDto> updateColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                  @NotNull @PathVariable("tableId") UUID tableId,
+                                                  @NotNull @PathVariable("columnId") UUID columnId,
                                                   @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
                                                   @NotNull Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
@@ -301,9 +300,9 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                                         @NotNull @PathVariable("tableId") Long tableId,
-                                                                         @NotNull @PathVariable("columnId") Long columnId,
+    public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                         @NotNull @PathVariable("tableId") UUID tableId,
+                                                                         @NotNull @PathVariable("columnId") UUID columnId,
                                                                          @NotNull Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}, principal.name={}",
@@ -358,7 +357,7 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @Valid @RequestBody CreateTableDto data,
                                                 @NotNull Principal principal) throws NotAllowedException, MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
@@ -413,8 +412,8 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                 @NotNull @Valid @RequestBody TableUpdateDto data,
                                                 @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
@@ -441,9 +440,6 @@ public class TableEndpoint extends AbstractEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find table successfully",
-                    headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
-                            @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TableDto.class))}),
@@ -457,22 +453,11 @@ public class TableEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Failed to establish connection with broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to obtain queue information from broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
-                                             @NotNull @PathVariable("tableId") Long tableId,
-                                             Principal principal) throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException, AccessNotFoundException {
+    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                             @NotNull @PathVariable("tableId") UUID tableId,
+                                             Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
@@ -496,16 +481,7 @@ public class TableEndpoint extends AbstractEndpoint {
             table.setConstraints(null);
         }
         final TableDto dto = metadataMapper.tableToTableDto(table);
-        final HttpHeaders headers = new HttpHeaders();
-        if (isSystem(principal)) {
-            headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
-            headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
-        } else {
-            removeInternalData(dto.getDatabase().getContainer());
-        }
         return ResponseEntity.ok()
-                .headers(headers)
                 .body(dto);
     }
 
@@ -545,8 +521,8 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                       @NotNull @PathVariable("tableId") UUID tableId,
                                        @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {

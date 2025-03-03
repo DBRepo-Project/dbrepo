@@ -1,7 +1,7 @@
 import {axiosErrorToApiError} from '@/utils'
 
 export const useTupleService = (): any => {
-  async function create(databaseId: number, tableId: number, data: TableCsvDto): Promise<void> {
+  async function create(databaseId: string, tableId: string, data: TableCsvDto): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('create tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
@@ -17,7 +17,7 @@ export const useTupleService = (): any => {
     })
   }
 
-  async function update(databaseId: number, tableId: number, data: TableCsvDto): Promise<void> {
+  async function update(databaseId: string, tableId: string, data: TableCsvDto): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('update tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
@@ -33,7 +33,7 @@ export const useTupleService = (): any => {
     })
   }
 
-  async function remove(databaseId: number, tableId: number, data: TableCsvDeleteDto): Promise<void> {
+  async function remove(databaseId: string, tableId: string, data: TableCsvDeleteDto): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {

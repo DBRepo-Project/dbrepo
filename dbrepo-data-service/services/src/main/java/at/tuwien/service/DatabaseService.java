@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
@@ -40,12 +39,13 @@ public interface DatabaseService {
     /**
      * Creates a view in given data database with view definition.
      * @param database The data database object.
-     * @param data The view definition.
+     * @param viewName The view name.
+     * @param query The view query.
      * @return The generated view.
      * @throws SQLException
      * @throws ViewMalformedException
      */
-    ViewDto createView(DatabaseDto database, CreateViewDto data) throws SQLException,
+    ViewDto createView(DatabaseDto database, String viewName, String query) throws SQLException,
             ViewMalformedException;
 
     /**

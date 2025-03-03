@@ -11,6 +11,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,25 +23,25 @@ import java.util.List;
 public class IdentifierSaveDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
+    @Schema(example = "68e11675-1e0f-4d24-a6d9-887ad1c4445d")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "null")
+    private UUID databaseId;
 
     @JsonProperty("query_id")
     @Schema(example = "null")
-    private Long queryId;
+    private UUID queryId;
 
     @JsonProperty("view_id")
     @Schema(example = "null")
-    private Long viewId;
+    private UUID viewId;
 
     @JsonProperty("table_id")
     @Schema(example = "null")
-    private Long tableId;
+    private UUID tableId;
 
     @NotNull
     @Schema(example = "database")

@@ -72,8 +72,8 @@ public class AccessServiceImpl implements AccessService {
                 .hdbid(database.getId())
                 .database(database)
                 .huserid(user.getId())
-                .type(metadataMapper.accessTypeDtoToAccessType(type))
                 .user(user)
+                .type(metadataMapper.accessTypeDtoToAccessType(type))
                 .build();
         database.getAccesses()
                 .add(access);

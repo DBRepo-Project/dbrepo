@@ -24,7 +24,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
+    ContainerDto getContainerById(UUID containerId) throws RemoteUnavailableException,
             ContainerNotFoundException, MetadataServiceException;
 
     /**
@@ -36,7 +36,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    DatabaseDto getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -49,7 +49,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    TableDto getTableById(Long databaseId, Long id) throws TableNotFoundException, RemoteUnavailableException,
+    TableDto getTableById(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -62,7 +62,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException, ViewNotFoundException,
+    ViewDto getViewById(UUID databaseId, UUID id) throws RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException;
 
     /**
@@ -86,7 +86,7 @@ public interface MetadataServiceGateway {
      * @throws NotAllowedException        The access to this database is denied for the given user.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException, NotAllowedException,
+    DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException, NotAllowedException,
             MetadataServiceException;
 
     /**
@@ -99,7 +99,7 @@ public interface MetadataServiceGateway {
      * @throws DatabaseNotFoundException  The database was not found.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    List<IdentifierBriefDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
+    List<IdentifierBriefDto> getIdentifiers(@NotNull UUID databaseId, UUID subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException;
 
     /**
@@ -112,6 +112,6 @@ public interface MetadataServiceGateway {
      * @throws TableNotFoundException     The table was not found.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    void updateTableStatistics(Long databaseId, Long tableId, String authorization) throws TableNotFoundException,
+    void updateTableStatistics(UUID databaseId, UUID tableId, String authorization) throws TableNotFoundException,
             MetadataServiceException, RemoteUnavailableException;
 }

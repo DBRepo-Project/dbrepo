@@ -8,6 +8,8 @@ import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -18,8 +20,8 @@ import lombok.extern.jackson.Jacksonized;
 public class SaveIdentifierCreatorDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
+    @Schema(example = "da9dd034-00a8-4517-b93d-d1b2adfee418")
+    private UUID id;
 
     @Schema(example = "Josiah")
     private String firstname;

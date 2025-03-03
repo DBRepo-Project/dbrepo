@@ -5,6 +5,8 @@ from json import dumps
 from typing import List, Any
 
 import requests
+from clients.keycloak_client import User, KeycloakClient
+from clients.opensearch_client import OpenSearchClient, flatten
 from dbrepo.api.dto import Database, ApiError
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request, Response
@@ -15,9 +17,6 @@ from opensearchpy import NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
 from pydantic.deprecated.json import pydantic_encoder
-
-from clients.keycloak_client import User, KeycloakClient
-from clients.opensearch_client import OpenSearchClient, flatten
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -412,11 +411,11 @@ def post_general_search(field_type):
     return Response(dumps(response, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
 
 
-@app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="search_put_database")
+@app.route("/api/search/database/<string:database_id>", methods=["PUT"], endpoint="search_put_database")
 @metrics.gauge(name='dbrepo_search_update_database',
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['update-search-index'])
-def update_database(database_id: int):
+def update_database(database_id: str):
     logging.debug(f"updating database with id: {database_id}")
     try:
         payload: Database = Database.model_validate(request.json)
@@ -429,11 +428,11 @@ def update_database(database_id: int):
     return database.model_dump(), 202
 
 
-@app.route("/api/search/database/<int:database_id>", methods=["DELETE"], endpoint="database_delete_database")
+@app.route("/api/search/database/<string:database_id>", methods=["DELETE"], endpoint="database_delete_database")
 @metrics.gauge(name='dbrepo_search_delete_database',
                description='Time needed to delete a database in the search database')
 @auth.login_required(role=['admin'])
-def delete_database(database_id: int):
+def delete_database(database_id: str):
     try:
         OpenSearchClient().delete_database(database_id)
         return Response(dumps({})), 202

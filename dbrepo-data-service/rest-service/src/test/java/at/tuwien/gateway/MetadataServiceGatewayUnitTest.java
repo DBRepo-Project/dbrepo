@@ -51,23 +51,14 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void getTableById_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
-        headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .headers(headers)
-                        .body(TABLE_1_PRIVILEGED_DTO));
+                        .body(TABLE_1_DTO));
 
         /* test */
         final TableDto response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
-        assertEquals(IMAGE_1_JDBC, response.getDatabase().getContainer().getImage().getJdbcMethod());
-        assertEquals(CONTAINER_1_HOST, response.getDatabase().getContainer().getHost());
-        assertEquals(CONTAINER_1_PORT, response.getDatabase().getContainer().getPort());
-        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getDatabase().getContainer().getUsername());
-        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getDatabase().getContainer().getPassword());
         assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
     }
 
@@ -105,33 +96,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body(TABLE_1_PRIVILEGED_DTO));
+                        .body(TABLE_1_DTO));
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
             metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
         });
-    }
-
-    @Test
-    public void getTableById_headerMissing_fails() {
-        final List<String> customHeaders = List.of("X-Username", "X-Password");
-
-        for (int i = 0; i < customHeaders.size(); i++) {
-            final HttpHeaders headers = new HttpHeaders();
-            for (int j = 0; j < i; j++) {
-                headers.add(customHeaders.get(j), "");
-            }
-            /* mock */
-            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
-                    .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                            .headers(headers)
-                            .body(TABLE_1_PRIVILEGED_DTO));
-            /* test */
-            assertThrows(MetadataServiceException.class, () -> {
-                metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
-            });
-        }
     }
 
     @Test
@@ -156,8 +126,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getDatabaseById_succeeds() throws RemoteUnavailableException, MetadataServiceException,
             DatabaseNotFoundException {
         final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Host", CONTAINER_1_HOST);
+        headers.set("X-Port", "" + CONTAINER_1_PORT);
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
+        headers.set("X-Jdbc-Method", IMAGE_1_JDBC);
+        headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
@@ -254,8 +228,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void getContainerById_succeeds() throws RemoteUnavailableException, ContainerNotFoundException, MetadataServiceException {
         final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Host", CONTAINER_1_HOST);
+        headers.set("X-Port", "" + CONTAINER_1_PORT);
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
+        headers.set("X-Jdbc-Method", IMAGE_1_JDBC);
+        headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
@@ -351,15 +329,11 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Test
     public void getViewById_succeeds() throws RemoteUnavailableException, ViewNotFoundException, MetadataServiceException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
-        headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ViewDto.class)))
                 .thenReturn(ResponseEntity.ok()
-                        .headers(headers)
-                        .body(VIEW_1_PRIVILEGED_DTO));
+                        .body(VIEW_1_DTO));
 
         /* test */
         final ViewDto response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);

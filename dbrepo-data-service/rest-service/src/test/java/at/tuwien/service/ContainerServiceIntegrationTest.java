@@ -79,7 +79,7 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException, InterruptedException {
+    public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException {
 
         /* test */
         createQueryStore_generic(DATABASE_1_INTERNALNAME);

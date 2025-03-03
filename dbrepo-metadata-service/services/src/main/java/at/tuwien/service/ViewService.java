@@ -8,6 +8,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ViewService {
 
@@ -18,7 +19,7 @@ public interface ViewService {
      * @param viewId   The view id.
      * @return The view, if successful.
      */
-    View findById(Database database, Long viewId) throws ViewNotFoundException;
+    View findById(Database database, UUID viewId) throws ViewNotFoundException;
 
     /**
      * Find all views by database id.
@@ -50,11 +51,10 @@ public interface ViewService {
      * @throws DatabaseNotFoundException
      * @throws SearchServiceException
      * @throws SearchServiceConnectionException
-     * @throws ViewNotFoundException
      */
     View create(Database database, User user, CreateViewDto data) throws MalformedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException;
+            SearchServiceConnectionException, TableNotFoundException, ImageNotFoundException;
 
     /**
      * @param database

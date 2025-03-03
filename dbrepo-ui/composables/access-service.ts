@@ -1,7 +1,7 @@
 import {axiosErrorToApiError} from '@/utils'
 
 export const useAccessService = (): any => {
-  async function findOne(databaseId: number, userId: string): Promise<DatabaseAccessDto> {
+  async function findOne(databaseId: string, userId: string): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
     console.debug('find access of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
@@ -17,7 +17,7 @@ export const useAccessService = (): any => {
     })
   }
 
-  async function create(databaseId: number, userId: number, payload: DatabaseGiveAccessDto): Promise<DatabaseAccessDto> {
+  async function create(databaseId: string, userId: string, payload: DatabaseGiveAccessDto): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
     console.debug('create access for user with id', userId, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
@@ -33,7 +33,7 @@ export const useAccessService = (): any => {
     })
   }
 
-  async function update(databaseId: number, userId: number, payload: DatabaseModifyAccessDto): Promise<DatabaseAccessDto> {
+  async function update(databaseId: string, userId: string, payload: DatabaseModifyAccessDto): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
     console.debug('update access for user with id', userId, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
@@ -49,7 +49,7 @@ export const useAccessService = (): any => {
     })
   }
 
-  async function remove(databaseId: number, userId: number): Promise<DatabaseAccessDto> {
+  async function remove(databaseId: string, userId: string): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
     console.debug('remove access for user with id', userId, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {

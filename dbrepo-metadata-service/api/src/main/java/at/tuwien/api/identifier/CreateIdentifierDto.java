@@ -11,6 +11,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -23,20 +24,20 @@ public class CreateIdentifierDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "d002e8d5-8db4-4ff7-ab3a-bc3f52d9ec44")
+    private UUID databaseId;
 
     @JsonProperty("query_id")
     @Schema(example = "null")
-    private Long queryId;
+    private UUID queryId;
 
     @JsonProperty("view_id")
     @Schema(example = "null")
-    private Long viewId;
+    private UUID viewId;
 
     @JsonProperty("table_id")
     @Schema(example = "null")
-    private Long tableId;
+    private UUID tableId;
 
     @NotNull
     @Schema(example = "database")

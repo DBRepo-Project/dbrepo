@@ -13,6 +13,8 @@ import java.util.List;
 
 public interface StorageService {
 
+    String putObject(byte[] content);
+
     /**
      * Loads an object of a bucket from the Storage Service into an input stream.
      *

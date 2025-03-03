@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 
+import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -21,8 +23,8 @@ import org.springframework.data.annotation.Id;
 public class CreatorDto {
 
     @NotNull
-    @Schema(example = "11")
-    private Long id;
+    @Schema(example = "e41f94a6-2b94-4a12-ac0e-678684e1c070")
+    private UUID id;
 
     @Schema(example = "Josiah")
     private String firstname;

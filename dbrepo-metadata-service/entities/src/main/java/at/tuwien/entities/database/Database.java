@@ -33,6 +33,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 })
 @NamedQueries({
         @NamedQuery(name = "Database.findAllDesc", query = "select distinct d from Database d order by d.id desc"),
+        @NamedQuery(name = "Database.findAllByInternalNameDesc", query = "select distinct d from Database d where d.internalName = ?1 order by d.id desc"),
         @NamedQuery(name = "Database.findAllAtLestReadAccessDesc", query = "select distinct d from Database d where exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.id desc"),
         @NamedQuery(name = "Database.findAllPublicOrSchemaPublicDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true order by d.id desc"),
         @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true or exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.id desc"),
@@ -42,9 +43,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Database implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
@@ -56,8 +57,8 @@ public class Database implements Serializable {
     })
     private User owner;
 
-    @Column(nullable = false)
-    private Long cid;
+    @Column(nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID cid;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
@@ -130,5 +131,12 @@ public class Database implements Serializable {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

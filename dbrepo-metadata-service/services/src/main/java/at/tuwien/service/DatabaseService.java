@@ -23,6 +23,8 @@ public interface DatabaseService {
 
     List<Database> findAllPublicOrSchemaPublic();
 
+    List<Database> findByInternalName(String internalName);
+
     List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName);
 
     /**
@@ -54,7 +56,7 @@ public interface DatabaseService {
      * @return The database, if successful.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
-    Database findById(Long databaseId) throws DatabaseNotFoundException;
+    Database findById(UUID databaseId) throws DatabaseNotFoundException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.

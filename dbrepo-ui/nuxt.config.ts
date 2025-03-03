@@ -85,12 +85,7 @@ export default defineNuxtConfig({
         client: 'http://localhost',
         server: 'http://gateway-service',
       },
-      upload: {
-        client: 'http://localhost/api/upload/files',
-        prefix: '/'
-      },
       database: {
-        unsupported: 'AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
         image: {
           width: 200,
           height: 200

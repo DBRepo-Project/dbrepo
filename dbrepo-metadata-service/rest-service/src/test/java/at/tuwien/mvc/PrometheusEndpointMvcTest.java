@@ -9,13 +9,8 @@ import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.*;
 import at.tuwien.test.AbstractUnitTest;
-import io.micrometer.observation.annotation.Observed;
 import io.micrometer.observation.tck.TestObservationRegistry;
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +25,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import static io.micrometer.observation.tck.TestObservationRegistryAssert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -99,8 +88,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
     @Autowired
     private ViewEndpoint viewEndpoint;
 
-    private static final Map<String, String> metrics = new TreeMap<>(); /* sorted */
-
     @TestConfiguration
     static class ObservationTestConfiguration {
 
@@ -108,16 +95,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         public TestObservationRegistry observationRegistry() {
             return TestObservationRegistry.create();
         }
-    }
-
-    @BeforeAll
-    public static void beforeAll() {
-        FileUtils.deleteQuietly(new File("../metrics.md"));
-    }
-
-    @AfterAll
-    public static void afterAll() throws IOException {
-        saveObservedMetrics(metrics);
     }
 
     @Test
@@ -160,7 +137,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(AccessEndpoint.class);
     }
 
     @Test
@@ -194,7 +170,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(ContainerEndpoint.class);
     }
 
     @Test
@@ -243,7 +218,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(DatabaseEndpoint.class);
     }
 
     @Test
@@ -289,7 +263,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(IdentifierEndpoint.class);
     }
 
     @Test
@@ -329,7 +302,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(ImageEndpoint.class);
     }
 
     @Test
@@ -346,7 +318,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         /* test */
         assertThat(registry)
                 .hasObservationWithNameEqualTo("dbrepo_license_findall");
-        generic_openApiDocs(LicenseEndpoint.class);
     }
 
     @Test
@@ -385,7 +356,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(MessageEndpoint.class);
     }
 
     @Test
@@ -419,7 +389,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(MetadataEndpoint.class);
     }
 
     @Test
@@ -463,7 +432,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(OntologyEndpoint.class);
     }
 
     @Test
@@ -482,7 +450,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(ConceptEndpoint.class);
     }
 
     @Test
@@ -501,7 +468,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(UnitEndpoint.class);
     }
 
     @Test
@@ -563,7 +529,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(TableEndpoint.class);
     }
 
     @Test
@@ -592,7 +557,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(UserEndpoint.class);
     }
 
     @Test
@@ -627,16 +591,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
-        generic_openApiDocs(ViewEndpoint.class);
-    }
-
-    private static void generic_openApiDocs(Class<?> endpoint) {
-        final List<Method> methods = Arrays.stream(endpoint.getMethods())
-                .filter(m -> m.getDeclaringClass().equals(endpoint))
-                .toList();
-        methods.forEach(m -> {
-            metrics.put(m.getDeclaredAnnotation(Observed.class).name(), m.getDeclaredAnnotation(Operation.class).summary());
-        });
     }
 
 }

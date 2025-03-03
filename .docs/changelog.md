@@ -2,21 +2,66 @@
 author: Martin Weise
 ---
 
+## v1.7.0 (2025-03-03)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.0)
+
+!!! warning "Contains Breaking Changes"
+
+    This release updates the Metadata Database schema which is incompatible to v1.6.3! Follow the steps:
+
+    1. Make a backup of the database with `mariadb-dump`.
+    2. Apply the schema changes script: [`schema.sql`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/16/schema.sql):
+       ```shell
+       mariadb -h 127.0.0.1 -p3306 -u root --password=<password> -D dbrepo < schema.sql
+       ```
+    3. Install the dependencies from the [`requirements.txt`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/16/requirements.txt)
+       file or use your local environment:
+       ```shell
+       pip install dbrepo==1.6.5rc15
+       ```
+    4. Run the data migration script [`data.py`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/16/data.py):
+       ```shell
+       python data.py > data.sql
+       ```
+       It generates the SQL statements used for migrating to the new schema.
+    5. Run the generated `data.sql` script:
+       ```shell
+       mariadb -h 127.0.0.1 -p3306 -u root --password=<password> -D dbrepo < data.sql
+       ```
+
+#### Features
+
+* Implemented a basic brute-force security defense strategy in the Auth Service that increments the wait time on wrong
+  logins in [#494](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/494).
+* Implemented a password policy
+  in [#495](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/495).
+
+#### Changes
+
+* Replaced sequential numerical ids with non-guessable random ids in the Metadata Database
+  in [#491](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/491).
+* Changed the interface for executing query in subsets/views 
+  in [#493](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/493).
+
+#### Removals
+
+* Removed the Upload Service in favor of an internal stable upload endpoint in the Data Service
+  in [#492](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/492).
+
 ## v1.6.5 (2025-02-18)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.5)
 
-### What's Changed
-
 #### Fixes
 
 * Fixed a bug where listing the views in the Python library did not work.
+* Fixed a wrong MariaDB configuration where the `innodb_buffer_pool_size` variable was not configured to 70% of the
+  available memory in the Helm chart.
 
 ## v1.6.4 (2025-02-14)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.4)
-
-### What's Changed
 
 #### Fixes
 
@@ -27,8 +72,6 @@ author: Martin Weise
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.3)
 
-### What's Changed
-
 #### Changes
 
 * Refactored the UI to support OIDC and added an event listener to the Auth Service that syncs users on creation to the
@@ -37,8 +80,6 @@ author: Martin Weise
 ## v1.6.2 (2025-01-24)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.2)
-
-### What's Changed
 
 #### Changes
 
@@ -54,8 +95,6 @@ author: Martin Weise
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.1)
 
-### What's Changed
-
 #### Changes
 
 * Added privacy feature for hidden databases (and optionally tables, views, subsets) that hides them completely from
@@ -69,8 +108,6 @@ author: Martin Weise
 ## v1.6.0 (2025-01-07)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0)
-
-### What's Changed
 
 #### Features
 
@@ -109,8 +146,6 @@ author: Martin Weise
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.3)
 
-### What's Changed
-
 #### Fixes
 
 * Fixed a bug where subsets containing sub-queries are not able to retrieve data
@@ -119,8 +154,6 @@ author: Martin Weise
 ## v1.5.2 (2024-12-03)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.2)
-
-### What's Changed
 
 #### Changes
 
@@ -141,8 +174,6 @@ author: Martin Weise
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.1)
 
-### What's Changed
-
 #### Fixes
 
 * Bug where the data volume could not be calculated when the data length column in the Metadata Database is `null`
@@ -159,8 +190,6 @@ author: Martin Weise
     This release updates the Metadata Database schema which is incompatible to v1.4.6! Use the migration
     script [`schema_1.4.5-to-1.5.0.sql`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.5/dbrepo-metadata-db/migration/schema_1.4.5-to-1.5.0.sql)
     to apply the changes manually.
-
-### What's Changed
 
 #### Features
 
@@ -195,8 +224,6 @@ author: Martin Weise
 !!! warning "Contains Breaking Changes"
 
     This release updates the Metadata Database schema which is incompatible to v1.4.5!
-
-### What's Changed
 
 #### Features
 

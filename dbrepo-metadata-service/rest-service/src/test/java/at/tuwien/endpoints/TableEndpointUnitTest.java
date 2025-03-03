@@ -58,6 +58,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private AccessService accessService;
 
     @MockBean
+    private UnitService unitService;
+
+    @MockBean
+    private ConceptService conceptService;
+
+    @MockBean
     private TableService tableService;
 
     @MockBean
@@ -372,6 +378,142 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_sets_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("sex")
+                        .type(ColumnTypeDto.SET)
+                        .sets(List.of("male", "female"))
+                        .build()))
+                .build();
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_enum_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("sex")
+                        .type(ColumnTypeDto.ENUM)
+                        .enums(List.of("male", "female"))
+                        .build()))
+                .build();
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasUnit_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException, UnitNotFoundException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name(UNIT_1_NAME)
+                        .type(ColumnTypeDto.INT)
+                        .unitUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(unitService.find(UNIT_1_URI))
+                .thenReturn(UNIT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasUnitNotFound_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name(UNIT_1_NAME)
+                        .type(ColumnTypeDto.INT)
+                        .unitUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(unitService.create(UNIT_1))
+                .thenReturn(UNIT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasConcept_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException, ConceptNotFoundException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name(CONCEPT_1_NAME)
+                        .type(ColumnTypeDto.INT)
+                        .conceptUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(conceptService.find(CONCEPT_1_URI))
+                .thenReturn(CONCEPT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasConceptNotFound_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("precipitation")
+                        .type(ColumnTypeDto.INT)
+                        .conceptUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(conceptService.create(CONCEPT_1))
+                .thenReturn(CONCEPT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
     @ParameterizedTest
     @MethodSource("canHaveSizeAndD_parameters")
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
@@ -524,22 +666,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_publicDatabasePrivateDataPrivateSchemaAnonymous_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException,
-            AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
-
-        /* test */
-        final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
-        final TableDto body = response.getBody();
-        assertNull(body.getConstraints());
-        assertEquals(List.of(), body.getColumns());
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, UserNotFoundException, NotAllowedException {
+    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_4_ID, DATABASE_4, TABLE_9_ID, TABLE_9, null, null, null);
@@ -567,9 +695,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_publicHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_publicHasRole_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1, DATABASE_1_USER_1_READ_ACCESS);
@@ -580,9 +707,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_publicNoRole_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1, null);
@@ -633,7 +759,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), null);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), null);
         });
     }
 
@@ -643,7 +769,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_4_PRINCIPAL);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_4_PRINCIPAL);
         });
     }
 
@@ -653,7 +779,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        analyseTableColumn_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_1_PRINCIPAL);
+        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -852,7 +978,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
-                .unitUri(UNIT_1_URI)
+                .unitUri(null)
+                .conceptUri(null)
                 .build();
 
         /* test */
@@ -935,8 +1062,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_privateDatabasePrivateDataPublicSchemaAnonymous_fails() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException,
-            AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, null, null, null);
@@ -944,19 +1070,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_privateSchemaNotOwnerNoAccess_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_4_PRINCIPAL, USER_4, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicSchemaNotOwnerNoAccess_succeeds() throws UserNotFoundException, TableNotFoundException,
-            NotAllowedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, DataServiceConnectionException {
+    public void findById_publicSchemaNotOwnerNoAccess_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, USER_4_PRINCIPAL, USER_4, null);
@@ -987,9 +1102,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_privateHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_privateHasRole_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
                 USER_1_PRINCIPAL, USER_1, DATABASE_1_USER_1_READ_ACCESS);
@@ -1001,8 +1115,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_privateDatabasePrivateDataPrivateSchemaNoRole_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException,
-            AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL, USER_4, DATABASE_1_USER_4_READ_ACCESS);
@@ -1131,7 +1244,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void analyseTable_generic(Long databaseId, Database database, Long tableId, Table table, Principal principal)
+    public void analyseTable_generic(UUID databaseId, Database database, UUID tableId, Table table, Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
@@ -1149,9 +1262,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    public void analyseTableColumn_generic(Long databaseId, Database database, Long tableId, Long columnId,
-                                           TableColumn tableColumn, Principal principal)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
+    public void analyseTableColumn_generic(UUID databaseId, UUID tableId, UUID columnId, TableColumn tableColumn,
+                                           Principal principal) throws MalformedException, TableNotFoundException,
+            DatabaseNotFoundException {
 
         /* mock */
         when(entityService.suggestByColumn(tableColumn))
@@ -1165,7 +1278,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    protected ResponseEntity<List<TableBriefDto>> generic_list(Long databaseId, Database database, Principal principal,
+    protected ResponseEntity<List<TableBriefDto>> generic_list(UUID databaseId, Database database, Principal principal,
                                                                User user, DatabaseAccess access)
             throws NotAllowedException, DatabaseNotFoundException, AccessNotFoundException, UserNotFoundException {
 
@@ -1193,7 +1306,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.list(databaseId, principal);
     }
 
-    protected ResponseEntity<TableBriefDto> generic_create(Long databaseId, Database database, CreateTableDto data,
+    protected ResponseEntity<TableBriefDto> generic_create(UUID databaseId, Database database, CreateTableDto data,
                                                            Principal principal, User user, DatabaseAccess access)
             throws MalformedException, NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException,
@@ -1226,11 +1339,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.create(databaseId, data, principal);
     }
 
-    protected ResponseEntity<TableDto> generic_findById(Long databaseId, Database database, Long tableId,
+    protected ResponseEntity<TableDto> generic_findById(UUID databaseId, Database database, UUID tableId,
                                                         Table table, Principal principal, User user,
-                                                        DatabaseAccess access) throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, UserNotFoundException, NotAllowedException {
+                                                        DatabaseAccess access) throws TableNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* mock */
         if (database != null) {
@@ -1277,15 +1389,15 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(tableService.findById(any(Database.class), anyLong()))
+        when(tableService.findById(any(Database.class), any(UUID.class)))
                 .thenReturn(table);
 
         /* test */
         return tableEndpoint.delete(DATABASE_1_ID, TABLE_1_ID, principal);
     }
 
-    protected ResponseEntity<ColumnDto> generic_updateColumn(Long databaseId, Database database, Long tableId,
-                                                             Table table, Long columnId, TableColumn column,
+    protected ResponseEntity<ColumnDto> generic_updateColumn(UUID databaseId, Database database, UUID tableId,
+                                                             Table table, UUID columnId, TableColumn column,
                                                              Principal principal, User user,
                                                              ColumnSemanticsUpdateDto data, DatabaseAccess access)
             throws DataServiceException, DataServiceConnectionException, MalformedException, NotAllowedException,

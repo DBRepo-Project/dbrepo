@@ -6,7 +6,8 @@
       :disabled="disabled">
       <v-row
         v-if="showPrimaryKeyWarning">
-        <v-col md="8">
+        <v-col
+          lg="8">
           <v-alert
             border="start"
             color="warning">
@@ -41,6 +42,7 @@
             item-title="display_name"
             item-value="value"
             required
+            :disabled="loadingColumnTypes"
             :rules="[v => !!v || $t('validation.required')]"
             persistent-hint
             :variant="inputVariant"
@@ -263,12 +265,12 @@ export default {
   },
   methods: {
     fetchColumnTypes () {
-      if (!this.database) {
+      if (!this.database || this.columnTypes.length > 0) {
         return
       }
       this.loadingColumnTypes = true
       const imageService = useImageService()
-      imageService.findById(this.database.container.id)
+      imageService.findById(this.database.container.image.id)
         .then((image) => {
           const types = image.data_types
           if (this.columns.filter(c => c.type === 'serial').length > 0) {
@@ -285,6 +287,9 @@ export default {
             return
           }
           toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loadingColumnTypes = false
         })
     },
     shift (column) {

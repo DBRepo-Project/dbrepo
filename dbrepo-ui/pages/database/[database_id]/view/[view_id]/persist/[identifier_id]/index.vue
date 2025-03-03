@@ -69,7 +69,7 @@ export default {
       if (!this.view) {
         return false
       }
-      const filter = this.view.identifiers.filter(i => i.id === Number(this.$route.params.identifier_id))
+      const filter = this.view.identifiers.filter(i => i.id === this.$route.params.identifier_id)
       return filter.length === 1 ? filter[0] : null
     },
     canPersistIdentifier () {

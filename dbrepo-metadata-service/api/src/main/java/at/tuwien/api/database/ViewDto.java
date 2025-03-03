@@ -12,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -24,13 +25,13 @@ import java.util.List;
 public class ViewDto extends CacheableDto {
 
     @NotNull
-    @Schema(example = "4")
-    private Long id;
+    @Schema(example = "787439d0-e85e-400c-a7e6-996a023bfad9")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long vdbid;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID databaseId;
 
     @NotBlank
     @Schema(example = "Air Quality")
@@ -64,10 +65,6 @@ public class ViewDto extends CacheableDto {
     @JsonProperty("query_hash")
     @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private DatabaseDto database;
 
     @NotNull
     private UserBriefDto owner;

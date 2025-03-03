@@ -8,6 +8,7 @@ import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.MetadataMapper;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
@@ -16,6 +17,8 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +32,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     private final KeycloakConfig keycloakConfig;
     private final MetadataMapper metadataMapper;
 
+    @Autowired
     public KeycloakGatewayImpl(Keycloak keycloak, KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
         this.keycloak = keycloak;
         this.keycloakConfig = keycloakConfig;
@@ -36,7 +40,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public TokenDto obtainUserToken(String username, String password) {
+    public TokenDto obtainUserToken(String username, String password) throws BadCredentialsException {
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
                 .realm(keycloakConfig.getRealm())
@@ -48,6 +52,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
                 .build()) {
             return metadataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
                     .getAccessToken());
+        } catch (NotAuthorizedException e) {
+            log.error("Failed to obtain user token: {}", e.getMessage());
+            throw new BadCredentialsException("Failed to obtain user token", e);
         }
     }
 

@@ -18,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,12 +89,12 @@ public class MessageServiceUnitTest extends AbstractUnitTest {
     public void find_notFound_fails() {
 
         /* mock */
-        when(bannerMessageRepository.findById(anyLong()))
+        when(bannerMessageRepository.findById(any(UUID.class)))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(MessageNotFoundException.class, () -> {
-            bannerMessageService.find(9999L);
+            bannerMessageService.find(UUID.randomUUID());
         });
     }
 

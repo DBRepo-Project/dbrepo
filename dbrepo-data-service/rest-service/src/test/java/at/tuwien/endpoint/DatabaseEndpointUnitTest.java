@@ -7,7 +7,7 @@ import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -48,7 +48,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
-    private CredentialService credentialService;
+    private CacheService credentialService;
 
     @BeforeEach
     public void beforeEach() {

@@ -10,8 +10,6 @@ import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.AuthenticationService;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,17 +41,12 @@ import java.util.UUID;
 public class UserEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
-    private final MetadataMapper userMapper;
-    private final DatabaseService databaseService;
-    private final AuthenticationService authenticationService;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public UserEndpoint(UserService userService, MetadataMapper userMapper, DatabaseService databaseService,
-                        AuthenticationService authenticationService) {
+    public UserEndpoint(UserService userService, MetadataMapper metadataMapper) {
         this.userService = userService;
-        this.userMapper = userMapper;
-        this.databaseService = databaseService;
-        this.authenticationService = authenticationService;
+        this.metadataMapper = metadataMapper;
     }
 
     @GetMapping
@@ -74,7 +67,7 @@ public class UserEndpoint extends AbstractEndpoint {
             return ResponseEntity.ok(userService.findAll()
                     .stream()
                     .filter(user -> !user.getIsInternal())
-                    .map(userMapper::userToUserBriefDto)
+                    .map(metadataMapper::userToUserBriefDto)
                     .toList());
         }
         log.trace("filter by username: {}", username);
@@ -83,7 +76,7 @@ public class UserEndpoint extends AbstractEndpoint {
             if (user.getIsInternal()) {
                 return ResponseEntity.ok(List.of());
             }
-            return ResponseEntity.ok(List.of(userMapper.userToUserBriefDto(user)));
+            return ResponseEntity.ok(List.of(metadataMapper.userToUserBriefDto(user)));
         } catch (UserNotFoundException e) {
             log.trace("filter by username {} failed: return empty list", username);
             return ResponseEntity.ok(List.of());
@@ -110,7 +103,7 @@ public class UserEndpoint extends AbstractEndpoint {
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data) {
         log.debug("endpoint create user, data.id={}, data.username={}", data.getId(), data.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userMapper.userToUserBriefDto(
+                .body(metadataMapper.userToUserBriefDto(
                         userService.create(data)));
     }
 
@@ -160,7 +153,7 @@ public class UserEndpoint extends AbstractEndpoint {
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .body(userMapper.userToUserDto(user));
+                .body(metadataMapper.userToUserDto(user));
     }
 
     @PutMapping("/{userId}")
@@ -208,7 +201,7 @@ public class UserEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to modify user: not current user " + user.getId());
         }
         return ResponseEntity.accepted()
-                .body(userMapper.userToUserBriefDto(
+                .body(metadataMapper.userToUserBriefDto(
                         userService.modify(user, data)));
     }
 

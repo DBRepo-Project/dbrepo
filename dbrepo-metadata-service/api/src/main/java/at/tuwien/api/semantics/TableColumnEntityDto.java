@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -19,18 +21,18 @@ public class TableColumnEntityDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "475b4107-a64d-4495-a7ef-3cb0dadd4804")
+    private UUID databaseId;
 
     @NotNull
     @JsonProperty("table_id")
-    @Schema(example = "1")
-    private Long tableId;
+    @Schema(example = "9a9208af-90ea-4382-9a11-0c8f6d89bd1f")
+    private UUID tableId;
 
     @NotNull
     @JsonProperty("column_id")
-    @Schema(example = "1")
-    private Long columnId;
+    @Schema(example = "297860e3-3b29-451c-ae8a-a85ed5941018")
+    private UUID columnId;
 
     @NotBlank
     @Schema(example = "https://www.wikidata.org/entity/Q1686799")

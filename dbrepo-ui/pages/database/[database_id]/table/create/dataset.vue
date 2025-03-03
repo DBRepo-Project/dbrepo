@@ -21,7 +21,7 @@
         <v-card-text>
           <v-row>
             <v-col
-              md="8">
+              lg="8">
               <v-alert
                 border="start"
                 color="info">
@@ -54,7 +54,8 @@
                 <v-container>
                   <v-row
                     dense>
-                    <v-col md="4">
+                    <v-col
+                      lg="4">
                       <v-text-field
                         v-model="tableCreate.name"
                         :rules="[
@@ -69,7 +70,8 @@
                         :hint="$t('pages.table.subpages.import.name.hint')"
                         :label="$t('pages.table.subpages.import.name.label')"/>
                     </v-col>
-                    <v-col md="4">
+                    <v-col
+                      lg="4">
                       <v-text-field
                         v-model="generatedTableName"
                         :rules="[
@@ -88,7 +90,8 @@
                   </v-row>
                   <v-row
                     dense>
-                    <v-col md="8">
+                    <v-col
+                      lg="8">
                       <v-textarea
                         v-model="tableCreate.description"
                         rows="2"
@@ -104,7 +107,7 @@
                   <v-row
                     dense>
                     <v-col
-                      md="4">
+                      lg="4">
                       <v-select
                         v-model="tableCreate.is_public"
                         name="public"
@@ -120,7 +123,7 @@
                       </v-select>
                     </v-col>
                     <v-col
-                      md="4">
+                      lg="4">
                       <v-select
                         v-model="tableCreate.is_schema_public"
                         name="schema-public"
@@ -175,7 +178,7 @@
               <v-container>
                 <v-row dense>
                   <v-col
-                    md="8">
+                    lg="8">
                     <v-alert
                       border="start"
                       color="success">
@@ -309,6 +312,8 @@ export default {
     }
     this.tableCreate.is_public = this.database.is_public
     this.tableCreate.is_schema_public = this.database.is_schema_public
+    /* fetch types in advance */
+    this.$refs.schema.fetchColumnTypes()
   },
   computed: {
     database() {

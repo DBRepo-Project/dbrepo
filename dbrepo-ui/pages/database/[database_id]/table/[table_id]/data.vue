@@ -45,7 +45,7 @@
         class="ml-2"
         :disabled="loadingData"
         :loading="loadingData"
-        @click="reload" />
+        @click="reload()" />
       <v-btn
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-update' : null"
         variant="flat"
@@ -61,14 +61,15 @@
       </v-card-text>
     </v-card>
     <v-card
-      tile>
+      rounded="0"
+      variant="flat">
       <QueryResults
         id="query-results"
         ref="queryResults"
         class="mt-0 mb-0"
         type="table"
         :select="canSelectTuples"
-        :timestamp="versionISO || lastReload.toISOString()"
+        :timestamp="lastReload.toISOString()"
         @selection="updateSelect" />
     </v-card>
     <v-dialog
@@ -310,7 +311,7 @@ export default {
         }
         const tupleService = useTupleService()
         wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
-          .catch(({code, message}) => {
+          .catch(({ code }) => {
             const toast = useToastInstance()
             if (typeof code !== 'string') {
               return
@@ -321,7 +322,7 @@ export default {
       Promise.all(wait)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(`Deleted ${this.selection.length} row(s)`)
+          toast.success(this.$t('success.data.deleted', { total: this.selection.length }))
           this.$emit('modified', { success: true, action: 'delete' })
           this.selection = []
           this.$refs.queryResults.resetSelection()
@@ -400,8 +401,8 @@ export default {
       if (!this.canViewTableData) {
         return
       }
-      this.$refs.queryResults.reExecute(Number(this.$route.params.table_id))
-      this.$refs.queryResults.reExecuteCount(Number(this.$route.params.table_id))
+      this.$refs.queryResults.reExecute(this.$route.params.table_id, this.lastReload)
+      this.$refs.queryResults.reExecuteCount(this.$route.params.table_id, this.lastReload)
     },
     isFileField (column) {
       return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.type)

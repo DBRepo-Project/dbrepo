@@ -17,8 +17,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Data
 @Entity
 @Builder
@@ -27,7 +25,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_view")
+@Table(name = "mdb_view", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"vdbid", "internalName"})
+})
 @NamedQueries({
         @NamedQuery(name = "View.findAllPublicByDatabaseId", query = "select v from View v where v.database.id = ?1 and v.isPublic = true"),
         @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.ownedBy = ?2)"),
@@ -37,13 +37,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class View {
 
     @Id
-    @org.springframework.data.annotation.Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
-
-    @Column(updatable = false, nullable = false)
-    private Long vdbid;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
@@ -90,10 +86,9 @@ public class View {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "vdbid", referencedColumnName = "id")
     })
     private Database database;
 
@@ -113,5 +108,12 @@ public class View {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

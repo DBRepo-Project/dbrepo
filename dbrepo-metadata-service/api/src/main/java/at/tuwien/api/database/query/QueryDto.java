@@ -1,5 +1,6 @@
 package at.tuwien.api.database.query;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -12,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -24,13 +26,13 @@ import java.util.List;
 public class QueryDto {
 
     @NotNull
-    @Schema(example = "4")
-    private Long id;
+    @Schema(example = "83ea2326-f8f6-4263-baf8-cdf88a54efc7")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID databaseId;
 
     @NotNull
     private UserBriefDto owner;

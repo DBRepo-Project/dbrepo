@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -16,8 +18,8 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class PrimaryKeyDto {
 
-    @Schema(example = "8")
-    private Long id;
+    @Schema(example = "d984f9d7-e8a7-4b81-b59a-862db1871f18")
+    private UUID id;
 
     @NotNull
     private TableBriefDto table;

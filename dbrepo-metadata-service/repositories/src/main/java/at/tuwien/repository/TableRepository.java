@@ -4,10 +4,12 @@ import at.tuwien.entities.database.table.Table;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 /**
  * TO BE USED READONLY
  */
 @Repository
-public interface TableRepository extends JpaRepository<Table, Long> {
+public interface TableRepository extends JpaRepository<Table, UUID> {
 
 }

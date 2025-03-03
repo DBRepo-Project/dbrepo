@@ -42,8 +42,9 @@ public class DatabaseAccess {
     private User user;
 
     @Id
-    @Column(name = "database_id", updatable = false)
-    private Long hdbid;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "database_id", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID hdbid;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -1,10 +1,12 @@
 package at.tuwien.listener;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.MetadataServiceException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import at.tuwien.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,20 +23,21 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Log4j2
 @Component
 public class DefaultListener implements MessageListener {
 
+    private final CacheService cacheService;
     private final ObjectMapper objectMapper;
     private final QueueService queueService;
-    private final CredentialService credentialService;
 
     @Autowired
-    public DefaultListener(ObjectMapper objectMapper, QueueService queueService, CredentialService credentialService) {
+    public DefaultListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService) {
+        this.cacheService = cacheService;
         this.objectMapper = objectMapper;
         this.queueService = queueService;
-        this.credentialService = credentialService;
     }
 
     @Override
@@ -53,20 +56,23 @@ public class DefaultListener implements MessageListener {
             log.error("Failed to map database and table names from routing key: is not 3-part");
             return;
         }
-        final Long databaseId = Long.parseLong(parts[1]);
-        final Long tableId = Long.parseLong(parts[2]);
+        final UUID databaseId = UUID.fromString(parts[1]);
+        final UUID tableId = UUID.fromString(parts[2]);
         log.trace("received message for table with id {} of database id {}: {} bytes", tableId, databaseId, message.getMessageProperties().getContentLength());
         final Map<String, Object> body;
         try {
-            final TableDto table = credentialService.getTable(databaseId, tableId);
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            final TableDto table = cacheService.getTable(databaseId, tableId);
             body = objectMapper.readValue(message.getBody(), typeRef);
-            queueService.insert(table, body);
+            queueService.insert(database, table, body);
         } catch (IOException e) {
             log.error("Failed to read object: {}", e.getMessage());
         } catch (SQLException | RemoteUnavailableException e) {
             log.error("Failed to insert tuple: {}", e.getMessage());
         } catch (TableNotFoundException | MetadataServiceException e) {
             log.error("Failed to find table: {}", e.getMessage());
+        } catch (DatabaseNotFoundException e) {
+            log.error("Failed to find database: {}", e.getMessage());
         }
     }
 }

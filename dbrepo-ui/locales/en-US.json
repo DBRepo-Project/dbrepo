@@ -541,7 +541,7 @@
           }
         },
         "semantics": {
-          "title": "Assign semantic instance for table column",
+          "title": "Assign semantic {type} for table column",
           "subtitle": "Semantic instances help machines to get the proper context of your dataset",
           "recommended": "Recommended semantic instances",
           "bullet": "●",
@@ -1015,6 +1015,15 @@
             "or": {
               "text": "Add \"OR\" Filter"
             }
+          },
+          "order": {
+            "text": "Add Sorting",
+            "direction": {
+              "label": "Direction"
+            },
+            "remove": {
+              "text": "Remove"
+            }
           }
         }
       }
@@ -1270,7 +1279,8 @@
     "view": {
       "create": "Failed to create view",
       "missing": "Failed to find view in metadata database",
-      "invalid": "Failed to map view query to columns in data service"
+      "invalid": "Failed to map view query to columns in data service",
+      "exists": "View with this name exists already"
     },
     "broker": {
       "connection": "Failed to contact broker service",
@@ -1305,8 +1315,9 @@
       "revoked": "Revoked {access} access successfully"
     },
     "data": {
-      "add": "Successfully added data entry",
-      "update": "Successfully updated data entry"
+      "add": "Successfully added data tuple",
+      "update": "Successfully updated data tuple",
+      "deleted": "Successfully deleted {total} data tuple(s)"
     },
     "table": {
       "created": "Created table {table} successfully",

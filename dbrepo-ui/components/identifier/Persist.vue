@@ -34,7 +34,7 @@
       <v-btn
         v-if="canPublish"
         class="mr-2"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
         :loading="loadingPublish"
@@ -867,10 +867,10 @@ export default {
       error: false, // XXX: `error` is never changed
       licenses: [],
       identifier: {
-        database_id: parseInt(this.$route.params.database_id),
-        query_id: parseInt(this.$route.params.subset_id),
-        view_id: parseInt(this.$route.params.view_id),
-        table_id: parseInt(this.$route.params.table_id),
+        database_id: this.$route.params.database_id,
+        query_id: this.$route.params.subset_id,
+        view_id: this.$route.params.view_id,
+        table_id: this.$route.params.table_id,
         titles: [],
         descriptions: [],
         publisher: this.$config.public.pid.default.publisher,
@@ -1391,9 +1391,10 @@ export default {
       this.loadingPublish = true
       const identifierService = useIdentifierService()
       identifierService.publish(this.identifier.id)
-        .then(() => {
+        .then((identifier) => {
           const toast = useToastInstance()
           toast.success(this.$t('success.pid.published'))
+          this.identifier = identifier
           this.cacheStore.reloadDatabase()
           this.loadingPublish = false
         })

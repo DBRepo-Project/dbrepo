@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,7 +23,8 @@ import java.time.Instant;
 public class OntologyDto {
 
     @NotNull
-    private Long id;
+    @Schema(example = "7c491e40-082a-47b8-b82c-51d03c520466")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "http://www.wikidata.org/")

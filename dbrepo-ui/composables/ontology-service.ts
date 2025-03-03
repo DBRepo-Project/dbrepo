@@ -17,7 +17,7 @@ export const useOntologyService = (): any => {
     })
   }
 
-  async function findOne(id: number): Promise<OntologyDto> {
+  async function findOne(id: string): Promise<OntologyDto> {
     const axios = useAxiosInstance()
     console.debug('find ontology for id', id)
     return new Promise<OntologyDto>((resolve, reject) => {
@@ -49,7 +49,7 @@ export const useOntologyService = (): any => {
     })
   }
 
-  async function update(id: number, data: OntologyModifyDto): Promise<OntologyDto> {
+  async function update(id: string, data: OntologyModifyDto): Promise<OntologyDto> {
     const axios = useAxiosInstance()
     console.debug('update ontology with id', id)
     return new Promise<OntologyDto>((resolve, reject) => {
@@ -65,7 +65,7 @@ export const useOntologyService = (): any => {
     })
   }
 
-  async function remove(id: number): Promise<void> {
+  async function remove(id: string): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete ontology with id', id)
     return new Promise<void>((resolve, reject) => {

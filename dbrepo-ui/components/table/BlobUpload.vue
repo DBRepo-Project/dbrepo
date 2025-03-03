@@ -24,8 +24,6 @@ export default {
       filename: null
     }
   },
-  computed: {
-  },
   methods: {
     upload () {
       if (!this.file || this.file.length === 0) {
@@ -34,11 +32,10 @@ export default {
       console.debug('upload file', this.file)
       const uploadService = useUploadService()
       uploadService.create(this.file)
-        .then((filename) => {
-          console.debug('uploaded file', filename)
-          this.filename = filename
-          this.value = filename
-          this.$emit('blob', { column: this.column, s3key: filename })
+        .then(({s3_key}) => {
+          this.filename = s3_key
+          this.value = s3_key
+          this.$emit('blob', { column: this.column, s3key: s3_key })
         })
         .catch((error) => {
           console.error('Failed to upload dataset', error)

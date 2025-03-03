@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,9 +22,11 @@ import java.time.Instant;
 public class BannerMessageDto {
 
     @NotNull
-    private Long id;
+    @Schema(example = "ae3f795b-a3da-4ebe-bdc4-21a8ce631e6f")
+    private UUID id;
 
     @NotNull
+    @Schema(example = "WARNING")
     private BannerMessageTypeDto type;
 
     @NotBlank

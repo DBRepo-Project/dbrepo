@@ -4,14 +4,8 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.api.database.table.TableStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.*;
+import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
@@ -20,7 +14,6 @@ import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.TableNotFoundException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
@@ -55,9 +48,6 @@ public interface DataMapper {
     ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
 
     /* redundant */
-    @Mappings({
-            @Mapping(target = "databaseId", source = "tdbid")
-    })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     /* redundant */
@@ -65,9 +55,11 @@ public interface DataMapper {
 
     ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
 
-    default String rabbitMqTupleToInsertOrUpdateQuery(TableDto table, Map<String, Object> data) {
+    default String rabbitMqTupleToInsertOrUpdateQuery(String databaseName, TableDto table, Map<String, Object> data) {
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
+                .append(databaseName)
+                .append("`.`")
                 .append(table.getInternalName())
                 .append("` (")
                 .append(data.keySet()
@@ -96,7 +88,7 @@ public interface DataMapper {
         return ViewDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
-                .vdbid(database.getId())
+                .databaseId(database.getId())
                 .isInitialView(false)
                 .isPublic(database.getIsPublic())
                 .isSchemaPublic(database.getIsSchemaPublic())
@@ -136,7 +128,7 @@ public interface DataMapper {
                 .name(resultSet.getString(10))
                 .internalName(resultSet.getString(10))
                 .tableId(table.getId())
-                .databaseId(table.getTdbid())
+                .databaseId(table.getDatabaseId())
                 .description(resultSet.getString(11))
                 .build();
         final String dataType = resultSet.getString(8);
@@ -144,14 +136,18 @@ public interface DataMapper {
             column.setEnums(Arrays.stream(dataType.substring(0, resultSet.getString(8).length() - 1)
                             .replace("enum(", "")
                             .split(","))
-                    .map(value -> value.replace("'", ""))
+                    .map(value -> EnumDto.builder()
+                            .value(value.replace("'", ""))
+                            .build())
                     .toList());
         }
         if (column.getColumnType().equals(ColumnTypeDto.SET)) {
             column.setSets(Arrays.stream(dataType.substring(0, dataType.length() - 1)
                             .replace("set(", "")
                             .split(","))
-                    .map(value -> value.replace("'", ""))
+                    .map(value -> SetDto.builder()
+                            .value(value.replace("'", ""))
+                            .build())
                     .toList());
         }
         /* fix boolean and set size for others */
@@ -174,7 +170,7 @@ public interface DataMapper {
         return table;
     }
 
-    default ViewDto resultSetToTable(ResultSet resultSet, ViewDto view, QueryConfig queryConfig) throws SQLException {
+    default ViewDto resultSetToTable(ResultSet resultSet, ViewDto view) throws SQLException {
         final ViewColumnDto column = ViewColumnDto.builder()
                 .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
                 .isNullAllowed(resultSet.getString(3).equals("YES"))
@@ -182,7 +178,7 @@ public interface DataMapper {
                 .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
                 .name(resultSet.getString(10))
                 .internalName(resultSet.getString(10))
-                .databaseId(view.getVdbid())
+                .databaseId(view.getDatabaseId())
                 .build();
         /* fix boolean and set size for others */
         if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
@@ -194,14 +190,13 @@ public interface DataMapper {
         }
         view.getColumns()
                 .add(column);
-        log.trace("parsed view column: {}.{}", view.getInternalName(), column.getInternalName());
         return view;
     }
 
     default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
         final QueryDto subset = QueryDto.builder()
-                .id(data.getLong(1))
+                .id(UUID.fromString(data.getString(1)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))
@@ -227,7 +222,7 @@ public interface DataMapper {
                     .timestamp(LocalDateTime.parse(resultSet.getString(1), mariaDbFormatter)
                             .atZone(ZoneId.of("UTC"))
                             .toInstant())
-                    .event(resultSet.getString(2))
+                    .event(HistoryEventTypeDto.valueOf(resultSet.getString(2).toUpperCase()))
                     .total(resultSet.getLong(3))
                     .build());
         }
@@ -277,12 +272,12 @@ public interface DataMapper {
                     .column(ColumnBriefDto.builder()
                             .name(columnName)
                             .internalName(columnName)
-                            .databaseId(table.getTdbid())
+                            .databaseId(table.getDatabaseId())
                             .build())
                     .referencedColumn(ColumnBriefDto.builder()
                             .name(referencedColumnName)
                             .internalName(referencedColumnName)
-                            .databaseId(table.getTdbid())
+                            .databaseId(table.getDatabaseId())
                             .build())
                     .build();
             if (optional1.isPresent()) {
@@ -299,7 +294,7 @@ public interface DataMapper {
                     .referencedTable(TableBriefDto.builder()
                             .name(referencedTable)
                             .internalName(referencedTable)
-                            .databaseId(table.getTdbid())
+                            .databaseId(table.getDatabaseId())
                             .build())
                     .references(new LinkedList<>(List.of(foreignKeyReference)))
                     .onDelete(deleteRule)
@@ -329,7 +324,7 @@ public interface DataMapper {
                 .avgRowLength(resultSet.getLong(4))
                 .dataLength(resultSet.getLong(5))
                 .maxDataLength(resultSet.getLong(6))
-                .tdbid(database.getId())
+                .databaseId(database.getId())
                 .queueName("dbrepo")
                 .routingKey("dbrepo")
                 .description(resultSet.getString(10))

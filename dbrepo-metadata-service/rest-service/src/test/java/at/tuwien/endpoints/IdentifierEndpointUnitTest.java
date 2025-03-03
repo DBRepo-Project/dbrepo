@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -92,32 +93,32 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> malformedDatabase_parameters() {
         return Stream.of(
-                Arguments.arguments("queryId", 9999L, null, null),
-                Arguments.arguments("viewId", null, 9999L, null),
-                Arguments.arguments("tableId", null, null, 9999L)
+                Arguments.arguments("queryId", "deadbeef-1f60-4297-9eab-5b0321d96dd7", null, null),
+                Arguments.arguments("viewId", null, "deadbeef-1f60-4297-9eab-5b0321d96dd7", null),
+                Arguments.arguments("tableId", null, null, "deadbeef-1f60-4297-9eab-5b0321d96dd7")
         );
     }
 
     public static Stream<Arguments> malformedSubset_parameters() {
         return Stream.of(
                 Arguments.arguments("queryId", null, null, null),
-                Arguments.arguments("viewId", null, 9999L, null),
-                Arguments.arguments("tableId", null, null, 9999L)
+                Arguments.arguments("viewId", null, "deadbeef-1f60-4297-9eab-5b0321d96dd7", null),
+                Arguments.arguments("tableId", null, null, "deadbeef-1f60-4297-9eab-5b0321d96dd7")
         );
     }
 
     public static Stream<Arguments> malformedView_parameters() {
         return Stream.of(
-                Arguments.arguments("queryId", 9999L, null, null),
+                Arguments.arguments("queryId", "deadbeef-1f60-4297-9eab-5b0321d96dd7", null, null),
                 Arguments.arguments("viewId", null, null, null),
-                Arguments.arguments("tableId", null, null, 9999L)
+                Arguments.arguments("tableId", null, null, "deadbeef-1f60-4297-9eab-5b0321d96dd7")
         );
     }
 
     public static Stream<Arguments> malformedTable_parameters() {
         return Stream.of(
-                Arguments.arguments("queryId", 9999L, null, null),
-                Arguments.arguments("viewId", null, 9999L, null),
+                Arguments.arguments("queryId", "deadbeef-1f60-4297-9eab-5b0321d96dd7", null, null),
+                Arguments.arguments("viewId", null, "deadbeef-1f60-4297-9eab-5b0321d96dd7", null),
                 Arguments.arguments("tableId", null, null, null)
         );
     }
@@ -125,7 +126,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     public static Stream<Arguments> findAll_anonymousFilterDatabase_parameters() {
         return Stream.of(
                 Arguments.arguments("dbid", DATABASE_1_ID, null, null, null, null, 1),
-                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 0),
+                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 1),
                 Arguments.arguments("vid", DATABASE_1_ID, null, VIEW_1_ID, null, null, 0),
                 Arguments.arguments("tid", DATABASE_1_ID, null, null, TABLE_1_ID, null, 0),
                 Arguments.arguments("status_published", DATABASE_1_ID, null, null, null, "PUBLISHED", 1),
@@ -143,7 +144,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     public static Stream<Arguments> findAll_filterDatabase_parameters() {
         return Stream.of(
                 Arguments.arguments("database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 1, USER_1_PRINCIPAL),
-                Arguments.arguments("database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, USER_1_PRINCIPAL),
+                Arguments.arguments("database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, USER_1_PRINCIPAL),
                 Arguments.arguments("database_vid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, USER_1_PRINCIPAL),
                 Arguments.arguments("database_tid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, USER_1_PRINCIPAL),
                 Arguments.arguments("subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 1, USER_1_PRINCIPAL),
@@ -159,7 +160,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
                 Arguments.arguments("table_vid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, USER_1_PRINCIPAL),
                 Arguments.arguments("table_tid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 1, USER_1_PRINCIPAL),
                 Arguments.arguments("anon_database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 1, null),
-                Arguments.arguments("anon_database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, null),
+                Arguments.arguments("anon_database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, null),
                 Arguments.arguments("anon_database_vid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, null),
                 Arguments.arguments("anon_database_tid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, null),
                 Arguments.arguments("anon_subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 1, null),
@@ -210,8 +211,8 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("findAll_anonymousFilterDatabase_parameters")
     @WithAnonymousUser
-    public void findAll_anonymousFilterDatabase_succeeds(String name, Long databaseId, Long queryId, Long viewId,
-                                                         Long tableId, IdentifierStatusTypeDto status,
+    public void findAll_anonymousFilterDatabase_succeeds(String name, UUID databaseId, UUID queryId, UUID viewId,
+                                                         UUID tableId, IdentifierStatusTypeDto status,
                                                          Integer expectedSize) throws ViewNotFoundException,
             TableNotFoundException, DatabaseNotFoundException {
 
@@ -239,7 +240,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("findAll_filterSubset_parameters")
     @WithMockUser(username = USER_2_USERNAME)
-    public void findAll_filterSubset_succeeds(String name, Long databaseId, Long queryId, Long viewId, Long tableId,
+    public void findAll_filterSubset_succeeds(String name, UUID databaseId, UUID queryId, UUID viewId, UUID tableId,
                                               IdentifierStatusTypeDto status, Integer expectedSize) {
 
         /* mock */
@@ -258,8 +259,8 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("findAll_anonymousFilterDatabase_parameters")
     @WithAnonymousUser
-    public void findAll_wrongPrincipalFilterDatabase_succeeds(String name, Long databaseId, Long queryId, Long viewId,
-                                                              Long tableId, IdentifierStatusTypeDto status,
+    public void findAll_wrongPrincipalFilterDatabase_succeeds(String name, UUID databaseId, UUID queryId, UUID viewId,
+                                                              UUID tableId, IdentifierStatusTypeDto status,
                                                               Integer expectedSize)
             throws ViewNotFoundException, TableNotFoundException, DatabaseNotFoundException {
 
@@ -288,7 +289,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("findAll_filterDatabase_parameters")
     @WithAnonymousUser
     public void findAll_filterDatabase_succeeds(String name, IdentifierTypeDto type, IdentifierStatusTypeDto status,
-                                                Long databaseId, Long queryId, Long viewId, Long tableId,
+                                                UUID databaseId, UUID queryId, UUID viewId, UUID tableId,
                                                 Integer expectedSize, Principal principal) throws ViewNotFoundException,
             TableNotFoundException, DatabaseNotFoundException {
 
@@ -1115,7 +1116,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         final ResponseEntity<?> response = generic_find(null, null);
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Location"));
-        assertEquals(endpointConfig.getWebsiteUrl() + "/database/" + IDENTIFIER_1_DATABASE_ID + "/info?pid=" + IDENTIFIER_1_DATABASE_ID,
+        assertEquals(endpointConfig.getWebsiteUrl() + "/database/" + DATABASE_1_ID + "/info?pid=" + IDENTIFIER_1_ID,
                 response.getHeaders().getFirst("Location"));
     }
 
@@ -1148,7 +1149,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
             SearchServiceException, SearchServiceConnectionException, TableNotFoundException, ExternalServiceException {
 
         /* mock */
-        when(dataServiceGateway.findQuery(DATABASE_2_ID, IDENTIFIER_5_QUERY_ID))
+        when(dataServiceGateway.findQuery(DATABASE_2_ID, QUERY_2_ID))
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
@@ -1158,12 +1159,12 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("malformedSubset_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedSubset_fails(String name, Long queryId, Long viewId, Long tableId) {
+    public void save_malformedSubset_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
-                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
@@ -1183,12 +1184,12 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("malformedView_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedView_fails(String name, Long queryId, Long viewId, Long tableId) {
+    public void save_malformedView_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
-                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
@@ -1208,12 +1209,12 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("malformedTable_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedTable_fails(String name, Long queryId, Long viewId, Long tableId) {
+    public void save_malformedTable_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
-                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
@@ -1233,12 +1234,12 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("malformedDatabase_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedDatabase_fails(String name, Long queryId, Long viewId, Long tableId) {
+    public void save_malformedDatabase_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
-                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
@@ -1259,7 +1260,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void save_invalidDateDay_fails() {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
-                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
@@ -1281,7 +1282,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void save_invalidDateMonth_fails() {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
-                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
@@ -1319,7 +1320,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void save_invalidTable_fails() {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
-                .viewId(1L)  // <--
+                .viewId(UUID.randomUUID())  // <--
                 .databaseId(DATABASE_1_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
@@ -1341,7 +1342,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("save_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_noForeign_fails(String name, Long databaseId, Database database, DatabaseAccess access,
+    public void save_noForeign_fails(String name, UUID databaseId, Database database, DatabaseAccess access,
                                      Identifier identifier, IdentifierSaveDto data, Principal principal, User user) {
 
         /* test */
@@ -1455,7 +1456,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_save(Long databaseId, Database database, DatabaseAccess access, Identifier identifier,
+    protected void generic_save(UUID databaseId, Database database, DatabaseAccess access, Identifier identifier,
                                 IdentifierSaveDto data, Principal principal, User user) throws MalformedException,
             NotAllowedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, QueryNotFoundException,

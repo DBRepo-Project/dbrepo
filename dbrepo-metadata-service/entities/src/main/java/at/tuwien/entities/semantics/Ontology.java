@@ -2,11 +2,13 @@ package at.tuwien.entities.semantics;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -27,9 +29,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Ontology {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String uri;
@@ -55,5 +57,12 @@ public class Ontology {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

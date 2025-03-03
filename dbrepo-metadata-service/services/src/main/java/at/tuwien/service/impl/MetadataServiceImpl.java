@@ -28,6 +28,7 @@ import org.thymeleaf.context.Context;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -97,7 +98,7 @@ public class MetadataServiceImpl implements MetadataService {
         if (parameters.getIdentifier().startsWith("doi")) {
             identifier = identifierService.findByDoi(parameters.getIdentifier().substring(4));
         } else if (parameters.getIdentifier().startsWith("oai")) {
-            identifier = identifierService.find(Long.parseLong(parameters.getIdentifier().substring(4)));
+            identifier = identifierService.find(UUID.fromString(parameters.getIdentifier().substring(4)));
         } else {
             final String prefix = parameters.getIdentifier().substring(0, 3);
             log.error("Invalid prefix: {}", prefix);

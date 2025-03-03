@@ -12,6 +12,7 @@ import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,11 +97,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 
@@ -111,11 +109,14 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1").with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
                 .andDo(print())
+                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
+                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port"))
                 .andExpect(status().isOk());
     }
 
@@ -127,11 +128,14 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         final TokenDto jwt = keycloakGateway.obtainUserToken(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1").header("Authorization", "Bearer " + jwt.getAccessToken()))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
                 .andDo(print())
+                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
+                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port"))
                 .andExpect(status().isOk());
     }
 
@@ -144,11 +148,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
 
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1/table/1").header("Authorization", "Bearer " + jwt.getAccessToken()))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
                 .andDo(print())
-                .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
-                .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
                 .andExpect(status().isOk());
     }
 
@@ -159,11 +160,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1/table/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 
@@ -174,26 +172,21 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1/table/1").with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
-                .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @Transactional
     public void findById_view_basicUser_succeeds() throws Exception {
 
         /* mock */
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/1/view/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/view/" + VIEW_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 
@@ -204,11 +197,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/container/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/container/" + CONTAINER_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 

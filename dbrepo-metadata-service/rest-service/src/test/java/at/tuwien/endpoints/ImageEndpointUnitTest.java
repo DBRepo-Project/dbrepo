@@ -25,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -260,7 +261,7 @@ public class ImageEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void findById_generic(Long imageId, ContainerImage image) throws ImageNotFoundException {
+    public void findById_generic(UUID imageId, ContainerImage image) throws ImageNotFoundException {
 
         /* mock */
         when(imageService.find(imageId))
@@ -272,7 +273,7 @@ public class ImageEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void delete_generic(Long imageId, ContainerImage image) throws ImageNotFoundException {
+    public void delete_generic(UUID imageId, ContainerImage image) throws ImageNotFoundException {
 
         /* mock */
         when(imageService.find(imageId))
@@ -284,7 +285,7 @@ public class ImageEndpointUnitTest extends AbstractUnitTest {
         assertNull(response.getBody());
     }
 
-    public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data) throws ImageNotFoundException {
+    public void modify_generic(UUID imageId, ContainerImage image, ImageChangeDto data) throws ImageNotFoundException {
 
         /* mock */
         when(imageService.find(imageId))

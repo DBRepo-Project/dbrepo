@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.ViewMalformedException;
@@ -27,13 +28,14 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
     }
 
     @Override
-    public void delete(ViewDto view) throws SQLException, ViewMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(view);
+    public void delete(DatabaseDto database, ViewDto view) throws SQLException, ViewMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* drop view if exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(view.getInternalName()))
+            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(database.getInternalName(),
+                            view.getInternalName()))
                     .execute();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
@@ -44,32 +46,32 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
         } finally {
             dataSource.close();
         }
-        log.info("Deleted view {}.{}", view.getDatabase(), view.getInternalName());
+        log.info("Deleted view {}.{}", database.getInternalName(), view.getInternalName());
     }
 
     @Override
-    public Long count(ViewDto view, Instant timestamp) throws SQLException,
+    public Long count(DatabaseDto database, ViewDto view, Instant timestamp) throws SQLException,
             QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(view);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         final Long queryResult;
         try {
             /* find view data */
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            view.getDatabase().getInternalName(), view.getInternalName(), timestamp))
+                            database.getInternalName(), view.getInternalName(), timestamp))
                     .executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to find row count from view {}.{}: {}", view.getDatabase(), view.getInternalName(), e.getMessage());
-            throw new QueryMalformedException("Failed to find row count from view " + view.getDatabase() + "." + view.getInternalName() + ": " + e.getMessage(), e);
+            log.error("Failed to find row count from view {}.{}: {}", database.getInternalName(), view.getInternalName(), e.getMessage());
+            throw new QueryMalformedException("Failed to find row count from view " + database.getInternalName() + "." + view.getInternalName() + ": " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        log.info("Find row count from view {}.{}", view.getDatabase(), view.getInternalName());
+        log.info("Find row count from view {}.{}", database.getInternalName(), view.getInternalName());
         return queryResult;
     }
 

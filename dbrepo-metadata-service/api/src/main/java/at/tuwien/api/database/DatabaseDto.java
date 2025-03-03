@@ -1,6 +1,7 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.CacheableDto;
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.identifier.IdentifierDto;
@@ -14,6 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -26,8 +28,8 @@ import java.util.List;
 public class DatabaseDto extends CacheableDto {
 
     @NotNull
-    @Schema(example = "3")
-    private Long id;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "Air Quality")

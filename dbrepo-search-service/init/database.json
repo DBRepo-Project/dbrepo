@@ -131,7 +131,13 @@
             }
           },
           "id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "image": {
             "properties": {
@@ -154,9 +160,6 @@
                 }
               },
               "id": {
-                "type": "long"
-              },
-              "jdbc_method": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -213,18 +216,6 @@
             }
           },
           "port": {
-            "type": "long"
-          },
-          "sidecar_host": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sidecar_port": {
             "type": "long"
           },
           "ui_host": {
@@ -303,7 +294,13 @@
         }
       },
       "id": {
-        "type": "long"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
       "identifiers": {
         "properties": {
@@ -371,7 +368,13 @@
                 }
               },
               "id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "name_identifier": {
                 "type": "text",
@@ -412,7 +415,13 @@
             }
           },
           "database_id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "descriptions": {
             "properties": {
@@ -426,12 +435,24 @@
                 }
               },
               "id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           },
           "id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "licenses": {
             "properties": {
@@ -512,7 +533,13 @@
           "titles": {
             "properties": {
               "id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "title": {
                 "type": "text",
@@ -535,7 +562,13 @@
             }
           },
           "view_id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           }
         }
       },
@@ -592,10 +625,22 @@
                 "type": "long"
               },
               "database_id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "internal_name": {
                 "type": "text",
@@ -634,7 +679,13 @@
                 "type": "float"
               },
               "table_id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           },
@@ -645,26 +696,62 @@
                   "column": {
                     "properties": {
                       "database_id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       },
                       "id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       },
                       "table_id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       }
                     }
                   },
                   "id": {
-                    "type": "long"
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
                   },
                   "table": {
                     "properties": {
                       "database_id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       },
                       "id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       }
                     }
                   }
@@ -675,26 +762,62 @@
                   "columns": {
                     "properties": {
                       "database_id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       },
                       "id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       },
                       "table_id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       }
                     }
                   },
                   "id": {
-                    "type": "long"
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
                   },
                   "table": {
                     "properties": {
                       "database_id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       },
                       "id": {
-                        "type": "long"
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
                       }
                     }
                   }
@@ -758,7 +881,13 @@
             "type": "long"
           },
           "database_id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "description": {
             "type": "text",
@@ -770,7 +899,13 @@
             }
           },
           "id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "internal_name": {
             "type": "text",
@@ -839,10 +974,22 @@
                 }
               },
               "database_id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "internal_name": {
                 "type": "text",
@@ -926,10 +1073,22 @@
             }
           },
           "database_id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "id": {
-            "type": "long"
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "identifiers": {
             "properties": {
@@ -997,7 +1156,13 @@
                     }
                   },
                   "id": {
-                    "type": "long"
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
                   },
                   "name_identifier": {
                     "type": "text",
@@ -1038,7 +1203,13 @@
                 }
               },
               "database_id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "descriptions": {
                 "properties": {
@@ -1052,12 +1223,24 @@
                     }
                   },
                   "id": {
-                    "type": "long"
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
                   }
                 }
               },
               "id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               },
               "licenses": {
                 "properties": {
@@ -1138,7 +1321,13 @@
               "titles": {
                 "properties": {
                   "id": {
-                    "type": "long"
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
                   },
                   "title": {
                     "type": "text",
@@ -1161,7 +1350,13 @@
                 }
               },
               "view_id": {
-                "type": "long"
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           },

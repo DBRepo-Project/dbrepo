@@ -13,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -25,18 +26,18 @@ import java.util.List;
 public class ColumnDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
+    @Schema(example = "a453e444-e00d-41ca-902c-11e9c54b39f1")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "2")
-    private Long databaseId;
+    @Schema(example = "911f9052-c58c-4e1c-b3f2-66af2107be16")
+    private UUID databaseId;
 
     @NotNull
     @JsonProperty("table_id")
-    @Schema(example = "3")
-    private Long tableId;
+    @Schema(example = "bfffa915-a547-4466-9c65-ddc0d38fdb08")
+    private UUID tableId;
 
     @NotNull
     @JsonProperty("ord")
@@ -119,12 +120,10 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
-    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private List<String> enums;
+    private List<EnumDto> enums;
 
-    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private List<String> sets;
+    private List<SetDto> sets;
 
 }

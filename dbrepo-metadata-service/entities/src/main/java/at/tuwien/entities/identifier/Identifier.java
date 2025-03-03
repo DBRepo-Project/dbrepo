@@ -39,18 +39,18 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Identifier implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
-    @Column(name = "qid")
-    private Long queryId;
+    @Column(name = "qid", columnDefinition = "VARCHAR(36)")
+    private UUID queryId;
 
-    @Column(name = "tid")
-    private Long tableId;
+    @Column(name = "tid", columnDefinition = "VARCHAR(36)")
+    private UUID tableId;
 
-    @Column(name = "vid")
-    private Long viewId;
+    @Column(name = "vid", columnDefinition = "VARCHAR(36)")
+    private UUID viewId;
 
     /**
      * Creators are created/updated/deleted by the Identifier entity.
@@ -175,6 +175,13 @@ public class Identifier implements Serializable {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }
 

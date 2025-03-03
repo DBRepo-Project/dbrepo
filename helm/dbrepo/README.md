@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.6.5"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.7.0"
 ```
 
 ## Prerequisites
@@ -23,12 +23,18 @@ helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo"
 * Optional certificate provisioner support in the underlying infrastructure:
   e.g. [cert-manager](https://cert-manager.io/) (for production use).
 
+## Database Configuration
+
+Note that the default configuration uses a lower memory bound (2GB) than the default MariaDB memory bound (4GB). We
+consequently decreased the `innodb_buffer_pool_size` to 1430MB (70% of the available memory). You need to increase this
+variable when you increase the available Pod memory for performance.
+
 ## Installing the Chart
 
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.6.5"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.7.0"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -75,8 +81,10 @@ The command removes all the Kubernetes components associated with the chart and 
 | `metadatadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
 | `metadatadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
 | `metadatadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
+| `metadatadb.configurationConfigMap`      | The database configuration files.                                                                                                      | `metadata-db-config`                                                   |
 | `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                       | `{}`                                                                   |
 | `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
+| `metadatadb.resourcesPreset`             | The container resource preset                                                                                                          | `nano-hm`                                                              |
 | `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
 ### Auth Service
@@ -109,6 +117,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `datadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
 | `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
 | `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
+| `datadb.resourcesPreset`             | The container resource preset                                                                                                          | `nano-hm`                                                              |
 | `datadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
 ### Search Database
@@ -119,9 +128,13 @@ The command removes all the Kubernetes components associated with the chart and 
 | `searchdb.host`                         | The hostname for the microservices. | `search-db` |
 | `searchdb.port`                         | The port for the microservices.     | `9200`      |
 | `searchdb.coordinating.resourcesPreset` | The container resource preset       | `small`     |
+| `searchdb.coordinating.replicaCount`    | The number of pod replicas.         | `1`         |
 | `searchdb.ingest.resourcesPreset`       | The container resource preset       | `micro`     |
+| `searchdb.ingest.replicaCount`          | The number of pod replicas.         | `1`         |
 | `searchdb.master.resourcesPreset`       | The container resource preset       | `small`     |
+| `searchdb.master.replicaCount`          | The number of pod replicas.         | `1`         |
 | `searchdb.data.resourcesPreset`         | The container resource preset       | `medium`    |
+| `searchdb.data.replicaCount`            | The number of pod replicas.         | `1`         |
 | `searchdb.clusterName`                  | The cluster name.                   | `search-db` |
 
 ### Upload Service

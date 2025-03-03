@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -44,16 +45,16 @@ import java.util.Optional;
 public class DatabaseEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
-    private final MetadataMapper databaseMapper;
+    private final MetadataMapper metadataMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
-    public DatabaseEndpoint(UserService userService, MetadataMapper databaseMapper, StorageService storageService,
+    public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService) {
         this.userService = userService;
-        this.databaseMapper = databaseMapper;
+        this.metadataMapper = metadataMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.containerService = containerService;
@@ -79,15 +80,24 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final List<Database> databases;
         if (principal != null) {
             if (internalName != null) {
-                log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name {}", getId(principal), internalName);
-                databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getId(principal), internalName);
+                if (isSystem(principal)) {
+                    log.debug("filter request to contain only databases that match internal name: {}", internalName);
+                    databases = databaseService.findByInternalName(internalName);
+                } else {
+                    log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name: {}", getId(principal), internalName);
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getId(principal), internalName);
+                }
             } else {
-                log.debug("filter request to contain only databases where user with id {} has at least read access", getId(principal));
-                databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getId(principal));
+                if (isSystem(principal)) {
+                    databases = databaseService.findAll();
+                } else {
+                    log.debug("filter request to contain only databases where user with id {} has at least read access", getId(principal));
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getId(principal));
+                }
             }
         } else {
             if (internalName != null) {
-                log.debug("filter request to contain only public databases that match internal name {}", internalName);
+                log.debug("filter request to contain only public databases that match internal name: {}", internalName);
                 databases = databaseService.findAllPublicOrSchemaPublicByInternalName(internalName);
             } else {
                 log.debug("filter request to contain only public databases");
@@ -100,7 +110,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
                 .body(databases.stream()
-                        .map(databaseMapper::databaseToDatabaseBriefDto)
+                        .map(metadataMapper::databaseToDatabaseBriefDto)
                         .toList());
     }
 
@@ -160,13 +170,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             ContainerQuotaException {
         log.debug("endpoint create database, data.name={}", data.getName());
         final Container container = containerService.find(data.getCid());
-        if (container.getDatabases().size() + 1 > container.getQuota()) {
+        if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
         final User caller = userService.findById(getId(principal));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.create(container, data, caller, userService.findAllInternalUsers()))));
     }
 
@@ -209,7 +219,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                  @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException,
@@ -220,7 +230,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
-        return ResponseEntity.ok(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+        return ResponseEntity.ok(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                 databaseService.updateTableMetadata(database))));
     }
 
@@ -258,7 +268,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                 @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, ViewNotFoundException {
@@ -268,7 +278,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
-        return ResponseEntity.ok(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+        return ResponseEntity.ok(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                 databaseService.updateViewMetadata(database))));
     }
 
@@ -311,7 +321,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> visibility(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> visibility(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                        @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                        @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, UserNotFoundException {
@@ -322,7 +332,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.modifyVisibility(database, data))));
     }
 
@@ -365,7 +375,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                      @Valid @RequestBody DatabaseTransferDto data,
                                                      @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
@@ -378,7 +388,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.modifyOwner(database, newOwner))));
     }
 
@@ -421,7 +431,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> modifyImage(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> modifyImage(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                         @Valid @RequestBody DatabaseModifyImageDto data,
                                                         @NotNull Principal principal) throws NotAllowedException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
@@ -437,7 +447,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             image = storageService.getBytes(data.getKey());
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.modifyImage(database, image))));
     }
 
@@ -456,7 +466,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))})
     })
-    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseNotFoundException {
         log.debug("endpoint get database preview image, databaseId={}", databaseId);
         return ResponseEntity.ok()
@@ -485,24 +495,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database, user or exchange could not be found",
+                    description = "Database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to the broker service could not be established",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to find queue information in broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))})
     })
-    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                Principal principal) throws DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException,
+    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                Principal principal) throws DatabaseNotFoundException,
             NotAllowedException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
@@ -521,14 +520,14 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .size();
             database.setTables(database.getTables()
                     .stream()
-                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent())
+                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent() || isSystem(principal))
                     .toList());
             log.trace("filtered database tables from {} to {}", tables, database.getTables().size());
             final int views = database.getViews()
                     .size();
             database.setViews(database.getViews()
                     .stream()
-                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent())
+                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent() || isSystem(principal))
                     .toList());
             log.trace("filtered database views from {} to {}", views, database.getViews().size());
             if (!isSystem(principal) && !database.getOwner().getId().equals(getId(principal))) {
@@ -553,12 +552,16 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             .toList());
             database.setAccesses(List.of());
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
+            log.trace("attach privileged credential information");
+            headers.set("X-Host", database.getContainer().getHost());
+            headers.set("X-Port", "" + database.getContainer().getPort());
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+            headers.set("X-Jdbc-Method", database.getContainer().getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
         } else {
             removeInternalData(dto.getContainer());
         }

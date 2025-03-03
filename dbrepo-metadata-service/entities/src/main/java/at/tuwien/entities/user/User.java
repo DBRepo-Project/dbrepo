@@ -27,7 +27,7 @@ public class User {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "ID", columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
@@ -67,5 +67,12 @@ public class User {
 
     @Column(name = "is_internal", nullable = false, updatable = false, columnDefinition = "bool default false")
     private Boolean isInternal;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

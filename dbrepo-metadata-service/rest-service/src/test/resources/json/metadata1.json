@@ -1,16 +1,16 @@
 {
-  "id": 1,
-  "query_id": 1,
+  "id": "679a83f2-ef23-4b4b-98f7-ad77b9d68733",
+  "query_id": "60494137-f000-459e-acd3-4fcadbdf14ca",
   "type": "subset",
   "doi": "10.12345/183",
   "titles": [
     {
-      "id": 1,
+      "id": "3df6b286-9bd2-4ae3-b8f4-29c217544bef",
       "title": "Austrian weather data",
       "language": "en"
     },
     {
-      "id": 2,
+      "id": "903a7e5b-8014-4b8a-b8fd-44f477880905",
       "title": "Österreichische Wetterdaten",
       "type": "TranslatedTitle",
       "language": "de"
@@ -18,7 +18,7 @@
   ],
   "descriptions": [
     {
-      "id": 1,
+      "id": "1c438756-93f0-4797-983c-175a17e18c2c",
       "description": "Selecting all from the weather Austrian table",
       "language": "en"
     }
@@ -32,7 +32,7 @@
   "publisher": "Austrian Government",
   "creators": [
     {
-      "id": 1,
+      "id": "667cd1d6-4f94-4808-b5cb-12e5ec0788d8",
       "firstname": "Max",
       "lastname": "Mustermann",
       "creator_name": "Mustermann, Max",

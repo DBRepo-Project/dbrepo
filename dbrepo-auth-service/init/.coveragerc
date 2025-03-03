@@ -1,4 +1,9 @@
 [report]
+omit =
+    # omit tests
+    ./tests/*
+    # omit ext lib
+    ./omlib/*
 
-exclude_lines =
-    if __name__ == .__main__.:
+[html]
+directory = htmlcov

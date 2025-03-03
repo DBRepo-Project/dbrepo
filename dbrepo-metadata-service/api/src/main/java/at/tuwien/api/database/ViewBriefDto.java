@@ -20,13 +20,13 @@ import java.util.UUID;
 public class ViewBriefDto {
 
     @NotNull
-    @Schema(example = "4")
-    private Long id;
+    @Schema(example = "787439d0-e85e-400c-a7e6-996a023bfad9")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long vdbid;
+    @Schema(example = "2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4")
+    private UUID vdbid;
 
     @NotBlank
     @Schema(example = "Air Quality")

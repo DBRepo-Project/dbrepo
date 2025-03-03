@@ -20,25 +20,25 @@ import java.util.UUID;
 public class IdentifierBriefDto {
 
     @NotNull
-    @Schema(example = "2")
-    private Long id;
+    @Schema(example = "b97cd56b-66ca-4354-9e6c-f47210cfaaec")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID databaseId;
 
     @JsonProperty("query_id")
     @Schema(example = "1")
-    private Long queryId;
+    private UUID queryId;
 
     @JsonProperty("table_id")
     @Schema(example = "1")
-    private Long tableId;
+    private UUID tableId;
 
     @JsonProperty("view_id")
     @Schema(example = "1")
-    private Long viewId;
+    private UUID viewId;
 
     @NotNull
     @Schema(example = "database")
