@@ -1,12 +1,12 @@
 import logging
 import os
 import sys
+from io import BytesIO
 
 import requests
 from pandas import DataFrame
 from pydantic import TypeAdapter
 
-from dbrepo.UploadClient import UploadClient
 from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
@@ -50,7 +50,7 @@ class RestClient:
             f'initialized rest client with endpoint={self.endpoint}, username={username}, verify_ssl={secure}')
 
     def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers: dict = None,
-                 force_auth: bool = False, stream: bool = False) -> requests.Response:
+                 force_auth: bool = False, files: dict = None) -> requests.Response:
         if force_auth and (self.username is None and self.password is None):
             raise AuthenticationError(f"Failed to perform request: authentication required")
         url = f'{self.endpoint}{url}'
@@ -58,8 +58,6 @@ class RestClient:
         logging.debug(f'url: {url}')
         if params is not None:
             logging.debug(f'params: {params}')
-        if stream is not None:
-            logging.debug(f'stream: {stream}')
         logging.debug(f'secure: {self.secure}')
         if headers is not None:
             logging.debug(f'headers: {headers}')
@@ -76,7 +74,7 @@ class RestClient:
             auth = (self.username, self.password)
             logging.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
         return requests.request(method=method, url=url, auth=auth, verify=self.secure,
-                                json=payload, headers=headers, params=params, stream=stream)
+                                json=payload, headers=headers, params=params, files=files)
 
     def whoami(self) -> str | None:
         """
@@ -911,6 +909,27 @@ class RestClient:
         raise ResponseCodeError(f'Failed to insert table data: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
+    def _upload(self, dataframe: DataFrame) -> str:
+        """
+        Uploads a pandas DataFrame to the S3 filesystem.
+
+        :param dataframe: The dataframe to be uploaded.
+
+        :returns: The S3 key if successful.
+        
+        :raises ResponseCodeError: If something went wrong with the insert.
+        """
+        url = f'/api/upload'
+        buffer = BytesIO()
+        dataframe.to_csv(path_or_buf=buffer, header=False, index=False)
+        response = self._wrapper(method="post", url=url, force_auth=True,
+                                 files={'file': ('dataframe.csv', buffer.getvalue())})
+        if response.status_code == 201:
+            body = response.json()
+            return UploadResponse.model_validate(body).s3_key
+        raise ResponseCodeError(f'Failed to upload: response code: {response.status_code} is not '
+                                f'202 (ACCEPTED): {response.text}')
+
     def import_table_data(self, database_id: str, table_id: str, dataframe: DataFrame) -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
@@ -927,12 +946,11 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the insert.
         """
-        client = UploadClient()
-        filename = client.upload(dataframe)
+
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=Import(location=filename, separator=',', quote='"', header=True,
-                                                line_termination='\n'))
+                                 payload=Import(location=self._upload(dataframe), separator=',', quote='"',
+                                                header=True, line_termination='\n'))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -961,10 +979,8 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        client = UploadClient()
-        filename = client.upload(dataframe)
         params = [
-            ('filename', filename),
+            ('filename', self._upload(dataframe)),
             ('separator', ','),
             ('enum', enum),
             ('enum_tol', enum_tol)
@@ -993,10 +1009,8 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        client = UploadClient()
-        filename = client.upload(dataframe=dataframe)
         params = [
-            ('filename', filename),
+            ('filename', self._upload(dataframe)),
             ('separator', ','),
         ]
         url = f'/api/analyse/keys'

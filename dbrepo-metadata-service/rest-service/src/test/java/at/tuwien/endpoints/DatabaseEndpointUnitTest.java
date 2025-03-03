@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -334,6 +335,30 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void list_hasSystemRole_succeeds() {
+
+        /* mock */
+        when(databaseService.findAll())
+                .thenReturn(List.of(DATABASE_1, DATABASE_2, DATABASE_3, DATABASE_4));
+
+        /* test */
+        list_generic(null, USER_LOCAL_ADMIN_PRINCIPAL, 4);
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void list_hasSystemRoleFilterByName_succeeds() {
+
+        /* mock */
+        when(databaseService.findByInternalName(DATABASE_1_INTERNALNAME))
+                .thenReturn(List.of(DATABASE_1));
+
+        /* test */
+        list_generic(DATABASE_1_INTERNALNAME, USER_LOCAL_ADMIN_PRINCIPAL, 1);
+    }
+
+    @Test
     @WithAnonymousUser
     public void list_filterNoResult_succeeds() {
 
@@ -567,7 +592,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        final DatabaseDto database = findById_generic(DATABASE_2_ID, DATABASE_2, null);
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_2_ID, DATABASE_2, null);
+        final DatabaseDto database = response.getBody();
+        assertNotNull(database);
         assertEquals(3, database.getTables().size());
         assertEquals(1, database.getViews().size());
         assertEquals(0, database.getAccesses().size());
@@ -579,9 +606,25 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        final DatabaseDto database = findById_generic(DATABASE_3_ID, DATABASE_3, USER_LOCAL_ADMIN_PRINCIPAL);
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_3_ID, DATABASE_3, USER_LOCAL_ADMIN_PRINCIPAL);
+        final DatabaseDto database = response.getBody();
+        assertNotNull(database);
         assertEquals(1, database.getTables().size());
         assertEquals(1, database.getViews().size());
+        assertNotEquals(0, database.getAccesses().size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void findById_privateSchemaPrivateDataNoAccessInternalUser_succeeds() throws NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
+        final DatabaseDto database = response.getBody();
+        assertNotNull(database);
+        assertEquals(4, database.getTables().size());
+        assertEquals(3, database.getViews().size());
         assertNotEquals(0, database.getAccesses().size());
     }
 
@@ -614,7 +657,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS, DATABASE_1_USER_2_READ_ACCESS));
 
         /* test */
-        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        final DatabaseDto database = response.getBody();
+        assertNotNull(database);
         assertEquals(4, database.getTables().size());
         assertEquals(3, database.getViews().size());
         assertEquals(3, database.getAccesses().size());
@@ -629,7 +674,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS, DATABASE_1_USER_2_READ_ACCESS));
 
         /* test */
-        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL);
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL);
+        final DatabaseDto database = response.getBody();
+        assertNotNull(database);
         assertEquals(4, database.getTables().size());
         assertEquals(3, database.getViews().size());
         assertEquals(0, database.getAccesses().size());
@@ -644,7 +691,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS, DATABASE_1_USER_2_READ_ACCESS));
 
         /* test */
-        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        final DatabaseDto database = response.getBody();
+        assertNotNull(database);
         assertEquals(4, database.getTables().size());
         assertEquals(3, database.getViews().size());
         assertEquals(3, database.getAccesses().size());
@@ -668,6 +717,21 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertThrows(NotAllowedException.class, () -> {
             findById_generic(DATABASE_1_ID, DATABASE_1, null);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
+    public void findById_system_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+
+        /* test */
+        final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
+        final HttpHeaders headers = response.getHeaders();
+        assertEquals(List.of(CONTAINER_1_HOST), headers.get("X-Host"));
+        assertEquals(List.of("" + CONTAINER_1_PORT), headers.get("X-Port"));
+        assertEquals(List.of(CONTAINER_1_PRIVILEGED_USERNAME), headers.get("X-Username"));
+        assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Password"));
+        assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Jdbc-Method"));
+        assertEquals(List.of("X-Username X-Password X-Jdbc-Method X-Host X-Port"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test
@@ -770,7 +834,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public DatabaseDto findById_generic(UUID databaseId, Database database, Principal principal)
+    public ResponseEntity<DatabaseDto> findById_generic(UUID databaseId, Database database, Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
@@ -786,9 +850,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<DatabaseDto> response = databaseEndpoint.findById(databaseId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        final DatabaseDto body = response.getBody();
-        assertNotNull(body);
-        return body;
+        return response;
     }
 
     public ResponseEntity<byte[]> findPreviewImage_generic(UUID databaseId, Database database)

@@ -1,10 +1,9 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.table.CreateTableDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -37,8 +36,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -158,6 +156,90 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         /* test */
         assertThrows(MalformedException.class, () -> {
             tableService.findColumnById(TABLE_1, UUID.randomUUID());
+        });
+    }
+
+    @Test
+    public void updateTable_succeeds() throws TableNotFoundException, SearchServiceException, DataServiceException,
+            DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException {
+
+        /* mock */
+        doNothing()
+                .when(dataServiceGateway)
+                .updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_3_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.updateTable(TABLE_8, TABLE_8_UPDATE_DTO);
+        assertTrue(response.getIsPublic());
+        assertTrue(response.getIsSchemaPublic());
+        assertNull(response.getDescription());
+    }
+
+    @Test
+    public void updateTable_dataServiceConnection_fails() throws DataServiceException, DatabaseNotFoundException,
+            DataServiceConnectionException {
+
+        /* mock */
+        doThrow(DataServiceConnectionException.class)
+                .when(dataServiceGateway)
+                .updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+
+        /* test */
+        assertThrows(DataServiceConnectionException.class, () -> {
+            tableService.updateTable(TABLE_8, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_dataService_fails() throws DataServiceException, DatabaseNotFoundException,
+            DataServiceConnectionException {
+
+        /* mock */
+        doThrow(DataServiceException.class)
+                .when(dataServiceGateway)
+                .updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+
+        /* test */
+        assertThrows(DataServiceException.class, () -> {
+            tableService.updateTable(TABLE_8, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_searchServiceConnection_fails() throws DataServiceException, DatabaseNotFoundException,
+            DataServiceConnectionException, SearchServiceException, SearchServiceConnectionException {
+
+        /* mock */
+        doNothing()
+                .when(dataServiceGateway)
+                .updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        doThrow(SearchServiceConnectionException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            tableService.updateTable(TABLE_8, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_searchService_fails() throws DataServiceException, DatabaseNotFoundException,
+            DataServiceConnectionException, SearchServiceException, SearchServiceConnectionException {
+
+        /* mock */
+        doNothing()
+                .when(dataServiceGateway)
+                .updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        doThrow(SearchServiceException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            tableService.updateTable(TABLE_8, TABLE_8_UPDATE_DTO);
         });
     }
 

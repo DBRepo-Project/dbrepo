@@ -472,11 +472,11 @@ export default {
       const uploadService = useUploadService()
       return new Promise((resolve, reject) => {
         return uploadService.create(this.file)
-          .then((s3key) => {
+          .then(({s3_key}) => {
             const toast = useToastInstance()
             toast.success(this.$t('success.upload.dataset'))
             this.loading = false
-            resolve(s3key)
+            resolve(s3_key)
           })
           .catch((error) => {
             console.error('Failed to upload dataset', error)

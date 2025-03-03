@@ -22,7 +22,9 @@
         :loading="loadingData"
         @click="reload" />
     </v-toolbar>
-    <v-card tile>
+    <v-card
+      rounded="0"
+      variant="flat">
       <QueryResults
         id="query-results"
         ref="queryResults"

@@ -1,7 +1,6 @@
 package at.tuwien.mvc;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.entities.database.View;
 import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.CredentialsInvalidException;
@@ -112,10 +111,12 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
                 .andDo(print())
+                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
+                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
                 .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port"))
                 .andExpect(status().isOk());
     }
 
@@ -129,10 +130,12 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
                 .andDo(print())
+                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
+                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
                 .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port"))
                 .andExpect(status().isOk());
     }
 

@@ -70,10 +70,12 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<ContainerDto> response = findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_LOCAL_ADMIN_PRINCIPAL);
         final HttpHeaders headers = response.getHeaders();
+        assertEquals(List.of(CONTAINER_1_HOST), headers.get("X-Host"));
+        assertEquals(List.of("" + CONTAINER_1_PORT), headers.get("X-Port"));
         assertEquals(List.of(CONTAINER_1_PRIVILEGED_USERNAME), headers.get("X-Username"));
         assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Password"));
         assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Jdbc-Method"));
-        assertEquals(List.of("X-Username X-Password X-Jdbc-Method"), headers.get("Access-Control-Expose-Headers"));
+        assertEquals(List.of("X-Username X-Password X-Jdbc-Method X-Host X-Port"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test

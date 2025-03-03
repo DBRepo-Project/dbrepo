@@ -61,7 +61,8 @@
       </v-card-text>
     </v-card>
     <v-card
-      tile>
+      rounded="0"
+      variant="flat">
       <QueryResults
         id="query-results"
         ref="queryResults"

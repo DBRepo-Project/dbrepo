@@ -938,6 +938,43 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
+  /api/upload:
+    post:
+      tags:
+        - upload-endpoint
+      summary: Uploads a multipart file
+      description: >-
+        Uploads a multipart file to the Storage Service. Requires role
+        `upload-file`.
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '201':
+          description: Uploaded the file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewDto'
+        '503':
+          description: Failed to establish connection with the storage service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - basicAuth: []
+        - bearerAuth: []
   '/api/database/{databaseId}/table/{tableId}/data/import':
     post:
       tags:
@@ -1068,7 +1105,7 @@ paths:
         used without authentication if (and only if) the database is marked as
         public (i.e. when `is_public` = `is_schema_public` is set to `true`).
         Otherwise at least read access is required.
-      operationId: create
+      operationId: create_1
       parameters:
         - name: databaseId
           in: path
@@ -3337,7 +3374,7 @@ paths:
       description: >-
         Creates a message in the metadata database. Requires role
         `create-maintenance-message`.
-      operationId: create_1
+      operationId: create_11
       requestBody:
         content:
           application/json:
@@ -5231,6 +5268,641 @@ components:
         family_name:
           type: string
           example: Carberry
+    CreatorDto:
+      required:
+        - creator_name
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: e41f94a6-2b94-4a12-ac0e-678684e1c070
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: 'Carberry, Josiah'
+        name_type:
+          type: string
+          example: Personal
+          enum:
+            - Personal
+            - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+            - ORCID
+            - ROR
+            - ISNI
+            - GRID
+        name_identifier_scheme_uri:
+          type: string
+          example: 'https://orcid.org/'
+        affiliation_identifier:
+          type: string
+          example: 'https://ror.org/05gq02987'
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+            - ROR
+            - GRID
+            - ISNI
+        affiliation_identifier_scheme_uri:
+          type: string
+          example: 'https://ror.org/'
+    IdentifierDto:
+      required:
+        - creators
+        - database_id
+        - descriptions
+        - funders
+        - id
+        - language
+        - licenses
+        - owner
+        - publication_year
+        - publisher
+        - query
+        - query_hash
+        - query_normalized
+        - status
+        - titles
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
+        type:
+          type: string
+          example: database
+          enum:
+            - database
+            - subset
+            - table
+            - view
+        titles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierTitleDto'
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDescriptionDto'
+        funders:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierFunderDto'
+        query:
+          type: string
+          example: >-
+            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
+            = "09:STEF"
+        execution:
+          type: string
+          format: date-time
+          example: '2021-03-12T15:26:21.000Z'
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        language:
+          type: string
+          enum:
+            - ab
+            - aa
+            - af
+            - ak
+            - sq
+            - am
+            - ar
+            - an
+            - hy
+            - as
+            - av
+            - ae
+            - ay
+            - az
+            - bm
+            - ba
+            - eu
+            - be
+            - bn
+            - bh
+            - bi
+            - bs
+            - br
+            - bg
+            - my
+            - ca
+            - km
+            - ch
+            - ce
+            - ny
+            - zh
+            - cu
+            - cv
+            - kw
+            - co
+            - cr
+            - hr
+            - cs
+            - da
+            - dv
+            - nl
+            - dz
+            - en
+            - eo
+            - et
+            - ee
+            - fo
+            - fj
+            - fi
+            - fr
+            - ff
+            - gd
+            - gl
+            - lg
+            - ka
+            - de
+            - ki
+            - el
+            - kl
+            - gn
+            - gu
+            - ht
+            - ha
+            - he
+            - hz
+            - hi
+            - ho
+            - hu
+            - is
+            - io
+            - ig
+            - id
+            - ia
+            - ie
+            - iu
+            - ik
+            - ga
+            - it
+            - ja
+            - jv
+            - kn
+            - kr
+            - ks
+            - kk
+            - rw
+            - kv
+            - kg
+            - ko
+            - kj
+            - ku
+            - ky
+            - lo
+            - la
+            - lv
+            - lb
+            - li
+            - ln
+            - lt
+            - lu
+            - mk
+            - mg
+            - ms
+            - ml
+            - mt
+            - gv
+            - mi
+            - mr
+            - mh
+            - ro
+            - mn
+            - na
+            - nv
+            - nd
+            - ng
+            - ne
+            - se
+            - 'no'
+            - nb
+            - nn
+            - ii
+            - oc
+            - oj
+            - or
+            - om
+            - os
+            - pi
+            - pa
+            - ps
+            - fa
+            - pl
+            - pt
+            - qu
+            - rm
+            - rn
+            - ru
+            - sm
+            - sg
+            - sa
+            - sc
+            - sr
+            - sn
+            - sd
+            - si
+            - sk
+            - sl
+            - so
+            - st
+            - nr
+            - es
+            - su
+            - sw
+            - ss
+            - sv
+            - tl
+            - ty
+            - tg
+            - ta
+            - tt
+            - te
+            - th
+            - bo
+            - ti
+            - to
+            - ts
+            - tn
+            - tr
+            - tk
+            - tw
+            - ug
+            - uk
+            - ur
+            - uz
+            - ve
+            - vi
+            - vo
+            - wa
+            - cy
+            - fy
+            - wo
+            - xh
+            - yi
+            - yo
+            - za
+            - zu
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseDto'
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDto'
+        status:
+          type: string
+          example: draft
+          enum:
+            - draft
+            - published
+        database_id:
+          type: string
+          format: uuid
+        query_id:
+          type: string
+          format: uuid
+        table_id:
+          type: string
+          format: uuid
+        view_id:
+          type: string
+          format: uuid
+        query_normalized:
+          type: string
+          example: >-
+            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
+            = "09:STEF"
+        related_identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedIdentifierDto'
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+    IdentifierFunderDto:
+      required:
+        - funder_name
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 39693413-e0ce-46da-ad5e-029c0556d439
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: 'http://doi.org/10.13039/501100000780'
+        funder_identifier_type:
+          type: string
+          example: Crossref Funder ID
+          enum:
+            - Crossref Funder ID
+            - ROR
+            - GND
+            - ISNI
+            - Other
+        scheme_uri:
+          type: string
+          example: 'http://doi.org/'
+        award_number:
+          type: string
+          example: '824087'
+        award_title:
+          type: string
+          example: EOSC-Life
+    LicenseDto:
+      required:
+        - identifier
+        - uri
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: MIT
+        uri:
+          type: string
+          example: 'https://opensource.org/licenses/MIT'
+        description:
+          type: string
+          example: >-
+            A short and simple permissive license with conditions only requiring
+            preservation of copyright and license notices. Licensed works,
+            modifications, and larger works may be distributed under different
+            terms and without source code.
+    RelatedIdentifierDto:
+      required:
+        - id
+        - relation
+        - type
+        - value
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ce9d11f0-60a2-448d-a3e4-44719a443e8a
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          example: DOI
+          enum:
+            - DOI
+            - URL
+            - URN
+            - ARK
+            - arXiv
+            - bibcode
+            - EAN13
+            - EISSN
+            - Handle
+            - IGSN
+            - ISBN
+            - ISTC
+            - LISSN
+            - LSID
+            - PMID
+            - PURL
+            - UPC
+            - w3id
+        relation:
+          type: string
+          example: Cites
+          enum:
+            - IsCitedBy
+            - Cites
+            - IsSupplementTo
+            - IsSupplementedBy
+            - IsContinuedBy
+            - Continues
+            - IsDescribedBy
+            - Describes
+            - HasMetadata
+            - IsMetadataFor
+            - HasVersion
+            - IsVersionOf
+            - IsNewVersionOf
+            - IsPreviousVersionOf
+            - IsPartOf
+            - HasPart
+            - IsPublishedIn
+            - IsReferencedBy
+            - References
+            - IsDocumentedBy
+            - Documents
+            - IsCompiledBy
+            - Compiles
+            - IsVariantFormOf
+            - IsOriginalFormOf
+            - IsIdenticalTo
+            - IsReviewedBy
+            - Reviews
+            - IsDerivedFrom
+            - IsSourceOf
+            - IsRequiredBy
+            - Requires
+            - IsObsoletedBy
+            - Obsoletes
+    ViewColumnDto:
+      required:
+        - database_id
+        - id
+        - internal_name
+        - is_null_allowed
+        - name
+        - ord
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
+        name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: Given Name
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        description:
+          maxLength: 2048
+          minLength: 0
+          type: string
+          example: Column comment
+        database_id:
+          type: string
+          format: uuid
+          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
+        ord:
+          type: integer
+          format: int32
+          example: 0
+        internal_name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: given_name
+        index_length:
+          type: integer
+          format: int64
+          example: 255
+        length:
+          type: integer
+          format: int64
+          example: 255
+        type:
+          type: string
+          example: varchar
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+        is_null_allowed:
+          type: boolean
+          example: false
+    ViewDto:
+      required:
+        - columns
+        - database_id
+        - id
+        - identifiers
+        - internal_name
+        - name
+        - owner
+        - query
+        - query_hash
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 787439d0-e85e-400c-a7e6-996a023bfad9
+        name:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewColumnDto'
+        last_retrieved:
+          type: string
+          format: date-time
+        database_id:
+          type: string
+          format: uuid
+          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        query_hash:
+          type: string
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
     TupleDto:
       required:
         - data
@@ -6011,25 +6683,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SaveRelatedIdentifierDto'
-    LicenseDto:
-      required:
-        - identifier
-        - uri
-      type: object
-      properties:
-        identifier:
-          type: string
-          example: MIT
-        uri:
-          type: string
-          example: 'https://opensource.org/licenses/MIT'
-        description:
-          type: string
-          example: >-
-            A short and simple permissive license with conditions only requiring
-            preservation of copyright and license notices. Licensed works,
-            modifications, and larger works may be distributed under different
-            terms and without source code.
     SaveIdentifierCreatorDto:
       required:
         - creator_name
@@ -6545,475 +7198,6 @@ components:
           type: string
           format: uuid
           example: 5bb272c7-7421-4f74-83ac-0486812d0f44
-        value:
-          type: string
-          example: 10.70124/dc4zh-9ce78
-        type:
-          type: string
-          example: DOI
-          enum:
-            - DOI
-            - URL
-            - URN
-            - ARK
-            - arXiv
-            - bibcode
-            - EAN13
-            - EISSN
-            - Handle
-            - IGSN
-            - ISBN
-            - ISTC
-            - LISSN
-            - LSID
-            - PMID
-            - PURL
-            - UPC
-            - w3id
-        relation:
-          type: string
-          example: Cites
-          enum:
-            - IsCitedBy
-            - Cites
-            - IsSupplementTo
-            - IsSupplementedBy
-            - IsContinuedBy
-            - Continues
-            - IsDescribedBy
-            - Describes
-            - HasMetadata
-            - IsMetadataFor
-            - HasVersion
-            - IsVersionOf
-            - IsNewVersionOf
-            - IsPreviousVersionOf
-            - IsPartOf
-            - HasPart
-            - IsPublishedIn
-            - IsReferencedBy
-            - References
-            - IsDocumentedBy
-            - Documents
-            - IsCompiledBy
-            - Compiles
-            - IsVariantFormOf
-            - IsOriginalFormOf
-            - IsIdenticalTo
-            - IsReviewedBy
-            - Reviews
-            - IsDerivedFrom
-            - IsSourceOf
-            - IsRequiredBy
-            - Requires
-            - IsObsoletedBy
-            - Obsoletes
-    CreatorDto:
-      required:
-        - creator_name
-        - id
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: e41f94a6-2b94-4a12-ac0e-678684e1c070
-        firstname:
-          type: string
-          example: Josiah
-        lastname:
-          type: string
-          example: Carberry
-        affiliation:
-          type: string
-          example: Brown University
-        creator_name:
-          type: string
-          example: 'Carberry, Josiah'
-        name_type:
-          type: string
-          example: Personal
-          enum:
-            - Personal
-            - Organizational
-        name_identifier:
-          type: string
-          example: 0000-0002-1825-0097
-        name_identifier_scheme:
-          type: string
-          example: ORCID
-          enum:
-            - ORCID
-            - ROR
-            - ISNI
-            - GRID
-        name_identifier_scheme_uri:
-          type: string
-          example: 'https://orcid.org/'
-        affiliation_identifier:
-          type: string
-          example: 'https://ror.org/05gq02987'
-        affiliation_identifier_scheme:
-          type: string
-          example: ROR
-          enum:
-            - ROR
-            - GRID
-            - ISNI
-        affiliation_identifier_scheme_uri:
-          type: string
-          example: 'https://ror.org/'
-    IdentifierDto:
-      required:
-        - creators
-        - database_id
-        - descriptions
-        - funders
-        - id
-        - language
-        - licenses
-        - owner
-        - publication_year
-        - publisher
-        - query
-        - query_hash
-        - query_normalized
-        - status
-        - titles
-        - type
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
-        type:
-          type: string
-          example: database
-          enum:
-            - database
-            - subset
-            - table
-            - view
-        titles:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierTitleDto'
-        descriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDescriptionDto'
-        funders:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierFunderDto'
-        query:
-          type: string
-          example: >-
-            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
-            = "09:STEF"
-        execution:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        doi:
-          type: string
-          example: 10.1038/nphys1170
-        publisher:
-          type: string
-          example: TU Wien
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        language:
-          type: string
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        licenses:
-          type: array
-          items:
-            $ref: '#/components/schemas/LicenseDto'
-        creators:
-          type: array
-          items:
-            $ref: '#/components/schemas/CreatorDto'
-        status:
-          type: string
-          example: draft
-          enum:
-            - draft
-            - published
-        database_id:
-          type: string
-          format: uuid
-        query_id:
-          type: string
-          format: uuid
-        table_id:
-          type: string
-          format: uuid
-        view_id:
-          type: string
-          format: uuid
-        query_normalized:
-          type: string
-          example: >-
-            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
-            = "09:STEF"
-        related_identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedIdentifierDto'
-        query_hash:
-          type: string
-          description: query hash in sha512
-        result_hash:
-          type: string
-          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
-        result_number:
-          type: integer
-          format: int64
-          example: 1
-        publication_day:
-          type: integer
-          format: int32
-          example: 15
-        publication_month:
-          type: integer
-          format: int32
-          example: 12
-        publication_year:
-          type: integer
-          format: int32
-          example: 2022
-    IdentifierFunderDto:
-      required:
-        - funder_name
-        - id
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 39693413-e0ce-46da-ad5e-029c0556d439
-        funder_name:
-          type: string
-          example: European Commission
-        funder_identifier:
-          type: string
-          example: 'http://doi.org/10.13039/501100000780'
-        funder_identifier_type:
-          type: string
-          example: Crossref Funder ID
-          enum:
-            - Crossref Funder ID
-            - ROR
-            - GND
-            - ISNI
-            - Other
-        scheme_uri:
-          type: string
-          example: 'http://doi.org/'
-        award_number:
-          type: string
-          example: '824087'
-        award_title:
-          type: string
-          example: EOSC-Life
-    RelatedIdentifierDto:
-      required:
-        - id
-        - relation
-        - type
-        - value
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: ce9d11f0-60a2-448d-a3e4-44719a443e8a
         value:
           type: string
           example: 10.70124/dc4zh-9ce78
@@ -8230,14 +8414,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
         - id
@@ -8356,153 +8540,6 @@ components:
           type: string
         '@type':
           type: string
-    ViewColumnDto:
-      required:
-        - database_id
-        - id
-        - internal_name
-        - is_null_allowed
-        - name
-        - ord
-        - type
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
-        name:
-          maxLength: 64
-          minLength: 0
-          type: string
-          example: Given Name
-        size:
-          type: integer
-          format: int64
-          example: 255
-        d:
-          type: integer
-          format: int64
-          example: 0
-        description:
-          maxLength: 2048
-          minLength: 0
-          type: string
-          example: Column comment
-        database_id:
-          type: string
-          format: uuid
-          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
-        ord:
-          type: integer
-          format: int32
-          example: 0
-        internal_name:
-          maxLength: 64
-          minLength: 0
-          type: string
-          example: given_name
-        index_length:
-          type: integer
-          format: int64
-          example: 255
-        length:
-          type: integer
-          format: int64
-          example: 255
-        type:
-          type: string
-          example: varchar
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-        is_null_allowed:
-          type: boolean
-          example: false
-    ViewDto:
-      required:
-        - columns
-        - database_id
-        - id
-        - identifiers
-        - internal_name
-        - name
-        - owner
-        - query
-        - query_hash
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 787439d0-e85e-400c-a7e6-996a023bfad9
-        name:
-          type: string
-          example: Air Quality
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDto'
-        query:
-          type: string
-          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ViewColumnDto'
-        last_retrieved:
-          type: string
-          format: date-time
-        database_id:
-          type: string
-          format: uuid
-          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
-        internal_name:
-          type: string
-          example: air_quality
-        is_public:
-          type: boolean
-          example: true
-        is_schema_public:
-          type: boolean
-          example: true
-        initial_view:
-          type: boolean
-          description: True if it is the default view for the database
-          example: true
-        query_hash:
-          type: string
-          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
     ConstraintsDto:
       type: object
       properties:

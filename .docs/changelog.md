@@ -42,6 +42,11 @@ author: Martin Weise
 * Replaced sequential numerical ids with non-guessable random ids in the Metadata Database
   in [#491](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/491).
 
+#### Removals
+
+* Removed the Upload Service in favor of an internal stable upload endpoint in the Data Service
+  in [#492](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/492).
+
 ## v1.6.5 (2025-02-18)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.5)

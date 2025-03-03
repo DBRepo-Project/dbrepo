@@ -259,7 +259,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:7ba35243c4ead72be2bf2a2d00a3fbbae4a9c7dabb872cca8ed1b1ce77720b5d"
+                "sha256:2bf2f28f048108191f8e86992004e8727ee4bdeed88076891e66034bcd32d9b0"
             ],
             "path": "./lib/dbrepo-1.7.0.tar.gz"
         },

@@ -58,6 +58,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private AccessService accessService;
 
     @MockBean
+    private UnitService unitService;
+
+    @MockBean
+    private ConceptService conceptService;
+
+    @MockBean
     private TableService tableService;
 
     @MockBean
@@ -370,6 +376,142 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertThrows(MalformedException.class, () -> {
             generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_sets_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("sex")
+                        .type(ColumnTypeDto.SET)
+                        .sets(List.of("male", "female"))
+                        .build()))
+                .build();
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_enum_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("sex")
+                        .type(ColumnTypeDto.ENUM)
+                        .enums(List.of("male", "female"))
+                        .build()))
+                .build();
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasUnit_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException, UnitNotFoundException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name(UNIT_1_NAME)
+                        .type(ColumnTypeDto.INT)
+                        .unitUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(unitService.find(UNIT_1_URI))
+                .thenReturn(UNIT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasUnitNotFound_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name(UNIT_1_NAME)
+                        .type(ColumnTypeDto.INT)
+                        .unitUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(unitService.create(UNIT_1))
+                .thenReturn(UNIT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasConcept_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException, ConceptNotFoundException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name(CONCEPT_1_NAME)
+                        .type(ColumnTypeDto.INT)
+                        .conceptUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(conceptService.find(CONCEPT_1_URI))
+                .thenReturn(CONCEPT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_hasConceptNotFound_succeeds() throws UserNotFoundException, SearchServiceException, NotAllowedException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException,
+            DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException,
+            TableExistsException, SearchServiceConnectionException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("precipitation")
+                        .type(ColumnTypeDto.INT)
+                        .conceptUri(UNIT_1_URI)
+                        .build()))
+                .build();
+
+        /* mock */
+        when(conceptService.create(CONCEPT_1))
+                .thenReturn(CONCEPT_1);
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
     }
 
     @ParameterizedTest
@@ -836,7 +978,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
-                .unitUri(UNIT_1_URI)
+                .unitUri(null)
+                .conceptUri(null)
                 .build();
 
         /* test */

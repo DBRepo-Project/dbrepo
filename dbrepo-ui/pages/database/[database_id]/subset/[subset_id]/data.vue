@@ -36,7 +36,8 @@
     </v-toolbar>
     <v-card
       v-if="subset"
-      tile>
+      rounded="0"
+      variant="flat">
       <QueryResults
         id="query-results"
         ref="queryResults"

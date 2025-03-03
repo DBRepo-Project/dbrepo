@@ -138,10 +138,12 @@ public class ContainerEndpoint extends AbstractEndpoint {
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             log.trace("attach privileged credential information");
+            headers.set("X-Host", container.getHost());
+            headers.set("X-Port", "" + container.getPort());
             headers.set("X-Username", container.getPrivilegedUsername());
             headers.set("X-Password", container.getPrivilegedPassword());
             headers.set("X-Jdbc-Method", container.getImage().getJdbcMethod());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
         }
         return ResponseEntity.ok()
                 .headers(headers)
