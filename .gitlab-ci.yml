@@ -165,6 +165,8 @@ build-metadata-service:
 build-analyse-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: build
+  only:
+    - merge_requests
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
