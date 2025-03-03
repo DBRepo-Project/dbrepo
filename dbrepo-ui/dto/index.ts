@@ -20,6 +20,10 @@ interface DatabaseDto {
   exchange_type: string | null;
 }
 
+interface UploadResponseDto {
+  s3_key: string;
+}
+
 interface DatabaseCreateDto {
   name: string;
   container_id: string;

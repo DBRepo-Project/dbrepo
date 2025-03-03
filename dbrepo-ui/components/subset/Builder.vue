@@ -496,10 +496,13 @@ export default {
       }
     },
     canExecute () {
-      if (this.isView) {
-        return this.view.name !== null && this.view.is_public !== null && this.subset !== null
+      if (this.subset === null || !this.subset.columns || this.subset.columns.length === 0 || !this.$refs.form.isValid) {
+        return false
       }
-      return this.subset !== null && this.subset.columns && this.subset.columns.length > 0 && this.$refs.form.isValid
+      if (!this.isView) {
+        return true
+      }
+      return this.view.name !== null && this.view.is_public !== null
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

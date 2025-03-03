@@ -22,19 +22,23 @@ author: Martin Weise
 
 We use [SeaweedFS](https://seaweedfs.github.io/) as a high-performance, S3 compatible object store for easy, cloud-ready
 deployments that by default support replication and monitoring. No graphical user interface is provided out-of-the-box,
-administrators can access the S3 storage via S3-compatible clients 
+administrators can access the S3 storage via S3-compatible clients
 e.g. [AWS CLI](https://docs.aws.amazon.com/cli/latest/reference/s3/) (see below).
 
-### Users
+The default configuration creates admin credentials `seaweedfsadmin:seaweedfsadmin`. By default, one bucket `dbrepo` is
+created that holds uploads temporarily. It is recommended to delete the contents regularly.
 
-The default configuration creates one user `seaweedfsadmin` with password `seaweedfsadmin`.
+The S3 endpoint of the Storage Service is available on port `9000`.
 
-### Buckets
+### Filer UI
 
-The default configuration creates two buckets `dbrepo-upload`, `dbrepo-download`:
+The storage service comes with a simple UI that can be used to explore the uploaded files, rename them and delete them.
+Please note that the Filer UI is not intended for production and should be turned off for security purposes.
 
-* `dbrepo-upload` for CSV-file upload (for import of data, analysis, etc.) from the User Interface
-* `dbrepo-download` for CSV-file download (exporting data, metadata, etc.)
+<figure markdown>
+![Filer UI with a list of uploaded files in the bucket dbrepo](../images/screenshots/storage-service-filer.png)
+<figcaption>Figure 1: Filer UI</figcaption>
+</figure>
 
 ## Limitations
 

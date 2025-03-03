@@ -1,64 +1,26 @@
-import * as tus from 'tus-js-client'
-import {useCacheStore} from '@/stores/cache'
+import {axiosErrorToApiError} from '@/utils'
 
 export const useUploadService = (): any => {
-
   function create (data: File) {
-    const config = useRuntimeConfig()
-    const endpoint = config.public.upload.client
-    return new Promise<string>((resolve, reject) => {
-      if (!tus.isSupported) {
-        console.error('Your browser does not support uploads!')
-        return
-      }
-      const { loggedIn, user, login, logout } = useOidcAuth()
-      if (!loggedIn || !user.value?.accessToken) {
-        console.error('Please login to use the upload!')
-        return
-      }
-      const { accessToken } = user.value
-      const uploadClient: tus.Upload = new tus.Upload(data, {
-        endpoint,
+    const axios = useAxiosInstance();
+    console.debug('upload file');
+    return new Promise<UploadResponseDto>((resolve, reject) => {
+      const form = new FormData();
+      form.append('file', data);
+      axios.post<UploadResponseDto>('/api/upload', form, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
-        },
-        retryDelays: [0, 3000, 5000, 10000, 20000],
-        onError (error) {
-          console.error('Failed to upload:', error)
-          reject(error)
-        },
-        onProgress (bytesUploaded, bytesTotal) {
-          const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2)
-          console.debug(bytesUploaded, bytesTotal, percentage + '%')
-          const cacheStore = useCacheStore()
-          cacheStore.setUploadProgress(percentage)
-        },
-        onSuccess () {
-          if (uploadClient.file) {
-            const file: File = uploadClient.file as File
-            console.info('Download %s from %s', file.name, uploadClient.url)
-          }
-          if (uploadClient.url) {
-            const matches = uploadClient.url.match(/files\/([a-z0-9]+)/gi)
-            if (!matches || matches.length !== 1) {
-              console.error('Failed to match file name', matches)
-              reject(new Error('Failed to match file name'))
-            } else {
-              const filename = matches[0].replace('files/', '')
-              console.debug('Filename cropped as', filename)
-              resolve(filename)
-            }
-          }
+          'content-type': 'multipart/form-data'
         }
       })
-      uploadClient.findPreviousUploads().then(function (previousUploads) {
-        /* Found previous uploads so we select the first one */
-        if (previousUploads.length) {
-          uploadClient.resumeFromPreviousUpload(previousUploads[0])
-        }
-        uploadClient.start()
-      })
-    })
+        .then((response) => {
+          console.info(`Uploaded file: ${response.data.s3_key}`);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to upload file', error);
+          reject(axiosErrorToApiError(error));
+        });
+    });
   }
 
   return { create }

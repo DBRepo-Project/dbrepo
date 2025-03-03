@@ -2242,7 +2242,7 @@ public abstract class BaseTest {
             .build();
 
     public static final TableUpdateDto TABLE_8_UPDATE_DTO = TableUpdateDto.builder()
-            .description(TABLE_8_DESCRIPTION)
+            .description(null)
             .isPublic(true)
             .isSchemaPublic(true)
             .build();

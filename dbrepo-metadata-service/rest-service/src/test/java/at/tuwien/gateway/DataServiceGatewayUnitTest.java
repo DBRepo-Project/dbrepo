@@ -1116,8 +1116,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getTableStatistics_emptyBody_fails() throws TableNotFoundException, DataServiceException,
-            DataServiceConnectionException {
+    public void getTableStatistics_emptyBody_fails() {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableStatisticDto.class)))
@@ -1125,7 +1124,9 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID);
+        assertThrows(DataServiceException.class, () -> {
+            dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID);
+        });
     }
 
     @Test

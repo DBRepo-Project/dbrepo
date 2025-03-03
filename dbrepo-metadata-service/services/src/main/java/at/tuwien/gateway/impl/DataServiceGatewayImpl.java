@@ -424,7 +424,12 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             log.error("Failed to analyse table statistic: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to analyse table statistic: wrong http code: " + response.getStatusCode());
         }
-        return response.getBody();
+        final TableStatisticDto body = response.getBody();
+        if (body == null) {
+            log.error("Failed to analyse table statistic: empty body: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to analyse table statistic: empty body");
+        }
+        return body;
     }
 
 }

@@ -85,10 +85,6 @@ export default defineNuxtConfig({
         client: 'http://localhost',
         server: 'http://gateway-service',
       },
-      upload: {
-        client: 'http://localhost/api/upload/files',
-        prefix: '/'
-      },
       database: {
         image: {
           width: 200,

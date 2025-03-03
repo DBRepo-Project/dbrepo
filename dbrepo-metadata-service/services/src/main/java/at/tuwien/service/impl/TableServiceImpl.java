@@ -296,9 +296,6 @@ public class TableServiceImpl implements TableService {
             DatabaseNotFoundException, SearchServiceConnectionException, MalformedException, TableNotFoundException,
             DataServiceException, DataServiceConnectionException {
         final TableStatisticDto statistic = dataServiceGateway.getTableStatistics(table.getTdbid(), table.getId());
-        if (statistic == null) {
-            return;
-        }
         table.setNumRows(statistic.getRows());
         table.setDataLength(statistic.getDataLength());
         table.setAvgRowLength(statistic.getAvgRowLength());

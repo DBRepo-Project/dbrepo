@@ -555,10 +555,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
+            log.trace("attach privileged credential information");
+            headers.set("X-Host", database.getContainer().getHost());
+            headers.set("X-Port", "" + database.getContainer().getPort());
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
             headers.set("X-Jdbc-Method", database.getContainer().getImage().getJdbcMethod());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
         } else {
             removeInternalData(dto.getContainer());
         }

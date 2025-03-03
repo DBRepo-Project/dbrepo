@@ -126,9 +126,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getDatabaseById_succeeds() throws RemoteUnavailableException, MetadataServiceException,
             DatabaseNotFoundException {
         final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Host", CONTAINER_1_HOST);
+        headers.set("X-Port", "" + CONTAINER_1_PORT);
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Jdbc-Method", IMAGE_1_JDBC);
+        headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
@@ -225,9 +228,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void getContainerById_succeeds() throws RemoteUnavailableException, ContainerNotFoundException, MetadataServiceException {
         final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Host", CONTAINER_1_HOST);
+        headers.set("X-Port", "" + CONTAINER_1_PORT);
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Jdbc-Method", IMAGE_1_JDBC);
+        headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))

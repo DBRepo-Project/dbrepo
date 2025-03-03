@@ -8,15 +8,18 @@ import at.tuwien.exception.StorageUnavailableException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.service.StorageService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.apache.spark.sql.types.StructField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.*;
@@ -41,6 +44,18 @@ public class StorageServiceS3Impl implements StorageService {
         this.s3Config = s3Config;
         this.s3Client = s3Client;
         this.sparkSession = sparkSession;
+    }
+
+    @Override
+    public String putObject(byte[] content) {
+        final String key = "dbr_" + RandomStringUtils.randomAlphanumeric(96)
+                .toLowerCase();
+        s3Client.putObject(PutObjectRequest.builder()
+                        .key(key)
+                .bucket(s3Config.getS3Bucket())
+                .build(), RequestBody.fromBytes(content));
+        log.debug("put object in S3 bucket {} with key: {}", s3Config.getS3Bucket(), key);
+        return key;
     }
 
     @Override

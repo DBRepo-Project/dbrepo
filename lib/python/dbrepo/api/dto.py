@@ -1002,6 +1002,10 @@ class ColumnSet(BaseModel):
     value: str
 
 
+class UploadResponse(BaseModel):
+    s3_key: str
+
+
 class DataType(BaseModel):
     id: str
     display_name: str
