@@ -491,7 +491,6 @@ release-helm:
   image: docker:${DOCKER_VERSION}-dind
   only:
     - tags
-  when: manual
   needs:
     - build-helm
   dependencies:
@@ -550,7 +549,6 @@ release-docs:
 release-libs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  when: manual
   only:
     - tags
   variables:
