@@ -180,6 +180,7 @@ build-lib:
   stage: build
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
