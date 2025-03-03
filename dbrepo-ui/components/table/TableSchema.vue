@@ -42,6 +42,7 @@
             item-title="display_name"
             item-value="value"
             required
+            :disabled="loadingColumnTypes"
             :rules="[v => !!v || $t('validation.required')]"
             persistent-hint
             :variant="inputVariant"
@@ -264,7 +265,7 @@ export default {
   },
   methods: {
     fetchColumnTypes () {
-      if (!this.database) {
+      if (!this.database || this.columnTypes.length > 0) {
         return
       }
       this.loadingColumnTypes = true
@@ -286,6 +287,9 @@ export default {
             return
           }
           toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loadingColumnTypes = false
         })
     },
     shift (column) {

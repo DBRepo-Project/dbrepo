@@ -49,20 +49,18 @@ public class ViewEndpoint extends RestEndpoint {
     private final CacheService cacheService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
-    private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public ViewEndpoint(ViewService viewService, CacheService cacheService, MariaDbMapper mariaDbMapper,
-                        SubsetService subsetService, MetricsService metricsService, StorageService storageService,
-                        DatabaseService databaseService, EndpointValidator endpointValidator) {
+                        SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
+                        EndpointValidator endpointValidator) {
         this.viewService = viewService;
         this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
-        this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
@@ -303,7 +301,6 @@ public class ViewEndpoint extends RestEndpoint {
                     view.getInternalName(), timestamp, page, size);
             final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(databaseId),
                     query);
-            metricsService.countViewGetData(databaseId, viewId);
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(transform(dataset));
@@ -371,7 +368,6 @@ public class ViewEndpoint extends RestEndpoint {
                 view.getInternalName(), timestamp, null, null);
         final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(databaseId),
                 query);
-        metricsService.countViewGetData(databaseId, viewId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

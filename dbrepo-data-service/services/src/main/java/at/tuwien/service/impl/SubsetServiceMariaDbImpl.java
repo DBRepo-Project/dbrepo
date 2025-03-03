@@ -131,8 +131,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException, SQLException,
-            RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
+    public QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException,
+            SQLException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -145,7 +145,6 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 throw new QueryNotFoundException("Failed to find query");
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
-            query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
             query.setOwner(database.getOwner());
             query.setDatabaseId(database.getId());
             return query;

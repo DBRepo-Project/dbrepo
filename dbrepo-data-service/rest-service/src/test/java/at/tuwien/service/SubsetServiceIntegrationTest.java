@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.*;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
@@ -13,6 +13,9 @@ import org.apache.spark.sql.Row;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,7 +28,9 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -41,6 +46,14 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
+
+    public static Stream<Arguments> create_arguments() {
+        return Stream.of(
+                Arguments.arguments("singleQuote", "' DROP TABLE `weather_location`; --"),
+                Arguments.arguments("singleQuoteEscaped", "\' DROP TABLE `weather_location`; --"),
+                Arguments.arguments("doubleQuote", "\" DROP TABLE `weather_location`; --")
+        );
+    }
 
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
@@ -225,6 +238,40 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_ID);
         assertNotNull(response);
+    }
+
+    @Test
+    public void create_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
+            TableNotFoundException, QueryMalformedException, ImageNotFoundException {
+
+        /* test */
+        final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_ID);
+        assertNotNull(response);
+    }
+
+    @ParameterizedTest
+    @MethodSource("create_arguments")
+    public void create_illegalQuery_succeeds(String name, String injection) throws TableNotFoundException,
+            QueryStoreInsertException, ViewMalformedException, SQLException, QueryMalformedException,
+            ImageNotFoundException {
+        final SubsetDto request = SubsetDto.builder()
+                .tableId(TABLE_1_ID)
+                .columns(new LinkedList<>(List.of(COLUMN_1_1_ID, COLUMN_1_2_ID, COLUMN_1_3_ID, COLUMN_1_4_ID, COLUMN_1_5_ID)))
+                .filter(new LinkedList<>(List.of(FilterDto.builder()
+                        .type(FilterTypeDto.WHERE)
+                        .columnId(COLUMN_1_1_ID)
+                        .operatorId(IMAGE_1_OPERATORS_2_ID)
+                        .value(injection)
+                        .build())))
+                .order(new LinkedList<>(List.of(OrderDto.builder()
+                        .columnId(COLUMN_1_1_ID)
+                        .direction(OrderTypeDto.ASC)
+                        .build())))
+                .build();
+
+        /* test */
+        subsetService.create(DATABASE_1_PRIVILEGED_DTO, request, QUERY_1_CREATED, USER_1_ID);
+        assertEquals(1, MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1 WHERE EXISTS (SELECT * FROM `weather_location`)", Set.of()).size());
     }
 
     @Test

@@ -53,7 +53,6 @@ public class TableEndpoint extends RestEndpoint {
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
-    private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
@@ -61,14 +60,12 @@ public class TableEndpoint extends RestEndpoint {
 
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
-                         SubsetService subsetService, MetricsService metricsService, StorageService storageService,
-                         DatabaseService databaseService, EndpointValidator endpointValidator,
-                         MetadataServiceGateway metadataServiceGateway) {
+                         SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
-        this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
@@ -301,7 +298,6 @@ public class TableEndpoint extends RestEndpoint {
             final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                     table.getInternalName(), timestamp, page, size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
-            metricsService.countTableGetData(databaseId, tableId);
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(transform(dataset));
@@ -647,7 +643,6 @@ public class TableEndpoint extends RestEndpoint {
                 table.getInternalName(), timestamp, null, null);
         final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(table.getDatabaseId()),
                 query);
-        metricsService.countTableGetData(databaseId, tableId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

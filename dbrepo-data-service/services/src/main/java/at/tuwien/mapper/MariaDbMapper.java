@@ -21,7 +21,6 @@ import at.tuwien.utils.MariaDbUtil;
 import org.jooq.Record;
 import org.jooq.*;
 import org.jooq.conf.ParamType;
-import org.jooq.conf.StatementType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 

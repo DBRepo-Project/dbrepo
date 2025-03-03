@@ -9,9 +9,13 @@ import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.query.SubsetDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.*;
+import at.tuwien.service.CacheService;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.StorageService;
+import at.tuwien.service.SubsetService;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,23 +57,23 @@ public class SubsetEndpoint extends RestEndpoint {
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final MetadataMapper metadataMapper;
-    private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
+    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetEndpoint(CacheService cacheService, MariaDbMapper mariaDbMapper, SubsetService subsetService, 
-                          MetadataMapper metadataMapper, MetricsService metricsService, StorageService storageService, 
-                          DatabaseService databaseService, EndpointValidator endpointValidator) {
+    public SubsetEndpoint(CacheService cacheService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
+                          MetadataMapper metadataMapper, StorageService storageService, DatabaseService databaseService,
+                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
-        this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
+        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @GetMapping
@@ -192,7 +196,6 @@ public class SubsetEndpoint extends RestEndpoint {
                 log.trace("accept header matches csv");
                 final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp, null, null);
                 final Dataset<Row> dataset = subsetService.getData(database, query);
-                metricsService.countSubsetGetData(databaseId, subsetId);
                 final ExportResourceDto resource = storageService.transformDataset(dataset);
                 final HttpHeaders headers = new HttpHeaders();
                 headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
@@ -377,9 +380,9 @@ public class SubsetEndpoint extends RestEndpoint {
                         .headers(headers)
                         .build();
             }
+            subset.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
             final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp, page, size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
-            metricsService.countSubsetGetData(databaseId, subsetId);
             final String viewName = metadataMapper.queryDtoToViewName(subset);
             databaseService.createView(database, viewName, subset.getQuery());
             final ViewDto view = databaseService.inspectView(database, viewName);

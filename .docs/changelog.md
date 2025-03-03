@@ -41,6 +41,8 @@ author: Martin Weise
 
 * Replaced sequential numerical ids with non-guessable random ids in the Metadata Database
   in [#491](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/491).
+* Changed the interface for executing query in subsets/views 
+  in [#493](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/493).
 
 #### Removals
 

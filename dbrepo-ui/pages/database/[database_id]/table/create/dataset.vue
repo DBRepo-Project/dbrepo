@@ -312,6 +312,8 @@ export default {
     }
     this.tableCreate.is_public = this.database.is_public
     this.tableCreate.is_schema_public = this.database.is_schema_public
+    /* fetch types in advance */
+    this.$refs.schema.fetchColumnTypes()
   },
   computed: {
     database() {
