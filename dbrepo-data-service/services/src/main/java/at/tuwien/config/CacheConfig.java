@@ -5,6 +5,7 @@ import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserDto;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -49,6 +50,11 @@ public class CacheConfig {
     @Bean
     public Cache<UUID, ContainerDto> containerCache() {
         return new ExpiryCache<UUID, ContainerDto>().build();
+    }
+
+    @Bean
+    public Cache<String, TokenDto> tokenCache() {
+        return new ExpiryCache<String, TokenDto>().build();
     }
 
     class ExpiryCache<K, T> {

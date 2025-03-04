@@ -11,11 +11,11 @@ spec:
   type: ClusterIP
   ports:
     - name: "ldap"
-      port: 389
+      port: 1389
       targetPort: 1389
       protocol: TCP
     - name: "sldap"
-      port: 636
+      port: 1636
       targetPort: 1636
       protocol: TCP
   selector:

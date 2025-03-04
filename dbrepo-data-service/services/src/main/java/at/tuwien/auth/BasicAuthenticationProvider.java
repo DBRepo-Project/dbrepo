@@ -1,7 +1,7 @@
 package at.tuwien.auth;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.service.CredentialService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,18 +15,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class BasicAuthenticationProvider implements AuthenticationManager {
 
+    private final CredentialService credentialService;
     private final AuthTokenFilter authTokenFilter;
-    private final KeycloakGateway keycloakGateway;
 
     @Autowired
-    public BasicAuthenticationProvider(AuthTokenFilter authTokenFilter, KeycloakGateway keycloakGateway) {
+    public BasicAuthenticationProvider(CredentialService credentialService, AuthTokenFilter authTokenFilter) {
+        this.credentialService = credentialService;
         this.authTokenFilter = authTokenFilter;
-        this.keycloakGateway = keycloakGateway;
     }
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final TokenDto tokenDto = keycloakGateway.obtainUserToken(auth.getName(), auth.getCredentials().toString());
+        final TokenDto tokenDto = credentialService.getAccessToken(auth.getName(), auth.getCredentials().toString());
         final UserDetails userDetails = authTokenFilter.verifyJwt(tokenDto.getAccessToken());
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
