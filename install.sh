@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # preset
-VERSION="1.7.0"
+VERSION="1.7.1"
 MIN_CPU=8
 MIN_RAM=4
 MIN_MAP_COUNT=262144

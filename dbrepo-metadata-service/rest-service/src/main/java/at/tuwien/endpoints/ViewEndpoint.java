@@ -146,7 +146,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
             ImageNotFoundException, ViewExistsException {
-        log.debug("endpoint create view, databaseId={}, data={}", databaseId, data);
+        log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to create view: not the database owner");
@@ -156,7 +156,6 @@ public class ViewEndpoint extends AbstractEndpoint {
             log.error("Failed to create view: name exists");
             throw new ViewExistsException("Failed to create view: name exists");
         }
-        log.trace("create view for database {}", database);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.viewToViewBriefDto(
                         viewService.create(database, userService.findById(getId(principal)), data)));
