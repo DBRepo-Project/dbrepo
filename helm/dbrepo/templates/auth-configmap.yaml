@@ -8,6 +8,18 @@ binaryData:
   create-event-listener.jar: |-
     {{ .Files.Get "files/create-event-listener.jar" | b64enc }}
 data:
+  AUTH_SERVICE_ADMIN: "{{ .Values.authservice.auth.adminUser }}"
+  AUTH_SERVICE_ADMIN_PASSWORD: "{{ .Values.authservice.auth.adminPassword }}"
+  AUTH_SERVICE_ENDPOINT: "{{ .Values.authservice.endpoint }}"
+  LDAP_ROOT: "{{ .Values.identityservice.global.ldapDomain }}"
+  LDAP_ADMIN_DN: "cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }}"
+  LDAP_ADMIN_PASSWORD: "{{ .Values.identityservice.global.adminPassword }}"
+  METADATA_DB: "{{ .Values.metadatadb.db.name }}"
+  METADATA_DB_PASSWORD: "{{ .Values.metadatadb.rootUser.password }}"
+  METADATA_SERVICE_ENDPOINT: "{{ .Values.metadataservice.endpoint }}"
+  METADATA_USERNAME: "{{ .Values.metadatadb.rootUser.user }}"
+  SYSTEM_USERNAME: "{{ .Values.identityservice.users }}"
+  SYSTEM_PASSWORD: "{{ .Values.identityservice.userPasswords }}"
   {{ (.Files.Glob "files/dbrepo-realm.json").AsConfig | nindent 2 }}
   {{ (.Files.Glob "files/master-realm.json").AsConfig | nindent 2 }}
 {{- end }}

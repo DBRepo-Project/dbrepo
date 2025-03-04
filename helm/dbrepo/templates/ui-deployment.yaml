@@ -46,7 +46,7 @@ spec:
             httpGet:
               path: /
               port: 3000
-            initialDelaySeconds: 120
+            initialDelaySeconds: 150
             periodSeconds: 10
           readinessProbe:
             httpGet:

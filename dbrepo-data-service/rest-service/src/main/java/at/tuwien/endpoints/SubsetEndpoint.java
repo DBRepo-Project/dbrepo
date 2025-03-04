@@ -175,6 +175,7 @@ public class SubsetEndpoint extends RestEndpoint {
         final QueryDto subset;
         try {
             subset = subsetService.findById(database, subsetId);
+            subset.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

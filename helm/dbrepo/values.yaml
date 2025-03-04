@@ -102,7 +102,7 @@ authservice:
     ## @param authservice.tls.enabled Enable TLS/SSL communication. Required for HTTPS.
     enabled: true
     ## @param authservice.tls.existingSecret The secret containing the `tls.crt`, `tls.key` and `ca.crt`.
-    existingSecret: ingress-cert
+    existingSecret: auth-service-secret
     ## @skip authservice.tls.usePem
     usePem: true
   metrics:
@@ -133,8 +133,8 @@ authservice:
     ##   limits:
     ##     cpu: 500m
     ##     memory: 1024Mi
-  ## @skip authservice.extraEnvVarsSecret
-  extraEnvVarsSecret: auth-service-secret
+  ## @skip authservice.extraEnvVarsCM
+  extraEnvVarsCM: auth-service-config
   ## @skip authservice.extraVolumes
   extraVolumes:
     - name: config-map
