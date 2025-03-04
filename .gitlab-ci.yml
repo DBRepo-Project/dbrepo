@@ -35,7 +35,7 @@ workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev"
       variables:
-        BUILD_VERSION: "-git.${CI_COMMIT_SHORT_SHA}"
+        BUILD_VERSION: "-dev.git.${CI_COMMIT_SHORT_SHA}"
     - when: always
 
 stages:
@@ -44,7 +44,6 @@ stages:
   - test
   - docs
   - release
-  - deploy
   - verify
   - scan
 
@@ -596,27 +595,6 @@ verify-dist:
     - "apk add curl"
   script:
     - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
-
-deploy-staging:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: deploy
-  only:
-    refs:
-      - dev
-  variables:
-    KUBECONFIG: ./kubecfg
-  environment:
-    name: staging/datalab
-    url: ${CI_ENV_STAGING_URL}
-  before_script:
-    - apk add --no-cache helm kubectl make
-    - echo ${CI_K8S_CONFIG} | base64 -d > ./kubecfg
-    - make build-helm
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME} --ignore-not-found
-    - kubectl -n ${CI_ENV_STAGING_NAMESPACE} delete pvc --all
-    - echo "${CI_K8S_VALUES}" | base64 -d > ./values.yaml
-  script:
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} upgrade --install ${CI_ENV_STAGING_RELEASE_NAME} ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace -f ./values.yaml
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}
