@@ -35,7 +35,7 @@ workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev"
       variables:
-        BUILD_VERSION: "+git.${CI_COMMIT_SHORT_SHA}"
+        BUILD_VERSION: "-git.${CI_COMMIT_SHORT_SHA}"
     - when: always
 
 stages:
