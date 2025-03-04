@@ -468,8 +468,9 @@ release-images:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "ifconfig eth0 mtu 1450 up"
     - "apk add --no-cache make bash"
+    - "echo 'Release staging images with tag: ${BUILD_VERSION}'"
   script:
-    - "make release-images"
+    - "make release-images > /dev/null"
 
 release-helm:
   stage: release
