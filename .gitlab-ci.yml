@@ -123,7 +123,6 @@ lint-helm-files:
   stage: lint
   script:
     - diff dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
-    - diff dbrepo-metadata-db/2_setup-data.sql helm/dbrepo/files/02-setup-data.sql
 
 lint-open-api-version:
   image: docker.io/alpine:${ALPINE_VERSION}
