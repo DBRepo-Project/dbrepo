@@ -2,7 +2,7 @@
 
 Official client library for [DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.3/), a database
 repository to support research based
-on [requests](https://pypi.org/project/requests/), [pydantic](https://pypi.org/project/pydantic/), [tuspy](https://pypi.org/project/tuspy/)
+on [requests](https://pypi.org/project/requests/), [pydantic](https://pypi.org/project/pydantic/) 
 and [pika](https://pypi.org/project/pika/).
 
 ## Installing
@@ -20,9 +20,11 @@ Get public data from a table as pandas `DataFrame`:
 ```python
 from dbrepo.RestClient import RestClient
 
-client = RestClient(endpoint="https://dbrepo1.ec.tuwien.ac.at")
+client = RestClient(endpoint="https://test.dbrepo.tuwien.ac.at")
 # Get a small data slice of just three rows
-df = client.get_table_data(database_id=7, table_id=13, page=0, size=3, df=True)
+df = client.get_table_data(database_id="e0d82287-9099-4077-8f69-3c19fc3bc145",
+                           table_id="71f8c746-ea26-4651-b3f2-ce46830f1af4",
+                           page=0, size=3)
 print(df)
 #     x_coord         component   unit  ... value stationid meantype
 # 0  16.52617  Feinstaub (PM10)  µg/m³  ...  21.0   01:0001      HMW
@@ -32,18 +34,22 @@ print(df)
 # [3 rows x 12 columns]
 ```
 
-Import data into a table:
+Create table and import `DataFrame` into a table:
 
 ```python
 import pandas as pd
 from dbrepo.RestClient import RestClient
 
-client = RestClient(endpoint="https://dbrepo1.ec.tuwien.ac.at", username="foo",
+client = RestClient(endpoint="https://test.dbrepo.tuwien.ac.at", username="foo",
                     password="bar")
 df = pd.DataFrame(data={'x_coord': 16.52617, 'component': 'Feinstaub (PM10)',
                         'unit': 'µg/m³', ...})
-client.import_table_data(database_id=7, table_id=13, file_name_or_data_frame=df)
+client.create_table(database_id="e0d82287-9099-4077-8f69-3c19fc3bc145",
+                    name="Sensor", is_public=True, is_schema_public=True,
+                    dataframe=df)
 ```
+
+... or just create the table schema by setting `create_table(..., withData=False)`.
 
 ## Supported Features & Best-Practices
 
@@ -76,7 +82,6 @@ AMQP_API_PORT="5672"
 AMQP_API_USERNAME="foo"
 AMQP_API_PASSWORD="bar"
 AMQP_API_VIRTUAL_HOST="dbrepo"
-REST_UPLOAD_ENDPOINT="https://dbrepo1.ec.tuwien.ac.at/api/upload/files"
 ```
 
 You can disable logging by setting the log level to e.g. `INFO`:

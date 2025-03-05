@@ -6,7 +6,7 @@ import requests_mock
 from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Table, CreateTableConstraints, Column, Constraints, ColumnType, ConceptBrief, UnitBrief, \
+from dbrepo.api.dto import Table, Column, Constraints, ColumnType, ConceptBrief, UnitBrief, \
     TableStatistics, ColumnStatistic, PrimaryKey, ColumnBrief, TableBrief, UserBrief, History, HistoryEventType
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, \
     AuthenticationError, ExternalSystemError, ServiceError, ServiceConnectionError, ResponseCodeError
@@ -25,125 +25,137 @@ class TableUnitTest(unittest.TestCase):
                          is_public=True,
                          is_schema_public=True)
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', json=exp.model_dump(),
                       status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                           description="Test Table", columns=[],
-                                           is_public=True, is_schema_public=True,
-                                           constraints=CreateTableConstraints())
+                                           description="Test Table", dataframe=dataframe, with_data=False,
+                                           is_public=True, is_schema_public=True)
             self.assertEqual(exp, response)
+
+    def test_create_table_index_missing_fails(self):
+        with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}])
+            # test
+            client = RestClient(username="a", password="b")
+            try:
+                client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
+                                    description="Test Table", dataframe=dataframe, with_data=False,
+                                    is_public=True, is_schema_public=True)
+            except MalformedError:
+                pass
 
     def test_create_table_400_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=400)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                               description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                                               description="Test Table", dataframe=dataframe,
+                                               is_public=True, is_schema_public=True)
             except MalformedError:
                 pass
 
     def test_create_table_403_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                                     name="Test",
-                                                                    description="Test Table", columns=[],
-                                                                    is_public=True, is_schema_public=True,
-                                                                    constraints=CreateTableConstraints())
+                                                                    description="Test Table", dataframe=dataframe,
+                                                                    is_public=True, is_schema_public=True)
             except ForbiddenError:
                 pass
 
     def test_create_table_404_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                               description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                                               description="Test Table", dataframe=dataframe,
+                                               is_public=True, is_schema_public=True)
             except NotExistsError:
                 pass
 
     def test_create_table_409_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=409)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                               description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                                               description="Test Table", dataframe=dataframe,
+                                               is_public=True, is_schema_public=True)
             except NameExistsError:
                 pass
 
     def test_create_table_502_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=502)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                               description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                                               description="Test Table", dataframe=dataframe,
+                                               is_public=True, is_schema_public=True)
             except ServiceConnectionError:
                 pass
 
     def test_create_table_503_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=503)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                               description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                                               description="Test Table", dataframe=dataframe,
+                                               is_public=True, is_schema_public=True)
             except ServiceError:
                 pass
 
     def test_create_table_unknown_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=200)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                               description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                                               description="Test Table", dataframe=dataframe,
+                                               is_public=True, is_schema_public=True)
             except ResponseCodeError:
                 pass
 
     def test_create_table_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
+            dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', status_code=409)
             # test
             try:
                 response = RestClient().create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
-                                                     description="Test Table", columns=[],
-                                                     is_public=True, is_schema_public=True,
-                                                     constraints=CreateTableConstraints())
+                                                     description="Test Table", dataframe=dataframe,
+                                                     is_public=True, is_schema_public=True)
             except AuthenticationError:
                 pass
 
