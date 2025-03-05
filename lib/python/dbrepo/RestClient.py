@@ -11,7 +11,7 @@ from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
     AuthenticationError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
-from dbrepo.api.mapper import query_to_subset
+from dbrepo.api.mapper import query_to_subset, dataframe_to_table_definition
 
 logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
                     stream=sys.stdout)
@@ -463,9 +463,8 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database schema: response code: {response.status_code} is not 200 (OK)')
 
-    def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool,
-                     columns: List[CreateTableColumn], constraints: CreateTableConstraints,
-                     description: str = None) -> TableBrief:
+    def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool, dataframe: DataFrame,
+                     description: str = None, with_data: bool = True) -> TableBrief:
         """
         Updates the database owner of a database with given database id.
 
@@ -473,9 +472,9 @@ class RestClient:
         :param name: The name of the created table.
         :param is_public: The visibility of the data. If set to true the data will be publicly visible.
         :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible.
-        :param constraints: The constraints of the created table.
-        :param columns: The columns of the created table.
+        :param dataframe: The `pandas` dataframe.
         :param description: The description of the created table. Optional.
+        :param with_data: If set to `True`, the data will be included in the new table. Optional. Default: `True`.
 
         :returns: The table, if successful.
 
@@ -488,12 +487,18 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the creation.
         """
         url = f'/api/database/{database_id}/table'
+        columns, constraints = dataframe_to_table_definition(dataframe)
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateTable(name=name, is_public=is_public, is_schema_public=is_schema_public,
                                                      description=description, columns=columns, constraints=constraints))
         if response.status_code == 201:
             body = response.json()
-            return TableBrief.model_validate(body)
+            table = TableBrief.model_validate(body)
+            if with_data:
+                self.import_table_data(database_id=database_id,
+                                       table_id=table.id,
+                                       dataframe=dataframe.reset_index())
+            return table
         if response.status_code == 400:
             raise MalformedError(f'Failed to create table: {response.text}')
         if response.status_code == 403:
@@ -919,9 +924,9 @@ class RestClient:
         
         :raises ResponseCodeError: If something went wrong with the insert.
         """
-        url = f'/api/upload'
         buffer = BytesIO()
-        dataframe.to_csv(path_or_buf=buffer, header=False, index=False)
+        dataframe.to_csv(path_or_buf=buffer, header=True, index=False)
+        url = f'/api/upload'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  files={'file': ('dataframe.csv', buffer.getvalue())})
         if response.status_code == 201:
@@ -949,8 +954,8 @@ class RestClient:
 
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=Import(location=self._upload(dataframe), separator=',', quote='"',
-                                                header=True, line_termination='\n'))
+                                 payload=Import(location=self._upload(dataframe), separator=',', quote='"', header=True,
+                                                line_termination='\n'))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -1354,7 +1359,7 @@ class RestClient:
                                  payload=subset)
         if response.status_code == 201:
             logging.info(f'Created subset with id: {response.headers["X-Id"]}')
-            return DataFrame.from_records(response.json())
+            return DataFrame.from_records(response.json(), columns=query.columns)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create subset: {response.text}')
         if response.status_code == 403:
