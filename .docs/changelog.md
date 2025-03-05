@@ -9,6 +9,11 @@ author: Martin Weise
 * Fixed a bug where quick interaction with the UI caused the user to trigger the brute-force login detection
   in [#501](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/501).
 
+#### Features
+
+* Added the possibility to create and fill a table from a `pandas` DataFrame (or optionally just create the schema)
+  in [#496](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/496).
+
 ## v1.7.0 (2025-03-03)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.1)
