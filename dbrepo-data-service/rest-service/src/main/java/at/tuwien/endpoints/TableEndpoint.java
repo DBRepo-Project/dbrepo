@@ -29,9 +29,9 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +40,6 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Log4j2
@@ -228,7 +227,8 @@ public class TableEndpoint extends RestEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = List.class))}),
+                            schema = @Schema(implementation = List.class)),
+                            @Content(mediaType = "text/csv")}),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
                     content = {@Content(
@@ -244,23 +244,30 @@ public class TableEndpoint extends RestEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Failed to format data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                             @NotNull @PathVariable("tableId") UUID tableId,
-                                                             @RequestParam(required = false) Instant timestamp,
-                                                             @RequestParam(required = false) Long page,
-                                                             @RequestParam(required = false) Long size,
-                                                             @NotNull HttpServletRequest request,
-                                                             Principal principal)
+    public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                     @NotNull @PathVariable("tableId") UUID tableId,
+                                     @RequestParam(required = false) Instant timestamp,
+                                     @RequestParam(required = false) Long page,
+                                     @RequestParam(required = false) Long size,
+                                     @NotNull @RequestHeader("Accept") String accept,
+                                     @NotNull HttpServletRequest request,
+                                     Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException {
-        log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
-                tableId, timestamp, page, size);
+            PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException,
+            FormatNotAvailableException, StorageUnavailableException {
+        log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, accept={}",
+                databaseId, tableId, timestamp, page, size, accept);
         endpointValidator.validateDataParams(page, size);
         /* parameters */
         if (page == null) {
@@ -281,7 +288,9 @@ public class TableEndpoint extends RestEndpoint {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
             }
-            cacheService.getAccess(databaseId, getId(principal));
+            if (!isSystem(principal)) {
+                cacheService.getAccess(databaseId, getId(principal));
+            }
         }
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
@@ -296,11 +305,26 @@ public class TableEndpoint extends RestEndpoint {
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
             final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
-                    table.getInternalName(), timestamp, page, size);
+                    table.getInternalName(), timestamp,
+                    accept.equals("text/csv") ? null : page,
+                    accept.equals("text/csv") ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(transform(dataset));
+            switch (accept) {
+                case MediaType.APPLICATION_JSON_VALUE:
+                    log.trace("accept header matches json");
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .body(transform(dataset));
+                case "text/csv":
+                    log.trace("accept header matches csv");
+                    final ExportResourceDto resource = storageService.transformDataset(dataset);
+                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .headers(headers)
+                            .body(storageService.transformDataset(dataset)
+                                    .getResource());
+            }
+            throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -584,72 +608,6 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
-    }
-
-    @GetMapping("/{tableId}/export")
-    @Observed(name = "dbrepo_table_data_export")
-    @Operation(summary = "Get table data",
-            description = "Gets data from table with id as downloadable file. For tables in private databases, the user needs to have at least *READ* access to the associated database.",
-            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Exported table data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = InputStreamResource.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Request pagination or table data select query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Export table data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                             @NotNull @PathVariable("tableId") UUID tableId,
-                                                             @RequestParam(required = false) Instant timestamp,
-                                                             Principal principal)
-            throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, StorageUnavailableException,
-            QueryMalformedException, MetadataServiceException, DatabaseNotFoundException {
-        log.debug("endpoint export table data, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
-        /* parameters */
-        if (timestamp == null) {
-            timestamp = Instant.now();
-            log.debug("timestamp not set: default to {}", timestamp);
-        }
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        if (!table.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to export private table: principal is null");
-                throw new NotAllowedException("Failed to export private table: principal is null");
-            }
-            cacheService.getAccess(databaseId, getId(principal));
-        }
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
-        final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
-                table.getInternalName(), timestamp, null, null);
-        final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(table.getDatabaseId()),
-                query);
-        final ExportResourceDto resource = storageService.transformDataset(dataset);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-        log.trace("export table resulted in resource {}", resource);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource.getResource());
     }
 
     @PostMapping("/{tableId}/data/import")

@@ -1,6 +1,5 @@
 package at.tuwien.gateway;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
@@ -809,75 +808,6 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(DataServiceException.class, () -> {
             dataServiceGateway.findQuery(DATABASE_1_ID, QUERY_1_ID);
-        });
-    }
-
-    @Test
-    public void exportQuery_succeeds() throws DataServiceException, DataServiceConnectionException,
-            QueryNotFoundException {
-
-        /* mock */
-        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ExportResourceDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .build());
-
-        /* test */
-        dataServiceGateway.exportQuery(DATABASE_1_ID, QUERY_1_ID);
-    }
-
-    @Test
-    public void exportQuery_connection_fails() {
-
-        /* mock */
-        doThrow(HttpServerErrorException.class)
-                .when(dataServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ExportResourceDto.class));
-
-        /* test */
-        assertThrows(DataServiceConnectionException.class, () -> {
-            dataServiceGateway.exportQuery(DATABASE_1_ID, QUERY_1_ID);
-        });
-    }
-
-    @Test
-    public void exportQuery_unauthorized_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.Unauthorized.class)
-                .when(dataServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ExportResourceDto.class));
-
-        /* test */
-        assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.exportQuery(DATABASE_1_ID, QUERY_1_ID);
-        });
-    }
-
-    @Test
-    public void exportQuery_notFound_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.NotFound.class)
-                .when(dataServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ExportResourceDto.class));
-
-        /* test */
-        assertThrows(QueryNotFoundException.class, () -> {
-            dataServiceGateway.exportQuery(DATABASE_1_ID, QUERY_1_ID);
-        });
-    }
-
-    @Test
-    public void exportQuery_responseCode_fails() {
-
-        /* mock */
-        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ExportResourceDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .build());
-
-        /* test */
-        assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.exportQuery(DATABASE_1_ID, QUERY_1_ID);
         });
     }
 

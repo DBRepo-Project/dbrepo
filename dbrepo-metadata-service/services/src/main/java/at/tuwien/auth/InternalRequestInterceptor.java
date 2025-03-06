@@ -29,7 +29,9 @@ public class InternalRequestInterceptor implements ClientHttpRequestInterceptor 
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         final HttpHeaders headers = request.getHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        if (headers.get("Accept") == null) {
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        }
         final TokenDto token = credentialService.getAccessToken(gatewayConfig.getSystemUsername(),
                 gatewayConfig.getSystemPassword());
         headers.setBearerAuth(token.getAccessToken());

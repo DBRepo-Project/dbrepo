@@ -29,7 +29,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -253,7 +252,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(viewService)
-                .delete(DATABASE_1_PRIVILEGED_DTO,VIEW_1_DTO);
+                .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -281,7 +280,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateDataPrivateSchema_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             DatabaseUnavailableException, QueryMalformedException, PaginationException, NotAllowedException,
-            MetadataServiceException, TableNotFoundException, DatabaseNotFoundException {
+            MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException, FormatNotAvailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -297,7 +296,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "application/json", USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -323,7 +322,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, null);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "application/json", null);
         });
     }
 
@@ -331,7 +330,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateHead_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
-            NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException {
+            NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException, FormatNotAvailableException {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
@@ -346,7 +345,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(VIEW_3_DATA_COUNT);
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, null, httpServletRequest, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, null, httpServletRequest, "application/json", USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("X-Count"));
         assertEquals(1, response.getHeaders().get("X-Count").size());
@@ -373,13 +372,13 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_4_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "application/json", USER_4_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void getData_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
+    public void getData_viewNotFoundTextCsv_fails() throws RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException {
 
         /* mock */
@@ -389,7 +388,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_4_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "text/csv", USER_4_PRINCIPAL);
         });
     }
 
@@ -407,13 +406,13 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_4_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "application/json", USER_4_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"view-database-view-data"})
-    public void exportDataset_privateNoAccess_fails() throws RemoteUnavailableException, ViewNotFoundException,
+    public void getData_privateNoAccessTextCsv_fails() throws RemoteUnavailableException, ViewNotFoundException,
             NotAllowedException, MetadataServiceException {
 
         /* mock */
@@ -425,13 +424,13 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_1_ID, null, USER_4_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "text/csv", USER_4_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void exportDataset_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
+    public void getData_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException {
 
         /* mock */
@@ -441,25 +440,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
-            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_1_ID, null, USER_4_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void exportDataset_privateNoAccess_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
-            NotAllowedException, MetadataServiceException {
-
-        /* mock */
-        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
-        doThrow(NotAllowedException.class)
-                .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_4_ID);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_1_ID, null, USER_4_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "application/json", USER_4_PRINCIPAL);
         });
     }
 

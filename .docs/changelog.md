@@ -2,17 +2,19 @@
 author: Martin Weise
 ---
 
-## v1.7.1 (2025-03-04)
+## v1.7.1 (2025-03-06)
+
+#### Features
+
+* Added support to download `pandas` DataFrame by PID
+  in [#503](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/503).
+* Added the possibility to create and fill a table from a `pandas` DataFrame (or optionally just create the schema)
+  in [#496](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/496).
 
 #### Fixes
 
 * Fixed a bug where quick interaction with the UI caused the user to trigger the brute-force login detection
   in [#501](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/501).
-
-#### Features
-
-* Added the possibility to create and fill a table from a `pandas` DataFrame (or optionally just create the schema)
-  in [#496](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/496).
 
 ## v1.7.0 (2025-03-03)
 

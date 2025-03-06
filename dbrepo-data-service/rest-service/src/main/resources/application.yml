@@ -74,6 +74,7 @@ dbrepo:
     default:
       read: "${GRANT_DEFAULT_READ:SELECT}"
       write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+  website: "${BASE_URL:http://localhost}"
   credentialCacheTimeout: "${CREDENTIAL_CACHE_TIMEOUT:60}"
   minConcurrent: "${MIN_CONCURRENT_CONSUMERS:2}"
   maxConcurrent: "${MAX_CONCURRENT_CONSUMERS:6}"

@@ -9,7 +9,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierStatusType;
-import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
@@ -126,7 +125,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     }
 
     @GetMapping(value = "/{identifierId}", produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json",
-            MediaType.TEXT_XML_VALUE, "text/csv", "text/bibliography", "text/bibliography; style=apa",
+            MediaType.TEXT_XML_VALUE, "text/bibliography", "text/bibliography; style=apa",
             "text/bibliography; style=ieee", "text/bibliography; style=bibtex"})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_identifier_find")
@@ -138,7 +137,6 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                     content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifierDto.class)),
                             @Content(mediaType = "application/ld+json", schema = @Schema(implementation = LdDatasetDto.class)),
-                            @Content(mediaType = "text/csv"),
                             @Content(mediaType = "text/xml"),
                             @Content(mediaType = "text/bibliography"),
                             @Content(mediaType = "text/bibliography; style=apa"),
@@ -190,7 +188,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                   Principal principal) throws IdentifierNotFoundException,
             DataServiceException, DataServiceConnectionException, MalformedException, FormatNotAvailableException,
-            QueryNotFoundException, NotAllowedException {
+            QueryNotFoundException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         log.debug("endpoint find identifier, identifierId={}, accept={}", identifierId, accept);
         if (accept == null) {
             accept = "";
@@ -212,13 +210,6 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             case "application/ld+json":
                 log.trace("accept header matches json-ld");
                 return ResponseEntity.ok(metadataMapper.identifierToLdDatasetDto(identifier, endpointConfig.getWebsiteUrl()));
-            case "text/csv":
-                log.trace("accept header matches csv");
-                if (identifier.getType().equals(IdentifierType.DATABASE)) {
-                    log.error("Failed to export dataset: identifier type is database");
-                    throw new FormatNotAvailableException("Failed to export dataset: identifier type is database");
-                }
-                return ResponseEntity.ok(identifierService.exportResource(identifier));
             case "text/xml":
                 log.trace("accept header matches xml");
                 return ResponseEntity.ok(identifierService.exportMetadata(identifier));

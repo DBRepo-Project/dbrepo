@@ -826,7 +826,7 @@ class RestClient:
         if page is not None and size is not None:
             params.append(('page', page))
             params.append(('size', size))
-        response = self._wrapper(method="get", url=url, params=params)
+        response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
         if response.status_code == 400:
@@ -869,7 +869,7 @@ class RestClient:
             params.append(('size', size))
         if timestamp is not None:
             params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
-        response = self._wrapper(method="get", url=url, params=params)
+        response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
         if response.status_code == 400:
@@ -1393,11 +1393,10 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        headers = {}
         url = f'/api/database/{database_id}/subset/{subset_id}/data'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
-        response = self._wrapper(method="get", url=url, headers=headers)
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
         if response.status_code == 400:
@@ -1786,7 +1785,7 @@ class RestClient:
 
     def get_identifier(self, identifier_id: str) -> Identifier:
         """
-        Get list of identifiers, filter by the remaining optional arguments.
+        Get the identifier by given id.
 
         :param identifier_id: The identifier id.
 
@@ -1803,6 +1802,39 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifier: not found')
         raise ResponseCodeError(f'Failed to get identifier: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_identifier_data(self, identifier_id: str) -> DataFrame:
+        """
+        Get the identifier data by given id.
+
+        :param identifier_id: The identifier id.
+
+        :returns: The identifier, if successful.
+
+        :raises NotExistsError: If the identifier does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval of the identifier.
+        """
+        url = f'/api/identifier/{identifier_id}'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            identifier = Identifier.model_validate(body)
+            if identifier.type == IdentifierType.VIEW:
+                return self.get_view_data(database_id=identifier.database_id, view_id=identifier.view_id, page=0,
+                                          size=10000)
+            elif identifier.type == IdentifierType.TABLE:
+                return self.get_table_data(database_id=identifier.database_id, table_id=identifier.table_id, page=0,
+                                           size=10000)
+            elif identifier.type == IdentifierType.SUBSET:
+                return self.get_subset_data(database_id=identifier.database_id, subset_id=identifier.query_id, page=0,
+                                            size=10000)
+            raise FormatNotAvailable(f'Failed to get identifier data: type is database')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get identifier data: not found')
+        if response.status_code == 406:
+            raise NotExistsError(f'Failed to get identifier data: type database')
+        raise ResponseCodeError(f'Failed to get identifier data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
     def get_image(self, image_id: str) -> Image:

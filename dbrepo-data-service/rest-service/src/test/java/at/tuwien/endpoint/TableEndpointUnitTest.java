@@ -39,7 +39,6 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -292,7 +291,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void getData_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, TableNotFoundException, QueryMalformedException,
             RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, StorageUnavailableException, FormatNotAvailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -306,7 +305,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_4_ID, null, null, null, httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_4_ID, null, null, null, "application/json", httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
     }
@@ -315,7 +314,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void getData_head_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException,
-            MetadataServiceException, NotAllowedException, DatabaseNotFoundException {
+            MetadataServiceException, NotAllowedException, DatabaseNotFoundException, StorageUnavailableException, FormatNotAvailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -331,7 +330,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, "application/json", httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));
@@ -351,7 +350,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, null);
         });
     }
 
@@ -369,14 +368,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, USER_2_PRINCIPAL);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, USER_2_PRINCIPAL);
         });
     }
 
     @Test
     @WithAnonymousUser
     public void getData_notAllowed_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException{
+            MetadataServiceException {
 
         /* mock */
         when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
@@ -386,7 +385,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, "application/json", httpServletRequest, null);
         });
     }
 
@@ -408,7 +407,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, "application/json", httpServletRequest, null);
         });
     }
 
@@ -426,7 +425,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, USER_2_PRINCIPAL);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, USER_2_PRINCIPAL);
         });
     }
 
@@ -435,7 +434,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("anyAccess_parameters")
     public void getData_private_succeeds(String name, DatabaseAccessDto access) throws DatabaseUnavailableException,
             TableNotFoundException, QueryMalformedException, RemoteUnavailableException, PaginationException,
-            MetadataServiceException, NotAllowedException, DatabaseNotFoundException {
+            MetadataServiceException, NotAllowedException, DatabaseNotFoundException, StorageUnavailableException, FormatNotAvailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -451,7 +450,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, USER_2_PRINCIPAL);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -467,7 +466,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, "application/json", httpServletRequest, null);
         });
     }
 
@@ -1323,8 +1322,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void exportData_publicDataPrivateSchema_succeeds() throws TableNotFoundException, NotAllowedException, StorageUnavailableException,
-            QueryMalformedException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+    public void getData_publicDataPrivateSchemaTextCsv_succeeds() throws TableNotFoundException, NotAllowedException,
+            StorageUnavailableException, QueryMalformedException, RemoteUnavailableException, MetadataServiceException,
+            DatabaseNotFoundException, DatabaseUnavailableException, FormatNotAvailableException, PaginationException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -1334,18 +1334,21 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<InputStreamResource> response = tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_4_ID, null, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_4_ID, null, null, null, "text/csv", httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @ParameterizedTest
     @WithMockUser(username = USER_2_USERNAME)
     @MethodSource("anyAccess_parameters")
-    public void exportData_privateDataPrivateSchema_succeeds(String name, DatabaseAccessDto access)
+    public void getData_privateDataPrivateSchemaTextCsv_succeeds(String name, DatabaseAccessDto access)
             throws TableNotFoundException, NotAllowedException, StorageUnavailableException, QueryMalformedException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
+            DatabaseUnavailableException, FormatNotAvailableException, PaginationException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -1359,9 +1362,11 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<InputStreamResource> response = tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, USER_2_PRINCIPAL);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "text/csv", httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -1381,7 +1386,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "text/csv", httpServletRequest, null);
         });
     }
 
