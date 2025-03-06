@@ -162,19 +162,6 @@ public interface IdentifierService {
     String exportBibliography(Identifier identifier, BibliographyTypeDto style) throws MalformedException;
 
     /**
-     * Exports an identifier to XML
-     *
-     * @param identifier The identifier.
-     * @return The XML resource, if successful.
-     * @throws DataServiceException
-     * @throws DataServiceConnectionException
-     * @throws IdentifierNotFoundException
-     * @throws QueryNotFoundException
-     */
-    InputStreamResource exportResource(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
-            IdentifierNotFoundException, QueryNotFoundException;
-
-    /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the
      * database, but sets it as deleted.
      *

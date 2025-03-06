@@ -232,7 +232,9 @@ build-images:
     - "apk add --no-cache make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - "make build-images"
+    - docker build -q --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
+    - docker build -q --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
+    - docker compose build -q --parallel
 
 build-helm:
   image: docker.io/docker:${DOCKER_VERSION}-dind

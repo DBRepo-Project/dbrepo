@@ -1,8 +1,6 @@
 package at.tuwien.mvc;
 
-import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.table.TupleDeleteDto;
 import at.tuwien.api.database.table.TupleDto;
@@ -116,7 +114,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
+            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, "application/json", httpServletRequest, null, 0L, 10L);
         } catch (Exception e) {
             /* ignore */
         }
@@ -126,7 +124,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            subsetEndpoint.findById(DATABASE_1_ID, QUERY_1_ID, "application/json", null, USER_1_PRINCIPAL);
+            subsetEndpoint.findById(DATABASE_1_ID, QUERY_1_ID, null, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -145,7 +143,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, null);
         } catch (Exception e) {
             /* ignore */
         }
@@ -170,11 +168,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, USER_1_PRINCIPAL);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
             tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, ImportDto.builder().build(), USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         } catch (Exception e) {
             /* ignore */
@@ -182,8 +175,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* test */
         for (String metric : List.of("dbrepo_table_data_list", "dbrepo_table_data_create", "dbrepo_table_data_update",
-                "dbrepo_table_data_delete", "dbrepo_table_data_history", "dbrepo_table_data_export",
-                "dbrepo_table_data_import")) {
+                "dbrepo_table_data_delete", "dbrepo_table_data_history", "dbrepo_table_data_import")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
@@ -195,7 +187,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, 0L, 10L, null, httpServletRequest, USER_1_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, 0L, 10L, null, httpServletRequest, "application/json", USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
