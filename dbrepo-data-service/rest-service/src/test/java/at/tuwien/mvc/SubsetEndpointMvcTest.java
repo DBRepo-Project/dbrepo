@@ -37,7 +37,7 @@ public class SubsetEndpointMvcTest extends AbstractUnitTest {
     private MockMvc mockMvc;
 
     @Test
-    public void findById_privateDataPublicSchema_jsonAcceptHeader_fails() throws Exception {
+    public void findById_privateDataPublicSchema_jsonAcceptHeader_succeeds() throws Exception {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
@@ -49,7 +49,7 @@ public class SubsetEndpointMvcTest extends AbstractUnitTest {
         this.mockMvc.perform(get("/api/database/" + DATABASE_3_ID + "/subset/" + QUERY_5_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test

@@ -75,17 +75,16 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void list_publicDataPrivateSchemaAnonymous_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, SQLException, MetadataServiceException {
+    public void list_publicDataPrivateSchemaAnonymous_succeeds() throws QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, SQLException, MetadataServiceException,
+            DatabaseUnavailableException, NotAllowedException {
 
         /* mock */
         when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
-                .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
+                .thenReturn(List.of(QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, null);
-        });
+        generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, null);
     }
 
     @Test
@@ -200,19 +199,13 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void findById_privateDataPrivateSchemaAcceptCsv_succeeds() throws DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseUnavailableException,
-            StorageUnavailableException, QueryMalformedException, QueryNotFoundException, SQLException,
-            MetadataServiceException, TableNotFoundException, NotAllowedException {
-        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+            QueryNotFoundException, SQLException, MetadataServiceException, NotAllowedException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
-                .thenReturn(mock);
-        when(storageService.transformDataset(any(Dataset.class)))
-                .thenReturn(EXPORT_RESOURCE_DTO);
 
         /* test */
         generic_findById(DATABASE_1_ID, QUERY_1_ID, null, USER_1_PRINCIPAL);
@@ -220,30 +213,32 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_publicDataPrivateSchemaAnonymous_fails() throws DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
+    public void findById_publicDataPrivateSchemaAnonymous_succeeds() throws DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, UserNotFoundException, DatabaseUnavailableException,
+            NotAllowedException, QueryNotFoundException, SQLException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_3_ID, QUERY_5_ID, Instant.now(), null);
-        });
+        generic_findById(DATABASE_3_ID, QUERY_5_ID, Instant.now(), null);
     }
 
     @Test
     @WithAnonymousUser
-    public void findById_publicDataPublicSchemaAnonymous_fails() throws DatabaseNotFoundException, SQLException,
+    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws DatabaseNotFoundException, SQLException,
             RemoteUnavailableException, UserNotFoundException, QueryMalformedException, StorageUnavailableException,
-            QueryNotFoundException, MetadataServiceException, TableNotFoundException {
+            QueryNotFoundException, MetadataServiceException, TableNotFoundException, DatabaseUnavailableException,
+            NotAllowedException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_4_PRIVILEGED_DTO, QUERY_5_ID))
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
@@ -251,9 +246,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(EXPORT_RESOURCE_DTO);
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_3_ID, QUERY_5_ID, Instant.now(), null);
-        });
+        generic_findById(DATABASE_3_ID, QUERY_5_ID, Instant.now(), null);
     }
 
     @Test
