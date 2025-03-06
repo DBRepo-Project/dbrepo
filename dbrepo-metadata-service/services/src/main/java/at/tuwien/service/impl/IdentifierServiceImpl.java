@@ -1,6 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreateIdentifierDto;
@@ -354,14 +353,6 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         log.trace("mapped bibliography {}", body);
         return body;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Identifier identifier) throws DataServiceException,
-            DataServiceConnectionException, QueryNotFoundException {
-        final ExportResourceDto exportResource = dataServiceGateway.exportQuery(identifier.getDatabase().getId(), identifier.getQueryId());
-        return exportResource.getResource();
     }
 
     @Override

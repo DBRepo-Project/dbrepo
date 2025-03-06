@@ -197,13 +197,6 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Identifier identifier) throws DataServiceException,
-            DataServiceConnectionException, IdentifierNotFoundException, QueryNotFoundException {
-        return identifierService.exportResource(identifier);
-    }
-
-    @Override
     @Transactional
     public void delete(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, IdentifierNotFoundException, SearchServiceException,

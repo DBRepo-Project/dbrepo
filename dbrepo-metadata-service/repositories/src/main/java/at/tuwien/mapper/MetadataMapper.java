@@ -318,9 +318,26 @@ public interface MetadataMapper {
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id")
+            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "links", expression = "java(identifierToLinksDto(data))"),
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
+
+    default LinksDto identifierToLinksDto(Identifier data) {
+        final LinksDto links = LinksDto.builder()
+                .self("/api/identifier/" + data.getId())
+                .selfHtml("/pid/" + data.getId())
+                .build();
+        switch (data.getType()) {
+            case VIEW ->
+                    links.setData("/api/database/" + data.getDatabase().getId() + "/view/" + data.getViewId() + "/data");
+            case TABLE ->
+                    links.setData("/api/database/" + data.getDatabase().getId() + "/table/" + data.getTableId() + "/data");
+            case SUBSET ->
+                    links.setData("/api/database/" + data.getDatabase().getId() + "/subset/" + data.getQueryId() + "/data");
+        }
+        return links;
+    }
 
     @Mappings({
             @Mapping(target = "databaseId", source = "database.id"),

@@ -539,6 +539,7 @@ services:
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"

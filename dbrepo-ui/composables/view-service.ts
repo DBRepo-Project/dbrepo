@@ -114,7 +114,7 @@ export const useViewService = (): any => {
     }
     console.debug('export data for view with id', viewId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/export`, config)
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, config)
         .then((response) => {
           console.info('Exported data for view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)

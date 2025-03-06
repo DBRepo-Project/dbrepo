@@ -44,12 +44,21 @@ client = RestClient(endpoint="https://test.dbrepo.tuwien.ac.at", username="foo",
                     password="bar")
 df = pd.DataFrame(data={'x_coord': 16.52617, 'component': 'Feinstaub (PM10)',
                         'unit': 'µg/m³', ...})
+df = df.set_index(['x_coord'])
 client.create_table(database_id="e0d82287-9099-4077-8f69-3c19fc3bc145",
                     name="Sensor", is_public=True, is_schema_public=True,
                     dataframe=df)
 ```
 
 ... or just create the table schema by setting `create_table(..., withData=False)`.
+
+In both cases it is important to set the index to existing columns that uniquely
+identify a row. You can specify multiple columns:
+
+```python
+...
+df = df.set_index(['some_column', 'some_other_column'])
+```
 
 ## Supported Features & Best-Practices
 

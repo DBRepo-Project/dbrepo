@@ -47,6 +47,9 @@ public class IdentifierDto {
     private UUID viewId;
 
     @NotNull
+    private LinksDto links;
+
+    @NotNull
     @Schema(example = "database")
     private IdentifierTypeDto type;
 

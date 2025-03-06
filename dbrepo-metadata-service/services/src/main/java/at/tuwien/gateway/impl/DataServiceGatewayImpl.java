@@ -1,6 +1,5 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
@@ -311,31 +310,6 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find query: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to find query: wrong http code: " + response.getStatusCode());
-        }
-        return response.getBody();
-    }
-
-    @Override
-    public ExportResourceDto exportQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException,
-            DataServiceException, QueryNotFoundException {
-        final ResponseEntity<ExportResourceDto> response;
-        final String path = "/api/database/" + databaseId + "/subset/" + queryId;
-        log.trace("export subset at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
-        try {
-            response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, ExportResourceDto.class);
-        } catch (HttpServerErrorException e) {
-            log.error("Failed to export query: {}", e.getMessage());
-            throw new DataServiceConnectionException("Failed to export query: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to export query: not found: {}", e.getMessage());
-            throw new QueryNotFoundException("Failed to export query: not found: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.Unauthorized e) {
-            log.error("Failed to export query: {}", e.getMessage());
-            throw new DataServiceException("Failed to export query: " + e.getMessage(), e);
-        }
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed to export query: wrong http code: {}", response.getStatusCode());
-            throw new DataServiceException("Failed to export query: wrong http code: " + response.getStatusCode());
         }
         return response.getBody();
     }
