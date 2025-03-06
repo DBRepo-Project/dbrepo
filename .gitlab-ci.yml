@@ -13,6 +13,7 @@ variables:
   DOC_VERSION: "1.7"
   APP_VERSION: "1.7.1"
   CHART_VERSION: "1.7.1"
+  SUPPORTED_VERSIONS: "[\"1.7.0\",\"1.7.1\"]"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -43,6 +44,7 @@ stages:
   - build
   - test
   - docs
+  - clean
   - release
   - verify
   - scan
@@ -445,10 +447,28 @@ test-ui:
     - "sleep 30"
     - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh"
 
+clean-images:
+  stage: clean
+  image: docker:${DOCKER_VERSION}-dind
+  only:
+    refs:
+      - dev
+      - /^release-.*/
+  before_script:
+    - "docker logout ${CI_REGISTRY_URL}"
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+    - "docker logout ${CI_REGISTRY2_URL}"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+    - "ifconfig eth0 mtu 1450 up"
+    - "apk add --no-cache curl bash jq regclient"
+  script:
+    - bash ./.gitlab/remove-unsupported-images.sh
+
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
   dependencies:
+    - clean-images
     - test-analyse-service
     - test-auth-service-init
     - test-data-service
