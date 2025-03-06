@@ -110,7 +110,13 @@ public class SubsetEndpoint extends RestEndpoint {
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final DatabaseDto database = cacheService.getDatabase(databaseId);
-        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to list queries: no authentication found");
+                throw new NotAllowedException("Failed to list queries: no authentication found");
+            }
+            endpointValidator.validateOnlyAccess(database, principal, false);
+        }
         final List<QueryDto> queries;
         try {
             queries = subsetService.findAll(database, filterPersisted);
@@ -171,7 +177,13 @@ public class SubsetEndpoint extends RestEndpoint {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
         final DatabaseDto database = cacheService.getDatabase(databaseId);
-        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to find query: no authentication found");
+                throw new NotAllowedException("Failed to find query: no authentication found");
+            }
+            endpointValidator.validateOnlyAccess(database, principal, false);
+        }
         final QueryDto subset;
         try {
             subset = subsetService.findById(database, subsetId);
@@ -205,7 +217,7 @@ public class SubsetEndpoint extends RestEndpoint {
                         .headers(headers)
                         .body(resource.getResource());
         }
-        throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
+        throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': got " + accept + " instead");
     }
 
     @PostMapping
