@@ -459,8 +459,9 @@ clean-images:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - echo "@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-    - "apk add --no-cache bash regclient"
+    - "apk add --no-cache curl bash"
+    - "curl -fsSL -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v0.8.2/regctl-linux-amd64"
+    - "chmod +x /usr/local/sbin/regctl"
   script:
     - bash ./.gitlab/remove-unsupported-images.sh
 
