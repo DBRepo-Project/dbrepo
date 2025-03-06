@@ -148,6 +148,7 @@ build-metadata-service:
   stage: build
   only:
     - merge_requests
+    - master
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
@@ -190,6 +191,7 @@ build-data-service:
   stage: build
   only:
     - merge_requests
+    - master
   needs:
     - build-metadata-service
   dependencies:
