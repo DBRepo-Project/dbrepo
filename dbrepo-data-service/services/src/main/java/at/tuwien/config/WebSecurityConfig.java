@@ -2,7 +2,7 @@ package at.tuwien.config;
 
 import at.tuwien.auth.AuthTokenFilter;
 import at.tuwien.auth.BasicAuthenticationProvider;
-import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.service.CredentialService;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +43,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, KeycloakGateway keycloakGateway)
+    public SecurityFilterChain filterChain(HttpSecurity http, CredentialService credentialService)
             throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
@@ -86,8 +86,8 @@ public class WebSecurityConfig {
         http.addFilterBefore(authTokenFilter(),
                 UsernamePasswordAuthenticationFilter.class
         );
-        http.addFilterBefore(new BasicAuthenticationFilter(new BasicAuthenticationProvider(authTokenFilter(),
-                        keycloakGateway)),
+        http.addFilterBefore(new BasicAuthenticationFilter(new BasicAuthenticationProvider(credentialService,
+                        authTokenFilter())),
                 UsernamePasswordAuthenticationFilter.class
         );
         return http.build();

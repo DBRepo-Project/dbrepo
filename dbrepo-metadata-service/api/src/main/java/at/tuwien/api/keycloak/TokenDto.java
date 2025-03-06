@@ -1,9 +1,13 @@
 package at.tuwien.api.keycloak;
 
+import at.tuwien.api.CacheableDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -12,7 +16,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class TokenDto {
+public class TokenDto extends CacheableDto {
 
     @NotNull
     @JsonProperty("access_token")
@@ -48,5 +52,11 @@ public class TokenDto {
     @NotNull
     @JsonProperty("not-before-policy")
     private Long notBeforePolicy;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
 
 }

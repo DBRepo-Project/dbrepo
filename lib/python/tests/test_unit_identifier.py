@@ -7,7 +7,7 @@ from dbrepo.api.dto import Identifier, IdentifierType, SaveIdentifierTitle, Crea
     IdentifierDescription, SaveIdentifierDescription, Language, SaveIdentifierFunder, SaveRelatedIdentifier, \
     RelatedIdentifierRelation, RelatedIdentifierType, IdentifierFunder, RelatedIdentifier, UserBrief, \
     IdentifierStatusType, CreateIdentifierCreator, CreateIdentifierTitle, CreateIdentifierFunder, \
-    CreateRelatedIdentifier, CreateIdentifierDescription, SaveIdentifierCreator
+    CreateRelatedIdentifier, CreateIdentifierDescription, SaveIdentifierCreator, Links
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, AuthenticationError, \
     ServiceConnectionError, ServiceError, ResponseCodeError, FormatNotAvailable, RequestError
 
@@ -19,6 +19,9 @@ class IdentifierUnitTest(unittest.TestCase):
             exp = Identifier(id="f6171539-a479-4829-9b9b-a6b474e1c7d3",
                              database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                              view_id="e5229d24-584a-43e8-b9f6-d349c3053f9c",
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              publication_year=2024,
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
@@ -172,6 +175,9 @@ class IdentifierUnitTest(unittest.TestCase):
                               publisher='TU Wien',
                               type=IdentifierType.VIEW,
                               language=Language.EN,
+                              links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                          self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                          data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                               descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                   description='Test Description')],
                               titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3",
@@ -275,6 +281,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3",
@@ -517,6 +526,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -530,7 +542,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=202)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.publish_identifier(identifier_id="f6171539-a479-4829-9b9b-a6b474e1c7d3")
@@ -545,6 +558,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -558,7 +574,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=400)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").publish_identifier(
@@ -575,6 +592,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -588,7 +608,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=403)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").publish_identifier(
@@ -605,6 +626,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -618,7 +642,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=404)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=404)
             # test
             try:
                 RestClient(username="a", password="b").publish_identifier(
@@ -635,6 +660,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -648,7 +676,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=502)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").publish_identifier(
@@ -665,6 +694,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -678,7 +710,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=503)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").publish_identifier(
@@ -695,6 +728,9 @@ class IdentifierUnitTest(unittest.TestCase):
                              publisher='TU Wien',
                              type=IdentifierType.VIEW,
                              language=Language.EN,
+                             links=Links(self="/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         self_html="/pid/f6171539-a479-4829-9b9b-a6b474e1c7d3",
+                                         data="/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/e5229d24-584a-43e8-b9f6-d349c3053f9c/data"),
                              descriptions=[IdentifierDescription(id="d8bdc933-655c-46bd-9903-ede3928a304b",
                                                                  description='Test Description')],
                              titles=[IdentifierTitle(id="f6171539-a479-4829-9b9b-a6b474e1c7d3", title='Test Title')],
@@ -708,7 +744,8 @@ class IdentifierUnitTest(unittest.TestCase):
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
-            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(), status_code=200)
+            mock.put('/api/identifier/f6171539-a479-4829-9b9b-a6b474e1c7d3/publish', json=exp.model_dump(),
+                     status_code=200)
             # test
             try:
                 RestClient(username="a", password="b").publish_identifier(

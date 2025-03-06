@@ -6,7 +6,6 @@ import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -26,10 +25,6 @@ import java.util.UUID;
 public interface MetadataMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MetadataMapper.class);
-
-    default String queryDtoToViewName(QueryDto subset) {
-        return subset.getQueryHash();
-    }
 
     ContainerDto containerDtoToContainerDto(ContainerDto data);
 

@@ -1,11 +1,10 @@
 package at.tuwien.config;
 
 import at.tuwien.auth.InternalRequestInterceptor;
-import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.service.CredentialService;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,11 +28,11 @@ public class GatewayConfig {
     @Value("${dbrepo.system.password}")
     private String systemPassword;
 
-    private final KeycloakGateway keycloakGateway;
+    private final CredentialService credentialService;
 
     @Autowired
-    public GatewayConfig(KeycloakGateway keycloakGateway) {
-        this.keycloakGateway = keycloakGateway;
+    public GatewayConfig(CredentialService credentialService) {
+        this.credentialService = credentialService;
     }
 
     @Bean
@@ -41,7 +40,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(this, keycloakGateway));
+                .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 

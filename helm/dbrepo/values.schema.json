@@ -126,7 +126,7 @@
                 "endpoint": {
                     "type": "string"
                 },
-                "extraEnvVarsSecret": {
+                "extraEnvVarsCM": {
                     "type": "string"
                 },
                 "extraVolumeMounts": {

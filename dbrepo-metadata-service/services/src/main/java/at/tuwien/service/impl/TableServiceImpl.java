@@ -322,7 +322,6 @@ public class TableServiceImpl implements TableService {
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated statistics for the table and {} column(s)", table.getColumns().size());
-        log.trace("updated statistics: {}", table);
     }
 
 }

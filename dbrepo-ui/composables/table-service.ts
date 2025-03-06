@@ -132,7 +132,7 @@ export const useTableService = (): any => {
     }
     console.debug('export data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/export`, config)
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, config)
         .then((response) => {
           console.info('Exported data for table')
           resolve(response.data)

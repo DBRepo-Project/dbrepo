@@ -44,7 +44,7 @@ spec:
                 - /bin/bash
                 - -ec
                 - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-            initialDelaySeconds: 120
+            initialDelaySeconds: 150
             periodSeconds: 10
           readinessProbe:
             exec:

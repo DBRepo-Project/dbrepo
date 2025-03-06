@@ -64,7 +64,7 @@ export const useQueryService = (): any => {
     }
     console.debug('export query with id', queryId, 'in database with id', databaseId)
     return new Promise<any>((resolve, reject) => {
-      axios.get<any>(`/api/database/${databaseId}/subset/${queryId}`, config)
+      axios.get<any>(`/api/database/${databaseId}/subset/${queryId}/data`, config)
         .then((response) => {
           console.info('Exported query with id', queryId, 'in database with id', databaseId)
           resolve(response.data)

@@ -1,7 +1,7 @@
 package at.tuwien.config;
 
 import at.tuwien.auth.InternalRequestInterceptor;
-import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.service.CredentialService;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +44,12 @@ public class GatewayConfig {
 
     @Value("${dbrepo.system.password}")
     private String systemPassword;
-
-    private final KeycloakGateway keycloakGateway;
+    
+    private final CredentialService credentialService;
 
     @Autowired
-    public GatewayConfig(KeycloakGateway keycloakGateway) {
-        this.keycloakGateway = keycloakGateway;
+    public GatewayConfig(CredentialService credentialService) {
+        this.credentialService = credentialService;
     }
 
     @Profile("!junit")
@@ -58,7 +58,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(brokerEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(this, keycloakGateway));
+                .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 
@@ -67,7 +67,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(this, keycloakGateway));
+                .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 
@@ -76,7 +76,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(analyseEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(this, keycloakGateway));
+                .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 
@@ -85,7 +85,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(searchEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(this, keycloakGateway));
+                .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 
