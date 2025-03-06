@@ -460,7 +460,7 @@ clean-images:
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "apk add --no-cache wget bash"
-    - "wget -O- /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v0.8.2/regctl-linux-amd64"
+    - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v0.8.2/regctl-linux-amd64"
     - "chmod +x /usr/local/sbin/regctl"
   script:
     - bash ./.gitlab/remove-unsupported-images.sh
