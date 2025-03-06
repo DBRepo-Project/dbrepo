@@ -459,8 +459,8 @@ clean-images:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add --no-cache curl bash jq regclient"
+    - echo "@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+    - "apk add --no-cache bash regclient"
   script:
     - bash ./.gitlab/remove-unsupported-images.sh
 
@@ -486,8 +486,6 @@ release-images:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add --no-cache make bash"
   script:
     - docker build -q --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
     - docker build -q --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
