@@ -653,6 +653,7 @@ class IdentifierSave(CreateIdentifier):
 class Identifier(BaseModel):
     id: str
     database_id: str
+    links: Links
     type: IdentifierType
     owner: UserBrief
     status: IdentifierStatusType
@@ -986,6 +987,12 @@ class Query(BaseModel):
     query_normalized: str
     result_number: Optional[int] = None
     identifiers: List[IdentifierBrief] = field(default_factory=list)
+
+
+class Links(BaseModel):
+    self: str
+    self_html: str
+    data: Optional[str] = None
 
 
 class UpdateQuery(BaseModel):

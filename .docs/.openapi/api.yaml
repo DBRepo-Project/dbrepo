@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.7.0
+  version: 1.7.1
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -186,6 +186,11 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Retrieved view data
@@ -202,6 +207,7 @@ paths:
             application/json:
               schema:
                 type: string
+            text/csv: {}
         '400':
           description: Request pagination is malformed
           content:
@@ -216,6 +222,12 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Failed to find view in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -274,6 +286,11 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Retrieved view data
@@ -290,6 +307,7 @@ paths:
             application/json:
               schema:
                 type: string
+            text/csv: {}
         '400':
           description: Request pagination is malformed
           content:
@@ -304,6 +322,12 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Failed to find view in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -365,6 +389,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Get table data
@@ -381,6 +410,7 @@ paths:
             application/json:
               schema:
                 type: string
+            text/csv: {}
         '400':
           description: Request pagination or table data select query is malformed
           content:
@@ -395,6 +425,12 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Failed to find table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -640,6 +676,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Get table data
@@ -656,6 +697,7 @@ paths:
             application/json:
               schema:
                 type: string
+            text/csv: {}
         '400':
           description: Request pagination or table data select query is malformed
           content:
@@ -670,6 +712,12 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Failed to find table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -708,6 +756,11 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
         - name: timestamp
           in: query
           required: false
@@ -748,6 +801,7 @@ paths:
             application/json:
               schema:
                 type: string
+            text/csv: {}
         '400':
           description: Invalid pagination
           content:
@@ -764,6 +818,12 @@ paths:
           description: >-
             Failed to find database in metadata database or query in query store
             of the data database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -801,6 +861,11 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
         - name: timestamp
           in: query
           required: false
@@ -841,6 +906,7 @@ paths:
             application/json:
               schema:
                 type: string
+            text/csv: {}
         '400':
           description: Invalid pagination
           content:
@@ -857,6 +923,12 @@ paths:
           description: >-
             Failed to find database in metadata database or query in query store
             of the data database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -1164,6 +1236,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        '406':
+          description: Failed to format data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '417':
           description: Failed to insert query into query store of data database
           content:
@@ -1178,70 +1256,6 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '503':
           description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-        - basicAuth: []
-        - bearerAuth: []
-  '/api/database/{databaseId}/view/{viewId}/export':
-    get:
-      tags:
-        - view-endpoint
-      summary: Get view data
-      description: >-
-        Gets data from view with id as downloadable file. For tables in private
-        databases, the user needs to have at least *READ* access to the
-        associated database.
-      operationId: exportDataset
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: viewId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: timestamp
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date-time
-      responses:
-        '200':
-          description: Exported view data
-          content:
-            application/json:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Request pagination or view data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '403':
-          description: Export view data not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '404':
-          description: Failed to find view in metadata database or export dataset
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '503':
-          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -1314,70 +1328,6 @@ paths:
       security:
         - basicAuth: []
         - bearerAuth: []
-  '/api/database/{databaseId}/table/{tableId}/export':
-    get:
-      tags:
-        - table-endpoint
-      summary: Get table data
-      description: >-
-        Gets data from table with id as downloadable file. For tables in private
-        databases, the user needs to have at least *READ* access to the
-        associated database.
-      operationId: exportDataset_1
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: timestamp
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date-time
-      responses:
-        '200':
-          description: Exported table data
-          content:
-            application/json:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '403':
-          description: Export table data not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '404':
-          description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '503':
-          description: Failed to establish connection with the metadata service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-        - basicAuth: []
-        - bearerAuth: []
   '/api/database/{databaseId}/subset/{subsetId}':
     get:
       tags:
@@ -1403,11 +1353,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: Accept
-          in: header
-          required: true
-          schema:
-            type: string
         - name: timestamp
           in: query
           required: false
@@ -2282,7 +2227,6 @@ paths:
             application/ld+json:
               schema:
                 $ref: '#/components/schemas/LdDatasetDto'
-            text/csv: {}
             text/xml: {}
             text/bibliography: {}
             text/bibliography; style=apa: {}
@@ -5332,6 +5276,7 @@ components:
         - id
         - language
         - licenses
+        - links
         - owner
         - publication_year
         - publisher
@@ -5347,6 +5292,8 @@ components:
           type: string
           format: uuid
           example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
+        links:
+          $ref: '#/components/schemas/LinksDto'
         type:
           type: string
           example: database
@@ -5681,6 +5628,21 @@ components:
             preservation of copyright and license notices. Licensed works,
             modifications, and larger works may be distributed under different
             terms and without source code.
+    LinksDto:
+      required:
+        - self
+        - self_html
+      type: object
+      properties:
+        self:
+          type: string
+          example: 'http://example.com/api/'
+        data:
+          type: string
+          example: 'http://example.com'
+        self_html:
+          type: string
+          example: 'http://example.com'
     RelatedIdentifierDto:
       required:
         - id
@@ -8414,14 +8376,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       required:
         - id

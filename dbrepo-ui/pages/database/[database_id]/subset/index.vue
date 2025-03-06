@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canViewSchema">
+    v-if="canView">
     <DatabaseToolbar />
     <SubsetList />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -42,11 +42,11 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    canViewSchema () {
+    canView () {
       if (!this.database) {
         return false
       }
-      if (this.database.is_schema_public) {
+      if (this.database.is_public || this.database.is_schema_public) {
         return true
       }
       if (!this.access) {

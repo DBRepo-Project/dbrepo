@@ -1,9 +1,8 @@
 package at.tuwien.gateway;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.CreateViewDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
@@ -144,19 +143,6 @@ public interface DataServiceGateway {
      */
     QueryDto findQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException;
-
-    /**
-     * Exports a given query.
-     *
-     * @param databaseId The database id.
-     * @param queryId    The query id.
-     * @return The exported resource, if successful.
-     * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException           The data service responded unexpectedly.
-     * @throws QueryNotFoundException         The given query was not found in the query store.
-     */
-    ExportResourceDto exportQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException,
-            DataServiceException, QueryNotFoundException;
 
     /**
      * Obtain table schemas from a given database.

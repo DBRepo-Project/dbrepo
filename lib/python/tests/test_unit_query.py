@@ -93,14 +93,14 @@ class QueryUnitTest(unittest.TestCase):
     def test_create_subset_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
-            df = DataFrame.from_records(json.dumps(exp))
+            df = DataFrame.from_records(exp)
             # mock
             mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
             mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/subset', json=json.dumps(exp),
-                      headers={'X-Id': '1'}, status_code=201)
+            mock.post(f'/api/database/{self.database.id}/subset', json=exp,
+                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8'}, status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
@@ -263,14 +263,14 @@ class QueryUnitTest(unittest.TestCase):
     def test_create_subset_anonymous_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
-            df = DataFrame.from_records(json.dumps(exp))
+            df = DataFrame.from_records(exp)
             # mock
             mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
             mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/subset', json=json.dumps(exp),
-                      headers={'X-Id': '1'}, status_code=201)
+            mock.post(f'/api/database/{self.database.id}/subset', json=exp,
+                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8'}, status_code=201)
             # test
 
             client = RestClient()

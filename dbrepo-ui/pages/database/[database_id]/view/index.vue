@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canViewSchema">
+    v-if="canView">
     <DatabaseToolbar />
     <v-window
       v-model="tab">
@@ -51,11 +51,11 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    canViewSchema () {
+    canView () {
       if (!this.database) {
         return false
       }
-      if (this.database.is_schema_public) {
+      if (this.database.is_public || this.database.is_schema_public) {
         return true
       }
       const userService = useUserService()

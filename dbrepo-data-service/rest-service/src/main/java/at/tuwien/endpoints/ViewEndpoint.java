@@ -25,9 +25,9 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +36,6 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Log4j2
@@ -225,7 +224,8 @@ public class ViewEndpoint extends RestEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = List.class))}),
+                            schema = @Schema(implementation = List.class)),
+                            @Content(mediaType = "text/csv")}),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination is malformed",
                     content = {@Content(
@@ -241,6 +241,11 @@ public class ViewEndpoint extends RestEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Failed to format data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "409",
                     description = "View schema could not be mapped",
                     content = {@Content(
@@ -252,17 +257,20 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                             @NotNull @PathVariable("viewId") UUID viewId,
-                                                             @RequestParam(required = false) Long page,
-                                                             @RequestParam(required = false) Long size,
-                                                             @RequestParam(required = false) Instant timestamp,
-                                                             @NotNull HttpServletRequest request,
-                                                             Principal principal)
+    public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                     @NotNull @PathVariable("viewId") UUID viewId,
+                                     @RequestParam(required = false) Long page,
+                                     @RequestParam(required = false) Long size,
+                                     @RequestParam(required = false) Instant timestamp,
+                                     @NotNull HttpServletRequest request,
+                                     @NotNull @RequestHeader("Accept") String accept,
+                                     Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException, PaginationException,
-            QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException {
-        log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId,
-                viewId, page, size, timestamp);
+            QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException,
+            DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException,
+            FormatNotAvailableException {
+        log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, accept={}, timestamp={}",
+                databaseId, viewId, page, size, accept, timestamp);
         endpointValidator.validateDataParams(page, size);
         /* parameters */
         if (page == null) {
@@ -283,7 +291,9 @@ public class ViewEndpoint extends RestEndpoint {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
-            cacheService.getAccess(databaseId, getId(principal));
+            if (!isSystem(principal)) {
+                cacheService.getAccess(databaseId, getId(principal));
+            }
         }
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
@@ -297,84 +307,32 @@ public class ViewEndpoint extends RestEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
-            final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
-                    view.getInternalName(), timestamp, page, size);
-            final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(databaseId),
-                    query);
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(transform(dataset));
+            final String query = mariaDbMapper.rawSelectQuery(view.getQuery(), timestamp,
+                    accept.equals("text/csv") ? null : page,
+                    accept.equals("text/csv") ? null : size);
+            final Dataset<Row> dataset = subsetService.getData(database, query);
+            final String viewName = view.getQueryHash();
+            databaseService.createView(database, viewName, view.getQuery());
+            switch (accept) {
+                case MediaType.APPLICATION_JSON_VALUE:
+                    log.trace("accept header matches json");
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .body(transform(dataset));
+                case "text/csv":
+                    log.trace("accept header matches csv");
+                    final ExportResourceDto resource = storageService.transformDataset(dataset);
+                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .body(storageService.transformDataset(dataset)
+                                    .getResource());
+            }
+            throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
-    }
-
-    @GetMapping("/{viewId}/export")
-    @Observed(name = "dbrepo_view_data_export")
-    @Operation(summary = "Get view data",
-            description = "Gets data from view with id as downloadable file. For tables in private databases, the user needs to have at least *READ* access to the associated database.",
-            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Exported view data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = InputStreamResource.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Request pagination or view data select query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Export view data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find view in metadata database or export dataset",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                             @NotNull @PathVariable("viewId") UUID viewId,
-                                                             @RequestParam(required = false) Instant timestamp,
-                                                             Principal principal)
-            throws RemoteUnavailableException, ViewNotFoundException, NotAllowedException, MetadataServiceException,
-            StorageUnavailableException, QueryMalformedException, TableNotFoundException, DatabaseNotFoundException {
-        log.debug("endpoint export view data, databaseId={}, viewId={}", databaseId, viewId);
-        /* parameters */
-        if (timestamp == null) {
-            timestamp = Instant.now();
-            log.debug("timestamp not set: default to {}", timestamp);
-        }
-        /* parameters */
-        final ViewDto view = cacheService.getView(databaseId, viewId);
-        if (!view.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to export private view: principal is null");
-                throw new NotAllowedException("Failed to export private view: principal is null");
-            }
-            cacheService.getAccess(databaseId, getId(principal));
-        }
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
-        final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
-                view.getInternalName(), timestamp, null, null);
-        final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(databaseId),
-                query);
-        final ExportResourceDto resource = storageService.transformDataset(dataset);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-        log.trace("export table resulted in resource {}", resource);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource.getResource());
     }
 
 }

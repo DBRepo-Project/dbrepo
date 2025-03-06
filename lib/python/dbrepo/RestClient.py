@@ -11,7 +11,7 @@ from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
     AuthenticationError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
-from dbrepo.api.mapper import query_to_subset
+from dbrepo.api.mapper import query_to_subset, dataframe_to_table_definition
 
 logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
                     stream=sys.stdout)
@@ -463,9 +463,8 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database schema: response code: {response.status_code} is not 200 (OK)')
 
-    def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool,
-                     columns: List[CreateTableColumn], constraints: CreateTableConstraints,
-                     description: str = None) -> TableBrief:
+    def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool, dataframe: DataFrame,
+                     description: str = None, with_data: bool = True) -> TableBrief:
         """
         Updates the database owner of a database with given database id.
 
@@ -473,9 +472,9 @@ class RestClient:
         :param name: The name of the created table.
         :param is_public: The visibility of the data. If set to true the data will be publicly visible.
         :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible.
-        :param constraints: The constraints of the created table.
-        :param columns: The columns of the created table.
+        :param dataframe: The `pandas` dataframe.
         :param description: The description of the created table. Optional.
+        :param with_data: If set to `True`, the data will be included in the new table. Optional. Default: `True`.
 
         :returns: The table, if successful.
 
@@ -488,12 +487,18 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the creation.
         """
         url = f'/api/database/{database_id}/table'
+        columns, constraints = dataframe_to_table_definition(dataframe)
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateTable(name=name, is_public=is_public, is_schema_public=is_schema_public,
                                                      description=description, columns=columns, constraints=constraints))
         if response.status_code == 201:
             body = response.json()
-            return TableBrief.model_validate(body)
+            table = TableBrief.model_validate(body)
+            if with_data:
+                self.import_table_data(database_id=database_id,
+                                       table_id=table.id,
+                                       dataframe=dataframe.reset_index())
+            return table
         if response.status_code == 400:
             raise MalformedError(f'Failed to create table: {response.text}')
         if response.status_code == 403:
@@ -821,7 +826,7 @@ class RestClient:
         if page is not None and size is not None:
             params.append(('page', page))
             params.append(('size', size))
-        response = self._wrapper(method="get", url=url, params=params)
+        response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
         if response.status_code == 400:
@@ -864,7 +869,7 @@ class RestClient:
             params.append(('size', size))
         if timestamp is not None:
             params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
-        response = self._wrapper(method="get", url=url, params=params)
+        response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
         if response.status_code == 400:
@@ -919,9 +924,9 @@ class RestClient:
         
         :raises ResponseCodeError: If something went wrong with the insert.
         """
-        url = f'/api/upload'
         buffer = BytesIO()
-        dataframe.to_csv(path_or_buf=buffer, header=False, index=False)
+        dataframe.to_csv(path_or_buf=buffer, header=True, index=False)
+        url = f'/api/upload'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  files={'file': ('dataframe.csv', buffer.getvalue())})
         if response.status_code == 201:
@@ -949,8 +954,8 @@ class RestClient:
 
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=Import(location=self._upload(dataframe), separator=',', quote='"',
-                                                header=True, line_termination='\n'))
+                                 payload=Import(location=self._upload(dataframe), separator=',', quote='"', header=True,
+                                                line_termination='\n'))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -1354,7 +1359,7 @@ class RestClient:
                                  payload=subset)
         if response.status_code == 201:
             logging.info(f'Created subset with id: {response.headers["X-Id"]}')
-            return DataFrame.from_records(response.json())
+            return DataFrame.from_records(response.json(), columns=query.columns)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create subset: {response.text}')
         if response.status_code == 403:
@@ -1388,11 +1393,10 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        headers = {}
         url = f'/api/database/{database_id}/subset/{subset_id}/data'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
-        response = self._wrapper(method="get", url=url, headers=headers)
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
         if response.status_code == 400:
@@ -1781,7 +1785,7 @@ class RestClient:
 
     def get_identifier(self, identifier_id: str) -> Identifier:
         """
-        Get list of identifiers, filter by the remaining optional arguments.
+        Get the identifier by given id.
 
         :param identifier_id: The identifier id.
 
@@ -1798,6 +1802,39 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifier: not found')
         raise ResponseCodeError(f'Failed to get identifier: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_identifier_data(self, identifier_id: str) -> DataFrame:
+        """
+        Get the identifier data by given id.
+
+        :param identifier_id: The identifier id.
+
+        :returns: The identifier, if successful.
+
+        :raises NotExistsError: If the identifier does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval of the identifier.
+        """
+        url = f'/api/identifier/{identifier_id}'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            identifier = Identifier.model_validate(body)
+            if identifier.type == IdentifierType.VIEW:
+                return self.get_view_data(database_id=identifier.database_id, view_id=identifier.view_id, page=0,
+                                          size=10000)
+            elif identifier.type == IdentifierType.TABLE:
+                return self.get_table_data(database_id=identifier.database_id, table_id=identifier.table_id, page=0,
+                                           size=10000)
+            elif identifier.type == IdentifierType.SUBSET:
+                return self.get_subset_data(database_id=identifier.database_id, subset_id=identifier.query_id, page=0,
+                                            size=10000)
+            raise FormatNotAvailable(f'Failed to get identifier data: type is database')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get identifier data: not found')
+        if response.status_code == 406:
+            raise NotExistsError(f'Failed to get identifier data: type database')
+        raise ResponseCodeError(f'Failed to get identifier data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
     def get_image(self, image_id: str) -> Image:

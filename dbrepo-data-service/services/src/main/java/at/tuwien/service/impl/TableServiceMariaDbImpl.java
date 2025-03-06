@@ -79,7 +79,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
                         .forEach(column -> statistic.getColumns().put(column.getInternalName(), new ColumnStatisticDto()));
                 log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
-                log.trace("obtained statistics: {}", statistic);
             }
         } catch (SQLException e) {
             connection.rollback();

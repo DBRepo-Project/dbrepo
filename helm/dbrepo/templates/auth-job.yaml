@@ -30,8 +30,8 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           envFrom:
-            - secretRef:
-                name: auth-service-secret
+            - configMapRef:
+                name: auth-service-config
           {{- if .Values.authservice.setupJob.resources }}
           resources: {{- toYaml .Values.authservice.setupJob.resources | nindent 12 }}
           {{- else if ne .Values.authservice.setupJob.resourcesPreset "none" }}

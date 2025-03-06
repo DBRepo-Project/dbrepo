@@ -11,8 +11,9 @@ variables:
   SONARQUBE_VERSION: "10.0"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.7"
-  APP_VERSION: "1.7.0"
-  CHART_VERSION: "1.7.0"
+  APP_VERSION: "1.7.1"
+  CHART_VERSION: "1.7.1"
+  SUPPORTED_VERSIONS: "[\"1.7.0\",\"1.7.1\"]"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -35,7 +36,7 @@ workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev"
       variables:
-        BUILD_VERSION: "+git.${CI_COMMIT_SHORT_SHA}"
+        BUILD_VERSION: "-dev.git.${CI_COMMIT_SHORT_SHA}"
     - when: always
 
 stages:
@@ -43,8 +44,8 @@ stages:
   - build
   - test
   - docs
+  - clean
   - release
-  - deploy
   - verify
   - scan
 
@@ -119,7 +120,7 @@ lint-helm-readme:
       - ./helm/dbrepo/README.md
     expire_in: 1 days
 
-lint-metadata-schema:
+lint-helm-files:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   script:
@@ -147,7 +148,6 @@ build-metadata-service:
   stage: build
   only:
     - merge_requests
-    - master
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
@@ -168,7 +168,6 @@ build-analyse-service:
   stage: build
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
@@ -180,7 +179,6 @@ build-lib:
   stage: build
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
@@ -192,7 +190,6 @@ build-data-service:
   stage: build
   only:
     - merge_requests
-    - master
   needs:
     - build-metadata-service
   dependencies:
@@ -215,7 +212,6 @@ build-ui:
   stage: build
   only:
     - merge_requests
-    - master
   script:
     - "cd ./dbrepo-ui && bun install && bun run build"
 
@@ -224,7 +220,6 @@ build-search-service:
   stage: build
   only:
     - merge_requests
-    - master
   before_script:
     - "pip install pipenv"
   script:
@@ -235,20 +230,19 @@ build-images:
   stage: build
   only:
     - merge_requests
-    - master
   before_script:
     - "apk add --no-cache make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - "make build-images"
+    - docker build -q --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
+    - docker build -q --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
+    - docker compose build -q --parallel
 
 build-helm:
   image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: build
   only:
-    - tags
     - merge_requests
-    - master
   before_script:
     - apk add --no-cache helm make
     - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
@@ -261,7 +255,6 @@ test-metadata-service:
   stage: test
   only:
     - merge_requests
-    - master
   needs:
     - build-metadata-service
   dependencies:
@@ -284,7 +277,6 @@ test-data-service:
   stage: test
   only:
     - merge_requests
-    - master
   needs:
     - build-data-service
   dependencies:
@@ -308,7 +300,6 @@ test-analyse-service:
   stage: test
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -335,7 +326,6 @@ test-auth-service-init:
   stage: test
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
   before_script:
@@ -360,7 +350,6 @@ test-search-service:
   stage: test
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
@@ -394,7 +383,6 @@ test-search-service-init:
   stage: test
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
   needs:
@@ -421,7 +409,6 @@ test-lib:
   stage: test
   only:
     - merge_requests
-    - master
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -448,7 +435,6 @@ test-ui:
   stage: test
   only:
     - merge_requests
-    - master
   needs:
     - build-ui
   dependencies:
@@ -461,13 +447,29 @@ test-ui:
     - "sleep 30"
     - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh"
 
+clean-images:
+  stage: clean
+  image: docker:${DOCKER_VERSION}-dind
+  only:
+    refs:
+      - dev
+      - /^release-.*/
+  before_script:
+    - "docker logout ${CI_REGISTRY_URL}"
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+    - "docker logout ${CI_REGISTRY2_URL}"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+    - "apk add --no-cache wget bash"
+    - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v0.8.2/regctl-linux-amd64"
+    - "chmod +x /usr/local/sbin/regctl"
+  script:
+    - bash ./.gitlab/remove-unsupported-images.sh
+
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
-  only:
-    - dev
-    - tags
   dependencies:
+    - clean-images
     - test-analyse-service
     - test-auth-service-init
     - test-data-service
@@ -476,21 +478,47 @@ release-images:
     - test-search-service
     - test-search-service-init
     - test-ui
+  only:
+    refs:
+      - dev
+      - /^release-.*/
   before_script:
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add --no-cache make bash"
   script:
-    - "make release-images"
+    - docker build -q --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
+    - docker build -q --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
+    - docker compose build -q --parallel
+    - docker tag dbrepo-analyse-service:latest "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-dashboard-service:latest "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-ui:latest "${CI_REGISTRY2_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-data-service:latest "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-metadata-service:latest "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-search-db:latest "${CI_REGISTRY2_URL}/search-db:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-search-service:latest "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-search-service-init:latest "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-storage-service-init:latest "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/search-db:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
 
 release-helm:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
   only:
-    - tags
+    refs:
+      - /^release-.*/
+  when: manual
   needs:
     - build-helm
   dependencies:
@@ -517,7 +545,8 @@ release-docs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   only:
-    - tags
+    refs:
+      - /^release-.*/
   before_script:
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
@@ -549,8 +578,10 @@ release-docs:
 release-libs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+  when: manual
   only:
-    - tags
+    refs:
+      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   before_script:
@@ -565,7 +596,8 @@ verify-install-script:
   image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: verify
   only:
-    - tags
+    refs:
+      - /^release-.*/
   variables:
     SKIP_CHECKS: 1
   before_script:
@@ -577,37 +609,25 @@ verify-dist:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: verify
   only:
-    - tags
+    refs:
+      - /^release-.*/
   before_script:
     - "apk add curl"
   script:
     - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
 
-deploy-staging:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: deploy
-  only:
-    - dev
-  variables:
-    KUBECONFIG: ./kubecfg
-  environment:
-    name: staging/datalab
-    url: ${CI_ENV_STAGING_URL}
-  before_script:
-    - apk add --no-cache helm kubectl make
-    - echo ${CI_K8S_CONFIG} | base64 -d > ./kubecfg
-    - make build-helm
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME} --ignore-not-found
-    - kubectl -n ${CI_ENV_STAGING_NAMESPACE} delete pvc --all
-    - echo "${CI_K8S_VALUES}" | base64 -d > ./values.yaml
-  script:
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} upgrade --install ${CI_ENV_STAGING_RELEASE_NAME} ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace -f ./values.yaml
-
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}
   stage: scan
   only:
-    - master
+    refs:
+      - master
+  needs:
+    - build-data-service
+    - build-metadata-service
+  dependencies:
+    - build-data-service
+    - build-metadata-service
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
   allow_failure: true

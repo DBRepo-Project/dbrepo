@@ -49,7 +49,7 @@ spec:
                 - /bin/bash
                 - -ec
                 - "ldapwhoami -H ldap://localhost:1389 -D cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }} -w {{ .Values.identityservice.global.adminPassword }}"
-            initialDelaySeconds: 120
+            initialDelaySeconds: 150
             periodSeconds: 10
           readinessProbe:
             exec:
