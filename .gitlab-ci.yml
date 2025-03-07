@@ -169,6 +169,7 @@ build-analyse-service:
   stage: build
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
@@ -180,6 +181,7 @@ build-lib:
   stage: build
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
@@ -214,6 +216,7 @@ build-ui:
   stage: build
   only:
     - merge_requests
+    - master
   script:
     - "cd ./dbrepo-ui && bun install && bun run build"
 
@@ -222,6 +225,7 @@ build-search-service:
   stage: build
   only:
     - merge_requests
+    - master
   before_script:
     - "pip install pipenv"
   script:
@@ -232,6 +236,7 @@ build-images:
   stage: build
   only:
     - merge_requests
+    - master
   before_script:
     - "apk add --no-cache make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
@@ -257,6 +262,7 @@ test-metadata-service:
   stage: test
   only:
     - merge_requests
+    - master
   needs:
     - build-metadata-service
   dependencies:
@@ -279,6 +285,7 @@ test-data-service:
   stage: test
   only:
     - merge_requests
+    - master
   needs:
     - build-data-service
   dependencies:
@@ -302,6 +309,7 @@ test-analyse-service:
   stage: test
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -328,6 +336,7 @@ test-auth-service-init:
   stage: test
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
   before_script:
@@ -352,6 +361,7 @@ test-search-service:
   stage: test
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
@@ -385,6 +395,7 @@ test-search-service-init:
   stage: test
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
   needs:
@@ -411,6 +422,7 @@ test-lib:
   stage: test
   only:
     - merge_requests
+    - master
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -437,6 +449,7 @@ test-ui:
   stage: test
   only:
     - merge_requests
+    - master
   needs:
     - build-ui
   dependencies:
@@ -622,8 +635,7 @@ scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}
   stage: scan
   only:
-    refs:
-      - master
+    - master
   needs:
     - build-data-service
     - build-metadata-service
