@@ -250,6 +250,7 @@ build-helm:
   stage: build
   only:
     - merge_requests
+    - tags
     - /^release-.*/
   before_script:
     - apk add --no-cache helm make
@@ -468,8 +469,8 @@ clean-images:
   image: docker:${DOCKER_VERSION}-dind
   only:
     refs:
+      - tags
       - dev
-      - /^release-.*/
   before_script:
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
@@ -531,7 +532,7 @@ release-helm:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
   only:
-    - /^release-.*/
+    - tags
   when: manual
   needs:
     - build-helm
@@ -594,8 +595,7 @@ release-libs:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   when: manual
   only:
-    refs:
-      - /^release-.*/
+    - tags
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   before_script:
