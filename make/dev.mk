@@ -26,7 +26,6 @@ package-config: ## Package the config files
 	cp ./dbrepo-dashboard-service/grafana.ini ./.docker/config
 	cp ./dbrepo-dashboard-service/ldap.toml ./.docker/config
 	cp -r ./dbrepo-dashboard-service/dashboards ./.docker/config
-	cp -r ./dbrepo-dashboard-service/provisioning ./.docker/config
 	cp ./dbrepo-gateway-service/dbrepo.conf ./.docker/config
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
