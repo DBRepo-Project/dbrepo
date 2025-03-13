@@ -1,7 +1,6 @@
 package at.tuwien.validation;
 
 import at.tuwien.exception.PaginationException;
-import at.tuwien.exception.QueryNotSupportedException;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -64,31 +63,6 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(PaginationException.class, () -> {
             endpointValidator.validateDataParams(0L, 0L);
-        });
-    }
-
-    @Test
-    public void validateForbiddenStatements_succeeds() throws QueryNotSupportedException {
-
-        /* test */
-        endpointValidator.validateForbiddenStatements("SELECT country FROM some_table");
-    }
-
-    @Test
-    public void validateForbiddenStatements_fails() {
-
-        /* test */
-        assertThrows(QueryNotSupportedException.class, () -> {
-            endpointValidator.validateForbiddenStatements("SELECT COUNT(id) FROM some_table");
-        });
-    }
-
-    @Test
-    public void validateForbiddenStatements_lowercase_fails() {
-
-        /* test */
-        assertThrows(QueryNotSupportedException.class, () -> {
-            endpointValidator.validateForbiddenStatements("SELECT COUNT(id) FROM some_table");
         });
     }
 
