@@ -16,6 +16,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,14 +30,16 @@ import java.util.UUID;
 @Service
 public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetService {
 
+    private final DSLContext context;
     private final DataMapper dataMapper;
     private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SparkSession sparkSession,
-                                    MetadataServiceGateway metadataServiceGateway) {
+    public SubsetServiceMariaDbImpl(DSLContext context, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
+                                    SparkSession sparkSession, MetadataServiceGateway metadataServiceGateway) {
+        this.context = context;
         this.dataMapper = dataMapper;
         this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
@@ -68,7 +71,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewMalformedException {
-        final String statement = mariaDbMapper.subsetDtoToRawQuery(database, subset);
+        final String statement = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
         return storeQuery(database, statement, timestamp, userId);
     }
 
