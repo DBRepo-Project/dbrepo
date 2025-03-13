@@ -279,7 +279,7 @@ public class SubsetEndpoint extends RestEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* create */
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         if (!database.getIsSchemaPublic()) {
             if (principal == null) {
                 log.error("Failed to create subset: no authentication found");

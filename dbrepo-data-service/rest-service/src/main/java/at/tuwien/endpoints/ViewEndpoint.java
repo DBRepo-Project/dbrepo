@@ -24,6 +24,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,7 @@ import java.util.UUID;
 @RequestMapping(path = "/api/database/{databaseId}/view")
 public class ViewEndpoint extends RestEndpoint {
 
+    private final DSLContext context;
     private final ViewService viewService;
     private final CacheService cacheService;
     private final MariaDbMapper mariaDbMapper;
@@ -53,9 +55,11 @@ public class ViewEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, CacheService cacheService, MariaDbMapper mariaDbMapper,
-                        SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
+    public ViewEndpoint(DSLContext context, ViewService viewService, CacheService cacheService,
+                        MariaDbMapper mariaDbMapper, SubsetService subsetService,
+                        StorageService storageService, DatabaseService databaseService,
                         EndpointValidator endpointValidator) {
+        this.context = context;
         this.viewService = viewService;
         this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
@@ -155,11 +159,11 @@ public class ViewEndpoint extends RestEndpoint {
         /* check */
         endpointValidator.validateSubsetParams(data.getQuery());
         /* create */
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(databaseService.createView(database, mariaDbMapper.nameToInternalName(data.getName()),
-                            mariaDbMapper.subsetDtoToRawQuery(database, data.getQuery())));
+                            mariaDbMapper.subsetDtoToRawQuery(context, database, data.getQuery())));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -201,7 +205,7 @@ public class ViewEndpoint extends RestEndpoint {
             ViewMalformedException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final ViewDto view = cacheService.getView(databaseId, viewId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
             viewService.delete(database, view);
             return ResponseEntity.status(HttpStatus.ACCEPTED)

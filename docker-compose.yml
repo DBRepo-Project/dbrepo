@@ -21,7 +21,6 @@ services:
     ports:
       - "3306:3306"
     environment:
-      BITNAMI_DEBUG: true
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
@@ -484,7 +483,6 @@ services:
     volumes:
       - dashboard-service-data:/opt/bitnami/grafana/data
     environment:
-      BITNAMI_DEBUG: true
       GF_SERVER_DOMAIN: "dashboard-service"
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"

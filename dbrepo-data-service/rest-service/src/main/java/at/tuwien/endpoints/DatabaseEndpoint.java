@@ -5,12 +5,12 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.ContainerService;
 import at.tuwien.service.CacheService;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,14 +38,16 @@ public class DatabaseEndpoint extends RestEndpoint {
 
     private final CacheService cacheService;
     private final AccessService accessService;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
     public DatabaseEndpoint(CacheService cacheService, AccessService accessService, DatabaseService databaseService,
-                            ContainerService containerService) {
+                            ContainerService containerService, MetadataMapper metadataMapper) {
         this.cacheService = cacheService;
         this.accessService = accessService;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.containerService = containerService;
     }
@@ -91,12 +93,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         try {
             final DatabaseDto database = containerService.createDatabase(container, data);
             containerService.createQueryStore(container, data.getInternalName());
-            final UserDto user = UserDto.builder()
-                    .id(data.getUserId())
-                    .username(data.getUsername())
-                    .password(data.getPassword())
-                    .build();
-            accessService.create(database, user, AccessTypeDto.WRITE_ALL);
+            accessService.create(database, metadataMapper.createDatabaseDtoToPrivilegedUserDto(data), AccessTypeDto.WRITE_ALL);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(database);
         } catch (SQLException e) {
