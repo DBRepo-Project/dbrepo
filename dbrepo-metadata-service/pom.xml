@@ -16,7 +16,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.7.1</version>
+    <version>1.7.2</version>
 
     <description>Service that manages the metadata</description>
 

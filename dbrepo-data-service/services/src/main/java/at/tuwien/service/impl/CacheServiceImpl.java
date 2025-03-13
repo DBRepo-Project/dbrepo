@@ -5,7 +5,6 @@ import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -44,17 +43,25 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public DatabaseDto getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    public DatabaseDto getDatabase(UUID id, Boolean forceReload) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
-        final DatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
-        if (cacheDatabase != null) {
-            log.trace("found database with id {} in cache", id);
-            return cacheDatabase;
+        if (!forceReload) {
+            final DatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
+            if (cacheDatabase != null) {
+                log.trace("found database with id {} in cache", id);
+                return cacheDatabase;
+            }
+            log.debug("database with id {} not it cache (anymore): reload from metadata service", id);
         }
-        log.debug("database with id {} not it cache (anymore): reload from metadata service", id);
         final DatabaseDto database = gateway.getDatabaseById(id);
         databaseCache.put(id, database);
         return database;
+    }
+
+    @Override
+    public DatabaseDto getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException {
+        return getDatabase(id, false);
     }
 
     @Override

@@ -13,6 +13,9 @@ import java.util.UUID;
 
 public interface CacheService {
 
+    DatabaseDto getDatabase(UUID id, Boolean forceReload) throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException;
+
     /**
      * Gets credentials for a database with given id either from the cache (if not expired) or retrieves them from the
      * Metadata Service.

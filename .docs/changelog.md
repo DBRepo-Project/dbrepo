@@ -2,7 +2,19 @@
 author: Martin Weise
 ---
 
+## v1.7.2 (2025-03-13)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.2)
+
+#### Fixes
+
+* Fixed a wrong configuration of `caffeine` in the Data Service that did not find views/subsets after table creation
+  within the cache period of 60 seconds
+  in [#506](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/506).
+
 ## v1.7.1 (2025-03-06)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.1)
 
 #### Features
 
@@ -18,7 +30,7 @@ author: Martin Weise
 
 ## v1.7.0 (2025-03-03)
 
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.1)
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.0)
 
 !!! warning "Contains Breaking Changes"
 
