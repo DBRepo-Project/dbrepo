@@ -63,7 +63,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
-    private CacheService credentialService;
+    private CacheService cacheService;
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
@@ -94,7 +94,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
                 .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
@@ -120,7 +120,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
@@ -138,7 +138,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -154,7 +154,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             QueryNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
@@ -170,7 +170,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             QueryNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
@@ -186,7 +186,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             QueryNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
@@ -202,7 +202,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             QueryNotFoundException, SQLException, MetadataServiceException, NotAllowedException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_5_DTO);
@@ -218,7 +218,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, QueryNotFoundException, SQLException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
@@ -236,7 +236,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
@@ -256,7 +256,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getDatabase(DATABASE_3_ID);
 
         /* test */
@@ -271,7 +271,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, SQLException, UserNotFoundException, QueryNotFoundException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
@@ -294,7 +294,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID, true))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
@@ -324,7 +326,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID, true))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), eq(USER_1_ID)))
                 .thenReturn(QUERY_5_ID);
@@ -352,8 +356,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(credentialService)
-                .getDatabase(DATABASE_3_ID);
+                .when(cacheService)
+                .getDatabase(DATABASE_3_ID, true);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -374,7 +378,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_4_ID))
+        when(cacheService.getDatabase(DATABASE_4_ID, true))
+                .thenReturn(DATABASE_4_PRIVILEGED_DTO);
+        when(cacheService.getDatabase(DATABASE_4_ID))
                 .thenReturn(DATABASE_4_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_9_DTO);
@@ -402,7 +408,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID, true))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(any(DatabaseDto.class), any(UUID.class)))
                 .thenReturn(QUERY_1_DTO);
@@ -429,7 +437,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_2_ID))
+        when(cacheService.getDatabase(DATABASE_2_ID, true))
+                .thenReturn(DATABASE_2_PRIVILEGED_DTO);
+        when(cacheService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_2_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_8_DTO);
@@ -454,7 +464,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
@@ -483,7 +493,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             ViewNotFoundException, ViewMalformedException, StorageUnavailableException, FormatNotAvailableException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
@@ -511,7 +521,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
@@ -539,7 +549,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -554,10 +564,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getAccess(DATABASE_1_ID, USER_1_ID);
 
         /* test */
@@ -575,7 +585,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             FormatNotAvailableException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
@@ -603,9 +613,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         doNothing()
                 .when(subsetService)
@@ -639,7 +649,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(NotAllowedException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getAccess(DATABASE_3_ID, USER_3_ID);
 
         /* test */
@@ -657,10 +667,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         doThrow(DatabaseNotFoundException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getDatabase(DATABASE_3_ID);
 
         /* test */
@@ -678,9 +688,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
+        when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
@@ -698,11 +708,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         if (database != null) {
-            when(credentialService.getDatabase(databaseId))
+            when(cacheService.getDatabase(databaseId))
                     .thenReturn(database);
         } else {
             doThrow(DatabaseNotFoundException.class)
-                    .when(credentialService)
+                    .when(cacheService)
                     .getDatabase(databaseId);
         }
 

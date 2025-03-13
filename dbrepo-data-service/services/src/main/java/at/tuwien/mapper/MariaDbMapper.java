@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.name;
 
 @Mapper(componentModel = "spring", uses = {MetadataMapper.class, DataMapper.class})
 public interface MariaDbMapper {
@@ -79,7 +79,6 @@ public interface MariaDbMapper {
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
                 .append(password)
                 .append("';");
-        log.trace("mapped create user statement: {}", statement);
         return statement.toString();
     }
 
@@ -107,7 +106,7 @@ public interface MariaDbMapper {
                 .append("` TO `")
                 .append(username)
                 .append("`@`%`;");
-        log.trace("mapped revoke privileges statement: {}", statement);
+        log.trace("mapped grant privileges statement: {}", statement);
         return statement.toString();
     }
 
@@ -181,7 +180,7 @@ public interface MariaDbMapper {
     }
 
     default String databaseTableSelectRawQuery() {
-        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION`, t.`TABLE_COMMENT` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
+        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION`, t.`TABLE_COMMENT` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` IN ('SYSTEM VERSIONED', 'VIEW') AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
         log.trace("mapped select table statement: {}", statement);
         return statement;
     }
@@ -846,33 +845,33 @@ public interface MariaDbMapper {
         switch (operator) {
             case "=":
             case "<=>":
-                return field(column.getInternalName()).eq(data.getValue());
+                return field(name(column.getInternalName())).eq(data.getValue());
             case "<":
-                return field(column.getInternalName()).lt(data.getValue());
+                return field(name(column.getInternalName())).lt(data.getValue());
             case "<=":
-                return field(column.getInternalName()).le(data.getValue());
+                return field(name(column.getInternalName())).le(data.getValue());
             case ">":
-                return field(column.getInternalName()).gt(data.getValue());
+                return field(name(column.getInternalName())).gt(data.getValue());
             case ">=":
-                return field(column.getInternalName()).ge(data.getValue());
+                return field(name(column.getInternalName())).ge(data.getValue());
             case "!=":
-                return field(column.getInternalName()).ne(data.getValue());
+                return field(name(column.getInternalName())).ne(data.getValue());
             case "LIKE":
-                return field(column.getInternalName()).like(data.getValue());
+                return field(name(column.getInternalName())).like(data.getValue());
             case "NOT LIKE":
-                return field(column.getInternalName()).notLike(data.getValue());
+                return field(name(column.getInternalName())).notLike(data.getValue());
             case "IN":
-                return field(column.getInternalName()).in(data.getValue());
+                return field(name(column.getInternalName())).in(data.getValue());
             case "NOT IN":
-                return field(column.getInternalName()).notIn(data.getValue());
+                return field(name(column.getInternalName())).notIn(data.getValue());
             case "IS NOT NULL":
-                return field(column.getInternalName()).isNotNull();
+                return field(name(column.getInternalName())).isNotNull();
             case "IS NULL":
-                return field(column.getInternalName()).isNull();
+                return field(name(column.getInternalName())).isNull();
             case "REGEXP":
-                return field(column.getInternalName()).likeRegex(data.getValue());
+                return field(name(column.getInternalName())).likeRegex(data.getValue());
             case "NOT REGEXP":
-                return field(column.getInternalName()).notLikeRegex(data.getValue());
+                return field(name(column.getInternalName())).notLikeRegex(data.getValue());
         }
         log.error("Failed to map operator: {}", operator);
         throw new IllegalArgumentException("Failed to map operator: " + operator);
@@ -884,26 +883,27 @@ public interface MariaDbMapper {
         for (OrderDto order : data.getOrder()) {
             final ColumnDto column = columnIdToColumnDto(database, order.getColumnId());
             if (order.getDirection() == null) {
-                sort.add(field(column.getInternalName()));
+                sort.add(field(name(column.getInternalName())));
                 continue;
             }
             switch (order.getDirection()) {
-                case ASC -> sort.add(field(column.getInternalName()).asc());
-                case DESC -> sort.add(field(column.getInternalName()).desc());
+                case ASC -> sort.add(field(name(column.getInternalName())).asc());
+                case DESC -> sort.add(field(name(column.getInternalName())).desc());
             }
         }
         return step.orderBy(sort);
     }
 
-    default String subsetDtoToRawQuery(DatabaseDto database, SubsetDto data) throws TableNotFoundException, ImageNotFoundException {
+    default String subsetDtoToRawQuery(DSLContext context, DatabaseDto database, SubsetDto data)
+            throws TableNotFoundException, ImageNotFoundException {
         final TableDto table = tableIdToTableDto(database, data.getTableId());
         final List<Field<Object>> columns = table.getColumns()
                 .stream()
                 .filter(c -> data.getColumns().contains(c.getId()))
-                .map(c -> field(c.getInternalName()))
+                .map(c -> field(name(c.getInternalName())))
                 .toList();
-        final SelectJoinStep<Record> query = select(columns)
-                .from(table.getInternalName());
+        final SelectJoinStep<Record> query = context.select(columns)
+                .from(name(table.getInternalName()));
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
         final String sql;
         if (data.getOrder() == null) {
@@ -966,7 +966,8 @@ public interface MariaDbMapper {
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find table with id: {}", tableId);
-            throw new TableNotFoundException("Failed to find table");
+            log.trace("known table ids: {}", database.getTables().stream().map(TableDto::getId).collect(Collectors.toList()));
+            throw new TableNotFoundException("Failed to find table id: " + tableId);
         }
         return optional.get();
     }
