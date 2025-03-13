@@ -72,7 +72,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             ImageNotFoundException, QueryMalformedException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_DTO);
         when(databaseService.createView(any(DatabaseDto.class), anyString(), anyString()))
                 .thenReturn(VIEW_1_DTO);
@@ -88,7 +88,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             ViewMalformedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
@@ -125,7 +125,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(DatabaseNotFoundException.class)
                 .when(credentialService)
-                .getDatabase(DATABASE_1_ID);
+                .getDatabase(DATABASE_1_ID, true);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -228,10 +228,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, ViewNotFoundException, DatabaseNotFoundException {
 
         /* mock */
+        when(credentialService.getDatabase(DATABASE_1_ID, true))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(viewService)
                 .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);

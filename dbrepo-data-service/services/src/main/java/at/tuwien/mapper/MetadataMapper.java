@@ -6,6 +6,8 @@ import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.internal.CreateDatabaseDto;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -27,6 +29,13 @@ public interface MetadataMapper {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MetadataMapper.class);
 
     ContainerDto containerDtoToContainerDto(ContainerDto data);
+
+    @Mappings({
+            @Mapping(target = "id", source = "userId"),
+            @Mapping(target = "username", source = "privilegedUsername"),
+            @Mapping(target = "password", source = "privilegedPassword"),
+    })
+    UserDto createDatabaseDtoToPrivilegedUserDto(CreateDatabaseDto data);
 
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 

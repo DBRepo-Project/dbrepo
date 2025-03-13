@@ -51,7 +51,7 @@ public class StorageServiceS3Impl implements StorageService {
         final String key = "dbr_" + RandomStringUtils.randomAlphanumeric(96)
                 .toLowerCase();
         s3Client.putObject(PutObjectRequest.builder()
-                        .key(key)
+                .key(key)
                 .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromBytes(content));
         log.debug("put object in S3 bucket {} with key: {}", s3Config.getS3Bucket(), key);
@@ -156,7 +156,8 @@ public class StorageServiceS3Impl implements StorageService {
         log.debug("read dataset from s3 path: {} using header: {}", path, withHeader);
         Dataset<Row> dataset;
         try {
-            log.trace("spark read conf: header={}, delimiter={}", withHeader, delimiter);
+            final String logDelimiter = delimiter.equals("\t") ? "[tab]" : delimiter;
+            log.trace("spark read conf: header={}, delimiter={}", withHeader, logDelimiter);
             dataset = sparkSession.read()
                     .option("delimiter", delimiter)
                     .option("header", withHeader)
