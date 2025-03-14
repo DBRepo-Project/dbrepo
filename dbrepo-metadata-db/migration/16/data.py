@@ -92,6 +92,7 @@ def update_databases() -> None:
         for view in database.views:
             v_old_id: int = view.id
             v_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_view SET ID = '{v_new_id}' WHERE ID = '{v_old_id}';")
             plan.append(f"UPDATE mdb_identifiers SET vid = '{v_new_id}' WHERE vid = '{v_old_id}';")
             plan.append(f"UPDATE mdb_view_columns SET id = UUID(), view_id = '{v_new_id}' WHERE id = '{v_old_id}';")
         for table in database.tables:
@@ -101,6 +102,7 @@ def update_databases() -> None:
             plan.append(f"UPDATE mdb_columns SET tID = '{tbl_new_id}' WHERE tID = '{tbl_old_id}';")
             plan.append(f"UPDATE mdb_constraints_primary_key SET pkid = UUID(), tID = '{tbl_new_id}' WHERE tID = '{tbl_old_id}';")
             plan.append(f"UPDATE mdb_constraints_unique SET tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
+            plan.append(f"UPDATE mdb_constraints_foreign_key SET rtid = '{tbl_new_id}' WHERE rtid = '{tbl_old_id}';")
             plan.append(
                 f"UPDATE mdb_constraints_checks SET id = UUID(), tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
             for fk in table.constraints.foreign_keys:
@@ -173,6 +175,7 @@ def update_identifiers() -> None:
         plan.append(f"UPDATE mdb_identifier_creators SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         plan.append(f"UPDATE mdb_identifier_funders SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         plan.append(f"UPDATE mdb_identifier_licenses SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        plan.append(f"UPDATE mdb_identifier_related SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         for title in identifier.titles:
             t_old_id = title.id
             t_new_id: uuid = uuid.uuid4()
@@ -189,6 +192,10 @@ def update_identifiers() -> None:
             f_old_id = funder.id
             f_new_id: uuid = uuid.uuid4()
             plan.append(f"UPDATE mdb_identifier_funders SET id = '{f_new_id}' WHERE id = '{f_old_id}';")
+        for funder in identifier.related:
+            r_old_id = funder.id
+            r_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_identifier_related SET id = '{r_new_id}' WHERE id = '{r_old_id}';")
     plan.append("COMMIT;")
 
 
