@@ -68,7 +68,7 @@
           </div>
         </v-list-item>
         <v-list-item
-          v-if="identifier.related_identifiers && identifier.related_identifiers.length > 0"
+          v-if="identifier.related_identifiers"
           :title="$t('pages.identifier.related-identifiers.title')"
           density="compact">
           <p
