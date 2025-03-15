@@ -418,6 +418,7 @@ services:
     image: docker.io/bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
     healthcheck:
       test: promtool check healthy

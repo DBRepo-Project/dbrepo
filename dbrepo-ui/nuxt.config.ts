@@ -98,7 +98,6 @@ export default defineNuxtConfig({
         }
       },
       doi: {
-        enabled: false,
         endpoint: 'https://doi.org'
       },
       links: {}
