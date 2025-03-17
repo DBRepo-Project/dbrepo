@@ -2,6 +2,14 @@
 author: Martin Weise
 ---
 
+## v1.7.3 (2025-03-17)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.2)
+
+#### Fixes
+
+* Fixed a wrong configuration where assets were not considered in the Kubernetes deployment.
+
 ## v1.7.2 (2025-03-13)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.2)

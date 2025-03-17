@@ -21,7 +21,7 @@ data:
         server_name _;
 
         location /assets/ {
-            root                    /etc/nginx/assets;
+            root                    /app/assets;
             expires                 max;
             access_log              off;
             autoindex               on;
