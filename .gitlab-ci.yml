@@ -543,17 +543,18 @@ release-helm:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - echo "$CI_GPG_KEYRING" | base64 -d > ~/.gnupg/secring.gpg
-    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/.gnupg/pubring.gpg
+    - "mkdir -p /root/.gnupg"
+    - echo "$CI_GPG_KEYRING" | base64 -d > /root/.gnupg/secring.gpg
+    - echo "$CI_GPG_KEYRING2" | base64 -d > /root/.gnupg/pubring.gpg
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
     - make build-helm
-    - ls -la ~/.gnupg
-    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
+    - ls -la /root/.gnupg
+    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring /root/.gnupg/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
-    - "helm sigstore upload --keyring ~/.gnupg/pubring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
+    - "helm sigstore upload --keyring /root/.gnupg/pubring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
 
 release-docs:
   stage: release
