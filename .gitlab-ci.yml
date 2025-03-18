@@ -545,9 +545,11 @@ release-helm:
     - "mkdir -m 0700 -p ~/.gnupg"
     - echo "${CI_GPG_SECRING}" | base64 -d > ~/.gnupg/secring.gpg
     - echo "${CI_GPG_PUBRING}" | base64 -d > ~/.gnupg/pubring.gpg
+    - echo "${CI_GPG_OWNER_TRUST}" | base64 -d > ~/.gnupg/trustdb.gpg
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
     - make build-helm
+    - "gpg --import-ownertrust ~/.gnupg/trustdb.gpg"
     - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
