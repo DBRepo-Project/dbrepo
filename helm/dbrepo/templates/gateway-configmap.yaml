@@ -20,6 +20,16 @@ data:
         listen 8080 default_server;
         server_name _;
 
+        location /assets/ {
+            root                    /app/assets;
+            expires                 max;
+            access_log              off;
+            autoindex               on;
+            autoindex_exact_size    off;
+            autoindex_format        html;
+            autoindex_localtime     on;
+        }
+
         location /dashboard {
             rewrite  ^/dashboard/(.*)  /$1 break;
             proxy_set_header        Host $host;
