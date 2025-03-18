@@ -549,8 +549,7 @@ release-helm:
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
     - make build-helm
-    - ls -la ~/.gnupg
-    - "gpg --import-ownertrust ~/.gnupg/trustdb.gpg"
+    - "gpg --import-ownertrust < ~/.gnupg/trustdb.gpg"
     - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
