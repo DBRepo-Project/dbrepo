@@ -4,9 +4,9 @@ import uuid
 
 from dbrepo.RestClient import RestClient
 
-endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'https://dbrepo1.ec.tuwien.ac.at')
+endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://localhost')
 username = os.getenv('SYSTEM_USERNAME', 'admin')
-password = os.getenv('SYSTEM_PASSWORD', 'f24870437f82adf567c0b03179f15e21')
+password = os.getenv('SYSTEM_PASSWORD', 'admin')
 client = RestClient(endpoint=endpoint, username=username, password=password)
 
 plan: [str] = []
@@ -89,11 +89,17 @@ def update_databases() -> None:
         plan.append(f"UPDATE mdb_view SET vdbid = '{new_id}' WHERE vdbid = '{old_id}';")
         plan.append(f"UPDATE mdb_identifiers SET dbid = '{new_id}' WHERE dbid = '{old_id}';")
         plan.append(f"UPDATE mdb_access SET aDBID = '{new_id}' WHERE aDBID = '{old_id}';")
-        for view in database.views:
-            v_old_id: int = view.id
+        for _view in database.views:
+            v_old_id: int = _view.id
             v_new_id: uuid = uuid.uuid4()
+            view = client.get_view(database_id=_database.id, view_id=_view.id)
+            plan.append(f"UPDATE mdb_view SET ID = '{v_new_id}' WHERE ID = '{v_old_id}';")
+            plan.append(f"UPDATE mdb_view_columns SET view_id = '{v_new_id}' WHERE view_id = '{v_old_id}';")
             plan.append(f"UPDATE mdb_identifiers SET vid = '{v_new_id}' WHERE vid = '{v_old_id}';")
-            plan.append(f"UPDATE mdb_view_columns SET id = UUID(), view_id = '{v_new_id}' WHERE id = '{v_old_id}';")
+            for column in view.columns:
+                vc_old_id: int = column.id
+                vc_new_id: uuid = uuid.uuid4()
+                plan.append(f"UPDATE mdb_view_columns SET id = '{vc_new_id}' WHERE id = '{vc_old_id}';")
         for table in database.tables:
             tbl_old_id: int = table.id
             tbl_new_id: uuid = uuid.uuid4()
@@ -101,6 +107,7 @@ def update_databases() -> None:
             plan.append(f"UPDATE mdb_columns SET tID = '{tbl_new_id}' WHERE tID = '{tbl_old_id}';")
             plan.append(f"UPDATE mdb_constraints_primary_key SET pkid = UUID(), tID = '{tbl_new_id}' WHERE tID = '{tbl_old_id}';")
             plan.append(f"UPDATE mdb_constraints_unique SET tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
+            plan.append(f"UPDATE mdb_constraints_foreign_key SET rtid = '{tbl_new_id}' WHERE rtid = '{tbl_old_id}';")
             plan.append(
                 f"UPDATE mdb_constraints_checks SET id = UUID(), tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
             for fk in table.constraints.foreign_keys:
@@ -173,6 +180,7 @@ def update_identifiers() -> None:
         plan.append(f"UPDATE mdb_identifier_creators SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         plan.append(f"UPDATE mdb_identifier_funders SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         plan.append(f"UPDATE mdb_identifier_licenses SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        plan.append(f"UPDATE mdb_identifier_related SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         for title in identifier.titles:
             t_old_id = title.id
             t_new_id: uuid = uuid.uuid4()
@@ -189,6 +197,10 @@ def update_identifiers() -> None:
             f_old_id = funder.id
             f_new_id: uuid = uuid.uuid4()
             plan.append(f"UPDATE mdb_identifier_funders SET id = '{f_new_id}' WHERE id = '{f_old_id}';")
+        for related_identifier in identifier.related_identifiers:
+            r_old_id = related_identifier.id
+            r_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_identifier_related SET id = '{r_new_id}' WHERE id = '{r_old_id}';")
     plan.append("COMMIT;")
 
 

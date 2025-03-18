@@ -273,6 +273,9 @@ export const useIdentifierService = (): any => {
       const regex: RegExp = /(10[.][0-9]{4,}[^\s"\/<>]*\/[^\s"<>]+)/g
       const matches: RegExpMatchArray | null = val.match(regex)
       if (matches && matches.length > 0) {
+        if (config.public.doi.endpoint) {
+          return `${config.public.doi.endpoint}/${matches[0]}`
+        }
         return `https://doi.org/${matches[0]}`
       }
       if (val.startsWith('http')) {

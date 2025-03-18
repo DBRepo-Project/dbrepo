@@ -16,7 +16,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.7.2</version>
+    <version>1.7.3</version>
 
     <description>Service that manages the data</description>
 
@@ -302,7 +302,6 @@
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-metadata-service-entities</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
