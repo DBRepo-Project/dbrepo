@@ -99,7 +99,7 @@ services:
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
-      test: curl -fsS http://localhost:8080/realms/master
+      test: curl -fsS localhost:8080/realms/master
       interval: 10s
       timeout: 5s
       retries: 12
@@ -115,7 +115,7 @@ services:
     init: true
     restart: "no"
     container_name: dbrepo-auth-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.7.3
+    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.7.3
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -126,6 +126,8 @@ services:
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
     depends_on:
       dbrepo-auth-service:
+        condition: service_healthy
+      dbrepo-gateway-service:
         condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
@@ -149,10 +151,10 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-admin}
+      BROKER_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
-      BROKER_USERNAME: ${BROKER_USERNAME:-admin}
+      BROKER_USERNAME: ${SYSTEM_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-http://data.crossref.org}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
@@ -284,8 +286,8 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
+      OPENSEARCH_USERNAME: ${SYSTEM_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
@@ -381,8 +383,8 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
+      OPENSEARCH_USERNAME: ${SYSTEM_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     depends_on:
@@ -500,15 +502,12 @@ services:
       GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
-      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       SPARK_USER: "${COMPUTE_SERVICE_USERNAME:-spark}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"

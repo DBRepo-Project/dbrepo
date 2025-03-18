@@ -48,6 +48,11 @@ logging:
     at.tuwien.: "${LOG_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
+  datacite:
+    url: "${DATACITE_URL:https://api.datacite.org}"
+    prefix: "${DATACITE_PREFIX}"
+    username: "${DATACITE_USERNAME}"
+    password: "${DATACITE_PASSWORD}"
   endpoints:
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
     searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
