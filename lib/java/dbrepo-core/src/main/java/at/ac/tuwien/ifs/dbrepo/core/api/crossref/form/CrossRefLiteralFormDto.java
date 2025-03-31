@@ -12,7 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class CrossrefLiteralFormDto {
+public class CrossRefLiteralFormDto {
 
     @Schema(example = "en")
     private String lang;

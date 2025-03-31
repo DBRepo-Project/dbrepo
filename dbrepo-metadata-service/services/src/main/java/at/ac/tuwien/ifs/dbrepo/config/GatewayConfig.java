@@ -36,6 +36,9 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.crossRefService}")
     private String crossRefEndpoint;
 
+    @Value("${dbrepo.endpoints.doiService}")
+    private String doiEndpoint;
+
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
 
@@ -98,6 +101,20 @@ public class GatewayConfig {
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dashboardEndpoint));
         restTemplate.getInterceptors()
                 .add(new InternalRequestInterceptor(credentialService, this));
+        return restTemplate;
+    }
+
+    @Bean("doiServiceRestTemplate")
+    public RestTemplate doiServiceRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(doiEndpoint));
+        return restTemplate;
+    }
+
+    @Bean("crossRefServiceRestTemplate")
+    public RestTemplate crossRefServiceRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(crossRefEndpoint));
         return restTemplate;
     }
 

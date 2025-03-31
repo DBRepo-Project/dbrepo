@@ -1,18 +1,18 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossrefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.affiliation.ExternalAffiliationDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.gateway.CrossrefGateway;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.gateway.CrossRefGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -48,7 +48,7 @@ public class MetadataServiceUnitTest extends BaseTest {
     private RorGateway rorGateway;
 
     @MockBean
-    private CrossrefGateway crossrefGateway;
+    private CrossRefGateway crossRefGateway;
 
     @MockBean
     private IdentifierService identifierService;
@@ -203,11 +203,11 @@ public class MetadataServiceUnitTest extends BaseTest {
     @Test
     public void findByUrl_doi_succeeds() throws OrcidNotFoundException, RorNotFoundException, IOException,
             DoiNotFoundException, IdentifierNotSupportedException {
-        final CrossrefDto doi = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .readValue(new File("src/test/resources/json/doi_ec.json"), CrossrefDto.class);
+        final CrossRefDto doi = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .readValue(new File("src/test/resources/json/doi_ec.json"), CrossRefDto.class);
 
         /* mock */
-        when(crossrefGateway.findById(FUNDER_1_IDENTIFIER_ID_ONLY))
+        when(crossRefGateway.findById(FUNDER_1_IDENTIFIER_ID_ONLY))
                 .thenReturn(doi);
 
         /* test */
@@ -223,7 +223,7 @@ public class MetadataServiceUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DoiNotFoundException.class)
-                .when(crossrefGateway)
+                .when(crossRefGateway)
                 .findById(anyString());
 
         /* test */

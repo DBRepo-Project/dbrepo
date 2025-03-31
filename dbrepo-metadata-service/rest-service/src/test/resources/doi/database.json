@@ -1,0 +1,70 @@
+{
+  "indexed": {
+    "date-parts": [
+      [
+        2024,
+        12,
+        11
+      ]
+    ],
+    "date-time": "2024-12-11T00:54:48Z",
+    "timestamp": 1733878488241,
+    "version": "3.30.1"
+  },
+  "reference-count": 0,
+  "publisher": "International STM Association",
+  "content-domain": {
+    "domain": [],
+    "crossmark-restriction": false
+  },
+  "DOI": "10.15223\/policy-037",
+  "type": "database",
+  "created": {
+    "date-parts": [
+      [
+        2021,
+        5,
+        3
+      ]
+    ],
+    "date-time": "2021-05-03T21:10:23Z",
+    "timestamp": 1620076223000
+  },
+  "source": "Crossref",
+  "is-referenced-by-count": 0,
+  "title": "Article Sharing Framework Policy #37",
+  "prefix": "10.15223",
+  "member": "5868",
+  "container-title": [],
+  "original-title": [],
+  "deposited": {
+    "date-parts": [
+      [
+        2021,
+        5,
+        3
+      ]
+    ],
+    "date-time": "2021-05-03T21:10:23Z",
+    "timestamp": 1620076223000
+  },
+  "score": 1,
+  "resource": {
+    "primary": {
+      "URL": "https:\/\/www.stm-assoc.org\/asf\/policy-037"
+    }
+  },
+  "subtitle": [],
+  "short-title": [],
+  "issued": {
+    "date-parts": [
+      [
+        null
+      ]
+    ]
+  },
+  "references-count": 0,
+  "URL": "http:\/\/dx.doi.org\/10.15223\/policy-037",
+  "relation": {},
+  "subject": []
+}

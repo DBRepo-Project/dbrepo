@@ -12,9 +12,9 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class CrossrefPrefLabelDto {
+public class CrossRefPrefLabelDto {
 
     @JsonProperty("Label")
-    private CrossrefLabelDto label;
+    private CrossRefLabelDto label;
 
 }
