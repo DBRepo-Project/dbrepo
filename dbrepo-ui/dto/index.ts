@@ -614,7 +614,8 @@ interface OrderDto {
 }
 
 interface SubsetDto {
-  table_id: string;
+  datasource_id: string;
+  datasource_type: string;
   columns: string[];
   filter: FilterDto[] | null;
   order: OrderDto[] | null;

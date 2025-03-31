@@ -2587,7 +2587,8 @@ public class BaseTest {
             .build();
 
     public final SubsetDto QUERY_9_SUBSET_DTO = SubsetDto.builder()
-            .tableId(TABLE_9_ID)
+            .datasourceId(TABLE_9_ID)
+            .datasourceType(DatasourceType.TABLE)
             .columns(new LinkedList<>(List.of(COLUMN_9_2_ID, COLUMN_9_3_ID)))
             .filter(new LinkedList<>(List.of(FilterDto.builder()
                     .columnId(COLUMN_9_1_ID)
@@ -2895,7 +2896,8 @@ public class BaseTest {
     public final static Boolean QUERY_1_PERSISTED = true;
 
     public final SubsetDto QUERY_1_SUBSET_DTO = SubsetDto.builder()
-            .tableId(TABLE_1_ID)
+            .datasourceId(TABLE_1_ID)
+            .datasourceType(DatasourceType.TABLE)
             .columns(new LinkedList<UUID>(List.of(COLUMN_1_1_ID, COLUMN_1_2_ID, COLUMN_1_3_ID, COLUMN_1_4_ID, COLUMN_1_5_ID)))
             .order(new LinkedList<OrderDto>(List.of(OrderDto.builder()
                     .columnId(COLUMN_1_1_ID)
@@ -3022,7 +3024,8 @@ public class BaseTest {
             .build();
 
     public final SubsetDto QUERY_5_SUBSET_DTO = SubsetDto.builder()
-            .tableId(TABLE_8_ID)
+            .datasourceId(TABLE_8_ID)
+            .datasourceType(DatasourceType.TABLE)
             .columns(new LinkedList<>(List.of(COLUMN_8_1_ID, COLUMN_8_2_ID)))
             .filter(new LinkedList<>(List.of(FilterDto.builder()
                     .columnId(COLUMN_8_2_ID)
@@ -4598,7 +4601,8 @@ public class BaseTest {
     public final static Boolean QUERY_8_PERSISTED = true;
 
     public final SubsetDto QUERY_8_SUBSET_DTO = SubsetDto.builder()
-            .tableId(TABLE_5_ID)
+            .datasourceId(TABLE_5_ID)
+            .datasourceType(DatasourceType.TABLE)
             .columns(new LinkedList<>(List.of(COLUMN_5_1_ID, COLUMN_5_2_ID)))
             .filter(new LinkedList<>(List.of(FilterDto.builder()
                             .type(FilterTypeDto.WHERE)
@@ -4845,7 +4849,8 @@ public class BaseTest {
     public final static UUID VIEW_COLUMN_1_3_ID = UUID.fromString("4f189a5f-c9ca-4518-9758-1a0730f6276b");
 
     public final SubsetDto VIEW_1_SUBSET_DTO = SubsetDto.builder()
-            .tableId(TABLE_2_ID)
+            .datasourceId(TABLE_2_ID)
+            .datasourceType(DatasourceType.TABLE)
             .columns(new LinkedList<>(List.of(COLUMN_2_1_ID, COLUMN_2_2_ID, COLUMN_2_3_ID)))
             .build();
 

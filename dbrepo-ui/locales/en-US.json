@@ -954,7 +954,7 @@
             "hint": "Required"
           },
           "table": {
-            "label": "Data Table",
+            "label": "Datasource",
             "hint": "Required"
           },
           "columns": {

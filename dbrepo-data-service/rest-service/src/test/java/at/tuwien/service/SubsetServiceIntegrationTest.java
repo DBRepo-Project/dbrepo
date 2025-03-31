@@ -241,7 +241,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     @Test
     public void create_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
-            TableNotFoundException, QueryMalformedException, ImageNotFoundException {
+            TableNotFoundException, QueryMalformedException, ImageNotFoundException, ViewNotFoundException {
 
         /* test */
         final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_ID);
@@ -252,9 +252,10 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     @MethodSource("create_arguments")
     public void create_illegalQuery_succeeds(String name, String injection) throws TableNotFoundException,
             QueryStoreInsertException, ViewMalformedException, SQLException, QueryMalformedException,
-            ImageNotFoundException {
+            ImageNotFoundException, ViewNotFoundException {
         final SubsetDto request = SubsetDto.builder()
-                .tableId(TABLE_1_ID)
+                .datasourceId(TABLE_1_ID)
+                .datasourceType(DatasourceType.TABLE)
                 .columns(new LinkedList<>(List.of(COLUMN_1_1_ID, COLUMN_1_2_ID, COLUMN_1_3_ID, COLUMN_1_4_ID, COLUMN_1_5_ID)))
                 .filter(new LinkedList<>(List.of(FilterDto.builder()
                         .type(FilterTypeDto.WHERE)
