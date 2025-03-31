@@ -4,15 +4,13 @@ import os
 from json import dumps
 from typing import List, Any
 
-import requests
-from clients.keycloak_client import User, KeycloakClient
-from clients.opensearch_client import OpenSearchClient, flatten
 from dbrepo.api.dto import Database, ApiError
+from dbrepo.core.client.auth import User, AuthServiceClient
+from dbrepo.core.client.search import SearchServiceClient, flatten
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request, Response
 from flask_cors import CORS
 from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
-from jwt.exceptions import JWTDecodeError
 from opensearchpy import NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
@@ -135,7 +133,24 @@ template = {
                         "type": "object"
                     }
                 }
-            }
+            },
+            "ApiError": {
+                "properties": {
+                    "message": {
+                        "example": "Message",
+                        "type": "string"
+                    },
+                    "status": {
+                        "example": "BAD_REQUEST",
+                        "type": "string"
+                    },
+                    "code": {
+                        "example": "error.dashboard.create",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
         },
         "securitySchemes": {
             "bearerAuth": {
@@ -154,7 +169,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "1.5",
+        "version": "1.8.0",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -166,7 +181,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/"
     },
     "servers": [
         {
@@ -185,7 +200,7 @@ app.config["METADATA_SERVICE_ENDPOINT"] = os.getenv("METADATA_SERVICE_ENDPOINT",
 app.config["JWT_ALGORITHM"] = "HS256"
 app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
                                                                       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
-app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://auth-service:8080")
+app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost:8080")
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["OPENSEARCH_HOST"] = os.getenv('OPENSEARCH_HOST', 'search-db')
@@ -195,41 +210,31 @@ app.config["OPENSEARCH_PASSWORD"] = os.getenv('OPENSEARCH_PASSWORD', 'admin')
 
 app.json_encoder = LazyJSONEncoder
 
+auth_client = AuthServiceClient(app.config["AUTH_SERVICE_ENDPOINT"], app.config["AUTH_SERVICE_CLIENT"],
+                                app.config["AUTH_SERVICE_CLIENT_SECRET"], app.config["JWT_PUBKEY"])
+
 
 @token_auth.verify_token
 def verify_token(token: str) -> bool | User:
-    if token is None or token == "":
-        return False
-    try:
-        client = KeycloakClient()
-        return client.verify_jwt(access_token=token)
-    except JWTDecodeError:
-        return False
+    return auth_client.is_valid_token(token)
 
 
 @basic_auth.verify_password
 def verify_password(username: str, password: str) -> Any:
-    if username is None or username == "" or password is None or password == "":
-        return False
-    client = KeycloakClient()
-    try:
-        return client.verify_jwt(access_token=client.obtain_user_token(username=username, password=password))
-    except AssertionError as error:
-        logging.error(error)
-        return False
-    except requests.exceptions.ConnectionError as error:
-        logging.error(f"Failed to connect to Authentication Service {error}")
-        return False
+    return auth_client.is_valid_password(username, password)
 
 
 @token_auth.get_user_roles
 def get_user_roles(user: User) -> List[str]:
-    return user.roles
+    return auth_client.get_user_roles(user)
 
 
 @basic_auth.get_user_roles
 def get_user_roles(user: User) -> List[str]:
-    return user.roles
+    return auth_client.get_user_roles(user)
+
+
+headers = {'Content-Type': 'application/json'}
 
 
 def general_filter(index, results):
@@ -264,9 +269,14 @@ def general_filter(index, results):
     return results
 
 
+def search_client():
+    return SearchServiceClient(app.config["OPENSEARCH_HOST"], int(app.config["OPENSEARCH_PORT"]),
+                               app.config["OPENSEARCH_USERNAME"], app.config["OPENSEARCH_PASSWORD"])
+
+
 @app.route("/health", methods=["GET"], endpoint="actuator_health")
 def health():
-    return dict({"status": "UP"}), 200
+    return dict({"status": "UP"}), 200, headers
 
 
 @app.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
@@ -279,7 +289,7 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.debug(f'endpoint get search type: {index}')
-    results = OpenSearchClient().query_index_by_term_opensearch("*", "contains")
+    results = search_client().query_index_by_term_opensearch("*", "contains")
     try:
         results = general_filter(index, results)
 
@@ -287,10 +297,10 @@ def get_index(index: str):
         max_pages = math.ceil(len(results) / results_per_page)
         page = min(request.args.get("page", 1, type=int), max_pages)
         results = results[(results_per_page * (page - 1)): (results_per_page * page)]
-        return Response(dumps(results, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
+        return Response(dumps(results, default=pydantic_encoder)), 200, headers
     except KeyError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find get index: {index}',
-                        code='search.index.missing').model_dump(), 404
+                        code='search.index.missing').model_dump(), 404, headers
 
 
 @app.route("/api/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
@@ -304,12 +314,12 @@ def get_fields(field_type: str):
     """
     logging.debug(f'endpoint get search type fields: {field_type}')
     try:
-        fields = OpenSearchClient().get_fields_for_index(field_type)
+        fields = search_client().get_fields_for_index(field_type)
         logging.debug(f'get fields for field_type {field_type} resulted in {len(fields)} field(s)')
-        return Response(dumps(fields, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
+        return Response(dumps(fields, default=pydantic_encoder)), 200, headers
     except NotFoundError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find fields for search type {field_type}',
-                        code='search.type.missing').model_dump(), 404
+                        code='search.type.missing').model_dump(), 404, headers
 
 
 @app.route("/api/search", methods=["GET"], endpoint="search_fuzzy_search")
@@ -326,13 +336,13 @@ def get_fuzzy_search():
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
-    user_id, error, status = KeycloakClient().userId(request.headers.get('Authorization'))
+    user_id, error, status = auth_client.get_user_id(request.headers.get('Authorization'))
     if error is not None and status is not None:
-        return error, status
-    results: [Database] = OpenSearchClient().fuzzy_search(search_term=search_term,
-                                                          user_id=user_id,
-                                                          user_token=request.headers.get('Authorization'))
-    return Response(dumps(results, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
+        return error, status, headers
+    results = search_client().fuzzy_search(search_term=search_term,
+                                           user_id=user_id,
+                                           user_token=request.headers.get('Authorization'))
+    return Response(dumps(results, default=pydantic_encoder)), 200, headers
 
 
 @app.route("/api/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
@@ -354,16 +364,16 @@ def post_general_search(field_type):
     t2 = request.args.get("t2")
     if not str(t2).isdigit():
         t2 = None
-    user_id, error, status = KeycloakClient().userId(request.headers.get('Authorization'))
+    user_id, error, status = auth_client.get_user_id(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status
     if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
-        response: [Database] = OpenSearchClient().unit_independent_search(t1, t2, value_pairs, user_id)
+        response = search_client().unit_independent_search(t1, t2, value_pairs, user_id)
     else:
-        response: [Database] = OpenSearchClient().general_search(field_type=field_type,
-                                                                 field_value_pairs=value_pairs,
-                                                                 user_id=user_id,
-                                                                 user_token=request.headers.get('Authorization'))
+        response = search_client().general_search(field_type=field_type,
+                                                  field_value_pairs=value_pairs,
+                                                  user_id=user_id,
+                                                  user_token=request.headers.get('Authorization'))
     # filter by type
     tables = [table for table in flatten([database.tables for database in response]) if
               table.is_public or table.is_schema_public or (user_id is not None and table.owner.id == user_id)]
@@ -408,34 +418,34 @@ def post_general_search(field_type):
         response = tmp
     elif field_type == 'view':
         response = views
-    return Response(dumps(response, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
+    return Response(dumps(response, default=pydantic_encoder)), 200, headers
 
 
-@app.route("/api/search/database/<string:database_id>", methods=["PUT"], endpoint="search_put_database")
-@metrics.gauge(name='dbrepo_search_update_database',
+@app.route("/api/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
+@metrics.gauge(name='dbrepo_search_save_database',
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['update-search-index'])
-def update_database(database_id: str):
-    logging.debug(f"updating database with id: {database_id}")
+def save_database(database_id: str):
+    logging.debug(f"save database with id: {database_id}")
     try:
-        payload: Database = Database.model_validate(request.json)
+        payload = Database.model_validate(request.json)
     except ValidationError as e:
         logging.error(f"Failed to validate: {e}")
         return ApiError(status='BAD_REQUEST', message=f'Malformed payload: {e}',
                         code='search.general.missing').model_dump(), 400
-    database = OpenSearchClient().update_database(database_id, payload)
-    logging.info(f"Updated database with id: {database_id}")
-    return database.model_dump(), 202
+    search_client().save_database(database_id, payload)
+    return Response(), 202, headers
 
 
 @app.route("/api/search/database/<string:database_id>", methods=["DELETE"], endpoint="database_delete_database")
 @metrics.gauge(name='dbrepo_search_delete_database',
                description='Time needed to delete a database in the search database')
-@auth.login_required(role=['admin'])
+@auth.login_required(role=['system'])
 def delete_database(database_id: str):
+    logging.debug(f"delete database with id: {database_id}")
     try:
-        OpenSearchClient().delete_database(database_id)
-        return Response(dumps({})), 202
+        search_client().delete_database(database_id)
+        return Response(dumps({})), 202, headers
     except NotFoundError:
         return ApiError(status='NOT_FOUND', message='Failed to find database',
                         code='search.database.missing').model_dump(), 404

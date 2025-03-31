@@ -81,6 +81,9 @@ export default defineNuxtConfig({
           contrast: 'flat',
         }
       },
+      dashboard: {
+        url: 'http://localhost:3000'
+      },
       api: {
         client: 'http://localhost',
         server: 'http://gateway-service',

@@ -7,6 +7,7 @@ compare "services.$1.restart"
 compare "services.$1.container_name"
 compare "services.$1.hostname"
 compare "services.$1.environment"
+compare "services.$1.depends_on"
 compare "services.$1.healthcheck"
 compare "services.$1.logging"
 

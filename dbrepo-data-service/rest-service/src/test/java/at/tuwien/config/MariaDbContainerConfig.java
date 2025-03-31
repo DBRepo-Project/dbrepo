@@ -1,7 +1,8 @@
 package at.tuwien.config;
 
-import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.MariaDBContainer;
@@ -10,8 +11,9 @@ import org.testcontainers.images.PullPolicy;
 /**
  * This class configures the MariaDB container for the integration tests.
  */
+@Log4j2
 @Configuration
-public class MariaDbContainerConfig extends AbstractUnitTest {
+public class MariaDbContainerConfig extends BaseTest {
 
     public static CustomMariaDBContainer getContainer() {
         return CustomMariaDBContainer.getInstance();
@@ -36,7 +38,7 @@ public class MariaDbContainerConfig extends AbstractUnitTest {
             if (instance == null) {
                 instance = new CustomMariaDBContainer(MARIADB_IMAGE);
                 instance.withImagePullPolicy(PullPolicy.alwaysPull());
-                instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, BaseTest.IMAGE_1_PORT);
+                instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, IMAGE_1_DEFAULT_PORT);
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);
                 instance.withPassword(BaseTest.CONTAINER_1_PRIVILEGED_PASSWORD);
                 instance.withInitScript("init/users.sql");

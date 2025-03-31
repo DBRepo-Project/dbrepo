@@ -23,7 +23,7 @@ class AppUnitTest(unittest.TestCase):
             mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=400)
             # test
             try:
-                fetch()
+                fetch('admin')
             except IOError:
                 pass
 
@@ -33,7 +33,7 @@ class AppUnitTest(unittest.TestCase):
             mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=401)
             # test
             try:
-                fetch()
+                fetch('admin')
             except IOError:
                 pass
 
@@ -45,7 +45,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch()
+                fetch('admin')
             except FileNotFoundError:
                 pass
 
@@ -57,7 +57,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch()
+                fetch('admin')
             except FileNotFoundError:
                 pass
 
@@ -69,7 +69,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch()
+                fetch('admin')
             except FileNotFoundError:
                 pass
 
@@ -83,7 +83,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch()
+                fetch('admin')
             except ModuleNotFoundError:
                 pass
 
@@ -98,7 +98,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch()
+                fetch('admin')
             except ImportError:
                 pass
 
@@ -115,7 +115,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch()
+                fetch('admin')
             except EnvironmentError:
                 pass
 
@@ -131,6 +131,6 @@ class AppUnitTest(unittest.TestCase):
             }], status_code=200)
 
             # test
-            ldap_user_id, user_id = fetch()
+            ldap_user_id, user_id = fetch('admin')
             self.assertEqual("7a0b4b7f-77cd-4f28-a665-2da443024621", ldap_user_id)
             self.assertEqual("5b516520-67cb-4aa0-86a6-d12f8b8f1a20", user_id)

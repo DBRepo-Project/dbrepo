@@ -76,6 +76,7 @@ class DatabaseUnitTest(unittest.TestCase):
             internal_name='test_abcd',
             is_public=True,
             is_schema_public=True,
+            is_dashboard_enabled=True,
             container=ContainerBrief(
                 id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                 name='MariaDB Galera 11.1.3',
@@ -134,6 +135,7 @@ class DatabaseUnitTest(unittest.TestCase):
             internal_name='test_abcd',
             is_public=True,
             is_schema_public=True,
+            is_dashboard_enabled=True,
             container=ContainerBrief(
                 id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                 name='MariaDB Galera 11.1.3',
@@ -261,6 +263,7 @@ class DatabaseUnitTest(unittest.TestCase):
             internal_name='test_abcd',
             is_public=True,
             is_schema_public=True,
+            is_dashboard_enabled=True,
             container=ContainerBrief(
                 id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                 name='MariaDB Galera 11.1.3',
@@ -379,6 +382,7 @@ class DatabaseUnitTest(unittest.TestCase):
             internal_name='test_abcd',
             is_public=True,
             is_schema_public=True,
+            is_dashboard_enabled=True,
             container=ContainerBrief(
                 id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                 name='MariaDB Galera 11.1.3',

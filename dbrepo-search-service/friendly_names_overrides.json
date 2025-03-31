@@ -1,0 +1,18 @@
+{
+  "tables.name": "Table Name",
+  "owner.id": "Owner ID",
+  "owner.username": "Owner Username",
+  "owner.attributes.orcid": "Owner ORCID",
+  "creator.orcid": "Creator ORCID",
+  "identifiers.doi": "DOI",
+  "identifiers.licenses.uri": "License URI",
+  "identifiers.funders.funder_identifier": "Funder PID",
+  "identifiers.table_id": "Table ID",
+  "identifiers.query_id": "Subset ID",
+  "identifiers.view_id": "View ID",
+  "identifiers.database_id": "Database ID",
+  "identifiers.creator.username": "Creator Username",
+  "is_public": "Public",
+  "tables.columns.concept.uri": "URI",
+  "tables.columns.unit.uri": "URI"
+}

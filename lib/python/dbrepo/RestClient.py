@@ -1915,11 +1915,42 @@ class RestClient:
         if response.status_code == 400:
             raise MalformedError(f'Failed to update column: {response.text}')
         if response.status_code == 403:
-            raise ForbiddenError(f'Failed to update colum: not allowed')
+            raise ForbiddenError(f'Failed to update column: not allowed')
         if response.status_code == 404:
-            raise NotExistsError(f'Failed to update colum: not found')
+            raise NotExistsError(f'Failed to update column: not found')
         if response.status_code == 502:
-            raise ServiceConnectionError(f'Failed to update colum: failed to establish connection to search service')
+            raise ServiceConnectionError(f'Failed to update column: failed to establish connection to search service')
         if response.status_code == 503:
-            raise ServiceError(f'Failed to update colum: failed to save in search service')
-        raise ResponseCodeError(f'Failed to update colum: response code: {response.status_code} is not 202 (ACCEPTED)')
+            raise ServiceError(f'Failed to update column: failed to save in search service')
+        raise ResponseCodeError(f'Failed to update column: response code: {response.status_code} is not 202 (ACCEPTED)')
+
+    def update_database_dashboard(self, database_id: str, uid: str) -> None:
+        """
+        Update semantic information of a table column by given database id and table id and column id.
+
+        :param database_id: The database id.
+        :param uid: The database uid.
+
+        :raises MalformedError: If the payload is rejected by the service.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
+        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceError: If something went wrong with obtaining the information in the search service.
+        :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
+        """
+        url = f'/api/database/{database_id}/dashboard'
+        response = self._wrapper(method="put", url=url, force_auth=True,
+                                 payload=DatabaseModifyDashboard(uid=uid))
+        if response.status_code == 202:
+            return
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to update database dashboard: {response.text}')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to update database dashboard: not found')
+        if response.status_code == 502:
+            raise ServiceConnectionError(
+                f'Failed to update database dashboard: failed to establish connection to search service')
+        if response.status_code == 503:
+            raise ServiceError(f'Failed to update database dashboard: failed to save in search service')
+        raise ResponseCodeError(
+            f'Failed to update database dashboard: response code: {response.status_code} is not 202 (ACCEPTED)')

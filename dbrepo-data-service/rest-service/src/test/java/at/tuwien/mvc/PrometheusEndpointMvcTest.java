@@ -1,16 +1,16 @@
 package at.tuwien.mvc;
 
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryPersistDto;
-import at.tuwien.api.database.table.TupleDeleteDto;
-import at.tuwien.api.database.table.TupleDto;
-import at.tuwien.api.database.table.TupleUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.SubsetEndpoint;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.endpoints.ViewEndpoint;
 import at.tuwien.listener.DefaultListener;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import io.micrometer.observation.tck.TestObservationRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Import(MetricsConfig.class)
 @AutoConfigureObservability
-public class PrometheusEndpointMvcTest extends AbstractUnitTest {
+public class PrometheusEndpointMvcTest extends BaseTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -1,9 +1,9 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.file.UploadResponseDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.file.UploadResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

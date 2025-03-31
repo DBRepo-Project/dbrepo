@@ -61,9 +61,6 @@ The consumer takes care of writing it to the correct table in the [Data Service]
 
 ## Limitations
 
-* No support for MQTT in the [Metadata Service](../system-services-metadata) 
-  and [Data Service](../system-services-data) because of MQTT's missing permission system.
-
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get

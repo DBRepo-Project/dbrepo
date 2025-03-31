@@ -1,20 +1,19 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.tuwien.endpoints.ViewEndpoint;
-import at.tuwien.exception.*;
 import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.service.ViewService;
-import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class ViewEndpointUnitTest extends AbstractUnitTest {
+public class ViewEndpointUnitTest extends BaseTest {
 
     @MockBean
     private ViewService viewService;
@@ -59,11 +58,6 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private SparkSession sparkSession;
-
-    @BeforeEach
-    public void beforeEach() {
-        genesis();
-    }
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})

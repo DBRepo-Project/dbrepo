@@ -1,14 +1,14 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.internal.TableCreateDto;
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.*;
@@ -297,7 +297,7 @@ public class TableEndpoint extends RestEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
                 headers.set("Access-Control-Expose-Headers", "X-Count");
-                headers.set("X-Count", "" + tableService.getCount(database, table, timestamp));
+                headers.set("X-Count", "" + tableService.getCount(database, table.getInternalName(), timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();
@@ -701,8 +701,9 @@ public class TableEndpoint extends RestEndpoint {
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
         final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final TableDto table = cacheService.getTable(databaseId, tableId);
         try {
-            return ResponseEntity.ok(tableService.getStatistics(database, cacheService.getTable(databaseId, tableId)));
+            return ResponseEntity.ok(tableService.getStatistics(database, table.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

@@ -1,11 +1,11 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.DatabaseMalformedException;
-import at.tuwien.exception.QueryStoreCreateException;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class ContainerServiceIntegrationTest extends AbstractUnitTest {
+public class ContainerServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private ContainerService containerService;
@@ -43,10 +43,9 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -54,12 +53,12 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
     public void create_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* mock */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
 
         /* test */
         final DatabaseDto response = containerService.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL);
         assertNull(response.getName());
-        assertEquals(DATABASE_1_INTERNALNAME, response.getInternalName());
+        assertEquals(DATABASE_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(EXCHANGE_DBREPO_NAME, response.getExchangeName());
         assertNotNull(response.getOwner());
         assertEquals(USER_1_ID, response.getOwner().getId());
@@ -82,7 +81,7 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
     public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException {
 
         /* test */
-        createQueryStore_generic(DATABASE_1_INTERNALNAME);
+        createQueryStore_generic(DATABASE_1_INTERNAL_NAME);
     }
 
     protected void createQueryStore_generic(String databaseName) throws SQLException, QueryStoreCreateException {

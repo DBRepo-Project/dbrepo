@@ -1,8 +1,8 @@
 package at.tuwien.handlers;
 
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.exception.*;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,15 +21,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static at.tuwien.test.utils.EndpointUtils.getErrorCodes;
-import static at.tuwien.test.utils.EndpointUtils.getExceptions;
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.getErrorCodes;
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.getExceptions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Log4j2
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class ApiExceptionHandlerTest extends AbstractUnitTest {
+public class ApiExceptionHandlerTest extends BaseTest {
 
     @Autowired
     private ApiExceptionHandler apiExceptionHandler;

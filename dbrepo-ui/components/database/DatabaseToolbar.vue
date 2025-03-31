@@ -63,14 +63,15 @@
             :text="$t('toolbars.database.info.tab')"
             :to="`/database/${$route.params.database_id}/info`" />
           <v-tab
-            :text="$t('toolbars.database.tables.tab')"
-            :to="`/database/${$route.params.database_id}/table`" />
+            :text="$t('toolbars.database.views.tab')"
+            :to="`/database/${$route.params.database_id}/view`" />
           <v-tab
+            v-if="database && database.is_public"
             :text="$t('toolbars.database.subsets.tab')"
             :to="`/database/${$route.params.database_id}/subset`" />
           <v-tab
-            :text="$t('toolbars.database.views.tab')"
-            :to="`/database/${$route.params.database_id}/view`" />
+            :text="$t('toolbars.database.tables.tab')"
+            :to="`/database/${$route.params.database_id}/table`" />
           <v-tab
             v-if="isOwner"
             :text="$t('toolbars.database.settings.tab')"

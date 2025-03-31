@@ -286,6 +286,7 @@ export default {
           const toast = useToastInstance()
           toast.success(this.$t('success.view.modified'))
           this.cacheStore.reloadView()
+          this.cacheStore.reloadDatabase()
         })
         .catch(({code, message}) => {
           this.loading = false

@@ -1,12 +1,12 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.constraints.unique.UniqueDto;
-import at.tuwien.api.database.table.internal.TableCreateDto;
-import at.tuwien.api.user.internal.UpdateUserPasswordDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
@@ -48,7 +48,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         try {
             /* obtain only view metadata */
             long start = System.currentTimeMillis();
-            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseViewSelectRawQuery());
+            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
             statement1.setString(1, database.getInternalName());
             statement1.setString(2, viewName);
             log.trace("1={}, 2={}", database.getInternalName(), viewName);

@@ -1,6 +1,6 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.keycloak.TokenDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.tuwien.config.KeycloakConfig;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.MetadataMapper;

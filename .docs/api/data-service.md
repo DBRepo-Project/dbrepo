@@ -45,6 +45,13 @@ cache the connection details from the [Metadata Service](../metadata-service) su
 everytime e.g. a sensor measurement is inserted. By default, this information is stored for 60 minutes. System
 administrators can disable this behavior by setting `CREDENTIAL_CACHE_TIMEOUT=0` (cache is deleted after 0 seconds).
 
+
+## Upload
+
+The Data Service also is capable to upload files to the S3 backend. The default limit 
+of [`Tomcat`](https://spring.io/guides/gs/uploading-files#_tuning_file_upload_limits) in Spring Boot is configured to be
+`2GB`. You can provide your own limit with setting `MAX_UPLOAD_SIZE`.
+
 ## Limitations
 
 * Views in DBRepo can only have 63-character length (it is assumed only internal views have the maximum length of 64

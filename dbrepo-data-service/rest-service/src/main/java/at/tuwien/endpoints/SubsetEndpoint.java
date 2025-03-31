@@ -1,14 +1,14 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryPersistDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.CacheService;

@@ -4,10 +4,9 @@ import os
 from logging.config import dictConfig
 from typing import List
 
-import opensearchpy.exceptions
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Database
-from opensearchpy import OpenSearch
+from dbrepo.core.client.search import SearchServiceClient
 
 level = os.getenv("LOG_LEVEL", "DEBUG").upper()
 logging.basicConfig(level=level)
@@ -34,84 +33,35 @@ dictConfig({
     }
 })
 
+search_client = SearchServiceClient(host=os.getenv("OPENSEARCH_HOST", "search-db"),
+                                    port=int(os.getenv("OPENSEARCH_PORT", "9200")),
+                                    username=os.getenv("OPENSEARCH_USERNAME", "admin"),
+                                    password=os.getenv("OPENSEARCH_PASSWORD", "admin"))
 
-class App:
-    """
-    The client to communicate with the OpenSearch database.
-    """
-    metadata_service_endpoint: str = None
-    search_host: str = None
-    search_port: int = None
-    search_username: str = None
-    search_password: str = None
-    search_instance: OpenSearch = None
-    system_username: str = None
-    system_password: str = None
+rest_client = RestClient(endpoint=os.getenv("METADATA_SERVICE_ENDPOINT", "http://metadata-service:8080"),
+                         username=os.getenv("SYSTEM_USERNAME", "admin"),
+                         password=os.getenv("SYSTEM_PASSWORD", "admin"))
 
-    def __init__(self):
-        self.metadata_service_endpoint = os.getenv("METADATA_SERVICE_ENDPOINT", "http://metadata-service:8080")
-        self.search_host = os.getenv("OPENSEARCH_HOST", "search-db")
-        self.search_port = int(os.getenv("OPENSEARCH_PORT", "9200"))
-        self.search_username = os.getenv("OPENSEARCH_USERNAME", "admin")
-        self.search_password = os.getenv("OPENSEARCH_PASSWORD", "admin")
-        self.system_username = os.getenv("SYSTEM_USERNAME", "admin")
-        self.system_password = os.getenv("SYSTEM_PASSWORD", "admin")
 
-    def _instance(self) -> OpenSearch:
-        """
-        Wrapper method to get the instance singleton.
+def fetch_databases() -> List[Database]:
+    databases = []
+    for index, database in enumerate(rest_client.get_databases()):
+        database = rest_client.get_database(database_id=database.id)
+        logging.debug(f'fetch database details with id: {database.id}')
+        databases.append(database)
+    logging.debug(f'fetched {len(databases)} database(s)')
+    return databases
 
-        @returns: The opensearch instance singleton, if successful.
-        """
-        if self.search_instance is None:
-            self.search_instance = OpenSearch(hosts=[{"host": self.search_host, "port": self.search_port}],
-                                              http_compress=True,
-                                              http_auth=(self.search_username, self.search_password))
-            logging.debug(f"create instance {self.search_host}:{self.search_port}")
-        return self.search_instance
 
-    def database_exists(self, database_id: int):
-        try:
-            self._instance().get(index="database", id=database_id)
-            return True
-        except opensearchpy.exceptions.NotFoundError:
-            return False
-
-    def index_update(self) -> None:
-        if self._instance().indices.exists(index="database"):
-            logging.debug(f"index 'database' exists, removing...")
-            self._instance().indices.delete(index="database")
-        with open('./database.json', 'r') as f:
-            self._instance().indices.create(index="database", body=json.load(f))
-        logging.info(f"Created index 'database'")
-
-    def fetch_databases(self) -> List[Database]:
-        logging.debug(f"fetching database from endpoint: {self.metadata_service_endpoint}")
-        client = RestClient(endpoint=self.metadata_service_endpoint, username=self.system_username,
-                            password=self.system_password)
-        databases = []
-        for index, database in enumerate(client.get_databases()):
-            logging.debug(f"fetching database {index}/{len(databases)} details for database id: {database.id}")
-            databases.append(client.get_database(database_id=database.id))
-        logging.debug(f"fetched {len(databases)} database(s)")
-        return databases
-
-    def save_databases(self, databases: List[Database]):
-        index = f'database'
-        logging.debug(f"save {len(databases)} database(s) in index: {index}")
-        for doc in databases:
-            doc: Database = doc
-            try:
-                self._instance().delete(index=index, id=doc.id)
-                logging.debug(f"truncated database with id {doc.id} in index: {index}")
-            except opensearchpy.NotFoundError:
-                pass
-            self._instance().create(index=index, id=doc.id, body=doc.model_dump())
-            logging.info(f"Saved database with id {doc.id} in index: {index}")
+def save_databases(databases: List[Database]):
+    logging.debug(f"save {len(databases)} database(s)")
+    for doc in databases:
+        search_client.save_database(database_id=doc.id, data=doc)
+        logging.info(f"Saved database with id {doc.id}")
 
 
 if __name__ == "__main__":
-    app = App()
-    update = app.index_update()
-    app.save_databases(databases=app.fetch_databases())
+    with open('./database.json', 'r') as f:
+        search_client.index_update(mapping=json.load(f))
+    save_databases(databases=fetch_databases())
     logging.info("Finished. Exiting.")

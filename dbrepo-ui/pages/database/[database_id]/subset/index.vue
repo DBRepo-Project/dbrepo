@@ -46,7 +46,7 @@ export default {
       if (!this.database) {
         return false
       }
-      if (this.database.is_public || this.database.is_schema_public) {
+      if (this.database.is_public) {
         return true
       }
       if (!this.access) {

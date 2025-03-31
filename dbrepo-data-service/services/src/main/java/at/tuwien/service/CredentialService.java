@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.keycloak.TokenDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 
 public interface CredentialService {
 
