@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.7.3
+  version: 1.8.0
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/'
 paths:
   /api/analyse/datatypes:
     get:
@@ -3244,6 +3244,62 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
+  '/api/database/{databaseId}/dashboard':
+    put:
+      tags:
+        - database-endpoint
+      summary: Update database dashboard uid
+      description: >-
+        Updates the dashboard uid for a database with given id. Only the
+        database owner can perform this operation. Requires role `system`.
+      operationId: modifyDashboard
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatabaseModifyDashboardDto'
+        required: true
+      responses:
+        '202':
+          description: Modify of dashboard uid was successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseBriefDto'
+        '400':
+          description: Malformed payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '502':
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '503':
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
   /api/ontology:
     get:
       tags:
@@ -4432,13 +4488,22 @@ components:
           example: ','
           type: string
       type: object
+    ApiError:
+      properties:
+        code:
+          example: error.dashboard.create
+          type: string
+        message:
+          example: Message
+          type: string
+        status:
+          example: BAD_REQUEST
+          type: string
+      type: object
     ColumnAnalysisDto:
       properties:
         d:
           example: 4
-          type: integer
-        dfid:
-          example: null
           type: integer
         enums:
           example: null
@@ -4458,15 +4523,6 @@ components:
         type:
           example: decimal
           type: string
-      type: object
-    ErrorDto:
-      properties:
-        message:
-          example: Message
-          type: string
-        success:
-          example: false
-          type: boolean
       type: object
     KeysDto:
       properties:
@@ -5267,6 +5323,20 @@ components:
         affiliation_identifier_scheme_uri:
           type: string
           example: 'https://ror.org/'
+    EnumDto:
+      required:
+        - id
+        - value
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
+        value:
+          type: string
+          example: '3'
+      description: 'enum values, only considered when type = ENUM'
     IdentifierDto:
       required:
         - creators
@@ -5643,6 +5713,9 @@ components:
         self_html:
           type: string
           example: 'http://example.com'
+        dashboard_html:
+          type: string
+          example: 'http://example.com/d/defi2baxqawaod'
     RelatedIdentifierDto:
       required:
         - id
@@ -5718,6 +5791,20 @@ components:
             - Requires
             - IsObsoletedBy
             - Obsoletes
+    SetDto:
+      required:
+        - id
+        - value
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
+        value:
+          type: string
+          example: '3'
+      description: 'enum values, only considered when type = ENUM'
     ViewColumnDto:
       required:
         - database_id
@@ -5751,6 +5838,16 @@ components:
           minLength: 0
           type: string
           example: Column comment
+        enums:
+          type: array
+          description: 'enum values, only considered when type = ENUM'
+          items:
+            $ref: '#/components/schemas/EnumDto'
+        sets:
+          type: array
+          description: 'enum values, only considered when type = ENUM'
+          items:
+            $ref: '#/components/schemas/SetDto'
         database_id:
           type: string
           format: uuid
@@ -5812,6 +5909,7 @@ components:
     ViewDto:
       required:
         - columns
+        - created
         - database_id
         - id
         - identifiers
@@ -5842,6 +5940,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ViewColumnDto'
+        created:
+          type: string
+          format: date-time
         last_retrieved:
           type: string
           format: date-time
@@ -7225,6 +7326,7 @@ components:
             - Obsoletes
     DatabaseModifyVisibilityDto:
       required:
+        - is_dashboard_enabled
         - is_public
         - is_schema_public
       type: object
@@ -7233,6 +7335,9 @@ components:
           type: boolean
           example: true
         is_schema_public:
+          type: boolean
+          example: true
+        is_dashboard_enabled:
           type: boolean
           example: true
     ViewUpdateDto:
@@ -7406,10 +7511,12 @@ components:
           example: Column comment
         enums:
           type: array
+          description: 'enum values, only considered when type = ENUM'
           items:
             $ref: '#/components/schemas/EnumDto'
         sets:
           type: array
+          description: 'enum values, only considered when type = ENUM'
           items:
             $ref: '#/components/schemas/SetDto'
         database_id:
@@ -7516,32 +7623,6 @@ components:
           example: >-
             name typically used to differentiate people from the same family,
             clan, or other social group who have a common last name
-    EnumDto:
-      required:
-        - id
-        - value
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
-        value:
-          type: string
-          example: '3'
-    SetDto:
-      required:
-        - id
-        - value
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
-        value:
-          type: string
-          example: '3'
     UnitBriefDto:
       required:
         - id
@@ -7573,6 +7654,13 @@ components:
       type: object
       properties:
         key:
+          type: string
+    DatabaseModifyDashboardDto:
+      required:
+        - uid
+      type: object
+      properties:
+        uid:
           type: string
     CreateAccessDto:
       required:
@@ -8376,14 +8464,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
         - id
@@ -8609,6 +8697,7 @@ components:
       required:
         - columns
         - constraints
+        - created
         - database_id
         - id
         - internal_name
@@ -8648,6 +8737,9 @@ components:
             $ref: '#/components/schemas/ColumnDto'
         constraints:
           $ref: '#/components/schemas/ConstraintsDto'
+        created:
+          type: string
+          format: date-time
         last_retrieved:
           type: string
           format: date-time

@@ -15,7 +15,6 @@
         :items="styles"
         item-title="title"
         item-value="value"
-        dense
         variant="outlined"
         single-line />
     </v-col>

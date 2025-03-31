@@ -1,18 +1,30 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
+import java.sql.SQLException;
 import java.util.UUID;
 
 public interface CacheService {
 
+    /**
+     * Gets credentials for a database with given id either from the cache (if not expired) or retrieves them from the
+     * Metadata Service.
+     *
+     * @param id The id.
+     * @param forceReload If set to true, force a reload of the cached result. Otherwise, use the cached result if it is present.
+     * @return The credentials.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata service.
+     * @throws RemoteUnavailableException The remote service is not available.
+     * @throws MetadataServiceException   The remote service returned invalid data.
+     */
     DatabaseDto getDatabase(UUID id, Boolean forceReload) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
@@ -28,6 +40,9 @@ public interface CacheService {
      */
     DatabaseDto getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
+
+    TableStatisticDto getStatistic(DatabaseDto database, ViewDto view) throws TableNotFoundException,
+            TableMalformedException, QueryMalformedException, SQLException;
 
     /**
      * Gets credentials for a container with given id either from the cache (if not expired) or retrieves them from the

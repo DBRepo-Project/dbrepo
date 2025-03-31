@@ -1,13 +1,13 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.ColumnStatisticDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.S3Config;
-import at.tuwien.exception.*;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class TableServiceIntegrationTest extends AbstractUnitTest {
+public class TableServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private TableService tableService;
@@ -74,11 +74,10 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
         MariaDbConfig.createInitDatabase(DATABASE_3_PRIVILEGED_DTO);
         /* s3 */
@@ -307,24 +306,28 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getStatistics_succeeds() throws TableMalformedException, SQLException, TableNotFoundException {
 
         /* test */
-        final TableStatisticDto response = tableService.getStatistics(DATABASE_1_PRIVILEGED_DTO, TABLE_2_DTO);
+        final TableStatisticDto response = tableService.getStatistics(DATABASE_1_PRIVILEGED_DTO, TABLE_2_INTERNAL_NAME);
         assertEquals(TABLE_2_COLUMNS.size(), response.getColumns().size());
-        log.trace("response rows: {}", response.getRows());
-        assertEquals(3L, response.getRows());
-        assertEquals(Set.of("location", "lat", "lng"), response.getColumns().keySet());
-        final ColumnStatisticDto column0 = response.getColumns().get("location");
+        assertEquals(TABLE_2_COLUMNS.size(), response.getTotalColumns());
+        log.trace("response rows: {}", response.getTotalRows());
+        assertEquals(3L, response.getTotalRows());
+        assertEquals(List.of("location", "lat", "lng"), response.getColumns().stream().map(ColumnStatisticDto::getName).toList());
+        final ColumnStatisticDto column0 = response.getColumns().get(0);
+        assertEquals("location", column0.getName());
         assertNull(column0.getMin());
         assertNull(column0.getMax());
         assertNull(column0.getMean());
         assertNull(column0.getMedian());
         assertNull(column0.getStdDev());
-        final ColumnStatisticDto column3 = response.getColumns().get("lat");
+        final ColumnStatisticDto column3 = response.getColumns().get(3);
+        assertEquals("lat", column0.getName());
         assertEquals(BigDecimal.valueOf(-36.0653583), column3.getMin());
         assertEquals(BigDecimal.valueOf(-33.847927), column3.getMax());
         assertNotNull(column3.getMean());
         assertNotNull(column3.getMedian());
         assertNotNull(column3.getStdDev());
-        final ColumnStatisticDto column4 = response.getColumns().get("lng");
+        final ColumnStatisticDto column4 = response.getColumns().get(4);
+        assertEquals("lng", column0.getName());
         assertEquals(BigDecimal.valueOf(146.9112214), column4.getMin());
         assertEquals(BigDecimal.valueOf(150.6517942), column4.getMax());
         assertNotNull(column4.getMean());
@@ -343,7 +346,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void delete_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
@@ -355,7 +358,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        final Long response = tableService.getCount(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, null);
+        final Long response = tableService.getCount(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME, null);
         assertEquals(3, response);
     }
 
@@ -363,7 +366,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_timestamp_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        final Long response = tableService.getCount(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, Instant.ofEpochSecond(0));
+        final Long response = tableService.getCount(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME, Instant.ofEpochSecond(0));
         assertEquals(0, response);
     }
 
@@ -371,11 +374,11 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            tableService.getCount(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO, null);
+            tableService.getCount(DATABASE_2_PRIVILEGED_DTO, TABLE_5_INTERNAL_NAME, null);
         });
     }
 
@@ -395,7 +398,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void history_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {

@@ -1,9 +1,10 @@
 FROM python:3.11-alpine3.21
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk add --no-cache curl bash jq
-
-WORKDIR /home/alpine
+RUN apk add --no-cache \
+    curl \
+    bash \
+    jq
 
 COPY Pipfile Pipfile.lock ./
 
@@ -13,12 +14,12 @@ RUN pip install pipenv && \
     pipenv install gunicorn && \
     pipenv install --system --deploy
 
-USER 1001
+RUN adduser -D dbrepo --uid 1001
 
 WORKDIR /app
 
-COPY --chown=1001 ./clients ./clients
-COPY --chown=1001 ./omlib ./omlib
+USER 1001
+
 COPY --chown=1001 ./app.py ./app.py
 COPY --chown=1001 ./database.json ./database.json
 

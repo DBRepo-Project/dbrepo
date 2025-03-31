@@ -1,14 +1,15 @@
 #!/bin/bash
 declare -A services
-services[4000]=search
-services[5000]=analyse
+services[4050]=analyse
+services[4060]=search
+services[4070]=dashboard
 services[9093]=data
 services[9099]=metadata
 
 # requires https://github.com/mikefarah/yq/ -> v4.44.3
 
 function retrieve () {
-  if [[ "$2" == analyse ]] || [[ "$2" == search ]]; then
+  if [[ "$2" == analyse ]] || [[ "$2" == search ]] || [[ "$2" == dashboard ]]; then
     echo "... retrieve json api from localhost:$1"
     curl -sSL "http://localhost:$1/api-$2.json" | yq -o=json - > "./.docs/.openapi/api-$2.yaml"
   else

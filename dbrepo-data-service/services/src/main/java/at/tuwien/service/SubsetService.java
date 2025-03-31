@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 

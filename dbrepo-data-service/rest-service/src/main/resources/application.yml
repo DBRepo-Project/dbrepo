@@ -17,6 +17,10 @@ spring:
           time_zone: UTC
   application:
     name: data-service
+  servlet:
+    multipart:
+      max-file-size: "${MAX_UPLOAD_SIZE:2GB}"
+      max-request-size: "${MAX_UPLOAD_SIZE:2GB}"
   rabbitmq:
     host: "${BROKER_HOST:broker-service}"
     virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
@@ -41,6 +45,8 @@ management:
       enabled: true
 server:
   port: 8080
+  tomcat:
+    max-swallow-size: -1
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -68,14 +74,11 @@ dbrepo:
     password: "${AUTH_SERVICE_ADMIN_PASSWORD:admin}"
     client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
     clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-  sql:
-    forbidden: "${NOT_SUPPORTED_KEYWORDS:AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--}"
   grant:
     default:
       read: "${GRANT_DEFAULT_READ:SELECT}"
       write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
-  website: "${BASE_URL:http://localhost}"
-  credentialCacheTimeout: "${CREDENTIAL_CACHE_TIMEOUT:60}"
+  credentialCacheTimeout: "${CREDENTIAL_CACHE_TIMEOUT:300}"
   minConcurrent: "${MIN_CONCURRENT_CONSUMERS:2}"
   maxConcurrent: "${MAX_CONCURRENT_CONSUMERS:6}"
   requeueRejected: ${REQUEUE_REJECTED:false}

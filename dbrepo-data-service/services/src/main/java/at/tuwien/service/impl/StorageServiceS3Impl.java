@@ -1,11 +1,11 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.tuwien.config.S3Config;
-import at.tuwien.exception.MalformedException;
-import at.tuwien.exception.StorageNotFoundException;
-import at.tuwien.exception.StorageUnavailableException;
-import at.tuwien.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.tuwien.service.StorageService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;

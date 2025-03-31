@@ -5,6 +5,7 @@ interface DatabaseDto {
   owner: UserDto;
   contact: UserDto;
   created: Date;
+  dashboard_uid: string;
   exchange_name: string;
   internal_name: string;
   is_public: boolean;

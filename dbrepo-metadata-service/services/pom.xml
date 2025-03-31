@@ -6,27 +6,22 @@
     <parent>
         <artifactId>dbrepo-metadata-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>1.7.3</version>
+        <version>1.8.0</version>
     </parent>
 
     <artifactId>dbrepo-metadata-service-services</artifactId>
     <name>dbrepo-metadata-service-services</name>
-    <version>1.7.3</version>
+    <version>1.8.0</version>
 
     <dependencies>
         <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-api</artifactId>
+            <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+            <artifactId>dbrepo-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-metadata-service-oai</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-entities</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -1,22 +1,22 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.container.image.OperatorDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.FilterDto;
-import at.tuwien.api.database.query.FilterTypeDto;
-import at.tuwien.api.database.query.OrderDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TupleDeleteDto;
-import at.tuwien.api.database.table.TupleDto;
-import at.tuwien.api.database.table.TupleUpdateDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.OperatorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.OrderDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import at.tuwien.utils.MariaDbUtil;
 import org.jooq.Record;
 import org.jooq.*;
@@ -317,7 +317,7 @@ public interface MariaDbMapper {
     }
 
     default String tableCreateDtoToCreateTableRawQuery(String databaseName,
-                                                       at.tuwien.api.database.table.internal.TableCreateDto data) {
+                                                       at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto data) {
         final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
                 .append(databaseName)
                 .append("`.`")

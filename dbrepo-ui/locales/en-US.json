@@ -38,7 +38,9 @@
     "help": "Help",
     "visibility": "Visibility",
     "update": "Update",
-    "you": "You"
+    "you": "You",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "pages": {
     "identifier": {
@@ -330,7 +332,7 @@
         "title": "Owner"
       },
       "creation": {
-        "title": "Creation"
+        "title": "Created"
       },
       "import": {
         "title": "Import dataset into"
@@ -594,6 +596,18 @@
       "image": {
         "title": "Preview Image",
         "alt": "Database preview image representing the dataset"
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "text": "View",
+        "visibility": {
+          "label": "Managed Dashboard",
+          "hint": "Required, enables/disables the managed dashboard",
+          "warn": "Note that disabling the dashboard management also disables automatic visibility permission management of the dashboard!"
+        }
+      },
+      "creation": {
+        "title": "Created"
       },
       "name": {
         "title": "Name"
@@ -919,7 +933,7 @@
         "title": "Owner"
       },
       "creation": {
-        "title": "Creation"
+        "title": "Created"
       },
       "visibility": {
         "title": "Visibility"
@@ -1136,9 +1150,13 @@
       "missing": "Failed to find access in metadata database"
     },
     "axios": {
-      "connection": "Failed to contact backend",
+      "connection": "Failed to establish connection to backend",
       "malformed": "Malformed request",
       "timeout": "Connection timed out"
+    },
+    "dashboard": {
+      "connection": "Failed to establish connection with dashboard service",
+      "invalid": "Failed to perform action at dashboard service"
     },
     "concept": {
       "missing": "Failed to find concept in metadata database"

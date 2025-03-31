@@ -1,10 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
-import at.tuwien.exception.MalformedException;
-import at.tuwien.exception.StorageNotFoundException;
-import at.tuwien.exception.StorageUnavailableException;
-import at.tuwien.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 

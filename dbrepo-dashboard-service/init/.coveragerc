@@ -1,0 +1,7 @@
+[report]
+omit =
+    # omit tests
+    ./tests/*
+
+[html]
+directory = htmlcov

@@ -1,11 +1,11 @@
 package at.tuwien.listener;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.MetadataServiceException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.TableNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import at.tuwien.service.CacheService;
 import at.tuwien.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;

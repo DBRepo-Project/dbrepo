@@ -1,27 +1,24 @@
-# -*- coding: utf-8 -*-
-"""
-@author: Martin Weise
-"""
-import logging
 import io
-import pandas
+import logging
 
-from numpy import dtype, max, min
+import pandas
+from dbrepo.core.client.storage import StorageServiceClient
 from flask import current_app
-from pandas import DataFrame, NaT
+from numpy import dtype, max, min
+from pandas import DataFrame
 from pandas.errors import EmptyDataError, ParserError
 
 from api.dto import ColumnAnalysisDto, DataTypeDto, AnalysisDto
-from clients.s3_client import S3Client
 
 
 def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') -> AnalysisDto:
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
-    s3_client = S3Client()
-    s3_client.file_exists(current_app.config['S3_BUCKET'], filename)
-    response = s3_client.get_file(current_app.config['S3_BUCKET'], filename)
+    storage_client = StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                          current_app.config['S3_SECRET_ACCESS_KEY'])
+    storage_client.file_exists(current_app.config['S3_BUCKET'], filename)
+    response = storage_client.get_file(current_app.config['S3_BUCKET'], filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         logging.warning(f'Failed to determine data types: file {filename} has empty body')
@@ -44,8 +41,9 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
         for encoding in ['utf-8', 'cp1252', 'latin1', 'iso-8859-1']:
             try:
                 logging.debug(f"attempt parsing .csv using encoding {encoding}")
-                df = pandas.read_csv(fh, delimiter=separator, nrows=current_app.config['ANALYSE_NROWS'],
-                                     lineterminator=line_terminator, index_col=False, encoding=encoding)
+                df = pandas.read_csv(fh, delimiter=separator, lineterminator=line_terminator, index_col=False,
+                                     encoding=encoding)
+                df = df.sample(frac=1)
                 logging.debug(f"parsing .csv using encoding {encoding} was successful")
                 break
             except ParserError as error:
@@ -98,7 +96,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
                     logging.debug(f"mapped column {name} from O to date")
                     col.type = DataTypeDto.DATE
                     continue
-                except ValueError:
+                except Exception:
                     pass
                 max_size = max(df[name].astype(str).map(len))
                 if max_size <= 1:

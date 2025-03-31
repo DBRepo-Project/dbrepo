@@ -2,13 +2,13 @@ package at.tuwien.service;
 
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.MetadataServiceException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.TableNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.impl.QueueServiceRabbitMqImpl;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class QueueServiceIntegrationTest extends AbstractUnitTest {
+public class QueueServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private QueueServiceRabbitMqImpl queueService;
@@ -50,9 +50,8 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 

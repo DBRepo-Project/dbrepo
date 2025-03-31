@@ -1,11 +1,13 @@
-import json
 import logging
-import pandas
-import random
-import numpy
 import math
+import random
+
+import numpy
+import pandas
+from dbrepo.core.client.storage import StorageServiceClient
+from flask import current_app
+
 from determine_dt import determine_datatypes
-from clients.s3_client import S3Client
 
 
 def determine_pk(filename: str, separator: str = ','):
@@ -14,10 +16,10 @@ def determine_pk(filename: str, separator: str = ','):
     # {k.lower(): v for k, v in dt['columns'].items() if v != 'Numeric'}
     colnames = dt.keys()
     colindex = list(range(0, len(colnames)))
-
-    s3_client = S3Client()
-    s3_client.file_exists('dbrepo', filename)
-    response = s3_client.get_file('dbrepo', filename)
+    storage_client = StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                          current_app.config['S3_SECRET_ACCESS_KEY'])
+    storage_client.file_exists('dbrepo', filename)
+    response = storage_client.get_file('dbrepo', filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         raise OSError(f'Failed to determine primary key: file {filename} has empty body')

@@ -46,6 +46,16 @@
                   :max-height="maxHeight" />
               </v-list-item>
               <v-list-item
+                v-if="canViewDashboard"
+                :title="$t('pages.database.dashboard.title')"
+                density="compact">
+                <NuxtLink
+                  target="_blank"
+                  :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}`">
+                  {{ $t('pages.database.dashboard.text') }}
+                </NuxtLink>
+              </v-list-item>
+              <v-list-item
                 :title="$t('pages.database.name.title')"
                 density="compact">
                 <div>
@@ -107,6 +117,11 @@
                     :user="database.contact"
                     :other-user="cacheUser" />
                 </div>
+              </v-list-item>
+              <v-list-item
+                v-if="database.created"
+                :title="$t('pages.database.creation.title')">
+                {{ formatUTC(database.created) }}
               </v-list-item>
             </v-list>
           </v-card-text>
@@ -187,7 +202,7 @@ import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { sizeToHumanLabel } from '@/utils'
+import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -221,6 +236,10 @@ export default {
   computed: {
     tab () {
       return 0
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     },
     description () {
       if (!this.identifier) {
@@ -341,6 +360,20 @@ export default {
       const userService = useUserService()
       return userService.hasReadAccess(this.access)
     },
+    canViewDashboard () {
+      if (!this.database || !this.database.views) {
+        return false
+      }
+      if (!this.database.is_public && !this.database.is_schema_public) {
+        return false
+      }
+      return this.database.dashboard_uid
+    }
+  },
+  methods: {
+    formatUTC (timestamp) {
+      return formatTimestampUTCLabel(timestamp)
+    }
   }
 }
 </script>

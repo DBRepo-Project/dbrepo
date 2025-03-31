@@ -1,20 +1,17 @@
-import os
 import logging
+import os
+from json import dumps
 from typing import Any, List
 
-from json import dumps
-
-import requests.exceptions
+from botocore.exceptions import ClientError
 from dbrepo.api.dto import ApiError
+from dbrepo.core.client.auth import User, AuthServiceClient
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, Response, request
 from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth, MultiAuth, HTTPTokenAuth
 from prometheus_flask_exporter import PrometheusMetrics
 
-from botocore.exceptions import ClientError
-
-from clients.keycloak_client import KeycloakClient, User
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
 
@@ -100,15 +97,19 @@ template = {
                 },
                 "type": "object"
             },
-            "ErrorDto": {
+            "ApiError": {
                 "properties": {
                     "message": {
                         "example": "Message",
                         "type": "string"
                     },
-                    "success": {
-                        "example": False,
-                        "type": "boolean"
+                    "status": {
+                        "example": "BAD_REQUEST",
+                        "type": "string"
+                    },
+                    "code": {
+                        "example": "error.dashboard.create",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -149,10 +150,6 @@ template = {
                         "type": "integer",
                         "example": 4
                     },
-                    "dfid": {
-                        "type": "integer",
-                        "example": None
-                    },
                     "enums": {
                         "type": "array",
                         "example": None,
@@ -188,7 +185,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "1.5",
+        "version": "1.8.0",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -200,11 +197,11 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/"
     },
     "servers": [
         {
-            "url": "http://localhost:5000",
+            "url": "http://localhost",
             "description": "Generated server url"
         },
         {
@@ -219,7 +216,7 @@ app.config["JWT_ALGORITHM"] = "HS256"
 app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
                                                                       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
 app.config["ANALYSE_NROWS"] = int(os.getenv('ANALYSE_NROWS', '10000'))
-app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost/api/auth")
+app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://auth-service:8080")
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["S3_ACCESS_KEY_ID"] = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
@@ -234,41 +231,28 @@ app.config["SYSTEM_PASSWORD"] = os.getenv('SYSTEM_PASSWORD', 'admin')
 
 app.json_encoder = LazyJSONEncoder
 
+auth_client = AuthServiceClient(app.config["AUTH_SERVICE_ENDPOINT"], app.config["AUTH_SERVICE_CLIENT"],
+                                app.config["AUTH_SERVICE_CLIENT_SECRET"], app.config["JWT_PUBKEY"])
+
 
 @token_auth.verify_token
 def verify_token(token: str):
-    if token is None or token == "":
-        return False
-    try:
-        client = KeycloakClient()
-        return client.verify_jwt(access_token=token)
-    except AssertionError:
-        return False
+    return auth_client.is_valid_token(token)
 
 
 @basic_auth.verify_password
 def verify_password(username: str, password: str) -> Any:
-    if username is None or username == "" or password is None or password == "":
-        return False
-    client = KeycloakClient()
-    try:
-        return client.verify_jwt(access_token=client.obtain_user_token(username=username, password=password))
-    except AssertionError as error:
-        logging.error(error)
-        return False
-    except requests.exceptions.ConnectionError as error:
-        logging.error(f"Failed to connect to Authentication Service {error}")
-        return False
+    return auth_client.is_valid_password(username, password)
 
 
 @token_auth.get_user_roles
 def get_user_roles(user: User) -> List[str]:
-    return user.roles
+    return auth_client.get_user_roles(user)
 
 
 @basic_auth.get_user_roles
 def get_user_roles(user: User) -> List[str]:
-    return user.roles
+    return auth_client.get_user_roles(user)
 
 
 @app.route("/health", methods=["GET"], endpoint="analyse_health")
@@ -300,7 +284,8 @@ def analyse_datatypes():
         return ApiError(status='BAD_REQUEST', message=str(e), code='error.analyse.invalid').model_dump_json(), 400
     except ClientError as e:
         logging.error(f"Failed to determine separator: {e}")
-        return ApiError(status='NOT_FOUND', message='Failed to find csv', code='error.analyse.missing').model_dump_json(), 404
+        return ApiError(status='NOT_FOUND', message='Failed to find csv',
+                        code='error.analyse.missing').model_dump_json(), 404
 
 
 @app.route("/api/analyse/keys", methods=["GET"], endpoint="analyse_analyse_keys")

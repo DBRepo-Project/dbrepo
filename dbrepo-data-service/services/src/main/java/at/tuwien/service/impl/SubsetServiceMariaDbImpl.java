@@ -1,11 +1,11 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;

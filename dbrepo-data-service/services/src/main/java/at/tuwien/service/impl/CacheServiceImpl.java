@@ -1,25 +1,30 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CacheService;
+import at.tuwien.service.TableService;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
+import java.time.Instant;
 import java.util.UUID;
 
 @Log4j2
 @Service
 public class CacheServiceImpl implements CacheService {
 
+    private final TableService tableService;
     private final MetadataServiceGateway gateway;
     private final Cache<UUID, UserDto> userCache;
     private final Cache<UUID, ViewDto> viewCache;
@@ -27,12 +32,14 @@ public class CacheServiceImpl implements CacheService {
     private final Cache<UUID, DatabaseDto> databaseCache;
     private final Cache<UUID, ContainerDto> containerCache;
     private final Cache<UUID, DatabaseAccessDto> accessCache;
+    private final Cache<UUID, TableStatisticDto> statisticCache;
 
     @Autowired
-    public CacheServiceImpl(MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
+    public CacheServiceImpl(TableService tableService, MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
                             Cache<UUID, ViewDto> viewCache, Cache<UUID, TableDto> tableCache,
                             Cache<UUID, DatabaseAccessDto> accessCache, Cache<UUID, DatabaseDto> databaseCache,
-                            Cache<UUID, ContainerDto> containerCache) {
+                            Cache<UUID, ContainerDto> containerCache, Cache<UUID, TableStatisticDto> statisticCache) {
+        this.tableService = tableService;
         this.gateway = gateway;
         this.userCache = userCache;
         this.viewCache = viewCache;
@@ -40,6 +47,7 @@ public class CacheServiceImpl implements CacheService {
         this.accessCache = accessCache;
         this.databaseCache = databaseCache;
         this.containerCache = containerCache;
+        this.statisticCache = statisticCache;
     }
 
     @Override
@@ -76,6 +84,21 @@ public class CacheServiceImpl implements CacheService {
         final TableDto table = gateway.getTableById(databaseId, tableId);
         tableCache.put(tableId, table);
         return table;
+    }
+
+    @Override
+    public TableStatisticDto getStatistic(DatabaseDto database, ViewDto view) throws TableNotFoundException,
+            TableMalformedException, QueryMalformedException, SQLException {
+        final TableStatisticDto cacheStatistic = statisticCache.getIfPresent(view.getId());
+        if (cacheStatistic != null) {
+            log.trace("found view statistic with id {} in cache", view.getId());
+            return cacheStatistic;
+        }
+        log.debug("view statistic with id {} not it cache (anymore): reload", view.getId());
+        final TableStatisticDto statistic = tableService.getStatistics(database, view.getInternalName());
+        statistic.setTotalRows(tableService.getCount(database, view.getInternalName(), Instant.now()));
+        statisticCache.put(view.getId(), statistic);
+        return statistic;
     }
 
     @Override
@@ -144,6 +167,7 @@ public class CacheServiceImpl implements CacheService {
         tableCache.invalidateAll();
         databaseCache.invalidateAll();
         containerCache.invalidateAll();
+        statisticCache.invalidateAll();
     }
 
 }

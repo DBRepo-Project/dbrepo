@@ -1,8 +1,10 @@
 import unittest
 
-from api.dto import AnalysisDto
-from clients.s3_client import S3Client
 from botocore.exceptions import ClientError
+from dbrepo.core.client.storage import StorageServiceClient
+from flask import current_app
+
+from api.dto import AnalysisDto
 from determine_dt import determine_datatypes
 
 
@@ -47,9 +49,11 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
         })
 
-
         # mock
-        S3Client().upload_file("datetime.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("datetime.csv",
+                                                                                         './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime.csv", separator=",")
@@ -95,7 +99,10 @@ class DetermineDatatypesTest(unittest.TestCase):
         })
 
         # mock
-        S3Client().upload_file("datetime_tz.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("datetime_tz.csv",
+                                                                                         './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime_tz.csv", separator=",")
@@ -141,7 +148,10 @@ class DetermineDatatypesTest(unittest.TestCase):
         })
 
         # mock
-        S3Client().upload_file("datetime_t.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("datetime_t.csv",
+                                                                                         './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime_t.csv", separator=",")
@@ -188,7 +198,10 @@ class DetermineDatatypesTest(unittest.TestCase):
         })
 
         # mock
-        S3Client().upload_file("datatypes.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("datatypes.csv",
+                                                                                         './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datatypes.csv", separator=",")
@@ -209,7 +222,10 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_fileEmpty_succeeds(self):
 
         # mock
-        S3Client().upload_file("empty.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("empty.csv", './data/test_dt/',
+                                                                                         'dbrepo')
 
         # test
         response = determine_datatypes("empty.csv")
@@ -219,7 +235,10 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_separatorSemicolon_succeeds(self):
 
         # mock
-        S3Client().upload_file("separator.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("separator.csv",
+                                                                                         './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="separator.csv", separator=";")
@@ -228,7 +247,10 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_separatorGuess_succeeds(self):
 
         # mock
-        S3Client().upload_file("separator.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("separator.csv",
+                                                                                         './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="separator.csv")
@@ -252,7 +274,10 @@ class DetermineDatatypesTest(unittest.TestCase):
         })
 
         # mock
-        S3Client().upload_file("novel.csv", './data/test_dt/', 'dbrepo')
+        with current_app.app_context():
+            StorageServiceClient(current_app.config['S3_ENDPOINT'], current_app.config['S3_ACCESS_KEY_ID'],
+                                 current_app.config['S3_SECRET_ACCESS_KEY']).upload_file("novel.csv", './data/test_dt/',
+                                                                                         'dbrepo')
 
         # test
         response = determine_datatypes(filename="novel.csv", separator=";")

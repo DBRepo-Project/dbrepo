@@ -1,25 +1,25 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.*;
-import at.tuwien.api.database.table.constraints.ConstraintsDto;
-import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
-import at.tuwien.api.database.table.constraints.foreign.CreateForeignKeyDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
-import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
-import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
-import at.tuwien.api.database.table.constraints.unique.UniqueDto;
-import at.tuwien.api.database.table.internal.TableCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.user.internal.UpdateUserPasswordDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.*;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
+public class DatabaseServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private DatabaseService databaseService;
@@ -60,11 +60,10 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_2_PRIVILEGED_DTO);
         Thread.sleep(1000) /* wait for test container some more */;
     }
@@ -113,9 +112,9 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         MariaDbConfig.grantWriteAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
 
         /* pre-condition */
-        MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNALNAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_1_PASSWORD);
+        MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_1_PASSWORD);
         try {
-            MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNALNAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
+            MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
             fail();
         } catch (SQLException e) {
             /* ignore */
@@ -123,7 +122,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         databaseService.update(DATABASE_1_PRIVILEGED_DTO, request);
-        MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNALNAME, "CREATE SEQUENCE debug2 NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
+        MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug2 NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
     }
 
     @Test
@@ -189,7 +188,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         assertTrue(response.getIsVersioned());
         assertEquals(DATABASE_2_PUBLIC, response.getIsPublic());
         assertNotNull(response.getOwner());
-        assertEquals(DATABASE_2_OWNER, response.getOwner().getId());
+        assertEquals(USER_2_ID, response.getOwner().getId());
         assertEquals(USER_2_NAME, response.getOwner().getName());
         assertEquals(USER_2_USERNAME, response.getOwner().getUsername());
         assertEquals(USER_2_FIRSTNAME, response.getOwner().getFirstname());
@@ -307,8 +306,8 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         assertNotNull(fk0.getOnDelete());
         assertNotNull(fk0.getOnUpdate());
         assertNotNull(fk0.getReferencedTable());
-        assertEquals(TABLE_2_INTERNALNAME, fk0.getReferencedTable().getName());
-        assertEquals(TABLE_2_INTERNALNAME, fk0.getReferencedTable().getInternalName());
+        assertEquals(TABLE_2_INTERNAL_NAME, fk0.getReferencedTable().getName());
+        assertEquals(TABLE_2_INTERNAL_NAME, fk0.getReferencedTable().getInternalName());
     }
 
     @Test
@@ -600,8 +599,8 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO);
-        assertEquals(TABLE_4_INTERNALNAME, response.getName());
-        assertEquals(TABLE_4_INTERNALNAME, response.getInternalName());
+        assertEquals(TABLE_4_INTERNAL_NAME, response.getName());
+        assertEquals(TABLE_4_INTERNAL_NAME, response.getInternalName());
         final List<ColumnDto> columns = response.getColumns();
         assertEquals(TABLE_4_COLUMNS.size(), columns.size());
         assertColumn(columns.get(0), null, null, DATABASE_1_ID, "timestamp", "timestamp", ColumnTypeDto.TIMESTAMP, null, null, false, null);
@@ -616,7 +615,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void createTable_malformed_fails() {
-        final at.tuwien.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
+        final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
                 .name("missing_foreign_key")
                 .columns(List.of())
                 .constraints(CreateTableConstraintsDto.builder()
@@ -637,7 +636,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     @Test
     public void createTable_compositePrimaryKey_fails() throws TableNotFoundException, TableMalformedException, SQLException,
             TableExistsException {
-        final at.tuwien.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
+        final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
                 .name("composite_primary_key")
                 .columns(List.of(CreateTableColumnDto.builder()
                                 .name("name")
