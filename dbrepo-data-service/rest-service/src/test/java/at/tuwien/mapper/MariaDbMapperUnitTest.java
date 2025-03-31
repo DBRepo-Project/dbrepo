@@ -1,6 +1,6 @@
 package at.tuwien.mapper;
 
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,12 +12,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class MariaDbMapperUnitTest extends AbstractUnitTest {
+public class MariaDbMapperUnitTest extends BaseTest {
 
     @Autowired
     private MariaDbMapper mariaDbMapper;

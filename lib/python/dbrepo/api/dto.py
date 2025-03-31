@@ -502,6 +502,10 @@ class UpdateColumn(BaseModel):
     unit_uri: Optional[str] = None
 
 
+class DatabaseModifyDashboard(BaseModel):
+    uid: str
+
+
 class ModifyVisibility(BaseModel):
     is_public: bool
     is_schema_public: bool
@@ -762,11 +766,12 @@ class KeyAnalysis(BaseModel):
 
 
 class ColumnStatistic(BaseModel):
-    val_min: float
-    val_max: float
+    name: str
     mean: float
     median: float
     std_dev: float
+    val_min: float
+    val_max: float
 
 
 class ApiError(BaseModel):
@@ -776,6 +781,11 @@ class ApiError(BaseModel):
 
 
 class TableStatistics(BaseModel):
+    total_rows: Optional[int] = None
+    total_columns: int
+    data_length: Optional[int] = None
+    max_data_length: Optional[int] = None
+    avg_row_length: Optional[int] = None
     columns: dict[str, ColumnStatistic]
 
 
@@ -1076,6 +1086,8 @@ class ViewColumn(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
+    enums: Optional[List[ColumnEnum]] = field(default_factory=list)
+    sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
     length: Optional[int] = None
 
@@ -1124,14 +1136,16 @@ class Database(BaseModel):
     internal_name: str
     is_public: bool
     is_schema_public: bool
+    is_dashboard_enabled: bool
     container: ContainerBrief
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     subsets: Optional[List[Identifier]] = field(default_factory=list)
-    preview_image: Optional[str] = None
-    description: Optional[str] = None
     tables: Optional[List[Table]] = field(default_factory=list)
     views: Optional[List[View]] = field(default_factory=list)
     accesses: Optional[List[DatabaseAccess]] = field(default_factory=list)
+    preview_image: Optional[str] = None
+    description: Optional[str] = None
+    dashboard_uid: Optional[str] = None
     exchange_name: Optional[str] = None
 
 

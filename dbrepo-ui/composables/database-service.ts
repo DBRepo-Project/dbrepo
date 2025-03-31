@@ -66,7 +66,7 @@ export const useDatabaseService = (): any => {
     });
   }
 
-  async function findOne(id: string, rawError: boolean = false): Promise<DatabaseDto | null> {
+  async function findOne(id: string, rawError: boolean = false): Promise<DatabaseDto> {
     const axios = useAxiosInstance();
     console.debug('find database with id', id);
     return new Promise((resolve, reject) => {
@@ -101,7 +101,7 @@ export const useDatabaseService = (): any => {
     });
   }
 
-  async function updateVisibility(id: string, payload: DatabaseModifyVisibilityDto): Promise<DatabaseDto | null> {
+  async function updateVisibility(id: string, payload: DatabaseModifyVisibilityDto): Promise<DatabaseDto> {
     const axios = useAxiosInstance()
     console.debug('update database visibility for database with id', id);
     return new Promise((resolve, reject) => {
@@ -117,7 +117,7 @@ export const useDatabaseService = (): any => {
     });
   }
 
-  async function updateImage(id: string, payload: DatabaseModifyImageDto): Promise<DatabaseDto | null> {
+  async function updateImage(id: string, payload: DatabaseModifyImageDto): Promise<DatabaseDto> {
     const axios = useAxiosInstance()
     console.debug('update database image for database with id', id);
     return new Promise((resolve, reject) => {
@@ -133,7 +133,7 @@ export const useDatabaseService = (): any => {
     });
   }
 
-  async function updateOwner(id: string, payload: DatabaseTransferDto): Promise<DatabaseDto | null> {
+  async function updateOwner(id: string, payload: DatabaseTransferDto): Promise<DatabaseDto> {
     const axios = useAxiosInstance()
     console.debug('update database owner for database with id', id);
     return new Promise((resolve, reject) => {

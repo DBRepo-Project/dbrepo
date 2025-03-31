@@ -1,18 +1,18 @@
 package at.tuwien.gateway;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import java.util.UUID;
-
+// todo ?
 public interface MetadataServiceGateway {
 
     /**

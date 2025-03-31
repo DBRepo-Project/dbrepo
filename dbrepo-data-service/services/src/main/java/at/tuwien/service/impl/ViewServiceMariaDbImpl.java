@@ -1,9 +1,9 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.ViewMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ViewMalformedException;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;

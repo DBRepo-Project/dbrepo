@@ -95,13 +95,8 @@ User Interface on development.
 * Frontend: [Vuetify 3+](https://vuetifyjs.com/en/)
 * State: [Pinia](https://pinia.vuejs.org/)
 
-### Example
-
-See the [API Overview](..) page for detailed examples.
-
 ## Limitations
 
-* Changing the OIDC provider URL requires to build the UI from scratch.
 * When developing locally, the `axios` module does not parse custom headers (such as `X-Count`, `X-Headers`) and/or
   blocks CORS requests wrongfully.
 

@@ -1,6 +1,6 @@
 package at.tuwien.auth;
 
-import at.tuwien.api.keycloak.TokenDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.service.CredentialService;
 import lombok.extern.log4j.Log4j2;

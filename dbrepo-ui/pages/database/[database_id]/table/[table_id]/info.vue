@@ -66,6 +66,11 @@
               :user="table.owner"
               :other-user="cacheUser" />
           </v-list-item>
+          <v-list-item
+            v-if="table.created"
+            :title="$t('pages.table.creation.title')">
+            {{ formatUTC(table.created) }}
+          </v-list-item>
         </v-list>
       </v-card-text>
     </v-card>
@@ -142,6 +147,7 @@ import Select from '@/components/identifier/Select.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   components: {
@@ -275,6 +281,11 @@ export default {
       } else if (this.canRead) {
         return this.$t('pages.table.connection.permissions.read')
       }
+    }
+  },
+  methods: {
+    formatUTC (timestamp) {
+      return formatTimestampUTCLabel(timestamp)
     }
   }
 }

@@ -165,6 +165,34 @@
                   :hint="$t('pages.database.resource.schema.hint', { resource: 'database', schema: 'tables, views, subsets' })" />
               </v-col>
             </v-row>
+            <v-row
+              v-if="isDashboardDisabled">
+              <v-col
+                lg="8">
+                <v-alert
+                  border="start"
+                  color="warning">
+                  {{ $t('pages.database.dashboard.visibility.warn') }}
+                </v-alert>
+              </v-col>
+            </v-row>
+            <v-row
+              dense>
+              <v-col
+                lg="4">
+                <v-select
+                  v-model="modifyVisibility.is_dashboard_enabled"
+                  :items="dashboardOptions"
+                  persistent-hint
+                  :variant="inputVariant"
+                  required
+                  :rules="[
+                    v => v !== null || $t('validation.required')
+                  ]"
+                  :label="$t('pages.database.dashboard.visibility.label')"
+                  :hint="$t('pages.database.dashboard.visibility.hint')" />
+              </v-col>
+            </v-row>
             <v-row>
               <v-col>
                 <v-btn
@@ -275,7 +303,8 @@ export default {
       editVisibilityDialog: false,
       modifyVisibility: {
         is_public: null,
-        is_schema_public: null
+        is_schema_public: null,
+        is_dashboard_enabled: null,
       },
       modifyOwner: {
         id: null
@@ -290,6 +319,10 @@ export default {
       schemaOptions: [
         { title: this.$t('pages.database.resource.schema.enabled'), value: true },
         { title: this.$t('pages.database.resource.schema.disabled'), value: false },
+      ],
+      dashboardOptions: [
+        { title: this.$t('navigation.enabled'), value: true },
+        { title: this.$t('navigation.disabled'), value: false },
       ],
       headers: [
         {
@@ -356,7 +389,7 @@ export default {
       if (!this.modifyVisibility || !this.database) {
         return false
       }
-      return this.modifyVisibility.is_public === this.database.is_public && this.modifyVisibility.is_schema_public === this.database.is_schema_public
+      return this.modifyVisibility.is_public === this.database.is_public && this.modifyVisibility.is_schema_public === this.database.is_schema_public && this.modifyVisibility.is_dashboard_enabled === this.database.is_dashboard_enabled
     },
     canModifyVisibility () {
       if (!this.roles) {
@@ -416,6 +449,12 @@ export default {
     maxHeight () {
       return this.$config.public.database.image.height
     },
+    isDashboardDisabled () {
+      if (!this.database) {
+        return false
+      }
+      return this.database.is_dashboard_enabled && !this.modifyVisibility.is_dashboard_enabled
+    },
     uploadErrorMessages () {
       if (!this.file || this.file.size < 1_000_000) {
         return []
@@ -449,6 +488,7 @@ export default {
     }
     this.modifyVisibility.is_public = this.database.is_public
     this.modifyVisibility.is_schema_public = this.database.is_schema_public
+    this.modifyVisibility.is_dashboard_enabled = this.database.is_dashboard_enabled
     this.modifyOwner.id = this.database.owner.id
   },
   methods: {
@@ -463,7 +503,7 @@ export default {
       this.loading = true
       const databaseService = useDatabaseService()
       databaseService.updateVisibility(this.$route.params.database_id, this.modifyVisibility)
-        .then((database) => {
+        .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.database.visibility'))
           this.cacheStore.reloadDatabase()

@@ -73,7 +73,7 @@ def opensearch_container():
     with os_container:
         client = os_container.get_client()
         index_mapping_path = os.path.join(
-            "..", "dbrepo-search-db", "init", "indices", "database.json"
+            "..", "dbrepo-search-service", "init", "database.json"
         )
         with open(index_mapping_path, "r") as file:
             mapping = json.load(file)

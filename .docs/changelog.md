@@ -2,6 +2,15 @@
 author: Martin Weise
 ---
 
+## v1.8.0 (2025-??-??)
+
+#### Features
+
+* Refactored internal Java-based testing data that improves test consistency
+  in [#510](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/510).
+* Added automated dashboard generation for all public databases where each view has an overview of its data and
+  schema in [#460](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/460).
+
 ## v1.7.3 (2025-03-17)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.3)

@@ -1,8 +1,8 @@
 package at.tuwien.mvc;
 
-import at.tuwien.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.tuwien.endpoints.*;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @SpringBootTest
-public class OpenApiEndpointMvcTest extends AbstractUnitTest {
+public class OpenApiEndpointMvcTest extends BaseTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -68,6 +68,7 @@ public class OpenApiEndpointMvcTest extends AbstractUnitTest {
     }
 
     private void generic_openApiDocs(Class<?> endpoint) {
+        final String packageScope = "at.ac.tuwien.ifs.dbrepo";
         final List<Method> methods = Arrays.stream(endpoint.getMethods())
                 .filter(m -> m.getDeclaringClass().equals(endpoint))
                 .toList();
@@ -76,9 +77,9 @@ public class OpenApiEndpointMvcTest extends AbstractUnitTest {
             final List<Class<?>> exceptions = Arrays.stream(m.getExceptionTypes())
                     .toList();
             final List<Class<?>> invalidExceptions = exceptions.stream()
-                    .filter(e -> !e.getName().startsWith("at.tuwien."))
+                    .filter(e -> !e.getName().startsWith(packageScope))
                     .toList();
-            assertTrue(invalidExceptions.isEmpty(), "method '" + m.getName() + "' throws exception(s) outside package scope at.tuwien: " + invalidExceptions.stream().map(Class::getName).toList());
+            assertTrue(invalidExceptions.isEmpty(), "method '" + m.getName() + "' throws exception(s) outside package scope " + packageScope + ": " + invalidExceptions.stream().map(Class::getName).toList());
             exceptions.forEach(exception -> {
                 final int status = exception.getAnnotation(ResponseStatus.class)
                         .code()

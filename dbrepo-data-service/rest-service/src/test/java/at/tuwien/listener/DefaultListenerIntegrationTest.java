@@ -1,16 +1,15 @@
 package at.tuwien.listener;
 
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.MetadataServiceException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.service.CacheService;
-import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.amqp.core.Message;
@@ -31,7 +30,6 @@ import java.util.HashMap;
 
 import static at.tuwien.utils.RabbitMqUtils.buildMessage;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -40,7 +38,7 @@ import static org.mockito.Mockito.when;
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class DefaultListenerIntegrationTest extends AbstractUnitTest {
+public class DefaultListenerIntegrationTest extends BaseTest {
 
     @MockBean
     private CacheService credentialService;
@@ -56,7 +54,6 @@ public class DefaultListenerIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* database */
         MariaDbConfig.dropAllDatabases(CONTAINER_1_PRIVILEGED_DTO);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
@@ -76,22 +73,6 @@ public class DefaultListenerIntegrationTest extends AbstractUnitTest {
         /* test */
         defaultListener.onMessage(request);
         assertTrue(output.getAll().contains("successfully inserted tuple"));
-    }
-
-    @Test
-    @Disabled
-    public void onMessage_tableNotFound_fails(CapturedOutput output) throws TableNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
-        final Message request = buildMessage("dbrepo." + DATABASE_1_ID + "." + TABLE_1_ID, "{\"id\":4,\"date\":\"2023-10-03\",\"mintemp\":15.0,\"rainfall\":0.2}", new HashMap<>());
-
-        /* mock */
-        doThrow(TableNotFoundException.class)
-                .when(credentialService)
-                .getTable(DATABASE_1_ID, TABLE_1_ID);
-
-        /* test */
-        defaultListener.onMessage(request);
-        assertTrue(output.getAll().contains("Failed to insert tuple"));
     }
 
 }

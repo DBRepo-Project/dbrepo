@@ -1,12 +1,12 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.query.*;
-import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class SubsetServiceIntegrationTest extends AbstractUnitTest {
+public class SubsetServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private SubsetService subsetService;
@@ -60,9 +60,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 

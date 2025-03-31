@@ -6,7 +6,7 @@ volumes:
   search-db-data:
   identity-service-data:
   metric-db-data:
-  dashboard-service-data:
+  dashboard-ui-data:
 
 services:
   dbrepo-metadata-db:
@@ -39,12 +39,13 @@ services:
     image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
     volumes:
       - data-db-data:/bitnami/mariadb
-      - "${SHARED_VOLUME:-/tmp}:/tmp"
     ports:
       - "3307:3306"
     environment:
-      MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
       MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
+      MARIADB_PASSWORD: "${READONLY_PASSWORD:-user}"
+      MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_USER: "${READONLY_USERNAME:-user}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -129,9 +130,12 @@ services:
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       METADATA_USERNAME: "root"
+      READONLY_USERNAME: "${READONLY_USERNAME:-user}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
     depends_on:
       dbrepo-auth-service:
+        condition: service_healthy
+      dbrepo-gateway-service:
         condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
@@ -148,8 +152,6 @@ services:
       network: host
     ports:
       - "9099:8080"
-    volumes:
-      - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://analyse-service:8080}"
@@ -162,12 +164,13 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-admin}
+      BROKER_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
-      BROKER_USERNAME: ${BROKER_USERNAME:-admin}
+      BROKER_USERNAME: ${SYSTEM_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-http://data.crossref.org}"
+      DASHBOARD_SERVICE_ENDPOINT: "${DASHBOARD_SERVICE_ENDPOINT:-http://dashboard-service:8080}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
@@ -201,6 +204,10 @@ services:
         condition: service_healthy
       dbrepo-data-service:
         condition: service_healthy
+      dbrepo-dashboard-service:
+        condition: service_healthy
+      dbrepo-search-service:
+        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
     logging:
@@ -215,7 +222,7 @@ services:
       context: ./dbrepo-analyse-service
       network: host
     ports:
-      - "5000:8080"
+      - "4050:8080"
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -229,8 +236,6 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
-    volumes:
-      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
       test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
       interval: 10s
@@ -303,7 +308,7 @@ services:
       context: ./dbrepo-search-service
       network: host
     ports:
-      - "4000:8080"
+      - "4060:8080"
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -313,8 +318,8 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
+      OPENSEARCH_USERNAME: ${SYSTEM_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
@@ -322,6 +327,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
 
   dbrepo-ui:
     restart: "no"
@@ -336,7 +343,7 @@ services:
       network: host
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
-      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
+      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
@@ -350,7 +357,7 @@ services:
       dbrepo-search-service:
         condition: service_healthy
     healthcheck:
-      test: curl -fsSL http://127.0.0.1:3000 && curl -fsSL http://127.0.0.1:3000/health
+      test: curl -fsSL 127.0.0.1:3000 && curl -fsSL 127.0.0.1:3000/health
       interval: 10s
       timeout: 5s
       retries: 12
@@ -368,6 +375,11 @@ services:
       - "80:8080"
     volumes:
       - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
+    healthcheck:
+      test: lsof -i TCP:80 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -395,8 +407,8 @@ services:
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_USERS: "${SYSTEM_USERNAME:-admin}"
-      LDAP_PASSWORDS: "${SYSTEM_PASSWORD:-admin}"
+      LDAP_USERS: "${SYSTEM_USERNAME:-admin},${READONLY_USERNAME:-user}"
+      LDAP_PASSWORDS: "${SYSTEM_PASSWORD:-admin},${READONLY_PASSWORD:-user}"
       LDAP_GROUP: "${ADMIN_GROUP:-system}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
       LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
@@ -422,12 +434,35 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
+      OPENSEARCH_USERNAME: ${SYSTEM_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     depends_on:
       dbrepo-search-db:
+        condition: service_healthy
+      dbrepo-metadata-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-service-init:
+    restart: "no"
+    init: true
+    container_name: dbrepo-dashboard-service-init
+    hostname: search-dashboard-init
+    image: dbrepo-dashboard-service-init:latest
+    build:
+      context: ./dbrepo-dashboard-service/init
+      network: host
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    depends_on:
+      dbrepo-dashboard-ui:
         condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
@@ -461,42 +496,11 @@ services:
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
-    ports:
-      - 9090:9090
     healthcheck:
       test: promtool check healthy
       interval: 10s
       timeout: 5s
       retries: 12
-    logging:
-      driver: json-file
-
-  dbrepo-dashboard-service:
-    restart: "no"
-    container_name: dbrepo-dashboard-service
-    hostname: dashboard-service
-    image: dbrepo-dashboard-service:latest
-    build:
-      context: ./dbrepo-dashboard-service
-      network: host
-    ports:
-      - "3000:3000"
-    volumes:
-      - dashboard-service-data:/opt/bitnami/grafana/data
-    environment:
-      GF_SERVER_DOMAIN: "dashboard-service"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
-      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
-    healthcheck:
-      test: curl -fsSL --head http://127.0.0.1:3000
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metric-db:
-        condition: service_started
     logging:
       driver: json-file
 
@@ -530,8 +534,6 @@ services:
       network: host
     ports:
       - "9093:8080"
-    volumes:
-      - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
       AUTH_SERVICE_ADMIN: "${AUTH_SERVICE_ADMIN:-admin}"
       AUTH_SERVICE_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -555,16 +557,12 @@ services:
       GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
-      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
-      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       SPARK_USER: "${COMPUTE_SERVICE_USERNAME:-spark}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
@@ -577,5 +575,67 @@ services:
     depends_on:
       dbrepo-data-db:
         condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-ui:
+    restart: "no"
+    container_name: dbrepo-dashboard-ui
+    hostname: dashboard-ui
+    image: dbrepo-dashboard-ui:latest
+    build:
+      context: ./dbrepo-dashboard-ui
+      network: host
+    ports:
+      - "3000:3000"
+    volumes:
+      - dashboard-ui-data:/opt/bitnami/grafana/data
+    environment:
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      GF_SERVER_DOMAIN: "dashboard-service"
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+    healthcheck:
+      test: curl -fsSL --head 127.0.0.1:3000
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metric-db:
+        condition: service_started
+    extra_hosts:
+      - "localhost:host-gateway"
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-service:
+    restart: "no"
+    container_name: dbrepo-dashboard-service
+    hostname: dashboard-service
+    image: dbrepo-dashboard-service:latest
+    build:
+      context: ./dbrepo-dashboard-service
+      network: host
+    ports:
+      - "4070:8080"
+    environment:
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    healthcheck:
+      test: curl -fsSL --head 127.0.0.1:8080/health
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metric-db:
+        condition: service_started
     logging:
       driver: json-file

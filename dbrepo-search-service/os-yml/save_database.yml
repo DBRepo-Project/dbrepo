@@ -1,0 +1,62 @@
+tags:
+  - database-endpoint
+summary: Saves a database
+operationId: save_database
+description: Save a database
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: '#/components/schemas/DatabaseDto'
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]
+responses:
+  202:
+    description: Saved database successfully
+  400:
+    description: "Invalid schema"
+    content:
+      application/json:
+        schema:
+          required:
+            - success
+            - message
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            message:
+              type: string
+              example: Message
+  404:
+    description: "Database not found"
+    content:
+      application/json:
+        schema:
+          required:
+            - success
+            - message
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            message:
+              type: string
+              example: Message
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

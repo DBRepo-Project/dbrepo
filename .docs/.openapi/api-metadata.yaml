@@ -8,10 +8,10 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: 1.7.3
+  version: 1.8.0
 externalDocs:
   description: Sourcecode Documentation
-  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/system-services-metadata/
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8.0/system-services-metadata/
 servers:
 - url: http://localhost
   description: Development instance
@@ -42,18 +42,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Found user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserDto"
         "403":
           description: Find user is not permitted
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Found user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -77,8 +77,8 @@ paths:
               $ref: "#/components/schemas/UserUpdateDto"
         required: true
       responses:
-        "400":
-          description: Modify user query is malformed
+        "503":
+          description: Failed to modify user at auth service
           content:
             application/json:
               schema:
@@ -89,8 +89,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to modify user at auth service
+        "400":
+          description: Modify user query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to modify user metadata
           content:
             application/json:
               schema:
@@ -101,12 +107,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDto"
-        "403":
-          description: Not allowed to modify user metadata
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -133,18 +133,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Found user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserDto"
         "403":
           description: Find user is not permitted
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Found user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -194,37 +194,6 @@ paths:
               $ref: "#/components/schemas/CreateDatabaseDto"
         required: true
       responses:
-        "400":
-          description: Database create query is malformed or image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "201":
-          description: Created a new database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DatabaseBriefDto"
-        "423":
-          description: Database quota exceeded
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "409":
-          description: Query store could not be created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Database create permission is missing or grant permissions
-            at broker service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to fin container/user/database in metadata database
           content:
@@ -237,12 +206,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "409":
+          description: Query store could not be created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Database create query is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "423":
+          description: Database quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Database create permission is missing or grant permissions
+            at broker service failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "201":
+          description: Created a new database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatabaseBriefDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -309,14 +309,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatabaseAccessDto"
-        "403":
-          description: No access to this database
+        "404":
+          description: Database not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Database not found
+        "403":
+          description: No access to this database
           content:
             application/json:
               schema:
@@ -358,6 +358,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Modify access query or database connection is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Modified access
         "403":
           description: Modify access not permitted when no access is granted in the
             first place
@@ -365,22 +373,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Modified access
-        "503":
-          description: Access could not be updated in the data service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Modify access query or database connection is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Database or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Access could not be updated in the data service
           content:
             application/json:
               schema:
@@ -415,12 +415,6 @@ paths:
               $ref: "#/components/schemas/CreateAccessDto"
         required: true
       responses:
-        "502":
-          description: Access could not be created due to connection error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Granting access succeeded
           content:
@@ -429,6 +423,12 @@ paths:
                 $ref: "#/components/schemas/DatabaseAccessDto"
         "403":
           description: Failed giving access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Database or user not found
           content:
             application/json:
               schema:
@@ -445,8 +445,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Database or user not found
+        "502":
+          description: Access could not be created due to connection error
           content:
             application/json:
               schema:
@@ -475,20 +475,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "502":
-          description: Access could not be created due to connection error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Revoke of access not permitted as no access was found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Deleted access
         "400":
           description: Modify access query or database connection is malformed
           content:
@@ -503,6 +489,20 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Access could not be revoked in the data service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Deleted access
+        "403":
+          description: Revoke of access not permitted as no access was found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "502":
+          description: Access could not be created due to connection error
           content:
             application/json:
               schema:
@@ -540,14 +540,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatabaseAccessDto"
-        "403":
-          description: No access to this database
+        "404":
+          description: Database not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Database not found
+        "403":
+          description: No access to this database
           content:
             application/json:
               schema:
@@ -602,18 +602,18 @@ paths:
               $ref: "#/components/schemas/OntologyModifyDto"
         required: true
       responses:
-        "404":
-          description: Could not find ontology
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Updated ontology successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/OntologyDto"
+        "404":
+          description: Could not find ontology
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -631,16 +631,16 @@ paths:
           type: string
           format: uuid
       responses:
+        "202":
+          description: Deleted ontology successfully
+          content:
+            application/json: {}
         "404":
           description: Could not find ontology
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Deleted ontology successfully
-          content:
-            application/json: {}
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -665,18 +665,18 @@ paths:
               $ref: "#/components/schemas/BannerMessageUpdateDto"
         required: true
       responses:
-        "202":
-          description: Updated message
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BannerMessageBriefDto"
         "404":
           description: Could not find message
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Updated message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BannerMessageBriefDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -694,16 +694,16 @@ paths:
           type: string
           format: uuid
       responses:
+        "202":
+          description: Deleted message
+          content:
+            application/json: {}
         "404":
           description: Could not find message
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Deleted message
-          content:
-            application/json: {}
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -785,14 +785,14 @@ paths:
           type: string
           format: uuid
       responses:
+        "202":
+          description: Deleted image successfully
         "404":
           description: Image could not be found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Deleted image successfully
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -817,8 +817,33 @@ paths:
         schema:
           type: string
       responses:
-        "403":
-          description: Not allowed to view identifier
+        "406":
+          description: Failed to find acceptable representation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "409":
+          description: Exported resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "410":
+          description: Failed to retrieve from S3 endpoint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: "Identifier could not be exported, the requested style is not\
+            \ known"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Identifier could not be found
           content:
             application/json:
               schema:
@@ -843,33 +868,8 @@ paths:
             text/bibliography; style=apa: {}
             text/bibliography; style=ieee: {}
             text/bibliography; style=bibtex: {}
-        "410":
-          description: Failed to retrieve from S3 endpoint
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "409":
-          description: Exported resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: "Identifier could not be exported, the requested style is not\
-            \ known"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "406":
-          description: Failed to find acceptable representation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Identifier could not be found
+        "403":
+          description: Not allowed to view identifier
           content:
             application/json:
               schema:
@@ -903,26 +903,20 @@ paths:
               $ref: "#/components/schemas/IdentifierSaveDto"
         required: true
       responses:
-        "404":
-          description: "Failed to find database, table or view"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Saved identifier
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/IdentifierDto"
-        "400":
-          description: Identifier form contains invalid request data
+        "503":
+          description: Failed to save in search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to save in search service
+        "400":
+          description: Identifier form contains invalid request data
           content:
             application/json:
               schema:
@@ -935,6 +929,12 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: "Failed to find database, table or view"
           content:
             application/json:
               schema:
@@ -956,14 +956,20 @@ paths:
           type: string
           format: uuid
       responses:
-        "503":
-          description: Failed to delete in search service
+        "404":
+          description: Identifier or database could not be found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Identifier or database could not be found
+        "403":
+          description: Deleting identifier not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to delete in search service
           content:
             application/json:
               schema:
@@ -972,12 +978,6 @@ paths:
           description: Deleted identifier
         "502":
           description: Connection to search service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Deleting identifier not permitted
           content:
             application/json:
               schema:
@@ -1001,26 +1001,14 @@ paths:
           type: string
           format: uuid
       responses:
-        "404":
-          description: "Failed to find database, table or view"
+        "503":
+          description: Failed to save in search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "400":
           description: Identifier form contains invalid request data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Published identifier
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/IdentifierDto"
-        "503":
-          description: Failed to save in search service
           content:
             application/json:
               schema:
@@ -1037,6 +1025,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: "Failed to find database, table or view"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Published identifier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdentifierDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -1062,12 +1062,12 @@ paths:
               $ref: "#/components/schemas/DatabaseModifyVisibilityDto"
         required: true
       responses:
-        "400":
-          description: The visibility payload is malformed
+        "202":
+          description: Visibility modified successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiErrorDto"
+                $ref: "#/components/schemas/DatabaseBriefDto"
         "503":
           description: Failed to save in search service
           content:
@@ -1080,20 +1080,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Visibility modified successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DatabaseBriefDto"
-        "502":
-          description: Connection to search service failed
+        "404":
+          description: Failed to find database in metadata database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find database in metadata database
+        "400":
+          description: The visibility payload is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "502":
+          description: Connection to search service failed
           content:
             application/json:
               schema:
@@ -1170,8 +1170,8 @@ paths:
               $ref: "#/components/schemas/ViewUpdateDto"
         required: true
       responses:
-        "404":
-          description: Database or View could not be found
+        "400":
+          description: Update view query is malformed
           content:
             application/json:
               schema:
@@ -1188,6 +1188,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Database or View could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Update view successfully
           content:
@@ -1196,12 +1202,6 @@ paths:
                 $ref: "#/components/schemas/ViewBriefDto"
         "502":
           description: Connection to search service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Update view query is malformed
           content:
             application/json:
               schema:
@@ -1229,22 +1229,28 @@ paths:
           type: string
           format: uuid
       responses:
-        "404":
-          description: "Database, view or user could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Delete view successfully
-        "423":
-          description: Delete view resulted in an invalid query statement
+        "403":
+          description: Deletion not allowed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Delete view successfully
+        "404":
+          description: "Database, view or user could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "423":
+          description: Delete view resulted in an invalid query statement
           content:
             application/json:
               schema:
@@ -1257,12 +1263,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Deletion not allowed
           content:
             application/json:
               schema:
@@ -1294,12 +1294,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "200":
-          description: Find table successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TableDto"
         "403":
           description: Access to the database is forbidden
           content:
@@ -1312,6 +1306,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Find table successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TableDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -1347,32 +1347,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Updated the table
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TableBriefDto"
         "503":
           description: Failed to save in search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Updated the table
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TableBriefDto"
         "404":
           description: Table could not be found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "502":
-          description: Connection to search service failed
+        "403":
+          description: Update table visibility not permitted
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Update table visibility not permitted
+        "502":
+          description: Connection to search service failed
           content:
             application/json:
               schema:
@@ -1402,14 +1402,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "400":
-          description: Delete table query resulted in an invalid query statement
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Delete table successfully
         "503":
           description: Failed to save in search service
           content:
@@ -1422,14 +1414,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "502":
-          description: Connection to search service failed
+        "404":
+          description: "Table, database or container could not be found"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: "Table, database or container could not be found"
+        "202":
+          description: Delete table successfully
+        "400":
+          description: Delete table query resulted in an invalid query statement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "502":
+          description: Connection to search service failed
           content:
             application/json:
               schema:
@@ -1478,12 +1478,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Failed to map column statistic to known columns
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
           content:
@@ -1492,6 +1486,12 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Updated table statistics successfully
+        "400":
+          description: Failed to map column statistic to known columns
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -1531,14 +1531,21 @@ paths:
               $ref: "#/components/schemas/ColumnSemanticsUpdateDto"
         required: true
       responses:
+        "404":
+          description: Failed to find user/table/database/ontology in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Updated column semantics successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ColumnDto"
-        "404":
-          description: Failed to find user/table/database/ontology in metadata database
+        "400":
+          description: Update semantic concept query is malformed or update unit of
+            measurement query is malformed
           content:
             application/json:
               schema:
@@ -1557,13 +1564,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Update semantic concept query is malformed or update unit of
-            measurement query is malformed
           content:
             application/json:
               schema:
@@ -1593,30 +1593,6 @@ paths:
               $ref: "#/components/schemas/DatabaseTransferDto"
         required: true
       responses:
-        "400":
-          description: Owner payload is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to save in search service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Database or user could not be found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "502":
-          description: Connection to search service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Transfer of ownership is not permitted
           content:
@@ -1629,6 +1605,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatabaseBriefDto"
+        "503":
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Database or user could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Owner payload is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "502":
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -1649,32 +1649,32 @@ paths:
           type: string
           format: uuid
       responses:
-        "200":
-          description: Refreshed database views metadata
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DatabaseBriefDto"
-        "503":
-          description: Failed to save in search service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Refresh view metadata is not permitted
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "502":
-          description: Connection to search service failed
+        "503":
+          description: Failed to save in search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Refreshed database views metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatabaseBriefDto"
         "404":
           description: Failed to find database in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "502":
+          description: Connection to search service failed
           content:
             application/json:
               schema:
@@ -1699,20 +1699,14 @@ paths:
           type: string
           format: uuid
       responses:
-        "400":
-          description: Failed to parse payload at search service
+        "503":
+          description: Failed to save in search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Refreshed database tables metadata
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DatabaseBriefDto"
-        "503":
-          description: Failed to save in search service
+        "404":
+          description: Failed to find database in metadata database
           content:
             application/json:
               schema:
@@ -1729,12 +1723,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find database in metadata database
+        "400":
+          description: Failed to parse payload at search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Refreshed database tables metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatabaseBriefDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -1753,6 +1753,12 @@ paths:
           type: string
           format: uuid
       responses:
+        "404":
+          description: Database or user could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: View of image was successful
           content:
@@ -1762,12 +1768,6 @@ paths:
                 items:
                   type: string
                   format: byte
-        "404":
-          description: Database or user could not be found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -1792,18 +1792,6 @@ paths:
               $ref: "#/components/schemas/DatabaseModifyImageDto"
         required: true
       responses:
-        "403":
-          description: Modify of image is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "410":
-          description: File was not found in the Storage Service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Database could not be found
           content:
@@ -1816,14 +1804,81 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Modify of image is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "410":
+          description: File was not found in the Storage Service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "502":
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Modify of image was successful
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatabaseBriefDto"
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+  /api/database/{databaseId}/dashboard:
+    put:
+      tags:
+      - database-endpoint
+      summary: Update database dashboard uid
+      description: Updates the dashboard uid for a database with given id. Only the
+        database owner can perform this operation. Requires role `system`.
+      operationId: modifyDashboard
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatabaseModifyDashboardDto"
+        required: true
+      responses:
+        "202":
+          description: Modify of dashboard uid was successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatabaseBriefDto"
+        "404":
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Malformed payload
           content:
             application/json:
               schema:
@@ -1947,18 +2002,18 @@ paths:
               $ref: "#/components/schemas/ImageCreateDto"
         required: true
       responses:
-        "409":
-          description: Image already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "201":
           description: Created image
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImageDto"
+        "409":
+          description: Image already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "400":
           description: Image specification is invalid
           content:
@@ -2053,26 +2108,20 @@ paths:
               $ref: "#/components/schemas/CreateIdentifierDto"
         required: true
       responses:
-        "404":
-          description: "Failed to find database, table or view"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "201":
           description: Drafted identifier
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/IdentifierDto"
-        "400":
-          description: Identifier form contains invalid request data
+        "503":
+          description: Failed to save in search service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to save in search service
+        "400":
+          description: Identifier form contains invalid request data
           content:
             application/json:
               schema:
@@ -2085,6 +2134,12 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "502":
           description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: "Failed to find database, table or view"
           content:
             application/json:
               schema:
@@ -2107,6 +2162,12 @@ paths:
           type: string
           format: uuid
       responses:
+        "404":
+          description: Database or user could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Find views successfully
           content:
@@ -2115,12 +2176,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ViewBriefDto"
-        "404":
-          description: Database or user could not be found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - bearerAuth: []
       - basicAuth: []
@@ -2145,20 +2200,8 @@ paths:
               $ref: "#/components/schemas/CreateViewDto"
         required: true
       responses:
-        "404":
-          description: Failed to find database/user in metadata database.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "201":
-          description: Create view successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ViewBriefDto"
-        "423":
-          description: Create view resulted in an invalid query statement
+        "403":
+          description: Credentials missing
           content:
             application/json:
               schema:
@@ -2175,8 +2218,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Credentials missing
+        "404":
+          description: Failed to find database/user in metadata database.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "201":
+          description: Create view successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewBriefDto"
+        "400":
+          description: Create view query is malformed
           content:
             application/json:
               schema:
@@ -2187,8 +2242,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Create view query is malformed
+        "423":
+          description: Create view resulted in an invalid query statement
           content:
             application/json:
               schema:
@@ -2213,12 +2268,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "403":
-          description: List tables not permitted
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: List tables
           content:
@@ -2229,6 +2278,12 @@ paths:
                   $ref: "#/components/schemas/TableBriefDto"
         "404":
           description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: List tables not permitted
           content:
             application/json:
               schema:
@@ -2256,8 +2311,14 @@ paths:
               $ref: "#/components/schemas/CreateTableDto"
         required: true
       responses:
-        "400":
-          description: Create table query is malformed
+        "201":
+          description: Created a new table
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TableBriefDto"
+        "503":
+          description: Failed to save in search service
           content:
             application/json:
               schema:
@@ -2268,26 +2329,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to save in search service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "201":
-          description: Created a new table
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TableBriefDto"
-        "404":
-          description: "Database, container or user could not be found"
+        "400":
+          description: Create table query is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Create table not permitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: "Database, container or user could not be found"
           content:
             application/json:
               schema:
@@ -2337,8 +2392,8 @@ paths:
               $ref: "#/components/schemas/CreateContainerDto"
         required: true
       responses:
-        "409":
-          description: Container name already exists
+        "404":
+          description: Container image or user could not be found
           content:
             application/json:
               schema:
@@ -2349,20 +2404,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Container payload malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "201":
           description: Created a new container
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ContainerDto"
-        "404":
-          description: Container image or user could not be found
+        "409":
+          description: Container name already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Container payload malformed
           content:
             application/json:
               schema:
@@ -2450,8 +2505,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Filter params are invalid
+        "422":
+          description: Ontology does not have rdf or sparql endpoint
           content:
             application/json:
               schema:
@@ -2462,8 +2517,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "422":
-          description: Ontology does not have rdf or sparql endpoint
+        "400":
+          description: Filter params are invalid
           content:
             application/json:
               schema:
@@ -2575,6 +2630,12 @@ paths:
           type: string
           format: uuid
       responses:
+        "404":
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Database found successfully
           headers:
@@ -2591,12 +2652,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatabaseBriefDto"
-        "404":
-          description: Database could not be found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to view database
           content:
@@ -2628,26 +2683,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "403":
-          description: Not the table owner.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Suggested table semantics successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/EntityDto"
-        "417":
-          description: Generated query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find database/table in metadata database
           content:
@@ -2660,8 +2695,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "417":
+          description: Generated query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "200":
+          description: Suggested table semantics successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityDto"
         "422":
           description: Ontology does not have rdf or sparql endpoint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not the table owner.
           content:
             application/json:
               schema:
@@ -2696,12 +2751,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "400":
-          description: Generated query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find database/table in metadata database
           content:
@@ -2716,6 +2765,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TableColumnEntityDto"
+        "400":
+          description: Generated query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "422":
           description: Ontology does not have rdf or sparql endpoint
           content:
@@ -2766,16 +2821,16 @@ paths:
           type: string
           format: uuid
       responses:
-        "404":
-          description: Container not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Deleted container
         "403":
           description: "Create container not permitted, need authority `delete-container`"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Container not found
           content:
             application/json:
               schema:
@@ -5095,6 +5150,9 @@ components:
         self_html:
           type: string
           example: http://example.com
+        dashboard_html:
+          type: string
+          example: http://example.com/d/defi2baxqawaod
     RelatedIdentifierDto:
       required:
       - id
@@ -5172,6 +5230,7 @@ components:
           - Obsoletes
     DatabaseModifyVisibilityDto:
       required:
+      - is_dashboard_enabled
       - is_public
       - is_schema_public
       type: object
@@ -5180,6 +5239,9 @@ components:
           type: boolean
           example: true
         is_schema_public:
+          type: boolean
+          example: true
+        is_dashboard_enabled:
           type: boolean
           example: true
     ViewUpdateDto:
@@ -5353,10 +5415,12 @@ components:
           example: Column comment
         enums:
           type: array
+          description: "enum values, only considered when type = ENUM"
           items:
             $ref: "#/components/schemas/EnumDto"
         sets:
           type: array
+          description: "enum values, only considered when type = ENUM"
           items:
             $ref: "#/components/schemas/SetDto"
         database_id:
@@ -5475,6 +5539,7 @@ components:
         value:
           type: string
           example: "3"
+      description: "enum values, only considered when type = ENUM"
     SetDto:
       required:
       - id
@@ -5488,6 +5553,7 @@ components:
         value:
           type: string
           example: "3"
+      description: "enum values, only considered when type = ENUM"
     UnitBriefDto:
       required:
       - id
@@ -5519,6 +5585,13 @@ components:
       type: object
       properties:
         key:
+          type: string
+    DatabaseModifyDashboardDto:
+      required:
+      - uid
+      type: object
+      properties:
+        uid:
           type: string
     CreateAccessDto:
       required:
@@ -6388,14 +6461,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
       - id
@@ -6547,6 +6620,16 @@ components:
           minLength: 0
           type: string
           example: Column comment
+        enums:
+          type: array
+          description: "enum values, only considered when type = ENUM"
+          items:
+            $ref: "#/components/schemas/EnumDto"
+        sets:
+          type: array
+          description: "enum values, only considered when type = ENUM"
+          items:
+            $ref: "#/components/schemas/SetDto"
         database_id:
           type: string
           format: uuid
@@ -6608,6 +6691,7 @@ components:
     ViewDto:
       required:
       - columns
+      - created
       - database_id
       - id
       - identifiers
@@ -6638,6 +6722,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ViewColumnDto"
+        created:
+          type: string
+          format: date-time
         last_retrieved:
           type: string
           format: date-time
@@ -6768,6 +6855,7 @@ components:
       required:
       - columns
       - constraints
+      - created
       - database_id
       - id
       - internal_name
@@ -6807,6 +6895,9 @@ components:
             $ref: "#/components/schemas/ColumnDto"
         constraints:
           $ref: "#/components/schemas/ConstraintsDto"
+        created:
+          type: string
+          format: date-time
         last_retrieved:
           type: string
           format: date-time

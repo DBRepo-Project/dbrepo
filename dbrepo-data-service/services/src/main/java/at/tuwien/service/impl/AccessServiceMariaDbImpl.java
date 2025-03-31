@@ -1,9 +1,9 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.AccessService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -66,8 +66,8 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         } finally {
             dataSource.close();
         }
-        log.info("Created access to database with internal name {} for user with id {}", database.getInternalName(),
-                user.getId());
+        log.info("Created access to database with internal name {} for user: {}", database.getInternalName(),
+                user.getUsername());
     }
 
     @Override

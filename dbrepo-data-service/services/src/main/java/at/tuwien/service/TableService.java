@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -14,14 +14,14 @@ public interface TableService {
     /**
      * Generate table statistic for a given table. Only numerical columns are calculated.
      *
-     * @param table The table.
+     * @param tableName The table name.
      * @return The table statistic, if successful.
      * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws TableMalformedException The table statistic generation was unsuccessful, likely due to a bug in the mapping.
      * @throws TableNotFoundException  The table could not be inspected in the data database.
      */
-    TableStatisticDto getStatistics(DatabaseDto database, TableDto table) throws SQLException, TableMalformedException,
-            TableNotFoundException;
+    TableStatisticDto getStatistics(DatabaseDto database, String tableName) throws SQLException,
+            TableMalformedException, TableNotFoundException;
 
     /**
      * Updating table description.
@@ -58,13 +58,13 @@ public interface TableService {
     /**
      * Obtains the table data tuples count at time.
      *
-     * @param table     The table object.
+     * @param tableName     The table name.
      * @param timestamp The timestamp.
      * @return Number of tuples, if successful.
      * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException The count query is malformed, likely due to a bug in the application.
      */
-    Long getCount(DatabaseDto database, TableDto table, Instant timestamp) throws SQLException,
+    Long getCount(DatabaseDto database, String tableName, Instant timestamp) throws SQLException,
             QueryMalformedException;
 
     /**

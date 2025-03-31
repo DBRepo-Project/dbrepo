@@ -1,7 +1,7 @@
 package at.tuwien.auth;
 
-import at.tuwien.api.auth.RealmAccessDto;
-import at.tuwien.api.user.UserDetailsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.auth.RealmAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDetailsDto;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;

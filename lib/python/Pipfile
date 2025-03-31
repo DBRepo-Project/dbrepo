@@ -10,6 +10,9 @@ paho-mqtt = "*"
 pydantic = "*"
 tuspy = "*"
 pandas = "*"
+jwt = "~=1.3"
+grafana-client = "*"
+opensearch-py = "~=2.2"
 
 [dev-packages]
 build = "*"
@@ -22,6 +25,8 @@ requests-mock = "*"
 furo = "*"
 pytest-ordering = "*"
 httpx = "*"
+testcontainers-minio = "*"
+testcontainers-opensearch = "*"
 
 [requires]
 python_version = "3.11"

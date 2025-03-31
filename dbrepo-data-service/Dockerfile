@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM dbrepo-metadata-service:build AS dependency
+FROM dbrepo-core:build AS dependency
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ###### SECOND STAGE ######
@@ -10,7 +10,7 @@ COPY ./pom.xml ./
 
 RUN mvn -fn dependency:go-offline
 
-COPY --from=dependency /root/.m2/repository/at/tuwien /root/.m2/repository/at/tuwien
+COPY --from=dependency /root/.m2/repository/at/ac/tuwien/ifs/dbrepo /root/.m2/repository/at/ac/tuwien/ifs/dbrepo
 
 COPY ./querystore ./querystore
 COPY ./report ./report
@@ -28,7 +28,7 @@ RUN apk add --no-cache curl bash jq
 
 WORKDIR /app
 
-RUN adduser -S -u 1001 data-service
+RUN adduser -D dbrepo --uid 1001
 
 USER 1001
 
