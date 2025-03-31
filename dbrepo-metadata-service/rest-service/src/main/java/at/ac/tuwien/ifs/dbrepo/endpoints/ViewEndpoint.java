@@ -140,7 +140,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @Valid @RequestBody CreateViewDto data,
-                                               @NotNull Principal principal) throws NotAllowedException,
+                                               Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
             ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException {
@@ -252,7 +252,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @NotNull @PathVariable("viewId") UUID viewId,
-                                       @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+                                       Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, UserNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {
@@ -308,7 +308,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("viewId") UUID viewId,
                                                @NotNull @Valid @RequestBody ViewUpdateDto data,
-                                               @NotNull Principal principal) throws NotAllowedException,
+                                               Principal principal) throws NotAllowedException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, UserNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {

@@ -364,7 +364,7 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDto data,
-                                               @NotNull Principal principal,
+                                               Principal principal,
                                                @RequestHeader("Authorization") String authorization)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
@@ -418,7 +418,7 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> updateRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleUpdateDto data,
-                                               @NotNull Principal principal,
+                                               Principal principal,
                                                @RequestHeader("Authorization") String authorization)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException,
@@ -473,7 +473,7 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> deleteRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDeleteDto data,
-                                               @NotNull Principal principal,
+                                               Principal principal,
                                                @RequestHeader("Authorization") String authorization)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException,
@@ -643,7 +643,7 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> importDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
                                               @NotNull @PathVariable("tableId") UUID tableId,
                                               @Valid @RequestBody ImportDto data,
-                                              @NotNull Principal principal,
+                                              Principal principal,
                                               @RequestHeader("Authorization") String authorization)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
             StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,

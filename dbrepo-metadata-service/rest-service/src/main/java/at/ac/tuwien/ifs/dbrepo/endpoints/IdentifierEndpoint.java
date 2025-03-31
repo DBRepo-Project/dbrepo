@@ -374,13 +374,13 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<IdentifierDto> save(@NotNull @PathVariable("identifierId") UUID identifierId,
                                               @NotNull @Valid @RequestBody IdentifierSaveDto data,
-                                              @NotNull Principal principal) throws UserNotFoundException,
+                                              Principal principal) throws UserNotFoundException,
             DatabaseNotFoundException, MalformedException, NotAllowedException, DataServiceException,
             DataServiceConnectionException, SearchServiceException, QueryNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
             TableNotFoundException, ExternalServiceException {
-        log.debug("endpoint save identifier, identifierId={}, data.id={}, principal.name={}", identifierId,
-                data.getId(), principal.getName());
+        log.debug("endpoint save identifier, identifierId={}, data.id={}", identifierId,
+                data.getId());
         final Database database = databaseService.findById(data.getDatabaseId());
         final User caller = userService.findById(getId(principal));
         final Identifier identifier = identifierService.find(identifierId);
@@ -475,7 +475,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody CreateIdentifierDto data,
-                                                @NotNull Principal principal) throws DatabaseNotFoundException,
+                                                Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException, MalformedException, DataServiceConnectionException,
             SearchServiceException, DataServiceException, QueryNotFoundException, SearchServiceConnectionException,
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {

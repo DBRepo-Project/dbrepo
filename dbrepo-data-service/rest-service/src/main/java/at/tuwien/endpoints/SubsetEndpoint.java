@@ -469,11 +469,11 @@ public class SubsetEndpoint extends RestEndpoint {
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") UUID databaseId,
                                             @NotNull @PathVariable("queryId") UUID queryId,
                                             @NotNull @Valid @RequestBody QueryPersistDto data,
-                                            @NotNull Principal principal) throws NotAllowedException,
+                                            Principal principal) throws NotAllowedException,
             RemoteUnavailableException, DatabaseNotFoundException, QueryStorePersistException,
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
-        log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
-                queryId, data.getPersist(), principal.getName());
+        log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}", databaseId, queryId,
+                data.getPersist());
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         if (!isSystem(principal)) {
             cacheService.getAccess(databaseId, getId(principal));
