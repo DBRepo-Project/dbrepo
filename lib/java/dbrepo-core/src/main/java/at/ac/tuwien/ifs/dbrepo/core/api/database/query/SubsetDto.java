@@ -20,9 +20,13 @@ import java.util.UUID;
 public class SubsetDto {
 
     @NotNull
-    @JsonProperty("table_id")
+    @JsonProperty("datasource_id")
     @Schema(example = "f7df2a7d-4ade-4c78-97b0-7c744d0893c7")
-    private UUID tableId;
+    private UUID datasourceId;
+
+    @NotNull
+    @JsonProperty("datasource_type")
+    private DatasourceType datasourceType;
 
     @NotNull
     @Schema(example = "[\"e891ba86-0258-41a6-a8d9-ff58bc10b618\"]")

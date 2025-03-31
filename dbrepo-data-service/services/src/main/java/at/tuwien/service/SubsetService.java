@@ -26,7 +26,7 @@ public interface SubsetService {
      * @throws SQLException              The connection to the database could not be established.
      */
     UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
-            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException;
+            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException, ViewNotFoundException;
 
     /**
      * Counts the subset row count of a query of a given subset in the given database.

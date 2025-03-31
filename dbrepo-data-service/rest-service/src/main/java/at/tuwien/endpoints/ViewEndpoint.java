@@ -49,7 +49,6 @@ public class ViewEndpoint extends RestEndpoint {
     private final DSLContext context;
     private final ViewService viewService;
     private final CacheService cacheService;
-    private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final StorageService storageService;
@@ -58,13 +57,11 @@ public class ViewEndpoint extends RestEndpoint {
 
     @Autowired
     public ViewEndpoint(DSLContext context, ViewService viewService, CacheService cacheService,
-                        TableService tableService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                        StorageService storageService, DatabaseService databaseService,
-                        EndpointValidator endpointValidator) {
+                        MariaDbMapper mariaDbMapper, SubsetService subsetService, StorageService storageService,
+                        DatabaseService databaseService, EndpointValidator endpointValidator) {
         this.context = context;
         this.viewService = viewService;
         this.cacheService = cacheService;
-        this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.storageService = storageService;
@@ -139,7 +136,7 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Failed to find database in metadata database",
+                    description = "Failed to find database (or table or view) in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -157,7 +154,7 @@ public class ViewEndpoint extends RestEndpoint {
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                           @Valid @RequestBody CreateViewDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException,
-            TableNotFoundException, ImageNotFoundException, QueryMalformedException {
+            TableNotFoundException, ImageNotFoundException, QueryMalformedException, ViewNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         /* check */
         endpointValidator.validateSubsetParams(data.getQuery());

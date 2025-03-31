@@ -6,12 +6,15 @@ author: Martin Weise
 
 #### Features
 
-* Fixed a bug where validation of missing `Principal` object in Java services caused a 400 error instead of a 401 error
-  in [#512](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/512).
 * Refactored internal Java-based testing data that improves test consistency
   in [#510](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/510).
 * Added automated dashboard generation for all public databases where each view has an overview of its data and
   schema in [#460](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/460).
+
+#### Fixes
+
+* Fixed a bug where validation of missing `Principal` object in Java services caused a 400 error instead of a 401 error
+  in [#512](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/512).
 
 ## v1.7.3 (2025-03-17)
 
