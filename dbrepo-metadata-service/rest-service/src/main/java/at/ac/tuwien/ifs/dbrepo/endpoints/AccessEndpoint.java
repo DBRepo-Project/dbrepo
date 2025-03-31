@@ -95,7 +95,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                     @PathVariable("userId") UUID userId,
                                                     @Valid @RequestBody CreateAccessDto data,
-                                                    @NotNull Principal principal) throws NotAllowedException,
+                                                    Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException,
             DashboardServiceException, DashboardServiceConnectionException {
@@ -159,12 +159,12 @@ public class AccessEndpoint extends AbstractEndpoint {
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody CreateAccessDto data,
-                                       @NotNull Principal principal) throws NotAllowedException,
+                                       Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException,
             DashboardServiceException, DashboardServiceConnectionException {
-        log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}, principal.name={}",
-                databaseId, userId, data.getType(), principal.getName());
+        log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}", databaseId, userId,
+                data.getType());
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to update access: not owner");
@@ -212,10 +212,9 @@ public class AccessEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                   @PathVariable("userId") UUID userId,
-                                                  @NotNull Principal principal) throws DatabaseNotFoundException,
+                                                  Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
-        log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
-                principal.getName());
+        log.debug("endpoint get database access, databaseId={}, userId={}", databaseId, userId);
         if (!userId.equals(getId(principal))) {
             if (!hasRole(principal, "check-foreign-database-access")) {
                 log.error("Failed to find access: foreign user");
@@ -267,7 +266,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
-                                       @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+                                       Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {

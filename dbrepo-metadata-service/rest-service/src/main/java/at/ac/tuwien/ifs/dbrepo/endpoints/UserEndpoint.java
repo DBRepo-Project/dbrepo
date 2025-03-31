@@ -132,9 +132,9 @@ public class UserEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("userId") UUID userId,
-                                        @NotNull Principal principal) throws NotAllowedException,
+                                        Principal principal) throws NotAllowedException,
             UserNotFoundException {
-        log.debug("endpoint find a user, userId={}, principal.name={}", userId, principal.getName());
+        log.debug("endpoint find a user, userId={}", userId);
         /* check */
         final User user = userService.findById(userId);
         if (!user.getId().equals(getId(principal)) && !hasRole(principal, "find-foreign-user")) {
@@ -192,7 +192,7 @@ public class UserEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
                                                @NotNull @Valid @RequestBody UserUpdateDto data,
-                                               @NotNull Principal principal) throws NotAllowedException,
+                                               Principal principal) throws NotAllowedException,
             UserNotFoundException, AuthServiceException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         final User user = userService.findById(userId);

@@ -95,9 +95,9 @@ public class ImageEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
-                                           @NotNull Principal principal) throws ImageAlreadyExistsException,
+                                           Principal principal) throws ImageAlreadyExistsException,
             ImageInvalidException {
-        log.debug("endpoint create image, data={}, principal.name={}", data, principal.getName());
+        log.debug("endpoint create image, data={}", data);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.containerImageToImageDto(
                         imageService.create(data, principal)));

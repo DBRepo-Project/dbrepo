@@ -165,10 +165,9 @@ public class TableEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                         @NotNull @PathVariable("tableId") UUID tableId,
-                                                        @NotNull Principal principal)
+                                                        Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
-        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
-                principal);
+        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         if (!table.getOwner().getId().equals(getId(principal))) {
@@ -217,11 +216,10 @@ public class TableEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @PathVariable("tableId") UUID tableId,
-                                                @NotNull Principal principal)
+                                                Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, SearchServiceException, NotAllowedException,
             SearchServiceConnectionException, MalformedException, DataServiceException, DataServiceConnectionException {
-        log.debug("endpoint update table statistics, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
-                principal.getName());
+        log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         if (!table.getOwner().getId().equals(getId(principal)) && !isSystem(principal)) {
@@ -276,12 +274,12 @@ public class TableEndpoint extends AbstractEndpoint {
                                                   @NotNull @PathVariable("tableId") UUID tableId,
                                                   @NotNull @PathVariable("columnId") UUID columnId,
                                                   @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
-                                                  @NotNull Principal principal) throws NotAllowedException,
+                                                  Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
-        log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}, principal.name={}", databaseId,
-                tableId, columnId, principal.getName());
+        log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}", databaseId,
+                tableId, columnId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         if (!hasRole(principal, "modify-foreign-table-column-semantics")) {
@@ -325,10 +323,10 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                          @NotNull @PathVariable("tableId") UUID tableId,
                                                                          @NotNull @PathVariable("columnId") UUID columnId,
-                                                                         @NotNull Principal principal)
+                                                                         Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
-        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}, principal.name={}",
-                databaseId, tableId, columnId, principal.getName());
+        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}",
+                databaseId, tableId, columnId);
         return ResponseEntity.ok()
                 .body(entityService.suggestByColumn(
                         tableService.findColumnById(
@@ -381,13 +379,12 @@ public class TableEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @Valid @RequestBody CreateTableDto data,
-                                                @NotNull Principal principal) throws NotAllowedException, MalformedException,
+                                                Principal principal) throws NotAllowedException, MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException,
             DashboardServiceException, DashboardServiceConnectionException {
-        log.debug("endpoint create table, databaseId={}, data.name={}, principal.name={}", databaseId, data.getName(),
-                principal.getName());
+        log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
@@ -439,12 +436,12 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @PathVariable("tableId") UUID tableId,
                                                 @NotNull @Valid @RequestBody TableUpdateDto data,
-                                                @NotNull Principal principal) throws NotAllowedException,
+                                                Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
-        log.debug("endpoint update table, databaseId={}, data.is_public={}, data.is_schema_public={}, principal.name={}",
-                databaseId, data.getIsPublic(), data.getIsSchemaPublic(), principal.getName());
+        log.debug("endpoint update table, databaseId={}, data.is_public={}, data.is_schema_public={}",
+                databaseId, data.getIsPublic(), data.getIsSchemaPublic());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         if (!table.getOwner().getId().equals(getId(principal))) {
@@ -544,12 +541,11 @@ public class TableEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @NotNull @PathVariable("tableId") UUID tableId,
-                                       @NotNull Principal principal) throws NotAllowedException,
+                                       Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
-        log.debug("endpoint delete table, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
-                principal.getName());
+        log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */

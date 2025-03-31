@@ -104,8 +104,8 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = OntologyDto.class))})
     })
     public ResponseEntity<OntologyDto> create(@NotNull @Valid @RequestBody OntologyCreateDto data,
-                                              @NotNull Principal principal) {
-        log.debug("endpoint create ontology, data={}, principal.name={}", data, principal.getName());
+                                              Principal principal) {
+        log.debug("endpoint create ontology, data={}", data);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.ontologyToOntologyDto(ontologyService.create(data, principal)));
     }

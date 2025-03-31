@@ -163,7 +163,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody CreateDatabaseDto data,
-                                                   @NotNull Principal principal) throws DataServiceException,
+                                                   Principal principal) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException {
@@ -222,7 +222,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                                 @NotNull Principal principal) throws DataServiceException,
+                                                                 Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, MalformedException, TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
@@ -270,10 +270,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseBriefDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                                @NotNull Principal principal) throws DataServiceException,
+                                                                Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, ViewNotFoundException {
-        log.debug("endpoint refresh database metadata, databaseId={}, principal.name={}", databaseId, principal.getName());
+        log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to refresh database views metadata: not owner");
@@ -324,7 +324,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<DatabaseBriefDto> visibility(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                        @Valid @RequestBody DatabaseModifyVisibilityDto data,
-                                                       @NotNull Principal principal) throws DatabaseNotFoundException,
+                                                       Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
@@ -381,7 +381,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                      @Valid @RequestBody DatabaseTransferDto data,
-                                                     @NotNull Principal principal) throws NotAllowedException,
+                                                     Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.id={}", databaseId, data.getId());
@@ -437,7 +437,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<DatabaseBriefDto> modifyImage(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                         @Valid @RequestBody DatabaseModifyImageDto data,
-                                                        @NotNull Principal principal) throws NotAllowedException,
+                                                        Principal principal) throws NotAllowedException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
