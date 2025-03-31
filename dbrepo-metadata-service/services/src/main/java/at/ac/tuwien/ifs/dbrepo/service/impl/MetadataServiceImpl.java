@@ -1,14 +1,14 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossrefDto;
+import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
+import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
-import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.gateway.CrossrefGateway;
+import at.ac.tuwien.ifs.dbrepo.gateway.CrossRefGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
@@ -39,21 +39,21 @@ public class MetadataServiceImpl implements MetadataService {
     private final MetadataConfig metadataConfig;
     private final MetadataMapper metadataMapper;
     private final TemplateEngine templateEngine;
-    private final CrossrefGateway crossrefGateway;
+    private final CrossRefGateway crossRefGateway;
     private final IdentifierService identifierService;
     private final IdentifierRepository identifierRepository;
 
     @Autowired
     public MetadataServiceImpl(RorGateway rorGateway, OrcidGateway orcidGateway, MetadataConfig metadataConfig,
                                MetadataMapper metadataMapper, TemplateEngine templateEngine,
-                               CrossrefGateway crossrefGateway, IdentifierService identifierService,
+                               CrossRefGateway crossRefGateway, IdentifierService identifierService,
                                IdentifierRepository identifierRepository) {
         this.rorGateway = rorGateway;
         this.orcidGateway = orcidGateway;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
         this.templateEngine = templateEngine;
-        this.crossrefGateway = crossrefGateway;
+        this.crossRefGateway = crossRefGateway;
         this.identifierService = identifierService;
         this.identifierRepository = identifierRepository;
     }
@@ -177,7 +177,7 @@ public class MetadataServiceImpl implements MetadataService {
                 throw new RorNotFoundException("Failed to find metadata from CrossRef URL: too short");
             }
             final String id = url.substring(idx + 8);
-            final CrossrefDto crossrefDto = crossrefGateway.findById(id);
+            final CrossRefDto crossrefDto = crossRefGateway.findById(id);
             return metadataMapper.crossrefDtoToExternalMetadataDto(crossrefDto);
         }
         log.error("Failed to find metadata: unsupported identifier {}", url);

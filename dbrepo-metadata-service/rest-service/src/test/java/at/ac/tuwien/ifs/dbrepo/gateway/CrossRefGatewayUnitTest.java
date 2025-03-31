@@ -1,12 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossrefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DoiNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
@@ -23,24 +24,25 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class CrossrefGatewayUnitTest extends BaseTest {
+public class CrossRefGatewayUnitTest extends BaseTest {
 
     @MockBean
+    @Qualifier("crossRefServiceRestTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
-    private CrossrefGateway crossrefGateway;
+    private CrossRefGateway crossRefGateway;
 
     @Test
     public void findById_succeeds() throws DoiNotFoundException {
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CrossrefDto.class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(CrossRefDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .build());
 
         /* test */
-        crossrefGateway.findById("501100004729");
+        crossRefGateway.findById("501100004729");
     }
 
     @Test
@@ -49,11 +51,11 @@ public class CrossrefGatewayUnitTest extends BaseTest {
         /* mock */
         doThrow(HttpServerErrorException.class)
                 .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CrossrefDto.class));
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(CrossRefDto.class));
 
         /* test */
         assertThrows(DoiNotFoundException.class, () -> {
-            crossrefGateway.findById("501100004729");
+            crossRefGateway.findById("501100004729");
         });
     }
 

@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.image.DataTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossrefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
@@ -355,7 +355,7 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default ExternalMetadataDto crossrefDtoToExternalMetadataDto(CrossrefDto data) {
+    default ExternalMetadataDto crossrefDtoToExternalMetadataDto(CrossRefDto data) {
         return ExternalMetadataDto.builder()
                 .affiliations(new ExternalAffiliationDto[]{
                         ExternalAffiliationDto.builder()
