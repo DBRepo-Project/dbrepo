@@ -64,6 +64,8 @@ dbrepo:
     accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
     bucket: "${S3_BUCKET:dbrepo}"
+    maxAge: "${S3_MAX_AGE:86400}"
+    cron: "${S3_STALE_CRON:0 */60 * * * *}"
   system:
     username: "${SYSTEM_USERNAME:admin}"
     password: "${SYSTEM_PASSWORD:admin}"
