@@ -20,6 +20,6 @@ WORKDIR /app
 
 USER 1001
 
-COPY --chown=1001 ./*.py ./
+COPY --chown=1001 ./app.py ./app.py
 
 ENTRYPOINT [ "python", "./app.py" ]

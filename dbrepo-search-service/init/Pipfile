@@ -11,6 +11,7 @@ testcontainers-opensearch = "*"
 pytest = "*"
 dbrepo = {path = "./lib/dbrepo-1.8.0.tar.gz"}
 rdflib = "*"
+grafana-client = "*"
 
 [dev-packages]
 coverage = "*"

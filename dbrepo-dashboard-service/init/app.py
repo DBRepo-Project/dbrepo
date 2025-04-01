@@ -39,7 +39,7 @@ def dashboard_client():
 
 
 def rest_client():
-    return RestClient(endpoint=os.getenv("METADATA_SERVICE_ENDPOINT", "http://metadata-service:8080"),
+    return RestClient(endpoint=os.getenv("METADATA_SERVICE_ENDPOINT", "http://localhost"),
                       username=os.getenv('SYSTEM_USERNAME', 'admin'), password=os.getenv('SYSTEM_PASSWORD', 'admin'))
 
 
@@ -53,11 +53,12 @@ def fetch_databases() -> List[Database]:
 
 
 def upsert_dashboard(database: Database) -> None:
-    db = dashboard_client().find(database.dashboard_uid)
+    db = dashboard_client().find(database.dashboard_uid)['dashboard']
     if db is None:
-        db = dashboard_client().create(database.internal_name, database.dashboard_uid)
-        rest_client().update_database_dashboard(database.id, database.dashboard_uid)
-    dashboard_client().update(db['uid'])
+        db = dashboard_client().create(database.internal_name, database.dashboard_uid)['dashboard']
+        rest_client().update_database_dashboard(database.id, db['uid'])
+        return
+    dashboard_client().update(database)
 
 
 if __name__ == "__main__":

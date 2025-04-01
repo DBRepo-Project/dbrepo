@@ -15,6 +15,7 @@ dbrepo = {path = "./lib/dbrepo-1.8.0.tar.gz"}
 gunicorn = "*"
 pydantic = "*"
 flask_httpauth = "*"
+grafana-client = "*"
 
 [dev-packages]
 coverage = "*"
