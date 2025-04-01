@@ -582,7 +582,7 @@ release-images:
     - docker tag dbrepo-analyse-service:latest "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-dashboard-service:latest "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-service-init:latest "${CI_REGISTRY2_URL}/dashboard-serviceinit:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-dashboard-service-init:latest "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-data-service:latest "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-metadata-service:latest "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-search-db:latest "${CI_REGISTRY2_URL}/search-db:${APP_VERSION}${BUILD_VERSION}"
