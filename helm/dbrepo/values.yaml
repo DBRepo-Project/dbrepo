@@ -975,6 +975,7 @@ dashboardui:
   metrics:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
+  ## @param dashboardui.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-ui:3000
   ldap:
     ## @skip dashboardui.ldap.enabled
@@ -990,7 +991,7 @@ dashboardui:
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
   datasources:
-    ## @skip dashboardservice.datasources.secretDefinition
+    ## @skip dashboardui.datasources.secretName
     secretName: "dashboard-ui-prov-datasources-secret"
   dashboardsProvider:
     ## @param dashboardui.dashboardsProvider.enabled Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards
