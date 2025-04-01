@@ -176,6 +176,10 @@ datadb:
   db:
     ## @param datadb.db.name The database name.
     name: dbrepo
+    ## @param datadb.db.user The database username for the dashboard service.
+    user: user
+    ## @param datadb.db.password The database user password for the dashboard service.
+    password: user
   galera:
     mariabackup:
       ## @param datadb.galera.mariabackup.user The database backup username.
@@ -218,7 +222,7 @@ searchdb:
     enabled: false
     ## @param searchdb.ingest.resourcesPreset The container resource preset
     resourcesPreset: "micro"
-      ## @param searchdb.ingest.replicaCount The number of pod replicas.
+    ## @param searchdb.ingest.replicaCount The number of pod replicas.
     replicaCount: 1
   master:
     ## @param searchdb.master.resourcesPreset The container resource preset
@@ -235,90 +239,6 @@ searchdb:
     enabled: false
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
-
-## @section Upload Service
-
-uploadservice:
-  ## @param uploadservice.enabled Enable the Upload Service.
-  enabled: true
-  ## @skip uploadservice.image
-  image:
-    name: docker.io/tusproject/tusd:v1.12
-  s3:
-    ## @param uploadservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storage-service-s3:8333
-    ## @param uploadservice.s3.bucket The S3 bucket name.
-    bucket: dbrepo
-    ## @param uploadservice.s3.maxSize The maximum file size in bytes.
-    maxSize: "2000000000"
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:
-    ## @param uploadservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled: true
-    ## @param uploadservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy: Always
-    ## @param uploadservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls: [ ]
-    ## @param uploadservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups: [ ]
-    ## @param uploadservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup: 0
-  containerSecurityContext:
-    ## @param uploadservice.containerSecurityContext.enabled Enable containers' Security Context
-    enabled: true
-    ## @param uploadservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: { }
-    ## @param uploadservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser: 1000
-    ## @param uploadservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup: 1000
-    ## @param uploadservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot: true
-    ## @param uploadservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation: false
-    ## @param uploadservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem: false
-    capabilities:
-      ## @param uploadservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop: [ "ALL" ]
-    seccompProfile:
-      ## @param uploadservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type: "RuntimeDefault"
-  ## @param uploadservice.resourcesPreset The container resource preset
-  resourcesPreset: "nano"
-  ## @param uploadservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
-  ## @skip uploadservice.containerArgs
-  containerArgs:
-    - "-behind-proxy"
-    - "-max-size=2000000000"
-    - "-base-path=/api/upload/files/"
-    - "-hooks-dir=/srv/tusd-hooks/"
-    - "-s3-endpoint=http://storage-service-s3:8333"
-    - "-s3-bucket=dbrepo"
-  ## @skip uploadservice.envFrom
-  envFrom:
-    - secretRef:
-        name: upload-service-secret
-  ## @skip uploadservice.volumes
-  volumes:
-    - name: config
-      configMap:
-        name: upload-service-setup
-        defaultMode: 0777
-  ## @skip uploadservice.volumeMounts
-  volumeMounts:
-    - name: config
-      mountPath: /srv/tusd-hooks/pre-create
-      subPath: pre-create
-  ## @param uploadservice.replicaCount The number of replicas.
-  replicaCount: 2
 
 ## @section Broker Service
 
@@ -981,40 +901,99 @@ ui:
 dashboardservice:
   ## @param dashboardservice.enabled Enable the Dashboard Service.
   enabled: true
+  image:
+      ## @skip dashboardservice.image.name
+    name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.0
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param dashboardservice.podSecurityContext.enabled Enable pods' Security Context
+    enabled: true
+    ## @param dashboardservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param dashboardservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param dashboardservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param dashboardservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 0
+  containerSecurityContext:
+    ## @param dashboardservice.containerSecurityContext.enabled Enable containers' Security Context
+    enabled: true
+    ## @param dashboardservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param dashboardservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param dashboardservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+    runAsGroup: 1001
+    ## @param dashboardservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+    runAsNonRoot: true
+    ## @param dashboardservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param dashboardservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
+    capabilities:
+      ## @param dashboardservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+    seccompProfile:
+      ## @param dashboardservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param dashboardservice.resourcesPreset The container resource preset
+  resourcesPreset: "micro"
+  ## @param dashboardservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
+  ## @param dashboardservice.replicaCount The number of replicas.
+  init:
+    image:
+      ## @skip dashboardservice.init.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.0
+    ## @param dashboardservice.init.resourcesPreset The container resource preset
+    resourcesPreset: "nano"
+    ## @param dashboardservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
+  ## @param dashboardservice.replicaCount The number of replicas.
+  replicaCount: 2
+
+## @section Dashboard UI
+
+dashboardui:
+  ## @param dashboardui.enabled Enable the Dashboard UI.
+  enabled: true
+  ## @skip dashboardui.fullnameOverride
+  fullnameOverride: dashboard-ui
   metrics:
-    ## @param dashboardservice.metrics.enabled Enable the metrics sidecar.
+    ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
-  ## @skip dashboardservice.fullnameOverride
-  fullnameOverride: dashboard-service
+  endpoint: http://dashboard-ui:3000
   ldap:
-    ## @skip dashboardservice.ldap.enabled
+    ## @skip dashboardui.ldap.enabled
     enabled: true
-    ## @skip dashboardservice.ldap.allowSignUp
+    ## @skip dashboardui.ldap.allowSignUp
     allowSignUp: true
-    ## @skip dashboardservice.ldap.secretName
-    secretName: dashboard-service-secret
+    ## @skip dashboardui.ldap.secretName
+    secretName: dashboard-ui-secret
   grafana:
     updateStrategy:
-      ## @skip dashboardservice.grafana.updateStrategy.type
+      ## @skip dashboardui.grafana.updateStrategy.type
       type: Recreate
-    ## @skip dashboardservice.grafana.extraEnvVarsSecret
-    extraEnvVarsSecret: dashboard-service-secret
-    ## @skip dashboardservice.grafana.extraConfigmaps
-    extraConfigmaps:
-      - name: dashboard-service-config
-        mountPath: /opt/bitnami/grafana/dashboards
-        readOnly: true
+    ## @skip dashboardui.grafana.extraEnvVarsSecret
+    extraEnvVarsSecret: dashboard-ui-secret
   datasources:
     ## @skip dashboardservice.datasources.secretDefinition
-    secretDefinition:
-      apiVersion: 1
-      datasources:
-        - name: "dbrepo-metric-db"
-          uid: "P18F45E9DC7E75912"
-          type: "prometheus"
-          url: "http://metric-db-server"
+    secretName: "dashboard-ui-prov-datasources-secret"
   dashboardsProvider:
-    ## @param dashboardservice.dashboardsProvider.enabled Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards
+    ## @param dashboardui.dashboardsProvider.enabled Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards
     enabled: true
 
 ## @section Metric Service
@@ -1024,6 +1003,8 @@ metricdb:
   enabled: true
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
+  ## @param metricdb.endpoint The endpoint for microservices.
+  endpoint: http://metric-db-server
   alertmanager:
     ## @skip metricdb.alertmanager.enabled
     enabled: false
