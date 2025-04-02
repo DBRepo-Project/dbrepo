@@ -85,26 +85,18 @@ authservice:
     debug: false
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
+  extraStartupArgs: --hostname-strict false --proxy-headers xforwarded
   ## @skip authservice.postgresql
   postgresql:
     enabled: true
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
-  ## @param authservice.production Start Keycloak with production profile.
-  production: true
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   jwt:
     ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
-  tls:
-    ## @param authservice.tls.enabled Enable TLS/SSL communication. Required for HTTPS.
-    enabled: true
-    ## @param authservice.tls.existingSecret The secret containing the `tls.crt`, `tls.key` and `ca.crt`.
-    existingSecret: auth-service-secret
-    ## @skip authservice.tls.usePem
-    usePem: true
   metrics:
     ## @skip authservice.metrics.enabled
     enabled: true
@@ -902,8 +894,10 @@ dashboardservice:
   ## @param dashboardservice.enabled Enable the Dashboard Service.
   enabled: true
   image:
-      ## @skip dashboardservice.image.name
+    ## @skip dashboardservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.0
+  ## @param dashboardservice.endpoint The endpoint for the microservices.
+  endpoint: http://dashboard-service
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dashboardservice.podSecurityContext.enabled Enable pods' Security Context
@@ -976,7 +970,7 @@ dashboardui:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
   ## @param dashboardui.endpoint The endpoint for the microservices.
-  endpoint: http://dashboard-ui:3000
+  endpoint: http://dashboard-ui
   ldap:
     ## @skip dashboardui.ldap.enabled
     enabled: true
@@ -990,6 +984,9 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
+  service:
+    ports:
+      grafana: 80
   datasources:
     ## @skip dashboardui.datasources.secretName
     secretName: "dashboard-ui-prov-datasources-secret"
@@ -1035,7 +1032,7 @@ metricdb:
       - job_name: 'dashboard scrape'
         metrics_path: '/dashboard/metrics'
         static_configs:
-          - targets: [ 'dashboard-service:3000' ]
+          - targets: [ 'dashboard-service' ]
 
 ## @section Gateway Service
 

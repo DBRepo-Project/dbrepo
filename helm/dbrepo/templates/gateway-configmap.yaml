@@ -30,60 +30,81 @@ data:
             autoindex_localtime     on;
         }
 
-        location /dashboard {
+        location /dashboard/ {
             rewrite  ^/dashboard/(.*)  /$1 break;
-            proxy_set_header        Host $host;
+            proxy_set_header        Host $http_host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://dashboard-service:3000;
+            proxy_pass              http://dashboard-ui;
             proxy_read_timeout      90;
         }
 
         # Proxy Grafana Live WebSocket connections.
-        location /dashboard/api/live {
-            proxy_set_header        Host $host;
+        location /dashboard/api/live/ {
+            rewrite  ^/dashboard/(.*)  /$1 break;
+            proxy_set_header        Host $http_host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_set_header        Upgrade $http_upgrade;
             proxy_set_header        Connection $connection_upgrade;
             proxy_http_version      1.1;
-            proxy_pass              http://dashboard-service:3000;
+            proxy_pass              http://dashboard-ui;
             proxy_read_timeout      90;
         }
 
+        # Proxy Keycloak OIDC connections, c.f. https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
         location /realms {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              https://auth-service;
+            proxy_pass              http://auth-service;
             proxy_read_timeout      90;
         }
 
+        # Proxy Keycloak assets, c.f. https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
         location /resources {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              https://auth-service;
+            proxy_pass              http://auth-service;
             proxy_read_timeout      90;
         }
 
         location /api/search {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://search-service;
+            proxy_read_timeout      90;
+        }
+
+        location /api/datasource {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://dashboard-service;
+            proxy_read_timeout      90;
+        }
+
+        location /api/dashboard {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://dashboard-service;
             proxy_read_timeout      90;
         }
 
         location /api/upload {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_set_header        X-Forwarded-Host $host;
             proxy_pass              http://data-service;
@@ -97,25 +118,25 @@ data:
         location /api/analyse {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://analyse-service;
             proxy_read_timeout      90;
         }
 
-        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/table/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(data|history)" {
+        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/table/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(data|statistic|history)" {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://data-service;
             proxy_read_timeout      90;
         }
 
-        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/data" {
+        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(data|statistic)" {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://data-service;
             proxy_read_timeout      90;
@@ -124,7 +145,7 @@ data:
         location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view" {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://metadata-service;
             proxy_read_timeout      90;
@@ -133,7 +154,7 @@ data:
         location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/subset" {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://data-service;
             proxy_read_timeout      600;
@@ -142,7 +163,7 @@ data:
         location ~ "/api/(database|concept|container|identifier|image|message|license|oai|ontology|unit|user)" {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://metadata-service;
             proxy_read_timeout      90;
@@ -151,7 +172,7 @@ data:
         location ~ "/api/identifier/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})" {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://metadata-service;
             proxy_read_timeout      90;
@@ -161,7 +182,7 @@ data:
             rewrite /pid/(.*) /api/identifier/$1 break;
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://metadata-service;
             proxy_read_timeout      90;
@@ -170,7 +191,7 @@ data:
         location / {
             proxy_set_header        Host $host;
             proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
             proxy_set_header        X-Forwarded-Proto $scheme;
             proxy_pass              http://ui;
             proxy_read_timeout      90;
