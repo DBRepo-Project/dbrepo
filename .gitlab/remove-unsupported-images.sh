@@ -6,8 +6,10 @@ MAINTAINED_SERVICES="analyse-service, auth-service-init, dashboard-service, dash
 VERSIONS=(${SUPPORTED_VERSIONS//,/ })
 SERVICES=(${MAINTAINED_SERVICES//,/ })
 
+CI_REGISTRY2_URL="registry.datalab.tuwien.ac.at/dbrepo"
+
 for SERVICE in "${SERVICES[@]}"; do
-  TAGS=$(regctl tag ls "registry.datalab.tuwien.ac.at/dbrepo/${SERVICE}")
+  TAGS=$(regctl tag ls "${CI_REGISTRY2_URL}/${SERVICE}")
   TAGS=(${TAGS//\n/ })
   for TAG in "${TAGS[@]}"; do
     if [[ ! "${VERSIONS[*]}" =~ $TAG ]]; then
