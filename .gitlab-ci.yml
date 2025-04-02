@@ -696,12 +696,20 @@ verify-dist:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: verify
   only:
-    refs:
-      - /^release-.*/
+    - /^release-.*/
+    - master
   before_script:
     - "apk add curl"
   script:
     - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
+
+verify-images:
+  image: docker.io/docker:${DOCKER_VERSION}-dind
+  stage: verify
+  only:
+    - master
+  script:
+    - bash ./.gitlab/check-unsupported-images.sh
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}

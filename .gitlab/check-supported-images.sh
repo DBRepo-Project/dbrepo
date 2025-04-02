@@ -1,9 +1,16 @@
 #!/bin/bash
 echo "Starting registry check ..."
 
-SUPPORTED_VERSIONS="1.7.3, 1.8.0"
-MAINTAINED_SERVICES="analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
-CI_REGISTRY2_URL="registry.datalab.tuwien.ac.at/dbrepo"
+if [ -z $SUPPORTED_VERSIONS ]; then
+  echo "[ERROR] Missing environment variable SUPPORTED_VERSIONS" > /dev/stderr
+  exit 1
+elif [ -z $MAINTAINED_SERVICES ]; then
+  echo "[ERROR] Missing environment variable MAINTAINED_SERVICES" > /dev/stderr
+  exit 1
+elif [ -z $CI_REGISTRY2_URL ]; then
+  echo "[ERROR] Missing environment variable CI_REGISTRY2_URL" > /dev/stderr
+  exit 1
+fi
 
 VERSIONS=(${SUPPORTED_VERSIONS//,/ })
 SERVICES=(${MAINTAINED_SERVICES//,/ })
