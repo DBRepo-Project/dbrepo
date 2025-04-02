@@ -85,6 +85,7 @@ authservice:
     debug: false
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
+  ## @param authservice.extraStartupArgs Extra arguments for the Keycloak container.
   extraStartupArgs: --hostname-strict false --proxy-headers xforwarded
   ## @skip authservice.postgresql
   postgresql:
@@ -986,6 +987,7 @@ dashboardui:
     extraEnvVarsSecret: dashboard-ui-secret
   service:
     ports:
+      ## @skip dashboardui.service.ports.grafana
       grafana: 80
   datasources:
     ## @skip dashboardui.datasources.secretName

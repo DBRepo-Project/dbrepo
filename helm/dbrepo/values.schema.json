@@ -129,6 +129,9 @@
                 "extraEnvVarsCM": {
                     "type": "string"
                 },
+                "extraStartupArgs": {
+                    "type": "string"
+                },
                 "extraVolumeMounts": {
                     "items": {
                         "properties": {
@@ -227,9 +230,6 @@
                     },
                     "type": "object"
                 },
-                "production": {
-                    "type": "boolean"
-                },
                 "replicaCount": {
                     "type": "integer"
                 },
@@ -252,20 +252,6 @@
                         },
                         "resourcesPreset": {
                             "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "tls": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "existingSecret": {
-                            "type": "string"
-                        },
-                        "usePem": {
-                            "type": "boolean"
                         }
                     },
                     "type": "object"
@@ -507,6 +493,9 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "endpoint": {
+                    "type": "string"
+                },
                 "image": {
                     "properties": {
                         "name": {
@@ -629,6 +618,19 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "service": {
+                    "properties": {
+                        "ports": {
+                            "properties": {
+                                "grafana": {
+                                    "type": "integer"
+                                }
+                            },
+                            "type": "object"
                         }
                     },
                     "type": "object"
