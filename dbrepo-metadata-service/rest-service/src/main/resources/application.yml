@@ -57,6 +57,11 @@ dbrepo:
     storageService: "${S3_ENDPOINT:http://storage-service:9000}"
     rorService: "${ROR_ENDPOINT:https://api.ror.org}"
     crossRefService: "${CROSSREF_ENDPOINT:http://data.crossref.org}"
+  datacite:
+    url: "${DATACITE_URL}"
+    username: "${DATACITE_USERNAME}"
+    password: "${DATACITE_PASSWORD}"
+    prefix: "${DATACITE_PREFIX}"
   s3:
     accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
