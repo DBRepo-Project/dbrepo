@@ -1,11 +1,11 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.tuwien.config.S3Config;
-import at.tuwien.exception.MalformedException;
-import at.tuwien.exception.StorageNotFoundException;
-import at.tuwien.exception.StorageUnavailableException;
-import at.tuwien.exception.TableMalformedException;
 import at.tuwien.service.StorageService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -17,13 +17,12 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,6 +88,30 @@ public class StorageServiceS3Impl implements StorageService {
             log.error("Failed to read bytes from input stream: {}", e.getMessage());
             throw new StorageNotFoundException("Failed to read bytes from input stream: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void deleteObject(String bucket, String key) {
+        log.trace("delete object with key {} from bucket: {}", key, bucket);
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build());
+    }
+
+    @Override
+    public void deleteStaleObjects() {
+        log.trace("list stale objects in bucket: {}", s3Config.getS3Bucket());
+        final List<String> keys = s3Client.listObjects(ListObjectsRequest.builder()
+                        .bucket(s3Config.getS3Bucket())
+                        .build())
+                .contents()
+                .stream()
+                .filter(o -> o.lastModified().isBefore(Instant.now().minus(s3Config.getMaxAge(), ChronoUnit.SECONDS)))
+                .map(S3Object::key)
+                .toList();
+        keys.forEach(key -> deleteObject(s3Config.getS3Bucket(), key));
+        log.info("Deleted {} stale object(s) in bucket: {}", keys.size(), s3Config.getS3Bucket());
     }
 
     @Override

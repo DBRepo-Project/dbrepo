@@ -1,11 +1,11 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.internal.TableCreateDto;
-import at.tuwien.api.user.internal.UpdateUserPasswordDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
 import java.sql.SQLException;
 import java.util.List;

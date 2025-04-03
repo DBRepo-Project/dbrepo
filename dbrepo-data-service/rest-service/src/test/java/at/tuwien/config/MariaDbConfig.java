@@ -1,8 +1,8 @@
 package at.tuwien.config;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;

@@ -1,10 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.internal.CreateDatabaseDto;
-import at.tuwien.exception.DatabaseMalformedException;
-import at.tuwien.exception.QueryStoreCreateException;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
 
 import java.sql.SQLException;
 

@@ -1,14 +1,15 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -34,15 +35,18 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     private final DataMapper dataMapper;
     private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
+    private final MetadataMapper metadataMapper;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public SubsetServiceMariaDbImpl(DSLContext context, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
-                                    SparkSession sparkSession, MetadataServiceGateway metadataServiceGateway) {
+                                    SparkSession sparkSession, MetadataMapper metadataMapper,
+                                    MetadataServiceGateway metadataServiceGateway) {
         this.context = context;
         this.dataMapper = dataMapper;
         this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
+        this.metadataMapper = metadataMapper;
         this.metadataServiceGateway = metadataServiceGateway;
     }
 
@@ -70,7 +74,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     @Override
     public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
-            ImageNotFoundException, ViewMalformedException {
+            ImageNotFoundException, ViewMalformedException, ViewNotFoundException {
         final String statement = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
         return storeQuery(database, statement, timestamp, userId);
     }
@@ -134,8 +138,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException,
-            SQLException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
+    public QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException, SQLException,
+            UserNotFoundException, RemoteUnavailableException, MetadataServiceException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -148,7 +152,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 throw new QueryNotFoundException("Failed to find query");
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
-            query.setOwner(database.getOwner());
+            query.setOwner(metadataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserById(query.getOwner()
+                    .getId())));
             query.setDatabaseId(database.getId());
             return query;
         } catch (SQLException e) {

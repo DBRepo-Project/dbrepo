@@ -5,6 +5,7 @@ interface DatabaseDto {
   owner: UserDto;
   contact: UserDto;
   created: Date;
+  dashboard_uid: string;
   exchange_name: string;
   internal_name: string;
   is_public: boolean;
@@ -613,7 +614,8 @@ interface OrderDto {
 }
 
 interface SubsetDto {
-  table_id: string;
+  datasource_id: string;
+  datasource_type: string;
   columns: string[];
   filter: FilterDto[] | null;
   order: OrderDto[] | null;

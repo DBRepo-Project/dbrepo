@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.7.3"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.8.0"
 ```
 
 ## Prerequisites
@@ -34,7 +34,7 @@ variable when you increase the available Pod memory for performance.
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.7.3"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.8.0"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -94,11 +94,9 @@ The command removes all the Kubernetes components associated with the chart and 
 | `authservice.enabled`                  | Enable the Auth Service.                                                                                          | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`.                                                       | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.endpoint`                 | The hostname for the microservices.                                                                               | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
-| `authservice.production`               | Start Keycloak with production profile.                                                                           | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `authservice.extraStartupArgs`         | Extra arguments for the Keycloak container.                                                                       | `--hostname-strict false --proxy-headers xforwarded`                                                                                                                                                                                                                                                                                                                                                       |
 | `authservice.resourcesPreset`          | The container resource presets                                                                                    | `small`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.jwt.pubkey`               | The JWT public key from the `dbrepo-client`.                                                                      | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
-| `authservice.tls.enabled`              | Enable TLS/SSL communication. Required for HTTPS.                                                                 | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `authservice.tls.existingSecret`       | The secret containing the `tls.crt`, `tls.key` and `ca.crt`.                                                      | `auth-service-secret`                                                                                                                                                                                                                                                                                                                                                                                      |
 | `authservice.client.id`                | The client id for the microservices.                                                                              | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            |
 | `authservice.client.secret`            | The client secret for the microservices.                                                                          | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         |
 | `authservice.setupJob.resourcesPreset` | The container resource preset                                                                                     | `nano`                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -113,6 +111,8 @@ The command removes all the Kubernetes components associated with the chart and 
 | `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
 | `datadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
 | `datadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
+| `datadb.db.user`                     | The database username for the dashboard service.                                                                                       | `user`                                                                 |
+| `datadb.db.password`                 | The database user password for the dashboard service.                                                                                  | `user`                                                                 |
 | `datadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
 | `datadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
 | `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
@@ -136,32 +136,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | `searchdb.data.resourcesPreset`         | The container resource preset       | `medium`    |
 | `searchdb.data.replicaCount`            | The number of pod replicas.         | `1`         |
 | `searchdb.clusterName`                  | The cluster name.                   | `search-db` |
-
-### Upload Service
-
-| Name                                                              | Description                                                                                                       | Value                            |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `uploadservice.enabled`                                           | Enable the Upload Service.                                                                                        | `true`                           |
-| `uploadservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.                                                             | `http://storage-service-s3:8333` |
-| `uploadservice.s3.bucket`                                         | The S3 bucket name.                                                                                               | `dbrepo`                         |
-| `uploadservice.s3.maxSize`                                        | The maximum file size in bytes.                                                                                   | `2000000000`                     |
-| `uploadservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                           |
-| `uploadservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                | `Always`                         |
-| `uploadservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                    | `[]`                             |
-| `uploadservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                       | `[]`                             |
-| `uploadservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                       | `0`                              |
-| `uploadservice.containerSecurityContext.enabled`                  | Enable containers' Security Context                                                                               | `true`                           |
-| `uploadservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                             |
-| `uploadservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1000`                           |
-| `uploadservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `1000`                           |
-| `uploadservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                           |
-| `uploadservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                          |
-| `uploadservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                          |
-| `uploadservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`                        |
-| `uploadservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`                 |
-| `uploadservice.resourcesPreset`                                   | The container resource preset                                                                                     | `nano`                           |
-| `uploadservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
-| `uploadservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                              |
 
 ### Broker Service
 
@@ -406,17 +380,46 @@ mqtt.prefetch = 10
 
 ### Dashboard Service
 
-| Name                                          | Description                                                                                                            | Value  |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------ |
-| `dashboardservice.enabled`                    | Enable the Dashboard Service.                                                                                          | `true` |
-| `dashboardservice.metrics.enabled`            | Enable the metrics sidecar.                                                                                            | `true` |
-| `dashboardservice.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true` |
+| Name                                                                 | Description                                                                                                       | Value                      |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `dashboardservice.enabled`                                           | Enable the Dashboard Service.                                                                                     | `true`                     |
+| `dashboardservice.endpoint`                                          | The endpoint for the microservices.                                                                               | `http://dashboard-service` |
+| `dashboardservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                     |
+| `dashboardservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                | `Always`                   |
+| `dashboardservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                    | `[]`                       |
+| `dashboardservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                       | `[]`                       |
+| `dashboardservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                       | `0`                        |
+| `dashboardservice.containerSecurityContext.enabled`                  | Enable containers' Security Context                                                                               | `true`                     |
+| `dashboardservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                       |
+| `dashboardservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1001`                     |
+| `dashboardservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `1001`                     |
+| `dashboardservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                     |
+| `dashboardservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                    |
+| `dashboardservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                    |
+| `dashboardservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`                  |
+| `dashboardservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`           |
+| `dashboardservice.resourcesPreset`                                   | The container resource preset                                                                                     | `micro`                    |
+| `dashboardservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                       |
+| `dashboardservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                        |
+| `dashboardservice.init.resourcesPreset`                              | The container resource preset                                                                                     | `nano`                     |
+| `dashboardservice.init.resources`                                    | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                       |
+| `dashboardservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                        |
+
+### Dashboard UI
+
+| Name                                     | Description                                                                                                            | Value                 |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `dashboardui.enabled`                    | Enable the Dashboard UI.                                                                                               | `true`                |
+| `dashboardui.metrics.enabled`            | Enable the metrics sidecar.                                                                                            | `true`                |
+| `dashboardui.endpoint`                   | The endpoint for the microservices.                                                                                    | `http://dashboard-ui` |
+| `dashboardui.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true`                |
 
 ### Metric Service
 
-| Name               | Description                | Value  |
-| ------------------ | -------------------------- | ------ |
-| `metricdb.enabled` | Enable the Metric Service. | `true` |
+| Name                | Description                     | Value                     |
+| ------------------- | ------------------------------- | ------------------------- |
+| `metricdb.enabled`  | Enable the Metric Service.      | `true`                    |
+| `metricdb.endpoint` | The endpoint for microservices. | `http://metric-db-server` |
 
 ### Gateway Service
 

@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;

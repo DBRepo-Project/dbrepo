@@ -1,12 +1,12 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.internal.CreateDatabaseDto;
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.internal.UpdateUserPasswordDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.CacheService;
@@ -94,6 +94,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             final DatabaseDto database = containerService.createDatabase(container, data);
             containerService.createQueryStore(container, data.getInternalName());
             accessService.create(database, metadataMapper.createDatabaseDtoToPrivilegedUserDto(data), AccessTypeDto.WRITE_ALL);
+            accessService.create(database, metadataMapper.createDatabaseDtoToReadonlyUserDto(data), AccessTypeDto.READ);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(database);
         } catch (SQLException e) {

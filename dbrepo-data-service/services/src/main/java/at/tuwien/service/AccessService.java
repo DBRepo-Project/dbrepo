@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 
 import java.sql.SQLException;
 

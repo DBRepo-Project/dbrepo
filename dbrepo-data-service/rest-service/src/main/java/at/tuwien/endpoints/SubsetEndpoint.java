@@ -1,14 +1,14 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryPersistDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.CacheService;
@@ -254,8 +254,8 @@ public class SubsetEndpoint extends RestEndpoint {
             QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
             NotAllowedException, UserNotFoundException, MetadataServiceException, TableNotFoundException,
             ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException {
-        log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}", databaseId,
-                page, size, timestamp);
+        log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}, data.datasource_id={}",
+                databaseId, page, size, timestamp, data.getDatasourceId());
         /* check */
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateSubsetParams(data);
@@ -469,11 +469,11 @@ public class SubsetEndpoint extends RestEndpoint {
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") UUID databaseId,
                                             @NotNull @PathVariable("queryId") UUID queryId,
                                             @NotNull @Valid @RequestBody QueryPersistDto data,
-                                            @NotNull Principal principal) throws NotAllowedException,
+                                            Principal principal) throws NotAllowedException,
             RemoteUnavailableException, DatabaseNotFoundException, QueryStorePersistException,
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
-        log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
-                queryId, data.getPersist(), principal.getName());
+        log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}", databaseId, queryId,
+                data.getPersist());
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         if (!isSystem(principal)) {
             cacheService.getAccess(databaseId, getId(principal));

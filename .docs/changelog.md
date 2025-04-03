@@ -2,6 +2,25 @@
 author: Martin Weise
 ---
 
+## v1.8.0 (2025-??-??)
+
+#### Features
+
+* Refactored internal Java-based testing data that improves test consistency
+  in [#510](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/510).
+* Added automated dashboard generation for all public databases where each view has an overview of its data and
+  schema in [#460](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/460).
+
+#### Changes
+
+* Removed OpenSearch security plugin from the Docker test deployment and changed to the `bitnami/opensearch` image
+  of the same version in [#515](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/515).
+
+#### Fixes
+
+* Fixed a bug where validation of missing `Principal` object in Java services caused a 400 error instead of a 401 error
+  in [#512](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/512).
+
 ## v1.7.3 (2025-03-17)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.3)

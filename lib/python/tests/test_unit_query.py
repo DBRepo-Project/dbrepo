@@ -23,6 +23,7 @@ class QueryUnitTest(unittest.TestCase):
         internal_name='test_abcd',
         is_public=True,
         is_schema_public=True,
+        is_dashboard_enabled=True,
         tables=[Table(id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
                       name="Some Table",
                       description="Test Table",

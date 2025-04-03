@@ -2,7 +2,7 @@ package at.tuwien.mvc;
 
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.SubsetService;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @AutoConfigureObservability
-public class SubsetEndpointMvcTest extends AbstractUnitTest {
+public class SubsetEndpointMvcTest extends BaseTest {
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;

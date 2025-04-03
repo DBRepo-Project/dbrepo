@@ -1,12 +1,13 @@
 package at.tuwien.config;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,11 @@ public class CacheConfig {
     @Bean
     public Cache<UUID, ContainerDto> containerCache() {
         return new ExpiryCache<UUID, ContainerDto>().build();
+    }
+
+    @Bean
+    public Cache<UUID, TableStatisticDto> statisticCache() {
+        return new ExpiryCache<UUID, TableStatisticDto>().build();
     }
 
     @Bean

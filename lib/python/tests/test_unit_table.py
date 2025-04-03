@@ -1105,7 +1105,10 @@ class TableUnitTest(unittest.TestCase):
     def test_analyse_table_statistics_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = TableStatistics(
-                columns={"id": ColumnStatistic(val_min=1.0, val_max=9.0, mean=5.0, median=5.0, std_dev=2.73)})
+                total_columns=1,
+                total_rows=1000,
+                columns={
+                    "id": ColumnStatistic(name="id", val_min=1.0, val_max=9.0, mean=5.0, median=5.0, std_dev=2.73)})
             # mock
             mock.get(
                 '/api/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',

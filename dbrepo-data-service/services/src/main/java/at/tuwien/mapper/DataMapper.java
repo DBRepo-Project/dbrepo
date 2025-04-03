@@ -1,26 +1,24 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.*;
-import at.tuwien.api.database.table.constraints.ConstraintsDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
-import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
-import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
-import at.tuwien.api.database.table.constraints.unique.UniqueDto;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.exception.TableNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,17 +102,19 @@ public interface DataMapper {
 
     default TableStatisticDto resultSetToTableStatistic(ResultSet data) throws SQLException {
         final TableStatisticDto statistic = TableStatisticDto.builder()
-                .columns(new LinkedHashMap<>())
+                .columns(new LinkedList<>())
                 .build();
         while (data.next()) {
             final ColumnStatisticDto columnStatistic = ColumnStatisticDto.builder()
+                    .name(data.getString(1))
                     .min(data.getBigDecimal(2))
                     .max(data.getBigDecimal(3))
                     .median(data.getBigDecimal(4))
                     .mean(data.getBigDecimal(5))
                     .stdDev(data.getBigDecimal(6))
                     .build();
-            statistic.getColumns().put(data.getString(1), columnStatistic);
+            statistic.getColumns()
+                    .add(columnStatistic);
         }
         return statistic;
     }
@@ -202,6 +202,9 @@ public interface DataMapper {
                 .resultHash(data.getString(6))
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
+                .owner(UserBriefDto.builder()
+                        .id(UUID.fromString(data.getString(3)))
+                        .build())
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())

@@ -14,18 +14,18 @@ author: Martin Weise
 ![Maintainability Rating](./images/maintainability.svg)
 ![Security Rating](./images/security.svg)
 
-Documentation for version: [v1.7.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
+Documentation for version: [v1.7.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 
-DBRepo is a repository for data in databases that are used from the beginning until the end of a research 
-project supporting data evolution, -citation and -versioning. It implements the query store of the 
-[RDA WGDC](https://doi.org/10.1162/99608f92.be565013) on precisely identifying arbitrary subsets of data.
+DBRepo is a repository for data in databases that cover the entire data life cycle supporting data evolution, -citation 
+and -versioning. It implements the query store of the [RDA WGDC](https://doi.org/10.1162/99608f92.be565013) on precisely
+identifying arbitrary subsets of data.
 
 ## Why use DBRepo?
 
-* **Built-in search** makes your dataset searchable without extra effort: most metadata is generated 
-  automatically for data in your databases.
+* **Built-in search** makes your dataset searchable without extra effort: metadata is generated automatically for data
+  in your databases.
 * **Citable datasets** adopting the recommendations of the RDA-WGDC, arbitrary subsets can be precisely, persistently 
-  identified using system-versioned tables of MariaDB and the DataCite schema for minting DOIs.
+  identified using [data versioning](concepts/data-versioning) of MariaDB and the DataCite schema for minting DOIs.
 * **Powerful API for Data Scientists** with our strongly typed Python Library, Data Scientists can import, export and
   work with data from Jupyter Notebook or Python script, optionally using Pandas DataFrames.
 * **Cloud Native** our lightweight Helm chart allows for installations on any cloud provider or private-cloud setting 

@@ -48,15 +48,22 @@ logging:
     at.tuwien.: "${LOG_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
+  datacite:
+    url: "${DATACITE_URL:https://api.datacite.org}"
+    prefix: "${DATACITE_PREFIX}"
+    username: "${DATACITE_USERNAME}"
+    password: "${DATACITE_PASSWORD}"
   endpoints:
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
-    searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
-    dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
-    brokerService: "${BROKER_SERVICE_ENDPOINT:http://broker-service:15672}"
     authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
-    storageService: "${S3_ENDPOINT:http://storage-service:9000}"
-    rorService: "${ROR_ENDPOINT:https://api.ror.org}"
+    brokerService: "${BROKER_SERVICE_ENDPOINT:http://broker-service:15672}"
     crossRefService: "${CROSSREF_ENDPOINT:http://data.crossref.org}"
+    dashboardService: "${DASHBOARD_SERVICE_ENDPOINT:http://dashboard-service:8080}"
+    doiService: "${DOI_ENDPOINT:https://doi.org}"
+    dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
+    rorService: "${ROR_ENDPOINT:https://api.ror.org}"
+    searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
+    storageService: "${S3_ENDPOINT:http://storage-service:9000}"
   s3:
     accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"

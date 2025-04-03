@@ -166,7 +166,7 @@ export default {
       if (!this.view) {
         return false
       }
-      if (this.view.is_public) {
+      if (this.database.is_public || this.database.is_schema_public) {
         return true
       }
       if (!this.access) {
