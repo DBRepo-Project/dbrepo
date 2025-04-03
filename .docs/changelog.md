@@ -11,6 +11,11 @@ author: Martin Weise
 * Added automated dashboard generation for all public databases where each view has an overview of its data and
   schema in [#460](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/460).
 
+#### Changes
+
+* Removed OpenSearch security plugin from the Docker test deployment and changed to the `bitnami/opensearch` image
+  of the same version in [#515](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/515).
+
 #### Fixes
 
 * Fixed a bug where validation of missing `Principal` object in Java services caused a 400 error instead of a 401 error

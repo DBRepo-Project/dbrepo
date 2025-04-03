@@ -276,26 +276,16 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: dbrepo-search-db:latest
-    build:
-      context: ./dbrepo-search-db
-      network: host
+    image: docker.io/bitnami/opensearch:2.10.0
+    ports:
+      - "9200:9200"
     healthcheck:
-      test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
+      test: curl -sSL 127.0.0.1:9200
       interval: 10s
       timeout: 5s
       retries: 12
-    environment:
-      ES_JAVA_OPTS: "-Xms4g -Xmx4g"
-      logger.level: "WARN"
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-    ports:
-      - "9200:9200"
     volumes:
-      - search-db-data:/usr/share/elasticsearch/data
+      - search-db-data:/bitnami/opensearch/data
     logging:
       driver: json-file
 
@@ -318,8 +308,6 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${SYSTEM_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
@@ -434,8 +422,6 @@ services:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${SYSTEM_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${SYSTEM_PASSWORD:-admin}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     depends_on:

@@ -23,19 +23,13 @@ class SearchServiceClient:
     """
     instance: OpenSearch = None
 
-    def __init__(self, host: str = None, port: int = None, username: str = None, password: str = None):
+    def __init__(self, host: str = None, port: int = 9000, username: str = None, password: str = None):
         if host is None:
             host = 'search-db'
         self.host = os.getenv('OPENSEARCH_HOST', host)
         self.metadata_endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://metadata-service:8080')
-        if username is None:
-            username = 'admin'
         self.username = os.getenv('OPENSEARCH_USERNAME', username)
-        if password is None:
-            password = 'admin'
         self.password = os.getenv('OPENSEARCH_PASSWORD', password)
-        if port is None:
-            port = 9200
         self.port = int(os.getenv('OPENSEARCH_PORT', port))
         self.system_username = os.getenv('SYSTEM_USERNAME', 'admin')
         self.system_password = os.getenv('SYSTEM_PASSWORD', 'admin')
