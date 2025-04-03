@@ -28,6 +28,7 @@ opensearch-py = "*"
 coverage = "*"
 pytest = "*"
 requests-mock = "*"
+testcontainers-minio = "*"
 
 [requires]
 python_version = "3.11"
