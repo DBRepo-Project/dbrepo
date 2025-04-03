@@ -30,7 +30,7 @@ data:
             autoindex_localtime     on;
         }
 
-        location /dashboard/ {
+        location /dashboard {
             rewrite  ^/dashboard/(.*)  /$1 break;
             proxy_set_header        Host $http_host;
             proxy_set_header        X-Real-IP $remote_addr;

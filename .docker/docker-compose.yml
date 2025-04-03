@@ -535,10 +535,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: dbrepo-dashboard-ui:latest
-    build:
-      context: ./dbrepo-dashboard-ui
-      network: host
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-ui:1.8.0
     ports:
       - "3000:3000"
     volumes:
