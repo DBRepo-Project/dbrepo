@@ -1,12 +1,12 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.tuwien.config.S3Config;
-import at.tuwien.exception.MalformedException;
-import at.tuwien.exception.StorageNotFoundException;
-import at.tuwien.exception.StorageUnavailableException;
-import at.tuwien.exception.TableMalformedException;
-import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.Dataset;
@@ -31,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.*;
@@ -48,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class StorageServiceIntegrationTest extends AbstractUnitTest {
+public class StorageServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private StorageService storageService;
@@ -84,7 +85,6 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* s3 */
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
@@ -231,6 +231,35 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
                 .toList();
         assertEquals(1, lines.size());
         assertEquals("", lines.get(0));
+    }
+
+    @Test
+    public void deleteStaleObjects_none_succeeds() {
+
+        /* mock */
+        s3Client.putObject(PutObjectRequest.builder()
+                .key("s3key")
+                .bucket(s3Config.getS3Bucket())
+                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
+
+        /* test */
+        storageService.deleteStaleObjects();
+        assertEquals(1, s3Client.listObjects(ListObjectsRequest.builder().bucket(s3Config.getS3Bucket()).build()).contents().size());
+    }
+
+    @Test
+    public void deleteStaleObjects_succeeds() throws InterruptedException {
+
+        /* mock */
+        s3Client.putObject(PutObjectRequest.builder()
+                .key("s3key")
+                .bucket(s3Config.getS3Bucket())
+                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
+
+        /* test */
+        Thread.sleep(4000);
+        storageService.deleteStaleObjects();
+        assertEquals(0, s3Client.listObjects(ListObjectsRequest.builder().bucket(s3Config.getS3Bucket()).build()).contents().size());
     }
 
     @ParameterizedTest

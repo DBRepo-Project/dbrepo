@@ -1,0 +1,43 @@
+tags:
+  - dashboard-endpoint
+summary: "Update dashboard"
+operationId: update_dashboard
+description: "Updates a dashboard in the Dashboard UI. Requires role `system`."
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - name: uid
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+  - name: "body"
+    in: "body"
+    required: true
+    schema:
+      type: object
+responses:
+  202:
+    description: Updated dashboard successfully
+    content:
+      application/json:
+        schema:
+          type: object
+  404:
+    description: "Dashboard not found"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+  500:
+    description: "Unexpected system error"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]

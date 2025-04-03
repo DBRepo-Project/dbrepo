@@ -1,10 +1,10 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.CreateAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.CacheService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,25 +1,23 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.container.image.OperatorDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.FilterDto;
-import at.tuwien.api.database.query.FilterTypeDto;
-import at.tuwien.api.database.query.OrderDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TupleDeleteDto;
-import at.tuwien.api.database.table.TupleDto;
-import at.tuwien.api.database.table.TupleUpdateDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.OperatorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.OrderDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.utils.MariaDbUtil;
-import org.jooq.Record;
 import org.jooq.*;
+import org.jooq.Record;
 import org.jooq.conf.ParamType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
@@ -317,7 +315,7 @@ public interface MariaDbMapper {
     }
 
     default String tableCreateDtoToCreateTableRawQuery(String databaseName,
-                                                       at.tuwien.api.database.table.internal.TableCreateDto data) {
+                                                       at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto data) {
         final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
                 .append(databaseName)
                 .append("`.`")
@@ -895,15 +893,30 @@ public interface MariaDbMapper {
     }
 
     default String subsetDtoToRawQuery(DSLContext context, DatabaseDto database, SubsetDto data)
-            throws TableNotFoundException, ImageNotFoundException {
-        final TableDto table = tableIdToTableDto(database, data.getTableId());
-        final List<Field<Object>> columns = table.getColumns()
-                .stream()
-                .filter(c -> data.getColumns().contains(c.getId()))
-                .map(c -> field(name(c.getInternalName())))
-                .toList();
+            throws TableNotFoundException, ImageNotFoundException, ViewNotFoundException {
+        final String datasourceName;
+        final List<Field<Object>> columns = switch (data.getDatasourceType()) {
+            case TABLE -> {
+                final TableDto table = tableIdToTableDto(database, data.getDatasourceId());
+                datasourceName = table.getInternalName();
+                yield table.getColumns()
+                        .stream()
+                        .filter(c -> data.getColumns().contains(c.getId()))
+                        .map(c -> field(name(c.getInternalName())))
+                        .toList();
+            }
+            case VIEW -> {
+                final ViewDto view = viewIdToViewDto(database, data.getDatasourceId());
+                datasourceName = view.getInternalName();
+                yield view.getColumns()
+                        .stream()
+                        .filter(c -> data.getColumns().contains(c.getId()))
+                        .map(c -> field(name(c.getInternalName())))
+                        .toList();
+            }
+        };
         final SelectJoinStep<Record> query = context.select(columns)
-                .from(name(table.getInternalName()));
+                .from(name(datasourceName));
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
         final String sql;
         if (data.getOrder() == null) {
@@ -968,6 +981,19 @@ public interface MariaDbMapper {
             log.error("Failed to find table with id: {}", tableId);
             log.trace("known table ids: {}", database.getTables().stream().map(TableDto::getId).collect(Collectors.toList()));
             throw new TableNotFoundException("Failed to find table id: " + tableId);
+        }
+        return optional.get();
+    }
+
+    default ViewDto viewIdToViewDto(DatabaseDto database, UUID viewId) throws ViewNotFoundException {
+        final Optional<ViewDto> optional = database.getViews()
+                .stream()
+                .filter(v -> v.getId().equals(viewId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find view with id: {}", viewId);
+            log.trace("known view ids: {}", database.getViews().stream().map(ViewDto::getId).collect(Collectors.toList()));
+            throw new ViewNotFoundException("Failed to find view id: " + viewId);
         }
         return optional.get();
     }

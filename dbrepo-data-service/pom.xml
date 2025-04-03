@@ -16,7 +16,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.7.3</version>
+    <version>1.8.0</version>
 
     <description>Service that manages the data</description>
 
@@ -28,7 +28,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -94,39 +94,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
+            <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+            <artifactId>dbrepo-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
-            <version>${spring-cloud.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <!-- Spark -->
         <dependency>
@@ -166,13 +140,12 @@
             <artifactId>hadoop-aws</artifactId>
             <version>${hadoop.version}</version>
         </dependency>
-        <!-- Open API -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-            <version>${springdoc-openapi.version}</version>
-        </dependency>
         <!-- Data Source -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${mariadb.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -203,12 +176,6 @@
             <version>${micrometer.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- IDE -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>compile</scope>
-        </dependency>
         <!-- Mapping -->
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -220,11 +187,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson-datatype.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -252,28 +214,11 @@
             <artifactId>keycloak-admin-client</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-hibernate6</artifactId>
-            <version>${jackson-datatype.version}</version>
-        </dependency>
         <!-- Authentication -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${jwt.version}</version>
-        </dependency>
-        <!-- DTOs -->
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- Exceptions -->
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-repositories</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- AMPQ -->
         <dependency>
@@ -293,19 +238,8 @@
         </dependency>
         <!-- Testing -->
         <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-entities</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -378,7 +312,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!-- Note config is repeated in scalatest config -->
                 <configuration>
-                    <argLine>@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g -XX:ReservedCodeCacheSize=${CodeCacheSize}
+                    <argLine>@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g
+                        -XX:ReservedCodeCacheSize=${CodeCacheSize}
                         ${extraJavaTestArgs}
                     </argLine>
                 </configuration>

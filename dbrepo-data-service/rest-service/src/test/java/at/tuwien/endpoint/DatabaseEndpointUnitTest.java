@@ -1,17 +1,16 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.tuwien.endpoints.DatabaseEndpoint;
-import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.ContainerService;
 import at.tuwien.service.CacheService;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class DatabaseEndpointUnitTest extends AbstractUnitTest {
+public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
@@ -50,11 +49,6 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @MockBean
     private CacheService credentialService;
 
-    @BeforeEach
-    public void beforeEach() {
-        genesis();
-    }
-
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
@@ -68,7 +62,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
         doNothing()
                 .when(accessService)
                 .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
@@ -90,7 +84,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
         doNothing()
                 .when(accessService)
                 .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
@@ -148,7 +142,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(QueryStoreCreateException.class)
                 .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {

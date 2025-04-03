@@ -1,6 +1,6 @@
 package at.tuwien.utils;
 
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 
 import java.util.List;
 

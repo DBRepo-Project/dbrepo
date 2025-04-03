@@ -1,0 +1,55 @@
+tags:
+  - dashboard-endpoint
+summary: "Create dashboard"
+operationId: create_dashboard
+description: "Creates a dashboard in the Dashboard UI. Requires role `system`."
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: "body"
+    name: "body"
+    required: true
+    schema:
+      required:
+        - is_public
+        - is_schema_public
+        - database_name
+        - owner_username
+      type: object
+      properties:
+        is_public:
+          type: boolean
+          example: True
+        is_schema_public:
+          type: boolean
+          example: True
+        database_name:
+          type: string
+          example: "some_database"
+        owner_username:
+          type: string
+          example: "foobar"
+responses:
+  201:
+    description: Created dashboard successfully
+    content:
+      application/json:
+        schema:
+          type: object
+  409:
+    description: "Dashboard exists with same name"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+  500:
+    description: "Unexpected system error"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]

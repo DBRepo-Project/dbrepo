@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 
 import java.sql.SQLException;
 import java.util.Map;

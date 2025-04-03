@@ -1,6 +1,6 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.user.UserDetailsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDetailsDto;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.security.core.Authentication;

@@ -13,12 +13,12 @@ RUN pip install pipenv && \
     pipenv install gunicorn && \
     pipenv install --system --deploy
 
-USER 1001
+RUN adduser -D dbrepo --uid 1001
 
 WORKDIR /app
 
-COPY --chown=1001 ./init/clients ./clients
-COPY --chown=1001 ./init/omlib ./omlib
+USER 1001
+
 COPY --chown=1001 ./init/friendly_names_overrides.json ./friendly_names_overrides.json
 COPY --chown=1001 ./os-yml ./os-yml
 COPY --chown=1001 ./app.py ./app.py

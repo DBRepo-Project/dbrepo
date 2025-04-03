@@ -45,6 +45,19 @@ cache the connection details from the [Metadata Service](../metadata-service) su
 everytime e.g. a sensor measurement is inserted. By default, this information is stored for 60 minutes. System
 administrators can disable this behavior by setting `CREDENTIAL_CACHE_TIMEOUT=0` (cache is deleted after 0 seconds).
 
+
+## Storage
+
+The Data Service also is capable to upload files to the S3 backend. The default limit 
+of [`Tomcat`](https://spring.io/guides/gs/uploading-files#_tuning_file_upload_limits) in Spring Boot is configured to be
+`2GB`. You can provide your own limit with setting `MAX_UPLOAD_SIZE`.
+
+By default, the Data Service removes datasets older than 24 hours on a regular basis every 60 minutes. You can set the
+`MAX_AGE` (in seconds) and `S3_STALE_CRON` to fit your use-case. You can disable this feature by setting `S3_STALE_CRON`
+to `-`, this may lead to storage issues as no space will be available inevitably. Note 
+that [Spring Boot uses its own flavor](https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions#usage)
+of cron syntax.
+
 ## Limitations
 
 * Views in DBRepo can only have 63-character length (it is assumed only internal views have the maximum length of 64

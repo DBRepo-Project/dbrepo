@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: Database Repository Data Service API
   description: Service that manages the data
@@ -8,10 +8,10 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: 1.7.3
+  version: 1.8.0
 externalDocs:
   description: Sourcecode Documentation
-  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7.3/system-services-metadata/
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8.0/system-services-metadata/
 servers:
 - url: http://localhost
   description: Development instance
@@ -63,20 +63,35 @@ paths:
         schema:
           type: string
       responses:
-        "406":
-          description: Failed to format data
+        "200":
+          description: Retrieved view data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+              schema:
+                type: string
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiErrorDto"
+                type: string
+            text/csv: {}
         "400":
           description: Request pagination is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "409":
-          description: View schema could not be mapped
+        "403":
+          description: Not allowed to retrieve view data
           content:
             application/json:
               schema:
@@ -87,30 +102,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "406":
+          description: Failed to format data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Retrieved view data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              required: true
-              style: simple
+        "409":
+          description: View schema could not be mapped
           content:
             application/json:
               schema:
-                type: string
-            text/csv: {}
-        "403":
-          description: Not allowed to retrieve view data
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -162,20 +167,35 @@ paths:
         schema:
           type: string
       responses:
-        "406":
-          description: Failed to format data
+        "200":
+          description: Retrieved view data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+              schema:
+                type: string
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiErrorDto"
+                type: string
+            text/csv: {}
         "400":
           description: Request pagination is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "409":
-          description: View schema could not be mapped
+        "403":
+          description: Not allowed to retrieve view data
           content:
             application/json:
               schema:
@@ -186,30 +206,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "406":
+          description: Failed to format data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Retrieved view data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              required: true
-              style: simple
+        "409":
+          description: View schema could not be mapped
           content:
             application/json:
               schema:
-                type: string
-            text/csv: {}
-        "403":
-          description: Not allowed to retrieve view data
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -264,8 +274,35 @@ paths:
         schema:
           type: string
       responses:
-        "406":
-          description: Failed to format data
+        "200":
+          description: Get table data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+              schema:
+                type: string
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
+              schema:
+                type: integer
+                format: int64
+          content:
+            application/json:
+              schema:
+                type: string
+            text/csv: {}
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to get table data
           content:
             application/json:
               schema:
@@ -276,30 +313,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Get table data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              required: true
-              style: simple
-          content:
-            application/json:
-              schema:
-                type: string
-            text/csv: {}
-        "403":
-          description: Not allowed to get table data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Request pagination or table data select query is malformed
+        "406":
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -346,6 +361,14 @@ paths:
               $ref: "#/components/schemas/TupleUpdateDto"
         required: true
       responses:
+        "202":
+          description: Updated table data
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Update table data not allowed
           content:
@@ -354,14 +377,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Updated table data
-        "400":
-          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
@@ -408,15 +423,16 @@ paths:
               $ref: "#/components/schemas/TupleDto"
         required: true
       responses:
-        "403":
-          description: Create table data not allowed
+        "201":
+          description: Created table data
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service or
-            storage service
+        "403":
+          description: Create table data not allowed
           content:
             application/json:
               schema:
@@ -428,10 +444,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "201":
-          description: Created table data
-        "400":
-          description: Request pagination or table data select query is malformed
+        "503":
+          description: Failed to establish connection with the metadata service or
+            storage service
           content:
             application/json:
               schema:
@@ -472,12 +487,6 @@ paths:
               $ref: "#/components/schemas/TupleDeleteDto"
         required: true
       responses:
-        "404":
-          description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Deleted table data
         "400":
@@ -486,14 +495,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "403":
+          description: Delete table data not allowed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Delete table data not allowed
+        "404":
+          description: Failed to find table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -547,8 +562,35 @@ paths:
         schema:
           type: string
       responses:
-        "406":
-          description: Failed to format data
+        "200":
+          description: Get table data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+              schema:
+                type: string
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
+              schema:
+                type: integer
+                format: int64
+          content:
+            application/json:
+              schema:
+                type: string
+            text/csv: {}
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to get table data
           content:
             application/json:
               schema:
@@ -559,30 +601,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Get table data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              required: true
-              style: simple
-          content:
-            application/json:
-              schema:
-                type: string
-            text/csv: {}
-        "403":
-          description: Not allowed to get table data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Request pagination or table data select query is malformed
+        "406":
+          description: Failed to format data
           content:
             application/json:
               schema:
@@ -643,8 +663,53 @@ paths:
           type: integer
           format: int64
       responses:
+        "200":
+          description: Retrieved subset data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Reverse proxy exposing of custom headers
+              required: true
+              style: simple
+              schema:
+                type: string
+            X-Count:
+              description: Number of rows
+              style: simple
+              schema:
+                type: string
+                format: uuid
+            X-Id:
+              description: The subset id
+              required: true
+              style: simple
+              schema:
+                type: string
+                format: uuid
+            X-Headers:
+              description: The list of headers separated by comma
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+            text/csv: {}
+        "400":
+          description: Invalid pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to retrieve subset data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -655,43 +720,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Retrieved subset data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Reverse proxy exposing of custom headers
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              style: simple
-            X-Id:
-              description: The subset id
-              required: true
-              style: simple
-            X-Headers:
-              description: The list of headers separated by comma
-              style: simple
-          content:
-            application/json:
-              schema:
-                type: string
-            text/csv: {}
         "503":
           description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Invalid pagination
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
           content:
             application/json:
               schema:
@@ -745,8 +775,53 @@ paths:
           type: integer
           format: int64
       responses:
+        "200":
+          description: Retrieved subset data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Reverse proxy exposing of custom headers
+              required: true
+              style: simple
+              schema:
+                type: string
+            X-Count:
+              description: Number of rows
+              style: simple
+              schema:
+                type: string
+                format: uuid
+            X-Id:
+              description: The subset id
+              required: true
+              style: simple
+              schema:
+                type: string
+                format: uuid
+            X-Headers:
+              description: The list of headers separated by comma
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+            text/csv: {}
+        "400":
+          description: Invalid pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to retrieve subset data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -757,43 +832,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Retrieved subset data
-          headers:
-            Access-Control-Expose-Headers:
-              description: Reverse proxy exposing of custom headers
-              required: true
-              style: simple
-            X-Count:
-              description: Number of rows
-              style: simple
-            X-Id:
-              description: The subset id
-              required: true
-              style: simple
-            X-Headers:
-              description: The list of headers separated by comma
-              style: simple
-          content:
-            application/json:
-              schema:
-                type: string
-            text/csv: {}
         "503":
           description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Invalid pagination
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
           content:
             application/json:
               schema:
@@ -828,8 +868,27 @@ paths:
               $ref: "#/components/schemas/QueryPersistDto"
         required: true
       responses:
+        "202":
+          description: Persisted subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryDto"
         "400":
           description: Malformed select query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to persist subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -842,25 +901,6 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "503":
           description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Not allowed to persist subset
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Persisted subset
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QueryDto"
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
           content:
             application/json:
               schema:
@@ -880,13 +920,13 @@ paths:
         content:
           application/json:
             schema:
-              required:
-              - file
               type: object
               properties:
                 file:
                   type: string
                   format: binary
+              required:
+              - file
         required: true
       responses:
         "201":
@@ -939,22 +979,22 @@ paths:
               $ref: "#/components/schemas/ImportDto"
         required: true
       responses:
+        "202":
+          description: Imported dataset successfully
         "400":
           description: Dataset and/or query are malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Imported dataset successfully
-        "404":
-          description: Failed to find table in metadata database
+        "403":
+          description: Import table dataset not allowed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Import table dataset not allowed
+        "404":
+          description: Failed to find table in metadata database
           content:
             application/json:
               schema:
@@ -1000,12 +1040,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/QueryDto"
-        "503":
-          description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to find subsets
           content:
@@ -1015,6 +1049,12 @@ paths:
         "404":
           description: Failed to find database in metadata database or query in query
             store of the data database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
@@ -1063,8 +1103,27 @@ paths:
               $ref: "#/components/schemas/SubsetDto"
         required: true
       responses:
+        "201":
+          description: Created subset
+          content:
+            application/json:
+              schema:
+                type: string
         "400":
           description: Malformed select query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to find subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -1081,33 +1140,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Not allowed to find subset
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to communicate with database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "501":
           description: Failed to execute query as it contains non-supported keywords
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "201":
-          description: Created subset
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
@@ -1144,12 +1184,6 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Failed to find table history in data database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Found table history
           content:
@@ -1158,14 +1192,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TableHistoryDto"
+        "400":
+          description: "Invalid pagination size request, must be > 0"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Find table history not allowed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: "Invalid pagination size request, must be > 0"
+        "404":
+          description: Failed to find table history in data database
           content:
             application/json:
               schema:
@@ -1210,6 +1250,13 @@ paths:
           type: string
           format: date-time
       responses:
+        "200":
+          description: Found subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryDto"
+            text/csv: {}
         "400":
           description: Malformed select query
           content:
@@ -1218,6 +1265,13 @@ paths:
                 $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to find subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -1234,35 +1288,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Found subset
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QueryDto"
-            text/csv: {}
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - basicAuth: []
       - bearerAuth: []
 components:
   schemas:
     ApiErrorDto:
-      required:
-      - code
-      - message
-      - status
       type: object
       properties:
         status:
           type: string
-          example: NOT_FOUND
           enum:
           - 100 CONTINUE
           - 101 SWITCHING_PROTOCOLS
@@ -1333,46 +1368,44 @@ components:
           - 509 BANDWIDTH_LIMIT_EXCEEDED
           - 510 NOT_EXTENDED
           - 511 NETWORK_AUTHENTICATION_REQUIRED
+          example: NOT_FOUND
         message:
           type: string
           example: Error message
         code:
           type: string
           example: error.service.code
-    TupleUpdateDto:
       required:
-      - data
-      - keys
+      - code
+      - message
+      - status
+    TupleUpdateDto:
       type: object
       properties:
         data:
           type: object
           additionalProperties:
             type: object
-            example:
-              key: value
           example:
             key: value
         keys:
           type: object
           additionalProperties:
             type: object
-            example:
-              id: 1
           example:
             id: 1
-    QueryPersistDto:
       required:
-      - persist
+      - data
+      - keys
+    QueryPersistDto:
       type: object
       properties:
         persist:
           type: boolean
           example: true
-    CreatorBriefDto:
       required:
-      - creator_name
-      - id
+      - persist
+    CreatorBriefDto:
       type: object
       properties:
         id:
@@ -1387,43 +1420,35 @@ components:
           example: "Carberry, Josiah"
         name_type:
           type: string
-          example: Personal
           enum:
           - Personal
           - Organizational
+          example: Personal
         name_identifier:
           type: string
           example: 0000-0002-1825-0097
         name_identifier_scheme:
           type: string
-          example: ORCID
           enum:
           - ORCID
           - ROR
           - ISNI
           - GRID
+          example: ORCID
         affiliation_identifier:
           type: string
           example: https://ror.org/05gq02987
         affiliation_identifier_scheme:
           type: string
-          example: ROR
           enum:
           - ROR
           - GRID
           - ISNI
-    IdentifierBriefDto:
+          example: ROR
       required:
-      - creators
-      - database_id
-      - descriptions
+      - creator_name
       - id
-      - owned_by
-      - publication_year
-      - publisher
-      - status
-      - titles
-      - type
+    IdentifierBriefDto:
       type: object
       properties:
         id:
@@ -1432,12 +1457,12 @@ components:
           example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
         type:
           type: string
-          example: database
           enum:
           - database
           - subset
           - table
           - view
+          example: database
         creators:
           type: array
           items:
@@ -1458,10 +1483,10 @@ components:
           example: TU Wien
         status:
           type: string
-          example: draft
           enum:
           - draft
           - published
+          example: draft
         database_id:
           type: string
           format: uuid
@@ -1469,12 +1494,15 @@ components:
         query_id:
           type: string
           format: uuid
+          example: 1
         table_id:
           type: string
           format: uuid
+          example: 1
         view_id:
           type: string
           format: uuid
+          example: 1
         publication_year:
           type: integer
           format: int32
@@ -1483,9 +1511,18 @@ components:
           type: string
           format: uuid
           example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
-    IdentifierDescriptionDto:
       required:
+      - creators
+      - database_id
+      - descriptions
       - id
+      - owned_by
+      - publication_year
+      - publisher
+      - status
+      - titles
+      - type
+    IdentifierDescriptionDto:
       type: object
       properties:
         id:
@@ -1497,7 +1534,6 @@ components:
           example: "Air quality reports at Stephansplatz, Vienna"
         language:
           type: string
-          example: en
           enum:
           - ab
           - aa
@@ -1683,9 +1719,9 @@ components:
           - yo
           - za
           - zu
+          example: en
         type:
           type: string
-          example: Abstract
           enum:
           - Abstract
           - Methods
@@ -1693,9 +1729,10 @@ components:
           - TableOfContents
           - TechnicalInfo
           - Other
-    IdentifierTitleDto:
+          example: Abstract
       required:
       - id
+    IdentifierTitleDto:
       type: object
       properties:
         id:
@@ -1707,7 +1744,6 @@ components:
           example: Airquality Demonstrator
         language:
           type: string
-          example: en
           enum:
           - ab
           - aa
@@ -1893,6 +1929,7 @@ components:
           - yo
           - za
           - zu
+          example: en
         type:
           type: string
           enum:
@@ -1900,17 +1937,9 @@ components:
           - Subtitle
           - TranslatedTitle
           - Other
-    QueryDto:
       required:
-      - database_id
-      - execution
       - id
-      - identifiers
-      - is_persisted
-      - owner
-      - query
-      - query_hash
-      - query_normalized
+    QueryDto:
       type: object
       properties:
         id:
@@ -1928,10 +1957,10 @@ components:
           example: SELECT `id` FROM `air_quality`
         type:
           type: string
-          example: query
           enum:
           - query
           - view
+          example: query
         identifiers:
           type: array
           items:
@@ -1956,10 +1985,17 @@ components:
           type: integer
           format: int64
           example: 1
-    UserBriefDto:
       required:
+      - database_id
+      - execution
       - id
-      - username
+      - identifiers
+      - is_persisted
+      - owner
+      - query
+      - query_hash
+      - query_normalized
+    UserBriefDto:
       type: object
       properties:
         id:
@@ -1985,10 +2021,10 @@ components:
         family_name:
           type: string
           example: Carberry
-    CreatorDto:
       required:
-      - creator_name
       - id
+      - username
+    CreatorDto:
       type: object
       properties:
         id:
@@ -2009,21 +2045,21 @@ components:
           example: "Carberry, Josiah"
         name_type:
           type: string
-          example: Personal
           enum:
           - Personal
           - Organizational
+          example: Personal
         name_identifier:
           type: string
           example: 0000-0002-1825-0097
         name_identifier_scheme:
           type: string
-          example: ORCID
           enum:
           - ORCID
           - ROR
           - ISNI
           - GRID
+          example: ORCID
         name_identifier_scheme_uri:
           type: string
           example: https://orcid.org/
@@ -2032,33 +2068,31 @@ components:
           example: https://ror.org/05gq02987
         affiliation_identifier_scheme:
           type: string
-          example: ROR
           enum:
           - ROR
           - GRID
           - ISNI
+          example: ROR
         affiliation_identifier_scheme_uri:
           type: string
           example: https://ror.org/
-    IdentifierDto:
       required:
-      - creators
-      - database_id
-      - descriptions
-      - funders
+      - creator_name
       - id
-      - language
-      - licenses
-      - links
-      - owner
-      - publication_year
-      - publisher
-      - query
-      - query_hash
-      - query_normalized
-      - status
-      - titles
-      - type
+    EnumDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
+        value:
+          type: string
+          example: 3
+      required:
+      - id
+      - value
+    IdentifierDto:
       type: object
       properties:
         id:
@@ -2069,12 +2103,12 @@ components:
           $ref: "#/components/schemas/LinksDto"
         type:
           type: string
-          example: database
           enum:
           - database
           - subset
           - table
           - view
+          example: database
         titles:
           type: array
           items:
@@ -2300,22 +2334,26 @@ components:
             $ref: "#/components/schemas/CreatorDto"
         status:
           type: string
-          example: draft
           enum:
           - draft
           - published
+          example: draft
         database_id:
           type: string
           format: uuid
+          example: null
         query_id:
           type: string
           format: uuid
+          example: null
         table_id:
           type: string
           format: uuid
+          example: null
         view_id:
           type: string
           format: uuid
+          example: null
         query_normalized:
           type: string
           example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
@@ -2346,10 +2384,25 @@ components:
           type: integer
           format: int32
           example: 2022
-    IdentifierFunderDto:
       required:
-      - funder_name
+      - creators
+      - database_id
+      - descriptions
+      - funders
       - id
+      - language
+      - licenses
+      - links
+      - owner
+      - publication_year
+      - publisher
+      - query
+      - query_hash
+      - query_normalized
+      - status
+      - titles
+      - type
+    IdentifierFunderDto:
       type: object
       properties:
         id:
@@ -2364,26 +2417,26 @@ components:
           example: http://doi.org/10.13039/501100000780
         funder_identifier_type:
           type: string
-          example: Crossref Funder ID
           enum:
           - Crossref Funder ID
           - ROR
           - GND
           - ISNI
           - Other
+          example: Crossref Funder ID
         scheme_uri:
           type: string
           example: http://doi.org/
         award_number:
           type: string
-          example: "824087"
+          example: 824087
         award_title:
           type: string
           example: EOSC-Life
-    LicenseDto:
       required:
-      - identifier
-      - uri
+      - funder_name
+      - id
+    LicenseDto:
       type: object
       properties:
         identifier:
@@ -2398,10 +2451,10 @@ components:
             \ preservation of copyright and license notices. Licensed works, modifications,\
             \ and larger works may be distributed under different terms and without\
             \ source code."
-    LinksDto:
       required:
-      - self
-      - self_html
+      - identifier
+      - uri
+    LinksDto:
       type: object
       properties:
         self:
@@ -2413,12 +2466,13 @@ components:
         self_html:
           type: string
           example: http://example.com
-    RelatedIdentifierDto:
+        dashboard_html:
+          type: string
+          example: http://example.com/d/defi2baxqawaod
       required:
-      - id
-      - relation
-      - type
-      - value
+      - self
+      - self_html
+    RelatedIdentifierDto:
       type: object
       properties:
         id:
@@ -2430,7 +2484,6 @@ components:
           example: 10.70124/dc4zh-9ce78
         type:
           type: string
-          example: DOI
           enum:
           - DOI
           - URL
@@ -2450,9 +2503,9 @@ components:
           - PURL
           - UPC
           - w3id
+          example: DOI
         relation:
           type: string
-          example: Cites
           enum:
           - IsCitedBy
           - Cites
@@ -2488,15 +2541,26 @@ components:
           - Requires
           - IsObsoletedBy
           - Obsoletes
-    ViewColumnDto:
+          example: Cites
       required:
-      - database_id
       - id
-      - internal_name
-      - is_null_allowed
-      - name
-      - ord
+      - relation
       - type
+      - value
+    SetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
+        value:
+          type: string
+          example: 3
+      required:
+      - id
+      - value
+    ViewColumnDto:
       type: object
       properties:
         id:
@@ -2504,10 +2568,10 @@ components:
           format: uuid
           example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
         name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: Given Name
+          maxLength: 64
+          minLength: 0
         size:
           type: integer
           format: int64
@@ -2517,10 +2581,20 @@ components:
           format: int64
           example: 0
         description:
-          maxLength: 2048
-          minLength: 0
           type: string
           example: Column comment
+          maxLength: 2048
+          minLength: 0
+        enums:
+          type: array
+          description: "enum values, only considered when type = ENUM"
+          items:
+            $ref: "#/components/schemas/EnumDto"
+        sets:
+          type: array
+          description: "enum values, only considered when type = ENUM"
+          items:
+            $ref: "#/components/schemas/SetDto"
         database_id:
           type: string
           format: uuid
@@ -2530,10 +2604,10 @@ components:
           format: int32
           example: 0
         internal_name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: given_name
+          maxLength: 64
+          minLength: 0
         index_length:
           type: integer
           format: int64
@@ -2544,7 +2618,6 @@ components:
           example: 255
         type:
           type: string
-          example: varchar
           enum:
           - char
           - varchar
@@ -2576,20 +2649,19 @@ components:
           - timestamp
           - time
           - year
+          example: varchar
         is_null_allowed:
           type: boolean
           example: false
-    ViewDto:
       required:
-      - columns
       - database_id
       - id
-      - identifiers
       - internal_name
+      - is_null_allowed
       - name
-      - owner
-      - query
-      - query_hash
+      - ord
+      - type
+    ViewDto:
       type: object
       properties:
         id:
@@ -2612,9 +2684,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ViewColumnDto"
+        created:
+          type: string
+          format: date-time
+          example: 2022-01-01 08:00:00.000
         last_retrieved:
           type: string
           format: date-time
+          example: 2025-01-23T12:09:01
         database_id:
           type: string
           format: uuid
@@ -2635,24 +2712,29 @@ components:
         query_hash:
           type: string
           example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-    TupleDto:
       required:
-      - data
+      - columns
+      - created
+      - database_id
+      - id
+      - identifiers
+      - internal_name
+      - name
+      - owner
+      - query
+      - query_hash
+    TupleDto:
       type: object
       properties:
         data:
           type: object
           additionalProperties:
             type: object
-            example:
-              key: value
           example:
             key: value
-    ImportDto:
       required:
-      - header
-      - location
-      - separator
+      - data
+    ImportDto:
       type: object
       properties:
         location:
@@ -2672,24 +2754,23 @@ components:
         line_termination:
           type: string
           example: \r\n
-    FilterDto:
       required:
-      - column_id
-      - operator_id
-      - type
-      - value
+      - header
+      - location
+      - separator
+    FilterDto:
       type: object
       properties:
         type:
           type: string
-          example: where
           enum:
           - where
           - or
           - and
+          example: where
         value:
           type: string
-          example: "1"
+          example: 1
         column_id:
           type: string
           format: uuid
@@ -2698,25 +2779,27 @@ components:
           type: string
           format: uuid
           example: 67c5b54d-2eb0-4f42-8dc1-a504562e9f32
-    OrderDto:
       required:
       - column_id
+      - operator_id
+      - type
+      - value
+    OrderDto:
       type: object
       properties:
         direction:
           type: string
-          example: asc
           enum:
           - asc
           - desc
+          example: asc
         column_id:
           type: string
           format: uuid
           example: e891ba86-0258-41a6-a8d9-ff58bc10b618
-    SubsetDto:
       required:
-      - columns
-      - table_id
+      - column_id
+    SubsetDto:
       type: object
       properties:
         columns:
@@ -2734,15 +2817,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OrderDto"
-        table_id:
+        datasource_id:
           type: string
           format: uuid
           example: f7df2a7d-4ade-4c78-97b0-7c744d0893c7
-    TableHistoryDto:
+        datasource_type:
+          type: string
+          enum:
+          - table
+          - view
       required:
-      - event
-      - timestamp
-      - total
+      - columns
+      - datasource_id
+      - datasource_type
+    TableHistoryDto:
       type: object
       properties:
         timestamp:
@@ -2751,27 +2839,29 @@ components:
           example: 2021-03-12T15:26:21Z
         event:
           type: string
-          example: INSERT
           enum:
           - insert
           - delete
+          example: INSERT
         total:
           type: integer
           format: int64
           example: 1
-    TupleDeleteDto:
       required:
-      - keys
+      - event
+      - timestamp
+      - total
+    TupleDeleteDto:
       type: object
       properties:
         keys:
           type: object
           additionalProperties:
             type: object
-            example:
-              id: 1
           example:
             id: 1
+      required:
+      - keys
   securitySchemes:
     basicAuth:
       type: http

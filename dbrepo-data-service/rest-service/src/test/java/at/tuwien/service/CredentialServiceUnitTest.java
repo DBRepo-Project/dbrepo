@@ -1,15 +1,15 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.impl.CacheServiceImpl;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class CredentialServiceUnitTest extends AbstractUnitTest {
+public class CredentialServiceUnitTest extends BaseTest {
 
     @Autowired
     private CacheServiceImpl credentialService;
@@ -37,7 +37,6 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* cache */
         credentialService.invalidateAll();
     }

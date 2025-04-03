@@ -1,7 +1,7 @@
 package at.tuwien.validation;
 
-import at.tuwien.exception.PaginationException;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.exception.PaginationException;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @AutoConfigureMockMvc
 @SpringBootTest
 @AutoConfigureObservability
-public class EndpointValidatorUnitTest extends AbstractUnitTest {
+public class EndpointValidatorUnitTest extends BaseTest {
 
     @Autowired
     private EndpointValidator endpointValidator;

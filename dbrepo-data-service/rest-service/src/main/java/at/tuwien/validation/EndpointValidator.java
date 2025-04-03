@@ -1,13 +1,13 @@
 package at.tuwien.validation;
 
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.FilterDto;
-import at.tuwien.api.database.query.FilterTypeDto;
-import at.tuwien.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
 import at.tuwien.endpoints.RestEndpoint;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.service.CacheService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

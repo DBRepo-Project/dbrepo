@@ -1,12 +1,12 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.DatabaseService;
@@ -51,7 +51,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public TableStatisticDto getStatistics(DatabaseDto database, TableDto table) throws SQLException, TableMalformedException,
+    public TableStatisticDto getStatistics(DatabaseDto database, String tableName) throws SQLException, TableMalformedException,
             TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -59,27 +59,30 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try {
             /* obtain statistic */
             final long start = System.currentTimeMillis();
-            final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(table.getColumns(), table.getInternalName());
+            final TableDto tmpTable = databaseService.inspectTable(database, tableName);
+            final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(tmpTable.getColumns(), tableName);
             if (query == null) {
-                log.debug("table {}.{} does not have columns that can be analysed for statistical properties", database.getInternalName(), table.getInternalName());
-                statistic = null;
-            } else {
-                final ResultSet resultSet = connection.prepareStatement(query)
-                        .executeQuery();
-                log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-                statistic = dataMapper.resultSetToTableStatistic(resultSet);
-                final TableDto tmpTable = databaseService.inspectTable(database, table.getInternalName());
-                statistic.setAvgRowLength(tmpTable.getAvgRowLength());
-                statistic.setDataLength(tmpTable.getDataLength());
-                statistic.setMaxDataLength(tmpTable.getMaxDataLength());
-                statistic.setRows(tmpTable.getNumRows());
-                /* add to statistic dto */
-                table.getColumns()
-                        .stream()
-                        .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
-                        .forEach(column -> statistic.getColumns().put(column.getInternalName(), new ColumnStatisticDto()));
-                log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
+                log.debug("table {}.{} does not have columns that can be analysed for statistical properties", database.getInternalName(), tableName);
+                return null;
             }
+            final ResultSet resultSet = connection.prepareStatement(query)
+                    .executeQuery();
+            statistic = dataMapper.resultSetToTableStatistic(resultSet);
+            statistic.setTotalColumns(Long.parseLong("" + tmpTable.getColumns()
+                    .size()));
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
+            statistic.setAvgRowLength(tmpTable.getAvgRowLength());
+            statistic.setDataLength(tmpTable.getDataLength());
+            statistic.setMaxDataLength(tmpTable.getMaxDataLength());
+            statistic.setTotalRows(tmpTable.getNumRows());
+            /* add to statistic dto */
+            tmpTable.getColumns()
+                    .stream()
+                    .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
+                    .forEach(column -> ColumnStatisticDto.builder()
+                            .name(column.getInternalName())
+                            .build());
+            log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to obtain column statistics: {}", e.getMessage());
@@ -168,7 +171,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public Long getCount(DatabaseDto database, TableDto table, Instant timestamp) throws SQLException,
+    public Long getCount(DatabaseDto database, String tableName, Instant timestamp) throws SQLException,
             QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -177,19 +180,19 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             /* find table data */
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            database.getInternalName(), table.getInternalName(), timestamp))
+                            database.getInternalName(), tableName, timestamp))
                     .executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to find row count from table {}.{}: {}", database, table.getInternalName(), e.getMessage());
-            throw new QueryMalformedException("Failed to find row count from table " + database + "." + table.getInternalName() + ": " + e.getMessage(), e);
+            log.error("Failed to find row count from table {}.{}: {}", database, tableName, e.getMessage());
+            throw new QueryMalformedException("Failed to find row count from table " + database + "." + tableName + ": " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        log.info("Find row count from table {}.{}", database.getInternalName(), table.getInternalName());
+        log.info("Find row count from table {}.{}", database.getInternalName(), tableName);
         return queryResult;
     }
 

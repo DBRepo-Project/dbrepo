@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.7.3
+  version: 1.8.0
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/'
 paths:
   /api/analyse/datatypes:
     get:
@@ -199,10 +199,15 @@ paths:
               description: Expose `X-Count` custom header
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of rows
               required: true
               style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -299,10 +304,15 @@ paths:
               description: Expose `X-Count` custom header
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of rows
               required: true
               style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -402,10 +412,15 @@ paths:
               description: Expose `X-Count` custom header
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of rows
               required: true
               style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -689,10 +704,15 @@ paths:
               description: Expose `X-Count` custom header
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of rows
               required: true
               style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -787,16 +807,26 @@ paths:
               description: Reverse proxy exposing of custom headers
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of rows
               style: simple
+              schema:
+                type: string
+                format: uuid
             X-Id:
               description: The subset id
               required: true
               style: simple
+              schema:
+                type: string
+                format: uuid
             X-Headers:
               description: The list of headers separated by comma
               style: simple
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -892,16 +922,26 @@ paths:
               description: Reverse proxy exposing of custom headers
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of rows
               style: simple
+              schema:
+                type: string
+                format: uuid
             X-Id:
               description: The subset id
               required: true
               style: simple
+              schema:
+                type: string
+                format: uuid
             X-Headers:
               description: The list of headers separated by comma
               style: simple
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -1023,13 +1063,13 @@ paths:
         content:
           application/json:
             schema:
-              required:
-                - file
               type: object
               properties:
                 file:
                   type: string
                   format: binary
+              required:
+                - file
         required: true
       responses:
         '201':
@@ -1558,10 +1598,15 @@ paths:
               description: Expose `X-Count` custom header
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of databases
               required: true
               style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -1575,7 +1620,7 @@ paths:
       description: >-
         Creates a database in the container with id. Requires roles
         `create-database`.
-      operationId: create_4
+      operationId: create1
       requestBody:
         content:
           application/json:
@@ -1659,10 +1704,15 @@ paths:
               description: Expose `X-Count` custom header
               required: true
               style: simple
+              schema:
+                type: string
             X-Count:
               description: Number of databases
               required: true
               style: simple
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -1723,7 +1773,7 @@ paths:
       description: >-
         Modifies access of a user with given id to database with given id.
         Requires role `update-database-access`.
-      operationId: update_5
+      operationId: update
       parameters:
         - name: databaseId
           in: path
@@ -1790,7 +1840,7 @@ paths:
       description: >-
         Give a user with given id access to some database with given id.
         Requires role `create-database-access`.
-      operationId: create_7
+      operationId: create_11
       parameters:
         - name: databaseId
           in: path
@@ -1985,7 +2035,7 @@ paths:
         - ontology-endpoint
       summary: Update ontology
       description: Updates an ontology with id. Requires role `update-ontology`.
-      operationId: update
+      operationId: update_1
       parameters:
         - name: ontologyId
           in: path
@@ -2048,7 +2098,7 @@ paths:
         - message-endpoint
       summary: Update message
       description: Updates a message with id. Requires role `update-maintenance-message`.
-      operationId: update_1
+      operationId: update_2
       parameters:
         - name: messageId
           in: path
@@ -2139,7 +2189,7 @@ paths:
       description: >-
         Updates container image in the metadata database. Requires role
         `modify-image`.
-      operationId: update_2
+      operationId: update_3
       parameters:
         - name: imageId
           in: path
@@ -2204,7 +2254,7 @@ paths:
       description: >-
         Finds an identifier with id. The response format depends on the HTTP
         `Accept` header set on the request.
-      operationId: find_7
+      operationId: find_5
       parameters:
         - name: identifierId
           in: path
@@ -2510,7 +2560,7 @@ paths:
         - view-endpoint
       summary: Get view
       description: Gets a view with id in the metadata database.
-      operationId: find_8
+      operationId: find_6
       parameters:
         - name: databaseId
           in: path
@@ -2553,7 +2603,7 @@ paths:
       description: >-
         Updates a view with id. This can only be performed by the view owner or
         database owner. Requires role `create-database-view`.
-      operationId: update_3
+      operationId: update_4
       parameters:
         - name: databaseId
           in: path
@@ -2684,7 +2734,7 @@ paths:
         `false`), then the user needs to have at least read access and the role
         `find-table`. When the `system` role is present, the endpoint responds
         with additional connection metadata in the header.
-      operationId: findById_2
+      operationId: findById_1
       parameters:
         - name: databaseId
           in: path
@@ -2725,7 +2775,7 @@ paths:
         - table-endpoint
       summary: Update table
       description: Updates a table in the database with id. Requires role `update-table`.
-      operationId: update_4
+      operationId: update_5
       parameters:
         - name: databaseId
           in: path
@@ -3170,10 +3220,8 @@ paths:
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  type: string
-                  format: byte
+                type: string
+                format: byte
         '404':
           description: Database or user could not be found
           content:
@@ -3244,13 +3292,69 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
+  '/api/database/{databaseId}/dashboard':
+    put:
+      tags:
+        - database-endpoint
+      summary: Update database dashboard uid
+      description: >-
+        Updates the dashboard uid for a database with given id. Only the
+        database owner can perform this operation. Requires role `system`.
+      operationId: modifyDashboard
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatabaseModifyDashboardDto'
+        required: true
+      responses:
+        '202':
+          description: Modify of dashboard uid was successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseBriefDto'
+        '400':
+          description: Malformed payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '502':
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '503':
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
   /api/ontology:
     get:
       tags:
         - ontology-endpoint
       summary: List ontologies
       description: Lists all ontologies known to the metadata database.
-      operationId: findAll_2
+      operationId: findAll
       responses:
         '200':
           description: List ontologies
@@ -3267,7 +3371,7 @@ paths:
       description: >-
         Creates an ontology in the metadata database. Requires role
         `create-ontology`.
-      operationId: create1
+      operationId: create_2
       requestBody:
         content:
           application/json:
@@ -3318,7 +3422,7 @@ paths:
       description: >-
         Creates a message in the metadata database. Requires role
         `create-maintenance-message`.
-      operationId: create_11
+      operationId: create_3
       requestBody:
         content:
           application/json:
@@ -3341,7 +3445,7 @@ paths:
         - image-endpoint
       summary: List images
       description: Lists all container images known to the metadata database.
-      operationId: findAll_3
+      operationId: findAll_1
       responses:
         '200':
           description: List images
@@ -3358,7 +3462,7 @@ paths:
       description: >-
         Creates a container image in the metadata database. Requires role
         `create-image`.
-      operationId: create_2
+      operationId: create_4
       requestBody:
         content:
           application/json:
@@ -3393,7 +3497,7 @@ paths:
         - identifier-endpoint
       summary: List identifiers
       description: Lists all identifiers known to the metadata database
-      operationId: findAll_4
+      operationId: findAll_2
       parameters:
         - name: type
           in: query
@@ -3450,7 +3554,9 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/IdentifierBriefDto'
             application/ld+json:
               schema:
                 type: array
@@ -3465,7 +3571,7 @@ paths:
         can only be created for objects the user has at least *READ* access in
         the associated database (requires role `create-identifier`) or for any
         object in any database (requires role `create-foreign-identifier`).
-      operationId: create_3
+      operationId: create_5
       requestBody:
         content:
           application/json:
@@ -3518,7 +3624,7 @@ paths:
         - view-endpoint
       summary: List views
       description: Lists views known to the metadata database.
-      operationId: findAll_5
+      operationId: findAll_3
       parameters:
         - name: databaseId
           in: path
@@ -3551,7 +3657,7 @@ paths:
       description: >-
         Creates a view. This can only be performed by the database owner.
         Requires role `create-database-view`.
-      operationId: create_5
+      operationId: create_6
       parameters:
         - name: databaseId
           in: path
@@ -3626,7 +3732,7 @@ paths:
         Lists all tables known to the metadata database. When a database has a
         hidden schema (i.e. when `is_schema_public` is `false`), then the user
         needs to have at least read access and the role `list-tables`.
-      operationId: list_4
+      operationId: list_3
       parameters:
         - name: databaseId
           in: path
@@ -3663,7 +3769,7 @@ paths:
         - table-endpoint
       summary: Create table
       description: Creates a table in the database with id. Requires role `create-table`.
-      operationId: create_6
+      operationId: create_7
       parameters:
         - name: databaseId
           in: path
@@ -3729,7 +3835,7 @@ paths:
         - container-endpoint
       summary: List containers
       description: List all containers in the metadata database.
-      operationId: findAll_6
+      operationId: findAll_4
       parameters:
         - name: limit
           in: query
@@ -3804,7 +3910,7 @@ paths:
         from the result list. If the optional query parameter `username` is
         present, the result list can be filtered by matching this exact
         username.
-      operationId: findAll
+      operationId: findAll_5
       parameters:
         - name: username
           in: query
@@ -3826,7 +3932,7 @@ paths:
         - unit-endpoint
       summary: List units
       description: Lists units known to the metadata database.
-      operationId: findAll_1
+      operationId: findAll_6
       responses:
         '200':
           description: Find all semantic units
@@ -3844,7 +3950,7 @@ paths:
       description: >-
         Finds semantic entities by label or uri in an ontology with id. Requires
         role `execute-semantic-query`.
-      operationId: find_5
+      operationId: find_7
       parameters:
         - name: ontologyId
           in: path
@@ -3903,7 +4009,7 @@ paths:
       tags:
         - metadata-endpoint
       summary: Get record
-      operationId: identify_1_1_1_1
+      operationId: identify
       parameters:
         - name: verb
           in: query
@@ -3916,14 +4022,16 @@ paths:
         '200':
           description: List containers
           content:
-            text/xml: {}
+            text/xml:
+              schema:
+                type: string
   '/api/message/message/{messageId}':
     get:
       tags:
         - message-endpoint
       summary: Find message
       description: Finds a message with id in the metadata database.
-      operationId: find_6
+      operationId: find_8
       parameters:
         - name: messageId
           in: path
@@ -3950,7 +4058,7 @@ paths:
         - license-endpoint
       summary: List licenses
       description: Lists licenses known to the metadata database.
-      operationId: list_3
+      operationId: list_4
       responses:
         '200':
           description: List of licenses
@@ -3994,7 +4102,7 @@ paths:
         - database-endpoint
       summary: Find database
       description: Finds a database with id.
-      operationId: findById_1
+      operationId: findById_2
       parameters:
         - name: databaseId
           in: path
@@ -4009,12 +4117,18 @@ paths:
             X-Username:
               description: The authentication username
               style: simple
+              schema:
+                type: string
             Access-Control-Expose-Headers:
               description: Expose custom headers
               style: simple
+              schema:
+                type: string
             X-Password:
               description: The authentication password
               style: simple
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -4432,13 +4546,22 @@ components:
           example: ','
           type: string
       type: object
+    ApiError:
+      properties:
+        code:
+          example: error.dashboard.create
+          type: string
+        message:
+          example: Message
+          type: string
+        status:
+          example: BAD_REQUEST
+          type: string
+      type: object
     ColumnAnalysisDto:
       properties:
         d:
           example: 4
-          type: integer
-        dfid:
-          example: null
           type: integer
         enums:
           example: null
@@ -4459,15 +4582,6 @@ components:
           example: decimal
           type: string
       type: object
-    ErrorDto:
-      properties:
-        message:
-          example: Message
-          type: string
-        success:
-          example: false
-          type: boolean
-      type: object
     KeysDto:
       properties:
         keys:
@@ -4481,15 +4595,10 @@ components:
         - keys
       type: object
     ApiErrorDto:
-      required:
-        - code
-        - message
-        - status
       type: object
       properties:
         status:
           type: string
-          example: NOT_FOUND
           enum:
             - 100 CONTINUE
             - 101 SWITCHING_PROTOCOLS
@@ -4560,46 +4669,44 @@ components:
             - 509 BANDWIDTH_LIMIT_EXCEEDED
             - 510 NOT_EXTENDED
             - 511 NETWORK_AUTHENTICATION_REQUIRED
+          example: NOT_FOUND
         message:
           type: string
           example: Error message
         code:
           type: string
           example: error.service.code
-    TupleUpdateDto:
       required:
-        - data
-        - keys
+        - code
+        - message
+        - status
+    TupleUpdateDto:
       type: object
       properties:
         data:
           type: object
           additionalProperties:
             type: object
-            example:
-              key: value
           example:
             key: value
         keys:
           type: object
           additionalProperties:
             type: object
-            example:
-              id: 1
           example:
             id: 1
-    QueryPersistDto:
       required:
-        - persist
+        - data
+        - keys
+    QueryPersistDto:
       type: object
       properties:
         persist:
           type: boolean
           example: true
-    CreatorBriefDto:
       required:
-        - creator_name
-        - id
+        - persist
+    CreatorBriefDto:
       type: object
       properties:
         id:
@@ -4614,43 +4721,35 @@ components:
           example: 'Carberry, Josiah'
         name_type:
           type: string
-          example: Personal
           enum:
             - Personal
             - Organizational
+          example: Personal
         name_identifier:
           type: string
           example: 0000-0002-1825-0097
         name_identifier_scheme:
           type: string
-          example: ORCID
           enum:
             - ORCID
             - ROR
             - ISNI
             - GRID
+          example: ORCID
         affiliation_identifier:
           type: string
           example: 'https://ror.org/05gq02987'
         affiliation_identifier_scheme:
           type: string
-          example: ROR
           enum:
             - ROR
             - GRID
             - ISNI
-    IdentifierBriefDto:
+          example: ROR
       required:
-        - creators
-        - database_id
-        - descriptions
+        - creator_name
         - id
-        - owned_by
-        - publication_year
-        - publisher
-        - status
-        - titles
-        - type
+    IdentifierBriefDto:
       type: object
       properties:
         id:
@@ -4659,12 +4758,12 @@ components:
           example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
         type:
           type: string
-          example: database
           enum:
             - database
             - subset
             - table
             - view
+          example: database
         creators:
           type: array
           items:
@@ -4685,10 +4784,10 @@ components:
           example: TU Wien
         status:
           type: string
-          example: draft
           enum:
             - draft
             - published
+          example: draft
         database_id:
           type: string
           format: uuid
@@ -4696,12 +4795,15 @@ components:
         query_id:
           type: string
           format: uuid
+          example: 1
         table_id:
           type: string
           format: uuid
+          example: 1
         view_id:
           type: string
           format: uuid
+          example: 1
         publication_year:
           type: integer
           format: int32
@@ -4710,9 +4812,18 @@ components:
           type: string
           format: uuid
           example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
-    IdentifierDescriptionDto:
       required:
+        - creators
+        - database_id
+        - descriptions
         - id
+        - owned_by
+        - publication_year
+        - publisher
+        - status
+        - titles
+        - type
+    IdentifierDescriptionDto:
       type: object
       properties:
         id:
@@ -4724,7 +4835,6 @@ components:
           example: 'Air quality reports at Stephansplatz, Vienna'
         language:
           type: string
-          example: en
           enum:
             - ab
             - aa
@@ -4910,9 +5020,9 @@ components:
             - yo
             - za
             - zu
+          example: en
         type:
           type: string
-          example: Abstract
           enum:
             - Abstract
             - Methods
@@ -4920,9 +5030,10 @@ components:
             - TableOfContents
             - TechnicalInfo
             - Other
-    IdentifierTitleDto:
+          example: Abstract
       required:
         - id
+    IdentifierTitleDto:
       type: object
       properties:
         id:
@@ -4934,7 +5045,6 @@ components:
           example: Airquality Demonstrator
         language:
           type: string
-          example: en
           enum:
             - ab
             - aa
@@ -5120,6 +5230,7 @@ components:
             - yo
             - za
             - zu
+          example: en
         type:
           type: string
           enum:
@@ -5127,17 +5238,9 @@ components:
             - Subtitle
             - TranslatedTitle
             - Other
-    QueryDto:
       required:
-        - database_id
-        - execution
         - id
-        - identifiers
-        - is_persisted
-        - owner
-        - query
-        - query_hash
-        - query_normalized
+    QueryDto:
       type: object
       properties:
         id:
@@ -5155,10 +5258,10 @@ components:
           example: SELECT `id` FROM `air_quality`
         type:
           type: string
-          example: query
           enum:
             - query
             - view
+          example: query
         identifiers:
           type: array
           items:
@@ -5183,10 +5286,17 @@ components:
           type: integer
           format: int64
           example: 1
-    UserBriefDto:
       required:
+        - database_id
+        - execution
         - id
-        - username
+        - identifiers
+        - is_persisted
+        - owner
+        - query
+        - query_hash
+        - query_normalized
+    UserBriefDto:
       type: object
       properties:
         id:
@@ -5212,10 +5322,10 @@ components:
         family_name:
           type: string
           example: Carberry
-    CreatorDto:
       required:
-        - creator_name
         - id
+        - username
+    CreatorDto:
       type: object
       properties:
         id:
@@ -5236,21 +5346,21 @@ components:
           example: 'Carberry, Josiah'
         name_type:
           type: string
-          example: Personal
           enum:
             - Personal
             - Organizational
+          example: Personal
         name_identifier:
           type: string
           example: 0000-0002-1825-0097
         name_identifier_scheme:
           type: string
-          example: ORCID
           enum:
             - ORCID
             - ROR
             - ISNI
             - GRID
+          example: ORCID
         name_identifier_scheme_uri:
           type: string
           example: 'https://orcid.org/'
@@ -5259,33 +5369,31 @@ components:
           example: 'https://ror.org/05gq02987'
         affiliation_identifier_scheme:
           type: string
-          example: ROR
           enum:
             - ROR
             - GRID
             - ISNI
+          example: ROR
         affiliation_identifier_scheme_uri:
           type: string
           example: 'https://ror.org/'
-    IdentifierDto:
       required:
-        - creators
-        - database_id
-        - descriptions
-        - funders
+        - creator_name
         - id
-        - language
-        - licenses
-        - links
-        - owner
-        - publication_year
-        - publisher
-        - query
-        - query_hash
-        - query_normalized
-        - status
-        - titles
-        - type
+    EnumDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
+        value:
+          type: string
+          example: 3
+      required:
+        - id
+        - value
+    IdentifierDto:
       type: object
       properties:
         id:
@@ -5296,12 +5404,12 @@ components:
           $ref: '#/components/schemas/LinksDto'
         type:
           type: string
-          example: database
           enum:
             - database
             - subset
             - table
             - view
+          example: database
         titles:
           type: array
           items:
@@ -5528,22 +5636,26 @@ components:
             $ref: '#/components/schemas/CreatorDto'
         status:
           type: string
-          example: draft
           enum:
             - draft
             - published
+          example: draft
         database_id:
           type: string
           format: uuid
+          example: null
         query_id:
           type: string
           format: uuid
+          example: null
         table_id:
           type: string
           format: uuid
+          example: null
         view_id:
           type: string
           format: uuid
+          example: null
         query_normalized:
           type: string
           example: >-
@@ -5575,10 +5687,25 @@ components:
           type: integer
           format: int32
           example: 2022
-    IdentifierFunderDto:
       required:
-        - funder_name
+        - creators
+        - database_id
+        - descriptions
+        - funders
         - id
+        - language
+        - licenses
+        - links
+        - owner
+        - publication_year
+        - publisher
+        - query
+        - query_hash
+        - query_normalized
+        - status
+        - titles
+        - type
+    IdentifierFunderDto:
       type: object
       properties:
         id:
@@ -5593,26 +5720,26 @@ components:
           example: 'http://doi.org/10.13039/501100000780'
         funder_identifier_type:
           type: string
-          example: Crossref Funder ID
           enum:
             - Crossref Funder ID
             - ROR
             - GND
             - ISNI
             - Other
+          example: Crossref Funder ID
         scheme_uri:
           type: string
           example: 'http://doi.org/'
         award_number:
           type: string
-          example: '824087'
+          example: 824087
         award_title:
           type: string
           example: EOSC-Life
-    LicenseDto:
       required:
-        - identifier
-        - uri
+        - funder_name
+        - id
+    LicenseDto:
       type: object
       properties:
         identifier:
@@ -5628,10 +5755,10 @@ components:
             preservation of copyright and license notices. Licensed works,
             modifications, and larger works may be distributed under different
             terms and without source code.
-    LinksDto:
       required:
-        - self
-        - self_html
+        - identifier
+        - uri
+    LinksDto:
       type: object
       properties:
         self:
@@ -5643,12 +5770,13 @@ components:
         self_html:
           type: string
           example: 'http://example.com'
-    RelatedIdentifierDto:
+        dashboard_html:
+          type: string
+          example: 'http://example.com/d/defi2baxqawaod'
       required:
-        - id
-        - relation
-        - type
-        - value
+        - self
+        - self_html
+    RelatedIdentifierDto:
       type: object
       properties:
         id:
@@ -5660,7 +5788,6 @@ components:
           example: 10.70124/dc4zh-9ce78
         type:
           type: string
-          example: DOI
           enum:
             - DOI
             - URL
@@ -5680,9 +5807,9 @@ components:
             - PURL
             - UPC
             - w3id
+          example: DOI
         relation:
           type: string
-          example: Cites
           enum:
             - IsCitedBy
             - Cites
@@ -5718,15 +5845,26 @@ components:
             - Requires
             - IsObsoletedBy
             - Obsoletes
-    ViewColumnDto:
+          example: Cites
       required:
-        - database_id
         - id
-        - internal_name
-        - is_null_allowed
-        - name
-        - ord
+        - relation
         - type
+        - value
+    SetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
+        value:
+          type: string
+          example: 3
+      required:
+        - id
+        - value
+    ViewColumnDto:
       type: object
       properties:
         id:
@@ -5734,10 +5872,10 @@ components:
           format: uuid
           example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
         name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: Given Name
+          maxLength: 64
+          minLength: 0
         size:
           type: integer
           format: int64
@@ -5747,10 +5885,20 @@ components:
           format: int64
           example: 0
         description:
-          maxLength: 2048
-          minLength: 0
           type: string
           example: Column comment
+          maxLength: 2048
+          minLength: 0
+        enums:
+          type: array
+          description: 'enum values, only considered when type = ENUM'
+          items:
+            $ref: '#/components/schemas/EnumDto'
+        sets:
+          type: array
+          description: 'enum values, only considered when type = ENUM'
+          items:
+            $ref: '#/components/schemas/SetDto'
         database_id:
           type: string
           format: uuid
@@ -5760,10 +5908,10 @@ components:
           format: int32
           example: 0
         internal_name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: given_name
+          maxLength: 64
+          minLength: 0
         index_length:
           type: integer
           format: int64
@@ -5774,7 +5922,6 @@ components:
           example: 255
         type:
           type: string
-          example: varchar
           enum:
             - char
             - varchar
@@ -5806,20 +5953,19 @@ components:
             - timestamp
             - time
             - year
+          example: varchar
         is_null_allowed:
           type: boolean
           example: false
-    ViewDto:
       required:
-        - columns
         - database_id
         - id
-        - identifiers
         - internal_name
+        - is_null_allowed
         - name
-        - owner
-        - query
-        - query_hash
+        - ord
+        - type
+    ViewDto:
       type: object
       properties:
         id:
@@ -5842,9 +5988,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ViewColumnDto'
+        created:
+          type: string
+          format: date-time
+          example: '2022-01-01T08:00:00.000Z'
         last_retrieved:
           type: string
           format: date-time
+          example: '2025-01-23T12:09:01.000Z'
         database_id:
           type: string
           format: uuid
@@ -5865,24 +6016,29 @@ components:
         query_hash:
           type: string
           example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-    TupleDto:
       required:
-        - data
+        - columns
+        - created
+        - database_id
+        - id
+        - identifiers
+        - internal_name
+        - name
+        - owner
+        - query
+        - query_hash
+    TupleDto:
       type: object
       properties:
         data:
           type: object
           additionalProperties:
             type: object
-            example:
-              key: value
           example:
             key: value
-    ImportDto:
       required:
-        - header
-        - location
-        - separator
+        - data
+    ImportDto:
       type: object
       properties:
         location:
@@ -5903,24 +6059,23 @@ components:
         line_termination:
           type: string
           example: \r\n
-    FilterDto:
       required:
-        - column_id
-        - operator_id
-        - type
-        - value
+        - header
+        - location
+        - separator
+    FilterDto:
       type: object
       properties:
         type:
           type: string
-          example: where
           enum:
             - where
             - or
             - and
+          example: where
         value:
           type: string
-          example: '1'
+          example: 1
         column_id:
           type: string
           format: uuid
@@ -5929,25 +6084,27 @@ components:
           type: string
           format: uuid
           example: 67c5b54d-2eb0-4f42-8dc1-a504562e9f32
-    OrderDto:
       required:
         - column_id
+        - operator_id
+        - type
+        - value
+    OrderDto:
       type: object
       properties:
         direction:
           type: string
-          example: asc
           enum:
             - asc
             - desc
+          example: asc
         column_id:
           type: string
           format: uuid
           example: e891ba86-0258-41a6-a8d9-ff58bc10b618
-    SubsetDto:
       required:
-        - columns
-        - table_id
+        - column_id
+    SubsetDto:
       type: object
       properties:
         columns:
@@ -5965,15 +6122,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrderDto'
-        table_id:
+        datasource_id:
           type: string
           format: uuid
           example: f7df2a7d-4ade-4c78-97b0-7c744d0893c7
-    TableHistoryDto:
+        datasource_type:
+          type: string
+          enum:
+            - table
+            - view
       required:
-        - event
-        - timestamp
-        - total
+        - columns
+        - datasource_id
+        - datasource_type
+    TableHistoryDto:
       type: object
       properties:
         timestamp:
@@ -5982,31 +6144,30 @@ components:
           example: '2021-03-12T15:26:21.000Z'
         event:
           type: string
-          example: INSERT
           enum:
             - insert
             - delete
+          example: INSERT
         total:
           type: integer
           format: int64
           example: 1
-    TupleDeleteDto:
       required:
-        - keys
+        - event
+        - timestamp
+        - total
+    TupleDeleteDto:
       type: object
       properties:
         keys:
           type: object
           additionalProperties:
             type: object
-            example:
-              id: 1
           example:
             id: 1
-    UserAttributesDto:
       required:
-        - language
-        - theme
+        - keys
+    UserAttributesDto:
       type: object
       properties:
         theme:
@@ -6021,12 +6182,10 @@ components:
         language:
           type: string
           example: en
-    UserDto:
       required:
-        - attributes
-        - id
-        - password
-        - username
+        - language
+        - theme
+    UserDto:
       type: object
       properties:
         id:
@@ -6047,6 +6206,7 @@ components:
         last_retrieved:
           type: string
           format: date-time
+          example: '2025-01-23T12:09:01.000Z'
         qualified_name:
           type: string
           example: Josiah Carberry — @jcarberry
@@ -6056,16 +6216,12 @@ components:
         family_name:
           type: string
           example: Carberry
-    DatabaseBriefDto:
       required:
-        - contact
+        - attributes
         - id
-        - identifiers
-        - internal_name
-        - is_public
-        - is_schema_public
-        - name
-        - owner_id
+        - password
+        - username
+    DatabaseBriefDto:
       type: object
       properties:
         id:
@@ -6099,25 +6255,31 @@ components:
           example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
         preview_image:
           type: string
-    DatabaseAccessDto:
       required:
-        - type
-        - user
+        - contact
+        - id
+        - identifiers
+        - internal_name
+        - is_public
+        - is_schema_public
+        - name
+        - owner_id
+    DatabaseAccessDto:
       type: object
       properties:
         user:
           $ref: '#/components/schemas/UserBriefDto'
         type:
           type: string
-          example: read
           enum:
             - read
             - write_own
             - write_all
-    UserUpdateDto:
+          example: read
       required:
-        - language
-        - theme
+        - type
+        - user
+    UserUpdateDto:
       type: object
       properties:
         firstname:
@@ -6138,10 +6300,10 @@ components:
         language:
           type: string
           example: en
-    OntologyModifyDto:
       required:
-        - prefix
-        - uri
+        - language
+        - theme
+    OntologyModifyDto:
       type: object
       properties:
         uri:
@@ -6156,13 +6318,10 @@ components:
         rdf_path:
           type: string
           example: rdf/om-2.0.rdf
-    OntologyDto:
       required:
-        - id
         - prefix
-        - rdf
-        - sparql
         - uri
+    OntologyDto:
       type: object
       properties:
         id:
@@ -6190,10 +6349,13 @@ components:
         rdf_path:
           type: string
           example: rdf/om-2.0.rdf
-    BannerMessageUpdateDto:
       required:
-        - message
-        - type
+        - id
+        - prefix
+        - rdf
+        - sparql
+        - uri
+    BannerMessageUpdateDto:
       type: object
       properties:
         type:
@@ -6219,10 +6381,10 @@ components:
           type: string
           format: date-time
           example: '2021-03-12T15:26:21.000Z'
-    BannerMessageBriefDto:
       required:
         - message
         - type
+    BannerMessageBriefDto:
       type: object
       properties:
         type:
@@ -6240,23 +6402,21 @@ components:
         link_text:
           type: string
           example: More
-    ImageChangeDto:
       required:
-        - dialect
-        - driver_class
-        - jdbc_method
-        - registry
+        - message
+        - type
+    ImageChangeDto:
       type: object
       properties:
         registry:
           type: string
           example: docker.io/library
         defaultPort:
-          maximum: 65535
-          minimum: 1024
           type: integer
           format: int32
           example: 5432
+          maximum: 65535
+          minimum: 1024
         dialect:
           type: string
           example: Postgres
@@ -6266,14 +6426,12 @@ components:
         jdbc_method:
           type: string
           example: postgresql
-    DataTypeDto:
       required:
-        - display_name
-        - documentation
-        - id
-        - is_buildable
-        - is_quoted
-        - value
+        - dialect
+        - driver_class
+        - jdbc_method
+        - registry
+    DataTypeDto:
       type: object
       properties:
         id:
@@ -6329,14 +6487,14 @@ components:
           type: boolean
           description: frontend can build this data type
           example: true
-    ImageDto:
       required:
-        - data_types
-        - default
+        - display_name
+        - documentation
         - id
-        - name
-        - operators
-        - version
+        - is_buildable
+        - is_quoted
+        - value
+    ImageDto:
       type: object
       properties:
         id:
@@ -6348,7 +6506,7 @@ components:
           example: mariadb
         version:
           type: string
-          example: '10.5'
+          example: 10.5
         operators:
           type: array
           items:
@@ -6360,12 +6518,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DataTypeDto'
-    OperatorDto:
       required:
-        - display_name
-        - documentation
+        - data_types
+        - default
         - id
-        - value
+        - name
+        - operators
+        - version
+    OperatorDto:
       type: object
       properties:
         id:
@@ -6381,15 +6541,12 @@ components:
         display_name:
           type: string
           example: XOR
-    IdentifierSaveDto:
       required:
-        - creators
-        - database_id
+        - display_name
+        - documentation
         - id
-        - publication_year
-        - publisher
-        - titles
-        - type
+        - value
+    IdentifierSaveDto:
       type: object
       properties:
         id:
@@ -6398,12 +6555,12 @@ components:
           example: 68e11675-1e0f-4d24-a6d9-887ad1c4445d
         type:
           type: string
-          example: database
           enum:
             - database
             - subset
             - table
             - view
+          example: database
         doi:
           type: string
           example: 10.1111/11111111
@@ -6620,15 +6777,19 @@ components:
         database_id:
           type: string
           format: uuid
+          example: null
         query_id:
           type: string
           format: uuid
+          example: null
         view_id:
           type: string
           format: uuid
+          example: null
         table_id:
           type: string
           format: uuid
+          example: null
         publication_day:
           type: integer
           format: int32
@@ -6645,10 +6806,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SaveRelatedIdentifierDto'
-    SaveIdentifierCreatorDto:
       required:
-        - creator_name
+        - creators
+        - database_id
         - id
+        - publication_year
+        - publisher
+        - titles
+        - type
+    SaveIdentifierCreatorDto:
       type: object
       properties:
         id:
@@ -6669,35 +6835,35 @@ components:
           example: 'Carberry, Josiah'
         name_type:
           type: string
-          example: Personal
           enum:
             - Personal
             - Organizational
+          example: Personal
         name_identifier:
           type: string
           example: 0000-0002-1825-0097
         name_identifier_scheme:
           type: string
-          example: ORCID
           enum:
             - ORCID
             - ROR
             - ISNI
             - GRID
+          example: ORCID
         affiliation_identifier:
           type: string
           example: 'https://ror.org/04d836q62'
         affiliation_identifier_scheme:
           type: string
-          example: ROR
           enum:
             - ROR
             - GRID
             - ISNI
-    SaveIdentifierDescriptionDto:
+          example: ROR
       required:
-        - description
+        - creator_name
         - id
+    SaveIdentifierDescriptionDto:
       type: object
       properties:
         id:
@@ -6709,7 +6875,6 @@ components:
           example: 'Air quality reports at Stephansplatz, Vienna'
         language:
           type: string
-          example: en
           enum:
             - ab
             - aa
@@ -6895,9 +7060,9 @@ components:
             - yo
             - za
             - zu
+          example: en
         type:
           type: string
-          example: Abstract
           enum:
             - Abstract
             - Methods
@@ -6905,10 +7070,11 @@ components:
             - TableOfContents
             - TechnicalInfo
             - Other
-    SaveIdentifierFunderDto:
+          example: Abstract
       required:
-        - funder_name
+        - description
         - id
+    SaveIdentifierFunderDto:
       type: object
       properties:
         id:
@@ -6923,26 +7089,26 @@ components:
           example: 'http://doi.org/10.13039/501100000780'
         funder_identifier_type:
           type: string
-          example: Crossref Funder ID
           enum:
             - Crossref Funder ID
             - ROR
             - GND
             - ISNI
             - Other
+          example: Crossref Funder ID
         scheme_uri:
           type: string
           example: 'http://doi.org/'
         award_number:
           type: string
-          example: '824087'
+          example: 824087
         award_title:
           type: string
           example: EOSC-Life
-    SaveIdentifierTitleDto:
       required:
+        - funder_name
         - id
-        - title
+    SaveIdentifierTitleDto:
       type: object
       properties:
         id:
@@ -6954,7 +7120,6 @@ components:
           example: Airquality Demonstrator
         language:
           type: string
-          example: en
           enum:
             - ab
             - aa
@@ -7140,20 +7305,19 @@ components:
             - yo
             - za
             - zu
+          example: en
         type:
           type: string
-          example: Subtitle
           enum:
             - AlternativeTitle
             - Subtitle
             - TranslatedTitle
             - Other
-    SaveRelatedIdentifierDto:
+          example: Subtitle
       required:
         - id
-        - relation
-        - type
-        - value
+        - title
+    SaveRelatedIdentifierDto:
       type: object
       properties:
         id:
@@ -7165,7 +7329,6 @@ components:
           example: 10.70124/dc4zh-9ce78
         type:
           type: string
-          example: DOI
           enum:
             - DOI
             - URL
@@ -7185,9 +7348,9 @@ components:
             - PURL
             - UPC
             - w3id
+          example: DOI
         relation:
           type: string
-          example: Cites
           enum:
             - IsCitedBy
             - Cites
@@ -7223,38 +7386,41 @@ components:
             - Requires
             - IsObsoletedBy
             - Obsoletes
-    DatabaseModifyVisibilityDto:
+          example: Cites
       required:
-        - is_public
-        - is_schema_public
-      type: object
-      properties:
-        is_public:
-          type: boolean
-          example: true
-        is_schema_public:
-          type: boolean
-          example: true
-    ViewUpdateDto:
-      required:
-        - is_public
-        - is_schema_public
-      type: object
-      properties:
-        is_public:
-          type: boolean
-          example: true
-        is_schema_public:
-          type: boolean
-          example: true
-    ViewBriefDto:
-      required:
-        - database_id
         - id
-        - internal_name
-        - name
-        - query
-        - query_hash
+        - relation
+        - type
+        - value
+    DatabaseModifyVisibilityDto:
+      type: object
+      properties:
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        is_dashboard_enabled:
+          type: boolean
+          example: true
+      required:
+        - is_dashboard_enabled
+        - is_public
+        - is_schema_public
+    ViewUpdateDto:
+      type: object
+      properties:
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+      required:
+        - is_public
+        - is_schema_public
+    ViewBriefDto:
       type: object
       properties:
         id:
@@ -7291,33 +7457,31 @@ components:
           type: string
           format: uuid
           example: ac750fcf-ea02-4fce-85ac-d73857e18b35
-    TableUpdateDto:
       required:
-        - is_public
-        - is_schema_public
+        - database_id
+        - id
+        - internal_name
+        - name
+        - query
+        - query_hash
+    TableUpdateDto:
       type: object
       properties:
         description:
-          maxLength: 180
-          minLength: 0
           type: string
           example: Air Quality in Austria
+          maxLength: 180
+          minLength: 0
         is_public:
           type: boolean
           example: true
         is_schema_public:
           type: boolean
           example: true
-    TableBriefDto:
       required:
-        - database_id
-        - id
-        - internal_name
         - is_public
         - is_schema_public
-        - is_versioned
-        - name
-        - owned_by
+    TableBriefDto:
       type: object
       properties:
         id:
@@ -7350,6 +7514,15 @@ components:
           type: string
           format: uuid
           example: 78337b80-5699-45db-8111-cec86439ab6b
+      required:
+        - database_id
+        - id
+        - internal_name
+        - is_public
+        - is_schema_public
+        - is_versioned
+        - name
+        - owned_by
     ColumnSemanticsUpdateDto:
       type: object
       properties:
@@ -7358,15 +7531,6 @@ components:
         unit_uri:
           type: string
     ColumnDto:
-      required:
-        - database_id
-        - id
-        - internal_name
-        - is_null_allowed
-        - name
-        - ord
-        - table_id
-        - type
       type: object
       properties:
         id:
@@ -7374,10 +7538,10 @@ components:
           format: uuid
           example: a453e444-e00d-41ca-902c-11e9c54b39f1
         name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: Given Name
+          maxLength: 64
+          minLength: 0
         alias:
           type: string
           example: firstname
@@ -7400,16 +7564,18 @@ components:
         unit:
           $ref: '#/components/schemas/UnitBriefDto'
         description:
-          maxLength: 2048
-          minLength: 0
           type: string
           example: Column comment
+          maxLength: 2048
+          minLength: 0
         enums:
           type: array
+          description: 'enum values, only considered when type = ENUM'
           items:
             $ref: '#/components/schemas/EnumDto'
         sets:
           type: array
+          description: 'enum values, only considered when type = ENUM'
           items:
             $ref: '#/components/schemas/SetDto'
         database_id:
@@ -7425,10 +7591,10 @@ components:
           format: int32
           example: 0
         internal_name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: given_name
+          maxLength: 64
+          minLength: 0
         index_length:
           type: integer
           format: int64
@@ -7439,7 +7605,6 @@ components:
           example: 255
         type:
           type: string
-          example: varchar
           enum:
             - char
             - varchar
@@ -7471,6 +7636,7 @@ components:
             - timestamp
             - time
             - year
+          example: varchar
         data_length:
           type: integer
           format: int64
@@ -7495,10 +7661,16 @@ components:
         is_null_allowed:
           type: boolean
           example: false
-    ConceptBriefDto:
       required:
+        - database_id
         - id
-        - uri
+        - internal_name
+        - is_null_allowed
+        - name
+        - ord
+        - table_id
+        - type
+    ConceptBriefDto:
       type: object
       properties:
         id:
@@ -7516,36 +7688,10 @@ components:
           example: >-
             name typically used to differentiate people from the same family,
             clan, or other social group who have a common last name
-    EnumDto:
-      required:
-        - id
-        - value
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
-        value:
-          type: string
-          example: '3'
-    SetDto:
-      required:
-        - id
-        - value
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
-        value:
-          type: string
-          example: '3'
-    UnitBriefDto:
       required:
         - id
         - uri
+    UnitBriefDto:
       type: object
       properties:
         id:
@@ -7561,35 +7707,42 @@ components:
         description:
           type: string
           example: 'subjective magnitude of value, meaning, or purpose'
-    DatabaseTransferDto:
       required:
         - id
+        - uri
+    DatabaseTransferDto:
       type: object
       properties:
         id:
           type: string
           format: uuid
+      required:
+        - id
     DatabaseModifyImageDto:
       type: object
       properties:
         key:
           type: string
-    CreateAccessDto:
+    DatabaseModifyDashboardDto:
+      type: object
+      properties:
+        uid:
+          type: string
       required:
-        - type
+        - uid
+    CreateAccessDto:
       type: object
       properties:
         type:
           type: string
-          example: read
           enum:
             - read
             - write_own
             - write_all
-    OntologyCreateDto:
+          example: read
       required:
-        - prefix
-        - uri
+        - type
+    OntologyCreateDto:
       type: object
       properties:
         uri:
@@ -7601,10 +7754,10 @@ components:
         sparql_endpoint:
           type: string
           example: Ontology SPARQL endpoint
-    BannerMessageCreateDto:
       required:
-        - message
-        - type
+        - prefix
+        - uri
+    BannerMessageCreateDto:
       type: object
       properties:
         type:
@@ -7630,16 +7783,10 @@ components:
           type: string
           format: date-time
           example: '2021-03-12T15:26:21.000Z'
-    ImageCreateDto:
       required:
-        - default_port
-        - dialect
-        - driver_class
-        - is_default
-        - jdbc_method
-        - name
-        - registry
-        - version
+        - message
+        - type
+    ImageCreateDto:
       type: object
       properties:
         registry:
@@ -7660,28 +7807,30 @@ components:
         jdbc_method:
           type: string
         default_port:
-          maximum: 65535
-          minimum: 1024
           type: integer
           format: int32
-    CreateIdentifierDto:
+          maximum: 65535
+          minimum: 1024
       required:
-        - creators
-        - database_id
-        - publication_year
-        - publisher
-        - titles
-        - type
+        - default_port
+        - dialect
+        - driver_class
+        - is_default
+        - jdbc_method
+        - name
+        - registry
+        - version
+    CreateIdentifierDto:
       type: object
       properties:
         type:
           type: string
-          example: database
           enum:
             - database
             - subset
             - table
             - view
+          example: database
         doi:
           type: string
           example: 10.1111/11111111
@@ -7902,12 +8051,15 @@ components:
         query_id:
           type: string
           format: uuid
+          example: null
         view_id:
           type: string
           format: uuid
+          example: null
         table_id:
           type: string
           format: uuid
+          example: null
         publication_day:
           type: integer
           format: int32
@@ -7924,12 +8076,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SaveRelatedIdentifierDto'
-    CreateDatabaseDto:
       required:
-        - container_id
-        - is_public
-        - is_schema_public
-        - name
+        - creators
+        - database_id
+        - publication_year
+        - publisher
+        - titles
+        - type
+    CreateDatabaseDto:
       type: object
       properties:
         name:
@@ -7945,19 +8099,19 @@ components:
         is_schema_public:
           type: boolean
           example: true
-    CreateViewDto:
       required:
+        - container_id
         - is_public
         - is_schema_public
         - name
-        - query
+    CreateViewDto:
       type: object
       properties:
         name:
-          maxLength: 63
-          minLength: 1
           type: string
           example: Air Quality
+          maxLength: 63
+          minLength: 1
         query:
           $ref: '#/components/schemas/SubsetDto'
         is_public:
@@ -7966,11 +8120,12 @@ components:
         is_schema_public:
           type: boolean
           example: true
-    CreateForeignKeyDto:
       required:
-        - columns
-        - referenced_columns
-        - referenced_table
+        - is_public
+        - is_schema_public
+        - name
+        - query
+    CreateForeignKeyDto:
       type: object
       properties:
         columns:
@@ -7979,7 +8134,6 @@ components:
             - id
           items:
             type: string
-            example: '["id"]'
         referenced_table:
           type: string
           example: sensor
@@ -7989,30 +8143,29 @@ components:
             - other_id
           items:
             type: string
-            example: '["other_id"]'
         on_update:
           type: string
-          example: cascade
           enum:
             - restrict
             - cascade
             - set_null
             - no_action
             - set_default
+          example: cascade
         on_delete:
           type: string
-          example: cascade
           enum:
             - restrict
             - cascade
             - set_null
             - no_action
             - set_default
-    CreateTableColumnDto:
+          example: cascade
       required:
-        - name
-        - null_allowed
-        - type
+        - columns
+        - referenced_columns
+        - referenced_table
+    CreateTableColumnDto:
       type: object
       properties:
         name:
@@ -8020,7 +8173,6 @@ components:
           example: Date
         type:
           type: string
-          example: varchar
           enum:
             - char
             - varchar
@@ -8052,6 +8204,7 @@ components:
             - timestamp
             - time
             - year
+          example: varchar
         size:
           type: integer
           format: int64
@@ -8061,22 +8214,20 @@ components:
           format: int64
           example: 0
         description:
-          maxLength: 2048
-          minLength: 0
           type: string
           example: Formatted as YYYY-MM-dd
+          maxLength: 2048
+          minLength: 0
         enums:
           type: array
           description: 'enum values, only considered when type = ENUM'
           items:
             type: string
-            description: 'enum values, only considered when type = ENUM'
         sets:
           type: array
           description: 'set values, only considered when type = SET'
           items:
             type: string
-            description: 'set values, only considered when type = SET'
         index_length:
           type: integer
           format: int64
@@ -8087,12 +8238,11 @@ components:
           type: string
         unit_uri:
           type: string
-    CreateTableConstraintsDto:
       required:
-        - checks
-        - foreign_keys
-        - primary_key
-        - uniques
+        - name
+        - null_allowed
+        - type
+    CreateTableConstraintsDto:
       type: object
       properties:
         uniques:
@@ -8102,38 +8252,37 @@ components:
             items:
               type: string
         checks:
-          uniqueItems: true
           type: array
           items:
             type: string
+          uniqueItems: true
         foreign_keys:
           type: array
           items:
             $ref: '#/components/schemas/CreateForeignKeyDto'
         primary_key:
-          uniqueItems: true
           type: array
           items:
             type: string
-    CreateTableDto:
+          uniqueItems: true
       required:
-        - columns
-        - constraints
-        - is_public
-        - is_schema_public
-        - name
+        - checks
+        - foreign_keys
+        - primary_key
+        - uniques
+    CreateTableDto:
       type: object
       properties:
         name:
-          maxLength: 64
-          minLength: 1
           type: string
           example: Air Quality
+          maxLength: 64
+          minLength: 1
         description:
-          maxLength: 180
-          minLength: 0
           type: string
           example: Air Quality in Austria
+          maxLength: 180
+          minLength: 0
         columns:
           type: array
           items:
@@ -8146,14 +8295,13 @@ components:
         is_schema_public:
           type: boolean
           example: true
-    CreateContainerDto:
       required:
-        - host
-        - image_id
+        - columns
+        - constraints
+        - is_public
+        - is_schema_public
         - name
-        - privileged_password
-        - privileged_username
-        - quota
+    CreateContainerDto:
       type: object
       properties:
         name:
@@ -8165,8 +8313,8 @@ components:
           example: data-db2
         port:
           type: integer
-          description: Port of container
           format: int32
+          description: Port of container
           example: 3306
         quota:
           type: integer
@@ -8174,8 +8322,8 @@ components:
           example: 50
         image_id:
           type: string
-          description: Image ID
           format: uuid
+          description: Image ID
           example: 2360f3c4-85e0-4fac-a7c6-73b296b9dde2
         ui_host:
           type: string
@@ -8192,13 +8340,14 @@ components:
           type: string
           description: Password of privileged user
           example: dbrepo
-    ContainerDto:
       required:
-        - count
-        - id
-        - image
-        - internal_name
+        - host
+        - image_id
         - name
+        - privileged_password
+        - privileged_username
+        - quota
+    ContainerDto:
       type: object
       properties:
         id:
@@ -8227,17 +8376,17 @@ components:
         last_retrieved:
           type: string
           format: date-time
+          example: '2025-01-23T12:09:01.000Z'
         internal_name:
           type: string
           example: air_quality
-    ColumnBriefDto:
       required:
-        - database_id
+        - count
         - id
+        - image
         - internal_name
         - name
-        - table_id
-        - type
+    ColumnBriefDto:
       type: object
       properties:
         id:
@@ -8245,10 +8394,10 @@ components:
           format: uuid
           example: a453e444-e00d-41ca-902c-11e9c54b39f1
         name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: Given Name
+          maxLength: 64
+          minLength: 0
         alias:
           type: string
           example: firstname
@@ -8261,13 +8410,12 @@ components:
           format: uuid
           example: bfffa915-a547-4466-9c65-ddc0d38fdb08
         internal_name:
-          maxLength: 64
-          minLength: 0
           type: string
           example: given_name
+          maxLength: 64
+          minLength: 0
         type:
           type: string
-          example: varchar
           enum:
             - char
             - varchar
@@ -8299,11 +8447,15 @@ components:
             - timestamp
             - time
             - year
-    UnitDto:
+          example: varchar
       required:
-        - columns
+        - database_id
         - id
-        - uri
+        - internal_name
+        - name
+        - table_id
+        - type
+    UnitDto:
       type: object
       properties:
         id:
@@ -8320,13 +8472,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ColumnBriefDto'
-    OntologyBriefDto:
       required:
+        - columns
         - id
-        - prefix
-        - rdf
-        - sparql
         - uri
+    OntologyBriefDto:
       type: object
       properties:
         id:
@@ -8348,10 +8498,13 @@ components:
         uri_pattern:
           type: string
           example: 'http://www.wikidata.org/entity/.*'
-    EntityDto:
       required:
-        - label
+        - id
+        - prefix
+        - rdf
+        - sparql
         - uri
+    EntityDto:
       type: object
       properties:
         uri:
@@ -8363,6 +8516,9 @@ components:
         description:
           type: string
           example: open source semantic web framework for Java
+      required:
+        - label
+        - uri
     OaiListIdentifiersParameters:
       type: object
       properties:
@@ -8376,19 +8532,15 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
-      required:
-        - id
-        - message
-        - type
       type: object
       properties:
         id:
@@ -8397,11 +8549,11 @@ components:
           example: ae3f795b-a3da-4ebe-bdc4-21a8ce631e6f
         type:
           type: string
-          example: WARNING
           enum:
             - error
             - warning
             - info
+          example: WARNING
         message:
           type: string
           example: Maintenance starts on 8am on Monday
@@ -8419,12 +8571,11 @@ components:
           type: string
           format: date-time
           example: '2021-03-12T15:26:21.000Z'
-    ImageBriefDto:
       required:
-        - default
         - id
-        - name
-        - version
+        - message
+        - type
+    ImageBriefDto:
       type: object
       properties:
         id:
@@ -8436,14 +8587,16 @@ components:
           example: mariadb
         version:
           type: string
-          example: '10.5'
+          example: 10.5
         default:
           type: boolean
           example: false
-    LdCreatorDto:
       required:
-        - '@type'
+        - default
+        - id
         - name
+        - version
+    LdCreatorDto:
       type: object
       properties:
         name:
@@ -8456,19 +8609,10 @@ components:
           type: string
         '@type':
           type: string
-    LdDatasetDto:
       required:
-        - '@context'
         - '@type'
-        - citation
-        - creator
-        - description
-        - hasPart
-        - identifier
         - name
-        - temporalCoverage
-        - url
-        - version
+    LdDatasetDto:
       type: object
       properties:
         name:
@@ -8502,6 +8646,18 @@ components:
           type: string
         '@type':
           type: string
+      required:
+        - '@context'
+        - '@type'
+        - citation
+        - creator
+        - description
+        - hasPart
+        - identifier
+        - name
+        - temporalCoverage
+        - url
+        - version
     ConstraintsDto:
       type: object
       properties:
@@ -8510,22 +8666,21 @@ components:
           items:
             $ref: '#/components/schemas/UniqueDto'
         checks:
-          uniqueItems: true
           type: array
           example:
             - value > 1
           items:
             type: string
-            example: '["value > 1"]'
+          uniqueItems: true
         foreign_keys:
           type: array
           items:
             $ref: '#/components/schemas/ForeignKeyDto'
         primary_key:
-          uniqueItems: true
           type: array
           items:
             $ref: '#/components/schemas/PrimaryKeyDto'
+          uniqueItems: true
     ForeignKeyBriefDto:
       type: object
       properties:
@@ -8534,11 +8689,6 @@ components:
           format: uuid
           example: f2b740ec-0b13-4d07-88a9-529d354bba6a
     ForeignKeyDto:
-      required:
-        - name
-        - referenced_table
-        - references
-        - table
       type: object
       properties:
         id:
@@ -8558,27 +8708,28 @@ components:
           $ref: '#/components/schemas/TableBriefDto'
         on_update:
           type: string
-          example: restrict
           enum:
             - restrict
             - cascade
             - set_null
             - no_action
             - set_default
+          example: restrict
         on_delete:
           type: string
-          example: restrict
           enum:
             - restrict
             - cascade
             - set_null
             - no_action
             - set_default
-    ForeignKeyReferenceDto:
+          example: restrict
       required:
-        - column
-        - foreign_key
-        - referenced_column
+        - name
+        - referenced_table
+        - references
+        - table
+    ForeignKeyReferenceDto:
       type: object
       properties:
         id:
@@ -8591,10 +8742,11 @@ components:
           $ref: '#/components/schemas/ForeignKeyBriefDto'
         referenced_column:
           $ref: '#/components/schemas/ColumnBriefDto'
-    PrimaryKeyDto:
       required:
         - column
-        - table
+        - foreign_key
+        - referenced_column
+    PrimaryKeyDto:
       type: object
       properties:
         id:
@@ -8605,20 +8757,10 @@ components:
           $ref: '#/components/schemas/TableBriefDto'
         column:
           $ref: '#/components/schemas/ColumnBriefDto'
-    TableDto:
       required:
-        - columns
-        - constraints
-        - database_id
-        - id
-        - internal_name
-        - is_public
-        - is_schema_public
-        - is_versioned
-        - name
-        - owner
-        - queue_name
-        - routing_key
+        - column
+        - table
+    TableDto:
       type: object
       properties:
         id:
@@ -8638,19 +8780,24 @@ components:
         owner:
           $ref: '#/components/schemas/UserBriefDto'
         description:
-          maxLength: 2048
-          minLength: 0
           type: string
           example: Air Quality in Austria
+          maxLength: 2048
+          minLength: 0
         columns:
           type: array
           items:
             $ref: '#/components/schemas/ColumnDto'
         constraints:
           $ref: '#/components/schemas/ConstraintsDto'
+        created:
+          type: string
+          format: date-time
+          example: '2022-01-01T08:00:00.000Z'
         last_retrieved:
           type: string
           format: date-time
+          example: '2025-01-23T12:09:01.000Z'
         database_id:
           type: string
           format: uuid
@@ -8682,25 +8829,34 @@ components:
           example: 5
         data_length:
           type: integer
-          description: in bytes
           format: int64
+          description: in bytes
           example: 16384
         max_data_length:
           type: integer
-          description: in bytes
           format: int64
+          description: in bytes
           example: 0
         avg_row_length:
           type: integer
-          description: in bytes
           format: int64
+          description: in bytes
           example: 3276
-    UniqueDto:
       required:
         - columns
+        - constraints
+        - created
+        - database_id
         - id
+        - internal_name
+        - is_public
+        - is_schema_public
+        - is_versioned
         - name
-        - table
+        - owner
+        - queue_name
+        - routing_key
+    UniqueDto:
       type: object
       properties:
         id:
@@ -8716,12 +8872,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ColumnBriefDto'
-    TableColumnEntityDto:
       required:
-        - column_id
-        - database_id
-        - table_id
-        - uri
+        - columns
+        - id
+        - name
+        - table
+    TableColumnEntityDto:
       type: object
       properties:
         uri:
@@ -8745,15 +8901,12 @@ components:
           type: string
           format: uuid
           example: 297860e3-3b29-451c-ae8a-a85ed5941018
-    ContainerBriefDto:
       required:
-        - count
-        - hash
-        - id
-        - image
-        - internal_name
-        - name
-        - quota
+        - column_id
+        - database_id
+        - table_id
+        - uri
+    ContainerBriefDto:
       type: object
       properties:
         id:
@@ -8779,11 +8932,15 @@ components:
         internal_name:
           type: string
           example: air-quality
-    ConceptDto:
       required:
-        - columns
+        - count
+        - hash
         - id
-        - uri
+        - image
+        - internal_name
+        - name
+        - quota
+    ConceptDto:
       type: object
       properties:
         id:
@@ -8800,6 +8957,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ColumnBriefDto'
+      required:
+        - columns
+        - id
+        - uri
     IndexDto:
       properties:
         results:

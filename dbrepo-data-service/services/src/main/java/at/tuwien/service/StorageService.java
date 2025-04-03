@@ -1,14 +1,15 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
-import at.tuwien.exception.MalformedException;
-import at.tuwien.exception.StorageNotFoundException;
-import at.tuwien.exception.StorageUnavailableException;
-import at.tuwien.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 
 public interface StorageService {
@@ -46,6 +47,10 @@ public interface StorageService {
      * @throws StorageNotFoundException    The key was not found in the Storage Service.
      */
     byte[] getBytes(String bucket, String key) throws StorageUnavailableException, StorageNotFoundException;
+
+    void deleteObject(String bucket, String key);
+
+    void deleteStaleObjects();
 
     /**
      * Loads an object of the default export bucket from the Storage Service into an export resource.

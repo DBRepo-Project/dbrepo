@@ -91,9 +91,9 @@
                 <v-col
                   lg="4">
                   <v-select
-                    v-model="table"
+                    v-model="datasource"
                     :disabled="isExecuted"
-                    :items="tables"
+                    :items="datasources"
                     item-title="name"
                     return-object
                     persistent-hint
@@ -108,7 +108,7 @@
                   <v-select
                     v-model="select"
                     item-title="internal_name"
-                    :disabled="!table || isExecuted"
+                    :disabled="!datasource || isExecuted"
                     :items="columns"
                     :rules="[v => !!v || $t('validation.required')]"
                     required
@@ -375,7 +375,7 @@ export default {
   },
   data () {
     return {
-      table: null,
+      datasource: null,
       views: [],
       columns: [],
       sorts: [],
@@ -393,7 +393,8 @@ export default {
       resultId: null,
       errorKeyword: null,
       query: {
-        table_id: null,
+        datasource_id: null,
+        datasource_type: null,
         columns: [],
         filter: null
       },
@@ -424,11 +425,14 @@ export default {
       }
       return this.database.container.image.operators
     },
-    tables () {
+    datasources () {
       if (!this.database) {
         return []
       }
-      return this.database.tables
+      if (this.isView) {
+        return this.database.tables
+      }
+      return this.database.views
     },
     database () {
       return this.cacheStore.getDatabase
@@ -467,11 +471,12 @@ export default {
       return this.$config.public.database.unsupported.split(',')
     },
     subset () {
-      if (!this.table || !this.select) {
+      if (!this.datasource || !this.select) {
         return null
       }
       return {
-        table_id: this.table.id,
+        datasource_id: this.datasource.id,
+        datasource_type: this.isView ? 'table' : 'view',
         columns: this.select.map(column => column.id),
         filter: this.clauses ? this.clauses.map(clause => {
           if (clause.type === 'or' || clause.type === 'and') {
@@ -479,7 +484,7 @@ export default {
               type: clause.type
             }
           }
-          const filtered_column = this.table.columns.filter(column => column.internal_name === clause.params[0])
+          const filtered_column = this.datasource.columns.filter(column => column.internal_name === clause.params[0])
           const filtered_operator = this.database.container.image.operators.filter(operator => operator.value === clause.params[1])
           if (!filtered_column || filtered_column.length === 0 || !filtered_operator || filtered_operator.length === 0) {
             return null
@@ -514,16 +519,21 @@ export default {
     }
   },
   watch: {
-    table () {
+    datasource () {
       this.select = []
-      if (!this.table) {
+      if (!this.datasource) {
         return
       }
-      this.fetchTableColumns(this.table?.id)
+      if (!this.isView) {
+        this.fetchViewColumns(this.datasource?.id)
+        return
+      }
+      this.fetchTableColumns(this.datasource?.id)
     }
   },
   mounted () {
     this.selectTable()
+    this.selectView()
     this.initViewVisibility()
   },
   methods: {
@@ -533,6 +543,23 @@ export default {
       tableService.findOne(this.$route.params.database_id, tableId)
         .then((table) => {
           this.columns = table.columns
+          this.loadingColumns = false
+        })
+        .catch(({code}) => {
+          this.loadingColumns = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
+        })
+    },
+    fetchViewColumns (viewId) {
+      this.loadingColumns = true
+      const viewService = useViewService()
+      viewService.findOne(this.$route.params.database_id, viewId)
+        .then((view) => {
+          this.columns = view.columns
           this.loadingColumns = false
         })
         .catch(({code}) => {
@@ -564,13 +591,24 @@ export default {
       }
       const tid = this.$route.query.tid
       const selection = this.tables.filter(t => t.id === tid)
-      if (selection.length > 0) {
-        this.table = selection[0]
-        console.info('Preselect table with id', tid)
-        console.debug('preselected table', this.table)
-      } else {
+      if (selection.length === 0) {
         console.warn('Failed to find table with id', tid)
+        return
       }
+      this.datasource = selection[0]
+      console.info('Preselect table with id', tid)
+    },
+    selectView () {
+      if (this.$route.query.vid === undefined) {
+        return
+      }
+      const vid = this.$route.query.vid
+      const selection = this.views.filter(v => v.id === vid)
+      if (selection.length === 0) {
+        console.warn('Failed to find view with id', vid)
+      }
+      this.datasource = selection[0]
+      console.info('Preselect view with id', vid)
     },
     execute () {
       if (this.isView) {
