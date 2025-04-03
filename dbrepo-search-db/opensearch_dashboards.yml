@@ -1,5 +1,0 @@
-server.name: log-dashboard
-server.host: "0.0.0.0"
-opensearch.hosts: http://search-db:9200
-opensearch.username: admin
-opensearch.password: admin

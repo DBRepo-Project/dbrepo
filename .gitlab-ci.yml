@@ -75,7 +75,7 @@ lint-docker-compose:
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
     - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
+    - "bash .scripts/check-service.sh 'dbrepo-search-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
