@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-## v1.8.0 (2025-??-??)
+## v1.8.0 (2025-04-04)
 
 #### Features
 
