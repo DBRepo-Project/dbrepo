@@ -11,6 +11,7 @@ data:
   AUTH_SERVICE_ADMIN: "{{ .Values.authservice.auth.adminUser }}"
   AUTH_SERVICE_ADMIN_PASSWORD: "{{ .Values.authservice.auth.adminPassword }}"
   AUTH_SERVICE_ENDPOINT: "{{ .Values.authservice.endpoint }}"
+  KEYCLOAK_HOSTNAME: "{{ .Values.gateway }}"
   LDAP_ROOT: "{{ .Values.identityservice.global.ldapDomain }}"
   LDAP_ADMIN_DN: "cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }}"
   LDAP_ADMIN_PASSWORD: "{{ .Values.identityservice.global.adminPassword }}"

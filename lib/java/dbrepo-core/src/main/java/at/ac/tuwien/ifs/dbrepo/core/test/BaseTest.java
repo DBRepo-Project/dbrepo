@@ -42,6 +42,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.name.OrcidNameDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.name.OrcidValueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.ContainerImage;

@@ -85,8 +85,8 @@ authservice:
     debug: false
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
-  ## @param authservice.extraStartupArgs Extra arguments for the Keycloak container.
-  extraStartupArgs: --hostname-strict false --proxy-headers xforwarded
+  ## @skip authservice.proxyHeaders
+  proxyHeaders: xforwarded
   ## @skip authservice.postgresql
   postgresql:
     enabled: true
@@ -790,6 +790,14 @@ ui:
   image:
     ## @skip ui.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.0
+  ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
+  oidc:
+    ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
+    authSessionSecret: qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
+    ## @param ui.oidc.sessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
+    sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
+    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
+    tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param ui.podSecurityContext.enabled Enable pods' Security Context

@@ -129,9 +129,6 @@
                 "extraEnvVarsCM": {
                     "type": "string"
                 },
-                "extraStartupArgs": {
-                    "type": "string"
-                },
                 "extraVolumeMounts": {
                     "items": {
                         "properties": {
@@ -229,6 +226,9 @@
                         }
                     },
                     "type": "object"
+                },
+                "proxyHeaders": {
+                    "type": "string"
                 },
                 "replicaCount": {
                     "type": "integer"
@@ -1831,6 +1831,20 @@
                 "image": {
                     "properties": {
                         "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "oidc": {
+                    "properties": {
+                        "authSessionSecret": {
+                            "type": "string"
+                        },
+                        "sessionSecret": {
+                            "type": "string"
+                        },
+                        "tokenKey": {
                             "type": "string"
                         }
                     },
