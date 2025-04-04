@@ -715,7 +715,7 @@ verify-images:
     - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64"
     - "chmod +x /usr/local/sbin/regctl"
   script:
-    - bash ./.gitlab/check-unsupported-images.sh
+    - bash ./.gitlab/check-supported-images.sh
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}
