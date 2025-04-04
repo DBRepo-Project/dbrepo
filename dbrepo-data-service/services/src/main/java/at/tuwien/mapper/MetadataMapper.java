@@ -1,21 +1,20 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.image.ImageDto;
-import at.tuwien.api.database.DatabaseBriefDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.internal.CreateDatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import org.keycloak.representations.AccessTokenResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -36,6 +35,12 @@ public interface MetadataMapper {
             @Mapping(target = "password", source = "privilegedPassword"),
     })
     UserDto createDatabaseDtoToPrivilegedUserDto(CreateDatabaseDto data);
+
+    @Mappings({
+            @Mapping(target = "username", source = "readonlyUsername"),
+            @Mapping(target = "password", source = "readonlyPassword"),
+    })
+    UserDto createDatabaseDtoToReadonlyUserDto(CreateDatabaseDto data);
 
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 

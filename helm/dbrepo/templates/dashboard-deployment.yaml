@@ -1,0 +1,77 @@
+{{- if .Values.dashboardservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: dashboard-service
+    service: dashboard-service
+spec:
+  replicas: {{ .Values.dashboardservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: dashboard-service
+      service: dashboard-service
+  template:
+    metadata:
+      labels:
+        app: dashboard-service
+        service: dashboard-service
+    spec:
+      {{- if .Values.dashboardservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init
+          image: {{ .Values.dashboardservice.init.image.name }}
+          imagePullPolicy: {{ .Values.dashboardservice.init.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.dashboardservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: dashboard-service-secret
+          {{- if .Values.dashboardservice.init.resources }}
+          resources: {{- toYaml .Values.dashboardservice.init.resources | nindent 12 }}
+          {{- else if ne .Values.dashboardservice.init.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.dashboardservice.init.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      containers:
+        - name: dashboard-service
+          image: {{ .Values.dashboardservice.image.name }}
+          imagePullPolicy: {{ .Values.dashboardservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.dashboardservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: dashboard-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.dashboardservice.resources }}
+          resources: {{- toYaml .Values.dashboardservice.resources | nindent 12 }}
+          {{- else if ne .Values.dashboardservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.dashboardservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+{{- end }}

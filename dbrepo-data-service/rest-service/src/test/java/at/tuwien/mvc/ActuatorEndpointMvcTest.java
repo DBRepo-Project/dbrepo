@@ -1,6 +1,6 @@
 package at.tuwien.mvc;
 
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @AutoConfigureObservability
-public class ActuatorEndpointMvcTest extends AbstractUnitTest {
+public class ActuatorEndpointMvcTest extends BaseTest {
 
     @Autowired
     private MockMvc mockMvc;

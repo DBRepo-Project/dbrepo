@@ -1,8 +1,8 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.QueueService;

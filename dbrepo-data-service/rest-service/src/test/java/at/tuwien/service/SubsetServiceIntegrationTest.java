@@ -1,12 +1,12 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.query.*;
-import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class SubsetServiceIntegrationTest extends AbstractUnitTest {
+public class SubsetServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private SubsetService subsetService;
@@ -60,9 +60,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 
@@ -242,7 +241,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
-            TableNotFoundException, QueryMalformedException, ImageNotFoundException {
+            TableNotFoundException, QueryMalformedException, ImageNotFoundException, ViewNotFoundException {
 
         /* test */
         final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_ID);
@@ -253,9 +252,10 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     @MethodSource("create_arguments")
     public void create_illegalQuery_succeeds(String name, String injection) throws TableNotFoundException,
             QueryStoreInsertException, ViewMalformedException, SQLException, QueryMalformedException,
-            ImageNotFoundException {
+            ImageNotFoundException, ViewNotFoundException {
         final SubsetDto request = SubsetDto.builder()
-                .tableId(TABLE_1_ID)
+                .datasourceId(TABLE_1_ID)
+                .datasourceType(DatasourceType.TABLE)
                 .columns(new LinkedList<>(List.of(COLUMN_1_1_ID, COLUMN_1_2_ID, COLUMN_1_3_ID, COLUMN_1_4_ID, COLUMN_1_5_ID)))
                 .filter(new LinkedList<>(List.of(FilterDto.builder()
                         .type(FilterTypeDto.WHERE)

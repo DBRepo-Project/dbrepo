@@ -1,24 +1,24 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.tuwien.endpoints.TableEndpoint;
-import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.service.TableService;
-import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +27,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -47,7 +46,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class TableEndpointUnitTest extends AbstractUnitTest {
+public class TableEndpointUnitTest extends BaseTest {
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -83,15 +82,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> anyAccess_parameters() {
         return Stream.of(
-                Arguments.arguments("read", DATABASE_1_USER_2_READ_ACCESS_DTO),
-                Arguments.arguments("write_own", DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO),
-                Arguments.arguments("write_all", DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO)
+                Arguments.arguments("read", AccessTypeDto.READ),
+                Arguments.arguments("write_own", AccessTypeDto.WRITE_OWN),
+                Arguments.arguments("write_all", AccessTypeDto.WRITE_ALL)
         );
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        genesis();
     }
 
     @Test
@@ -177,7 +171,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(tableService.getStatistics(any(DatabaseDto.class), any(TableDto.class)))
+        when(tableService.getStatistics(any(DatabaseDto.class), anyString()))
                 .thenReturn(TABLE_8_STATISTIC_DTO);
 
         /* test */
@@ -197,7 +191,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
-                .getStatistics(any(DatabaseDto.class), any(TableDto.class));
+                .getStatistics(any(DatabaseDto.class), anyString());
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -322,7 +316,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_5_DTO);
         when(credentialService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(tableService.getCount(any(DatabaseDto.class), any(TableDto.class), any(Instant.class)))
+        when(tableService.getCount(any(DatabaseDto.class), anyString(), any(Instant.class)))
                 .thenReturn(3L);
         when(subsetService.getData(eq(DATABASE_2_DTO), anyString()))
                 .thenReturn(mock);
@@ -432,7 +426,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @WithMockUser(username = USER_2_USERNAME)
     @MethodSource("anyAccess_parameters")
-    public void getData_private_succeeds(String name, DatabaseAccessDto access) throws DatabaseUnavailableException,
+    public void getData_private_succeeds(String name, AccessTypeDto type) throws DatabaseUnavailableException,
             TableNotFoundException, QueryMalformedException, RemoteUnavailableException, PaginationException,
             MetadataServiceException, NotAllowedException, DatabaseNotFoundException, StorageUnavailableException, FormatNotAvailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
@@ -443,7 +437,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
-                .thenReturn(access);
+                .thenReturn(DatabaseAccessDto.builder()
+                        .user(USER_2_BRIEF_DTO)
+                        .huserid(USER_2_ID)
+                        .hdbid(DATABASE_1_ID)
+                        .type(type)
+                        .build());
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
@@ -1345,7 +1344,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @WithMockUser(username = USER_2_USERNAME)
     @MethodSource("anyAccess_parameters")
-    public void getData_privateDataPrivateSchemaTextCsv_succeeds(String name, DatabaseAccessDto access)
+    public void getData_privateDataPrivateSchemaTextCsv_succeeds(String name, AccessTypeDto type)
             throws TableNotFoundException, NotAllowedException, StorageUnavailableException, QueryMalformedException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
             DatabaseUnavailableException, FormatNotAvailableException, PaginationException {
@@ -1357,7 +1356,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
-                .thenReturn(access);
+                .thenReturn(DatabaseAccessDto.builder()
+                        .user(USER_2_BRIEF_DTO)
+                        .huserid(USER_2_ID)
+                        .hdbid(DATABASE_1_ID)
+                        .type(type)
+                        .build());
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))

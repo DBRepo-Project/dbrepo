@@ -1,6 +1,6 @@
 package at.tuwien.auth;
 
-import at.tuwien.api.keycloak.TokenDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.tuwien.service.CredentialService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,7 @@ public class BasicAuthenticationProvider implements AuthenticationManager {
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
         final TokenDto tokenDto = credentialService.getAccessToken(auth.getName(), auth.getCredentials().toString());
         final UserDetails userDetails = authTokenFilter.verifyJwt(tokenDto.getAccessToken());
+        log.debug("set basic auth principal username: {}", userDetails.getUsername());
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }

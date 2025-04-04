@@ -2,8 +2,8 @@ package at.tuwien.service;
 
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.ViewMalformedException;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ViewMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import java.sql.SQLException;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class ViewServiceIntegrationTest extends AbstractUnitTest {
+public class ViewServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private ViewService viewService;
@@ -31,9 +31,8 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 

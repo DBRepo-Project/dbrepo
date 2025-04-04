@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.SubsetDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
@@ -26,7 +26,7 @@ public interface SubsetService {
      * @throws SQLException              The connection to the database could not be established.
      */
     UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
-            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException;
+            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException, ViewNotFoundException;
 
     /**
      * Counts the subset row count of a query of a given subset in the given database.

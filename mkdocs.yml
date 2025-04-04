@@ -1,5 +1,5 @@
 site_name: Database Repository
-site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/
+site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/
 repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 repo_name: fda-services
 site_author: Research Unit Data Science, Technische Universit&auml;t Wien
@@ -18,12 +18,12 @@ nav:
     - Overview: concepts/index.md
     - Authentication: concepts/authentication.md
     - Data Versioning: concepts/data-versioning.md
+    - Dashboards: concepts/dashboards.md
     - Data Visibility: concepts/data-visibility.md
     - Messaging: concepts/messaging.md
     - Monitoring: concepts/monitoring.md
     - Persistent Identifier: concepts/pid.md
     - Search: concepts/search.md
-    - User Interface: concepts/ui.md
   - API:
     - Overview: api/index.md
     - Databases:
@@ -37,16 +37,14 @@ nav:
       - Analyse Service: api/analyse-service.md
       - Auth Service: api/auth-service.md
       - Broker Service: api/broker-service.md
-      - Dashboard Service: api/dashboard-service.md
       - Data Service: api/data-service.md
       - Gateway Service: api/gateway-service.md
       - Identity Service: api/identity-service.md
       - Metadata Service: api/metadata-service.md
       - Search Service: api/search-service.md
       - Storage Service: api/storage-service.md
-      - Upload Service: api/upload-service.md
     - UI:
-      - Customization: api/ui.md
+      - Repository: api/ui.md
   - Examples:
     - Air Quality Data: examples/air.md
     - COVID-19 Data: examples/covid-19.md
@@ -120,9 +118,9 @@ markdown_extensions:
         custom_icons:
           - .docs/overrides/.icons
 extra:
-  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/
   version:
-    default: 1.7
+    default: 1.8
     provider: mike
   social:
     - icon: simple/artifacthub

@@ -1,7 +1,7 @@
 package at.tuwien.handlers;
 
-import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
@@ -112,6 +112,20 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.FORBIDDEN)
     @ExceptionHandler(CredentialsInvalidException.class)
     public ResponseEntity<ApiErrorDto> handle(CredentialsInvalidException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(DashboardServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(DashboardServiceException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
+    @ExceptionHandler(DashboardServiceConnectionException.class)
+    public ResponseEntity<ApiErrorDto> handle(DashboardServiceConnectionException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 

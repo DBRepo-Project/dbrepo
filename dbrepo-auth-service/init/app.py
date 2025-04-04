@@ -5,22 +5,30 @@ from requests import post, get
 
 endpoint = os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
 system_username = os.getenv('SYSTEM_USERNAME', 'admin')
+readonly_username = os.getenv('READONLY_USERNAME', 'user')
 
 
-def fetch() -> (str, str):
-    print(f'Fetching user id of internal user with username: {system_username}')
+def fetch_keycloak_master_access_token() -> str:
+    """
+    Fetch admin access token from the master realm.
+    :return: The access token.
+    """
     response = post(url=f'{endpoint}/realms/master/protocol/openid-connect/token', data=dict({
         'username': os.getenv('AUTH_SERVICE_ADMIN', 'admin'),
         'password': os.getenv('AUTH_SERVICE_ADMIN_PASSWORD', 'admin'),
         'grant_type': 'password',
         'client_id': 'admin-cli'
     }))
-
     if response.status_code != 200:
         raise IOError(f'Failed to obtain admin token: {response.status_code}')
+    return response.json()["access_token"]
 
-    response = get(url=f'{endpoint}/admin/realms/dbrepo/users/?username={system_username}', headers=dict({
-        'Authorization': f'Bearer {response.json()["access_token"]}'
+
+def fetch(username) -> (str, str):
+    print(f'Fetching user id of internal user with username: {username}')
+
+    response = get(url=f'{endpoint}/admin/realms/dbrepo/users/?username={username}', headers=dict({
+        'Authorization': f'Bearer {fetch_keycloak_master_access_token()}'
     }))
     if response.status_code != 200 or len(response.json()) != 1:
         raise FileNotFoundError(f'Failed to obtain user')
@@ -39,7 +47,7 @@ def fetch() -> (str, str):
     return (ldap_user_id, user_id)
 
 
-def save(user_id: str, keycloak_id: str) -> None:
+def save(user_id: str, keycloak_id: str, username: str) -> None:
     conn = mariadb.connect(user=os.getenv('METADATA_USERNAME', 'root'),
                            password=os.getenv('METADATA_DB_PASSWORD', 'dbrepo'),
                            host=os.getenv('METADATA_HOST', 'metadata-db'),
@@ -48,12 +56,14 @@ def save(user_id: str, keycloak_id: str) -> None:
     cursor = conn.cursor()
     cursor.execute(
         "INSERT IGNORE INTO `mdb_users` (`id`, `keycloak_id`, `username`, `mariadb_password`, `is_internal`) VALUES (?, ?, ?, PASSWORD(LEFT(UUID(), 20)), true)",
-        (user_id, keycloak_id, system_username))
+        (user_id, keycloak_id, username))
     conn.commit()
     conn.close()
+    print(f'Successfully inserted user: {username}')
 
 
 if __name__ == '__main__':
-    user_id, keycloak_id = fetch()
-    save(user_id, keycloak_id)
-    print(f'Successfully inserted user')
+    user_id, keycloak_id = fetch(system_username)
+    save(user_id, keycloak_id, system_username)
+    user_id, keycloak_id = fetch(readonly_username)
+    save(user_id, keycloak_id, readonly_username)

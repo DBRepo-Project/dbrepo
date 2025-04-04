@@ -376,6 +376,8 @@ ALTER TABLE mdb_users
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_users
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE mdb_users
+    DROP COLUMN email;
 -- mdb_images
 ALTER TABLE mdb_images
     ADD PRIMARY KEY (id);

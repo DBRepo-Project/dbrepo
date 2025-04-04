@@ -1,16 +1,15 @@
 package at.tuwien.gateway;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
-import at.tuwien.test.AbstractUnitTest;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ import static org.mockito.Mockito.when;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
+public class MetadataServiceGatewayUnitTest extends BaseTest {
 
     @MockBean
     @Qualifier("internalRestTemplate")
@@ -42,11 +41,6 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Autowired
     private MetadataServiceGateway metadataServiceGateway;
-
-    @BeforeEach
-    public void beforeEach() {
-        genesis();
-    }
 
     @Test
     public void getTableById_succeeds() throws TableNotFoundException, RemoteUnavailableException,
@@ -130,7 +124,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Port", "" + CONTAINER_1_PORT);
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
-        headers.set("X-Jdbc-Method", IMAGE_1_JDBC);
+        headers.set("X-Jdbc-Method", IMAGE_1_JDBC_METHOD);
         headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
@@ -232,7 +226,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Port", "" + CONTAINER_1_PORT);
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
-        headers.set("X-Jdbc-Method", IMAGE_1_JDBC);
+        headers.set("X-Jdbc-Method", IMAGE_1_JDBC_METHOD);
         headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */

@@ -129,6 +129,9 @@
                 "extraEnvVarsCM": {
                     "type": "string"
                 },
+                "extraStartupArgs": {
+                    "type": "string"
+                },
                 "extraVolumeMounts": {
                     "items": {
                         "properties": {
@@ -227,9 +230,6 @@
                     },
                     "type": "object"
                 },
-                "production": {
-                    "type": "boolean"
-                },
                 "replicaCount": {
                     "type": "integer"
                 },
@@ -252,20 +252,6 @@
                         },
                         "resourcesPreset": {
                             "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "tls": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "existingSecret": {
-                            "type": "string"
-                        },
-                        "usePem": {
-                            "type": "boolean"
                         }
                     },
                     "type": "object"
@@ -458,40 +444,45 @@
         },
         "dashboardservice": {
             "properties": {
-                "dashboardsProvider": {
+                "containerSecurityContext": {
                     "properties": {
-                        "enabled": {
+                        "allowPrivilegeEscalation": {
                             "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "datasources": {
-                    "properties": {
-                        "secretDefinition": {
+                        },
+                        "capabilities": {
                             "properties": {
-                                "apiVersion": {
-                                    "type": "integer"
-                                },
-                                "datasources": {
+                                "drop": {
                                     "items": {
-                                        "properties": {
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "type": {
-                                                "type": "string"
-                                            },
-                                            "uid": {
-                                                "type": "string"
-                                            },
-                                            "url": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "type": "object"
+                                        "type": "string"
                                     },
                                     "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
                                 }
                             },
                             "type": "object"
@@ -502,28 +493,99 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "endpoint": {
+                    "type": "string"
+                },
+                "image": {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "init": {
+                    "properties": {
+                        "image": {
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "resources": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "resourcesPreset": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "podSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "replicaCount": {
+                    "type": "integer"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "resourcesPreset": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "dashboardui": {
+            "properties": {
+                "dashboardsProvider": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "datasources": {
+                    "properties": {
+                        "secretName": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string"
+                },
                 "fullnameOverride": {
                     "type": "string"
                 },
                 "grafana": {
                     "properties": {
-                        "extraConfigmaps": {
-                            "items": {
-                                "properties": {
-                                    "mountPath": {
-                                        "type": "string"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "readOnly": {
-                                        "type": "boolean"
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "type": "array"
-                        },
                         "extraEnvVarsSecret": {
                             "type": "string"
                         },
@@ -559,6 +621,19 @@
                         }
                     },
                     "type": "object"
+                },
+                "service": {
+                    "properties": {
+                        "ports": {
+                            "properties": {
+                                "grafana": {
+                                    "type": "integer"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"
@@ -568,6 +643,12 @@
                 "db": {
                     "properties": {
                         "name": {
+                            "type": "string"
+                        },
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
                             "type": "string"
                         }
                     },
@@ -1302,6 +1383,9 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "endpoint": {
+                    "type": "string"
+                },
                 "fullnameOverride": {
                     "type": "string"
                 },
@@ -1877,173 +1961,6 @@
                 },
                 "resourcesPreset": {
                     "type": "string"
-                }
-            },
-            "type": "object"
-        },
-        "uploadservice": {
-            "properties": {
-                "containerArgs": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "containerSecurityContext": {
-                    "properties": {
-                        "allowPrivilegeEscalation": {
-                            "type": "boolean"
-                        },
-                        "capabilities": {
-                            "properties": {
-                                "drop": {
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "readOnlyRootFilesystem": {
-                            "type": "boolean"
-                        },
-                        "runAsGroup": {
-                            "type": "integer"
-                        },
-                        "runAsNonRoot": {
-                            "type": "boolean"
-                        },
-                        "runAsUser": {
-                            "type": "integer"
-                        },
-                        "seLinuxOptions": {
-                            "properties": {},
-                            "type": "object"
-                        },
-                        "seccompProfile": {
-                            "properties": {
-                                "type": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    },
-                    "type": "object"
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "envFrom": {
-                    "items": {
-                        "properties": {
-                            "secretRef": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
-                },
-                "image": {
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "podSecurityContext": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "fsGroup": {
-                            "type": "integer"
-                        },
-                        "fsGroupChangePolicy": {
-                            "type": "string"
-                        },
-                        "supplementalGroups": {
-                            "type": "array"
-                        },
-                        "sysctls": {
-                            "type": "array"
-                        }
-                    },
-                    "type": "object"
-                },
-                "replicaCount": {
-                    "type": "integer"
-                },
-                "resources": {
-                    "properties": {},
-                    "type": "object"
-                },
-                "resourcesPreset": {
-                    "type": "string"
-                },
-                "s3": {
-                    "properties": {
-                        "bucket": {
-                            "type": "string"
-                        },
-                        "endpoint": {
-                            "type": "string"
-                        },
-                        "maxSize": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "volumeMounts": {
-                    "items": {
-                        "properties": {
-                            "mountPath": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "subPath": {
-                                "type": "string"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
-                },
-                "volumes": {
-                    "items": {
-                        "properties": {
-                            "configMap": {
-                                "properties": {
-                                    "defaultMode": {
-                                        "type": "integer"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
                 }
             },
             "type": "object"

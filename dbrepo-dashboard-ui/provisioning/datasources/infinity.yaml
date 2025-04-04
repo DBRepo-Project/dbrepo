@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: dbrepo-json
+    uid: dbrepojson0
+    type: yesoreyeram-infinity-datasource
+    basicAuth: true
+    basicAuthUser: user
+    url: http://localhost
+    jsonData:
+      auth_method: 'basicAuth'
+      httpHeaderName1: Accept
+      allowedHosts:
+        - 'http://localhost'
+    secureJsonData:
+      basicAuthPassword: user
+      httpHeaderValue1: application/json

@@ -43,3 +43,4 @@ htmlcov/
 .coverage
 .coverage.*
 *,cover
+coverage.xml

@@ -1,23 +1,22 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryPersistDto;
-import at.tuwien.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.tuwien.endpoints.SubsetEndpoint;
-import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.SubsetService;
-import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +35,13 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class SubsetEndpointUnitTest extends AbstractUnitTest {
+public class SubsetEndpointUnitTest extends BaseTest {
 
     @Autowired
     private SubsetEndpoint subsetEndpoint;
@@ -67,11 +66,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
-
-    @BeforeEach
-    public void beforeEach() {
-        genesis();
-    }
 
     @Test
     @WithAnonymousUser

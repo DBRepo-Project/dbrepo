@@ -1,14 +1,14 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.tuwien.config.GatewayConfig;
-import at.tuwien.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import jakarta.validation.constraints.NotNull;
@@ -157,7 +157,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             ViewNotFoundException, MetadataServiceException {
         final ResponseEntity<ViewDto> response;
         final String url = "/api/database/" + databaseId + "/view/" + id;
-        log.debug("get  view info from metadata service: {}", url);
+        log.debug("get view info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
@@ -185,7 +185,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             MetadataServiceException {
         final ResponseEntity<UserDto> response;
         final String url = "/api/user/" + userId;
-        log.debug("get  user info from metadata service: {}", url);
+        log.debug("get user info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {

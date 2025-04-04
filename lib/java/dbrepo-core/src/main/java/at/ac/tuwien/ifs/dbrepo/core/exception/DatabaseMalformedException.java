@@ -1,0 +1,21 @@
+package at.ac.tuwien.ifs.dbrepo.core.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(code = HttpStatus.EXPECTATION_FAILED, reason = "error.database.invalid")
+public class DatabaseMalformedException extends Exception {
+
+    public DatabaseMalformedException(String message) {
+        super(message);
+    }
+
+    public DatabaseMalformedException(String message, Throwable thr) {
+        super(message, thr);
+    }
+
+    public DatabaseMalformedException(Throwable thr) {
+        super(thr);
+    }
+
+}

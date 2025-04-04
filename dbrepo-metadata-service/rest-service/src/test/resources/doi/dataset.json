@@ -1,0 +1,25 @@
+{
+  "type": "dataset",
+  "id": "https://doi.org/10.5281/zenodo.1404173",
+  "author": [
+    {
+      "family": "Marshall",
+      "given": "Michael"
+    }
+  ],
+  "issued": {
+    "date-parts": [
+      [
+        2018,
+        8,
+        27
+      ]
+    ]
+  },
+  "abstract": "<strong>Data Set Characteristics:</strong>\n\nNumber of Instances:\n150 (50 in each of three classes)\nNumber of Attributes:\n\n4 numeric, predictive attributes and the class\nAttribute Information:\n\n\n\tsepal length in cm\n\tsepal width in cm\n\tpetal length in cm\n\tpetal width in cm\n\t\n\tclass:\n\n\t\n\t\tIris-Setosa\n\t\tIris-Versicolour\n\t\tIris-Virginica",
+  "DOI": "10.5281/ZENODO.1404173",
+  "publisher": "Zenodo",
+  "title": "Scikit-Learn Iris",
+  "URL": "https://zenodo.org/record/1404173",
+  "copyright": "Creative Commons Attribution 4.0"
+}

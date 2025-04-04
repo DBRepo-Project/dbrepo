@@ -1,0 +1,403 @@
+{
+  "indexed": {
+    "date-parts": [
+      [
+        2024,
+        7,
+        1
+      ]
+    ],
+    "date-time": "2024-07-01T09:15:12Z",
+    "timestamp": 1719825312147
+  },
+  "reference-count": 37,
+  "publisher": "Ubiquity Press, Ltd.",
+  "content-domain": {
+    "domain": [],
+    "crossmark-restriction": false
+  },
+  "published-print": {
+    "date-parts": [
+      [
+        2022,
+        2,
+        9
+      ]
+    ]
+  },
+  "DOI": "10.5334\/dsj-2022-004",
+  "type": "journal-article",
+  "created": {
+    "date-parts": [
+      [
+        2022,
+        2,
+        9
+      ]
+    ],
+    "date-time": "2022-02-09T11:11:20Z",
+    "timestamp": 1644405080000
+  },
+  "source": "Crossref",
+  "is-referenced-by-count": 5,
+  "title": "OSSDIP: Open Source Secure Data Infrastructure and Processes Supporting Data Visiting",
+  "prefix": "10.5334",
+  "volume": "21",
+  "author": [
+    {
+      "ORCID": "http:\/\/orcid.org\/0000-0003-4216-302X",
+      "authenticated-orcid": false,
+      "given": "Martin",
+      "family": "Weise",
+      "sequence": "first",
+      "affiliation": []
+    },
+    {
+      "ORCID": "http:\/\/orcid.org\/0000-0002-2854-0434",
+      "authenticated-orcid": false,
+      "given": "Filip",
+      "family": "Kovacevic",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "http:\/\/orcid.org\/0000-0003-4615-2774",
+      "authenticated-orcid": false,
+      "given": "Nikolas",
+      "family": "Popper",
+      "sequence": "additional",
+      "affiliation": []
+    },
+    {
+      "ORCID": "http:\/\/orcid.org\/0000-0002-9272-6225",
+      "authenticated-orcid": false,
+      "given": "Andreas",
+      "family": "Rauber",
+      "sequence": "additional",
+      "affiliation": []
+    }
+  ],
+  "member": "3285",
+  "reference": [
+    {
+      "key": "key20220209060905_B1",
+      "volume-title": "Defenders\u2019 Guide to Container Infrastructure Security",
+      "year": "2019"
+    },
+    {
+      "issue": "2",
+      "key": "key20220209060905_B2",
+      "first-page": "315",
+      "article-title": "20 remoteneps: Data Dissemination in a Collaborative Workspace",
+      "volume": "14",
+      "year": "2011",
+      "journal-title": "Zeitschrift f\u00fcr Erziehungswissenschaft"
+    },
+    {
+      "issue": "1",
+      "key": "key20220209060905_B3",
+      "article-title": "Kadi4Mat: A Research Data Infrastructure for Materials Science",
+      "volume": "20",
+      "year": "2021",
+      "journal-title": "Data Science Journal"
+    },
+    {
+      "issue": "1",
+      "key": "key20220209060905_B4",
+      "doi-asserted-by": "crossref",
+      "first-page": "195",
+      "DOI": "10.1055\/s-0039-1677917",
+      "article-title": "The French Health Data Hub and the German Medical Informatics Initiatives: Two National Projects to Promote Data Sharing in Healthcare",
+      "volume": "28",
+      "year": "2019",
+      "journal-title": "EN. Yearbook of Medical Informatics"
+    },
+    {
+      "key": "key20220209060905_B5",
+      "article-title": "Five Safes: Designing data access for research [Online]",
+      "year": "2016",
+      "journal-title": "Economics Working Paper Series 1601"
+    },
+    {
+      "key": "key20220209060905_B6",
+      "article-title": "Remote Access to Official Microdata",
+      "year": "2020"
+    },
+    {
+      "key": "key20220209060905_B7",
+      "first-page": "554",
+      "article-title": "Role-Based Access Controls",
+      "year": "1992"
+    },
+    {
+      "key": "key20220209060905_B8",
+      "article-title": "De-identification of personal information",
+      "year": "2015",
+      "journal-title": "National institute of standards and technology"
+    },
+    {
+      "key": "key20220209060905_B9",
+      "first-page": "16",
+      "article-title": "Secure cloud computing with a virtualized network infrastructure",
+      "year": "2010"
+    },
+    {
+      "key": "key20220209060905_B10",
+      "doi-asserted-by": "crossref",
+      "first-page": "196",
+      "DOI": "10.1016\/j.jbi.2014.01.003",
+      "article-title": "A case study of the Secure Anonymous Information Linkage (SAIL) Gateway: A privacy-protecting remote access system for health-related research and evaluation",
+      "volume": "50",
+      "year": "2014",
+      "journal-title": "Journal of Biomedical Informatics"
+    },
+    {
+      "issue": "4",
+      "key": "key20220209060905_B11",
+      "doi-asserted-by": "crossref",
+      "first-page": "533",
+      "DOI": "10.1016\/j.giq.2010.10.008",
+      "article-title": "Key Issues in Data Center Security: An Investigation of Government Audit Reports",
+      "volume": "28",
+      "year": "2011",
+      "journal-title": "Government Information Quarterly"
+    },
+    {
+      "issue": "5",
+      "key": "key20220209060905_B12",
+      "doi-asserted-by": "crossref",
+      "first-page": "38",
+      "DOI": "10.1109\/MSEC.2020.2990230",
+      "article-title": "Dedicated Security Chips in the Age of Secure Enclaves",
+      "volume": "18",
+      "year": "2020",
+      "journal-title": "IEEE Security & Privacy"
+    },
+    {
+      "issue": "3",
+      "key": "key20220209060905_B13",
+      "first-page": "34",
+      "volume": "41",
+      "year": "2012",
+      "journal-title": "Temporal Features in SQL:2011"
+    },
+    {
+      "issue": "4",
+      "key": "key20220209060905_B14",
+      "article-title": "Watermill: An Optimized Fingerprinting System for Databases under Constraints",
+      "volume": "20",
+      "year": "2008",
+      "journal-title": "IEEE Transactions on Knowledge and Data Engineering"
+    },
+    {
+      "key": "key20220209060905_B15",
+      "article-title": "Keystone: An Open Framework for Architecting Trusted Execution Environments",
+      "year": "2020"
+    },
+    {
+      "key": "key20220209060905_B16",
+      "first-page": "106",
+      "article-title": "T-closeness: privacy beyond k-anonymity and l-diversity",
+      "year": "2007"
+    },
+    {
+      "issue": "1",
+      "key": "key20220209060905_B17",
+      "article-title": "Fingerprinting Relational Databases: Schemes and Specialties",
+      "volume": "2",
+      "year": "2005",
+      "journal-title": "Transactions on Dependable and Secure Computing"
+    },
+    {
+      "issue": "1",
+      "key": "key20220209060905_B18",
+      "doi-asserted-by": "crossref",
+      "first-page": "3",
+      "DOI": "10.1145\/1217299.1217302",
+      "article-title": "L-diversity: privacy beyond k-anonymity",
+      "volume": "1",
+      "year": "2007",
+      "journal-title": "Acm transactions on knowledge discovery from data (tkdd)"
+    },
+    {
+      "key": "key20220209060905_B19",
+      "first-page": "1",
+      "article-title": "Database security threats and challenges",
+      "year": "2020"
+    },
+    {
+      "key": "key20220209060905_B20",
+      "article-title": "Data grid concepts for data security in distributed computing",
+      "year": "2013",
+      "journal-title": "Arxiv preprint arxiv:1308.6058"
+    },
+    {
+      "key": "key20220209060905_B21",
+      "volume-title": "A vision of a Nordic secure digital infrastructure for health data: The Nordic Commons",
+      "year": "2019"
+    },
+    {
+      "key": "key20220209060905_B22",
+      "unstructured": "Peisert, S. 2021. An Examination and Survey of Data Confidentiality Issues and Solutions in Academic Research Computing. https:\/\/escholarship.org\/uc\/item\/7cz7m1ws. Online; accessed 22 December 2021."
+    },
+    {
+      "key": "key20220209060905_B23",
+      "first-page": "561",
+      "article-title": "Real-Time Screen Watermarking Using Overlaying Layer",
+      "year": "2014",
+      "journal-title": "2014 Ninth International Conference on Availability, Reliability and Security"
+    },
+    {
+      "issue": "4",
+      "key": "key20220209060905_B24",
+      "doi-asserted-by": "crossref",
+      "first-page": "203",
+      "DOI": "10.11128\/sne.27.tn.10396",
+      "article-title": "Planning Future Health: Developing Big Data and System Modelling Pipelines for Health System Research",
+      "volume": "27",
+      "year": "2017",
+      "journal-title": "Simulation Notes Europe"
+    },
+    {
+      "key": "key20220209060905_B25",
+      "first-page": "231",
+      "article-title": "Preventing Privilege Escalation",
+      "year": "2003"
+    },
+    {
+      "key": "key20220209060905_B26",
+      "year": "2015",
+      "journal-title": "Data Citation of Evolving Data: Recommendations of the Working Group on Data Citation (WGDC)"
+    },
+    {
+      "issue": "1",
+      "key": "key20220209060905_B27",
+      "article-title": "Identification of Reproducible Subsets for Data Citation, Sharing and Re-Use",
+      "volume": "12",
+      "year": "2016",
+      "journal-title": "Bulletin of the IEEE Technical Committe on Digital Libraries (TCDL)"
+    },
+    {
+      "key": "key20220209060905_B28",
+      "first-page": "199",
+      "article-title": "Hey, you, get off of my cloud: exploring information leakage in third-party compute clouds",
+      "year": "2009"
+    },
+    {
+      "key": "key20220209060905_B29",
+      "doi-asserted-by": "crossref",
+      "first-page": "221",
+      "DOI": "10.1109\/SERVICES.2015.40",
+      "volume-title": "2015 IEEE world congress on services",
+      "year": "2015"
+    },
+    {
+      "key": "key20220209060905_B30",
+      "doi-asserted-by": "crossref",
+      "first-page": "611",
+      "DOI": "10.1007\/978-3-658-11994-2_34",
+      "volume-title": "Methodological Issues of Longitudinal Surveys: The Example of the National Educational Panel Study",
+      "year": "2016"
+    },
+    {
+      "key": "key20220209060905_B31",
+      "first-page": "1",
+      "article-title": "A collective attestation scheme towards cloud system",
+      "year": "2020",
+      "journal-title": "Cluster computing"
+    },
+    {
+      "issue": "5",
+      "key": "key20220209060905_B32",
+      "doi-asserted-by": "crossref",
+      "first-page": "557",
+      "DOI": "10.1142\/S0218488502001648",
+      "article-title": "K-anonymity: a model for protecting privacy",
+      "volume": "10",
+      "year": "2002",
+      "journal-title": "International journal of uncertainty, fuzziness and knowledge-based systems"
+    },
+    {
+      "key": "key20220209060905_B33",
+      "unstructured": "United Kingdom Health Data Research Alliance. 2020. Trusted Research Environments [Online]. URL: https:\/\/ukhealthdata.org\/projects\/aligning-approach-to-trusted-research-environments\/. Accessed September 2020. Version 2.0."
+    },
+    {
+      "key": "key20220209060905_B34",
+      "first-page": "34",
+      "article-title": "FDA-DBRepo: A Data Preservation Repository Supporting FAIR Principles, Data Versioning and Reproducible Queries",
+      "year": "2021"
+    },
+    {
+      "key": "key20220209060905_B35",
+      "first-page": "51",
+      "article-title": "A Data-Visiting Infrastructure for Providing Access to Preserved Databases that Cannot be Shared or Made Publicly Accessible",
+      "year": "2021"
+    },
+    {
+      "key": "key20220209060905_B36",
+      "article-title": "OpenSAFELY: factors associated with COVID-19-related hospital death in the linked electronic health records of 17 million adult NHS patients",
+      "year": "2020",
+      "journal-title": "Medrxiv"
+    },
+    {
+      "key": "key20220209060905_B37",
+      "first-page": "305",
+      "article-title": "Cross-vm side channels and their use to extract private keys",
+      "year": "2012"
+    }
+  ],
+  "container-title": "Data Science Journal",
+  "original-title": [],
+  "language": "en",
+  "link": [
+    {
+      "URL": "https:\/\/doi.org\/10.5334\/dsj-2022-004",
+      "content-type": "unspecified",
+      "content-version": "vor",
+      "intended-application": "similarity-checking"
+    }
+  ],
+  "deposited": {
+    "date-parts": [
+      [
+        2022,
+        7,
+        11
+      ]
+    ],
+    "date-time": "2022-07-11T09:21:08Z",
+    "timestamp": 1657531268000
+  },
+  "score": 1,
+  "resource": {
+    "primary": {
+      "URL": "http:\/\/datascience.codata.org\/articles\/10.5334\/dsj-2022-004\/"
+    }
+  },
+  "subtitle": [],
+  "short-title": [],
+  "issued": {
+    "date-parts": [
+      [
+        2022
+      ]
+    ]
+  },
+  "references-count": 37,
+  "alternative-id": [
+    "10.5334\/dsj-2022-004"
+  ],
+  "URL": "http:\/\/dx.doi.org\/10.5334\/dsj-2022-004",
+  "relation": {},
+  "ISSN": [
+    "1683-1470"
+  ],
+  "subject": [],
+  "published": {
+    "date-parts": [
+      [
+        2022
+      ]
+    ]
+  }
+}
