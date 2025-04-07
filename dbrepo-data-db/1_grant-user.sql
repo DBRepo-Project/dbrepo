@@ -1,1 +1,1 @@
-GRANT SELECT ON *.* TO `user`@`%`;
+GRANT SELECT ON *.* TO `readonly`@`%`;

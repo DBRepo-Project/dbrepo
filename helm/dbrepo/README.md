@@ -411,12 +411,11 @@ mqtt.prefetch = 10
 
 ### Dashboard UI
 
-| Name                                     | Description                                                                                                            | Value                 |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `dashboardui.enabled`                    | Enable the Dashboard UI.                                                                                               | `true`                |
-| `dashboardui.metrics.enabled`            | Enable the metrics sidecar.                                                                                            | `true`                |
-| `dashboardui.endpoint`                   | The endpoint for the microservices.                                                                                    | `http://dashboard-ui` |
-| `dashboardui.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true`                |
+| Name                          | Description                         | Value                 |
+| ----------------------------- | ----------------------------------- | --------------------- |
+| `dashboardui.enabled`         | Enable the Dashboard UI.            | `true`                |
+| `dashboardui.metrics.enabled` | Enable the metrics sidecar.         | `true`                |
+| `dashboardui.endpoint`        | The endpoint for the microservices. | `http://dashboard-ui` |
 
 ### Metric Service
 

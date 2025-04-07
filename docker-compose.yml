@@ -42,9 +42,9 @@ services:
     ports:
       - "3307:3306"
     environment:
-      MARIADB_PASSWORD: "${READONLY_PASSWORD:-user}"
+      MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
-      MARIADB_USER: "${READONLY_USERNAME:-user}"
+      MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
       test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
       interval: 10s
@@ -128,7 +128,7 @@ services:
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       METADATA_USERNAME: "root"
-      READONLY_USERNAME: "${READONLY_USERNAME:-user}"
+      READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
     depends_on:
@@ -329,6 +329,7 @@ services:
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
+      NUXT_PUBLIC_DASHBOARD_URL: "${BASE_URL:-http://localhost}/dashboard"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
@@ -394,8 +395,8 @@ services:
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_USERS: "${SYSTEM_USERNAME:-admin},${READONLY_USERNAME:-user}"
-      LDAP_PASSWORDS: "${SYSTEM_PASSWORD:-admin},${READONLY_PASSWORD:-user}"
+      LDAP_USERS: "${SYSTEM_USERNAME:-admin},${READONLY_USERNAME:-readonly}"
+      LDAP_PASSWORDS: "${SYSTEM_PASSWORD:-admin},${READONLY_PASSWORD:-readonly}"
       LDAP_GROUP: "${ADMIN_GROUP:-system}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
       LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
@@ -575,6 +576,8 @@ services:
       - dashboard-ui-data:/opt/bitnami/grafana/data
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
+      # do not attempt to set it in the grafana.ini, hours wasted here: 7
+      GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
