@@ -654,6 +654,9 @@
                     },
                     "type": "object"
                 },
+                "enabled": {
+                    "type": "boolean"
+                },
                 "extraFlags": {
                     "type": "string"
                 },
@@ -677,6 +680,9 @@
                     "type": "object"
                 },
                 "host": {
+                    "type": "string"
+                },
+                "initdbScriptsConfigMap": {
                     "type": "string"
                 },
                 "jdbcExtraArgs": {

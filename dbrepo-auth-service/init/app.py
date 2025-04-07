@@ -3,19 +3,16 @@ import os
 import mariadb
 from requests import post, get
 
-endpoint = os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
-system_username = os.getenv('SYSTEM_USERNAME', 'admin')
-readonly_username = os.getenv('READONLY_USERNAME', 'user')
-
 
 def fetch_keycloak_master_access_token() -> str:
     """
     Fetch admin access token from the master realm.
     :return: The access token.
     """
+    endpoint = os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
     response = post(url=f'{endpoint}/realms/master/protocol/openid-connect/token', data=dict({
-        'username': os.getenv('AUTH_SERVICE_ADMIN', 'admin'),
-        'password': os.getenv('AUTH_SERVICE_ADMIN_PASSWORD', 'admin'),
+        'username': os.getenv('SYSTEM_USERNAME', 'admin'),
+        'password': os.getenv('SYSTEM_PASSWORD', 'admin'),
         'grant_type': 'password',
         'client_id': 'admin-cli'
     }))
@@ -26,7 +23,7 @@ def fetch_keycloak_master_access_token() -> str:
 
 def fetch(username) -> (str, str):
     print(f'Fetching user id of internal user with username: {username}')
-
+    endpoint = os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
     response = get(url=f'{endpoint}/admin/realms/dbrepo/users/?username={username}', headers=dict({
         'Authorization': f'Bearer {fetch_keycloak_master_access_token()}'
     }))
@@ -63,6 +60,8 @@ def save(user_id: str, keycloak_id: str, username: str) -> None:
 
 
 if __name__ == '__main__':
+    system_username = os.getenv('SYSTEM_USERNAME', 'admin')
+    readonly_username = os.getenv('READONLY_USERNAME', 'user')
     user_id, keycloak_id = fetch(system_username)
     save(user_id, keycloak_id, system_username)
     user_id, keycloak_id = fetch(readonly_username)

@@ -155,6 +155,8 @@ authservice:
 ## @section Data Database
 
 datadb:
+  ## @param datadb.enabled Enable the Auth Service.
+  enabled: true
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
   ## @param datadb.host The hostname for the microservices.
@@ -188,6 +190,8 @@ datadb:
   replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "nano-hm"
+  ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
+  initdbScriptsConfigMap: "data-db-setup"
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true

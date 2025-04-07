@@ -28,8 +28,6 @@ class SearchServiceClient:
             host = 'search-db'
         self.host = os.getenv('OPENSEARCH_HOST', host)
         self.metadata_endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://metadata-service:8080')
-        self.username = os.getenv('OPENSEARCH_USERNAME', username)
-        self.password = os.getenv('OPENSEARCH_PASSWORD', password)
         self.port = int(os.getenv('OPENSEARCH_PORT', port))
         self.system_username = os.getenv('SYSTEM_USERNAME', 'admin')
         self.system_password = os.getenv('SYSTEM_PASSWORD', 'admin')
@@ -43,7 +41,7 @@ class SearchServiceClient:
         if self.instance is None:
             self.instance = OpenSearch(hosts=[{"host": self.host, "port": self.port}],
                                        http_compress=True,
-                                       http_auth=(self.username, self.password))
+                                       http_auth=(self.system_username, self.system_password))
         return self.instance
 
     def database_exists(self, database_id: str):

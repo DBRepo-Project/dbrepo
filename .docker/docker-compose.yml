@@ -13,9 +13,9 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
+    image: docker.io/mariadb:11.3.2
     volumes:
-      - metadata-db-data:/bitnami/mariadb
+      - metadata-db-data:/var/lib/mysql
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./config/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
@@ -23,9 +23,8 @@ services:
     environment:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
-      test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
+      test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
       interval: 10s
       timeout: 5s
       retries: 12
@@ -36,18 +35,18 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
+    image: docker.io/mariadb:11.3.2
     volumes:
-      - data-db-data:/bitnami/mariadb
+      - data-db-data:/var/lib/mysql
+      - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "3307:3306"
     environment:
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
       MARIADB_PASSWORD: "${READONLY_PASSWORD:-user}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
       MARIADB_USER: "${READONLY_USERNAME:-user}"
     healthcheck:
-      test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
+      test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
       interval: 10s
       timeout: 5s
       retries: 12
@@ -119,14 +118,13 @@ services:
     container_name: dbrepo-auth-service-init
     image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.0
     environment:
-      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
-      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       METADATA_USERNAME: "root"
       READONLY_USERNAME: "${READONLY_USERNAME:-user}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -145,8 +143,6 @@ services:
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://analyse-service:8080}"
-      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
-      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
@@ -477,8 +473,6 @@ services:
     hostname: data-service
     image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.0
     environment:
-      AUTH_SERVICE_ADMIN: "${AUTH_SERVICE_ADMIN:-admin}"
-      AUTH_SERVICE_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
@@ -558,8 +552,6 @@ services:
     ports:
       - "4070:8080"
     environment:
-      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
-      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
