@@ -908,7 +908,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.0
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
@@ -1001,12 +1001,6 @@ dashboardui:
     ports:
       ## @skip dashboardui.service.ports.grafana
       grafana: 80
-  datasources:
-    ## @skip dashboardui.datasources.secretName
-    secretName: "dashboard-ui-prov-datasources-secret"
-  dashboardsProvider:
-    ## @param dashboardui.dashboardsProvider.enabled Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards
-    enabled: true
 
 ## @section Metric Service
 

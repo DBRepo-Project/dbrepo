@@ -39,9 +39,9 @@ class SearchServiceClient:
         @returns: The opensearch instance singleton, if successful.
         """
         if self.instance is None:
-            self.instance = OpenSearch(hosts=[{"host": self.host, "port": self.port}],
-                                       http_compress=True,
-                                       http_auth=(self.system_username, self.system_password))
+            self.instance = SearchServiceClient(hosts=[{"host": self.host, "port": self.port}],
+                                                http_compress=True,
+                                                http_auth=(self.system_username, self.system_password))
         return self.instance
 
     def database_exists(self, database_id: str):
