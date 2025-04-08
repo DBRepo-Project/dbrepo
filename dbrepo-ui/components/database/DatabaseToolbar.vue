@@ -120,7 +120,7 @@ export default {
       return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     },
     canCreateIdentifier () {
-      if (!this.roles) {
+      if (!this.roles || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
@@ -150,7 +150,7 @@ export default {
       return this.hasReadAccess
     },
     canCreateView () {
-      if (!this.cacheUser || !this.isOwner || !this.roles) {
+      if (!this.cacheUser || !this.isOwner || !this.roles || !this.access) {
         return false
       }
       return this.roles.includes('create-database-view')

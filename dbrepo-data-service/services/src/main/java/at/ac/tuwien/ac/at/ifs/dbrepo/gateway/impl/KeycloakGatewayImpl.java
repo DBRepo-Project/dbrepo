@@ -1,9 +1,9 @@
 package at.ac.tuwien.ac.at.ifs.dbrepo.gateway.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ac.at.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ac.at.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ac.at.ifs.dbrepo.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.OAuth2Constants;

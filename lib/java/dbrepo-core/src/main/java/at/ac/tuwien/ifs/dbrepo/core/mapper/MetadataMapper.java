@@ -155,7 +155,8 @@ public interface MetadataMapper {
     ContainerBriefDto containerToContainerBriefDto(Container data);
 
     @Mappings({
-            @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)")
+            @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)"),
+            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().filter(a -> !a.getUser().getIsInternal()).map(a -> databaseAccessToDatabaseAccessDto(a)).toList())")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 

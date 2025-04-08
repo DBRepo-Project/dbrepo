@@ -53,7 +53,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    public UserDetails verifyJwt(String token) throws BadCredentialsException {
+    public DecodedJWT decodeJwt(String token) {
         final KeyFactory kf;
         try {
             kf = KeyFactory.getInstance("RSA");
@@ -72,7 +72,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         final Algorithm algorithm = Algorithm.RSA256(pubKey, null);
         final Verification verification = JWT.require(algorithm);
         final JWTVerifier verifier = verification.build();
-        final DecodedJWT jwt = verifier.verify(token);
+        return verifier.verify(token);
+    }
+
+    public UserDetails verifyJwt(String token) throws BadCredentialsException {
+        final DecodedJWT jwt = decodeJwt(token);
         final RealmAccessDto realmAccess = jwt.getClaim("realm_access").as(RealmAccessDto.class);
         return UserDetailsDto.builder()
                 .id(jwt.getClaim("uid").asString())

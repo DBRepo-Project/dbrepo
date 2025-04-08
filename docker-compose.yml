@@ -79,7 +79,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: bitnami/keycloak:26.0.4-debian-12-r0
+    image: docker.io/bitnami/keycloak:26.0.4-debian-12-r0
     volumes:
       - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
@@ -99,6 +99,7 @@ services:
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost}"
+      KEYCLOAK_HOSTNAME_ADMIN: "http://localhost:8080"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -588,9 +589,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    depends_on:
-      dbrepo-data-db:
-        condition: service_healthy
     extra_hosts:
       - "localhost:host-gateway"
     logging:
@@ -618,7 +616,7 @@ services:
       timeout: 5s
       retries: 12
     depends_on:
-      dbrepo-metric-db:
-        condition: service_started
+      dbrepo-dashboard-ui:
+        condition: service_healthy
     logging:
       driver: json-file
