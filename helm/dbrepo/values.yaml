@@ -115,7 +115,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.1
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -332,7 +332,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.1
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
@@ -393,7 +393,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.1
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -490,7 +490,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.1
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -576,7 +576,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.1
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
@@ -623,7 +623,7 @@ searchservice:
   init:
     image:
       ## @skip searchservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.1
     ## @param searchservice.init.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -684,7 +684,7 @@ storageservice:
   init:
     image:
       ## @skip storageservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.1
     s3:
       ## @param storageservice.init.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -793,7 +793,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.1
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -908,7 +908,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.1
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
@@ -958,7 +958,7 @@ dashboardservice:
   init:
     image:
       ## @skip dashboardservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.1
     ## @param dashboardservice.init.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)

@@ -2,6 +2,16 @@
 author: Martin Weise
 ---
 
+## v1.8.1 (2025-04-??)
+
+#### Fixes
+
+* Fixed a bug in the UI that displays the "Create View" button only when the user has at least read access. 
+
+#### Changes
+
+* Refactored stale objects scheduler from the Data Service into a separate image.
+
 ## v1.8.0 (2025-04-04)
 
 #### Features

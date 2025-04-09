@@ -16,7 +16,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 
     <description>Service that manages the metadata</description>
 
@@ -43,7 +43,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <commons-io.version>2.17.0</commons-io.version>
-        <commons-validator.version>1.8.0</commons-validator.version>
+        <commons-validator.version>1.8.1</commons-validator.version>
         <guava.version>33.0.0-jre</guava.version>
         <jacoco.version>0.8.12</jacoco.version>
         <jwt.version>4.3.0</jwt.version>

@@ -16,7 +16,7 @@
     <groupId>at.ac.tuwien.ac.at.ifs.dbrepo</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 
     <description>Service that manages the data</description>
 
@@ -44,7 +44,7 @@
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
         <commons-io.version>2.17.0</commons-io.version>
-        <commons-validator.version>1.8.0</commons-validator.version>
+        <commons-validator.version>1.8.1</commons-validator.version>
         <jacoco.version>0.8.12</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
         <opencsv.version>5.7.1</opencsv.version>

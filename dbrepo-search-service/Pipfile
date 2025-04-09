@@ -19,7 +19,7 @@ testcontainers-opensearch = "*"
 pytest = "*"
 rdflib = "*"
 grafana-client = "*"
-dbrepo = {path = "./lib/dbrepo-1.8.0.tar.gz"}
+dbrepo = {path = "./lib/dbrepo-1.8.1.tar.gz"}
 gunicorn = "*"
 
 [dev-packages]

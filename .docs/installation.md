@@ -181,4 +181,4 @@ then [create a database](../api/#create-database) to [import a dataset](../api/#
 
 !!! info "Alternative Deployments"
 
-    Alternatively, you can also deploy DBRepo with [Kubernetes](../deployment-helm) in your virtual machine instead.
+    Alternatively, you can also deploy DBRepo with [Kubernetes](../kubernetes) in your virtual machine instead.

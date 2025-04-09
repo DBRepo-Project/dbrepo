@@ -11,7 +11,7 @@ flask-jwt-extended = "~=4.5"
 prometheus-flask-exporter = "*"
 python-dotenv = "~=1.0"
 pytest = "*"
-dbrepo = {path = "./lib/dbrepo-1.8.0.tar.gz"}
+dbrepo = {path = "./lib/dbrepo-1.8.1.tar.gz"}
 gunicorn = "*"
 pydantic = "*"
 flask_httpauth = "*"
