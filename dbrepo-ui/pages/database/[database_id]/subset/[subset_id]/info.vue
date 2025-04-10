@@ -40,11 +40,11 @@
               :resource="identifier" />
           </v-list-item>
           <v-list-item
-            v-if="subset.owner"
+            v-if="subset?.owner"
             :title="$t('pages.subset.creator.title')"
             density="compact">
             <UserBadge
-              :user="subset.owner"
+              :user="subset?.owner"
               :other-user="cacheUser" />
           </v-list-item>
           <v-list-item
@@ -173,7 +173,7 @@ export default {
       return this.database.subsets.filter(i => i.query_id === this.$route.params.subset_id)
     },
     canViewInfo () {
-      if (!this.database) {
+      if (!this.database || !this.subset) {
         return false
       }
       if (this.database.is_public || this.database.is_schema_public) {
