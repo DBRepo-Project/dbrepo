@@ -373,7 +373,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:22484d712e4a240a0114b90b5e8eaacbe47aa8f7fc79200557150f081faf7669"
+                "sha256:27d91126d95c24ed5f373726a9f119abd1f60ac8f4db1b8e59038ffacccd3b75"
             ],
             "path": "./lib/dbrepo-1.8.1.tar.gz"
         },

@@ -4,7 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# TODO
 .docker/
 # generated
 ready
@@ -60,9 +59,6 @@ ready
 # Certificates
 *.crt
 *.p12
-
-# Environment
-/.env
 
 # X509
 root.crt
