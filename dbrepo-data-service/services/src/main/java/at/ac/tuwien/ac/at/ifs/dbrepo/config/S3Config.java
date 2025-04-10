@@ -30,9 +30,6 @@ public class S3Config {
     @Value("${dbrepo.s3.bucket}")
     private String s3Bucket;
 
-    @Value("${dbrepo.s3.maxAge}")
-    private Integer maxAge;
-
     @Bean
     public S3Client s3client() {
         final AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(

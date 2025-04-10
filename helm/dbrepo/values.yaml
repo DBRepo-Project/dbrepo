@@ -997,10 +997,6 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
-  service:
-    ports:
-      ## @skip dashboardui.service.ports.grafana
-      grafana: 80
 
 ## @section Metric Service
 

@@ -6,15 +6,14 @@ import os
 from collections.abc import MutableMapping
 from json import dumps, load
 
-from opensearchpy import OpenSearch, NotFoundError
-from requests import head
-
 from dbrepo.api.dto import Database
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError
 from dbrepo.core.omlib.constants import OM_IDS
 from dbrepo.core.omlib.measure import om
 from dbrepo.core.omlib.omconstants import OM
 from dbrepo.core.omlib.unit import Unit
+from opensearchpy import OpenSearch, NotFoundError
+from requests import head
 
 
 class SearchServiceClient:
@@ -23,14 +22,14 @@ class SearchServiceClient:
     """
     instance: OpenSearch = None
 
-    def __init__(self, host: str = None, port: int = 9000, username: str = None, password: str = None):
+    def __init__(self, host: str = None, port: int = 9000, username: str = 'admin', password: str = 'admin'):
         if host is None:
             host = 'search-db'
         self.host = os.getenv('OPENSEARCH_HOST', host)
         self.metadata_endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://metadata-service:8080')
         self.port = int(os.getenv('OPENSEARCH_PORT', port))
-        self.system_username = os.getenv('SYSTEM_USERNAME', 'admin')
-        self.system_password = os.getenv('SYSTEM_PASSWORD', 'admin')
+        self.system_username = os.getenv('SYSTEM_USERNAME', username)
+        self.system_password = os.getenv('SYSTEM_PASSWORD', password)
 
     def _instance(self) -> OpenSearch:
         """
@@ -39,9 +38,9 @@ class SearchServiceClient:
         @returns: The opensearch instance singleton, if successful.
         """
         if self.instance is None:
-            self.instance = SearchServiceClient(hosts=[{"host": self.host, "port": self.port}],
-                                                http_compress=True,
-                                                http_auth=(self.system_username, self.system_password))
+            self.instance = OpenSearch(hosts=[{"host": self.host, "port": self.port}],
+                                       http_compress=True,
+                                       http_auth=(self.system_username, self.system_password))
         return self.instance
 
     def database_exists(self, database_id: str):
