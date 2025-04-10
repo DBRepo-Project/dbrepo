@@ -22,6 +22,6 @@ technologies. The conceptualized microservices (c.f. [Fig. 1](#fig1)) operate th
 *findability*, *accessability*, *interoperability* and *reuseability* (FAIR).
 
 <figure id="fig1" markdown>
-![DBRepo architecture](../images/architecture-docker-compose.svg)
-<figcaption>Fig. 1: Architecture of the services deployed via Docker Compose</figcaption>
+![DBRepo architecture](../images/architecture.svg)
+<figcaption>Fig. 1: Architecture of the services</figcaption>
 </figure>

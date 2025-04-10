@@ -605,19 +605,6 @@
                         }
                     },
                     "type": "object"
-                },
-                "service": {
-                    "properties": {
-                        "ports": {
-                            "properties": {
-                                "grafana": {
-                                    "type": "integer"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    },
-                    "type": "object"
                 }
             },
             "type": "object"

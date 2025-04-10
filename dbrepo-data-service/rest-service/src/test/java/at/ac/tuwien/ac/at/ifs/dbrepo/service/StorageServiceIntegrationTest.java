@@ -1,12 +1,12 @@
 package at.ac.tuwien.ac.at.ifs.dbrepo.service;
 
+import at.ac.tuwien.ac.at.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import at.ac.tuwien.ac.at.ifs.dbrepo.config.S3Config;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.Dataset;
@@ -28,10 +28,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.*;
@@ -231,35 +232,6 @@ public class StorageServiceIntegrationTest extends BaseTest {
                 .toList();
         assertEquals(1, lines.size());
         assertEquals("", lines.get(0));
-    }
-
-    @Test
-    public void deleteStaleObjects_none_succeeds() {
-
-        /* mock */
-        s3Client.putObject(PutObjectRequest.builder()
-                .key("s3key")
-                .bucket(s3Config.getS3Bucket())
-                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
-
-        /* test */
-        storageService.deleteStaleObjects();
-        assertEquals(1, s3Client.listObjects(ListObjectsRequest.builder().bucket(s3Config.getS3Bucket()).build()).contents().size());
-    }
-
-    @Test
-    public void deleteStaleObjects_succeeds() throws InterruptedException {
-
-        /* mock */
-        s3Client.putObject(PutObjectRequest.builder()
-                .key("s3key")
-                .bucket(s3Config.getS3Bucket())
-                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
-
-        /* test */
-        Thread.sleep(4000);
-        storageService.deleteStaleObjects();
-        assertEquals(0, s3Client.listObjects(ListObjectsRequest.builder().bucket(s3Config.getS3Bucket()).build()).contents().size());
     }
 
     @ParameterizedTest

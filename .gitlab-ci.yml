@@ -519,6 +519,22 @@ test-python-lib:
       junit: ./lib/python/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
+test-storage-service-init:
+  image: docker.io/docker:${DOCKER_VERSION}-dind
+  stage: test
+  only:
+    - merge_requests
+    - master
+  variables:
+    PYTHONUNBUFFERED: 1
+  before_script:
+    - "apk --no-cache add s3cmd bash libxml2-utils"
+    - "docker compose build dbrepo-storage-service-init"
+    - "mkdir -p /app/"
+    - "echo ${CI_S3_CONFIG} | base64 -d > /app/.s3cfg"
+  script:
+    - "bash ./dbrepo-storage-service/init/tests/test_integration_expire.sh"
+
 test-ui:
   image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: test

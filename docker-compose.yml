@@ -433,25 +433,22 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-dashboard-service-init:
+  dbrepo-storage-service-init:
     restart: "no"
     init: true
-    container_name: dbrepo-dashboard-service-init
-    hostname: search-dashboard-init
-    image: dbrepo-dashboard-service-init:latest
+    container_name: dbrepo-storage-service-init
+    hostname: storage-service-init
+    image: dbrepo-storage-service-init:latest
     build:
-      context: ./dbrepo-dashboard-service/init
+      context: ./dbrepo-storage-service/init
       network: host
     environment:
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
-      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
-      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
-      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     depends_on:
-      dbrepo-dashboard-ui:
-        condition: service_healthy
-      dbrepo-metadata-service:
+      dbrepo-storage-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -488,26 +485,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    logging:
-      driver: json-file
-
-  dbrepo-storage-service-init:
-    restart: "no"
-    init: true
-    container_name: dbrepo-storage-service-init
-    hostname: storage-service-init
-    image: dbrepo-storage-service-init:latest
-    build:
-      context: ./dbrepo-storage-service/init
-      network: host
-    environment:
-      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
-      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}
-      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
-    depends_on:
-      dbrepo-storage-service:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -563,34 +540,26 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-dashboard-ui:
+  dbrepo-dashboard-service-init:
     restart: "no"
-    container_name: dbrepo-dashboard-ui
-    hostname: dashboard-ui
-    image: dbrepo-dashboard-ui:latest
+    init: true
+    container_name: dbrepo-dashboard-service-init
+    hostname: search-dashboard-init
+    image: dbrepo-dashboard-service-init:latest
     build:
-      context: ./dbrepo-dashboard-ui
+      context: ./dbrepo-dashboard-service/init
       network: host
-    ports:
-      - "3000:3000"
-    volumes:
-      - dashboard-ui-data:/opt/bitnami/grafana/data
     environment:
-      BASE_URL: "${BASE_URL:-http://localhost}"
-      # do not attempt to set it in the grafana.ini, hours wasted here: 7
-      GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
-      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
-    healthcheck:
-      test: curl -fsSL --head 127.0.0.1:3000
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    extra_hosts:
-      - "localhost:host-gateway"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    depends_on:
+      dbrepo-dashboard-ui:
+        condition: service_healthy
+      dbrepo-metadata-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -618,5 +587,36 @@ services:
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-ui:
+    restart: "no"
+    container_name: dbrepo-dashboard-ui
+    hostname: dashboard-ui
+    image: dbrepo-dashboard-ui:latest
+    build:
+      context: ./dbrepo-dashboard-ui
+      network: host
+    ports:
+      - "3000:3000"
+    volumes:
+      - dashboard-ui-data:/opt/bitnami/grafana/data
+    environment:
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      # do not attempt to set it in the grafana.ini, hours wasted here: 7
+      GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+    healthcheck:
+      test: ps -o pid= -p 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    extra_hosts:
+      - "localhost:host-gateway"
     logging:
       driver: json-file

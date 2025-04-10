@@ -1,8 +1,7 @@
 FROM python:3.11-alpine3.21
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk --no-cache \
-    add \
+RUN apk --no-cache add \
     bash \
     curl \
     openjdk8-jre
