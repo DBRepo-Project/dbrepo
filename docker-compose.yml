@@ -1,3 +1,62 @@
+x-resources-nano: &resources-nano
+  resources:
+    reservations:
+      cpus: '0.1'
+      memory: 128M
+    limits:
+      cpus: '0.15'
+      memory: 192M
+
+x-resources-nano-hm: &resources-nano-hm
+  resources:
+    reservations:
+      cpus: '0.1'
+      memory: 1024M
+    limits:
+      cpus: '0.5'
+      memory: 4096M
+
+x-resources-micro: &resources-micro
+  resources:
+    reservations:
+      cpus: '0.25'
+      memory: 256M
+    limits:
+      cpus: '0.375'
+      memory: 384M
+
+x-resources-small: &resources-small
+  resources:
+    reservations:
+      cpus: '0.5'
+      memory: 512M
+    limits:
+      cpus: '0.75'
+      memory: 768M
+
+x-resources-medium: &resources-medium
+  resources:
+    reservations:
+      cpus: '0.5'
+      memory: 1024M
+    limits:
+      cpus: '0.75'
+      memory: 1536M
+
+x-resources-large: &resources-large
+  resources:
+    reservations:
+      cpus: '1'
+      memory: 2048M
+    limits:
+      cpus: '1.5'
+      memory: 3072M
+
+x-healthcheck-params: &healthcheck-params
+  interval: 30s
+  timeout: 10s
+  retries: 15
+
 volumes:
   metadata-db-data:
   data-db-data:
@@ -13,7 +72,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/mariadb:11.3.2
+    image: docker.io/mariadb:${MARIADB_VERSION}
     volumes:
       - metadata-db-data:/var/lib/mysql
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -25,9 +84,9 @@ services:
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
       test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano-hm
     logging:
       driver: json-file
 
@@ -35,7 +94,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/mariadb:11.3.2
+    image: docker.io/mariadb:${MARIADB_VERSION}
     volumes:
       - data-db-data:/var/lib/mysql
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
@@ -47,9 +106,9 @@ services:
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
       test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano-hm
     logging:
       driver: json-file
 
@@ -57,7 +116,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/postgresql:17.0.0-debian-12-r1
+    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
     volumes:
       - auth-db-data:/bitnami/postgresql
     ports:
@@ -69,9 +128,9 @@ services:
       PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
       test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
-      interval: 15s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
     logging:
       driver: json-file
 
@@ -79,7 +138,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: docker.io/bitnami/keycloak:26.0.4-debian-12-r0
+    image: docker.io/bitnami/keycloak:${KEYCLOAK_VERSION}
     volumes:
       - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
@@ -104,10 +163,10 @@ services:
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
-      test: curl -fsS http://localhost:8080/realms/master
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      test: curl -fsS localhost:8080/realms/master
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-small
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -132,6 +191,8 @@ services:
       READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
+    deploy:
+      <<: *resources-nano
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -192,9 +253,9 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-small
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -236,9 +297,9 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
     logging:
       driver: json-file
 
@@ -246,7 +307,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.13.7-debian-12-r4
+    image: docker.io/bitnami/rabbitmq:${RABBITMQ_VERSION}
     ports:
       - 15672:15672
       - 5672:5672
@@ -264,9 +325,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
     logging:
       driver: json-file
 
@@ -274,14 +335,14 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/bitnami/opensearch:2.10.0
+    image: docker.io/bitnami/opensearch:${OPENSEARCH_VERSION}
     ports:
       - "9200:9200"
     healthcheck:
       test: curl -sSL 127.0.0.1:9200
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-medium
     volumes:
       - search-db-data:/bitnami/opensearch/data
     logging:
@@ -310,9 +371,9 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
     logging:
       driver: json-file
 
@@ -340,14 +401,14 @@ services:
       NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/token"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/userinfo"
+    healthcheck:
+      test: curl -fsSL 127.0.0.1:3000 && curl -fsSL 127.0.0.1:3000/health
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
     depends_on:
       dbrepo-search-service:
         condition: service_healthy
-    healthcheck:
-      test: curl -fsSL 127.0.0.1:3000 && curl -fsSL 127.0.0.1:3000/health
-      interval: 10s
-      timeout: 5s
-      retries: 12
     extra_hosts:
       - "localhost:host-gateway"
     logging:
@@ -357,16 +418,16 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/nginx:1.27.3-alpine3.20-slim
+    image: docker.io/nginx:${NGINX_VERSION}
     ports:
       - "80:8080"
     volumes:
       - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     healthcheck:
       test: lsof -i TCP:80 || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -389,7 +450,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: bitnami/openldap:2.6.8-debian-12-r1
+    image: bitnami/openldap:${OPENLDAP_VERSION}
     ports:
       - '1389:1389'
       - '1636:1636'
@@ -405,9 +466,11 @@ services:
       - identity-service-data:/bitnami/openldap
     healthcheck:
       test: "ldapwhoami -H ldap://localhost:1389 -D ${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at} -w ${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin} || exit 1"
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
+    logging:
+      driver: json-file
 
   dbrepo-search-service-init:
     restart: "no"
@@ -425,11 +488,73 @@ services:
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    deploy:
+      <<: *resources-nano
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-service-init:
+    restart: "no"
+    init: true
+    container_name: dbrepo-dashboard-service-init
+    hostname: search-dashboard-init
+    image: dbrepo-dashboard-service-init:latest
+    build:
+      context: ./dbrepo-dashboard-service/init
+      network: host
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    deploy:
+      <<: *resources-nano
+    depends_on:
+      dbrepo-dashboard-ui:
+        condition: service_healthy
+      dbrepo-metadata-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-storage-service:
+    restart: "no"
+    container_name: dbrepo-storage-service
+    hostname: storage-service
+    image: docker.io/bitnami/seaweedfs:${SEAWEEDFS_VERSION}
+    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
+    volumes:
+      - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
+    ports:
+      - "9000:9000"
+      - "8888:8888"
+    healthcheck:
+      test: echo "cluster.check" | weed shell | grep "checking master.*ok" || exit 1
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
+    logging:
+      driver: json-file
+
+  dbrepo-metric-db:
+    restart: "no"
+    container_name: dbrepo-metric-db
+    hostname: metric-db
+    image: docker.io/bitnami/prometheus:${PROMETHEUS_VERSION}
+    volumes:
+      - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
+    healthcheck:
+      test: promtool check healthy
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
     logging:
       driver: json-file
 
@@ -447,44 +572,11 @@ services:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}
       STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
+    deploy:
+      <<: *resources-nano
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-storage-service:
-    restart: "no"
-    container_name: dbrepo-storage-service
-    hostname: storage-service
-    image: docker.io/bitnami/seaweedfs:3.71.0-debian-12-r4
-    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
-    volumes:
-      - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
-    ports:
-      - "9000:9000"
-      - "8888:8888"
-    healthcheck:
-      test: echo "cluster.check" | weed shell | grep "checking master.*ok" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    logging:
-      driver: json-file
-
-  dbrepo-metric-db:
-    restart: "no"
-    container_name: dbrepo-metric-db
-    hostname: metric-db
-    image: docker.io/bitnami/prometheus:2.54.1-debian-12-r4
-    volumes:
-      - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
-      - metric-db-data:/opt/bitnami/prometheus/data
-    healthcheck:
-      test: promtool check healthy
-      interval: 10s
-      timeout: 5s
-      retries: 12
     logging:
       driver: json-file
 
@@ -531,61 +623,11 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-large
     depends_on:
       dbrepo-data-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-dashboard-service-init:
-    restart: "no"
-    init: true
-    container_name: dbrepo-dashboard-service-init
-    hostname: search-dashboard-init
-    image: dbrepo-dashboard-service-init:latest
-    build:
-      context: ./dbrepo-dashboard-service/init
-      network: host
-    environment:
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
-      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
-      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
-      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
-    depends_on:
-      dbrepo-dashboard-ui:
-        condition: service_healthy
-      dbrepo-metadata-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-dashboard-service:
-    restart: "no"
-    container_name: dbrepo-dashboard-service
-    hostname: dashboard-service
-    image: dbrepo-dashboard-service:latest
-    build:
-      context: ./dbrepo-dashboard-service
-      network: host
-    ports:
-      - "4070:8080"
-    environment:
-      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
-      BASE_URL: "${BASE_URL:-http://localhost}"
-      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
-      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
-      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
-    healthcheck:
-      test: curl -fsSL --head 127.0.0.1:8080/health
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-dashboard-ui:
         condition: service_healthy
     logging:
       driver: json-file
@@ -612,11 +654,38 @@ services:
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
     healthcheck:
-      test: ps -o pid= -p 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      test: curl -fsSL --head 127.0.0.1:3000
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
     extra_hosts:
       - "localhost:host-gateway"
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-service:
+    restart: "no"
+    container_name: dbrepo-dashboard-service
+    hostname: dashboard-service
+    image: dbrepo-dashboard-service:latest
+    build:
+      context: ./dbrepo-dashboard-service
+      network: host
+    ports:
+      - "4070:8080"
+    environment:
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    healthcheck:
+      test: curl -fsSL --head 127.0.0.1:8080/health
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
+    depends_on:
+      dbrepo-dashboard-ui:
+        condition: service_healthy
     logging:
       driver: json-file
