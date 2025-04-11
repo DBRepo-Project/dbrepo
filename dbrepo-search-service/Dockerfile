@@ -1,9 +1,10 @@
 FROM python:3.11-alpine3.21
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk add --no-cache curl bash jq
-
-WORKDIR /home/alpine
+RUN apk add --no-cache \
+    curl \
+    bash \
+    jq
 
 COPY Pipfile Pipfile.lock ./
 
@@ -19,7 +20,7 @@ WORKDIR /app
 
 USER 1001
 
-COPY --chown=1001 ./init/friendly_names_overrides.json ./friendly_names_overrides.json
+COPY --chown=1001 ./friendly_names_overrides.json ./friendly_names_overrides.json
 COPY --chown=1001 ./os-yml ./os-yml
 COPY --chown=1001 ./app.py ./app.py
 

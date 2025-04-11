@@ -7,15 +7,6 @@ x-resources-nano: &resources-nano
       cpus: '0.15'
       memory: 192M
 
-x-resources-nano-hm: &resources-nano-hm
-  resources:
-    reservations:
-      cpus: '0.1'
-      memory: 1024M
-    limits:
-      cpus: '0.5'
-      memory: 4096M
-
 x-resources-micro: &resources-micro
   resources:
     reservations:
@@ -24,6 +15,15 @@ x-resources-micro: &resources-micro
     limits:
       cpus: '0.375'
       memory: 384M
+
+x-resources-nano-hm: &resources-micro-hm
+  resources:
+    reservations:
+      cpus: '0.25'
+      memory: 256M
+    limits:
+      cpus: '0.375'
+      memory: 4096M
 
 x-resources-small: &resources-small
   resources:
@@ -72,7 +72,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/mariadb:${MARIADB_VERSION}
+    image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
     volumes:
       - metadata-db-data:/var/lib/mysql
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -81,12 +81,13 @@ services:
       - "3306:3306"
     environment:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
+      MARIADB_EXTRA_FLAGS: "${METADATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
+      test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
-      <<: *resources-nano-hm
+      <<: *resources-micro-hm
     logging:
       driver: json-file
 
@@ -94,21 +95,22 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/mariadb:${MARIADB_VERSION}
+    image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
     volumes:
       - data-db-data:/var/lib/mysql
       - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "3307:3306"
     environment:
+      MARIADB_EXTRA_FLAGS: "${DATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
       MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
+      test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
-      <<: *resources-nano-hm
+      <<: *resources-micro-hm
     logging:
       driver: json-file
 
@@ -128,7 +130,7 @@ services:
       test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
       <<: *healthcheck-params
     deploy:
-      <<: *resources-nano
+      <<: *resources-micro
     logging:
       driver: json-file
 
@@ -164,7 +166,7 @@ services:
       test: curl -fsS localhost:8080/realms/master
       <<: *healthcheck-params
     deploy:
-      <<: *resources-small
+      <<: *resources-medium
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy

@@ -194,12 +194,6 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String databaseViewSelectRawQuery() {
-        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'VIEW' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
-        log.trace("mapped select view statement: {}", statement);
-        return statement;
-    }
-
     default String columnsCheckConstraintSelectRawQuery() {
         final String statement = "SELECT DISTINCT c.`CHECK_CLAUSE` FROM information_schema.COLUMNS k JOIN information_schema.CHECK_CONSTRAINTS c ON k.TABLE_NAME = c.TABLE_NAME WHERE k.TABLE_SCHEMA = ? AND k.TABLE_NAME = ?";
         log.trace("mapped select column constraint statement: {}", statement);

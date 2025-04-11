@@ -15,8 +15,6 @@ python-dotenv = "~=1.0"
 sqlalchemy-utils = "*"
 flask_httpauth = "*"
 jwt = "~=1.3"
-testcontainers-opensearch = "*"
-pytest = "*"
 rdflib = "*"
 grafana-client = "*"
 dbrepo = {path = "./lib/dbrepo-1.8.1.tar.gz"}
@@ -26,6 +24,8 @@ gunicorn = "*"
 coverage = "*"
 pytest = "*"
 requests-mock = "*"
+jwt = "~=1.3"
+testcontainers-opensearch = "*"
 
 [requires]
 python_version = "3.11"
