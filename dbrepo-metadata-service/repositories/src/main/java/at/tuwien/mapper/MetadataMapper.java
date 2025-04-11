@@ -219,6 +219,9 @@ public interface MetadataMapper {
 
     /* keep */
     default String nameIdentifierSchemeTypeToUri(NameIdentifierSchemeType data) {
+        if (data == null) {
+            return null;
+        }
         switch (data) {
             case ROR -> {
                 return "https://ror.org/";
