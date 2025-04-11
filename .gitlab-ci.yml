@@ -529,7 +529,6 @@ release-images:
     - test-python-lib
     - test-metadata-service
     - test-search-service
-    - test-search-service-init
     - test-ui
   only:
     - tags
