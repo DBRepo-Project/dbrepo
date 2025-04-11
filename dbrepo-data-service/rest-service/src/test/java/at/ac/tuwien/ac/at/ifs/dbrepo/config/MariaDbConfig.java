@@ -241,7 +241,7 @@ public class MariaDbConfig {
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final Statement statement = connection.createStatement();
-            statement.executeUpdate(query);
+            statement.execute(query);
         }
     }
 

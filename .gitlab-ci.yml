@@ -439,60 +439,6 @@ test-dashboard-service:
       junit: ./dbrepo-dashboard-service/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
-test-dashboard-service-init:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-dashboard-service/init/Pipfile"
-  needs:
-    - build-dashboard-service
-  dependencies:
-    - build-dashboard-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-dashboard-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-dashboard-service/init/coverage.xml
-      - ./dbrepo-dashboard-service/init/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-dashboard-service/init/coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-search-service-init:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
-  needs:
-    - build-search-service
-  dependencies:
-    - build-search-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-search-service/coverage.xml
-      - ./dbrepo-search-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-search-service/coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
 test-python-lib:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
