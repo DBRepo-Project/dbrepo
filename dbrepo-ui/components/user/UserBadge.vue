@@ -9,7 +9,7 @@
       <v-chip
         size="x-small"
         inline>
-        {{ $t('navigation.you') }}
+        {{ $t('navigation.me') }}
         <v-icon
           icon="mdi-account-outline"
           end />

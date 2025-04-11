@@ -20,8 +20,8 @@ WORKDIR /app
 
 USER 1001
 
-COPY --chown=1001 ./ds-yml ./ds-yml
 COPY --chown=1001 ./app.py ./app.py
+COPY --chown=1001 ./ds-yml ./ds-yml
 
 # non-root port
 EXPOSE 8080

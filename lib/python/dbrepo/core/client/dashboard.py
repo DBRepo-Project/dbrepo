@@ -9,9 +9,8 @@ from dbrepo.api.dto import Database, ColumnType, ViewColumn, View
 from dbrepo.core.api.dto import Permission
 from dbrepo.core.api.exceptions import DashboardNotFound
 
-statistics_row_title = 'Generated Statistics'
-
-disclaimer = 'Generic auto-generated chart'
+statistics_row_title = 'Generated Dashboard'
+auto_generated_description = 'Auto-generated'
 
 number_types = [ColumnType.SERIAL, ColumnType.BIT, ColumnType.SMALLINT, ColumnType.MEDIUMINT, ColumnType.INT,
                 ColumnType.BIGINT, ColumnType.FLOAT, ColumnType.DOUBLE, ColumnType.DECIMAL]
@@ -70,6 +69,23 @@ def map_row(title: str, x: int = 0, y: int = 0) -> dict:
                              w=24,
                              x=x,
                              y=y))
+
+
+def map_preview_image_panel(database_id: str, w: int = 4, h: int = 4, x: int = 20, y: int = 1) -> dict:
+    return dict(title='Preview Image',
+                type='text',
+                description=auto_generated_description,
+                gridPos=dict(h=h,
+                             w=w,
+                             x=x,
+                             y=y),
+                fieldConfig=dict(defaults=dict(),
+                                 overrides=[]),
+                options=dict(mode="markdown",
+                             code=dict(language="plaintext",
+                                       showLineNumbers=False,
+                                       showMiniMap=False),
+                             content=f'<img src="/api/database/{database_id}/image" alt="" width="90" />'))
 
 
 class DashboardServiceClient:
@@ -185,7 +201,7 @@ class DashboardServiceClient:
         if panel_type == 'histogram':
             fillOpacity = 60
         return dict(title=panel_type.capitalize(),
-                    description=disclaimer,
+                    description=auto_generated_description,
                     type=panel_type,
                     datasource=datasource,
                     targets=[dict(datasource=datasource,
@@ -421,6 +437,48 @@ class DashboardServiceClient:
                             y: int = 8) -> dict:
         return self._map_timeseries_panel(database_id, view, 'histogram', h, w, x, y)
 
+    def map_data_sources_panel(self, database_id: str, x: int = 0, y: int = 1) -> dict:
+        datasource = dict(uid=self.datasource_uid,
+                          type='yesoreyeram-infinity-datasource')
+        return dict(title='Datasources',
+                    description=auto_generated_description,
+                    type='stat',
+                    datasource=datasource,
+                    targets=[dict(datasource=datasource,
+                                  columns=[],
+                                  filters=[],
+                                  format='table',
+                                  global_query_id='',
+                                  hide=False,
+                                  refId='A',
+                                  root_selector='$count(id)',
+                                  source='url',
+                                  type='json',
+                                  url=f'/api/database/{database_id}/view',
+                                  parser='backend',
+                                  url_options=dict(data='',
+                                                   method='GET'))],
+                    fieldConfig=dict(defaults=dict(mappings=[],
+                                                   thresholds=dict(mode='absolute',
+                                                                   steps=[dict(color='blue',
+                                                                               value=None)])),
+                                     overrides=[]),
+                    transformations=[],
+                    gridPos=dict(h=4,
+                                 w=6,
+                                 x=x,
+                                 y=y),
+                    options=dict(colorMode='background',
+                                 graphMode='area',
+                                 justifyMode='auto',
+                                 orientation='auto',
+                                 reduceOptions=dict(calcs=[],
+                                                    fields='/.*/',
+                                                    values=True),
+                                 showPercentChange=False,
+                                 textMode='auto',
+                                 wideLayout=True))
+
     def map_rows_panel(self, database_id: str, view_id: str, x: int = 18, y: int = 0) -> dict:
         return self._map_number_panel(database_id, view_id, 'Rows', 'total_rows', x, y)
 
@@ -436,16 +494,19 @@ class DashboardServiceClient:
         except ValueError:
             logging.warning(f'No managed panels found')
         original_panels_size = len(panels)
-        panels.append(map_row(statistics_row_title, 0, 0))  # statistics row
+        panels.append(map_row(statistics_row_title, 0, 0))
+        panels.append(self.map_data_sources_panel(database.id))
+        if database.preview_image is not None:
+            panels.append(map_preview_image_panel(database.id))
         for i, view in enumerate(database.views):
             # section
-            panels.append(map_row(view.name, 0, i * section_height + 0))
-            panels.append(self.map_overview_panel(database.id, view.id, 0, i * section_height + 4))
-            panels.append(self.map_rows_panel(database.id, view.id, 18, i * section_height + 0))
-            panels.append(self.map_columns_panel(database.id, view.id, 18, i * section_height + 4))
-            panels.append(self.map_statistics_panel(database.id, view.id, h=8, w=12, x=0, y=i * section_height + 8))
-            panels.append(self.map_histogram_panel(database.id, view, h=8, w=12, x=12, y=i * section_height + 8))
-            panels.append(self.map_timeseries_panel(database.id, view, h=8, w=8, x=0, y=i * section_height + 16))
-            panels.append(self.map_pie_panel(database.id, view, h=8, w=8, x=8, y=i * section_height + 16))
+            panels.append(map_row(view.name, 0, i * section_height + 4))
+            panels.append(self.map_overview_panel(database.id, view.id, 0, i * section_height + 8))
+            panels.append(self.map_rows_panel(database.id, view.id, 18, i * section_height + 4))
+            panels.append(self.map_columns_panel(database.id, view.id, 18, i * section_height + 8))
+            panels.append(self.map_statistics_panel(database.id, view.id, h=8, w=12, x=0, y=i * section_height + 12))
+            panels.append(self.map_histogram_panel(database.id, view, h=8, w=12, x=12, y=i * section_height + 12))
+            panels.append(self.map_timeseries_panel(database.id, view, h=8, w=8, x=0, y=i * section_height + 20))
+            panels.append(self.map_pie_panel(database.id, view, h=8, w=8, x=8, y=i * section_height + 20))
         logging.info(f'Added {len(panels) - original_panels_size} managed panel(s)')
         return panels

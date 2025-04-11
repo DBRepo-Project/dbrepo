@@ -428,11 +428,10 @@ export default {
       return this.roles.includes('modify-database-image')
     },
     canViewSettings () {
-      if (!this.database || !this.cacheUser || !this.access) {
+      if (!this.database || !this.cacheUser) {
         return false
       }
-      const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.database.owner.id === this.cacheUser.uid
+      return this.database.owner.id === this.cacheUser.uid
     },
     previewImage () {
       if (this.file) {

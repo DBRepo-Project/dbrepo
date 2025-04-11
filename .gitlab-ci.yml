@@ -12,9 +12,9 @@ variables:
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.8"
-  APP_VERSION: "1.8.0"
-  CHART_VERSION: "1.8.0"
-  SUPPORTED_VERSIONS: "1.7.3, 1.8.0"
+  APP_VERSION: "1.8.1"
+  CHART_VERSION: "1.8.1"
+  SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1"
   MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -58,7 +58,7 @@ lint-docker-compose:
     VERSION: 4.45.1
     BINARY: yq_linux_amd64
   before_script:
-    - 'apk --no-cache add bash wget'
+    - 'apk add --no-cache bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
     - "bash .scripts/check-compose.sh"
@@ -83,12 +83,13 @@ lint-docker-compose:
     - "IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service-init'"
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
+    - "diff ./.env ./.docker/.env"
 
 lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   before_script:
-    - apk --no-cache add helm git bash
+    - apk add --no-cache helm git bash
     - cp ./helm/dbrepo/values.schema.json ./CI_values.schema.json
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm package ./helm/seaweedfs --destination ./build
@@ -109,7 +110,7 @@ lint-helm-readme:
   image: docker.io/node:${NODE_VERSION}-alpine${ALPINE_VERSION}
   stage: lint
   before_script:
-    - apk --no-cache add alpine-sdk bash git
+    - apk add --no-cache alpine-sdk bash git
     - cp ./helm/dbrepo/README.md ./CI_README.md
     - git clone https://github.com/bitnami/readme-generator-for-helm
     - (cd ./readme-generator-for-helm && npm install && npm install -g pkg && pkg . -o /usr/local/sbin/readme-generator)
@@ -137,7 +138,7 @@ lint-open-api-version:
   before_script:
     - echo "${DOC_VERSION}" > ./doc-version.txt
     - echo "${APP_VERSION}" > ./app-version.txt
-    - 'apk --no-cache add bash wget'
+    - 'apk add --no-cache bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
     - yq '.externalDocs.url' ./.docs/.openapi/api.base.yaml | grep -o "${DOC_VERSION}" > ./openapi-doc-version.txt
@@ -438,60 +439,6 @@ test-dashboard-service:
       junit: ./dbrepo-dashboard-service/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
-test-dashboard-service-init:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-dashboard-service/init/Pipfile"
-  needs:
-    - build-dashboard-service
-  dependencies:
-    - build-dashboard-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-dashboard-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-dashboard-service/init/coverage.xml
-      - ./dbrepo-dashboard-service/init/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-dashboard-service/init/coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-search-service-init:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
-  needs:
-    - build-search-service
-  dependencies:
-    - build-search-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-search-service/coverage.xml
-      - ./dbrepo-search-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-search-service/coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
 test-python-lib:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
@@ -518,6 +465,22 @@ test-python-lib:
     reports:
       junit: ./lib/python/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-storage-service-init:
+  image: docker.io/docker:${DOCKER_VERSION}-dind
+  stage: test
+  only:
+    - merge_requests
+    - master
+  variables:
+    PYTHONUNBUFFERED: 1
+  before_script:
+    - "apk --no-cache add s3cmd bash libxml2-utils"
+    - "docker compose build dbrepo-storage-service-init"
+    - "mkdir -p /app/"
+    - "echo ${CI_S3_CONFIG} | base64 -d > /app/.s3cfg"
+  script:
+    - "bash ./dbrepo-storage-service/init/tests/test_integration_expire.sh"
 
 test-ui:
   image: docker.io/docker:${DOCKER_VERSION}-dind
@@ -566,7 +529,6 @@ release-images:
     - test-python-lib
     - test-metadata-service
     - test-search-service
-    - test-search-service-init
     - test-ui
   only:
     - tags
@@ -585,9 +547,9 @@ release-images:
     - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-dashboard-service:latest "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-dashboard-service-init:latest "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker tag dbrepo-dashboard-ui:latest "${CI_REGISTRY2_URL}/dashboard-ui:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-data-service:latest "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-metadata-service:latest "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-search-db:latest "${CI_REGISTRY2_URL}/search-db:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-search-service:latest "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-search-service-init:latest "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-storage-service-init:latest "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
@@ -596,8 +558,8 @@ release-images:
     - docker push "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
     - docker push "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
     - docker push "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
+    - docker push "${CI_REGISTRY2_URL}/dashboard-ui:${APP_VERSION}${BUILD_VERSION}"
     - docker push "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/search-db:${APP_VERSION}${BUILD_VERSION}"
     - docker push "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
     - docker push "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
     - docker push "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
@@ -673,12 +635,12 @@ release-libs:
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   before_script:
-    - "apk add sed bash"
     - "pip install pipenv twine build"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "echo ${CI_PIPYRC} | base64 -d > /app/.pypirc"
   script:
-    - bash ./lib/python/package.sh
-    - bash ./lib/python/release.sh
+    - "python -m build"
+    - "python -m twine upload --config-file /app/.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*"
 
 verify-install-script:
   image: docker.io/docker:${DOCKER_VERSION}-dind
@@ -713,7 +675,7 @@ verify-images:
     - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64"
     - "chmod +x /usr/local/sbin/regctl"
   script:
-    - bash ./.gitlab/check-unsupported-images.sh
+    - bash ./.gitlab/check-supported-images.sh
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}

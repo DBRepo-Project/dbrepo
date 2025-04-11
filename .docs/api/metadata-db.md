@@ -53,3 +53,14 @@ the `setup-schema.sql` into the container. This can be done more transparently t
 
     Beware that the init script provided by Bitnami executes files in alphabetic order! For example: the file 
     `setup-schema.sql` is executed **after** the file `setup-data.sql`! Thefore a sorting prefix 1-9 is recommended!
+
+
+## Limitations
+
+(none)
+
+!!! question "Do you miss functionality? Do these limitations affect you?"
+
+    We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
+    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    experience!

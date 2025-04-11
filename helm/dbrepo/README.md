@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.8.0"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.8.1"
 ```
 
 ## Prerequisites
@@ -34,7 +34,7 @@ variable when you increase the available Pod memory for performance.
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.8.0"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.8.1"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -105,6 +105,7 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Name                                 | Description                                                                                                                            | Value                                                                  |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `datadb.enabled`                     | Enable the Auth Service.                                                                                                               | `true`                                                                 |
 | `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
 | `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
@@ -117,6 +118,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
 | `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
 | `datadb.resourcesPreset`             | The container resource preset                                                                                                          | `nano-hm`                                                              |
+| `datadb.initdbScriptsConfigMap`      | The setup data to load into the database on first start.                                                                               | `data-db-setup`                                                        |
 | `datadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
 ### Search Database
@@ -409,12 +411,11 @@ mqtt.prefetch = 10
 
 ### Dashboard UI
 
-| Name                                     | Description                                                                                                            | Value                 |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `dashboardui.enabled`                    | Enable the Dashboard UI.                                                                                               | `true`                |
-| `dashboardui.metrics.enabled`            | Enable the metrics sidecar.                                                                                            | `true`                |
-| `dashboardui.endpoint`                   | The endpoint for the microservices.                                                                                    | `http://dashboard-ui` |
-| `dashboardui.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true`                |
+| Name                          | Description                         | Value                 |
+| ----------------------------- | ----------------------------------- | --------------------- |
+| `dashboardui.enabled`         | Enable the Dashboard UI.            | `true`                |
+| `dashboardui.metrics.enabled` | Enable the metrics sidecar.         | `true`                |
+| `dashboardui.endpoint`        | The endpoint for the microservices. | `http://dashboard-ui` |
 
 ### Metric Service
 

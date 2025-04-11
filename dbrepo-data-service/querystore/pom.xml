@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>at.tuwien</groupId>
+        <groupId>at.ac.tuwien.ac.at.ifs.dbrepo</groupId>
         <artifactId>dbrepo-data-service</artifactId>
-        <version>1.8.0</version>
+        <version>1.8.1</version>
     </parent>
 
     <artifactId>dbrepo-data-service-querystore</artifactId>
     <name>dbrepo-data-service-querystore</name>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 
     <dependencies/>
 

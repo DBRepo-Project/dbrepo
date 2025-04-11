@@ -76,7 +76,7 @@ template = {
     "info": {
         "title": "Database Repository Dashboard Service API",
         "description": "Service that manages the dashboards",
-        "version": "1.8.0",
+        "version": "1.8.1",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -154,8 +154,9 @@ headers = {'Content-Type': 'application/json'}
 
 
 def dashboard_client():
-    return DashboardServiceClient(os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
-                                  os.getenv('SYSTEM_USERNAME', 'admin'), os.getenv('SYSTEM_PASSWORD', 'admin'))
+    return DashboardServiceClient(endpoint=os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
+                                  username=os.getenv('SYSTEM_USERNAME', 'admin'),
+                                  password=os.getenv('SYSTEM_PASSWORD', 'admin'))
 
 
 def auth_client():
@@ -201,13 +202,14 @@ def create_dashboard():
     is_public = bool(request.json['is_public'])
     is_schema_public = bool(request.json['is_schema_public'])
     owner_username = request.json['owner_username']
-    logging.debug(
-        f"endpoint create dashboard, is_public={is_public}, is_schema_public={is_schema_public}, owner_username={owner_username}")
+    logging.debug(f"endpoint create dashboard, is_public={is_public}, is_schema_public={is_schema_public}, "
+                  f"owner_username={owner_username}")
     try:
         db = dashboard_client().create(request.json['database_name'])
         dashboard_client().update_anonymous_read_access(db['uid'], is_public, is_schema_public)
         return Response(dumps(db)), 201, headers
     except GrafanaClientError as e:
+        logging.error(f"Failed to create dashboard: {e.response['message']}")
         dto = ApiError(status=HTTPStatus(e.status_code).phrase.upper(),
                        message=f"Failed to create dashboard: {e.response['message']}", code="error.dashboard.create")
         if e.status_code == 409 or e.status_code == 412:

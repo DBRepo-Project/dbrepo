@@ -559,22 +559,6 @@
         },
         "dashboardui": {
             "properties": {
-                "dashboardsProvider": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "datasources": {
-                    "properties": {
-                        "secretName": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -621,19 +605,6 @@
                         }
                     },
                     "type": "object"
-                },
-                "service": {
-                    "properties": {
-                        "ports": {
-                            "properties": {
-                                "grafana": {
-                                    "type": "integer"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    },
-                    "type": "object"
                 }
             },
             "type": "object"
@@ -653,6 +624,9 @@
                         }
                     },
                     "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
                 },
                 "extraFlags": {
                     "type": "string"
@@ -677,6 +651,9 @@
                     "type": "object"
                 },
                 "host": {
+                    "type": "string"
+                },
+                "initdbScriptsConfigMap": {
                     "type": "string"
                 },
                 "jdbcExtraArgs": {

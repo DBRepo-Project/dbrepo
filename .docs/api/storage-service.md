@@ -11,6 +11,7 @@ author: Martin Weise
     * Ports: 8888/tcp, 9000/tcp
     * Prometheus: `http://<hostname>:9091/metrics`
     * Filer UI: `http://<hostname>:8888`
+    * Cluster UI: `http://<hostname>:9333`
 
     To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
 
