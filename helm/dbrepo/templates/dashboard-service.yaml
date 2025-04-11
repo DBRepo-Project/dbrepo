@@ -1,0 +1,19 @@
+{{- if .Values.dashboardservice.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    service: dashboard-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "dashboard-service"
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    service: dashboard-service
+{{- end }}

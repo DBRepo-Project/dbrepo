@@ -6,7 +6,7 @@ author: Martin Weise
 
 To install DBRepo in your existing cluster, download the
 sample [
-`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/helm/dbrepo/values.yaml)
+`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.8/helm/dbrepo/values.yaml)
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
@@ -14,14 +14,14 @@ helm upgrade --install dbrepo \
   -n dbrepo \
   "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" \
   --values ./values.yaml \
-  --version "1.8.0" \
+  --version "1.8.1" \
   --create-namespace \
   --cleanup-on-fail
 ```
 
 ## Prerequisites
 
-* Kubernetes 1.30+
+* Kubernetes 1.30+ (tested on 1.31.5)
 * PV provisioner support in the underlying infrastructure
 
 ### Resource Quota
@@ -42,14 +42,6 @@ requests.storage: 150Gi
 limits.memory: 20480Mi
 configmaps: '20'
 services: '40'
-```
-
-You can reduce the resources needed by disabling services and metric collection. You can disable e.g. the dashboard
-service:
-
-``` title="values.yaml"
-dashboardservice:
-  enabled: false
 ```
 
 ## Limitations

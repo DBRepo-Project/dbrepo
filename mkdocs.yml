@@ -30,6 +30,7 @@ nav:
       - Data Database: api/data-db.md
       - Metadata Database: api/metadata-db.md
       - Metric Database: api/metric-db.md
+      - Search Database: api/search-db.md
     - SDK:
       - Python Library: api/python.md
       - Swagger / OpenAPI: api/open-api.md

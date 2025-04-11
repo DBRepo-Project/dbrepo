@@ -28,21 +28,15 @@ build-ui: ## Build the UI.
 build-lib: ## Build the Python Library.
 	rm -rf ./dbrepo-analyse-service/venv/ ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-analyse-service/lib/*
 	rm -rf ./dbrepo-search-service/venv/ ./dbrepo-search-service/Pipfile.lock ./dbrepo-search-service/lib/*
-	rm -rf ./dbrepo-search-service/init/venv/ ./dbrepo-search-service/init/Pipfile.lock ./dbrepo-search-service/init/lib/*
 	rm -rf ./dbrepo-dashboard-service/venv/ ./dbrepo-dashboard-service/Pipfile.lock ./dbrepo-dashboard-service/lib/*
-	rm -rf ./dbrepo-dashboard-service/init/venv/ ./dbrepo-dashboard-service/init/Pipfile.lock ./dbrepo-dashboard-service/init/lib/*
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib
 	(cd ./dbrepo-analyse-service && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib
 	(cd ./dbrepo-search-service && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
-	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/init/lib
-	(cd ./dbrepo-search-service/init && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib
 	(cd ./dbrepo-dashboard-service && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
-	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/init/lib
-	(cd ./dbrepo-dashboard-service/init && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.

@@ -16,7 +16,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 
     <description>Service that manages the metadata</description>
 
@@ -62,13 +62,18 @@
             ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <CodeCacheSize>128m</CodeCacheSize>
+        <extraJavaTestArgs></extraJavaTestArgs>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.8.0</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <!-- Data Source -->
         <dependency>
@@ -216,6 +221,7 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -252,13 +258,16 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin><!-- Surefire runs all Java tests -->
+            </plugin>
+            <!-- Surefire runs all Java tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!-- Note config is repeated in scalatest config -->
                 <configuration>
-                    <argLine>@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g -XX:ReservedCodeCacheSize=${CodeCacheSize}
+                    <argLine>@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g
+                        -XX:ReservedCodeCacheSize=${CodeCacheSize}
+                        ${extraJavaTestArgs}
                     </argLine>
                 </configuration>
             </plugin>

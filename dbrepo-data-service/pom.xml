@@ -13,10 +13,10 @@
         <url>https://www.tuwien.ac.at</url>
     </organization>
 
-    <groupId>at.tuwien</groupId>
+    <groupId>at.ac.tuwien.ac.at.ifs.dbrepo</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 
     <description>Service that manages the data</description>
 
@@ -53,7 +53,7 @@
         <hsqldb.version>2.7.2</hsqldb.version>
         <testcontainers.version>1.19.1</testcontainers.version>
         <jackson.version>2.15.2</jackson.version>
-        <c3p0.version>0.9.5.5</c3p0.version>
+        <c3p0.version>0.10.2</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <aws-s3.version>2.25.23</aws-s3.version>
         <minio.version>8.5.7</minio.version>
@@ -160,6 +160,12 @@
             <artifactId>hibernate-c3p0</artifactId>
             <version>${c3p0-hibernate.version}</version>
         </dependency>
+        <!-- Storage -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws-s3.version}</version>
+        </dependency>
         <!-- Monitoring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -230,16 +236,19 @@
             <artifactId>amqp-client</artifactId>
             <version>${rabbitmq.version}</version>
         </dependency>
-        <!-- Storage -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>${aws-s3.version}</version>
-        </dependency>
         <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

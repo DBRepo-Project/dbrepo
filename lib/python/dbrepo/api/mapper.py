@@ -5,7 +5,7 @@ from numpy import dtype
 from pandas import DataFrame, Series
 
 from dbrepo.api.dto import Subset, QueryDefinition, Database, Table, Image, Filter, Order, CreateTableColumn, \
-    CreateTableConstraints, ColumnType
+    CreateTableConstraints, ColumnType, DatasourceType
 from dbrepo.api.exceptions import MalformedError
 
 
@@ -44,7 +44,8 @@ def query_to_subset(database: Database, image: Image, query: QueryDefinition) ->
             if len(order_column_ids) != 1:
                 raise MalformedError(f'Failed to create view: order column name not found in database')
             orders.append(Order(column_id=order_column_ids[0], direction=order.direction))
-    return Subset(table_id=tables[0].id, columns=filtered_column_ids, filter=filters, order=orders)
+    return Subset(datasource_id=tables[0].id, datasource_type=DatasourceType.TABLE, columns=filtered_column_ids,
+                  filter=filters, order=orders)
 
 
 def dataframe_to_table_definition(dataframe: DataFrame) -> ([CreateTableColumn], CreateTableConstraints):
@@ -115,6 +116,7 @@ def dataframe_to_table_definition(dataframe: DataFrame) -> ([CreateTableColumn],
             logging.warning(f'default to \'text\' for column {name} and type {dtype}')
         columns.append(column)
     return columns, constraints
+
 
 def contains_null(dataframe: DataFrame) -> bool:
     if '\\N' in dataframe.values:

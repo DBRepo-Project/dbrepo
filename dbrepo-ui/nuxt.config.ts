@@ -82,7 +82,7 @@ export default defineNuxtConfig({
         }
       },
       dashboard: {
-        url: 'http://localhost:3000'
+        url: 'http://localhost/dashboard'
       },
       api: {
         client: 'http://localhost',
