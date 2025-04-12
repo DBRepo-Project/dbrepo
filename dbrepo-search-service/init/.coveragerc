@@ -1,9 +1,0 @@
-[report]
-omit =
-    # omit tests
-    ./tests/*
-    # omit ext lib
-    ./omlib/*
-
-[html]
-directory = htmlcov

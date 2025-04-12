@@ -1,8 +1,9 @@
+import os
 import unittest
 
 import requests_mock
 
-from app import endpoint, fetch
+from app import fetch
 
 
 class AppUnitTest(unittest.TestCase):
@@ -17,10 +18,14 @@ class AppUnitTest(unittest.TestCase):
         "scope": "profile email"
     }
 
+    def endpoint(self):
+        return os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
+
     def test_fetch_token_bad_request_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=400)
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=400)
             # test
             try:
                 fetch('admin')
@@ -30,7 +35,8 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_token_unauthorized_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=401)
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=401)
             # test
             try:
                 fetch('admin')
@@ -40,8 +46,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_user_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[], status_code=200)
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[], status_code=200)
 
             # test
             try:
@@ -52,8 +59,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_user_too_much_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[{}, {}], status_code=200)
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[{}, {}], status_code=200)
 
             # test
             try:
@@ -64,8 +72,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_user_not_ok_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[{}], status_code=202)
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[{}], status_code=202)
 
             # test
             try:
@@ -76,8 +85,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_user_no_attrs_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[{
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[{
                 "id": "5b516520-67cb-4aa0-86a6-d12f8b8f1a20"
             }], status_code=200)
 
@@ -90,8 +100,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_user_empty_attrs_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[{
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[{
                 "id": "5b516520-67cb-4aa0-86a6-d12f8b8f1a20",
                 "attributes": {}
             }], status_code=200)
@@ -105,8 +116,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_user_malformed_attr_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[{
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[{
                 "id": "5b516520-67cb-4aa0-86a6-d12f8b8f1a20",
                 "attributes": {
                     "LDAP_ID": []
@@ -122,8 +134,9 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=[{
+            mock.post(f'{self.endpoint()}/realms/master/protocol/openid-connect/token', json=self.token_res,
+                      status_code=200)
+            mock.get(f'{self.endpoint()}/admin/realms/dbrepo/users/?username=admin', json=[{
                 "id": "5b516520-67cb-4aa0-86a6-d12f8b8f1a20",
                 "attributes": {
                     "LDAP_ID": ["7a0b4b7f-77cd-4f28-a665-2da443024621"]

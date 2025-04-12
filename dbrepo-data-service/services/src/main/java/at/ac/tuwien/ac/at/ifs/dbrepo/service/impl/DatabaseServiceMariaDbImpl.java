@@ -135,6 +135,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                 .databaseId(database.getId())
                 .columns(new LinkedList<>())
                 .build();
+        log.debug("creating view: {}.{}", database.getInternalName(), view.getInternalName());
         try {
             /* create view if not exists */
             final long start = System.currentTimeMillis();

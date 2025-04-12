@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/nginx:1.27.0-alpine3.19-slim`](https://hub.docker.com/r/nginx)
+    Image: [`docker.io/nginx:1.27.3-alpine3.20-slim`](https://hub.docker.com/r/nginx)
 
     * Ports: 80/tcp
 

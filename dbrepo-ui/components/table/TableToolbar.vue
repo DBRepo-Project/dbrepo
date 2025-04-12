@@ -31,14 +31,6 @@
         class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
       <v-btn
-        v-if="canExecuteQuery"
-        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-wrench' : null"
-        color="secondary"
-        variant="flat"
-        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
-        class="mr-2"
-        :to="`/database/${$route.params.database_id}/subset/create?tid=${$route.params.table_id}`" />
-      <v-btn
         v-if="canCreateView"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-view-carousel' : null"
         color="secondary"
@@ -124,21 +116,15 @@ export default {
       }
       return this.roles.includes('update-table') && this.table.owner.id === this.cacheUser.uid
     },
-    canExecuteQuery () {
-      if (!this.roles || !this.table || !this.cacheUser) {
-        return false
-      }
-      return this.hasReadAccess && this.roles.includes('execute-query')
-    },
     isOwner () {
       const databaseService = useDatabaseService()
       return databaseService.isOwner(this.database, this.cacheUser)
     },
     canCreateView () {
-      if (!this.roles || !this.table || !this.cacheUser) {
+      if (!this.roles || !this.cacheUser || !this.isOwner) {
         return false
       }
-      return this.isOwner && this.roles.includes('create-database-view')
+      return this.roles.includes('create-database-view')
     },
     canViewData () {
       if (!this.table) {

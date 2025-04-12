@@ -19,7 +19,7 @@ These presets are for basic testing and not meant to be used in production
    )
   "nano-hm" (dict
       "requests" (dict "cpu" "100m" "memory" "1024Mi" "ephemeral-storage" "50Mi")
-      "limits" (dict "cpu" "500m" "memory" "2048Mi" "ephemeral-storage" "2Gi")
+      "limits" (dict "cpu" "500m" "memory" "4096Mi" "ephemeral-storage" "2Gi")
    )
   "micro" (dict
       "requests" (dict "cpu" "250m" "memory" "256Mi" "ephemeral-storage" "50Mi")
