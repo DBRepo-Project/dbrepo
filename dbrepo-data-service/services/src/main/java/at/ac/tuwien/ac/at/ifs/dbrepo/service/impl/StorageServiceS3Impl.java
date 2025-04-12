@@ -7,14 +7,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
-<<<<<<< HEAD
-=======
-import at.ac.tuwien.ac.at.ifs.dbrepo.config.S3Config;
-import at.ac.tuwien.ac.at.ifs.dbrepo.service.StorageService;
->>>>>>> release-1.8
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.james.mime4j.dom.datetime.DateTime;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.apache.spark.sql.types.StructField;
@@ -27,8 +21,6 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -214,7 +214,6 @@ class AppIntegrationTest(unittest.TestCase):
             self.assertEqual('link', dashboard['links'][0]['type'])
             self.assertEqual('info', dashboard['links'][0]['icon'])
             self.assertEqual(f'http://localhost/database/{req.id}', dashboard['links'][0]['url'])
-<<<<<<< HEAD
             self.assertEqual(2, len(dashboard['panels']))
             panel0 = dashboard['panels'][0]
             self.assertEqual('row', panel0['type'])
@@ -223,11 +222,6 @@ class AppIntegrationTest(unittest.TestCase):
             self.assertEqual('stat', panel1['type'])
             self.assertEqual('Datasources', panel1['title'])
             self.assertEqual('Auto-generated', panel1['description'])
-=======
-            self.assertEqual(1, len(dashboard['panels']))
-            self.assertEqual('row', dashboard['panels'][0]['type'])
-            self.assertEqual('Generated Statistics', dashboard['panels'][0]['title'])
->>>>>>> release-1.8
 
     def test_update_dashboard_unmanaged_succeeds(self):
         req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",

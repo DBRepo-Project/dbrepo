@@ -11,7 +11,7 @@ info:
   version: 1.8.1
 externalDocs:
   description: Sourcecode Documentation
-  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/system-services-metadata/
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8.1/system-services-metadata/
 servers:
 - url: http://localhost
   description: Development instance
@@ -6495,14 +6495,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       type: object
       properties:

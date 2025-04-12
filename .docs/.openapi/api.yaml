@@ -8532,14 +8532,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       type: object
       properties:

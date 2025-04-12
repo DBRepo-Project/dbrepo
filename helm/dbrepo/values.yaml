@@ -908,11 +908,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-<<<<<<< HEAD
     name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.1
-=======
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.0
->>>>>>> release-1.8
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
@@ -1001,13 +997,6 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
-<<<<<<< HEAD
-=======
-  service:
-    ports:
-      ## @skip dashboardui.service.ports.grafana
-      grafana: 80
->>>>>>> release-1.8
 
 ## @section Metric Service
 

@@ -14,10 +14,7 @@ author: Martin Weise
 ![Maintainability Rating](./images/maintainability.svg)
 ![Security Rating](./images/security.svg)
 
-<<<<<<< HEAD
 Documentation for version: [v1.8.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
-=======
-Documentation for version: [v1.8.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 >>>>>>> release-1.8
 
 DBRepo is a repository for data in databases that cover the entire data life cycle supporting data evolution, -citation 
