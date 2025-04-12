@@ -68,7 +68,7 @@ class AppIntegrationTest(unittest.TestCase):
                 'roles': roles
             }
         }
-        with open('../tests/rsa/rs256.key', 'rb') as fh:
+        with open('./tests/rsa/rs256.key', 'rb') as fh:
             return jwt.JWT().encode(claims, jwt.jwk_from_pem(fh.read()), alg='RS256')
 
     def dashboard_client(self):

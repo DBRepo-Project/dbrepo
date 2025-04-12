@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.james.mime4j.dom.datetime.DateTime;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.apache.spark.sql.types.StructField;
