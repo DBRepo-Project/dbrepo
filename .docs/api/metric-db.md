@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/prometheus:2.54.1-debian-12-r4`](https://hub.docker.com/r/bitnami/prometheus)
+    Image: [`bitnami/prometheus:2.54.1`](https://hub.docker.com/r/bitnami/prometheus)
 
     * Ports: 8080/tcp
 
