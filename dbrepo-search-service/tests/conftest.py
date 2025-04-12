@@ -41,7 +41,7 @@ def cleanup(request, session):
     :return:
     """
     logging.info("[fixture] clean schema")
-    with open('./init/database.json', 'r') as f:
+    with open('./database.json', 'r') as f:
         if session.get_client().indices.exists(index="database"):
             session.get_client().indices.delete(index="database")
         session.get_client().indices.create(index="database", body=json.load(f))

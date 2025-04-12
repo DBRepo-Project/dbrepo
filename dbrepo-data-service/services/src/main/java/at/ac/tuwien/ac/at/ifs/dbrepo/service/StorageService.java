@@ -49,8 +49,6 @@ public interface StorageService {
 
     void deleteObject(String bucket, String key);
 
-    void deleteStaleObjects();
-
     /**
      * Loads an object of the default export bucket from the Storage Service into an export resource.
      *

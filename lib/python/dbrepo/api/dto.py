@@ -805,6 +805,14 @@ class FilterType(str, Enum):
     AND = "and"
 
 
+class DatasourceType(str, Enum):
+    """
+    Enumeration of data source types.
+    """
+    TABLE = "table"
+    VIEW = "view"
+
+
 class OrderType(str, Enum):
     """
     Enumeration of order types.
@@ -838,7 +846,8 @@ class OrderDefinition(BaseModel):
 
 
 class Subset(BaseModel):
-    table_id: str
+    datasource_id: str
+    datasource_type: DatasourceType
     columns: List[str]
     filter: Optional[List[Filter]] = None
     order: Optional[List[Order]] = None

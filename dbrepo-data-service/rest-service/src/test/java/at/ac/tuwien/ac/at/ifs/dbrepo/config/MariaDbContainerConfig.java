@@ -3,10 +3,13 @@ package at.ac.tuwien.ac.at.ifs.dbrepo.config;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.images.PullPolicy;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * This class configures the MariaDB container for the integration tests.
@@ -48,13 +51,22 @@ public class MariaDbContainerConfig extends BaseTest {
         }
 
         private CustomMariaDBContainer(String dockerImageName) {
-            super(dockerImageName);
+            super(DockerImageName.parse(dockerImageName).asCompatibleSubstituteFor("mariadb"));
         }
 
         @Override
         protected void configure() {
             super.configure();
-            this.addEnv("MYSQL_USER", "test"); // MariaDB does not allow this to be root
+            this.addEnv("MARIADB_EXTRA_FLAGS", "--max_connections=20 --max-statement-time=10");
+            if (this.getPassword() != null && !this.getPassword().isEmpty()) {
+                this.addEnv("MARIADB_ROOT_PASSWORD", this.getPassword());
+            } else {
+                if (!"root".equalsIgnoreCase(this.getUsername())) {
+                    throw new ContainerLaunchException("Empty password can be used only with the root user");
+                }
+                this.addEnv("MARIADB_ALLOW_EMPTY_PASSWORD", "yes");
+            }
+            this.setStartupAttempts(3);
         }
 
         @Override

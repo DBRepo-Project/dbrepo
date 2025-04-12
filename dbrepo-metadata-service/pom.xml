@@ -16,7 +16,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 
     <description>Service that manages the metadata</description>
 
@@ -62,6 +62,7 @@
             ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <CodeCacheSize>128m</CodeCacheSize>
+        <extraJavaTestArgs></extraJavaTestArgs>
     </properties>
 
     <dependencies>
