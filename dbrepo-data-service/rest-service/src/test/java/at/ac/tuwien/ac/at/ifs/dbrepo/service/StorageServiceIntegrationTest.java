@@ -7,6 +7,10 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+<<<<<<< HEAD
+=======
+import at.ac.tuwien.ac.at.ifs.dbrepo.config.S3Config;
+>>>>>>> release-1.8
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.Dataset;

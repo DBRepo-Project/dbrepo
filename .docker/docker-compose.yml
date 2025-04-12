@@ -72,7 +72,11 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
+<<<<<<< HEAD
     image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
+=======
+    image: docker.io/mariadb:11.3.2
+>>>>>>> release-1.8
     volumes:
       - metadata-db-data:/var/lib/mysql
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -84,10 +88,17 @@ services:
       MARIADB_EXTRA_FLAGS: "${METADATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
+<<<<<<< HEAD
       test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro-hm
+=======
+      test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
+      interval: 10s
+      timeout: 5s
+      retries: 12
+>>>>>>> release-1.8
     logging:
       driver: json-file
 
@@ -95,22 +106,36 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
+<<<<<<< HEAD
     image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
+=======
+    image: docker.io/mariadb:11.3.2
+>>>>>>> release-1.8
     volumes:
       - data-db-data:/var/lib/mysql
       - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "3307:3306"
     environment:
+<<<<<<< HEAD
       MARIADB_EXTRA_FLAGS: "${DATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
+=======
+>>>>>>> release-1.8
       MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
+<<<<<<< HEAD
       test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro-hm
+=======
+      test: ./usr/local/bin/healthcheck.sh --connect --innodb_initialized
+      interval: 10s
+      timeout: 5s
+      retries: 12
+>>>>>>> release-1.8
     logging:
       driver: json-file
 
@@ -158,7 +183,10 @@ services:
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost}"
+<<<<<<< HEAD
       KEYCLOAK_HOSTNAME_ADMIN: "http://localhost:8080"
+=======
+>>>>>>> release-1.8
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -188,8 +216,11 @@ services:
       READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
+<<<<<<< HEAD
     deploy:
       <<: *resources-nano
+=======
+>>>>>>> release-1.8
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -609,9 +640,15 @@ services:
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
     healthcheck:
       test: curl -fsSL --head 127.0.0.1:3000
+<<<<<<< HEAD
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
+=======
+      interval: 10s
+      timeout: 5s
+      retries: 12
+>>>>>>> release-1.8
     extra_hosts:
       - "localhost:host-gateway"
     logging:
