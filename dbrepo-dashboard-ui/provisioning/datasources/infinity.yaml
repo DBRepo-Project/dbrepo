@@ -6,12 +6,12 @@ datasources:
     type: yesoreyeram-infinity-datasource
     basicAuth: true
     basicAuthUser: user
-    url: http://localhost
+    url: $BASE_URL
     jsonData:
       auth_method: 'basicAuth'
       httpHeaderName1: Accept
       allowedHosts:
-        - 'http://localhost'
+        - '$BASE_URL'
     secureJsonData:
       basicAuthPassword: user
       httpHeaderValue1: application/json
