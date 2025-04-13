@@ -162,9 +162,6 @@ export default {
       return this.roles.includes('create-table')
     },
     canViewSubsets () {
-      if (!this.cacheUser) {
-        return false
-      }
       return this.hasReadAccess
     },
     isOwner () {

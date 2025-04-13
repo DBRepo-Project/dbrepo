@@ -352,6 +352,7 @@
             variant="flat">
             <v-stepper-header>
               <v-stepper-item
+                :title="descriptionTitle(description)"
                 :value="i+1" />
             </v-stepper-header>
             <v-stepper-window
@@ -359,12 +360,12 @@
               <v-container>
                 <v-row dense>
                   <v-col cols="8">
-                    <v-text-field
+                    <v-textarea
                       v-model="description.description"
                       :label="$t('pages.identifier.subpages.create.descriptions.description.label')"
                       clearable
                       :variant="inputVariant"
-                      :hint="$t('pages.identifier.subpages.create.descriptions.description.hint')"
+                      :hint="$t('pages.identifier.subpages.create.descriptions.description.hint', { symbol: '<br>'})"
                       persistent-hint
                       :rules="[v => !!v || $t('validation.required')]"
                       required />
@@ -1155,7 +1156,21 @@ export default {
   mounted () {
     this.addCreator()
     this.addTitle()
-    this.addDescription()
+    this.identifier.descriptions.push({
+      description: null,
+      type: 'Abstract',
+      language: null
+    })
+    this.identifier.descriptions.push({
+      description: null,
+      type: 'Methods',
+      language: null
+    })
+    this.identifier.descriptions.push({
+      description: null,
+      type: 'Other',
+      language: null
+    })
     this.fetchLicenses()
     this.fetchIdentifier()
     this.$refs.form.validate()
@@ -1163,6 +1178,12 @@ export default {
   methods: {
     cancel () {
       this.$emit('close', { action: 'closed' })
+    },
+    descriptionTitle (description) {
+      if (!description.type) {
+        return null
+      }
+      return this.$t(`pages.identifier.subpages.create.descriptions.description.${description.type.toLowerCase()}`)
     },
     retrieveCreator (creator) {
       if (!creator || !creator.name_identifier) {

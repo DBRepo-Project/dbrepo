@@ -6,6 +6,9 @@ author: Martin Weise
 
 #### Changes
 
+* Improved default mask for PIDs
+  in [#521](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/521).
+* Added a visual filter for displaying starred/unstarred/all subsets in the UI.
 * Specified image platform as `linux/amd64` in `docker-compose.yaml` deployment to enable host platform (e.g. ARM) to
   emulate it.
 * Specified resource limits in the `docker-compose.yaml` deployment

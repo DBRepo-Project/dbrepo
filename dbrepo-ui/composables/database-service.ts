@@ -214,7 +214,7 @@ export const useDatabaseService = (): any => {
     if (!database || !user) {
       return false
     }
-    return database.owner.id === user.id
+    return database.owner.id === user.uid
   }
 
   return {

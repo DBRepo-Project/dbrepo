@@ -155,8 +155,7 @@
             </v-stepper-header>
             <v-stepper-window
               direction="vertical">
-              <v-container
-                v-if="step >= 4">
+              <v-container>
                 <TableSchema
                   ref="schema"
                   :back="false"

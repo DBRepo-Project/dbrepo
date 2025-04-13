@@ -169,6 +169,7 @@
         </v-col>
       </v-row>
       <v-row
+        v-if="columns.length !== 0"
         dense>
         <v-col>
           <v-btn
@@ -181,7 +182,8 @@
             @click="addColumn()" />
         </v-col>
       </v-row>
-      <v-row>
+      <v-row
+        v-if="columns.length !== 0">
         <v-col>
           <v-btn
             color="secondary"
@@ -250,6 +252,9 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     },
     showPrimaryKeyWarning () {
+      if (this.columns.length === 0) {
+        return false
+      }
       return this.columns.filter(c => c.primary_key).length === 0
     }
   },

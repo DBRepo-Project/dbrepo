@@ -1,7 +1,8 @@
 <template>
-  <div
-    v-if="canInsertTableData">
-    <v-toolbar flat>
+  <div>
+    <v-toolbar
+      v-if="hasReadAccess"
+      flat>
       <v-btn
         class="mr-2"
         variant="plain"
@@ -12,6 +13,7 @@
         :text="title" />
     </v-toolbar>
     <v-card
+      v-if="canInsertTableData"
       variant="flat"
       rounded="0">
       <v-card-text>
@@ -84,6 +86,9 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    hasReadAccess () {
+      return this.access
+    },
     title () {
       if (!this.table) {
         return this.$t('pages.table.import.title')
@@ -91,7 +96,7 @@ export default {
       return this.$t('pages.table.import.title') + ' ' + this.table.name
     },
     canInsertTableData () {
-      if (!this.table || !this.access || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data')) {
+      if (!this.table || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data') || !this.hasReadAccess) {
         return false
       }
       const userService = useUserService()
