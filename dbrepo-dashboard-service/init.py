@@ -57,7 +57,6 @@ def upsert_dashboard(database: Database) -> None:
     if db is None:
         db = dashboard_client().create(database.internal_name, database.dashboard_uid)
         rest_client().update_database_dashboard(database.id, db['uid'])
-        return
     dashboard_client().update(database)
 
 
