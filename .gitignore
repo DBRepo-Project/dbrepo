@@ -4,7 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-.docker/
 # generated
 ready
 schema.xsd
@@ -21,7 +20,6 @@ tmp.yaml
 .docs/.swagger/dist/
 .docs/.swagger/site/
 site/
-final/
 
 .$*
 dbrepo-somapper/
@@ -29,9 +27,6 @@ dbrepo-somapper/
 # Notebooks
 .pytest_cache/
 __pycache__/
-
-# docs
-site/
 
 # Previous directories
 fda-analyse-service/
@@ -52,9 +47,6 @@ fda-ui/
 
 # demo
 .demo
-
-# Generated
-ready
 
 # Certificates
 *.crt
@@ -106,7 +98,6 @@ table.md
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
