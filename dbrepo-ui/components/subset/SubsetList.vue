@@ -1,5 +1,17 @@
 <template>
   <div>
+    <v-toolbar
+      class="pr-2"
+      color="secondary"
+      flat>
+      <v-spacer />
+      <v-btn
+        :variant="buttonVariant"
+        :prepend-icon="filterIcon"
+        @click="switchFilter">
+        {{ filterText }}
+      </v-btn>
+    </v-toolbar>
     <v-card
       v-if="!loadingSubsets && subsets.length === 0"
       variant="flat"
@@ -14,6 +26,7 @@
         <Loading />
       </v-list-item>
       <div
+        v-if="!loadingSubsets"
         v-for="(subset, i) in subsets"
         :key="`q-${i}`">
         <v-divider v-if="i !== 0" class="mx-4" />
@@ -45,6 +58,7 @@ export default {
       loadingSubsets: false,
       loadingIdentifiers: false,
       subsets: [],
+      filter: null,
       cacheStore: useCacheStore()
     }
   },
@@ -58,8 +72,35 @@ export default {
     isDarkTheme () {
       return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
     },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
+    },
     colorVariant () {
       return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
+    },
+    filterIcon () {
+      if (this.filter === true) {
+        return 'mdi-star'
+      }
+      if (this.filter === false) {
+        return 'mdi-star-off'
+      }
+      return 'mdi-star-outline'
+    },
+    filterText () {
+      if (this.filter === true) {
+        return 'Starred'
+      }
+      if (this.filter === false) {
+        return 'Not Starred'
+      }
+      return 'All'
+    }
+  },
+  watch: {
+    filter () {
+      this.loadQueries()
     }
   },
   mounted () {
@@ -69,7 +110,7 @@ export default {
     loadQueries () {
       this.loadingSubsets = true
       const queryService = useQueryService()
-      queryService.findAll(this.$route.params.database_id, true)
+      queryService.findAll(this.$route.params.database_id, this.filter)
         .then((subsets) => {
           this.loadingSubsets = false
           this.subsets = subsets.map(subset => {
@@ -86,6 +127,17 @@ export default {
           }
           toast.error(this.$t(code))
         })
+    },
+    switchFilter () {
+      if (this.filter === true) {
+        this.filter = false
+        return
+      }
+      if (this.filter === false) {
+        this.filter = null
+        return
+      }
+      this.filter = true
     },
     title (subset) {
       if (subset.identifiers.length === 0) {
