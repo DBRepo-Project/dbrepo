@@ -88,6 +88,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro-hm
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -111,6 +112,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro-hm
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -131,6 +133,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -167,6 +170,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-medium
+    platform: linux/amd64
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -190,6 +194,7 @@ services:
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -248,6 +253,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-small
+    platform: linux/amd64
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -287,6 +293,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -314,6 +321,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -322,6 +330,8 @@ services:
     container_name: dbrepo-search-db
     hostname: search-db
     image: docker.io/bitnami/opensearch:${OPENSEARCH_VERSION}
+    volumes:
+      - search-db-data:/bitnami/opensearch/data
     ports:
       - "9200:9200"
     healthcheck:
@@ -329,8 +339,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-medium
-    volumes:
-      - search-db-data:/bitnami/opensearch/data
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -355,6 +364,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -381,6 +391,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
+    platform: linux/amd64
     depends_on:
       dbrepo-search-service:
         condition: service_healthy
@@ -403,6 +414,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -441,6 +453,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -459,6 +472,7 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
@@ -481,6 +495,7 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy
@@ -505,6 +520,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -521,6 +537,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -537,6 +554,7 @@ services:
       STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -584,6 +602,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-large
+    platform: linux/amd64
     depends_on:
       dbrepo-data-db:
         condition: service_healthy
@@ -612,6 +631,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
+    platform: linux/amd64
     extra_hosts:
       - "localhost:host-gateway"
     logging:
@@ -635,6 +655,7 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
+    platform: linux/amd64
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy

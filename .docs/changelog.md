@@ -2,10 +2,12 @@
 author: Martin Weise
 ---
 
-## v1.8.1 (2025-04-??)
+## v1.8.1 (2025-04-13)
 
 #### Changes
 
+* Specified image platform as `linux/amd64` in `docker-compose.yaml` deployment to enable host platform (e.g. ARM) to
+  emulate it.
 * Specified resource limits in the `docker-compose.yaml` deployment
   in [#517](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/517).
 
@@ -13,9 +15,9 @@ author: Martin Weise
 
 * Fixed a bug in the UI that displays the "Create View" button only when the user has at least read access. 
 
-#### Changes
+#### Removals
 
-* Refactored stale objects scheduler from the Data Service into a separate image.
+* Removed the stale objects scheduler from the Data Service and pushed it to next release.
 
 ## v1.8.0 (2025-04-04)
 
