@@ -117,11 +117,14 @@ export default {
       return this.roles.includes('update-table') && this.table.owner.id === this.cacheUser.uid
     },
     isOwner () {
+      if (!this.cacheUser || !this.database) {
+        return false
+      }
       const databaseService = useDatabaseService()
       return databaseService.isOwner(this.database, this.cacheUser)
     },
     canCreateView () {
-      if (!this.roles || !this.cacheUser || !this.isOwner) {
+      if (!this.roles || !this.isOwner) {
         return false
       }
       return this.roles.includes('create-database-view')

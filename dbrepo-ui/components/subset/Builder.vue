@@ -590,7 +590,7 @@ export default {
         return
       }
       const tid = this.$route.query.tid
-      const selection = this.tables.filter(t => t.id === tid)
+      const selection = this.datasources.filter(t => t.id === tid)
       if (selection.length === 0) {
         console.warn('Failed to find table with id', tid)
         return
