@@ -6,6 +6,7 @@ author: Martin Weise
 
 #### Changes
 
+* Added a visual filter for displaying starred/unstarred/all subsets in the UI.
 * Specified image platform as `linux/amd64` in `docker-compose.yaml` deployment to enable host platform (e.g. ARM) to
   emulate it.
 * Specified resource limits in the `docker-compose.yaml` deployment
