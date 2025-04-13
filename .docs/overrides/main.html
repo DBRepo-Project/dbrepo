@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block outdated %}
+<strong>WARNING</strong> You're browsing the documentation for an old version of DBRepo. Consider upgrading your project
+to <a href="{{ config.site_url }}">
+    <strong>the latest version</strong>.
+</a>
+{% endblock %}
