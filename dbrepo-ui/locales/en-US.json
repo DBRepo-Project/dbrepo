@@ -137,7 +137,13 @@
           "descriptions": {
             "description": {
               "label": "Description",
-              "hint": "Required"
+              "hint": "Required. Use {symbol} to indicate a line break for improved rendering of multiple paragraphs, but otherwise no HTML markup.",
+              "abstract": "Data Abstract",
+              "methods": "Collection Method",
+              "seriesinformation": "Series Information",
+              "tableofcontents": "Table of Contents",
+              "technicalinfo": "Technical Information",
+              "other": "Description of the Dataset"
             },
             "type": {
               "label": "Type",
@@ -185,7 +191,7 @@
           },
           "licenses": {
             "title": "License",
-            "subtitle": "Identifiers of related resources. These must be globally unique identifiers",
+            "subtitle": "Rights information of the dataset",
             "license": {
               "label": "License"
             }
