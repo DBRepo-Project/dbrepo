@@ -522,7 +522,7 @@ release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
   variables:
-    BUILDX_ARGS: --load
+    BUILDX_ARGS: --load --quiet
   dependencies:
     - clean-images
     - test-analyse-service
