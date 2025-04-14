@@ -1,9 +1,9 @@
 ###### FIRST STAGE ######
-FROM dbrepo-core:build AS dependency
+FROM --platform=$BUILDPLATFORM dbrepo-core:build AS dependency
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ###### SECOND STAGE ######
-FROM maven:3-amazoncorretto-17 AS build
+FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
@@ -22,7 +22,7 @@ COPY ./services ./services
 RUN mvn -fn clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM amazoncorretto:17-alpine3.19 AS runtime
+FROM --platform=$BUILDPLATFORM amazoncorretto:17-alpine3.19 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 RUN apk add --no-cache curl bash jq
