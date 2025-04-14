@@ -521,8 +521,6 @@ clean-images:
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
-  variables:
-    BUILDX_ARGS: --network=host
   dependencies:
     - clean-images
     - test-analyse-service
@@ -542,9 +540,9 @@ release-images:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "docker buildx create --name multiarch --driver docker-container --use"
   script:
-    - docker buildx ${BUILDX_ARGS} -t dbrepo-core:build --target build ./lib/java/dbrepo-core
-    - docker buildx ${BUILDX_ARGS} -t dbrepo-data-service:build --target build dbrepo-data-service
-    - docker buildx ${BUILDX_ARGS} -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
+    - docker buildx -t dbrepo-core:build --target build ./lib/java/dbrepo-core
+    - docker buildx -t dbrepo-data-service:build --target build dbrepo-data-service
+    - docker buildx -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
     - docker compose build -q --parallel
     - docker tag dbrepo-analyse-service:latest "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
