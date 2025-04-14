@@ -538,6 +538,7 @@ release-images:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+    - "docker buildx create --name multiarch --driver docker-container --use"
   script:
     - docker build --network=host -t dbrepo-core:build --target build ./lib/java/dbrepo-core
     - docker build --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
