@@ -542,7 +542,8 @@ release-images:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "docker buildx create --name multiarch --driver docker-container --use"
   script:
-    - docker buildx build $BUILDX_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
+    - docker buildx build --platform linux/amd64 $BUILDX_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
+    - docker buildx build --platform linux/arm64 $BUILDX_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
     - docker buildx build $BUILDX_ARGS -t dbrepo-data-service:build --target build dbrepo-data-service
     - docker buildx build $BUILDX_ARGS -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
     - docker compose build -q --parallel
