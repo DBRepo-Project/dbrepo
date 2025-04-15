@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM maven:3-amazoncorretto-17 AS build
+FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./

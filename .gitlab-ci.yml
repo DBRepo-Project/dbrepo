@@ -15,6 +15,7 @@ variables:
   APP_VERSION: "1.8.1"
   CHART_VERSION: "1.8.1"
   SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1"
+  SUPPORTED_ARCH: "linux/amd64,linux/arm64"
   MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -522,7 +523,8 @@ release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
   variables:
-    BUILDX_ARGS: --load --quiet
+    BUILD_ARGS: --network=host
+    COMPOSE_BUILD_ARGS: -q --parallel
   dependencies:
     - clean-images
     - test-analyse-service
@@ -540,13 +542,11 @@ release-images:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "docker buildx create --name multiarch --driver docker-container --use"
   script:
-    - docker buildx build --platform linux/amd64 $BUILDX_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
-    - docker buildx build --platform linux/arm64 $BUILDX_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
-    - docker buildx build $BUILDX_ARGS -t dbrepo-data-service:build --target build dbrepo-data-service
-    - docker buildx build $BUILDX_ARGS -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
-    - docker compose build -q --parallel
+    - docker build $BUILD_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
+    - docker build $BUILD_ARGS -t dbrepo-data-service:build --target build ./dbrepo-data-service
+    - docker build $BUILD_ARGS -t dbrepo-metadata-service:build --target build ./dbrepo-metadata-service
+    - docker compose build $COMPOSE_BUILD_ARGS
     - docker tag dbrepo-analyse-service:latest "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
     - docker tag dbrepo-dashboard-service:latest "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
