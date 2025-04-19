@@ -10,19 +10,20 @@
     <div class="container">
 
         <div class="left-section">
-            <div id="static-header">Created {{ view.created }}
+            <div id="view-header">
+{#                Created {{ view.created }}#}
 
-                <div id="type"><i class="lock open icon"></i>View</div>
-                <div id="access"><i class="lock open icon"></i>Open</div>
+                <div class="view-header-child" id="type">View</div>
+                <div class="view-header-child" id="access"><i class="lock open icon"></i>Open</div>
 
 
             </div>
-            <h1>{{ view.name }}</h1>
-            <a id="creator">{{ view.creator.username }}</a>
-            <p style="white-space: pre-line;">{{ view.description }}</p>
+            <h1>{{ metadata.name }}</h1>
+            <a id="creator">{{ metadata.owner.username }}</a>
+            <p style="white-space: pre-line;">{{ metadata.description }}</p>
             <h2>Data</h2>
-            {{ preview_info_box(view_data) }}
-            {{ view_schema_box(view) }}
+            {{ preview_info_box(data) }}
+            {{ view_schema_box(metadata) }}
         </div>
         <div class="right-section">
             {%- include "/view_records/details/side_bar.html" %}

@@ -14,24 +14,45 @@ $('.accordion').on('click', function() {
         $(this).find('.icon').toggleClass('right down');
     });
 
-$('.preview_button').on('click', function() {
+$('.preview_button').on('click', async function() {
+    const database_id = $(this).data('database_id');
     const preview_id = $(this).data('value');
-    renderTable(preview_id);
-});
+    const name = $(this).data('name');
 
-async function renderTable(index) {
-
-    console.log(index)
-    const response = await fetch(`/get-data?id=${index}`);
+    const response = await fetch(`/get-data?database_id=${database_id}&id=${preview_id}`);
     if (!response.ok) {
         throw new Error("Failed to fetch data");
     }
 
     const dataset = await response.json();
-    console.log(dataset);
 
+    renderTable(dataset, name);
+});
+
+$('.subset_preview_button').on('click', async function() {
+    const database_id = $(this).data('database_id');
+    const preview_id = $(this).data('value');
+    const name = $(this).data('name');
+
+
+    const response = await fetch(`/get-subset-data?database_id=${database_id}&id=${preview_id}`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch data");
+    }
+
+    const dataset = await response.json();
+
+    renderTable(dataset, name);
+});
+
+function renderTable(dataset, name) {
 
     const $table = $("#preview_table");
+
+    const $table_name = $("#preview_name");
+
+    $table_name.text(name);
+
 
     $table.empty();
 

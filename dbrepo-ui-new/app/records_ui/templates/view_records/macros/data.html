@@ -19,7 +19,6 @@
     </table>
 {%- endmacro %}
 
-
 {% macro preview_info_box(view_data) %}
     <div role="button" class="accordion link-box">
         <span class="box-title"> Dataset </span>
@@ -43,7 +42,7 @@
             {% for column in view.columns %}
             <tr>
                 <td>{{ column.name }}</td>
-                <td>{{ column.column_type.value }}</td>
+                <td>{{ column.type.value }}</td>
                 <td>{% if column.size == None %}
                     {% else %}
                         {{ column.size }}

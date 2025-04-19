@@ -1,6 +1,6 @@
 {%- extends 'page.html' %}
 
-{%- from "records/macros/data.html" import preview_info_box,dataset_list_box %}
+{%- from "records/macros/data.html" import preview_info_box,dataset_list_box, datasource_list_box %}
 {%- from "records/macros/metadata.html" import creators_list %}
 
 
@@ -10,23 +10,19 @@
 
 
         <div class="left-section">
-            <div id="static-header">Created {{ database.created }}
+            <div id="static-header">Created {{ database.identifiers[doi_id].publication_day }}.{{ database.identifiers[doi_id].publication_month }}.{{ database.identifiers[doi_id].publication_year }}
                 <div id="access"><i class="lock open icon"></i>Open</div>
             </div>
             <h1>{{ database.name }}</h1>
             <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
             <p style="white-space: pre-line;">{{ database.identifiers[0].descriptions[0].description }}</p>
             <h2>Data</h2>
-            {{ preview_info_box(table, table_data) }}
-            {{ dataset_list_box(database.views) }}
+            {{ preview_info_box(view, data) }}
+            {{ datasource_list_box(database.views) }}
+            {{ dataset_list_box(queries) }}
+
             <div class="ui grid">
-                <div class="centered row rel-mt-1">
-                  <button id="jump-btn" class="jump-to-top ui button labeled icon"
-                          aria-label="Jump to top of page ">
-                    <i class="arrow alternate circle up outline icon"></i>
-                    Jump Up
-                  </button>
-                </div>
+
             </div>
         </div>
         <div class="right-section">
