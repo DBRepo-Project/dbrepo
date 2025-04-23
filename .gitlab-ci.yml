@@ -543,7 +543,7 @@ release-images:
     - tags
     - dev
   before_script:
-    - "apk add --no-cache make"
+    - "apk add --no-cache make maven openjdk17-jdk"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
