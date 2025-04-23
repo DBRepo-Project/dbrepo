@@ -1,5 +1,14 @@
 # Metadata Service
 
+## Build
+
+Before testing, it is recommended to (re-)build the `MapStruct` mappers in case they were modified using the `package`
+target:
+
+```shell
+mvn clean package
+```
+
 ## Test
 
 Run all unit and integration tests and create an HTML+TXT coverage report located in the `report` module:
