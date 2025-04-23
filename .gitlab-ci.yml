@@ -529,8 +529,7 @@ release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
   variables:
-    BUILD_ARGS: --network=host
-    COMPOSE_BUILD_ARGS: -q --parallel
+    REPOSITORY_URL: $CI_REGISTRY2_URL
   dependencies:
     - clean-images
     - test-analyse-service
@@ -544,37 +543,13 @@ release-images:
     - tags
     - dev
   before_script:
+    - "apk add --no-cache make"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
   script:
-    - docker build $BUILD_ARGS -t dbrepo-core:build --target build ./lib/java/dbrepo-core
-    - docker build $BUILD_ARGS -t dbrepo-data-service:build --target build ./dbrepo-data-service
-    - docker build $BUILD_ARGS -t dbrepo-metadata-service:build --target build ./dbrepo-metadata-service
-    - docker compose build $COMPOSE_BUILD_ARGS
-    - docker tag dbrepo-analyse-service:latest "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-service:latest "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-service-init:latest "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-ui:latest "${CI_REGISTRY2_URL}/dashboard-ui:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-data-service:latest "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-metadata-service:latest "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-search-service:latest "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-search-service-init:latest "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-storage-service-init:latest "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-ui:latest "${CI_REGISTRY2_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/dashboard-ui:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
+    - "make release-images"
 
 release-helm:
   stage: release
