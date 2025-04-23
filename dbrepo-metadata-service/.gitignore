@@ -7,6 +7,9 @@ target/
 ### Environment ###
 .env
 
+### local repo ###
+lib/at/
+
 ### Generated ###
 ready
 mapping.xml

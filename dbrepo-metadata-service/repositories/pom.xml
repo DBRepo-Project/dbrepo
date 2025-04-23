@@ -4,27 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>dbrepo-metadata-service</artifactId>
-        <groupId>at.tuwien</groupId>
+        <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+        <artifactId>metadata-service</artifactId>
         <version>1.8.1</version>
     </parent>
 
-    <artifactId>dbrepo-metadata-service-repositories</artifactId>
-    <name>dbrepo-metadata-service-repositories</name>
+    <name>repositories</name>
+    <artifactId>metadata-service-repositories</artifactId>
     <version>1.8.1</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-            <artifactId>dbrepo-core</artifactId>
-            <version>${project.version}</version>
+            <artifactId>metadata-service-oai</artifactId>
+            <version>1.8.1</version>
         </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-oai</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
     </dependencies>
 
 </project>

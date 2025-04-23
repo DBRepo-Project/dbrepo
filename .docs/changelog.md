@@ -2,6 +2,19 @@
 author: Martin Weise
 ---
 
+## v1.8.2 (2025-04-??)
+
+#### Features
+
+* Added structured logging through the `fluentd` protocol via the lightweight fluentbit in a 
+  separate [Logging Service](../api/logging-service)
+  in [#524](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/524).
+
+#### Changes
+
+* Improved internal packaging mechanism that is compatible with multiarch deployments 
+  in [#523](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/523).
+
 ## v1.8.1 (2025-04-13)
 
 #### Changes
