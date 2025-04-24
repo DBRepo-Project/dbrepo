@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import {useCacheStore} from "~/stores/cache.js";
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
@@ -65,7 +65,7 @@ export default {
       return this.cacheStore.getUser
     },
     hasIdentifier () {
-      if (!this.resource.identifiers) {
+      if (!this.resource.identifiers || this.resource.identifiers.length === 0) {
         return false
       }
       if (!this.cacheUser) {
