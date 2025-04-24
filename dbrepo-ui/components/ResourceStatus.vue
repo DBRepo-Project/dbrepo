@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import {useCacheStore} from "~/stores/cache.js";
+
 export default {
   props: {
     resource: {
@@ -32,6 +34,11 @@ export default {
       default: () => {
         return 'small'
       }
+    }
+  },
+  data () {
+    return {
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -54,8 +61,17 @@ export default {
       }
       return this.$t(`pages.database.status.${this.mode}`)
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     hasIdentifier () {
-      return this.resource.identifiers?.length > 0
+      if (!this.resource.identifiers) {
+        return false
+      }
+      if (!this.cacheUser) {
+        return this.resource.identifiers.filter(i => i.status === 'published').length
+      }
+      return this.resource.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
     },
     color () {
       if (this.hasIdentifier) {

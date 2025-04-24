@@ -5,6 +5,7 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.identifier.IdentifierStatusType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
@@ -534,6 +535,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                 log.trace("authenticated user {} is not owner: remove access list", principal.getName());
                 database.setAccesses(List.of());
             }
+            database.setIdentifiers(database.getIdentifiers()
+                    .stream()
+                    .filter(i -> i.getStatus().equals(IdentifierStatusType.DRAFT) && i.getOwnedBy().equals(getId(principal)) || i.getStatus().equals(IdentifierStatusType.PUBLISHED))
+                    .toList());
         } else {
             if (!database.getIsPublic() && !database.getIsSchemaPublic()) {
                 log.error("Failed to find database: not public and not authenticated");
@@ -551,6 +556,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             .filter(v -> !v.getIsPublic() && !v.getIsSchemaPublic())
                             .toList());
             database.setAccesses(List.of());
+            database.setIdentifiers(database.getIdentifiers()
+                    .stream()
+                    .filter(i -> i.getStatus().equals(IdentifierStatusType.PUBLISHED))
+                    .toList());
         }
         final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();

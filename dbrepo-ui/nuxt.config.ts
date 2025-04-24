@@ -82,8 +82,8 @@ export default defineNuxtConfig({
         }
       },
       api: {
-        client: 'http://localhost',
-        server: 'http://gateway-service',
+        client: 'https://test.dbrepo.tuwien.ac.at',
+        server: 'https://test.dbrepo.tuwien.ac.at',
       },
       database: {
         image: {
