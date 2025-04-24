@@ -253,7 +253,7 @@ export default {
       if (!this.database || !this.database.identifiers) {
         return []
       }
-      return this.database.identifiers.filter(i => i.query_id === this.$route.params.subset_id)
+      return this.database.identifiers.filter(i => i.database_id === this.$route.params.database_id)
     },
     pid () {
       return this.$route.query.pid

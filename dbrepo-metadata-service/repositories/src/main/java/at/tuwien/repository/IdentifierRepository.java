@@ -1,6 +1,7 @@
 package at.tuwien.repository;
 
 import at.tuwien.entities.identifier.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,6 +11,9 @@ import java.util.UUID;
 
 @Repository
 public interface IdentifierRepository extends JpaRepository<Identifier, UUID> {
+
+    @NotNull
+    List<Identifier> findAll();
 
     /**
      * Finds identifiers by given database id.
