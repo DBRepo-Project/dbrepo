@@ -237,6 +237,14 @@ export default {
         .then(() => {
           console.info('Updated user information')
           const toast = useToastInstance()
+          const user = Object.assign({}, this.cacheUser)
+          user.given_name = this.model.firstname
+          user.family_name = this.model.lastname
+          user.orcid = this.model.orcid
+          user.affiliation = this.model.affiliation
+          user.theme = this.model.theme
+          user.language = this.model.language
+          this.cacheStore.setUser(user)
           toast.success(this.$t('success.user.info'))
           /* language */
           this.cacheStore.setLocale(this.model.language)

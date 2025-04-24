@@ -20,7 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doNothing;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -90,11 +89,6 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
                 .theme("dark")
                 .language("de")
                 .build();
-
-        /* mock */
-        doNothing()
-                .when(keycloakGateway)
-                .updateUser(USER_1_ID, request);
 
         /* test */
         final User response = userService.modify(USER_1, request);

@@ -103,7 +103,6 @@ public class KeycloakGatewayIntegrationTest extends AbstractUnitTest {
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        keycloakGateway.updateUser(keycloakUtils.getUserId(USER_1_USERNAME), USER_1_UPDATE_DTO);
         final UserRepresentation user = keycloakUtils.getUser(USER_1_USERNAME);
         assertNotNull(user.getId());
         assertEquals(USER_1_FIRSTNAME, user.getFirstName());
