@@ -26,6 +26,9 @@ public class DataCiteCreateDoi implements Serializable {
 
     private DataCiteDoiEvent event;
 
+    @NotBlank
+    private String schemaVersion;
+
     private List<DataCiteDoiTitle> titles;
 
     @NotBlank

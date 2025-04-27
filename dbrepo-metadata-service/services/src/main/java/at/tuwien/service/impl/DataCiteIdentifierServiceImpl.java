@@ -19,6 +19,8 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
@@ -32,6 +34,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
@@ -100,6 +105,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             DataServiceConnectionException, MalformedException, DatabaseNotFoundException, IdentifierNotFoundException,
             ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ExternalServiceException {
+        log.debug("save identifier, {}", data.getId());
         data.setDoi(remoteSave(identifierService.save(database, user, data), DataCiteDoiEvent.REGISTER));
         return identifierService.save(database, user, data);
     }
@@ -110,6 +116,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             DataServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
             DatabaseNotFoundException, QueryNotFoundException, SearchServiceException,
             SearchServiceConnectionException, ExternalServiceException {
+        log.debug("create identifier");
         data.setDoi(remoteSave(identifierService.create(database, user, data), DataCiteDoiEvent.REGISTER));
         return identifierService.create(database, user, data);
     }
@@ -129,19 +136,17 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
-        final HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(
-                DataCiteBody.<DataCiteCreateDoi>builder()
-                        .data(DataCiteData.<DataCiteCreateDoi>builder()
-                                .type("dois")
-                                .attributes(metadataMapper.identifierToDataCiteCreateDoi(identifier,
-                                        endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
-                                        dataCiteConfig.getPrefix(), event))
-                                .build())
-                        .build(),
-                headers
-        );
+        final DataCiteBody<DataCiteCreateDoi> body = DataCiteBody.<DataCiteCreateDoi>builder()
+                .data(DataCiteData.<DataCiteCreateDoi>builder()
+                        .type("dois")
+                        .attributes(metadataMapper.identifierToDataCiteCreateDoi(identifier,
+                                endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
+                                dataCiteConfig.getPrefix(), event))
+                        .build())
+                .build();
+        final HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(body, headers);
         final String url = dataCiteConfig.getUrl() + "/dois";
-        log.trace("request doi from url {}", url);
+        log.trace("request doi from url={}", url);
         try {
             final ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
                     request, dataCiteBodyParameterizedTypeReference);

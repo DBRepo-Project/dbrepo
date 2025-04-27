@@ -80,4 +80,5 @@ public enum RelationType {
     public String toString() {
         return this.name;
     }
+
 }

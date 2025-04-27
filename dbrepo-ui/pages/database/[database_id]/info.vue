@@ -46,6 +46,13 @@
                   :max-height="maxHeight" />
               </v-list-item>
               <v-list-item
+                :title="$t('pages.database.id.title')"
+                density="compact">
+                <div>
+                  {{ database.id }}
+                </div>
+              </v-list-item>
+              <v-list-item
                 :title="$t('pages.database.name.title')"
                 density="compact">
                 <div>

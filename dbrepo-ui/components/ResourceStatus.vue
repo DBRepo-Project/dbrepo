@@ -65,13 +65,13 @@ export default {
       return this.cacheStore.getUser
     },
     hasIdentifier () {
-      if (!this.resource.identifiers || this.resource.identifiers.length === 0) {
+      if (!this.resource.identifiers?.length === 0) {
         return false
       }
       if (!this.cacheUser) {
-        return this.resource.identifiers.filter(i => i.status === 'published').length
+        return this.resource.identifiers.filter(i => i.status === 'published').length > 0
       }
-      return this.resource.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
+      return this.resource.identifiers.filter(i => i.status === 'published' || i?.owned_by === this.cacheUser.uid || i?.owner.id === this.cacheUser.uid).length > 0
     },
     color () {
       if (this.hasIdentifier) {

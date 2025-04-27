@@ -631,6 +631,9 @@
       "created": {
         "title": "Created"
       },
+      "id": {
+        "title": "ID"
+      },
       "connection": {
         "title": "Connection",
         "username": "username",

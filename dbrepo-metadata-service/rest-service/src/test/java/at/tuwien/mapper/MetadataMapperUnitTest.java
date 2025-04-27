@@ -1,6 +1,7 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.datacite.doi.DataCiteDoiRelatedIdentifier;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.entities.database.View;
@@ -56,6 +57,13 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
 
         /* test */
         assertNotEquals(CONTAINER_1, CONTAINER_2);
+    }
+
+    @Test
+    public void relatedIdentifierToDoiRelatedIdentifier_succeeds() {
+
+        /* test */
+        assertEquals("Cites", metadataMapper.relatedIdentifierToDoiRelatedIdentifier(IDENTIFIER_1_RELATED_IDENTIFIER_1).getRelationType());
     }
 
     @Test

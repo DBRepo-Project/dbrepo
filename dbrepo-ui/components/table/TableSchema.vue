@@ -152,7 +152,6 @@
           <v-checkbox
             v-model="c.unique"
             :disabled="disabled || c.type === 'serial'"
-            :hidden="c.primary_key"
             :label="$t('pages.table.subpages.schema.unique.label')" />
         </v-col>
         <v-col
@@ -250,6 +249,9 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     },
     showPrimaryKeyWarning () {
+      if (this.disabled) {
+        return false
+      }
       return this.columns.filter(c => c.primary_key).length === 0
     }
   },

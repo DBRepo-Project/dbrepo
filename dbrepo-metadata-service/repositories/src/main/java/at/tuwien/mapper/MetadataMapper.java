@@ -258,7 +258,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "relatedIdentifier", source = "value"),
             @Mapping(target = "relatedIdentifierType", source = "type"),
-            @Mapping(target = "relationType", source = "relation"),
+            @Mapping(target = "relationType", expression = "java(relatedIdentifier.getRelation().toString())"),
     })
     DataCiteDoiRelatedIdentifier relatedIdentifierToDoiRelatedIdentifier(RelatedIdentifier relatedIdentifier);
 
