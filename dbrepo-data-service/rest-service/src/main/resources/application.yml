@@ -17,6 +17,10 @@ spring:
           time_zone: UTC
   application:
     name: data-service
+  servlet:
+    multipart:
+      max-file-size: "${MAX_UPLOAD_SIZE:2GB}"
+      max-request-size: "${MAX_UPLOAD_SIZE:2GB}"
   rabbitmq:
     host: "${BROKER_HOST:broker-service}"
     virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
@@ -41,6 +45,8 @@ management:
       enabled: true
 server:
   port: 8080
+  tomcat:
+    max-swallow-size: -1
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:

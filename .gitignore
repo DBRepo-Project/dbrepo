@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# secrets
+.s3cfg
+
 # generated
 ready
 schema.xsd
