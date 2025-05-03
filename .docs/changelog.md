@@ -9,6 +9,8 @@ author: Martin Weise
 * Added structured logging through the `fluentd` protocol via the lightweight fluentbit in a 
   separate [Logging Service](../api/logging-service)
   in [#524](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/524).
+* Added a separate database for the Dashboard Service for high-availability deployment of Grafana
+  in [#526](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/526).
 
 #### Changes
 

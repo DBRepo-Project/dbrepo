@@ -442,6 +442,42 @@
             },
             "type": "object"
         },
+        "dashboarddb": {
+            "properties": {
+                "auth": {
+                    "properties": {
+                        "database": {
+                            "type": "string"
+                        },
+                        "password": {
+                            "type": "string"
+                        },
+                        "username": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "metrics": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "dashboardservice": {
             "properties": {
                 "containerSecurityContext": {
@@ -559,6 +595,22 @@
         },
         "dashboardui": {
             "properties": {
+                "dashboardsProvider": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "datasources": {
+                    "properties": {
+                        "secretName": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -570,8 +622,25 @@
                 },
                 "grafana": {
                     "properties": {
+                        "extraConfigmaps": {
+                            "items": {
+                                "properties": {
+                                    "mountPath": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
                         "extraEnvVarsSecret": {
                             "type": "string"
+                        },
+                        "replicaCount": {
+                            "type": "integer"
                         },
                         "updateStrategy": {
                             "properties": {
@@ -599,6 +668,14 @@
                     "type": "object"
                 },
                 "metrics": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "persistence": {
                     "properties": {
                         "enabled": {
                             "type": "boolean"
@@ -671,6 +748,17 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "readonlyUser": {
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -1345,14 +1433,6 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
-                        },
-                        "service": {
-                            "properties": {
-                                "type": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
                         }
                     },
                     "type": "object"
@@ -1413,6 +1493,14 @@
                             "type": "object"
                         },
                         "service": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "updateStrategy": {
                             "properties": {
                                 "type": {
                                     "type": "string"
@@ -1883,6 +1971,14 @@
                                     "type": "string"
                                 },
                                 "host": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "dashboard": {
+                            "properties": {
+                                "url": {
                                     "type": "string"
                                 }
                             },

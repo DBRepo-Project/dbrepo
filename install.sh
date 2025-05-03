@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # preset
-VERSION="1.8.1"
+VERSION="1.8.2"
 MIN_CPU=8
-MIN_RAM=4
-MIN_MAP_COUNT=262144
+MIN_RAM=20
 SKIP_CHECKS=${SKIP_CHECKS:-0}
 DOWNLOAD_ONLY=${DOWNLOAD_ONLY:-0}
 
@@ -40,23 +39,6 @@ if [[ $SKIP_CHECKS -eq 0 ]] && [[ $DOWNLOAD_ONLY -ne 1 ]]; then
     exit 4
   else
     echo "RAM ${RAM}GB OK"
-  fi
-  MAX_MAP_COUNT=$(cat /proc/sys/vm/max_map_count)
-  if [[ $MAX_MAP_COUNT -lt $MIN_MAP_COUNT ]]; then
-    echo "You do not have enough max. map counts: found ${MAX_MAP_COUNT} instead of minimum ${MIN_MAP_COUNT}"
-    if [ $(id -u) -eq 0 ]; then
-        echo "  - attempt to update the /etc/sysctl.conf file  and add the line 'vm.max_map_count=${MIN_MAP_COUNT}' at the end"
-        echo "vm.max_map_count=${MIN_MAP_COUNT}" >> /etc/sysctl.conf
-        sysctl -p
-        if [[ $MAX_MAP_COUNT -lt $MIN_MAP_COUNT ]]; then
-            exit 4
-        fi
-    else
-        echo "  - you need to re-run the install.sh script as root to fix this"
-        exit 4
-    fi
-  else
-    echo "MAP COUNT ${MAX_MAP_COUNT} OK"
   fi
 else
   echo "[✨] Skipping checks ..."

@@ -16,15 +16,6 @@ x-resources-micro: &resources-micro
       cpus: '0.375'
       memory: 384M
 
-x-resources-nano-hm: &resources-micro-hm
-  resources:
-    reservations:
-      cpus: '0.25'
-      memory: 256M
-    limits:
-      cpus: '0.375'
-      memory: 4096M
-
 x-resources-small: &resources-small
   resources:
     reservations:
@@ -52,6 +43,15 @@ x-resources-large: &resources-large
       cpus: '1.5'
       memory: 3072M
 
+x-resources-xlarge: &resources-xlarge
+  resources:
+    reservations:
+      cpus: '1.5'
+      memory: 3072M
+    limits:
+      cpus: '2'
+      memory: 6144M
+
 x-healthcheck-params: &healthcheck-params
   interval: 30s
   timeout: 10s
@@ -66,13 +66,14 @@ volumes:
   identity-service-data:
   metric-db-data:
   dashboard-ui-data:
+  dashboard-db-data:
 
 services:
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
+    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - metadata-db-data:/var/lib/mysql
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -80,15 +81,38 @@ services:
     ports:
       - "3306:3306"
     environment:
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
-      MARIADB_EXTRA_FLAGS: "${METADATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
+      MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_SKIP_TEST_DB: "yes"
+      MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
+      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
-      <<: *resources-micro-hm
-    platform: linux/amd64
+      <<: *resources-xlarge
+    logging:
+      driver: json-file
+
+  dbrepo-metadata-db-metrics:
+    restart: "no"
+    container_name: dbrepo-metadata-db-metrics
+    hostname: metadata-db-metrics
+    image: docker.io/bitnami/mysqld-exporter:0.15.1
+    command:
+      - --mysqld.address=metadata-db:3306
+      - --config.my-cnf=/.my.cnf
+    volumes:
+      - ./dbrepo-metadata-db/metrics.cnf:/.my.cnf
+    healthcheck:
+      test: -h
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -96,23 +120,44 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
+    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - data-db-data:/var/lib/mysql
-      - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-startdb.d/1_grant-user.sql
+      - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "3307:3306"
     environment:
-      MARIADB_EXTRA_FLAGS: "${DATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_SKIP_TEST_DB: "yes"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
+      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
-      <<: *resources-micro-hm
-    platform: linux/amd64
+      <<: *resources-xlarge
+    logging:
+      driver: json-file
+
+  dbrepo-data-db-metrics:
+    restart: "no"
+    container_name: dbrepo-data-db-metrics
+    hostname: data-db-metrics
+    image: docker.io/bitnami/mysqld-exporter:0.15.1
+    command:
+      - --mysqld.address=data-db:3306
+      - --config.my-cnf=/.my.cnf
+    volumes:
+      - ./dbrepo-data-db/metrics.cnf:/.my.cnf
+    healthcheck:
+      test: -h
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
+    depends_on:
+      dbrepo-data-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -135,7 +180,25 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-db:
+    restart: "no"
+    container_name: dbrepo-dashboard-db
+    hostname: dashboard-db
+    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
+    volumes:
+      - dashboard-db-data:/bitnami/postgresql
+    environment:
+      POSTGRESQL_DATABASE: "${DASHBOARD_DB_NAME:-grafana}"
+      POSTGRESQL_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
+      POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
     logging:
       driver: json-file
 
@@ -172,7 +235,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-medium
-    platform: linux/amd64
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -199,7 +261,6 @@ services:
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -263,7 +324,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-small
-    platform: linux/amd64
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -308,7 +368,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -337,7 +396,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -355,7 +413,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-medium
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -385,7 +442,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -418,7 +474,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     depends_on:
       dbrepo-search-service:
         condition: service_healthy
@@ -441,7 +496,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -483,7 +537,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -506,7 +559,6 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
@@ -533,7 +585,6 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy
@@ -558,7 +609,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -567,6 +617,8 @@ services:
     container_name: dbrepo-metric-db
     hostname: metric-db
     image: docker.io/bitnami/prometheus:${PROMETHEUS_VERSION}
+    ports:
+      - 9090:9090
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
@@ -575,7 +627,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -595,7 +646,6 @@ services:
       STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -648,7 +698,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-large
-    platform: linux/amd64
     depends_on:
       dbrepo-data-db:
         condition: service_healthy
@@ -659,19 +708,24 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: dbrepo-dashboard-ui:latest
-    build:
-      context: ./dbrepo-dashboard-ui
-      network: host
+    image: docker.io/bitnami/grafana:11.5.3
     ports:
       - "3000:3000"
     volumes:
-      - dashboard-ui-data:/opt/bitnami/grafana/data
+      - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
+      - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
+      - ./dbrepo-dashboard-ui/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
+      - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
       # do not attempt to set it in the grafana.ini, hours wasted here: 7
+      DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
+      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
+      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -681,7 +735,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     extra_hosts:
       - "localhost:host-gateway"
     logging:
@@ -708,7 +761,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy

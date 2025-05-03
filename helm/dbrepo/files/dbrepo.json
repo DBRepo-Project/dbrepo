@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
+  "id": 5,
   "links": [
     {
       "asDropdown": false,
@@ -29,11 +30,12 @@
       "title": "Docs",
       "tooltip": "",
       "type": "link",
-      "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.6/"
+      "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/"
     }
   ],
   "panels": [
     {
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -41,6 +43,7 @@
         "y": 0
       },
       "id": 34,
+      "panels": [],
       "title": "tl;dr",
       "type": "row"
     },
@@ -48,7 +51,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "Quality of Service",
       "fieldConfig": {
@@ -109,12 +112,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -134,7 +137,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -179,12 +182,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -205,7 +208,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -247,12 +250,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -273,7 +276,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -315,12 +318,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -336,7 +339,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -353,7 +356,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -388,7 +391,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -431,12 +434,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -454,12 +457,83 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "dbrepometrics0"
+      },
+      "description": "Top 10 by number of accesses",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 4
+      },
+      "id": 38,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "right",
+          "showLegend": false,
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dbrepometrics0"
+          },
+          "editorMode": "code",
+          "expr": "topk(10, dbrepo_datasource_data_get_total)",
+          "instant": false,
+          "legendFormat": "{{uri}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Popular Data Sources",
+      "type": "piechart"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 11
       },
       "id": 22,
       "panels": [],
@@ -469,7 +543,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -506,7 +580,7 @@
         "h": 3,
         "w": 4,
         "x": 0,
-        "y": 5
+        "y": 12
       },
       "id": 17,
       "options": {
@@ -526,12 +600,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -551,7 +625,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -588,7 +662,7 @@
         "h": 3,
         "w": 4,
         "x": 4,
-        "y": 5
+        "y": 12
       },
       "id": 24,
       "options": {
@@ -608,12 +682,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -633,7 +707,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -645,8 +719,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
               }
             ]
           },
@@ -658,7 +740,7 @@
         "h": 3,
         "w": 4,
         "x": 8,
-        "y": 5
+        "y": 12
       },
       "id": 25,
       "options": {
@@ -678,12 +760,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -703,7 +785,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -715,8 +797,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
               }
             ]
           },
@@ -728,7 +814,7 @@
         "h": 3,
         "w": 4,
         "x": 12,
-        "y": 5
+        "y": 12
       },
       "id": 26,
       "options": {
@@ -748,12 +834,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -773,7 +859,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -787,7 +873,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "green",
                 "value": null
               }
             ]
@@ -800,7 +886,7 @@
         "h": 3,
         "w": 4,
         "x": 16,
-        "y": 5
+        "y": 12
       },
       "id": 27,
       "options": {
@@ -808,6 +894,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -819,12 +906,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -844,7 +931,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -881,11 +968,17 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 15
       },
       "id": 20,
       "options": {
         "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
         "maxVizHeight": 300,
         "minVizHeight": 16,
         "minVizWidth": 8,
@@ -902,12 +995,12 @@
         "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -927,7 +1020,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -941,6 +1034,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -988,7 +1082,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 15
       },
       "id": 21,
       "options": {
@@ -1003,11 +1097,12 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -1030,7 +1125,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 22
       },
       "id": 31,
       "panels": [],
@@ -1040,93 +1135,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
-      },
-      "description": "Quality of Service",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "purple",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "orange",
-                "value": 60
-              },
-              {
-                "color": "#EAB839",
-                "value": 80
-              },
-              {
-                "color": "green",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 0,
-        "y": 16
-      },
-      "id": 32,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
-          },
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "rabbitmq_channels*100/rabbitmq_channel_consumers",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Services Running",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Broker Service QoS",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -1138,8 +1147,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
               }
             ]
           },
@@ -1150,8 +1163,8 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 4,
-        "y": 16
+        "x": 0,
+        "y": 23
       },
       "id": 29,
       "options": {
@@ -1171,12 +1184,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1196,7 +1209,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -1208,8 +1221,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
               }
             ]
           },
@@ -1220,8 +1237,8 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 8,
-        "y": 16
+        "x": 4,
+        "y": 23
       },
       "id": 30,
       "options": {
@@ -1241,12 +1258,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1266,7 +1283,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -1302,8 +1319,8 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 12,
-        "y": 16
+        "x": 8,
+        "y": 23
       },
       "id": 35,
       "options": {
@@ -1323,12 +1340,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1348,7 +1365,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "Ready and unacknowledged messages stored in memory",
       "fieldConfig": {
@@ -1384,8 +1401,8 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 16,
-        "y": 16
+        "x": 12,
+        "y": 23
       },
       "id": 36,
       "options": {
@@ -1405,12 +1422,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1430,7 +1447,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "Messages delivered to consumers but not yet acknowledged",
       "fieldConfig": {
@@ -1466,8 +1483,8 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 20,
-        "y": 16
+        "x": 16,
+        "y": 23
       },
       "id": 37,
       "options": {
@@ -1487,12 +1504,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1512,7 +1529,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "Messages for received protocol messages",
       "fieldConfig": {
@@ -1527,6 +1544,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -1601,7 +1619,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 19
+        "y": 26
       },
       "id": 33,
       "options": {
@@ -1616,12 +1634,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1644,7 +1662,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 33
       },
       "id": 2,
       "panels": [],
@@ -1654,7 +1672,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -1669,6 +1687,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -1715,7 +1734,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 27
+        "y": 34
       },
       "id": 23,
       "options": {
@@ -1730,12 +1749,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.4.9",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -1755,7 +1774,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -1806,7 +1825,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 34
       },
       "id": 16,
       "options": {
@@ -1823,11 +1842,12 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -1847,7 +1867,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -1861,6 +1881,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 25,
             "gradientMode": "none",
@@ -1965,7 +1986,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 34
+        "y": 41
       },
       "id": 6,
       "options": {
@@ -1980,12 +2001,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -2007,7 +2028,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "Heap and non-heap memory summed",
       "fieldConfig": {
@@ -2022,6 +2043,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 25,
             "gradientMode": "none",
@@ -2126,7 +2148,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 34
+        "y": 41
       },
       "id": 7,
       "options": {
@@ -2141,12 +2163,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -2167,130 +2189,79 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
+      "description": "Top 10 by frequency of access",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 25,
-            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
             }
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
           "unit": "reqps"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "/.*search-service.*/"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "/.*analyse-service.*/"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "super-light-orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 41
+        "y": 48
       },
       "id": 18,
       "options": {
+        "displayLabels": [
+          "percent"
+        ],
         "legend": {
           "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+          "displayMode": "hidden",
+          "placement": "right",
+          "showLegend": false,
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "editorMode": "code",
-          "expr": "rate(flask_http_request_duration_seconds_count{status=~\"200|201|202\",path!=\"/health\"}[$__rate_interval])",
+          "expr": "topk(10, rate(dbrepo_table_data_get_total[$__range]))",
           "instant": false,
-          "legendFormat": "{{method}} {{instance}} {{path}} ({{status}})",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Successful API Requests",
-      "type": "timeseries"
+      "title": "Popular Datasources",
+      "type": "piechart"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "fieldConfig": {
         "defaults": {
@@ -2304,6 +2275,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 25,
             "gradientMode": "none",
@@ -2334,8 +2306,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2378,7 +2349,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 41
+        "y": 48
       },
       "id": 19,
       "options": {
@@ -2393,11 +2364,12 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
+            "uid": "dbrepometrics0"
           },
           "editorMode": "code",
           "expr": "rate(flask_http_request_duration_seconds_count{status!~\"200|201|202\"}[$__rate_interval])",
@@ -2411,22 +2383,29 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "1m",
-  "schemaVersion": 39,
+  "preload": false,
+  "refresh": "5m",
+  "schemaVersion": 40,
   "tags": [
-    "provisioned",
-    "dbrepo"
+    "ui",
+    "dashboard",
+    "metadata",
+    "data",
+    "gateway",
+    "analyse",
+    "metrics",
+    "auth"
   ],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "DBRepo - Overview",
+  "title": "DBRepo",
   "uid": "bdz20owu8zn5se",
   "version": 1,
   "weekStart": ""

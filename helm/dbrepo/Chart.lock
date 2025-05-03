@@ -4,7 +4,7 @@ dependencies:
   version: 1.4.0
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
-  version: 24.0.3
+  version: 24.6.3
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
   version: 13.2.7
@@ -26,5 +26,8 @@ dependencies:
 - name: nginx
   repository: https://charts.bitnami.com/bitnami
   version: 18.3.1
-digest: sha256:acb36fe9078b39dd50381a03827c318897d401c1946aee453611b3b58c924a54
-generated: "2025-04-01T13:07:24.905667677+02:00"
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.1.0
+digest: sha256:fd6fb7a9547e6bb1c7d311b67dae7a3987247e16256ef3b553593ddd90b91340
+generated: "2025-05-02T14:16:07.24283973+02:00"

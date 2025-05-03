@@ -31,7 +31,7 @@ RUN adduser -D dbrepo --uid 1001 && \
 
 USER 1001
 
-COPY --from=build --chown=1001 ./rest-service/target/*rest-service-*.jar ./data-service.jar
+COPY --from=build --chown=1001 ./rest-service/target/*service-*.jar ./data-service.jar
 
 # non-root port
 EXPOSE 8080

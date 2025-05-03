@@ -12,9 +12,9 @@ variables:
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.8"
-  APP_VERSION: "1.8.1"
-  CHART_VERSION: "1.8.1"
-  SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1"
+  APP_VERSION: "1.8.2"
+  CHART_VERSION: "1.8.2"
+  SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1, 1.8.2"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
@@ -550,6 +550,7 @@ release-images:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
   script:
     - "make release-images"
+    - "APP_VERSION=$DOC_VERSION make release-images"
 
 release-helm:
   stage: release
