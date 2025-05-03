@@ -159,7 +159,7 @@
                 <TableSchema
                   ref="schema"
                   :back="false"
-                  :disabled="step > 4"
+                  :disabled="step !== 4"
                   :loading="loading"
                   :submit-text="$t('navigation.continue')"
                   :columns="tableCreate.columns"

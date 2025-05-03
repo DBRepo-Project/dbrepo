@@ -16,15 +16,6 @@ x-resources-micro: &resources-micro
       cpus: '0.375'
       memory: 384M
 
-x-resources-nano-hm: &resources-micro-hm
-  resources:
-    reservations:
-      cpus: '0.25'
-      memory: 256M
-    limits:
-      cpus: '0.375'
-      memory: 4096M
-
 x-resources-small: &resources-small
   resources:
     reservations:
@@ -52,6 +43,15 @@ x-resources-large: &resources-large
       cpus: '1.5'
       memory: 3072M
 
+x-resources-xlarge: &resources-xlarge
+  resources:
+    reservations:
+      cpus: '1.5'
+      memory: 3072M
+    limits:
+      cpus: '2'
+      memory: 6144M
+
 x-healthcheck-params: &healthcheck-params
   interval: 30s
   timeout: 10s
@@ -66,29 +66,53 @@ volumes:
   identity-service-data:
   metric-db-data:
   dashboard-ui-data:
+  dashboard-db-data:
 
 services:
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
+    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
-      - metadata-db-data:/bitnami/mariadb
+      - metadata-db-data:/var/lib/mysql
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./config/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
       - "3306:3306"
     environment:
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
-      MARIADB_EXTRA_FLAGS: "${METADATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
+      MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_SKIP_TEST_DB: "yes"
+      MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
+      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
-      <<: *resources-micro-hm
-    platform: linux/amd64
+      <<: *resources-xlarge
+    logging:
+      driver: json-file
+
+  dbrepo-metadata-db-metrics:
+    restart: "no"
+    container_name: dbrepo-metadata-db-metrics
+    hostname: metadata-db-metrics
+    image: docker.io/bitnami/mysqld-exporter:0.15.1
+    command:
+      - --mysqld.address=metadata-db:3306
+      - --config.my-cnf=/.my.cnf
+    volumes:
+      - ./dbrepo-metadata-db/metrics.cnf:/.my.cnf
+    healthcheck:
+      test: -h
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -96,23 +120,44 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:${MARIADB_VERSION}
+    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
-      - data-db-data:/bitnami/mariadb
-      - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
+      - data-db-data:/var/lib/mysql
+      - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "3307:3306"
     environment:
-      MARIADB_EXTRA_FLAGS: "${DATA_DB_EXTRA_FLAGS:---max_connections=155 --max-statement-time=60}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_SKIP_TEST_DB: "yes"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb/healthcheck.sh --connect --innodb_initialized
+      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
     deploy:
-      <<: *resources-micro-hm
-    platform: linux/amd64
+      <<: *resources-xlarge
+    logging:
+      driver: json-file
+
+  dbrepo-data-db-metrics:
+    restart: "no"
+    container_name: dbrepo-data-db-metrics
+    hostname: data-db-metrics
+    image: docker.io/bitnami/mysqld-exporter:0.15.1
+    command:
+      - --mysqld.address=data-db:3306
+      - --config.my-cnf=/.my.cnf
+    volumes:
+      - ./dbrepo-data-db/metrics.cnf:/.my.cnf
+    healthcheck:
+      test: -h
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-nano
+    depends_on:
+      dbrepo-data-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -133,7 +178,25 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-db:
+    restart: "no"
+    container_name: dbrepo-dashboard-db
+    hostname: dashboard-db
+    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
+    volumes:
+      - dashboard-db-data:/bitnami/postgresql
+    environment:
+      POSTGRESQL_DATABASE: "${DASHBOARD_DB_NAME:-grafana}"
+      POSTGRESQL_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
+      POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
+      <<: *healthcheck-params
+    deploy:
+      <<: *resources-micro
     logging:
       driver: json-file
 
@@ -170,7 +233,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-medium
-    platform: linux/amd64
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -183,7 +245,7 @@ services:
     init: true
     restart: "no"
     container_name: dbrepo-auth-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.2
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       METADATA_DB: "${METADATA_DB:-dbrepo}"
@@ -194,7 +256,6 @@ services:
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -209,7 +270,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.2
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://analyse-service:8080}"
@@ -253,7 +314,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-small
-    platform: linux/amd64
     depends_on:
       dbrepo-auth-service:
         condition: service_healthy
@@ -274,7 +334,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.2
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -293,7 +353,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -321,7 +380,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -339,7 +397,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-medium
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -347,7 +404,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.2
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -364,7 +421,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -372,7 +428,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.2
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
@@ -391,7 +447,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     depends_on:
       dbrepo-search-service:
         condition: service_healthy
@@ -414,7 +469,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -437,7 +491,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: bitnami/openldap:${OPENLDAP_VERSION}
+    image: bitnami/openldap:2.6.8-debian-12-r1
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -453,7 +507,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -462,7 +515,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.2
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -472,7 +525,6 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
@@ -486,7 +538,7 @@ services:
     init: true
     container_name: dbrepo-dashboard-service-init
     hostname: search-dashboard-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.2
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -495,7 +547,6 @@ services:
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy
@@ -520,7 +571,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -537,7 +587,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     logging:
       driver: json-file
 
@@ -546,7 +595,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.2
     environment:
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -554,7 +603,6 @@ services:
       STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -565,7 +613,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.2
     environment:
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
@@ -602,7 +650,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-large
-    platform: linux/amd64
     depends_on:
       dbrepo-data-db:
         condition: service_healthy
@@ -613,13 +660,21 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-ui:1.8.1
+    image: docker.io/bitnami/grafana:11.5.3
     ports:
       - "3000:3000"
     volumes:
-      - dashboard-ui-data:/opt/bitnami/grafana/data
+      - ./config/dashboards:/app/dashboards
+      - ./config/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
+      - ./config/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
+      - ./config/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
+      - ./config/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
+      - ./config/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
+      DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
+      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
+      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
@@ -631,7 +686,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-nano
-    platform: linux/amd64
     extra_hosts:
       - "localhost:host-gateway"
     logging:
@@ -641,7 +695,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.2
     ports:
       - "4070:8080"
     environment:
@@ -655,7 +709,6 @@ services:
       <<: *healthcheck-params
     deploy:
       <<: *resources-micro
-    platform: linux/amd64
     depends_on:
       dbrepo-dashboard-ui:
         condition: service_healthy
