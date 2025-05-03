@@ -66,7 +66,7 @@
             :text="$t('toolbars.database.views.tab')"
             :to="`/database/${$route.params.database_id}/view`" />
           <v-tab
-            v-if="hasReadAccess"
+            v-if="canViewSubsets"
             :text="$t('toolbars.database.subsets.tab')"
             :to="`/database/${$route.params.database_id}/subset`" />
           <v-tab
@@ -160,6 +160,9 @@ export default {
         return false
       }
       return this.roles.includes('create-table')
+    },
+    canViewSubsets () {
+      return this.hasReadAccess
     },
     isOwner () {
       if (!this.database || !this.cacheUser) {

@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/chrislusf/seaweedfs:3.59`](https://hub.docker.com/r/chrislusf/seaweedfs)
+    Image: [`docker.io/chrislusf/seaweedfs:3.71.0`](https://hub.docker.com/r/chrislusf/seaweedfs)
 
     * Ports: 8888/tcp, 9000/tcp
     * Prometheus: `http://<hostname>:9091/metrics`

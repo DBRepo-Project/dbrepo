@@ -4,7 +4,7 @@ access_key = ${S3_ACCESS_KEY_ID}
 secret_key = ${S3_SECRET_ACCESS_KEY}
 # Setup endpoint
 host_base = ${STORAGE_ENDPOINT}
-host_bucket = ${STORAGE_ENDPOINT}
+host_bucket = ${S3_BUCKET}
 use_https = False
 # Enable S3 v4 signature APIs
 signature_v2 = False
