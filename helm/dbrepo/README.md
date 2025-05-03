@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.8.1"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.8.2"
 ```
 
 ## Prerequisites
@@ -72,7 +72,7 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Name                                     | Description                                                                                                                            | Value                                                                  |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `metadatadb.enabled`                     | Enable the Metadata datadb.                                                                                                            | `true`                                                                 |
+| `metadatadb.enabled`                     | Enable the Metadata Database.                                                                                                          | `true`                                                                 |
 | `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
 | `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `metadatadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
@@ -84,8 +84,18 @@ The command removes all the Kubernetes components associated with the chart and 
 | `metadatadb.configurationConfigMap`      | The database configuration files.                                                                                                      | `metadata-db-config`                                                   |
 | `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                       | `{}`                                                                   |
 | `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
-| `metadatadb.resourcesPreset`             | The container resource preset                                                                                                          | `nano-hm`                                                              |
+| `metadatadb.resourcesPreset`             | The container resource preset                                                                                                          | `xlarge`                                                               |
 | `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
+
+### Dashboard Database Enable the Dashboard Database.
+
+| Name                        | Description                           | Value               |
+| --------------------------- | ------------------------------------- | ------------------- |
+| `dashboarddb.enabled`       |                                       | `true`              |
+| `dashboarddb.host`          | The hostname for the microservices.   | `dashboard-db:5432` |
+| `dashboarddb.auth.database` | The dashboard database name.          | `grafana`           |
+| `dashboarddb.auth.username` | The dashboard database username.      | `grafana`           |
+| `dashboarddb.auth.password` | The dashboard database user password. | `dbrepo`            |
 
 ### Auth Service
 
@@ -110,14 +120,16 @@ The command removes all the Kubernetes components associated with the chart and 
 | `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
 | `datadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
+| `datadb.readonlyUser.user`           | The readonly username.                                                                                                                 | `readonly`                                                             |
+| `datadb.readonlyUser.password`       | The readonly password.                                                                                                                 | `readonly`                                                             |
 | `datadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
 | `datadb.db.user`                     | The database username for the dashboard service.                                                                                       | `user`                                                                 |
 | `datadb.db.password`                 | The database user password for the dashboard service.                                                                                  | `user`                                                                 |
 | `datadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
 | `datadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
 | `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
-| `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
-| `datadb.resourcesPreset`             | The container resource preset                                                                                                          | `nano-hm`                                                              |
+| `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `1`                                                                    |
+| `datadb.resourcesPreset`             | The container resource preset                                                                                                          | `xlarge`                                                               |
 | `datadb.initdbScriptsConfigMap`      | The setup data to load into the database on first start.                                                                               | `data-db-setup`                                                        |
 | `datadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
@@ -367,9 +379,10 @@ mqtt.prefetch = 10
 | `ui.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                                                                                                                                                                                                                     | `RuntimeDefault`                                            |
 | `ui.resourcesPreset`                                   | The container resource preset                                                                                                                                                                                                                                                                                        | `micro`                                                     |
 | `ui.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                                                                                                                                                                                                    | `{}`                                                        |
-| `ui.public.api.client`                                 | The endpoint for the client api. Defaults to the value of `gateway`.                                                                                                                                                                                                                                                 | `""`                                                        |
-| `ui.public.api.server`                                 | The endpoint for the server api. Defaults to the value of `gateway`.                                                                                                                                                                                                                                                 | `""`                                                        |
-| `ui.public.upload.client`                              | The endpoint for the upload client. Defaults to the value of `gateway` and path `/api/upload/files`.                                                                                                                                                                                                                 | `""`                                                        |
+| `ui.public.api.client`                                 | The endpoint for the client api. Overrides to the value of `gateway`.                                                                                                                                                                                                                                                | `""`                                                        |
+| `ui.public.api.server`                                 | The endpoint for the server api. Overrides to the value of `gateway`.                                                                                                                                                                                                                                                | `""`                                                        |
+| `ui.public.dashboard.url`                              | The url for the dashboard. Overrides to the value of `gateway` and path `/dashboard`.                                                                                                                                                                                                                                | `""`                                                        |
+| `ui.public.upload.client`                              | The endpoint for the upload client. Overrides to the value of `gateway` and path `/api/upload/files`.                                                                                                                                                                                                                | `""`                                                        |
 | `ui.public.title`                                      | The user interface title.                                                                                                                                                                                                                                                                                            | `Database Repository`                                       |
 | `ui.public.logo`                                       | The user interface logo.                                                                                                                                                                                                                                                                                             | `/logo.svg`                                                 |
 | `ui.public.icon`                                       | The user interface icon.                                                                                                                                                                                                                                                                                             | `/favicon.ico`                                              |
@@ -411,11 +424,12 @@ mqtt.prefetch = 10
 
 ### Dashboard UI
 
-| Name                          | Description                         | Value                 |
-| ----------------------------- | ----------------------------------- | --------------------- |
-| `dashboardui.enabled`         | Enable the Dashboard UI.            | `true`                |
-| `dashboardui.metrics.enabled` | Enable the metrics sidecar.         | `true`                |
-| `dashboardui.endpoint`        | The endpoint for the microservices. | `http://dashboard-ui` |
+| Name                               | Description                         | Value                      |
+| ---------------------------------- | ----------------------------------- | -------------------------- |
+| `dashboardui.enabled`              | Enable the Dashboard UI.            | `true`                     |
+| `dashboardui.metrics.enabled`      | Enable the metrics sidecar.         | `true`                     |
+| `dashboardui.endpoint`             | The endpoint for the microservices. | `http://dashboard-ui:3000` |
+| `dashboardui.grafana.replicaCount` | The number of replicas.             | `2`                        |
 
 ### Metric Service
 
@@ -426,13 +440,13 @@ mqtt.prefetch = 10
 
 ### Gateway Service
 
-| Name                                          | Description                                   | Value                   |
-| --------------------------------------------- | --------------------------------------------- | ----------------------- |
-| `gatewayservice.enabled`                      | Enable the Gateway Service.                   | `true`                  |
-| `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`             |
-| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                 |
-| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-setup` |
-| `gatewayservice.replicaCount`                 | The number of replicas.                       | `3`                     |
+| Name                                          | Description                                   | Value                    |
+| --------------------------------------------- | --------------------------------------------- | ------------------------ |
+| `gatewayservice.enabled`                      | Enable the Gateway Service.                   | `true`                   |
+| `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`              |
+| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                  |
+| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-config` |
+| `gatewayservice.replicaCount`                 | The number of replicas.                       | `3`                      |
 
 ### Analytics Service
 

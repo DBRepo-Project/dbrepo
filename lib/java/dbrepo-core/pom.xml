@@ -18,7 +18,7 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>dbrepo-core</artifactId>
     <name>dbrepo-core</name>
-    <version>1.8.1</version>
+    <version>${env.APP_VERSION}</version>
 
     <description>Core library for DBRepo</description>
 

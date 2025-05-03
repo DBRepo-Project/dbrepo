@@ -14,7 +14,7 @@ helm upgrade --install dbrepo \
   -n dbrepo \
   "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" \
   --values ./values.yaml \
-  --version "1.8.1" \
+  --version "1.8.2" \
   --create-namespace \
   --cleanup-on-fail
 ```

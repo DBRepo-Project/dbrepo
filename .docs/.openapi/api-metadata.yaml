@@ -8,7 +8,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: 1.8.1
+  version: 1.8.2
 externalDocs:
   description: Sourcecode Documentation
   url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/system-services-metadata/
