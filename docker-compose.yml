@@ -99,7 +99,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db-metrics
     hostname: metadata-db-metrics
-    image: docker.io/bitnami/mysqld-exporter:0.15.1
+    image: docker.io/bitnami/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
     command:
       - --mysqld.address=metadata-db:3306
       - --config.my-cnf=/.my.cnf
@@ -144,7 +144,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-metrics
     hostname: data-db-metrics
-    image: docker.io/bitnami/mysqld-exporter:0.15.1
+    image: docker.io/bitnami/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
     command:
       - --mysqld.address=data-db:3306
       - --config.my-cnf=/.my.cnf
