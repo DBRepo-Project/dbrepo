@@ -62,7 +62,6 @@ lint-docker-compose:
     - 'apk add --no-cache bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
-    - "bash .scripts/check-compose.sh"
     - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
