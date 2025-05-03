@@ -13,12 +13,12 @@
         <url>https://www.tuwien.ac.at</url>
     </organization>
 
-    <groupId>at.tuwien</groupId>
-    <artifactId>dbrepo-metadata-service</artifactId>
-    <name>dbrepo-metadata-service</name>
-    <version>1.8.1</version>
-
+    <name>metadata-service</name>
     <description>Service that manages the metadata</description>
+
+    <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+    <artifactId>metadata-service</artifactId>
+    <version>1.8.2</version>
 
     <packaging>pom</packaging>
     <modules>
@@ -67,13 +67,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dbrepo-core</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <!-- Data Source -->
         <dependency>
@@ -168,6 +164,13 @@
             <artifactId>amqp-client</artifactId>
             <version>${rabbitmq.version}</version>
         </dependency>
+        <!-- Api -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -181,7 +184,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -273,6 +275,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>dbrepo-maven-repo</id>
+            <url>file:///${project.basedir}/lib</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <licenses>
         <license>

@@ -13,10 +13,10 @@
         <url>https://www.tuwien.ac.at</url>
     </organization>
 
-    <groupId>at.ac.tuwien.ac.at.ifs.dbrepo</groupId>
-    <artifactId>dbrepo-data-service</artifactId>
-    <name>dbrepo-data-service</name>
-    <version>1.8.1</version>
+    <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+    <artifactId>data-service</artifactId>
+    <name>data-service</name>
+    <version>1.8.2</version>
 
     <description>Service that manages the data</description>
 
@@ -96,11 +96,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <version>1.8.2</version>
         </dependency>
         <!-- Spark -->
         <dependency>
@@ -139,6 +135,13 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-aws</artifactId>
             <version>${hadoop.version}</version>
+        </dependency>
+        <!-- Api -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- Data Source -->
         <dependency>
@@ -329,6 +332,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>dbrepo-maven-repo</id>
+            <url>file:///${project.basedir}/lib</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <licenses>
         <license>

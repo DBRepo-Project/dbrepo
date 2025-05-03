@@ -41,7 +41,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
+        "uid": "dbrepometrics0"
       },
       "description": "",
       "fieldConfig": {
@@ -8053,7 +8053,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "15s",
+  "refresh": "24h",
   "schemaVersion": 34,
   "style": "dark",
   "tags": ["provisioned", "rabbitmq"],
@@ -8133,7 +8133,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
