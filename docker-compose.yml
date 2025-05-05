@@ -518,7 +518,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: bitnami/openldap:${OPENLDAP_VERSION}
+    image: docker.io/bitnami/openldap:${OPENLDAP_VERSION}
     ports:
       - '1389:1389'
       - '1636:1636'

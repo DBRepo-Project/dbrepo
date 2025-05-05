@@ -245,7 +245,7 @@ services:
     init: true
     restart: "no"
     container_name: dbrepo-auth-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:${APP_VERSION}
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       METADATA_DB: "${METADATA_DB:-dbrepo}"
@@ -270,7 +270,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:${APP_VERSION}
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://analyse-service:8080}"
@@ -334,7 +334,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -404,7 +404,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -428,7 +428,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:${APP_VERSION}
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
@@ -491,7 +491,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: bitnami/openldap:2.6.8-debian-12-r1
+    image: docker.io/bitnami/openldap:${OPENLDAP_VERSION}
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -515,7 +515,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:${APP_VERSION}
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -538,7 +538,7 @@ services:
     init: true
     container_name: dbrepo-dashboard-service-init
     hostname: search-dashboard-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:${APP_VERSION}
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -595,7 +595,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:${APP_VERSION}
     environment:
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -613,7 +613,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
@@ -676,7 +676,7 @@ services:
       DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -695,7 +695,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:${DBREPO_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:${APP_VERSION}
     ports:
       - "4070:8080"
     environment:
