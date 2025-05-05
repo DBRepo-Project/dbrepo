@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
@@ -82,7 +83,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     public List<QueryDto> findAll(DatabaseDto database, Boolean filterPersisted) throws SQLException,
-            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
+            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException, UserNotFoundException {
         final List<IdentifierBriefDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -102,6 +103,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         .filter(i -> i.getType().equals(IdentifierTypeDto.SUBSET))
                         .filter(i -> i.getQueryId().equals(query.getId()))
                         .toList());
+                query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserById(query.getOwner()
+                        .getId())));
+                query.setType(QueryTypeDto.QUERY);
+                query.setDatabaseId(database.getId());
+
                 queries.add(query);
             }
             log.info("Find {} queries", queries.size());
@@ -150,6 +156,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
             query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserById(query.getOwner()
                     .getId())));
+            query.setType(QueryTypeDto.QUERY);
             query.setDatabaseId(database.getId());
             return query;
         } catch (SQLException e) {

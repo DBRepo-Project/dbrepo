@@ -66,8 +66,9 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findAll_succeeds() throws SQLException, QueryNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+    public void findAll_succeeds()  throws SQLException, QueryNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
+            UserNotFoundException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(null);
@@ -77,8 +78,9 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findAll_onlyPersisted_succeeds() throws SQLException, QueryNotFoundException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+    public void findAll_onlyPersisted_succeeds()  throws SQLException, QueryNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
+            UserNotFoundException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(true);
@@ -88,7 +90,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     @Test
     public void findAll_onlyNonPersisted_succeeds() throws SQLException, QueryNotFoundException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
+            UserNotFoundException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(false);
@@ -303,7 +306,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     protected List<QueryDto> findAll_generic(Boolean filterPersisted) throws SQLException, QueryNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
-            InterruptedException {
+            InterruptedException, UserNotFoundException {
 
         /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
