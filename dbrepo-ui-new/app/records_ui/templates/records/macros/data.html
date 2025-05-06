@@ -45,7 +45,7 @@
     <tbody>
         {% for subset in subsets %}
             <tr>
-                <td>{{ subset.titles[0].title }}</td>
+                <td>{{ subset.identifiers[0].titles[0].title }}</td>
                 <td>
                     <span>
                         <a role="button" class="ui compact mini button right floated">
@@ -54,7 +54,7 @@
                         <a role="button" class="ui compact mini button preview-link right floated" href="/view/{{ subset.database_id }}/{{ subset.id }}">
                           <i class="info icon" aria-hidden="true"></i>Details
                         </a>
-                        <a role="button" class="ui compact mini button preview-link right floated subset_preview_button" data-value="{{ subset.id }}" data-database_id="{{ subset.database_id }}" data-name="{{ subset.titles[0] }}">
+                        <a role="button" class="ui compact mini button preview-link right floated subset_preview_button" data-value="{{ subset.id }}" data-database_id="{{ subset.database_id }}" data-name="{{ subset.identifiers[0].titles[0].title }}">
                           <i class="eye icon" aria-hidden="true"></i>Preview
                         </a>
 

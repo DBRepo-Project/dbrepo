@@ -16,10 +16,10 @@ def show_record(db_id):
     database = repo.get_database(database_id=db_id)
     view = repo.get_view(database_id=db_id, view_id=database.views[0].id)
     view_data = repo.get_view_data(database_id=db_id, view_id=database.views[0].id).to_dict(orient='records')
-    #queries = repo.get_queries(database_id=db_id)
+    queries = repo.get_queries(database_id=db_id)
     print(view_data)
     return render_template('records/detail.html', database=database, view=view, data=view_data,
-                           doi_id=0, queries=database.subsets)
+                           doi_id=0, queries=queries)
 
 
 @records_bp.route('/view/<database_id>/<view_id>')
