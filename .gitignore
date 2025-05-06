@@ -114,3 +114,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/dbrepo-ui-new/.venv/
