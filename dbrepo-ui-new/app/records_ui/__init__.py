@@ -30,7 +30,7 @@ def show_view_record(database_id, view_id):
 
 
     return render_template('view_records/detail.html', database=database, metadata=view,
-                           data=view_data, table_id=0)
+                           data=view_data, type="view")
 
 @records_bp.route('/subset/<database_id>/<subset_id>')
 def show_subset_record(database_id, subset_id):
@@ -40,7 +40,7 @@ def show_subset_record(database_id, subset_id):
 
 
     return render_template('view_records/detail.html', database=database, metadata=subset,
-                           data=subset_data, table_id=0)
+                           data=subset_data, type="subset")
 
 
 @records_bp.route('/get-data', methods=['GET'])

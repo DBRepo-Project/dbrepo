@@ -13,17 +13,28 @@
             <div id="view-header">
 {#                Created {{ view.created }}#}
 
-                <div class="view-header-child" id="type">View</div>
+                {% if type == "view" %}
+                    <div class="view-header-child" id="type">Data Source</div>
+                {% else %}
+                    <div class="view-header-child" id="type">Data Set</div>
+                {% endif %}
+
                 <div class="view-header-child" id="access"><i class="lock open icon"></i>Open</div>
 
 
             </div>
-            <h1>{{ metadata.name }}</h1>
-            <a id="creator">{{ metadata.owner.username }}</a>
+            {% if type == "view" %}
+                <h1>{{ metadata.name }}</h1>
+            {% else %}
+                <h1>{{ metadata.identifiers[0].titles[0].title }}</h1>
+            {% endif %}
+            <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
             <p style="white-space: pre-line;">{{ metadata.description }}</p>
             <h2>Data</h2>
             {{ preview_info_box(data) }}
-            {{ view_schema_box(metadata) }}
+            {% if type == "view" %}
+                {{ view_schema_box(metadata) }}
+            {% endif %}
         </div>
         <div class="right-section">
             {%- include "/view_records/details/side_bar.html" %}
