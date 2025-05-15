@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
+        <version>3.4.0</version>
     </parent>
 
     <organization>
@@ -37,7 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <keycloak.version>26.0.4</keycloak.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <spring-cloud.version>4.1.4</spring-cloud.version>
+        <spring-cloud.version>4.2.1</spring-cloud.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
         <springdoc-openapi.version>2.8.5</springdoc-openapi.version>
     </properties>

@@ -2,7 +2,11 @@
 author: Martin Weise
 ---
 
-## v1.8.2 (2025-04-??)
+## v1.8.2 (2025-05-15)
+
+#### Fixes
+
+* Fixed a bug in the UI where the resource status was displayed as identifier when a draft identifier has been created.
 
 #### Features
 

@@ -21,21 +21,18 @@ build-ui: ## Build the UI.
 
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
-	rm -rf ./dbrepo-analyse-service/venv/ ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-analyse-service/lib/*
-	rm -rf ./dbrepo-search-service/venv/ ./dbrepo-search-service/Pipfile.lock ./dbrepo-search-service/lib/*
-	rm -rf ./dbrepo-dashboard-service/venv/ ./dbrepo-dashboard-service/Pipfile.lock ./dbrepo-dashboard-service/lib/*
+	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-search-service/lib/* ./dbrepo-dashboard-service/lib/*
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib
-	(cd ./dbrepo-analyse-service && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
+	PIPENV_PIPFILE=./dbrepo-analyse-service/Pipfile pipenv lock
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib
-	(cd ./dbrepo-search-service && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
+	PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv lock
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib
-	(cd ./dbrepo-dashboard-service && python3 -m venv venv && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev)
+	PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv lock
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.
-	helm dependency update ./helm/seaweedfs
 	helm package ./helm/seaweedfs --destination ./build
 	helm dependency update ./helm/dbrepo
 	helm package ./helm/dbrepo --destination ./build

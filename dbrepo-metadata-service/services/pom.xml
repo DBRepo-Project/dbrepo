@@ -10,18 +10,18 @@
     </parent>
 
     <name>services</name>
-    <artifactId>metadata-service-services</artifactId>
+    <artifactId>services</artifactId>
     <version>1.8.2</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-            <artifactId>metadata-service-oai</artifactId>
+            <artifactId>oai</artifactId>
             <version>1.8.2</version>
         </dependency>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-            <artifactId>metadata-service-repositories</artifactId>
+            <artifactId>repositories</artifactId>
             <version>1.8.2</version>
         </dependency>
     </dependencies>

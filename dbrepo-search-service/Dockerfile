@@ -18,6 +18,9 @@ RUN adduser -D dbrepo --uid 1001
 
 WORKDIR /app
 
+RUN mkdir -p /var/log/app/service/search && \
+    chown -R 1001:1001 /var/log/app
+
 USER 1001
 
 COPY --chown=1001 ./friendly_names_overrides.json ./friendly_names_overrides.json

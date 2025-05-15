@@ -2342,7 +2342,7 @@
   "refresh": "5m",
   "schemaVersion": 26,
   "style": "dark",
-  "tags": [],
+  "tags": ["provisioned", "auth"],
   "templating": {
     "list": [
       {
@@ -2357,7 +2357,7 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -2386,7 +2386,7 @@
     ]
   },
   "timezone": "",
-  "title": "Keycloak Metrics Dashboard",
+  "title": "Keycloak - Overview",
   "uid": "keycloak-dashboard",
   "version": 6,
   "description": "Dashboard of Keycloak metrics exported with Keycloak Metrics SPI\r\n\r\nhttps://github.com/aerogear/keycloak-metrics-spi"

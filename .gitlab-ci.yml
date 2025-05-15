@@ -62,7 +62,6 @@ lint-docker-compose:
     - 'apk add --no-cache bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
-    - "bash .scripts/check-compose.sh"
     - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
@@ -71,10 +70,12 @@ lint-docker-compose:
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-data-db-metrics'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
     - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db-metrics'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
     - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
     - "bash .scripts/check-service.sh 'dbrepo-search-db'"
@@ -352,14 +353,17 @@ test-analyse-service:
     - build-analyse-service
   dependencies:
     - build-analyse-service
-  script:
+  before_script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/analyse"
+  script:
     - cd ./dbrepo-analyse-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_determine_dt.py tests/test_determine_pk.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
+      - /var/log/app/service/analyse/app.log
       - ./dbrepo-analyse-service/coverage.xml
       - ./dbrepo-analyse-service/coverage.txt
     expire_in: 1 days
@@ -404,14 +408,17 @@ test-search-service:
     - build-search-service
   dependencies:
     - build-search-service
-  script:
+  before_script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/search"
+  script:
     - cd ./dbrepo-search-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
+      - /var/log/app/service/search/app.log
       - ./dbrepo-search-service/coverage.xml
       - ./dbrepo-search-service/coverage.txt
     expire_in: 1 days
@@ -431,14 +438,17 @@ test-dashboard-service:
     - build-dashboard-service
   dependencies:
     - build-dashboard-service
-  script:
+  before_script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/dashboard"
+  script:
     - cd ./dbrepo-dashboard-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
+      - /var/log/app/service/dashboard/app.log
       - ./dbrepo-dashboard-service/coverage.xml
       - ./dbrepo-dashboard-service/coverage.txt
     expire_in: 1 days

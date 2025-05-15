@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -44,7 +44,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     @Autowired
     private SubsetService subsetService;
 
-    @MockBean
+    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     public static Stream<Arguments> create_arguments() {
@@ -66,8 +66,9 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findAll_succeeds() throws SQLException, QueryNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+    public void findAll_succeeds()  throws SQLException, QueryNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
+            UserNotFoundException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(null);
@@ -77,8 +78,9 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findAll_onlyPersisted_succeeds() throws SQLException, QueryNotFoundException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+    public void findAll_onlyPersisted_succeeds()  throws SQLException, QueryNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
+            UserNotFoundException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(true);
@@ -88,7 +90,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     @Test
     public void findAll_onlyNonPersisted_succeeds() throws SQLException, QueryNotFoundException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
+            UserNotFoundException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(false);
@@ -303,7 +306,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     protected List<QueryDto> findAll_generic(Boolean filterPersisted) throws SQLException, QueryNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
-            InterruptedException {
+            InterruptedException, UserNotFoundException {
 
         /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;

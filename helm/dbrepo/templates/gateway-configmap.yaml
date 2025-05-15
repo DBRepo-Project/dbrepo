@@ -1,201 +1,22 @@
 {{- if .Values.gatewayservice.enabled }}
+{{- if .Values.global.loggingSidecar.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gateway-service-config
   namespace: {{ include "common.names.namespace" . | quote }}
 data:
-  dbrepo.conf: |-
-    # This is required to proxy Grafana Live WebSocket connections.
-    map $http_upgrade $connection_upgrade {
-      default upgrade;
-      '' close;
-    }
-
-    proxy_buffer_size        128k;
-    proxy_buffers       4    256k;
-    proxy_busy_buffers_size  256k;
-
-    server {
-        listen 8080 default_server;
-        server_name _;
-
-        location /assets/ {
-            root                    /app/assets;
-            expires                 max;
-            access_log              off;
-            autoindex               on;
-            autoindex_exact_size    off;
-            autoindex_format        html;
-            autoindex_localtime     on;
-        }
-
-        location /dashboard/ {
-            proxy_set_header        Host $http_host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://dashboard-ui:3000/;
-            proxy_read_timeout      90;
-        }
-
-        # Proxy Grafana Live WebSocket connections.
-        location /dashboard/api/live/ws {
-            rewrite  ^/dashboard/(.*)  /$1 break;
-            proxy_set_header        Host $http_host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_set_header        Upgrade $http_upgrade;
-            proxy_set_header        Connection $connection_upgrade;
-            proxy_http_version      1.1;
-            proxy_pass              http://dashboard-ui:3000/;
-            proxy_read_timeout      90;
-        }
-
-        # Proxy Keycloak OIDC connections, c.f. https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
-        location /realms {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://auth-service;
-            proxy_read_timeout      90;
-        }
-
-        # Proxy Keycloak assets, c.f. https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
-        location /resources {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://auth-service;
-            proxy_read_timeout      90;
-        }
-
-        location /api/search {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://search-service;
-            proxy_read_timeout      90;
-        }
-
-        location /api/datasource {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://dashboard-service;
-            proxy_read_timeout      90;
-        }
-
-        location /api/dashboard {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://dashboard-service;
-            proxy_read_timeout      90;
-        }
-
-        location /api/upload {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_pass              http://data-service;
-            proxy_read_timeout      90;
-            # Disable request and response buffering
-            proxy_request_buffering off;
-            proxy_buffering         off;
-            proxy_http_version      1.1;
-        }
-
-        location /api/analyse {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://analyse-service;
-            proxy_read_timeout      90;
-        }
-
-        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/table/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(data|statistic|history)" {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://data-service;
-            proxy_read_timeout      90;
-        }
-
-        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(data|statistic)" {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://data-service;
-            proxy_read_timeout      90;
-        }
-
-        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view" {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata-service;
-            proxy_read_timeout      90;
-        }
-
-        location ~ "/api/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/subset" {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://data-service;
-            proxy_read_timeout      600;
-        }
-
-        location ~ "/api/(database|concept|container|identifier|image|message|license|oai|ontology|unit|user)" {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata-service;
-            proxy_read_timeout      90;
-        }
-
-        location ~ "/api/identifier/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})" {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata-service;
-            proxy_read_timeout      90;
-        }
-
-        location ~ "/pid/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})" {
-            rewrite /pid/(.*) /api/identifier/$1 break;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata-service;
-            proxy_read_timeout      90;
-        }
-
-        location / {
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://ui;
-            proxy_read_timeout      90;
-        }
-    }
+  fluent-bit.conf: |-
+    {{- include "dbrepo.logging.sidecarOpensearchService" . | nindent 4 }}
+    [INPUT]
+        Name                  tail
+        Tag                   *
+        Path                  /var/log/nginx/*.log
+        Parser                docker
+        Mem_Buf_Limit         5MB
+        Buffer_Chunk_size     32k
+        Buffer_Max_size       32k
+    {{- include "dbrepo.logging.sidecarOpensearchOutput" . | nindent 4 }}
+    {{- include "dbrepo.logging.sidecarMetricsOutput" . | nindent 4 }}
+{{- end }}
 {{- end }}

@@ -10,13 +10,13 @@
     </parent>
 
     <name>report</name>
-    <artifactId>metadata-service-report</artifactId>
+    <artifactId>report</artifactId>
     <version>1.8.2</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-            <artifactId>metadata-service-services</artifactId>
+            <artifactId>services</artifactId>
             <version>1.8.2</version>
         </dependency>
     </dependencies>

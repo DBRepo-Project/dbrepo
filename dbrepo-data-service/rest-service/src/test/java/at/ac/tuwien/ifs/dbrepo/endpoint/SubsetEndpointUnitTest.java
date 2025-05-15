@@ -21,11 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
@@ -49,43 +49,47 @@ public class SubsetEndpointUnitTest extends BaseTest {
     @Autowired
     private SparkSession sparkSession;
 
-    @MockBean
+    @MockitoBean
     private SubsetService subsetService;
 
-    @MockBean
+    @MockitoBean
     private HttpServletRequest httpServletRequest;
 
-    @MockBean
+    @MockitoBean
     private StorageService storageService;
 
-    @MockBean
+    @MockitoBean
     private DatabaseService databaseService;
 
-    @MockBean
+    @MockitoBean
     private CacheService cacheService;
 
-    @MockBean
+    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @Test
     @WithAnonymousUser
     public void list_publicDataPrivateSchemaAnonymous_succeeds() throws QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, SQLException, MetadataServiceException,
-            DatabaseUnavailableException, NotAllowedException {
+            DatabaseUnavailableException, NotAllowedException, UserNotFoundException {
 
         /* mock */
         when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
                 .thenReturn(List.of(QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO));
 
         /* test */
-        generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, null);
+        final List<QueryDto> response = generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, null);
+        assertEquals(3, response.size());
+        assertEquals(QUERY_3_DTO, response.get(0));
+        assertEquals(QUERY_4_DTO, response.get(1));
+        assertEquals(QUERY_5_DTO, response.get(2));
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME)
     public void list_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, SQLException,
-            MetadataServiceException {
+            MetadataServiceException, UserNotFoundException {
 
         /* mock */
         when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
@@ -96,6 +100,12 @@ public class SubsetEndpointUnitTest extends BaseTest {
         /* test */
         final List<QueryDto> response = generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
         assertEquals(6, response.size());
+        assertEquals(QUERY_1_DTO, response.get(0));
+        assertEquals(QUERY_2_DTO, response.get(1));
+        assertEquals(QUERY_3_DTO, response.get(2));
+        assertEquals(QUERY_4_DTO, response.get(3));
+        assertEquals(QUERY_5_DTO, response.get(4));
+        assertEquals(QUERY_6_DTO, response.get(5));
     }
 
     @Test
@@ -111,7 +121,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME)
     public void list_publicDataAndPrivateSchemaUnavailable_fails() throws SQLException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
+            DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException, UserNotFoundException {
 
         /* mock */
         when(cacheService.getDatabase(DATABASE_3_ID))
@@ -698,7 +708,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
     protected List<QueryDto> generic_list(UUID databaseId, DatabaseDto database, Principal principal)
             throws NotAllowedException, DatabaseUnavailableException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
+            RemoteUnavailableException, MetadataServiceException, UserNotFoundException {
 
         /* mock */
         if (database != null) {

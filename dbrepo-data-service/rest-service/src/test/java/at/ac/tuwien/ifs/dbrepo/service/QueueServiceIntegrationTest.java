@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -37,7 +37,7 @@ public class QueueServiceIntegrationTest extends BaseTest {
     @Autowired
     private QueueServiceRabbitMqImpl queueService;
 
-    @MockBean
+    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @Container

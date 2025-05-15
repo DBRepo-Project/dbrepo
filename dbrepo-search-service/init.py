@@ -19,17 +19,32 @@ dictConfig({
             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
         },
         'simple': {
-            'format': '[%(asctime)s] %(levelname)s: %(message)s',
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s',
+        },
+        'ecs': {
+            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "search-service-init", "service_version": "1.8.2"}',
+            'datefmt': '%Y-%m-%dT%H:%M:%S'
         },
     },
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'simple'  # default
-    }},
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'simple'
+        },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'formatter': 'ecs',
+            'filename': '/var/log/app/service/search/init.log',
+            'when': 'm',
+            'interval': 1,
+            'backupCount': 5,
+            'encoding': 'utf8'
+        },
+    },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['wsgi']
+        'handlers': ['wsgi', 'file']
     }
 })
 
