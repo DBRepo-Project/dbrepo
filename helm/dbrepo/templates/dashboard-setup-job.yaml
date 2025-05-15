@@ -1,0 +1,49 @@
+{{- if .Values.dashboardservice.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dashboard-service-setup-job
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  backoffLimit: {{ .Values.dashboardservice.setupJob.backoffLimit | default "10" }}
+  template:
+    metadata:
+      name: auth-service-setup-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: {{ .Values.dashboardservice.setupJob.image.name }}
+          imagePullPolicy: {{ .Values.dashboardservice.setupJob.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.dashboardservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          envFrom:
+            - secretRef:
+                name: dashboard-service-secret
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/dashboard
+          {{- if .Values.dashboardservice.setupJob.resources }}
+          resources: {{- toYaml .Values.dashboardservice.setupJob.resources | nindent 12 }}
+          {{- else if ne .Values.dashboardservice.setupJob.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.dashboardservice.setupJob.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
+{{- end }}

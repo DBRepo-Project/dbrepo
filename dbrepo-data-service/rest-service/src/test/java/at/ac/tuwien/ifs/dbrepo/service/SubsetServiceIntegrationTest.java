@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -44,7 +44,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     @Autowired
     private SubsetService subsetService;
 
-    @MockBean
+    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     public static Stream<Arguments> create_arguments() {

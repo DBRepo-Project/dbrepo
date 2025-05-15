@@ -21,11 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
@@ -49,22 +49,22 @@ public class SubsetEndpointUnitTest extends BaseTest {
     @Autowired
     private SparkSession sparkSession;
 
-    @MockBean
+    @MockitoBean
     private SubsetService subsetService;
 
-    @MockBean
+    @MockitoBean
     private HttpServletRequest httpServletRequest;
 
-    @MockBean
+    @MockitoBean
     private StorageService storageService;
 
-    @MockBean
+    @MockitoBean
     private DatabaseService databaseService;
 
-    @MockBean
+    @MockitoBean
     private CacheService cacheService;
 
-    @MockBean
+    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @Test
@@ -708,7 +708,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
     protected List<QueryDto> generic_list(UUID databaseId, DatabaseDto database, Principal principal)
             throws NotAllowedException, DatabaseUnavailableException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
+            RemoteUnavailableException, MetadataServiceException, UserNotFoundException {
 
         /* mock */
         if (database != null) {

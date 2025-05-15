@@ -16,6 +16,10 @@ spec:
       service: identity-service
   template:
     metadata:
+      annotations:
+        {{- if .Values.identityservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.identityservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
       labels:
         app: identity-service
         service: identity-service

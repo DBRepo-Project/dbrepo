@@ -4,7 +4,10 @@ dependencies:
   version: 1.4.0
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
-  version: 24.6.3
+  version: 24.6.6
+- name: nginx
+  repository: https://charts.bitnami.com/bitnami
+  version: 20.0.2
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
   version: 13.2.7
@@ -16,18 +19,15 @@ dependencies:
   version: 14.0.0
 - name: seaweedfs
   repository: file://../seaweedfs
-  version: 4.2.1
+  version: 4.8.7
 - name: grafana
   repository: https://charts.bitnami.com/bitnami
   version: 11.4.2
 - name: prometheus
   repository: https://charts.bitnami.com/bitnami
   version: 1.3.22
-- name: nginx
-  repository: https://charts.bitnami.com/bitnami
-  version: 18.3.1
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 16.1.0
-digest: sha256:fd6fb7a9547e6bb1c7d311b67dae7a3987247e16256ef3b553593ddd90b91340
-generated: "2025-05-02T14:16:07.24283973+02:00"
+digest: sha256:bbe97a5c50a63d3449e457cc6973b7c58e841a82552a8c137d07cd4d6b60fe78
+generated: "2025-05-14T15:39:57.551220972+02:00"

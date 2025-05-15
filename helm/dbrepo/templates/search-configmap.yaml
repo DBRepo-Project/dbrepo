@@ -1,0 +1,15 @@
+{{- if .Values.searchservice.enabled }}
+{{- if .Values.global.loggingSidecar.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: search-service-config
+  namespace: {{ include "common.names.namespace" . | quote }}
+data:
+  fluent-bit.conf: |-
+    {{- include "dbrepo.logging.sidecarOpensearchService" . | nindent 4 }}
+    {{- include "dbrepo.logging.sidecarOpensearchInput" . | nindent 4 }}
+    {{- include "dbrepo.logging.sidecarOpensearchOutput" . | nindent 4 }}
+    {{- include "dbrepo.logging.sidecarMetricsOutput" . | nindent 4 }}
+{{- end }}
+{{- end }}

@@ -27,6 +27,9 @@ RUN apk --no-cache add \
 
 WORKDIR /app
 
+RUN mkdir -p /var/log/app/service/metadata && \
+    chown -R 1001:1001 /var/log/app
+
 RUN adduser -D dbrepo --uid 1001 && \
     chown -R 1001:1001 /app
 
