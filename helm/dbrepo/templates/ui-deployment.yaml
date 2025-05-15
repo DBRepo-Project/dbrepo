@@ -18,6 +18,10 @@ spec:
       service: ui
   template:
     metadata:
+      annotations:
+        {{- if .Values.ui.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.ui.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
       labels:
         app: ui
         service: ui

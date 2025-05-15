@@ -18,6 +18,10 @@ spec:
       service: search-service
   template:
     metadata:
+      annotations:
+        {{- if .Values.searchservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.searchservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
       labels:
         app: search-service
         service: search-service
@@ -25,21 +29,6 @@ spec:
       {{- if .Values.searchservice.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
-      initContainers:
-        - name: init
-          image: {{ .Values.searchservice.init.image.name }}
-          imagePullPolicy: {{ .Values.searchservice.init.image.pullPolicy | default "IfNotPresent" }}
-          {{- if .Values.searchservice.containerSecurityContext.enabled }}
-          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.containerSecurityContext "context" $) | nindent 12 }}
-          {{- end }}
-          envFrom:
-            - secretRef:
-                name: search-service-secret
-          {{- if .Values.searchservice.init.resources }}
-          resources: {{- toYaml .Values.searchservice.init.resources | nindent 12 }}
-          {{- else if ne .Values.searchservice.init.resourcesPreset "none" }}
-          resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.init.resourcesPreset) | nindent 12 }}
-          {{- end }}
       containers:
         - name: search-service
           image: {{ .Values.searchservice.image.name }}
@@ -54,8 +43,10 @@ spec:
             - secretRef:
                 name: search-service-secret
           volumeMounts:
-            - mountPath: /tmp
-              name: cache
+            - name: empty-dir
+              mountPath: /tmp
+            - name: empty-dir
+              mountPath: /var/log/app/service/search
           livenessProbe:
             exec:
               command:
@@ -77,8 +68,37 @@ spec:
           {{- else if ne .Values.searchservice.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.resourcesPreset) | nindent 12 }}
           {{- end }}
+        {{- if .Values.global.loggingSidecar.enabled }}
+        - name: logging-agent
+          image: {{ .Values.global.loggingSidecar.image.name }}
+          imagePullPolicy: {{ .Values.searchservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.searchservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: logging-config
+              mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+              subPath: fluent-bit.conf
+            - name: empty-dir
+              mountPath: /var/log/app/service/search
+          livenessProbe:
+            httpGet:
+              port: 2021
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              port: 2021
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources: {{- include "common.resources.preset" (dict "type" .Values.global.loggingSidecar.resourcesPreset) | nindent 12 }}
+        {{- end }}
       volumes:
-        - name: cache
-          emptyDir:
-            sizeLimit: 100Mi
+        {{- if .Values.global.loggingSidecar.enabled }}
+        - name: logging-config
+          configMap:
+            name: search-service-config
+        {{- end }}
+        - name: empty-dir
+          emptyDir: { }
 {{- end }}

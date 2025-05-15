@@ -56,7 +56,7 @@
           <v-spacer />
           <v-btn
             variant="plain"
-            :text="commitShort"
+            :text="commit"
             size="x-small"
             prepend-icon="mdi-source-commit"
             :href="`https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/${commit}`" />
@@ -248,9 +248,6 @@ export default {
     },
     commit () {
       return this.$config.public.commit
-    },
-    commitShort () {
-      return this.$config.public.commit.substr(0, 8)
     },
     error () {
       if (this.identifier) {

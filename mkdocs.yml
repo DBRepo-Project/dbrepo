@@ -20,6 +20,7 @@ nav:
     - Data Versioning: concepts/data-versioning.md
     - Dashboards: concepts/dashboards.md
     - Data Visibility: concepts/data-visibility.md
+    - Logging: concepts/logging.md
     - Messaging: concepts/messaging.md
     - Monitoring: concepts/monitoring.md
     - Persistent Identifier: concepts/pid.md

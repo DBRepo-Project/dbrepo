@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface IdentifierRepository extends JpaRepository<Identifier, UUID> {
 
+    List<Identifier> findAll();
+
     /**
      * Finds identifiers by given database id.
      *
