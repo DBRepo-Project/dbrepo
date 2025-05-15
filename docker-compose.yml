@@ -193,7 +193,7 @@ services:
       dbrepo-auth-service:
         condition: service_healthy
       dbrepo-gateway-service:
-        condition: service_healthy
+        condition: service_started
       dbrepo-metadata-db:
         condition: service_healthy
     logging:
@@ -401,9 +401,6 @@ services:
       - "80:8080"
     volumes:
       - ./dbrepo-gateway-service/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
-    healthcheck:
-      test: wget -O- http://127.0.0.1:8080
-      <<: *healthcheck-params
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
