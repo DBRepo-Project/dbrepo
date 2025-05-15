@@ -1,11 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.CreateIdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierSaveDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
-import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.LanguageType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
@@ -22,6 +22,7 @@ import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.spi.LoggingEventBuilder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,7 +151,10 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier = identifierRepository.save(identifier);
         /* update in search service */
         searchServiceGateway.update(identifier.getDatabase());
-        log.info("Published identifier with id {}", identifier.getId());
+        log.atInfo()
+                .setMessage("Published identifier")
+                .addKeyValue("id", identifier.getId())
+                .log();
         return identifier;
     }
 
@@ -280,10 +284,14 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier save(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
             ViewNotFoundException, DatabaseNotFoundException, QueryNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
+        LoggingEventBuilder loggingBuilder = log.atDebug()
+                .setMessage("save identifier")
+                .addKeyValue("type", identifier.getType())
+                .addKeyValue("database_id", identifier.getDatabase().getId());
         /* save identifier */
         switch (identifier.getType()) {
             case SUBSET -> {
-                log.debug("identifier type: subset with id {}", identifier.getQueryId());
+                loggingBuilder = loggingBuilder.addKeyValue("query_id", identifier.getQueryId());
                 final QueryDto query = dataServiceGateway.findQuery(identifier.getDatabase().getId(), identifier.getQueryId());
                 identifier.setQuery(query.getQuery());
                 identifier.setQueryId(query.getId());
@@ -294,16 +302,16 @@ public class IdentifierServiceImpl implements IdentifierService {
                 identifier.setResultHash(query.getResultHash());
             }
             case VIEW -> {
-                log.debug("identifier type: view with id {}", identifier.getViewId());
+                loggingBuilder = loggingBuilder.addKeyValue("view_id", identifier.getViewId());
                 final View view = viewService.findById(identifier.getDatabase(), identifier.getViewId());
                 identifier.setViewId(view.getId());
                 identifier.setQuery(view.getQuery());
                 identifier.setQueryNormalized(view.getQuery());
                 identifier.setQueryHash(view.getQueryHash());
             }
-            case DATABASE -> log.debug("identifier type: database with id {}", identifier.getDatabase().getId());
-            case TABLE -> log.debug("identifier type: table with id {}", identifier.getTableId());
+            case TABLE -> loggingBuilder = loggingBuilder.addKeyValue("table_id", identifier.getTableId());
         }
+        loggingBuilder.log();
         /* save identifier in metadata database */
         final Identifier out = identifierRepository.save(identifier);
         /* update in search database */
@@ -327,7 +335,6 @@ public class IdentifierServiceImpl implements IdentifierService {
         final String body = templateEngine.process("record_oai_datacite.xml", context)
                 .replaceAll("\\s+", " ");
         final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
-        log.debug("mapped file stream {}", resource.getDescription());
         return resource;
     }
 
@@ -366,7 +373,10 @@ public class IdentifierServiceImpl implements IdentifierService {
                 .getIdentifiers()
                 .remove(identifier);
         searchServiceGateway.update(identifier.getDatabase());
-        log.info("Deleted identifier with id {}", identifier.getId());
+        log.atInfo()
+                .setMessage("Deleted identifier")
+                .addKeyValue("id", identifier.getId())
+                .log();
     }
 
     public IdentifierTitle preferTitle(List<IdentifierTitle> titles) {

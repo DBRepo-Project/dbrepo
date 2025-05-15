@@ -86,7 +86,7 @@ public class SubsetEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Failed to find database in metadata database or query in query store of the data database",
+                    description = "Failed to find database or user in metadata database or query in query store of the data database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -100,7 +100,7 @@ public class SubsetEndpoint extends RestEndpoint {
                                                @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
                                                Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            QueryNotFoundException, NotAllowedException, MetadataServiceException {
+            QueryNotFoundException, NotAllowedException, MetadataServiceException, UserNotFoundException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         if (!database.getIsPublic()) {

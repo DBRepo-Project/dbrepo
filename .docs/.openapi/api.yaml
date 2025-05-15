@@ -1193,8 +1193,8 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: >-
-            Failed to find database in metadata database or query in query store
-            of the data database
+            Failed to find database or user in metadata database or query in
+            query store of the data database
           content:
             application/json:
               schema:
@@ -5252,7 +5252,7 @@ components:
         execution:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
         query:
           type: string
           example: SELECT `id` FROM `air_quality`
@@ -5430,7 +5430,7 @@ components:
         execution:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
         doi:
           type: string
           example: 10.1038/nphys1170
@@ -5991,11 +5991,11 @@ components:
         created:
           type: string
           format: date-time
-          example: '2022-01-01T08:00:00.000Z'
+          example: '2022-01-01 08:00:00.000'
         last_retrieved:
           type: string
           format: date-time
-          example: '2025-01-23T12:09:01.000Z'
+          example: '2025-01-23T12:09:01'
         database_id:
           type: string
           format: uuid
@@ -6088,7 +6088,6 @@ components:
         - column_id
         - operator_id
         - type
-        - value
     OrderDto:
       type: object
       properties:
@@ -6141,7 +6140,7 @@ components:
         timestamp:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
         event:
           type: string
           enum:
@@ -6206,7 +6205,7 @@ components:
         last_retrieved:
           type: string
           format: date-time
-          example: '2025-01-23T12:09:01.000Z'
+          example: '2025-01-23T12:09:01'
         qualified_name:
           type: string
           example: Josiah Carberry — @jcarberry
@@ -6376,11 +6375,11 @@ components:
         display_start:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
         display_end:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
       required:
         - message
         - type
@@ -7778,11 +7777,11 @@ components:
         display_start:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
         display_end:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
       required:
         - message
         - type
@@ -8376,7 +8375,7 @@ components:
         last_retrieved:
           type: string
           format: date-time
-          example: '2025-01-23T12:09:01.000Z'
+          example: '2025-01-23T12:09:01'
         internal_name:
           type: string
           example: air_quality
@@ -8532,14 +8531,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       type: object
       properties:
@@ -8566,11 +8565,11 @@ components:
         display_start:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
         display_end:
           type: string
           format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          example: '2021-03-12T15:26:21Z'
       required:
         - id
         - message
@@ -8793,11 +8792,11 @@ components:
         created:
           type: string
           format: date-time
-          example: '2022-01-01T08:00:00.000Z'
+          example: '2022-01-01 08:00:00.000'
         last_retrieved:
           type: string
           format: date-time
-          example: '2025-01-23T12:09:01.000Z'
+          example: '2025-01-23T12:09:01'
         database_id:
           type: string
           format: uuid

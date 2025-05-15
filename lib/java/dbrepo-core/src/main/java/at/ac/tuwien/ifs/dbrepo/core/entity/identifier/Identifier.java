@@ -33,6 +33,7 @@ import java.util.UUID;
         @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.database.id = ?1 and i.queryId = ?2 and i.type = 'SUBSET' ORDER BY i.id DESC"),
         @NamedQuery(name = "Identifier.findViewIdentifier", query = "select i from Identifier i where i.database.id = ?1 and i.viewId = ?2 and i.type = 'VIEW' ORDER BY i.id DESC"),
         @NamedQuery(name = "Identifier.findEarliest", query = "select i from Identifier i ORDER BY i.created ASC limit 1"),
+        @NamedQuery(name = "Identifier.findAll", query = "select i from Identifier i ORDER BY i.created DESC"),
 })
 public class Identifier implements Serializable {
 

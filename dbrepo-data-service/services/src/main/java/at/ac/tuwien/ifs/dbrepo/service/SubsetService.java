@@ -63,7 +63,7 @@ public interface SubsetService {
      * @throws MetadataServiceException   The Metadata Service responded unexpected.
      */
     List<QueryDto> findAll(DatabaseDto database, Boolean filterPersisted) throws SQLException,
-            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException;
+            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException, UserNotFoundException;
 
     /**
      * Executes a subset query without saving it.

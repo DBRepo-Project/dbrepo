@@ -10,13 +10,13 @@
     </parent>
 
     <name>rest-service</name>
-    <artifactId>metadata-service-service</artifactId>
+    <artifactId>rest-service</artifactId>
     <version>1.8.2</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-            <artifactId>metadata-service-services</artifactId>
+            <artifactId>services</artifactId>
             <version>1.8.2</version>
         </dependency>
     </dependencies>

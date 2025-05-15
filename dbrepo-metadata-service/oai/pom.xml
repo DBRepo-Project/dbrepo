@@ -10,7 +10,7 @@
     </parent>
 
     <name>oai</name>
-    <artifactId>metadata-service-oai</artifactId>
+    <artifactId>oai</artifactId>
     <version>1.8.2</version>
 
     <dependencies/>

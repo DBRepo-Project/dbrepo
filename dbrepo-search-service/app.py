@@ -29,17 +29,32 @@ dictConfig({
             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
         },
         'simple': {
-            'format': '[%(asctime)s] %(levelname)s: %(message)s',
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s',
+        },
+        'ecs': {
+            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "search-service", "service_version": "1.8.2"}',
+            'datefmt': '%Y-%m-%dT%H:%M:%S'
         },
     },
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'simple'  # default
-    }},
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'simple'
+        },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'formatter': 'ecs',
+            'filename': '/var/log/app/service/search/app.log',
+            'when': 'm',
+            'interval': 1,
+            'backupCount': 5,
+            'encoding': 'utf8'
+        },
+    },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['wsgi']
+        'handlers': ['wsgi', 'file']
     }
 })
 
@@ -60,8 +75,8 @@ swagger_config = {
     "headers": [],
     "specs": [
         {
-            "endpoint": "api-search",
-            "route": "/api-search.json",
+            "endpoint": "api-docs",
+            "route": "/api-docs.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('search'),
             "model_filter": lambda tag: True,  # all in
         }
@@ -281,7 +296,7 @@ def health():
 
 @app.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
 @metrics.gauge(name='dbrepo_search_index_list', description='Time needed to list search index')
-@swag_from("os-yml/get_index.yml")
+@swag_from("/app/os-yml/get_index.yml")
 def get_index(index: str):
     """
     returns all entries in a specific index
@@ -305,7 +320,7 @@ def get_index(index: str):
 
 @app.route("/api/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
 @metrics.gauge(name='dbrepo_search_type_list', description='Time needed to list search types')
-@swag_from("os-yml/get_fields.yml")
+@swag_from("/app/os-yml/get_fields.yml")
 def get_fields(field_type: str):
     """
     returns a list of attributes of the data for a specific index.
@@ -324,7 +339,7 @@ def get_fields(field_type: str):
 
 @app.route("/api/search", methods=["GET"], endpoint="search_fuzzy_search")
 @metrics.gauge(name='dbrepo_search_fuzzy', description='Time needed to search fuzzy')
-@swag_from("os-yml/get_fuzzy_search.yml")
+@swag_from("/app/os-yml/get_fuzzy_search.yml")
 def get_fuzzy_search():
     """
     Main endpoint for fuzzy searching.
@@ -347,7 +362,7 @@ def get_fuzzy_search():
 
 @app.route("/api/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
 @metrics.gauge(name='dbrepo_search_type', description='Time needed to search by type')
-@swag_from("os-yml/post_general_search.yml")
+@swag_from("/app/os-yml/post_general_search.yml")
 def post_general_search(field_type):
     """
     Main endpoint for fuzzy searching.
@@ -430,8 +445,8 @@ def save_database(database_id: str):
     try:
         payload = Database.model_validate(request.json)
     except ValidationError as e:
-        logging.error(f"Failed to validate: {e}")
-        return ApiError(status='BAD_REQUEST', message=f'Malformed payload: {e}',
+        logging.error(f"Failed to validate: {str(e).strip()}")
+        return ApiError(status='BAD_REQUEST', message=f'Malformed payload: {str(e).strip()}',
                         code='search.general.missing').model_dump(), 400
     search_client().save_database(database_id, payload)
     return Response(), 202, headers

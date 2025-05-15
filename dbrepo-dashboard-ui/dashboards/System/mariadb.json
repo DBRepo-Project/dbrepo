@@ -1366,12 +1366,12 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Galera/MariaDB - Overview",
+  "title": "MariaDB Galera - Overview",
   "uid": "pXgz0qFGk",
   "version": 2
 }

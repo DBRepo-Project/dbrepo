@@ -257,6 +257,7 @@ public interface DataMapper {
         final QueryDto subset = QueryDto.builder()
                 .id(UUID.fromString(data.getString(1)))
                 .query(data.getString(4))
+                .queryNormalized(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))
                 .resultNumber(data.getLong(7))

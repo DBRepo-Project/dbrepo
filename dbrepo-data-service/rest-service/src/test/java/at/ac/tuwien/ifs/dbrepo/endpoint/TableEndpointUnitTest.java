@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -54,22 +54,22 @@ public class TableEndpointUnitTest extends BaseTest {
     @Autowired
     private SparkSession sparkSession;
 
-    @MockBean
+    @MockitoBean
     private HttpServletRequest httpServletRequest;
 
-    @MockBean
+    @MockitoBean
     private TableService tableService;
 
-    @MockBean
+    @MockitoBean
     private SubsetService subsetService;
 
-    @MockBean
+    @MockitoBean
     private DatabaseService databaseService;
 
-    @MockBean
+    @MockitoBean
     private CacheService credentialService;
 
-    @MockBean
+    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     public static Stream<Arguments> size_arguments() {

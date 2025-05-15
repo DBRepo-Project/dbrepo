@@ -1,0 +1,26 @@
+{{- if .Values.storageservice.setupJob.enabled }}
+{{- if .Values.global.loggingSidecar.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-service-config
+  namespace: {{ include "common.names.namespace" . | quote }}
+data:
+  fluent-bit.conf: |-
+    [SERVICE]
+        Flush                 5
+        Daemon                Off
+        Log_Level             debug
+        Parsers_File          /opt/bitnami/fluent-bit/conf/parsers.conf
+    [INPUT]
+        Name                  tail
+        Tag                   *
+        Path                  /var/log/app/service/*/*.log
+        Parser                docker
+        Mem_Buf_Limit         5MB
+        Buffer_Chunk_size     32k
+        Buffer_Max_size       32k
+    {{- include "dbrepo.logging.sidecarOpensearchOutput" . | nindent 4 }}
+    {{- include "dbrepo.logging.sidecarMetricsOutput" . | nindent 4 }}
+{{- end }}
+{{- end }}
