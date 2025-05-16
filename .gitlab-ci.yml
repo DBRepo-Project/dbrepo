@@ -679,12 +679,14 @@ scan-sonarqube:
   only:
     - master
   needs:
+    - build-java-lib
     - test-analyse-service
     - test-dashboard-service
     - test-data-service
     - test-metadata-service
     - test-search-service
   dependencies:
+    - build-java-lib
     - test-analyse-service
     - test-dashboard-service
     - test-data-service
