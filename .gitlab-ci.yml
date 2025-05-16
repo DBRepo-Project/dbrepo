@@ -180,7 +180,7 @@ build-analyse-service:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
 
 build-python-lib:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
@@ -192,7 +192,7 @@ build-python-lib:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
 
 build-java-lib:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -355,7 +355,7 @@ test-analyse-service:
     - build-analyse-service
   before_script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/analyse"
   script:
     - cd ./dbrepo-analyse-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_determine_dt.py tests/test_determine_pk.py && coverage html && coverage xml && coverage report > ./coverage.txt
@@ -382,7 +382,7 @@ test-auth-service-init:
   before_script:
     - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev"
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
   script:
     - cd ./dbrepo-auth-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
@@ -410,7 +410,7 @@ test-search-service:
     - build-search-service
   before_script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/search"
   script:
     - cd ./dbrepo-search-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
@@ -440,7 +440,7 @@ test-dashboard-service:
     - build-dashboard-service
   before_script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/dashboard"
   script:
     - cd ./dbrepo-dashboard-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
@@ -470,7 +470,7 @@ test-python-lib:
     - build-python-lib
   script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
     - cd ./lib/python/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
@@ -679,14 +679,19 @@ scan-sonarqube:
   only:
     - master
   needs:
-    - build-data-service
-    - build-java-lib
+    - test-analyse-service
+    - test-dashboard-service
+    - test-data-service
+    - test-metadata-service
+    - test-search-service
   dependencies:
-    - build-data-service
-    - build-java-lib
+    - test-analyse-service
+    - test-dashboard-service
+    - test-data-service
+    - test-metadata-service
+    - test-search-service
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
-  allow_failure: true
   cache:
     policy: pull
     key: "${CI_COMMIT_SHORT_SHA}"

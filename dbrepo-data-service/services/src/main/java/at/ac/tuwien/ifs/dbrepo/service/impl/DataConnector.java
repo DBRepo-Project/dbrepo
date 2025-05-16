@@ -26,8 +26,6 @@ public abstract class DataConnector {
         dataSource.setAcquireIncrement(5);
         dataSource.setMaxPoolSize(20);
         dataSource.setMaxStatements(100);
-        log.trace("mapped datasource, jdbcUrl={}, user={}, password={}", getJdbcUrl(container, databaseName),
-                container.getUsername(), container.getPassword());
         return dataSource;
     }
 

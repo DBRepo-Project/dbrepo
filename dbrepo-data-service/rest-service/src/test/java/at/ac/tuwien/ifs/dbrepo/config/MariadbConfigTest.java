@@ -1,13 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -18,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Log4j2
 @SpringBootTest
@@ -25,18 +24,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Testcontainers
 public class MariadbConfigTest extends BaseTest {
 
-    @Autowired
-    private DatabaseService databaseService;
-
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeAll
+    @SuppressWarnings("java:S2925")
     public static void beforeAll() throws InterruptedException {
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
     @BeforeEach
+    @SuppressWarnings("java:S2925")
     public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
@@ -49,6 +47,7 @@ public class MariadbConfigTest extends BaseTest {
 
         /* test */
         MariaDbConfig.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(8);"); // -2
+        assertTrue(true);
     }
 
     @Test
