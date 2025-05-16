@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # preset
-VERSION="1.8.2"
+APP_VERSION="1.8.2"
+DOC_VERSION="1.8"
 MIN_CPU=8
 MIN_RAM=20
 SKIP_CHECKS=${SKIP_CHECKS:-0}
@@ -45,8 +46,8 @@ else
 fi
 
 # environment
-echo "[🚀] Gathering environment for version ${VERSION} ..."
-curl -ksSL -o ./dist.tar.gz "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/dist.tar.gz"
+echo "[🚀] Gathering environment for version ${APP_VERSION} ..."
+curl -ksSL -o ./dist.tar.gz "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
 tar xzfv ./dist.tar.gz
 
 if [[ $DOWNLOAD_ONLY -eq 1 ]]; then
@@ -54,7 +55,7 @@ if [[ $DOWNLOAD_ONLY -eq 1 ]]; then
   exit 0
 fi
 
-echo "[📦] Pulling images for version ${VERSION} ..."
+echo "[📦] Pulling images for version ${APP_VERSION} ..."
 docker compose pull
 
 echo "[🎉] Success!"
@@ -68,4 +69,4 @@ echo "Then start the local deployment with:"
 echo ""
 echo "  docker compose up -d"
 echo ""
-echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/installation/#next-steps"
+echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${DOC_VERSION}/installation/#next-steps"
