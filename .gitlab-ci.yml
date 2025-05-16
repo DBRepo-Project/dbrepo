@@ -682,7 +682,9 @@ scan-sonarqube:
     - build-java-lib
     - test-analyse-service
     - test-dashboard-service
+    - build-data-service
     - test-data-service
+    - build-metadata-service
     - test-metadata-service
     - test-search-service
   dependencies:
