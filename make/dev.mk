@@ -28,8 +28,6 @@ package-config: ## Package the config files
 	cp -r ./dbrepo-dashboard-ui/provisioning ./.docker/config
 	cp ./dbrepo-dashboard-ui/grafana.ini ./.docker/config/grafana.ini
 	cp ./dbrepo-dashboard-ui/ldap.toml ./.docker/config/ldap.toml
-	cp ./dbrepo-logging-service/fluentbit.conf ./.docker/config
-	cp ./dbrepo-logging-service/fluentbit_parser.conf ./.docker/config
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
 	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./.docker/config
