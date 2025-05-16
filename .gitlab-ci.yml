@@ -592,8 +592,7 @@ release-docs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   only:
-    refs:
-      - /^release-.*/
+    - tags
   before_script:
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
