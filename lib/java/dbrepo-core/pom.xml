@@ -22,7 +22,7 @@
 
     <description>Core library for DBRepo</description>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>

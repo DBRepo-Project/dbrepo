@@ -13,11 +13,6 @@
     <artifactId>report</artifactId>
     <version>1.9.0</version>
 
-    <description>
-        This module is only intended for the pipeline coverage report. See the detailed report in the
-        respective modules
-    </description>
-
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>

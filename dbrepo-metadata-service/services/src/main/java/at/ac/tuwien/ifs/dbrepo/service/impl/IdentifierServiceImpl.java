@@ -354,8 +354,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* map */
         final String body = templateEngine.process("record_oai_datacite.xml", context)
                 .replaceAll("\\s+", " ");
-        final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
-        return resource;
+        return new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
     }
 
     @Override

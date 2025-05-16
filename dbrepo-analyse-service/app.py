@@ -212,7 +212,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/"
     },
     "servers": [
         {
