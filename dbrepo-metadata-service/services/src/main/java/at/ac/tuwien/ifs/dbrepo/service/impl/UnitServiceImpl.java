@@ -4,7 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnUni
 import at.ac.tuwien.ifs.dbrepo.core.exception.UnitNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.repository.UnitRepository;
 import at.ac.tuwien.ifs.dbrepo.service.UnitService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-@Log4j2
+@Slf4j
 @Service
 public class UnitServiceImpl implements UnitService {
 

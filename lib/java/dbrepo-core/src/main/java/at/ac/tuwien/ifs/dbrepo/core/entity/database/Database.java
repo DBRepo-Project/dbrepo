@@ -91,19 +91,19 @@ public class Database implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='DATABASE'")
-    @OrderBy("id DESC")
+    @OrderBy("created DESC")
     private List<Identifier> identifiers;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='SUBSET'")
-    @OrderBy("id DESC")
+    @OrderBy("created DESC")
     private List<Identifier> subsets;
 
-    @OrderBy("id DESC")
+    @OrderBy("created DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table> tables;
 
-    @OrderBy("id DESC")
+    @OrderBy("created DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<View> views;
 

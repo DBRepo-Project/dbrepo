@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.utils;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 public class AmqpUtils extends BaseTest {
 
     private static final String BASIC_AUTH = new String(Base64.encodeBase64((USER_1_USERNAME + ":" + USER_1_PASSWORD).getBytes(Charset.defaultCharset())));

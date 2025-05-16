@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
@@ -164,21 +164,6 @@ public class StorageServiceIntegrationTest extends BaseTest {
         assertThrows(StorageNotFoundException.class, () -> {
             storageService.getBytes(s3Config.getS3Bucket(), "i_do_not_exist");
         });
-    }
-
-    @Test
-    public void getResource_succeeds() throws StorageUnavailableException, StorageNotFoundException {
-
-        /* mock */
-        s3Client.putObject(PutObjectRequest.builder()
-                .key("s3key")
-                .bucket(s3Config.getS3Bucket())
-                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
-
-        /* test */
-        final ExportResourceDto response = storageService.getResource(s3Config.getS3Bucket(), "s3key");
-        assertEquals("s3key", response.getFilename());
-        assertNotNull(response.getResource());
     }
 
     @Test

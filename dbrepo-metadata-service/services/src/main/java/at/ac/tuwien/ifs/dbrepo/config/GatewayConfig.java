@@ -3,14 +3,14 @@ package at.ac.tuwien.ifs.dbrepo.config;
 import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-@Log4j2
+@Slf4j
 @Getter
 @Configuration
 public class GatewayConfig {

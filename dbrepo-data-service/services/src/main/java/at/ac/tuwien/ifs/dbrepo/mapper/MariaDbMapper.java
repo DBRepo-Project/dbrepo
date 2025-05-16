@@ -501,6 +501,16 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String copyTableSchemaToRawQuery(String from, String to) {
+        final StringBuilder statement = new StringBuilder("CREATE TABLE `")
+                .append(to)
+                .append("` LIKE `")
+                .append(from)
+                .append("`;");
+        log.trace("mapped copy table schema statement: {}", statement);
+        return statement.toString();
+    }
+
     default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(table)

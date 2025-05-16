@@ -13,7 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.google.common.hash.Hashing;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.Optional;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class ViewServiceImpl implements ViewService {
 

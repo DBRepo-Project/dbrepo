@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import jakarta.ws.rs.NotAuthorizedException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.getErrorCode
 import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.getExceptions;
 import static org.junit.jupiter.api.Assertions.*;
 
-@Log4j2
+@Slf4j
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ApiExceptionHandlerTest extends BaseTest {

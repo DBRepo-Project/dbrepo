@@ -23,6 +23,9 @@ public class Creator {
     @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
+    @Column
+    private Integer ordinalPosition;
+
     @Column(name = "given_names")
     private String firstname;
 

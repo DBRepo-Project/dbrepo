@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.jooq.impl.DSL.using;
 
-@Log4j2
+@Slf4j
 @Getter
 @Configuration
 public class QueryConfig {

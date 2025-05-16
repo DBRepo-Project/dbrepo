@@ -11,11 +11,11 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "1.8.2"
+    "version": "1.9.0"
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8.2/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9.0/system-services-metadata/"
   },
   "servers": [
     {
@@ -8955,9 +8955,6 @@
           "resumptionToken": {
             "type": "string"
           },
-          "parametersString": {
-            "type": "string"
-          },
           "fromDate": {
             "type": "string",
             "format": "date-time"
@@ -8965,6 +8962,9 @@
           "untilDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "parametersString": {
+            "type": "string"
           }
         }
       },

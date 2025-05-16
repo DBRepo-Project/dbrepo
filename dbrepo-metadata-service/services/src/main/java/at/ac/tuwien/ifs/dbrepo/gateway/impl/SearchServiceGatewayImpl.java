@@ -8,7 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.SearchServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.SearchServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class SearchServiceGatewayImpl implements SearchServiceGateway {
 

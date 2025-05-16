@@ -56,6 +56,9 @@ fda-ui/
 root.crt
 intermediate.crt
 
+# secret
+.s3cfg
+
 # scanning
 .trivy/trivy-*.json
 

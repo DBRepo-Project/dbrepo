@@ -3,7 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.handlers;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.getException
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Log4j2
+@Slf4j
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ApiExceptionHandlerTest extends BaseTest {
