@@ -633,10 +633,10 @@ release-libs:
   before_script:
     - "pip install pipenv twine build"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - "echo ${CI_PIPYRC} | base64 -d > /app/.pypirc"
+    - "echo ${CI_PIPYRC} | base64 -d > ./.pypirc"
   script:
     - "python -m build"
-    - "python -m twine upload --config-file /app/.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*"
+    - "python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*"
 
 verify-install-script:
   image: docker.io/docker:${DOCKER_VERSION}-dind
