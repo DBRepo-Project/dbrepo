@@ -12,9 +12,10 @@ variables:
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.8"
-  APP_VERSION: "1.8.1"
-  CHART_VERSION: "1.8.1"
-  SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1"
+  APP_VERSION: "1.8.2"
+  CHART_VERSION: "1.8.2"
+  SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1, 1.8.2"
+  SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -61,7 +62,6 @@ lint-docker-compose:
     - 'apk add --no-cache bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
-    - "bash .scripts/check-compose.sh"
     - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
@@ -70,10 +70,12 @@ lint-docker-compose:
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-data-db-metrics'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
     - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db-metrics'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
     - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
     - "bash .scripts/check-service.sh 'dbrepo-search-db'"
@@ -154,10 +156,10 @@ build-metadata-service:
     - master
   needs:
     - build-java-lib
-  dependencies:
-    - build-java-lib
+  before_script:
+    - mvn -f ./lib/java/dbrepo-core/pom.xml -q clean install $MAVEN_OPTS -DskipTests
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
   artifacts:
     when: always
@@ -199,11 +201,15 @@ build-java-lib:
     - merge_requests
     - master
   script:
-    - "mvn -f ./lib/java/dbrepo-core/pom.xml clean install $MAVEN_OPTS -DskipTests"
+    - "mvn -f ./lib/java/dbrepo-core/pom.xml clean package install $MAVEN_OPTS -DskipTests"
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   artifacts:
     when: always
     paths:
       - ./lib/java/dbrepo-core/target/classes
+      - ./dbrepo-data-service/lib
+      - ./dbrepo-metadata-service/lib
 
 build-data-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -215,8 +221,10 @@ build-data-service:
     - build-java-lib
   dependencies:
     - build-java-lib
+  before_script:
+    - mvn -f ./lib/java/dbrepo-core/pom.xml -q clean install $MAVEN_OPTS -DskipTests
   script:
-    - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
+    - "mvn -f ./dbrepo-data-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
   artifacts:
     when: always
@@ -263,14 +271,13 @@ build-images:
   only:
     - merge_requests
     - master
+  variables:
+    DOCKER_BUILDKIT: 1
   before_script:
-    - "apk add --no-cache make"
+    - "apk add --no-cache make maven openjdk17-jdk"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - docker build --network=host -t dbrepo-core:build --target build ./lib/java/dbrepo-core
-    - docker build --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
-    - docker build --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
-    - docker compose build -q --parallel
+    - make build-images
 
 build-helm:
   image: docker.io/docker:${DOCKER_VERSION}-dind
@@ -294,6 +301,7 @@ test-metadata-service:
     - master
   needs:
     - build-java-lib
+    - build-metadata-service
   dependencies:
     - build-java-lib
   script:
@@ -316,11 +324,11 @@ test-data-service:
     - merge_requests
     - master
   needs:
+    - build-java-lib
     - build-data-service
   dependencies:
-    - build-data-service
+    - build-java-lib
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests $MAVEN_OPTS"
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
@@ -345,14 +353,17 @@ test-analyse-service:
     - build-analyse-service
   dependencies:
     - build-analyse-service
-  script:
+  before_script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/analyse"
+  script:
     - cd ./dbrepo-analyse-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_determine_dt.py tests/test_determine_pk.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
+      - /var/log/app/service/analyse/app.log
       - ./dbrepo-analyse-service/coverage.xml
       - ./dbrepo-analyse-service/coverage.txt
     expire_in: 1 days
@@ -397,14 +408,17 @@ test-search-service:
     - build-search-service
   dependencies:
     - build-search-service
-  script:
+  before_script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/search"
+  script:
     - cd ./dbrepo-search-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
+      - /var/log/app/service/search/app.log
       - ./dbrepo-search-service/coverage.xml
       - ./dbrepo-search-service/coverage.txt
     expire_in: 1 days
@@ -424,14 +438,17 @@ test-dashboard-service:
     - build-dashboard-service
   dependencies:
     - build-dashboard-service
-  script:
+  before_script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/dashboard"
+  script:
     - cd ./dbrepo-dashboard-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
+      - /var/log/app/service/dashboard/app.log
       - ./dbrepo-dashboard-service/coverage.xml
       - ./dbrepo-dashboard-service/coverage.txt
     expire_in: 1 days
@@ -521,6 +538,8 @@ clean-images:
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
+  variables:
+    REPOSITORY_URL: $CI_REGISTRY2_URL
   dependencies:
     - clean-images
     - test-analyse-service
@@ -534,37 +553,14 @@ release-images:
     - tags
     - dev
   before_script:
+    - "apk add --no-cache make maven openjdk17-jdk"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
   script:
-    - docker build --network=host -t dbrepo-core:build --target build ./lib/java/dbrepo-core
-    - docker build --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
-    - docker build --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
-    - docker compose build -q --parallel
-    - docker tag dbrepo-analyse-service:latest "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-auth-service-init:latest "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-service:latest "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-service-init:latest "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-dashboard-ui:latest "${CI_REGISTRY2_URL}/dashboard-ui:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-data-service:latest "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-metadata-service:latest "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-search-service:latest "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-search-service-init:latest "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-storage-service-init:latest "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker tag dbrepo-ui:latest "${CI_REGISTRY2_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/auth-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/dashboard-ui:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
-    - docker push "${CI_REGISTRY2_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
+    - "make release-images"
+    - "APP_VERSION=$DOC_VERSION make release-images"
 
 release-helm:
   stage: release

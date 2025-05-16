@@ -10,7 +10,7 @@
         <version>24.0.5</version>
     </parent>
 
-    <groupId>at.tuwien</groupId>
+    <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>create-event-listener</artifactId>
     <name>dbrepo-auth-service</name>
     <version>24.0.5</version>

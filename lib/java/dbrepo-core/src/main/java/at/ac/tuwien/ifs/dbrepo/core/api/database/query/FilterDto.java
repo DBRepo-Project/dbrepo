@@ -32,7 +32,6 @@ public class FilterDto {
     @Schema(example = "67c5b54d-2eb0-4f42-8dc1-a504562e9f32")
     private UUID operatorId;
 
-    @NotNull
     @Schema(example = "1")
     private String value;
 

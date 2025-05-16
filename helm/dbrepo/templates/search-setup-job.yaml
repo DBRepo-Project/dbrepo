@@ -1,0 +1,49 @@
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: search-service-setup-job
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  backoffLimit: {{ .Values.searchservice.setupJob.backoffLimit | default "10" }}
+  template:
+    metadata:
+      name: search-service-setup-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: {{ .Values.searchservice.setupJob.image.name }}
+          imagePullPolicy: {{ .Values.searchservice.setupJob.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.searchservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          envFrom:
+            - secretRef:
+                name: search-service-secret
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/search
+          {{- if .Values.searchservice.setupJob.resources }}
+          resources: {{- toYaml .Values.searchservice.setupJob.resources | nindent 12 }}
+          {{- else if ne .Values.searchservice.setupJob.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.setupJob.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
+{{- end }}

@@ -29,17 +29,32 @@ dictConfig({
             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
         },
         'simple': {
-            'format': '[%(asctime)s] %(levelname)s: %(message)s',
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s',
+        },
+        'ecs': {
+            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "dashboard-service", "service_version": "1.8.2"}',
+            'datefmt': '%Y-%m-%dT%H:%M:%S'
         },
     },
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'simple'  # default
-    }},
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'simple'
+        },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'formatter': 'ecs',
+            'filename': '/var/log/app/service/dashboard/app.log',
+            'when': 'm',
+            'interval': 1,
+            'backupCount': 5,
+            'encoding': 'utf8'
+        },
+    },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['wsgi']
+        'handlers': ['wsgi', 'file']
     }
 })
 
@@ -60,8 +75,8 @@ swagger_config = {
     "headers": [],
     "specs": [
         {
-            "endpoint": "api-dashboard",
-            "route": "/api-dashboard.json",
+            "endpoint": "api-docs",
+            "route": "/api-docs.json",
             "rule_filter": lambda rule: True,
             "model_filter": lambda tag: True,  # all in
         }
@@ -191,7 +206,7 @@ def health():
 
 @app.route("/api/dashboard", methods=["POST"], endpoint="create_dashboard")
 @metrics.gauge(name='dbrepo_create_dashboard', description='Time needed to create dashboard')
-@swag_from("ds-yml/create_dashboard.yml")
+@swag_from("/app/ds-yml/create_dashboard.yml")
 @auth.login_required(role=['system'])
 def create_dashboard():
     for parameter in [param for param in ['is_public', 'is_schema_public', 'owner_username', 'database_name'] if
@@ -220,14 +235,14 @@ def create_dashboard():
 
 @app.route("/api/dashboard/<string:uid>", methods=["PUT"], endpoint="update_dashboard")
 @metrics.gauge(name='dbrepo_update_dashboard', description='Time needed to update dashboard')
-@swag_from("ds-yml/update_dashboard.yml")
+@swag_from("/app/ds-yml/update_dashboard.yml")
 @auth.login_required(role=['system'])
 def update_dashboard(uid: str):
     logging.debug(f'endpoint update dashboard, uid={uid}')
     try:
         database = Database.model_validate(request.json)
     except ValidationError as e:
-        logging.error(f'Model malformed: {e}')
+        logging.error(f'Model malformed: {str(e).strip()}')
         return Response(ApiError(status='BAD_REQUEST', message='Invalid database format',
                                  code='error.database.malformed').model_dump_json(), 400, headers)
     try:

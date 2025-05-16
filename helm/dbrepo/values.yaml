@@ -12,6 +12,14 @@ global:
       adaptSecurityContext: auto
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
+  loggingSidecar:
+    ## @param global.loggingSidecar.enabled Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.
+    enabled: true
+    image:
+      ## @param global.loggingSidecar.image.name The logging sidecar image.
+      name: docker.io/bitnami/fluent-bit:4.0.0
+    ## @param global.loggingSidecar.resourcesPreset The resource definitions for the logging sidecar.
+    resourcesPreset: nano
 
 ## @section Common parameters
 
@@ -27,7 +35,7 @@ clusterDomain: cluster.local
 ## @section Metadata Database
 
 metadatadb:
-  ## @param metadatadb.enabled Enable the Metadata datadb.
+  ## @param metadatadb.enabled Enable the Metadata Database.
   enabled: true
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
@@ -56,8 +64,6 @@ metadatadb:
     enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-config
-  ## @param metadatadb.configurationConfigMap The database configuration files.
-  configurationConfigMap: metadata-db-config
   ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
   extraInitDbScripts: { }
   #    03-additional-data.sql: |
@@ -65,13 +71,33 @@ metadatadb:
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
-  ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 3
   ## @param metadatadb.resourcesPreset The container resource preset
-  resourcesPreset: "nano-hm"
+  resourcesPreset: "xlarge"
   persistence:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
     enabled: true
+  ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
+  replicaCount: 1
+
+## @section Dashboard Database Enable the Dashboard Database.
+
+dashboarddb:
+  ## @param dashboarddb.enabled
+  enabled: true
+  ## @skip dashboarddb.fullnameOverride
+  fullnameOverride: dashboard-db
+  ## @param dashboarddb.host The hostname for the microservices.
+  host: dashboard-db:5432
+  metrics:
+    ## @skip dashboarddb.metrics.enabled
+    enabled: true
+  auth:
+    ## @param dashboarddb.auth.database The dashboard database name.
+    database: grafana
+    ## @param dashboarddb.auth.username The dashboard database username.
+    username: grafana
+    ## @param dashboarddb.auth.password The dashboard database user password.
+    password: dbrepo
 
 ## @section Auth Service
 
@@ -115,7 +141,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.1
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.2
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -126,29 +152,24 @@ authservice:
     ##   limits:
     ##     cpu: 500m
     ##     memory: 1024Mi
-  ## @skip authservice.extraEnvVarsCM
-  extraEnvVarsCM: auth-service-config
+  ## @skip authservice.extraEnvVarsSecret
+  extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
   extraVolumes:
-    - name: config-map
+    - name: config
       configMap:
         name: auth-service-config
-    - name: cache
-      emptyDir:
-        sizeLimit: 100Mi
   ## @skip authservice.extraVolumeMounts
   extraVolumeMounts:
-    - name: config-map
+    - name: config
       mountPath: /opt/keycloak/data/import/dbrepo-realm.json
       subPath: dbrepo-realm.json
-    - name: config-map
+    - name: config
       mountPath: /opt/keycloak/data/import/master-realm.json
       subPath: master-realm.json
-    - name: config-map
+    - name: config
       mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
       subPath: create-event-listener.jar
-    - name: cache
-      mountPath: /bitnami/keycloak/
   ## @skip authservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -168,6 +189,11 @@ datadb:
     user: root
     ## @param datadb.rootUser.password The root user password.
     password: dbrepo
+  readonlyUser:
+    ## @param datadb.readonlyUser.user The readonly username.
+    user: readonly
+    ## @param datadb.readonlyUser.password The readonly password.
+    password: readonly
   db:
     ## @param datadb.db.name The database name.
     name: dbrepo
@@ -187,9 +213,9 @@ datadb:
     ## @skip datadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 3
+  replicaCount: 1
   ## @param datadb.resourcesPreset The container resource preset
-  resourcesPreset: "nano-hm"
+  resourcesPreset: "xlarge"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
   initdbScriptsConfigMap: "data-db-setup"
   persistence:
@@ -275,7 +301,7 @@ brokerservice:
     servers:
       - identity-service
     ## @skip brokerservice.ldap.port
-    port: 389
+    port: 1389
     ## @param brokerservice.ldap.binddn The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`.
     binddn: cn=admin,dc=dbrepo,dc=at
     ## @param brokerservice.ldap.bindpw The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.
@@ -305,23 +331,84 @@ brokerservice:
     existingSecret: broker-service-secret
   ## @param brokerservice.extraPlugins The list of plugins to be activated.
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
-  persistence:
-    ## @param brokerservice.persistence.enabled If set to true, a PVC will be created.
-    enabled: false
-  ## @skip brokerservice.service
   service:
-    type: ClusterIP
-    managerPortEnabled: true
+    ## @skip brokerservice.service.extraPorts
     extraPorts:
       - name: mqtt
         port: 1883
         targetPort: 1883
     # loadBalancerIP:
+  ## @skip brokerservice.logs
+  logs: ""
   ## @param brokerservice.extraConfiguration The extra configuration for MQTT
   extraConfiguration: |
+    # https://www.rabbitmq.com/docs/logging#log-message-categories
+    log.connection.level = warning
+    log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
+    log.file.formatter = json
+    log.file.level = info
+    # rotate when the file reaches 10 MiB
+    log.file.rotation.size = 10485760
+    # keep up to 5 archived log files in addition to the current one
+    log.file.rotation.count = 5
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
+  ## @skip brokerservice.sidecars
+  sidecars:
+    - name: logging-agent
+      image: docker.io/bitnami/fluent-bit:4.0.0
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: false
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seLinuxOptions: { }
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: logging-config
+          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+          subPath: fluent-bit.conf
+        - name: logging-config
+          mountPath: /opt/bitnami/fluent-bit/conf/parsers.conf
+          subPath: parsers.conf
+        - name: empty-dir
+          mountPath: /opt/bitnami/rabbitmq/var/log/rabbitmq
+          subPath: app-logs-dir
+      livenessProbe:
+        httpGet:
+          port: 2021
+        initialDelaySeconds: 150
+        periodSeconds: 10
+      readinessProbe:
+        httpGet:
+          port: 2021
+        initialDelaySeconds: 30
+        periodSeconds: 10
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+          ephemeral-storage: 50Mi
+        limits:
+          cpu: 150m
+          memory: 192Mi
+          ephemeral-storage: 2Gi
+  ## @skip brokerservice.extraVolumes
+  extraVolumes:
+    - name: logging-config
+      configMap:
+        name: broker-service-config
+  ## @skip brokerservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: logging-config
+      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
 
@@ -332,7 +419,10 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.2
+  ## @param analyseservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
@@ -393,7 +483,10 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.2
+  ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -490,7 +583,10 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.2
+  ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -576,7 +672,10 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.2
+  ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
@@ -620,13 +719,15 @@ searchservice:
   ##   limits:
   ##     cpu: 500m
   ##     memory: 1024Mi
-  init:
+  setupJob:
+    ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
+    enabled: true
     image:
-      ## @skip searchservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.1
-    ## @param searchservice.init.resourcesPreset The container resource preset
+      ## @skip searchservice.setupJob.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.2
+    ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param searchservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
     ##   requests:
     ##     cpu: 250m
@@ -681,16 +782,18 @@ storageservice:
       readAccessKeyId: seaweedfsuser
       ## @param storageservice.s3.auth.readSecretAccessKey The S3 secret access key for the read only user.
       readSecretAccessKey: seaweedfsuser
-  init:
+  setupJob:
+    ## @param storageservice.setupJob.enabled Enable the setup job that creates the bucket in the s3 endpoint.
+    enabled: true
     image:
-      ## @skip storageservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.1
+      ## @skip storageservice.setupJob.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.2
     s3:
-      ## @param storageservice.init.s3.endpoint The S3-capable endpoint the microservice connects to.
+      ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
-    ## @param storageservice.init.resourcesPreset The container resource preset
+    ## @param storageservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param storageservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param storageservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
     ##   requests:
     ##     cpu: 250m
@@ -716,6 +819,9 @@ identityservice:
     adminPassword: admin
     ## @skip identityservice.global.configUserEnabled
     configUserEnabled: false
+  ## @param identityservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param identityservice.podSecurityContext.enabled Enable pods' Security Context
@@ -793,7 +899,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.2
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -802,6 +908,9 @@ ui:
     sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
     ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
     tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
+  ## @param ui.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param ui.podSecurityContext.enabled Enable pods' Security Context
@@ -848,12 +957,15 @@ ui:
   ## @skip ui.resources
   public:
     api:
-      ## @param ui.public.api.client The endpoint for the client api. Defaults to the value of `gateway`.
+      ## @param ui.public.api.client The endpoint for the client api. Overrides to the value of `gateway`.
       client: ""
-      ## @param ui.public.api.server The endpoint for the server api. Defaults to the value of `gateway`.
+      ## @param ui.public.api.server The endpoint for the server api. Overrides to the value of `gateway`.
       server: ""
+    dashboard:
+      ## @param ui.public.dashboard.url The url for the dashboard. Overrides to the value of `gateway` and path `/dashboard`.
+      url: ""
     upload:
-      ## @param ui.public.upload.client The endpoint for the upload client. Defaults to the value of `gateway` and path `/api/upload/files`.
+      ## @param ui.public.upload.client The endpoint for the upload client. Overrides to the value of `gateway` and path `/api/upload/files`.
       client: ""
     ## @param ui.public.title The user interface title.
     title: "Database Repository"
@@ -908,9 +1020,12 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.2
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
+  ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dashboardservice.podSecurityContext.enabled Enable pods' Security Context
@@ -955,13 +1070,15 @@ dashboardservice:
   ##     cpu: 500m
   ##     memory: 1024Mi
   ## @param dashboardservice.replicaCount The number of replicas.
-  init:
+  setupJob:
+    ## @param dashboardservice.setupJob.enabled Enable the setup job that creates dashboards for existing databases in the Dashboard UI.
+    enabled: true
     image:
-      ## @skip dashboardservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.1
-    ## @param dashboardservice.init.resourcesPreset The container resource preset
+      ## @skip dashboardservice.setupJob.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.2
+    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param dashboardservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
     ##   requests:
     ##     cpu: 250m
@@ -983,7 +1100,13 @@ dashboardui:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
   ## @param dashboardui.endpoint The endpoint for the microservices.
-  endpoint: http://dashboard-ui
+  endpoint: http://dashboard-ui:3000
+  datasources:
+    ## @skip dashboardui.datasources.secretName
+    secretName: dashboard-ui-datasources-secret
+  dashboardsProvider:
+    ## @skip dashboardui.dashboardsProvider.enabled
+    enabled: true
   ldap:
     ## @skip dashboardui.ldap.enabled
     enabled: true
@@ -997,6 +1120,15 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
+    ## @skip dashboardui.grafana.extraConfigmaps
+    extraConfigmaps:
+      - name: dashboard-ui-config
+        mountPath: /opt/bitnami/grafana/dashboards
+    ## @param dashboardui.grafana.replicaCount The number of replicas.
+    replicaCount: 2
+  persistence:
+    ## @skip dashboardui.persistence.enabled
+    enabled: false
 
 ## @section Metric Service
 
@@ -1010,13 +1142,13 @@ metricdb:
   alertmanager:
     ## @skip metricdb.alertmanager.enabled
     enabled: false
-    service:
-      ## @skip metricdb.alertmanager.service.type
-      type: ClusterIP
   server:
     rbac:
       ## @skip metricdb.server.rbac.create
       create: false
+    updateStrategy:
+      ## @skip metricdb.server.updateStrategy.type
+      type: Recreate
     service:
       ## @skip metricdb.server.service.type
       type: ClusterIP
@@ -1028,15 +1160,28 @@ metricdb:
       - job_name: 'actuator scrape'
         metrics_path: '/actuator/prometheus'
         static_configs:
-          - targets: [ 'data-service:80', 'metadata-service:80' ]
+          - targets:
+              - data-service
+              - metadata-service
       - job_name: 'metrics scrape'
         metrics_path: '/metrics'
         static_configs:
-          - targets: [ 'ui:80', 'auth-service-metrics:8080', 'analyse-service:80', 'search-service:80', 'data-db-metrics:9104', 'broker-service:9419', 'metadata-db-metrics:9104', 'storage-service-master-metrics:9327', 'upload-service:80' ]
-      - job_name: 'dashboard scrape'
-        metrics_path: '/dashboard/metrics'
+          - targets:
+              - analyse-service
+              - auth-service-metrics:9000
+              - broker-service:9419
+              - dashboard-db-metrics:9187
+              - dashboard-service
+              - data-db-metrics:9104
+              - metadata-db-metrics:9104
+              - search-service
+              - storage-service-master-metrics:9327
+              - ui:3000
+      - job_name: 'realm scrape'
+        metrics_path: '/realms/dbrepo/metrics'
         static_configs:
-          - targets: [ 'dashboard-service' ]
+          - targets:
+              - auth-service-metrics:8080
 
 ## @section Gateway Service
 
@@ -1053,6 +1198,59 @@ gatewayservice:
     enabled: false
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
+  ## @skip gatewayservice.sidecars
+  sidecars:
+    - name: logging-agent
+      image: docker.io/bitnami/fluent-bit:4.0.0
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: false
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seLinuxOptions: { }
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: logging-config
+          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+          subPath: fluent-bit.conf
+        - name: empty-dir
+          mountPath: /var/log/nginx/
+      livenessProbe:
+        httpGet:
+          port: 2021
+        initialDelaySeconds: 150
+        periodSeconds: 10
+      readinessProbe:
+        httpGet:
+          port: 2021
+        initialDelaySeconds: 30
+        periodSeconds: 10
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+          ephemeral-storage: 50Mi
+        limits:
+          cpu: 150m
+          memory: 192Mi
+          ephemeral-storage: 2Gi
+  ## @skip gatewayservice.extraVolumes
+  extraVolumes:
+    - name: logging-config
+      configMap:
+        name: gateway-service-config
+  ## @skip gatewayservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: empty-dir
+      mountPath: /var/log/nginx
+    - name: logging-config
+      mountPath: /app # irrelevant but needed from bitnami chart
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 
@@ -1061,6 +1259,7 @@ gatewayservice:
 computeservice:
   ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
   endpoint: local[2]
+
 
 ## @section Ingress
 

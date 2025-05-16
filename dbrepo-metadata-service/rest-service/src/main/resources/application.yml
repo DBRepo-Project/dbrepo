@@ -42,11 +42,17 @@ management:
 server:
   port: 8080
 logging:
-  pattern.console: "%d %highlight(%-5level) %msg%n"
+  file:
+    name: /var/log/app/service/metadata/app.log
   level:
     root: warn
     at.ac.tuwien.ifs.dbrepo.: "${LOG_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+  pattern:
+    console: "%d %highlight(%-5level) %msg%n"
+  structured:
+    format:
+      file: ecs
 dbrepo:
   datacite:
     url: "${DATACITE_URL:https://api.datacite.org}"

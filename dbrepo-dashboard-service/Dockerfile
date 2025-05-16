@@ -1,4 +1,4 @@
-FROM python:3.11-alpine3.21
+FROM --platform=$BUILDPLATFORM python:3.11-alpine3.21
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 RUN apk add --no-cache \
@@ -17,6 +17,9 @@ RUN pip install pipenv && \
 RUN adduser -D dbrepo --uid 1001
 
 WORKDIR /app
+
+RUN mkdir -p /var/log/app/service/dashboard && \
+    chown -R 1001:1001 /var/log/app
 
 USER 1001
 

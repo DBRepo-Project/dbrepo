@@ -9,6 +9,9 @@ target/
 *.iml
 *.ipr
 
+## generated
+dependency-reduced-pom.xml
+
 ### Eclipse ###
 .apt_generated
 .classpath
