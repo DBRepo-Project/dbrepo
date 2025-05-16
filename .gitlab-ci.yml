@@ -577,17 +577,16 @@ release-helm:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "mkdir -p ~/.gnupg"
-    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
-    - echo "$CI_GPG_KEYRING2" | base64 -d > ./pubring.gpg
+    - echo "$CI_GPG_KEYRING" | base64 -d > ~/secring.gpg
+    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/pubring.gpg
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
     - make build-helm
-    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ./secring.gpg --destination ./build"
+    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
-    - "helm sigstore upload --keyring ./pubring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
+    - "helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
 
 release-docs:
   stage: release
@@ -629,13 +628,13 @@ release-libs:
   only:
     - tags
   variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+    PIPENV_PIPFILE: "./lib/python/Pipfile"
   before_script:
     - "pip install pipenv twine build"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - "pipenv install --dev --system --deploy"
     - "echo ${CI_PIPYRC} | base64 -d > ./.pypirc"
   script:
-    - "python -m build"
+    - "python -m build ./lib/python"
     - "python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*"
 
 verify-install-script:
