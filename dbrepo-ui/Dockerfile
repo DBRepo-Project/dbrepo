@@ -1,4 +1,5 @@
-FROM oven/bun:1.1.40-alpine AS build
+###### FIRST STAGE ######
+FROM --platform=$BUILDPLATFORM oven/bun:1.1.40-alpine AS build
 
 WORKDIR /app
 
@@ -25,7 +26,8 @@ COPY ./nuxt.config.ts ./nuxt.config.ts
 
 RUN bun run build
 
-FROM node:22.9.0-alpine3.20 AS runtime
+###### SECOND STAGE ######
+FROM --platform=$BUILDPLATFORM node:22.9.0-alpine3.20 AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""

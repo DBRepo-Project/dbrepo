@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.DataCiteConfig;
+import at.ac.tuwien.ifs.dbrepo.config.EndpointConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteBody;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteData;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteCreateDoi;
@@ -9,8 +11,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.CreateIdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierSaveDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
-import at.ac.tuwien.ifs.dbrepo.config.DataCiteConfig;
-import at.ac.tuwien.ifs.dbrepo.config.EndpointConfig;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
@@ -128,18 +128,25 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
+        final DataCiteCreateDoi attributes = metadataMapper.identifierToDataCiteCreateDoi(identifier,
+                endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
+                dataCiteConfig.getPrefix(), event);
         final HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(
                 DataCiteBody.<DataCiteCreateDoi>builder()
                         .data(DataCiteData.<DataCiteCreateDoi>builder()
                                 .type("dois")
-                                .attributes(metadataMapper.identifierToDataCiteCreateDoi(identifier,
-                                        endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
-                                        dataCiteConfig.getPrefix(), event))
+                                .attributes(attributes)
                                 .build())
                         .build(),
                 headers
         );
         final String url = dataCiteConfig.getUrl() + "/dois";
+        log.atDebug()
+                .setMessage("register doi from datacite url: " + url)
+                .addKeyValue("type", "dois")
+                .addKeyValue("event", event)
+                .addKeyValue("attributes", attributes)
+                .log();
         log.trace("request doi from url {}", url);
         try {
             final ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
@@ -148,15 +155,26 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                 log.error("Failed to mint doi: {}", response);
                 throw new ExternalServiceException("Failed to mint doi: " + response.getBody());
             }
-            return response.getBody()
+            final String doi = response.getBody()
                     .getData()
                     .getAttributes()
                     .getDoi();
+            log.atInfo()
+                    .setMessage("Saved doi: " + doi)
+                    .addKeyValue("doi", doi)
+                    .log();
+            return doi;
         } catch (HttpClientErrorException e) {
-            log.error("Failed to mint doi: malformed metadata: {}", e.getMessage());
-            throw new MalformedException("Failed to mint doi: malformed metadata: " + e.getMessage(), e);
+            log.atError()
+                    .setMessage("Failed to mint doi")
+                    .setCause(e)
+                    .log();
+            throw new MalformedException("Failed to mint doi: " + e.getMessage(), e);
         } catch (RestClientException e) {
-            log.error("Failed to mint doi: {}", e.getMessage());
+            log.atError()
+                    .setMessage("Failed to mint doi")
+                    .setCause(e)
+                    .log();
             throw new DataServiceConnectionException("Failed to mint doi: " + e.getMessage(), e);
         }
     }

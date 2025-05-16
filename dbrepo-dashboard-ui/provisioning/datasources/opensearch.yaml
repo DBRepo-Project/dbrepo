@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: dbrepo-opensearch
+    uid: dbrepoopensearch0
+    type: grafana-opensearch-datasource
+    basicAuth: false
+    url: http://search-db:9200
+    jsonData:
+      flavor: "opensearch"
+      logLevelField: "level"
+      logMessageField: "message"
+      timeField: "@timestamp"
+      version: "2.19.0"

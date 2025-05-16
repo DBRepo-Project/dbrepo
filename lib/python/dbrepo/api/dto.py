@@ -825,14 +825,14 @@ class Filter(BaseModel):
     type: FilterType
     column_id: str
     operator_id: str
-    value: str
+    value: Optional[str] = None
 
 
 class FilterDefinition(BaseModel):
     type: FilterType
     column: str
     operator: str
-    value: str
+    value: Optional[str] = None
 
 
 class Order(BaseModel):

@@ -16,6 +16,10 @@ spec:
       service: identity-service
   template:
     metadata:
+      annotations:
+        {{- if .Values.identityservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.identityservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
       labels:
         app: identity-service
         service: identity-service
@@ -40,7 +44,7 @@ spec:
                 name: identity-service-secret
           {{- if .Values.identityservice.persistence.enabled }}
           volumeMounts:
-            - name: openldap-data
+            - name: data
               mountPath: /bitnami/openldap
           {{- end }}
           livenessProbe:
@@ -67,7 +71,7 @@ spec:
   {{- if .Values.identityservice.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:
-        name: openldap-data
+        name: data
       spec:
         accessModes: [ "ReadWriteOnce" ]
         {{- if .Values.global.storageClass }}

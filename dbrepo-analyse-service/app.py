@@ -28,17 +28,32 @@ dictConfig({
             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
         },
         'simple': {
-            'format': '[%(asctime)s] %(levelname)s: %(message)s',
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s',
+        },
+        'ecs': {
+            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "analyse-service", "service_version": "1.8.2"}',
+            'datefmt': '%Y-%m-%dT%H:%M:%S'
         },
     },
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'simple'  # default
-    }},
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'simple'
+        },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'formatter': 'ecs',
+            'filename': '/var/log/app/service/analyse/app.log',
+            'when': 'm',
+            'interval': 1,
+            'backupCount': 5,
+            'encoding': 'utf8'
+        },
+    },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['wsgi']
+        'handlers': ['wsgi', 'file']
     }
 })
 
@@ -59,8 +74,8 @@ swagger_config = {
     "headers": [],
     "specs": [
         {
-            "endpoint": "api-analyse",
-            "route": "/api-analyse.json",
+            "endpoint": "api-docs",
+            "route": "/api-docs.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('actuator') or rule.endpoint.startswith('analyse'),
             "model_filter": lambda tag: True,  # all in
         }
@@ -185,7 +200,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "1.8.1",
+        "version": "1.8.2",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -263,7 +278,7 @@ def get_health():
 
 @app.route("/api/analyse/datatypes", methods=["GET"], endpoint="analyse_analyse_datatypes")
 @metrics.gauge(name='dbrepo_analyse_datatypes', description='Time needed to analyse datatypes of dataset')
-@swag_from("as-yml/analyse_datatypes.yml")
+@swag_from("/app/as-yml/analyse_datatypes.yml")
 def analyse_datatypes():
     filename: str = request.args.get('filename')
     separator: str = request.args.get('separator')
@@ -280,17 +295,17 @@ def analyse_datatypes():
         logging.debug("determine datatype resulted in datatypes %s", res)
         return Response(res.model_dump_json(), mimetype="application/json"), 202
     except OSError as e:
-        logging.error(f"Failed to determine data types: {e}")
+        logging.error(f"Failed to determine data types: {str(e).strip()}")
         return ApiError(status='BAD_REQUEST', message=str(e), code='error.analyse.invalid').model_dump_json(), 400
     except ClientError as e:
-        logging.error(f"Failed to determine separator: {e}")
+        logging.error(f"Failed to determine separator: {str(e).strip()}")
         return ApiError(status='NOT_FOUND', message='Failed to find csv',
                         code='error.analyse.missing').model_dump_json(), 404
 
 
 @app.route("/api/analyse/keys", methods=["GET"], endpoint="analyse_analyse_keys")
 @metrics.gauge(name='dbrepo_analyse_keys', description='Time needed to analyse keys of dataset')
-@swag_from("as-yml/analyse_keys.yml")
+@swag_from("/app/as-yml/analyse_keys.yml")
 def analyse_keys():
     filename: str = request.args.get("filename")
     separator: str = request.args.get('separator')
@@ -305,5 +320,5 @@ def analyse_keys():
         logging.info(f"Determined list of primary keys: {res}")
         return Response(dumps(res), mimetype="application/json"), 202
     except OSError as e:
-        logging.error(f"Failed to determine primary key: {e}")
+        logging.error(f"Failed to determine primary key: {str(e).strip()}")
         return ApiError(status='BAD_REQUEST', message=str(e), code='analyse.database.invalid').model_dump_json(), 400

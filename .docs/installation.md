@@ -22,13 +22,10 @@ curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-service
 
 ## Requirements
 
-We only support the Debian 12 operating system officially. In theory, any DEB-based operating system (e.g. Ubuntu)
-should be compatible. Any modern hardware suffices, we recommend a dedicated virtual machine with the following
-settings.
+We recommend a dedicated virtual machine with the following system requirements:
 
 - min. 8 vCPU cores
-- min. 8GB free RAM memory
-- min. 200GB free SSD storage
+- min. 20GB free RAM memory
 
 Since DBRepo is intended to be a publicly available repository, an optional fixed/static IP-address with optional
 SSL/TLS certificate is recommended. Follow the [secure installation](#secure-installation) guide.

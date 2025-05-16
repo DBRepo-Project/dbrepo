@@ -2,6 +2,25 @@
 author: Martin Weise
 ---
 
+## v1.8.2 (2025-05-15)
+
+#### Fixes
+
+* Fixed a bug in the UI where the resource status was displayed as identifier when a draft identifier has been created.
+
+#### Features
+
+* Added structured logging through the `fluentd` protocol via the lightweight fluentbit in a 
+  separate [Logging Service](../api/logging-service)
+  in [#524](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/524).
+* Added a separate database for the Dashboard Service for high-availability deployment of Grafana
+  in [#526](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/526).
+
+#### Changes
+
+* Improved internal packaging mechanism that is compatible with multiarch deployments 
+  in [#523](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/523).
+
 ## v1.8.1 (2025-04-13)
 
 #### Changes

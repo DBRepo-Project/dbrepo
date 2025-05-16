@@ -18,6 +18,10 @@ spec:
       service: dashboard-service
   template:
     metadata:
+      annotations:
+        {{- if .Values.dashboardservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.dashboardservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
       labels:
         app: dashboard-service
         service: dashboard-service
@@ -25,21 +29,6 @@ spec:
       {{- if .Values.dashboardservice.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
-      initContainers:
-        - name: init
-          image: {{ .Values.dashboardservice.init.image.name }}
-          imagePullPolicy: {{ .Values.dashboardservice.init.image.pullPolicy | default "IfNotPresent" }}
-          {{- if .Values.dashboardservice.containerSecurityContext.enabled }}
-          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.containerSecurityContext "context" $) | nindent 12 }}
-          {{- end }}
-          envFrom:
-            - secretRef:
-                name: dashboard-service-secret
-          {{- if .Values.dashboardservice.init.resources }}
-          resources: {{- toYaml .Values.dashboardservice.init.resources | nindent 12 }}
-          {{- else if ne .Values.dashboardservice.init.resourcesPreset "none" }}
-          resources: {{- include "common.resources.preset" (dict "type" .Values.dashboardservice.init.resourcesPreset) | nindent 12 }}
-          {{- end }}
       containers:
         - name: dashboard-service
           image: {{ .Values.dashboardservice.image.name }}
@@ -50,6 +39,9 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/dashboard
           envFrom:
             - secretRef:
                 name: dashboard-service-secret
@@ -74,4 +66,37 @@ spec:
           {{- else if ne .Values.dashboardservice.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.dashboardservice.resourcesPreset) | nindent 12 }}
           {{- end }}
+        {{- if .Values.global.loggingSidecar.enabled }}
+        - name: logging-agent
+          image: {{ .Values.global.loggingSidecar.image.name }}
+          imagePullPolicy: {{ .Values.dashboardservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.dashboardservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: logging-config
+              mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+              subPath: fluent-bit.conf
+            - name: empty-dir
+              mountPath: /var/log/app/service/dashboard
+          livenessProbe:
+            httpGet:
+              port: 2021
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              port: 2021
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources: {{- include "common.resources.preset" (dict "type" .Values.global.loggingSidecar.resourcesPreset) | nindent 12 }}
+        {{- end }}
+      volumes:
+        {{- if .Values.global.loggingSidecar.enabled }}
+        - name: logging-config
+          configMap:
+            name: dashboard-service-config
+        {{- end }}
+        - name: empty-dir
+          emptyDir: { }
 {{- end }}
