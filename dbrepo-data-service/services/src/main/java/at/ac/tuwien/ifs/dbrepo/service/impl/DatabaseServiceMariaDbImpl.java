@@ -12,7 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-@Log4j2
+@Slf4j
 @Service
 public class DatabaseServiceMariaDbImpl extends DataConnector implements DatabaseService {
 

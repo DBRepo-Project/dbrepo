@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 
 import java.security.Principal;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 public abstract class AbstractEndpoint {
 
     public boolean hasRole(Principal principal, String role) {

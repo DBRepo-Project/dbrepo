@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.auth;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-@Log4j2
+@Slf4j
 @Component
 public class BasicAuthenticationProvider implements AuthenticationManager {
 

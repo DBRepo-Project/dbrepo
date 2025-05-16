@@ -8,13 +8,13 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.BrokerServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.BrokerService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 @Service
 public class BrokerServiceRabbitMqImpl implements BrokerService {
 

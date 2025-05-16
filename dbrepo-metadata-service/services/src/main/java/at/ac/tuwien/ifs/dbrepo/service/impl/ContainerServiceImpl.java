@@ -10,7 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.ImageRepository;
 import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class ContainerServiceImpl implements ContainerService {
 

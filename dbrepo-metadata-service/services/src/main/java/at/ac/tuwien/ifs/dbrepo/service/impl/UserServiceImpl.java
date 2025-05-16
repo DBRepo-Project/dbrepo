@@ -8,7 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 

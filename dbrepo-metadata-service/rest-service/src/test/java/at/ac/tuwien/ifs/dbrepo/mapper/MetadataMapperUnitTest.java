@@ -6,7 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 public class MetadataMapperUnitTest extends BaseTest {
 

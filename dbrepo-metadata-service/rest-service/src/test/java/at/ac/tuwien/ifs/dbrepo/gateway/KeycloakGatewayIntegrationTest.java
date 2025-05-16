@@ -6,7 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.impl.KeycloakGatewayImpl;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 @Testcontainers
 @ExtendWith(SpringExtension.class)

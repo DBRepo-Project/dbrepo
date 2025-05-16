@@ -11,7 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Value("${dbrepo.jwt.public_key}")

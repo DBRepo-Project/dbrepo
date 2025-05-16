@@ -32,7 +32,7 @@ dictConfig({
             'format': '[%(asctime)s] [%(levelname)s] %(message)s',
         },
         'ecs': {
-            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "dashboard-service", "service_version": "1.8.2"}',
+            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "dashboard-service", "service_version": "1.9.0"}',
             'datefmt': '%Y-%m-%dT%H:%M:%S'
         },
     },

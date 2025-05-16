@@ -6,7 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.OntologyNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.SemanticEntityNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class EntityServiceUnitTest extends BaseTest {

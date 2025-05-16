@@ -8,11 +8,11 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 
-@Log4j2
+@Slf4j
 public class XmlUtils {
 
     public static boolean validateXmlResponse(String xsdUrl, String xmlDocument) {

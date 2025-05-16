@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/access")

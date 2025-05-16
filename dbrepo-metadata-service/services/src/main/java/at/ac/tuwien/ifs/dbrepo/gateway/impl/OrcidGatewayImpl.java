@@ -3,7 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.OrcidNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-@Log4j2
+@Slf4j
 @Service
 public class OrcidGatewayImpl implements OrcidGateway {
 

@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +40,10 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/table")
@@ -56,6 +57,8 @@ public class TableEndpoint extends RestEndpoint {
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+
+    private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
@@ -306,8 +309,8 @@ public class TableEndpoint extends RestEndpoint {
             headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
             final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                     table.getInternalName(), timestamp,
-                    accept.equals("text/csv") ? null : page,
-                    accept.equals("text/csv") ? null : size);
+                    accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
+                    accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
@@ -315,7 +318,7 @@ public class TableEndpoint extends RestEndpoint {
                     return ResponseEntity.ok()
                             .headers(headers)
                             .body(transform(dataset));
-                case "text/csv":
+                case MEDIA_TYPE_TEXT_CSV:
                     log.trace("accept header matches csv");
                     final ExportResourceDto resource = storageService.transformDataset(dataset);
                     headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
@@ -323,8 +326,13 @@ public class TableEndpoint extends RestEndpoint {
                             .headers(headers)
                             .body(storageService.transformDataset(dataset)
                                     .getResource());
+                default:
+                    log.atError()
+                            .setMessage("Invalid data format " + accept + " accepted")
+                            .addKeyValue("request_header_accept", accept)
+                            .log();
+                    throw new FormatNotAvailableException("Header 'Accept' must be one of: application/json, text/csv value");
             }
-            throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -648,7 +656,12 @@ public class TableEndpoint extends RestEndpoint {
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
             StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,
             DatabaseUnavailableException, DatabaseNotFoundException {
-        log.debug("endpoint insert table data, databaseId={}, tableId={}, data.location={}", databaseId, tableId, data.getLocation());
+        log.atDebug()
+                .setMessage("endpoint insert table data")
+                .addKeyValue("database_id", databaseId)
+                .addKeyValue("table_id", tableId)
+                .addKeyValue("data", data)
+                .log();
         final TableDto table = cacheService.getTable(databaseId, tableId);
         final DatabaseAccessDto access = cacheService.getAccess(databaseId, getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));

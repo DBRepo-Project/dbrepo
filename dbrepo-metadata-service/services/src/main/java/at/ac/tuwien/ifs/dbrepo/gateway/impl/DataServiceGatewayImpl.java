@@ -11,7 +11,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class DataServiceGatewayImpl implements DataServiceGateway {
 

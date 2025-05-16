@@ -2,6 +2,19 @@
 author: Martin Weise
 ---
 
+## v1.9.0 (2025-05-??)
+
+#### Fixes
+
+* Fixed a bug where titles, descriptions, creators, etc. were not sorted to the user-specified ordering
+  in [#531](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/531).
+
+#### Changes
+
+* Improved S3-related mechanisms to de-duplicate uploaded datasets and remove them on successful import, various
+  structured logging improvements 
+  in [#528](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/528).
+
 ## v1.8.2 (2025-05-15)
 
 #### Fixes

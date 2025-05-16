@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import java.util.List;
 
 @Getter
-@Log4j2
+@Slf4j
 @Profile("doi")
 @Configuration
 public class DataCiteConfig {

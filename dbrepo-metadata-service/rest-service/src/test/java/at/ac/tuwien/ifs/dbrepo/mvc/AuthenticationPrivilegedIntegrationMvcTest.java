@@ -13,7 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import jakarta.transaction.Transactional;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Log4j2
+@Slf4j
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @Testcontainers

@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.utils;
 
 import jakarta.persistence.EntityManager;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@Log4j2
+@Slf4j
 @Component
 public class H2Utils {
 

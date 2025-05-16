@@ -25,6 +25,9 @@ public class IdentifierDescription implements Serializable {
     @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
+    @Column
+    private Integer ordinalPosition;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 

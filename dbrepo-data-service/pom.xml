@@ -16,7 +16,7 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
     <name>data-service</name>
-    <version>1.8.2</version>
+    <version>1.9.0</version>
 
     <description>Service that manages the data</description>
 
@@ -96,7 +96,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.8.2</version>
+            <version>1.9.0</version>
         </dependency>
         <!-- Spark -->
         <dependency>
@@ -168,6 +168,12 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>${aws-s3.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Monitoring -->
         <dependency>
@@ -206,6 +212,12 @@
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>${commons-validator.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
@@ -300,6 +312,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/*.properties</include>
                     <include>**/jars/*.jar</include>
                 </includes>
             </resource>

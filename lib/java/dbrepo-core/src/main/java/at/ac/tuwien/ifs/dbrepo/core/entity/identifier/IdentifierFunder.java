@@ -24,6 +24,9 @@ public class IdentifierFunder implements Serializable {
     @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
+    @Column
+    private Integer ordinalPosition;
+
     @Column(nullable = false)
     private String funderName;
 

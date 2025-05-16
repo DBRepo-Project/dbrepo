@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)

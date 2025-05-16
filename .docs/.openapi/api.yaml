@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.8.2
+  version: 1.9.0
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -8531,14 +8531,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       type: object
       properties:
