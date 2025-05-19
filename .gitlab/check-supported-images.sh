@@ -1,13 +1,13 @@
 #!/bin/bash
 echo "Starting registry check ..."
 
-if [ -z $SUPPORTED_VERSIONS ]; then
+if [[ -z $SUPPORTED_VERSIONS ]]; then
   echo "[ERROR] Missing environment variable SUPPORTED_VERSIONS" > /dev/stderr
   exit 1
-elif [ -z $MAINTAINED_SERVICES ]; then
+elif [[ -z $MAINTAINED_SERVICES ]]; then
   echo "[ERROR] Missing environment variable MAINTAINED_SERVICES" > /dev/stderr
   exit 1
-elif [ -z $CI_REGISTRY2_URL ]; then
+elif [[ -z $CI_REGISTRY2_URL ]]; then
   echo "[ERROR] Missing environment variable CI_REGISTRY2_URL" > /dev/stderr
   exit 1
 fi
