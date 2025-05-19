@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # preset
-APP_VERSION="1.8.2"
-DOC_VERSION="1.8"
+APP_VERSION="1.8"
 MIN_CPU=8
 MIN_RAM=10
 SKIP_CHECKS=${SKIP_CHECKS:-0}
@@ -69,4 +68,4 @@ echo "Then start the local deployment with:"
 echo ""
 echo "  docker compose up -d"
 echo ""
-echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${DOC_VERSION}/installation/#next-steps"
+echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/installation/#next-steps"
