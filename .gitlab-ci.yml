@@ -598,7 +598,6 @@ release-docs:
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
-    - "mkdir -p ./final/${APP_VERSION}"
   script:
     - "make gen-lib-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
@@ -606,7 +605,7 @@ release-docs:
     - "cp .docs/.openapi/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # openapi
     - "cp .docs/.openapi/custom.css ./final/${DOC_VERSION}/rest/custom.css" # openapi
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
-    - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
+    - "cp .docker/dist.tar.gz ./final/${DOC_VERSION}/dist.tar.gz" # dist
     - "cp .docs/index.html.tpl ./final/index.html" # redirect patch docs
     - sed -i "s/DOC_VERSION/$DOC_VERSION/g" ./final/index.html
     - "bash ./.gitlab/gen-badge.sh"
@@ -657,7 +656,7 @@ verify-dist:
   before_script:
     - "apk add curl"
   script:
-    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
+    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${DOC_VERSION}/dist.tar.gz"
 
 verify-images:
   image: docker.io/docker:${DOCKER_VERSION}-dind
