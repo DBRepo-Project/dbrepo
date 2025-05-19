@@ -21,7 +21,7 @@ services:
     hostname: metadata-db
     image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
-      - metadata-db-data:/var/lib/mysql
+      - metadata-db-data:/bitnami/mariadb
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./config/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
@@ -64,7 +64,7 @@ services:
     hostname: data-db
     image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
-      - data-db-data:/var/lib/mysql
+      - data-db-data:/bitnami/mariadb
       - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "3307:3306"
