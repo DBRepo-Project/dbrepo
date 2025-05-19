@@ -89,7 +89,7 @@ services:
       - --mysqld.address=data-db:3306
       - --config.my-cnf=/.my.cnf
     volumes:
-      - ./dbrepo-data-db/metrics.cnf:/.my.cnf
+      - ./config/metrics.cnf:/.my.cnf
     healthcheck:
       test: -h
       <<: *healthcheck-params
@@ -381,7 +381,7 @@ services:
     ports:
       - "80:8080"
     volumes:
-      - ./conf/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
+      - ./config/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
