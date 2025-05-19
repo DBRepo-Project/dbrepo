@@ -48,6 +48,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     private final IdentifierService identifierService;
     private final IdentifierRepository identifierRepository;
 
+    private static final String LOG_MINT_FAILED = "Failed to mint doi";
+
     private final ParameterizedTypeReference<DataCiteBody<DataCiteDoi>> dataCiteBodyParameterizedTypeReference = new ParameterizedTypeReference<>() {
     };
 
@@ -152,8 +154,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             final ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
                     request, dataCiteBodyParameterizedTypeReference);
             if (response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
-                log.error("Failed to mint doi: {}", response);
-                throw new ExternalServiceException("Failed to mint doi: " + response.getBody());
+                log.error(LOG_MINT_FAILED + ": {}", response);
+                throw new ExternalServiceException(LOG_MINT_FAILED + ": " + response.getBody());
             }
             final String doi = response.getBody()
                     .getData()
@@ -166,16 +168,16 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             return doi;
         } catch (HttpClientErrorException e) {
             log.atError()
-                    .setMessage("Failed to mint doi")
+                    .setMessage(LOG_MINT_FAILED)
                     .setCause(e)
                     .log();
-            throw new MalformedException("Failed to mint doi: " + e.getMessage(), e);
+            throw new MalformedException(LOG_MINT_FAILED + ": " + e.getMessage(), e);
         } catch (RestClientException e) {
             log.atError()
-                    .setMessage("Failed to mint doi")
+                    .setMessage(LOG_MINT_FAILED)
                     .setCause(e)
                     .log();
-            throw new DataServiceConnectionException("Failed to mint doi: " + e.getMessage(), e);
+            throw new DataServiceConnectionException(LOG_MINT_FAILED + ": " + e.getMessage(), e);
         }
     }
 

@@ -24,8 +24,8 @@
     <modules>
         <module>oai</module>
         <module>repositories</module>
-        <module>services</module>
         <module>rest-service</module>
+        <module>services</module>
         <module>report</module>
     </modules>
 
@@ -58,9 +58,6 @@
         <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
         <minio.version>8.5.7</minio.version>
-        <sonar.coverage.jacoco.xmlReportPaths>
-            ./report/target/site/jacoco-aggregate/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
         <CodeCacheSize>128m</CodeCacheSize>
         <extraJavaTestArgs></extraJavaTestArgs>
     </properties>
@@ -280,9 +277,6 @@
         <repository>
             <id>dbrepo-maven-repo</id>
             <url>file:///${project.basedir}/lib</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>

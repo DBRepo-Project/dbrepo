@@ -13,12 +13,12 @@
         <url>https://www.tuwien.ac.at</url>
     </organization>
 
+    <name>data-service</name>
+    <description>Service that manages the data</description>
+
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
-    <name>data-service</name>
     <version>1.8.2</version>
-
-    <description>Service that manages the data</description>
 
     <packaging>pom</packaging>
     <modules>
