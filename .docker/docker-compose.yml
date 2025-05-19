@@ -158,7 +158,7 @@ services:
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost}"
-      KEYCLOAK_HOSTNAME_ADMIN: "http://localhost:8080"
+      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost}:8080"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
