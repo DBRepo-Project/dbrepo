@@ -19,6 +19,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-data-db/1_grant-user.sql ./.docker/config
 	cp ./dbrepo-metadata-db/1_setup-schema.sql ./.docker/config
 	cp ./dbrepo-metadata-db/2_setup-data.sql ./.docker/config
+	cp ./dbrepo-metadata-db/metrics.cnf ./.docker/config
 	cp ./dbrepo-broker-service/rabbitmq.conf ./.docker/config
 	cp ./dbrepo-broker-service/enabled_plugins ./.docker/config
 	cp ./dbrepo-broker-service/definitions.json ./.docker/config
@@ -30,7 +31,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-dashboard-ui/ldap.toml ./.docker/config/ldap.toml
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
-	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./.docker/config
+	cp ./dbrepo-auth-service/listeners/create-event-listener.jar ./.docker/config
 	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config
 
 .PHONY: install-staging

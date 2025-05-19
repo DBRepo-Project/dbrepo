@@ -16,7 +16,7 @@ variables:
   CHART_VERSION: "1.9.0"
   SUPPORTED_VERSIONS: "1.8.0, 1.8.1, 1.8.2, 1.9.0"
   SUPPORTED_ARCH: "linux/amd64"
-  MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
+  MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.

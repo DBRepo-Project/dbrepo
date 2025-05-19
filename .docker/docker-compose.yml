@@ -89,7 +89,7 @@ services:
       - --mysqld.address=data-db:3306
       - --config.my-cnf=/.my.cnf
     volumes:
-      - ./dbrepo-data-db/metrics.cnf:/.my.cnf
+      - ./config/metrics.cnf:/.my.cnf
     healthcheck:
       test: -h
       <<: *healthcheck-params
