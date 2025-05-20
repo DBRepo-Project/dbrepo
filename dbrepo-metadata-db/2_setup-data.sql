@@ -6,4 +6,6 @@ VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203', 'mariadb:11.3.2', 'mariadb_11_3_
         'd79cb089-363c-488b-9717-649e44d8fcc5', 'data-db', 3306, 'localhost', 3306, 'root', 'dbrepo', 'readonly',
         'readonly');
 
+GRANT SLAVE MONITOR, PROCESS ON *.* TO `readonly`@`%`;
+
 COMMIT;

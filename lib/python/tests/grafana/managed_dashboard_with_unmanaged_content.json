@@ -1,0 +1,3729 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 9,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "info",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Database",
+      "type": "link",
+      "url": "http://localhost/database/ae888c39-1185-40db-b532-3b89cc99a913"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "refId": "A"
+        }
+      ],
+      "title": "Panel Title",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 20,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "refId": "A"
+        }
+      ],
+      "title": "Panel Title",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 17,
+        "x": 0,
+        "y": 8
+      },
+      "id": 21,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "refId": "A"
+        }
+      ],
+      "title": "Panel Title",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 7,
+        "x": 8,
+        "y": 14
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "refId": "A"
+        }
+      ],
+      "title": "Panel Title",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 23,
+      "panels": [],
+      "title": "Generated Dashboard",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 21
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "$count(id)",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Datasources",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 25,
+      "panels": [],
+      "title": "adsasd",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 0,
+        "y": 26
+      },
+      "id": 26,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "Cite",
+          "url": "http://localhost/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/data"
+        }
+      ],
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "showHeader": true,
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "json",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Datasource Preview",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 26
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/statistic",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Rows",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "delimiter": ",",
+            "format": "auto",
+            "keepTime": false,
+            "replace": false,
+            "source": "total_rows"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "total_rows"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 30
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/statistic",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Variables",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "delimiter": ",",
+            "format": "auto",
+            "keepTime": false,
+            "replace": false,
+            "source": "total_columns"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "total_columns"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": "true",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 34
+      },
+      "id": 29,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "columns",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/statistic",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Statistics",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "mean": 3,
+              "median": 4,
+              "name": 0,
+              "std_dev": 5,
+              "val_max": 2,
+              "val_min": 1
+            },
+            "renameByName": {
+              "mean": "Mean",
+              "median": "Median",
+              "name": "Name",
+              "std_dev": "std.dev",
+              "val_max": "Maximum",
+              "val_min": "Minimum"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "absolute"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 34
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Histogram",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "order"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pid"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "ms_subclass"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "ms_zoning"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_frontage"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "lot_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "street"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "alley"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_shape"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_contour"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "utilities"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_config"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_slope"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "neighborhood"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bldg_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "house_style"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_cond"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_built"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_remod_add"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_style"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_matl"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_1st"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_2nd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "foundation"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_exposure"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_unf_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "total_bsmt_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "central_air"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "electrical"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "1st_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "2nd_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "low_qual_fin_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "gr_liv_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_full_bath"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "full_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "bedroom_abvgr"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "kitchen_abvgr"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "kitchen_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "totrms_abvgrd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "functional"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "fireplaces"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fireplace_qu"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_yr_blt"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_finish"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cars"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "paved_drive"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "wood_deck_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "open_porch_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "enclosed_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "3ssn_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "screen_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pool_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "pool_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fence"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "misc_feature"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "misc_val"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "mo_sold"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "yr_sold"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_condition"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "sale_price"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "absolute"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 42
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Timeseries",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "order"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pid"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "ms_subclass"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "ms_zoning"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_frontage"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "lot_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "street"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "alley"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_shape"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_contour"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "utilities"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_config"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_slope"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "neighborhood"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bldg_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "house_style"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_cond"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_built"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_remod_add"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_style"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_matl"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_1st"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_2nd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "foundation"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_exposure"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_unf_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "total_bsmt_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "central_air"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "electrical"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "1st_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "2nd_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "low_qual_fin_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "gr_liv_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_full_bath"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "full_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "bedroom_abvgr"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "kitchen_abvgr"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "kitchen_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "totrms_abvgrd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "functional"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "fireplaces"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fireplace_qu"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_yr_blt"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_finish"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cars"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "paved_drive"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "wood_deck_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "open_porch_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "enclosed_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "3ssn_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "screen_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pool_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "pool_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fence"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "misc_feature"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "misc_val"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "mo_sold"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "yr_sold"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_condition"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "sale_price"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "absolute"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 42
+      },
+      "id": 32,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/790a0d1c-8774-4345-a7da-bb15880d5840/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Piechart",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "order"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pid"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "ms_subclass"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "ms_zoning"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_frontage"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "lot_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "street"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "alley"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_shape"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_contour"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "utilities"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_config"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_slope"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "neighborhood"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bldg_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "house_style"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_cond"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_built"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_remod_add"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_style"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_matl"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_1st"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_2nd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "foundation"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_exposure"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_unf_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "total_bsmt_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "central_air"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "electrical"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "1st_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "2nd_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "low_qual_fin_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "gr_liv_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_full_bath"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "full_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "bedroom_abvgr"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "kitchen_abvgr"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "kitchen_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "totrms_abvgrd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "functional"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "fireplaces"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fireplace_qu"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_yr_blt"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_finish"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cars"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "paved_drive"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "wood_deck_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "open_porch_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "enclosed_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "3ssn_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "screen_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pool_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "pool_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fence"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "misc_feature"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "misc_val"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "mo_sold"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "yr_sold"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_condition"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "sale_price"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 33,
+      "panels": [],
+      "title": "New2",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 0,
+        "y": 51
+      },
+      "id": 34,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "Cite",
+          "url": "http://localhost/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/data"
+        }
+      ],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "json",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Datasource Preview",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 51
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/statistic",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Rows",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "delimiter": ",",
+            "format": "auto",
+            "keepTime": false,
+            "replace": false,
+            "source": "total_rows"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "total_rows"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": ""
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 55
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/statistic",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Variables",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "delimiter": ",",
+            "format": "auto",
+            "keepTime": false,
+            "replace": false,
+            "source": "total_columns"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "total_columns"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": "true",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 59
+      },
+      "id": 37,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "columns",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/statistic",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Statistics",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "mean": 3,
+              "median": 4,
+              "name": 0,
+              "std_dev": 5,
+              "val_max": 2,
+              "val_min": 1
+            },
+            "renameByName": {
+              "mean": "Mean",
+              "median": "Median",
+              "name": "Name",
+              "std_dev": "std.dev",
+              "val_max": "Maximum",
+              "val_min": "Minimum"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "absolute"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 59
+      },
+      "id": 38,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Histogram",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "order"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pid"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_frontage"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "lot_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "street"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "alley"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_shape"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_contour"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "utilities"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_config"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_slope"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "neighborhood"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bldg_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "house_style"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_cond"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_built"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_remod_add"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_style"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_matl"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_1st"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_2nd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "foundation"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_exposure"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_unf_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "total_bsmt_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "central_air"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "electrical"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "1st_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "2nd_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "low_qual_fin_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "gr_liv_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_full_bath"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "full_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "bedroom_abvgr"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "kitchen_abvgr"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "kitchen_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "totrms_abvgrd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "functional"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "fireplaces"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fireplace_qu"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_yr_blt"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_finish"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cars"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "paved_drive"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "wood_deck_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "open_porch_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "enclosed_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "3ssn_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "screen_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pool_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "pool_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fence"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "misc_feature"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "misc_val"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "mo_sold"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "yr_sold"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_condition"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "sale_price"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "absolute"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 67
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Timeseries",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "order"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pid"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_frontage"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "lot_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "street"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "alley"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_shape"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_contour"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "utilities"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_config"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_slope"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "neighborhood"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bldg_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "house_style"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_cond"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_built"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_remod_add"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_style"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_matl"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_1st"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_2nd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "foundation"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_exposure"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_unf_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "total_bsmt_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "central_air"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "electrical"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "1st_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "2nd_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "low_qual_fin_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "gr_liv_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_full_bath"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "full_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "bedroom_abvgr"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "kitchen_abvgr"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "kitchen_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "totrms_abvgrd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "functional"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "fireplaces"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fireplace_qu"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_yr_blt"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_finish"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cars"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "paved_drive"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "wood_deck_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "open_porch_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "enclosed_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "3ssn_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "screen_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pool_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "pool_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fence"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "misc_feature"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "misc_val"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "mo_sold"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "yr_sold"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_condition"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "sale_price"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "dbrepojson0"
+      },
+      "description": "Auto-generated",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "absolute"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 67
+      },
+      "id": 40,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "dbrepojson0"
+          },
+          "format": "table",
+          "global_query_id": "",
+          "hide": false,
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "/api/database/ae888c39-1185-40db-b532-3b89cc99a913/view/1edb002d-62f2-4b0a-b27a-d5a9747a865c/data",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Piechart",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "order"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pid"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_frontage"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "lot_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "street"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "alley"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_shape"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_contour"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "utilities"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "lot_config"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "land_slope"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "neighborhood"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "condition_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bldg_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "house_style"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "overall_cond"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_built"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "year_remod_add"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_style"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "roof_matl"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_1st"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exterior_2nd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "mas_vnr_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "exter_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "foundation"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_exposure"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_1"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_type_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmtfin_sf_2"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_unf_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "total_bsmt_sf"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "heating_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "central_air"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "electrical"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "1st_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "2nd_flr_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "low_qual_fin_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "gr_liv_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_full_bath"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "bsmt_half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "full_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "half_bath"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "bedroom_abvgr"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "kitchen_abvgr"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "kitchen_qual"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "totrms_abvgrd"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "functional"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "fireplaces"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fireplace_qu"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_yr_blt"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_finish"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cars"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_qual"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "garage_cond"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "paved_drive"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "wood_deck_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "open_porch_sf"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "enclosed_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "3ssn_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "screen_porch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "pool_area"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "pool_qc"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "fence"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "misc_feature"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "misc_val"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "mo_sold"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "yr_sold"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_type"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "sale_condition"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "sale_price"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "piechart"
+    }
+  ],
+  "preload": false,
+  "refresh": "30m",
+  "schemaVersion": 40,
+  "tags": [
+    "managed"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "test_hkox Overview",
+  "uid": "eemd8tiylyio0c",
+  "version": 7,
+  "weekStart": ""
+}
