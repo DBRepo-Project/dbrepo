@@ -1,4 +1,4 @@
-import os
+import logging
 import os
 import time
 import unittest
@@ -134,8 +134,7 @@ class AppIntegrationTest(unittest.TestCase):
 
     def test_update_dashboard_no_auth_fails(self):
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             json_payload = dict({'is_public': True,
                                  'is_schema_public': True,
                                  'database_name': 'some_database',
@@ -148,8 +147,7 @@ class AppIntegrationTest(unittest.TestCase):
 
     def test_update_dashboard_no_body_fails(self):
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             json_payload = dict({'is_public': True,
                                  'is_schema_public': True,
                                  'database_name': 'some_database',
@@ -163,8 +161,7 @@ class AppIntegrationTest(unittest.TestCase):
 
     def test_update_dashboard_empty_body_fails(self):
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             json_payload = dict({'is_public': True,
                                  'is_schema_public': True,
                                  'database_name': 'some_database',
@@ -177,8 +174,7 @@ class AppIntegrationTest(unittest.TestCase):
 
     def test_update_dashboard_malformed_body_fails(self):
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             json_payload = dict({'is_public': True,
                                  'is_schema_public': True,
                                  'database_name': 'some_database',
@@ -192,8 +188,7 @@ class AppIntegrationTest(unittest.TestCase):
 
     def test_update_dashboard_succeeds(self):
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             json_payload = dict({'is_public': True,
                                  'is_schema_public': True,
                                  'is_dashboard_enabled': True,
@@ -233,7 +228,7 @@ class AppIntegrationTest(unittest.TestCase):
                        exchange_name="dbrepo",
                        is_public=True,
                        is_schema_public=True,
-                       is_dashboard_enabled=False, # <<<
+                       is_dashboard_enabled=False,  # <<<
                        container=ContainerBrief(id="7efe8b27-6cdc-4387-80e3-92ee28f4a7c5",
                                                 name="MariaDB",
                                                 internal_name="mariadb",
@@ -270,8 +265,7 @@ class AppIntegrationTest(unittest.TestCase):
                                                      val_max=10)]
                                      )])
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             json_payload = dict({'is_public': True,
                                  'is_schema_public': True,
                                  'is_dashboard_enabled': False,
@@ -287,10 +281,9 @@ class AppIntegrationTest(unittest.TestCase):
             dashboard = self.dashboard_client().find(req.dashboard_uid)['dashboard']
             self.assertEqual([], dashboard['tags'])
 
-    def test_update_dashboard_not_found_fails(self):
+    def test_update_dashboard_not_found_created_succeeds(self):
         with app.test_client() as test_client:
-            headers = {'Authorization': f'Bearer {self.token(["system"])}',
-                       'Content-Type': 'application/json'}
+            headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             # test
-            response = test_client.put(f"/api/dashboard/idonotexist", headers=headers, json=req.model_dump())
-            self.assertEqual(404, response.status_code)
+            response = test_client.put(f"/api/dashboard/{req.dashboard_uid}", headers=headers, json=req.model_dump())
+            self.assertEqual(202, response.status_code)

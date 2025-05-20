@@ -7,7 +7,6 @@ from requests import Response
 
 from dbrepo.api.dto import Database, ColumnType, ViewColumn, View
 from dbrepo.core.api.dto import Permission
-from dbrepo.core.api.exceptions import DashboardNotFound
 
 statistics_row_title = 'Generated Dashboard'
 auto_generated_description = 'Auto-generated'
@@ -32,6 +31,15 @@ def map_link(title: str, url: str, icon: str = 'info', open_new_window: bool = T
                 icon=icon,
                 title=title,
                 url=url)
+
+
+def _get_managed_offset_y(dashboard: dict) -> int | None:
+    idx = [panel['title'] for panel in dashboard['panels']].index(statistics_row_title)
+    if idx == -1:
+        return None
+    offset_y = dashboard['panels'][idx]['gridPos']['y']
+    logging.debug(f'managed panel y-offset: {offset_y}')
+    return offset_y
 
 
 def _get_start_index(dashboard: dict) -> int | None:
@@ -71,7 +79,7 @@ def map_row(title: str, x: int = 0, y: int = 0) -> dict:
                              y=y))
 
 
-def map_preview_image_panel(database_id: str, w: int = 4, h: int = 4, x: int = 20, y: int = 1) -> dict:
+def map_preview_image_panel(database_id: str, w: int = 4, h: int = 4, x: int = 20, y: int = 0) -> dict:
     return dict(title='Preview Image',
                 type='text',
                 description=auto_generated_description,
@@ -148,7 +156,8 @@ class DashboardServiceClient:
     def update(self, database: Database) -> None:
         dashboard = self.find(database.dashboard_uid)
         if dashboard is None:
-            raise DashboardNotFound(f'Dashboard {database.dashboard_uid} not found')
+            self.create(database.internal_name, database.dashboard_uid)
+            dashboard = self.find(database.dashboard_uid)
         dashboard = dashboard['dashboard']
         # update metadata
         if not database.is_dashboard_enabled and 'managed' in dashboard['tags']:
@@ -437,7 +446,7 @@ class DashboardServiceClient:
                             y: int = 8) -> dict:
         return self._map_timeseries_panel(database_id, view, 'histogram', h, w, x, y)
 
-    def map_data_sources_panel(self, database_id: str, x: int = 0, y: int = 1) -> dict:
+    def map_data_sources_panel(self, database_id: str, x: int = 0, y: int = 0) -> dict:
         datasource = dict(uid=self.datasource_uid,
                           type='yesoreyeram-infinity-datasource')
         return dict(title='Datasources',
@@ -487,26 +496,32 @@ class DashboardServiceClient:
 
     def get_panels(self, dashboard: dict, database: Database) -> [dict]:
         panels = dashboard['panels']
+        managed_offset = 1
         try:
+            managed_offset = _get_managed_offset_y(dashboard)
             end_index = _get_start_index(dashboard)
             logging.debug(f'splicing managed panels after index: {end_index}')
             panels = panels[:end_index]
         except ValueError:
             logging.warning(f'No managed panels found')
         original_panels_size = len(panels)
-        panels.append(map_row(statistics_row_title, 0, 0))
-        panels.append(self.map_data_sources_panel(database.id))
+        panels.append(map_row(statistics_row_title, 0, managed_offset + 0))
+        panels.append(self.map_data_sources_panel(database.id, y=managed_offset))
         if database.preview_image is not None:
-            panels.append(map_preview_image_panel(database.id))
+            panels.append(map_preview_image_panel(database.id, y=managed_offset))
         for i, view in enumerate(database.views):
             # section
-            panels.append(map_row(view.name, 0, i * section_height + 4))
-            panels.append(self.map_overview_panel(database.id, view.id, 0, i * section_height + 8))
-            panels.append(self.map_rows_panel(database.id, view.id, 18, i * section_height + 4))
-            panels.append(self.map_columns_panel(database.id, view.id, 18, i * section_height + 8))
-            panels.append(self.map_statistics_panel(database.id, view.id, h=8, w=12, x=0, y=i * section_height + 12))
-            panels.append(self.map_histogram_panel(database.id, view, h=8, w=12, x=12, y=i * section_height + 12))
-            panels.append(self.map_timeseries_panel(database.id, view, h=8, w=8, x=0, y=i * section_height + 20))
-            panels.append(self.map_pie_panel(database.id, view, h=8, w=8, x=8, y=i * section_height + 20))
+            panels.append(map_row(view.name, 0, y=i * section_height + managed_offset + 4))
+            panels.append(self.map_overview_panel(database.id, view.id, 0, y=i * section_height + managed_offset + 8))
+            panels.append(self.map_rows_panel(database.id, view.id, 18, y=i * section_height + managed_offset + 4))
+            panels.append(self.map_columns_panel(database.id, view.id, 18, y=i * section_height + managed_offset + 8))
+            panels.append(self.map_statistics_panel(database.id, view.id, h=8, w=12, x=0,
+                                                    y=i * section_height + managed_offset + 12))
+            panels.append(self.map_histogram_panel(database.id, view, h=8, w=12, x=12,
+                                                   y=i * section_height + managed_offset + 12))
+            panels.append(self.map_timeseries_panel(database.id, view, h=8, w=8, x=0,
+                                                    y=i * section_height + managed_offset + 20))
+            panels.append(self.map_pie_panel(database.id, view, h=8, w=8, x=8,
+                                             y=i * section_height + managed_offset + 20))
         logging.info(f'Added {len(panels) - original_panels_size} managed panel(s)')
         return panels
