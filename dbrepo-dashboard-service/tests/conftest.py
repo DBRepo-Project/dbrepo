@@ -3,6 +3,7 @@ import os
 
 import pytest
 from dbrepo.core.client.dashboard import DashboardServiceClient
+
 from tests.grafana import GrafanaContainer
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,7 +32,7 @@ def session(request):
     return container
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 def cleanup(request, session):
     """
     Clean up after each test by removing dashboards (=so it's empty again)

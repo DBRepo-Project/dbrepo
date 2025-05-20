@@ -1,1 +1,1 @@
-GRANT SELECT ON *.* TO `readonly`@`%`;
+GRANT SELECT, SLAVE MONITOR, PROCESS ON *.* TO `readonly`@`%`;
