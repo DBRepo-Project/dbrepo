@@ -162,6 +162,12 @@ export default {
       return this.roles.includes('create-table')
     },
     canViewSubsets () {
+      if (!this.database) {
+        return false
+      }
+      if (this.database.is_public) {
+        return true
+      }
       return this.hasReadAccess
     },
     isOwner () {
