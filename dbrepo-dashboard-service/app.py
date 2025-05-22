@@ -31,9 +31,8 @@ dictConfig({
         'simple': {
             'format': '[%(asctime)s] [%(levelname)s] %(message)s',
         },
-        'ecs': {
-            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "dashboard-service", "service_version": "1.9.0"}',
-            'datefmt': '%Y-%m-%dT%H:%M:%S'
+        "ecs": {
+            "()": "ecs_logging.StdlibFormatter"
         },
     },
     'handlers': {
@@ -247,8 +246,18 @@ def update_dashboard(uid: str):
                                  code='error.database.malformed').model_dump_json(), 400, headers)
     try:
         dashboard_client().update(database)
-    except DashboardNotFound as e:
+    except DashboardNotFound:
         return Response(ApiError(status='NOT_FOUND', message=f"Failed to update dashboard: not found",
                                  code="error.dashboard.missing").model_dump_json(), 404, headers)
     dashboard_client().update_anonymous_read_access(uid, database.is_public, database.is_schema_public)
+    return Response(), 202, headers
+
+
+@app.route("/api/dashboard/<string:uid>/access/<string:username>", methods=["PUT"], endpoint="update_dashboard_access")
+@metrics.gauge(name='dbrepo_update_dashboard_access', description='Time needed to update dashboard access')
+@swag_from("/app/ds-yml/update_dashboard_access.yml")
+@auth.login_required(role=['system'])
+def update_dashboard(uid: str, username: str):
+    logging.debug(f'endpoint update dashboard access, uid={uid}, username={username}')
+    # not implemented
     return Response(), 202, headers

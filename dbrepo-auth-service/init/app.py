@@ -1,7 +1,49 @@
+import logging
 import os
 
 import mariadb
 from requests import post, get
+
+logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
+logging.basicConfig(level=logging.DEBUG)
+
+from logging.config import dictConfig
+
+# logging configuration
+dictConfig({
+    'version': 1,
+    'formatters': {
+        'default': {
+            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        },
+        'simple': {
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s',
+        },
+        "ecs": {
+            "()": "ecs_logging.StdlibFormatter"
+        },
+    },
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'simple'
+        },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'formatter': 'ecs',
+            'filename': '/var/log/app/service/auth/init.log',
+            'when': 'm',
+            'interval': 1,
+            'backupCount': 5,
+            'encoding': 'utf8'
+        },
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['wsgi', 'file']
+    }
+})
 
 
 def fetch_keycloak_master_access_token() -> str:
@@ -22,7 +64,7 @@ def fetch_keycloak_master_access_token() -> str:
 
 
 def fetch(username) -> (str, str):
-    print(f'Fetching user id of internal user with username: {username}')
+    logging.debug(f'fetching user id of internal user with username: {username}')
     endpoint = os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
     response = get(url=f'{endpoint}/admin/realms/dbrepo/users/?username={username}', headers=dict({
         'Authorization': f'Bearer {fetch_keycloak_master_access_token()}'
@@ -31,7 +73,7 @@ def fetch(username) -> (str, str):
         raise FileNotFoundError(f'Failed to obtain user')
     ldap_user = response.json()[0]
     user_id = ldap_user["id"]
-    print(f'Successfully fetched user id: {user_id}')
+    logging.debug(f'obtained user id for username {username} from auth service: {user_id}')
     if 'attributes' not in ldap_user or ldap_user['attributes'] is None:
         raise ModuleNotFoundError(f'Failed to obtain user attributes: {ldap_user}')
     ldap_user_attrs = ldap_user['attributes']
@@ -40,7 +82,6 @@ def fetch(username) -> (str, str):
     if len(ldap_user_attrs['LDAP_ID']) != 1:
         raise EnvironmentError(f'Failed to obtain ldap id: wrong length {len(ldap_user_attrs["LDAP_ID"])} != 1')
     ldap_user_id = ldap_user_attrs['LDAP_ID'][0]
-    print(f'Successfully fetched ldap user id: {ldap_user_id}')
     return (ldap_user_id, user_id)
 
 
@@ -56,7 +97,7 @@ def save(user_id: str, keycloak_id: str, username: str) -> None:
         (user_id, keycloak_id, username))
     conn.commit()
     conn.close()
-    print(f'Successfully inserted user: {username}')
+    logging.info(f'Successfully inserted user: {username}')
 
 
 if __name__ == '__main__':
