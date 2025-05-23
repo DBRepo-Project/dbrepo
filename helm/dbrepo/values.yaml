@@ -1250,7 +1250,7 @@ gatewayservice:
     - name: empty-dir
       mountPath: /var/log/nginx
     - name: logging-config
-      mountPath: /app # irrelevant but needed from bitnami chart
+      mountPath: /tmp
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 
