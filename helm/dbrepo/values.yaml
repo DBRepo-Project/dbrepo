@@ -791,6 +791,29 @@ storageservice:
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
+    containerSecurityContext:
+      ## @param storageservice.setupJob.containerSecurityContext.enabled Enabled containers' Security Context
+      enabled: true
+      ## @param storageservice.setupJob.containerSecurityContext.seLinuxOptions Set SELinux options in container
+      seLinuxOptions: { }
+      ## @param storageservice.setupJob.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+      runAsUser: 1001
+      ## @param storageservice.setupJob.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+      runAsGroup: 0
+      ## @param storageservice.setupJob.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+      runAsNonRoot: true
+      ## @param storageservice.setupJob.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+      allowPrivilegeEscalation: false
+      ## @param storageservice.setupJob.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+      readOnlyRootFilesystem: false
+      capabilities:
+        ## @param storageservice.setupJob.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+        drop: [ "ALL" ]
+        ## @param storageservice.setupJob.containerSecurityContext.capabilities.add Set container's Security Context runAsNonRoot
+        add: [ "NET_BIND_SERVICE" ]
+      seccompProfile:
+        ## @param storageservice.setupJob.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+        type: "RuntimeDefault"
     ## @param storageservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param storageservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
