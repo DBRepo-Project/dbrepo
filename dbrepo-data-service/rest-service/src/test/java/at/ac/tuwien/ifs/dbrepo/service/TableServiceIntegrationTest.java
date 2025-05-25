@@ -60,8 +60,7 @@ public class TableServiceIntegrationTest extends BaseTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @Container
-    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE)
-            .withCreateContainerCmdModifier(cmd -> cmd.withCmd("mkdir -p /app/dbrepo && /usr/bin/minio server /app"));
+    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
@@ -74,7 +73,7 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
@@ -82,15 +81,13 @@ public class TableServiceIntegrationTest extends BaseTest {
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
         MariaDbConfig.createInitDatabase(DATABASE_3_PRIVILEGED_DTO);
         /* s3 */
+        Thread.sleep(1000) /* wait for test container some more */;
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
+            log.warn("Bucket {} not found", s3Config.getS3Bucket());
             s3Client.createBucket(CreateBucketRequest.builder()
                     .bucket(s3Config.getS3Bucket())
                     .build());
-        }
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
-            s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3Bucket())
-                    .build());
+            log.info("Bucket {} created", s3Config.getS3Bucket());
         }
     }
 

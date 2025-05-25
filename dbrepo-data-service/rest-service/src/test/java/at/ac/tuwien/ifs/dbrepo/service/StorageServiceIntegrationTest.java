@@ -83,17 +83,15 @@ public class StorageServiceIntegrationTest extends BaseTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws SQLException, InterruptedException {
+        Thread.sleep(1000) /* wait for test container some more */;
         /* s3 */
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
+            log.warn("Bucket {} not found", s3Config.getS3Bucket());
             s3Client.createBucket(CreateBucketRequest.builder()
                     .bucket(s3Config.getS3Bucket())
                     .build());
-        }
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
-            s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3Bucket())
-                    .build());
+            log.info("Bucket {} created", s3Config.getS3Bucket());
         }
     }
 
