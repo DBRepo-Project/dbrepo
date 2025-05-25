@@ -14,7 +14,6 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -74,6 +73,7 @@ public class StorageServiceIntegrationTest extends BaseTest {
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
+        log.debug("set dbrepo.endpoints.storageService={}", minIOContainer.getS3URL());
         registry.add("dbrepo.endpoints.storageService", minIOContainer::getS3URL);
     }
 
@@ -92,6 +92,8 @@ public class StorageServiceIntegrationTest extends BaseTest {
                     .bucket(s3Config.getS3Bucket())
                     .build());
             log.info("Bucket {} created", s3Config.getS3Bucket());
+        } else {
+            log.trace("bucket {} exists, continue", s3Config.getS3Bucket());
         }
     }
 

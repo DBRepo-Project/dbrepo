@@ -1,11 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import com.google.common.io.Files;
@@ -64,6 +64,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
+        log.debug("set dbrepo.endpoints.storageService={}", minIOContainer.getS3URL());
         registry.add("dbrepo.endpoints.storageService", minIOContainer::getS3URL);
     }
 
@@ -88,6 +89,8 @@ public class TableServiceIntegrationTest extends BaseTest {
                     .bucket(s3Config.getS3Bucket())
                     .build());
             log.info("Bucket {} created", s3Config.getS3Bucket());
+        } else {
+            log.trace("bucket {} exists, continue", s3Config.getS3Bucket());
         }
     }
 
