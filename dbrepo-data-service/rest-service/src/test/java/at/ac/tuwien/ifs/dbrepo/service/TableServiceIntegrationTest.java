@@ -60,7 +60,8 @@ public class TableServiceIntegrationTest extends BaseTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @Container
-    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);
+    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE)
+            .withCreateContainerCmdModifier(cmd -> cmd.withCmd("mkdir -p /app/dbrepo && /usr/bin/minio server /app"));
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {

@@ -10,6 +10,8 @@ WORKDIR /home/alpine
 
 COPY Pipfile Pipfile.lock ./
 
+COPY ./lib ./lib
+
 RUN pip install pipenv && \
     pipenv install --system --deploy
 
