@@ -2,18 +2,19 @@
 author: Martin Weise
 ---
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+All notable changes to this project will be documented in this file.
 
-## v1.9.0 (2025-05-??)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.9.0)
+## [Unreleased]
 
 #### Fixes
 
 * Fixed a bug where titles, descriptions, creators, etc. were not sorted to the user-specified ordering
   in [#531](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/531).
 * Fixed a design issue where the `get_identifier_data` method in the Python library only fetched the first 10.000 rows
-  and could not paginate 
+  and could not paginate
   in [#527](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/527).
 * Fixed a bug where Spark did not map the column headers correct when importing a dataset
   in [#518](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/518).
@@ -21,12 +22,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Changes
 
 * Improved S3-related mechanisms to de-duplicate uploaded datasets and remove them on successful import, various
-  structured logging improvements 
+  structured logging improvements
   in [#528](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/528).
 
-## v1.8.2 (2025-05-15)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.2)
+## [v1.8.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.2) - 2025-05-15
 
 #### Fixes
 
@@ -34,7 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Features
 
-* Added structured logging through the `fluentd` protocol via the lightweight fluentbit in a 
+* Added structured logging through the `fluentd` protocol via the lightweight fluentbit in a
   separate [Logging Service](../api/logging-service)
   in [#524](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/524).
 * Added a separate database for the Dashboard Service for high-availability deployment of Grafana
@@ -42,12 +41,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Changes
 
-* Improved internal packaging mechanism that is compatible with multiarch deployments 
+* Improved internal packaging mechanism that is compatible with multiarch deployments
   in [#523](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/523).
 
-## v1.8.1 (2025-04-13)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.1)
+## [v1.8.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.1) - 2025-04-13
 
 #### Changes
 
@@ -61,15 +58,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Fixes
 
-* Fixed a bug in the UI that displays the "Create View" button only when the user has at least read access. 
+* Fixed a bug in the UI that displays the "Create View" button only when the user has at least read access.
 
 #### Removals
 
 * Removed the stale objects scheduler from the Data Service and pushed it to next release.
 
-## v1.8.0 (2025-04-04)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.0)
+## [v1.8.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.0) - 2025-04-04
 
 #### Features
 
@@ -88,9 +83,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed a bug where validation of missing `Principal` object in Java services caused a 400 error instead of a 401 error
   in [#512](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/512).
 
-## v1.7.3 (2025-03-17)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.3)
+## [v1.7.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.3) - 2025-03-17
 
 #### Fixes
 
@@ -98,9 +91,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed a wrong configuration in the Docker deployment where the OIDC provider did not consider other URLs than
   `http://localhost`.
 
-## v1.7.2 (2025-03-13)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.2)
+## [v1.7.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.2) - 2025-03-13
 
 #### Fixes
 
@@ -108,9 +99,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   within the cache period of 60 seconds
   in [#506](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/506).
 
-## v1.7.1 (2025-03-06)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.1)
+## [v1.7.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.1) - 2025-03-06
 
 #### Features
 
@@ -124,9 +113,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed a bug where quick interaction with the UI caused the user to trigger the brute-force login detection
   in [#501](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/501).
 
-## v1.7.0 (2025-03-03)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.0)
+## [v1.7.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.7.0) - 2025-03-03
 
 !!! warning "Contains Breaking Changes"
 
@@ -171,9 +158,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Removed the Upload Service in favor of an internal stable upload endpoint in the Data Service
   in [#492](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/492).
 
-## v1.6.5 (2025-02-18)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.5)
+## [v1.6.5](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.5) - 2025-02-18
 
 #### Fixes
 
@@ -181,27 +166,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed a wrong MariaDB configuration where the `innodb_buffer_pool_size` variable was not configured to 70% of the
   available memory in the Helm chart.
 
-## v1.6.4 (2025-02-14)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.4)
+## [v1.6.4](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.4) - 2025-02-14
 
 #### Fixes
 
 * Fixed a bug where the users were not synced with the Metadata Database
   in [#489](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/489).
 
-## v1.6.3 (2025-02-05)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.3)
+## [v1.6.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.3) - 2025-02-05
 
 #### Changes
 
 * Refactored the UI to support OIDC and added an event listener to the Auth Service that syncs users on creation to the
   Metadata DB in [#488](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/488).
 
-## v1.6.2 (2025-01-24)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.2)
+## [v1.6.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.2) - 2025-01-24
 
 #### Changes
 
@@ -213,9 +192,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed a bug where no pagination was possible
   in [#487](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/487).
 
-## v1.6.1 (2025-01-21)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.1)
+## [v1.6.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.1) - 2025-01-21
 
 #### Changes
 
@@ -227,9 +204,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Added init container that adds the admin user to the Metadata Database
   in [#480](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/480).
 
-## v1.6.0 (2025-01-07)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0)
+## [v1.6.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0) - 2025-01-07
 
 #### Features
 
@@ -264,18 +239,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed a bug where the dataset separator was being ignored for imports
   in [#478](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/478).
 
-## v1.5.3 (2024-12-13)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.3)
+## [v1.5.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.3) - 2024-12-13
 
 #### Fixes
 
 * Fixed a bug where subsets containing sub-queries are not able to retrieve data
   in [#476](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/476).
 
-## v1.5.2 (2024-12-03)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.2)
+## [v1.5.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.2) - 2024-12-03
 
 #### Changes
 
@@ -292,9 +263,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed the `dist.tar.gz` file not being found in the CI/CD pipeline on `release-` branches
   in [#465](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/465).
 
-## v1.5.1 (2024-11-09)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.1)
+## [v1.5.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.1) - 2024-11-09
 
 #### Fixes
 
@@ -303,9 +272,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Bug where the schema could not be created manually
   in [#461](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/461).
 
-## v1.5.0 (2024-11-06)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.0)
+## [v1.5.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.0) - 2024-11-06
 
 !!! warning "Contains Breaking Changes"
 
@@ -339,9 +306,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in [#444](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/444)
 * No hardcoded data type metadata in UI but instead added it hardcoded (associated with `image_id`) Metadata Database.
 
-## v1.4.6 (2024-10-11)
-
-[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.4.6)
+## [v1.4.6](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.4.6) - 2024-10-11
 
 !!! warning "Contains Breaking Changes"
 
