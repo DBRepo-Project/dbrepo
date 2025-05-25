@@ -8,6 +8,11 @@ author: Martin Weise
 
 * Fixed a bug where titles, descriptions, creators, etc. were not sorted to the user-specified ordering
   in [#531](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/531).
+* Fixed a design issue where the `get_identifier_data` method in the Python library only fetched the first 10.000 rows
+  and could not paginate 
+  in [#527](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/527).
+* Fixed a bug where Spark did not map the column headers correct when importing a dataset
+  in [#518](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/518).
 
 #### Changes
 
