@@ -218,7 +218,6 @@ public class StorageServiceIntegrationTest extends BaseTest {
     }
 
     @ParameterizedTest
-    @Disabled("cannot fix")
     @MethodSource("loadDataset_arguments")
     public void generic_loadDataset(String name, String separator, Boolean withHeader, Integer expectedRows)
             throws StorageUnavailableException, StorageNotFoundException, IOException, MalformedException, TableMalformedException {

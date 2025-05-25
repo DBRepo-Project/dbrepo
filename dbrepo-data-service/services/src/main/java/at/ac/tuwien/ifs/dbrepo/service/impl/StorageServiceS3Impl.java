@@ -155,7 +155,8 @@ public class StorageServiceS3Impl implements StorageService {
             dataset = sparkSession.read()
                     .option("delimiter", delimiter)
                     .option("header", withHeader)
-                    .csv(path);
+                    .csv(path)
+                    .toDF(columns.toArray(new String[0]));
         } catch (Exception e) {
             if (e instanceof AnalysisException) {
                 final AnalysisException exception = (AnalysisException) e;
