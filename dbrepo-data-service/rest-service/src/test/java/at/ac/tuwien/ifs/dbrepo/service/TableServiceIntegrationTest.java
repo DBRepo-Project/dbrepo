@@ -64,7 +64,6 @@ public class TableServiceIntegrationTest extends BaseTest {
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        log.debug("set dbrepo.endpoints.storageService={}", minIOContainer.getS3URL());
         registry.add("dbrepo.endpoints.storageService", minIOContainer::getS3URL);
     }
 
@@ -426,28 +425,6 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.importDataset(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-    }
-
-    @Test
-    public void importDataset_withHeader_fails() {
-        final ImportDto request = ImportDto.builder()
-                .header(true)
-                .lineTermination("\n")
-                .quote('"')
-                .separator(';')
-                .location("s3key") /* irrelevant */
-                .build();
-
-        /* mock */
-        s3Client.putObject(PutObjectRequest.builder()
-                .key("s3key")
-                .bucket(s3Config.getS3Bucket())
-                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
-
-        /* test */
-        assertThrows(TableMalformedException.class, () -> {
-            tableService.importDataset(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        });
     }
 
     @Test

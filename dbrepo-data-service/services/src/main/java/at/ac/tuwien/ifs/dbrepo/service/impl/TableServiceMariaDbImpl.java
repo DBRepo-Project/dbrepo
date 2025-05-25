@@ -229,7 +229,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             dataset.write()
                     .mode(SaveMode.Overwrite)
                     .option("header", data.getHeader())
-//                    .option("inferSchema", "true")
                     .jdbc(getSparkUrl(database), temporaryTable, properties);
         } catch (Exception e) {
             log.atError()

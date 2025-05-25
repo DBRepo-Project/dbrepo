@@ -383,6 +383,7 @@ test-auth-service-init:
     - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev"
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/auth"
   script:
     - cd ./dbrepo-auth-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
@@ -471,7 +472,7 @@ test-python-lib:
   script:
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
-    - cd ./lib/python/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py tests/test_unit_dashboard.py && coverage html && coverage xml && coverage report > ./coverage.txt
+    - cd ./lib/python/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always

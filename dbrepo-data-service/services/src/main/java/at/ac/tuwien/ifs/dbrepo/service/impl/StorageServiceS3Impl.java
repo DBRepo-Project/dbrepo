@@ -176,6 +176,13 @@ public class StorageServiceS3Impl implements StorageService {
                             .log();
                     throw new TableMalformedException("Failed to resolve column from dataset in database: " + e.getMessage());
                 }
+            } else if (e instanceof IllegalArgumentException) {
+                log.atError()
+                        .setMessage("Failed to map columns: " + e.getMessage())
+                        .addKeyValue("s3_key", key)
+                        .setCause(e)
+                        .log();
+                throw new MalformedException("Failed to map columns: " + e.getMessage());
             }
             log.atError()
                     .setMessage("Failed to connect to storage service")

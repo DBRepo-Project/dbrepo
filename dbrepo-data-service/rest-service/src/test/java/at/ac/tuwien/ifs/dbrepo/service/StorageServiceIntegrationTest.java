@@ -73,7 +73,6 @@ public class StorageServiceIntegrationTest extends BaseTest {
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        log.debug("set dbrepo.endpoints.storageService={}", minIOContainer.getS3URL());
         registry.add("dbrepo.endpoints.storageService", minIOContainer::getS3URL);
     }
 
@@ -84,8 +83,8 @@ public class StorageServiceIntegrationTest extends BaseTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
-        Thread.sleep(1000) /* wait for test container some more */;
         /* s3 */
+        Thread.sleep(1000) /* wait for test container some more */;
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             log.warn("Bucket {} not found", s3Config.getS3Bucket());
             s3Client.createBucket(CreateBucketRequest.builder()

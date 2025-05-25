@@ -19,6 +19,9 @@ USER 1001
 
 WORKDIR /app
 
+RUN mkdir -p /var/log/app/service/auth && \
+    chown -R 1001:1001 /var/log/app
+
 COPY --chown=1001 ./app.py ./app.py
 
 ENTRYPOINT [ "python", "app.py" ]
