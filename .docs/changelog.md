@@ -2,7 +2,11 @@
 author: Martin Weise
 ---
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
 ## v1.9.0 (2025-05-??)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.9.0)
 
 #### Fixes
 
@@ -21,6 +25,8 @@ author: Martin Weise
   in [#528](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/528).
 
 ## v1.8.2 (2025-05-15)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.2)
 
 #### Fixes
 
@@ -41,6 +47,8 @@ author: Martin Weise
 
 ## v1.8.1 (2025-04-13)
 
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.1)
+
 #### Changes
 
 * Improved default mask for PIDs
@@ -60,6 +68,8 @@ author: Martin Weise
 * Removed the stale objects scheduler from the Data Service and pushed it to next release.
 
 ## v1.8.0 (2025-04-04)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.8.0)
 
 #### Features
 
