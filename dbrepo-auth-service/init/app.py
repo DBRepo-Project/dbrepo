@@ -24,9 +24,9 @@ dictConfig({
         },
     },
     'handlers': {
-        'wsgi': {
+        'console': {
             'class': 'logging.StreamHandler',
-            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'stream': 'ext://sys.stdout',
             'formatter': 'simple'
         },
         'file': {
@@ -41,7 +41,7 @@ dictConfig({
     },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['wsgi', 'file']
+        'handlers': ['console', 'file']
     }
 })
 

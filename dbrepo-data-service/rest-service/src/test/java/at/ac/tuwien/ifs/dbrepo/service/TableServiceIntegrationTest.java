@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.MinioConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -26,7 +27,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
@@ -64,7 +64,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        registry.add("dbrepo.endpoints.storageService", minIOContainer::getS3URL);
+        registry.add("dbrepo.endpoints.storageService", () -> "http://127.0.0.1:" + minIOContainer.getMappedPort(9000));
     }
 
     @BeforeAll
@@ -80,17 +80,6 @@ public class TableServiceIntegrationTest extends BaseTest {
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
         MariaDbConfig.createInitDatabase(DATABASE_3_PRIVILEGED_DTO);
-        /* s3 */
-        Thread.sleep(1000) /* wait for test container some more */;
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
-            log.warn("Bucket {} not found", s3Config.getS3Bucket());
-            s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3Bucket())
-                    .build());
-            log.info("Bucket {} created", s3Config.getS3Bucket());
-        } else {
-            log.trace("bucket {} exists, continue", s3Config.getS3Bucket());
-        }
     }
 
     @Test
@@ -233,6 +222,7 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
+        MinioConfig.makeBucket(s3Client, s3Config.getS3Bucket());
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
                 .bucket(s3Config.getS3Bucket())
@@ -418,6 +408,7 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
+        MinioConfig.makeBucket(s3Client, s3Config.getS3Bucket());
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
                 .bucket(s3Config.getS3Bucket())
@@ -438,6 +429,7 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
+        MinioConfig.makeBucket(s3Client, s3Config.getS3Bucket());
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
                 .bucket(s3Config.getS3Bucket())
