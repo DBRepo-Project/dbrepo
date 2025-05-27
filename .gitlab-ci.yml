@@ -26,7 +26,7 @@ variables:
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
 
-image: debian:12-slim
+image: alpine:${ALPINE_VERSION}
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
@@ -320,6 +320,10 @@ test-metadata-service:
 test-data-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
+  services:
+    - minio/minio:latest
+  variables:
+    SPRING_PROFILES_ACTIVE: ci
   only:
     - merge_requests
     - master
