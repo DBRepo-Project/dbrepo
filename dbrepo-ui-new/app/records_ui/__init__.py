@@ -3,8 +3,6 @@ import json
 from flask import Flask, render_template, Blueprint, request, jsonify
 import dbrepo.RestClient
 
-app = Flask(__name__)
-
 repo = dbrepo.RestClient.RestClient(endpoint='https://dbrepo1.ec.tuwien.ac.at')
 
 records_bp = Blueprint('records', __name__, template_folder='templates', static_folder='static',
@@ -67,4 +65,3 @@ def get_subset_data():
 
 view_records_bp = Blueprint('view_records', __name__, template_folder='templates', static_folder='static',
                             static_url_path='/static/admin')
-#start with > python app.py
