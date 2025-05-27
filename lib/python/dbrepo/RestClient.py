@@ -23,7 +23,7 @@ class RestClient:
     variables, e.g. set endpoint with REST_API_ENDPOINT, username with REST_API_USERNAME, etc. You can override \
     the constructor parameters with the environment variables.
 
-    :param endpoint: The REST API endpoint. Optional. Default: "http://gateway-service"
+    :param endpoint: The REST API endpoint. Optional. Default: `http://gateway-service`
     :param username: The REST API username. Optional.
     :param password: The REST API password. Optional.
     :param secure: When set to false, the requests library will not verify the authenticity of your TLS/SSL
@@ -626,7 +626,7 @@ class RestClient:
 
         :param database_id: The database id.
         :param table_id: The table id.
-        :param size: The number of operations. Optional. Default: 100.
+        :param size: The number of operations. Optional. Default: `100`.
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -809,8 +809,8 @@ class RestClient:
 
         :param database_id: The database id.
         :param view_id: The view id.
-        :param page: The result pagination number. Optional. Default: 0.
-        :param size: The result pagination size. Optional. Default: 10.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10`.
 
         :returns: The view data, if successful.
 
@@ -850,8 +850,8 @@ class RestClient:
 
         :param database_id: The database id.
         :param table_id: The table id.
-        :param page: The result pagination number. Optional. Default: 0.
-        :param size: The result pagination size. Optional. Default: 10.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10`.
         :param timestamp: The query execution time. Optional.
 
         :returns: The table data, if successful.
@@ -1804,11 +1804,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get identifier: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_identifier_data(self, identifier_id: str) -> DataFrame:
+    def get_identifier_data(self, identifier_id: str, page: int = 0, size: int = 10000) -> DataFrame:
         """
         Get the identifier data by given id.
 
         :param identifier_id: The identifier id.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10000`.
 
         :returns: The identifier, if successful.
 
@@ -1821,14 +1823,14 @@ class RestClient:
             body = response.json()
             identifier = Identifier.model_validate(body)
             if identifier.type == IdentifierType.VIEW:
-                return self.get_view_data(database_id=identifier.database_id, view_id=identifier.view_id, page=0,
-                                          size=10000)
+                return self.get_view_data(database_id=identifier.database_id, view_id=identifier.view_id, page=page,
+                                          size=size)
             elif identifier.type == IdentifierType.TABLE:
-                return self.get_table_data(database_id=identifier.database_id, table_id=identifier.table_id, page=0,
-                                           size=10000)
+                return self.get_table_data(database_id=identifier.database_id, table_id=identifier.table_id, page=page,
+                                           size=size)
             elif identifier.type == IdentifierType.SUBSET:
-                return self.get_subset_data(database_id=identifier.database_id, subset_id=identifier.query_id, page=0,
-                                            size=10000)
+                return self.get_subset_data(database_id=identifier.database_id, subset_id=identifier.query_id,
+                                            page=page, size=size)
             raise FormatNotAvailable(f'Failed to get identifier data: type is database')
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifier data: not found')
