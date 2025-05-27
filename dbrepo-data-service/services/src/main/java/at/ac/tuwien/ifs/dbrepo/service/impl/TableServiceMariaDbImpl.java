@@ -249,7 +249,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
                     .setCause(e)
                     .log();
-            throw new QueryMalformedException("Failed to import tuple: " + e.getMessage(), e);
+            throw new MalformedException("Failed to import tuple: " + e.getMessage(), e);
         } finally {
             /* delete temporary table */
             connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
