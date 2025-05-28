@@ -595,13 +595,11 @@ class CreateIdentifierCreator(BaseModel):
     firstname: Optional[str] = None
     lastname: Optional[str] = None
     affiliation: Optional[str] = None
-    name_type: Optional[str] = None
+    name_type: Optional[IdentifierNameType] = None
     name_identifier: Optional[str] = None
     name_identifier_scheme: Optional[str] = None
-    name_identifier_scheme_uri: Optional[str] = None
     affiliation_identifier: Optional[str] = None
     affiliation_identifier_scheme: Optional[str] = None
-    affiliation_identifier_scheme_uri: Optional[str] = None
 
 
 class SaveIdentifierCreator(CreateIdentifierCreator):
@@ -991,6 +989,17 @@ class IdentifierStatusType(str, Enum):
 
     DRAFT = "draft"
     """The identifier is a draft and can still be edited."""
+
+
+class IdentifierNameType(str, Enum):
+    """
+    Enumeration of identifier name types.
+    """
+    PERSONAL = "Personal"
+    """The creator identifies a person."""
+
+    ORGANIZATIONAL = "Organizational"
+    """The creator identifies an organization"""
 
 
 class Query(BaseModel):
