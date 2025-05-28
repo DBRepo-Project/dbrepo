@@ -12,7 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetService {
 
@@ -60,7 +60,10 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         } catch (Exception e) {
             if (e instanceof ExtendedAnalysisException && e.getMessage().contains("TABLE_OR_VIEW_NOT_FOUND")
                     || e instanceof SQLSyntaxErrorException && e.getMessage().contains("doesn't exist")) {
-                log.error("Failed to find named reference: {}", e.getMessage());
+                log.atError()
+                        .setMessage("Failed to find named reference")
+                        .setCause(e)
+                        .log();
                 throw new TableNotFoundException("Failed to find named reference: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
             }
             log.error("Malformed query: {}", e.getMessage());

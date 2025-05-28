@@ -120,9 +120,9 @@ markdown_extensions:
         custom_icons:
           - .docs/overrides/.icons
 extra:
-  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/
   version:
-    default: 1.8
+    default: 1.9
     provider: mike
   social:
     - icon: simple/artifacthub

@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import jakarta.ws.rs.core.Response;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Component
 public class KeycloakUtils {
 

@@ -31,9 +31,8 @@ dictConfig({
         'simple': {
             'format': '[%(asctime)s] [%(levelname)s] %(message)s',
         },
-        'ecs': {
-            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "search-service", "service_version": "1.8.2"}',
-            'datefmt': '%Y-%m-%dT%H:%M:%S'
+        "ecs": {
+            "()": "ecs_logging.StdlibFormatter"
         },
     },
     'handlers': {
@@ -184,7 +183,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "1.8.2",
+        "version": "1.9.0",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"

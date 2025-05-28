@@ -81,7 +81,7 @@ public class View {
             @JoinColumn(name = "dbid", referencedColumnName = "vdbid", insertable = false, updatable = false)
     })
     @Where(clause = "identifier_type='VIEW'")
-    @OrderBy("id DESC")
+    @OrderBy("created DESC")
     private List<Identifier> identifiers;
 
     @ToString.Exclude

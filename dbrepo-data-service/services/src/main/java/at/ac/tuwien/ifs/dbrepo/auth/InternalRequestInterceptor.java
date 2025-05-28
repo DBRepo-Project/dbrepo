@@ -3,7 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.auth;
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
@@ -15,7 +15,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 import java.util.List;
 
-@Log4j2
+@Slf4j
 public class InternalRequestInterceptor implements ClientHttpRequestInterceptor {
 
     private final CredentialService credentialService;

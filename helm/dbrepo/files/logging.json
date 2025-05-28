@@ -17,8 +17,8 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": 4,
+  "graphTooltip": 1,
+  "id": 30,
   "links": [],
   "panels": [
     {
@@ -29,9 +29,10 @@
         "x": 0,
         "y": 0
       },
-      "id": 6,
+      "id": 24,
       "panels": [],
-      "title": "System",
+      "repeat": "service",
+      "title": "$service",
       "type": "row"
     },
     {
@@ -100,7 +101,7 @@
         "x": 0,
         "y": 1
       },
-      "id": 1,
+      "id": 25,
       "options": {
         "legend": {
           "calcs": [],
@@ -134,15 +135,14 @@
           },
           "format": "table",
           "hide": false,
-          "luceneQueryType": "Metric",
+          "luceneQueryType": "Logs",
           "metrics": [
             {
-              "hide": false,
               "id": "1",
-              "type": "count"
+              "type": "logs"
             }
           ],
-          "query": "log_level: WARN",
+          "query": "log_level: WARN AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "warn",
           "timeField": "@timestamp"
@@ -217,7 +217,7 @@
         "x": 12,
         "y": 1
       },
-      "id": 18,
+      "id": 28,
       "options": {
         "legend": {
           "calcs": [],
@@ -259,7 +259,7 @@
               "type": "count"
             }
           ],
-          "query": "log_level: ERROR",
+          "query": "log_level: ERROR AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "warn",
           "timeField": "@timestamp"
@@ -323,7 +323,7 @@
               "type": "logs"
             }
           ],
-          "query": "log_level: WARN",
+          "query": "log_level: WARN AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
@@ -367,7 +367,7 @@
         "x": 12,
         "y": 5
       },
-      "id": 19,
+      "id": 29,
       "options": {
         "dedupStrategy": "none",
         "enableInfiniteScrolling": false,
@@ -406,7 +406,7 @@
               "type": "logs"
             }
           ],
-          "query": "log_level: ERROR",
+          "query": "log_level: ERROR AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
@@ -500,7 +500,7 @@
         "x": 0,
         "y": 15
       },
-      "id": 20,
+      "id": 30,
       "options": {
         "legend": {
           "calcs": [],
@@ -542,7 +542,7 @@
               "type": "count"
             }
           ],
-          "query": "log_level: DEBUG",
+          "query": "log_level: DEBUG AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "warn",
           "timeField": "@timestamp"
@@ -659,7 +659,7 @@
               "type": "count"
             }
           ],
-          "query": "log_level: INFO",
+          "query": "log_level: INFO AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "warn",
           "timeField": "@timestamp"
@@ -723,7 +723,7 @@
               "type": "logs"
             }
           ],
-          "query": "log_level: DEBUG",
+          "query": "log_level: DEBUG AND service_name: $service",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
@@ -767,7 +767,7 @@
         "x": 12,
         "y": 19
       },
-      "id": 22,
+      "id": 19,
       "options": {
         "dedupStrategy": "none",
         "enableInfiniteScrolling": false,
@@ -806,13 +806,13 @@
               "type": "logs"
             }
           ],
-          "query": "log_level: INFO",
+          "query": "log_level: ERROR AND service_name: \"$service\"",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
         }
       ],
-      "title": "Infos",
+      "title": "Errors",
       "transformations": [
         {
           "id": "filterFieldsByName",
@@ -850,16 +850,55 @@
     "search"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "text": "metadata-service",
+          "value": "metadata-service"
+        },
+        "includeAll": true,
+        "label": "Service",
+        "name": "service",
+        "options": [
+          {
+            "selected": false,
+            "text": "analyse-service",
+            "value": "analyse-service"
+          },
+          {
+            "selected": false,
+            "text": "dashboard-service",
+            "value": "dashboard-service"
+          },
+          {
+            "selected": false,
+            "text": "data-service",
+            "value": "data-service"
+          },
+          {
+            "selected": true,
+            "text": "metadata-service",
+            "value": "metadata-service"
+          },
+          {
+            "selected": false,
+            "text": "search-service",
+            "value": "search-service"
+          }
+        ],
+        "query": "analyse-service, dashboard-service, data-service, metadata-service, search-service",
+        "type": "custom"
+      }
+    ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Logging - Overview",
   "uid": "aejhojr0mrpj4c",
-  "version": 1,
+  "version": 23,
   "weekStart": ""
 }

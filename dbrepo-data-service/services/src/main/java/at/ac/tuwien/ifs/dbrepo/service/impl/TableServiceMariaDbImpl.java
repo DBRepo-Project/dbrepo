@@ -14,8 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import lombok.extern.log4j.Log4j2;
-import org.apache.spark.sql.AnalysisException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -32,7 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-@Log4j2
+@Slf4j
 @Service
 public class TableServiceMariaDbImpl extends DataConnector implements TableService {
 
@@ -210,26 +209,34 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         properties.setProperty("user", database.getContainer().getUsername());
         properties.setProperty("password", database.getContainer().getPassword());
         final String temporaryTable = table.getInternalName() + "_tmp";
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
         try {
-            log.trace("import dataset to temporary table: {}", temporaryTable);
+            /* import tuple */
+            connection.prepareStatement(mariaDbMapper.copyTableSchemaToRawQuery(table.getInternalName(), temporaryTable))
+                    .execute();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            log.atError()
+                    .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
+                    .setCause(e)
+                    .log();
+            throw new QueryMalformedException("Failed to import data: " + e.getMessage(), e);
+        }
+        log.debug("copied schema from target table {} to import table: {}", table.getInternalName(), temporaryTable);
+        try {
             dataset.write()
                     .mode(SaveMode.Overwrite)
                     .option("header", data.getHeader())
-                    .option("inferSchema", "true")
                     .jdbc(getSparkUrl(database), temporaryTable, properties);
         } catch (Exception e) {
-            if (e instanceof AnalysisException exception) {
-                final String message = exception.getSimpleMessage()
-                        .replaceAll(" Some\\(.*", "");
-                log.error("Failed to write dataset: schema malformed: {}", message);
-                throw new MalformedException("Failed to write dataset: schema malformed: " + message) /* remove throwable on purpose, clutters the output */;
-            }
-            log.error("Failed to write dataset: {}", e.getMessage());
-            throw new MalformedException("Failed to write dataset: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
+            log.atError()
+                    .setMessage("Failed to write dataset: schema malformed")
+                    .setCause(e)
+                    .log();
+            throw new MalformedException("Failed to write dataset: schema malformed: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
         }
-        /* import .csv to database */
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
         try {
             /* import tuple */
             connection.prepareStatement(mariaDbMapper.temporaryTableToRawMergeQuery(temporaryTable,
@@ -238,17 +245,26 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to import tuple: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to import tuple: " + e.getMessage(), e);
+            log.atError()
+                    .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
+                    .setCause(e)
+                    .log();
+            throw new MalformedException("Failed to import tuple: " + e.getMessage(), e);
         } finally {
             /* delete temporary table */
             connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
                             false))
                     .execute();
+            log.debug("deleted temporary table: {}", temporaryTable);
             connection.commit();
             dataSource.close();
         }
-        log.info("Imported dataset into table: {}.{}", database, table.getInternalName());
+        storageService.deleteObject(data.getLocation());
+        log.atInfo()
+                .setMessage("Imported dataset into table " + database.getInternalName() + "." + table.getInternalName())
+                .addKeyValue("s3_key", data.getLocation())
+                .addKeyValue("table_name", database.getInternalName() + "." + table.getInternalName())
+                .log();
     }
 
     @Override

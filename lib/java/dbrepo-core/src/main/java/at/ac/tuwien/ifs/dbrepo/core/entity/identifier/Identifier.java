@@ -55,7 +55,7 @@ public class Identifier implements Serializable {
      * Creators are created/updated/deleted by the Identifier entity.
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
-    @OrderBy("id")
+    @OrderBy("ordinalPosition ASC")
     private List<Creator> creators;
 
     @Column(nullable = false)
@@ -73,21 +73,21 @@ public class Identifier implements Serializable {
      * Titles are created/updated/deleted by the Identifier entity.
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
-    @OrderBy("id")
+    @OrderBy("ordinalPosition ASC")
     private List<IdentifierTitle> titles;
 
     /**
      * Descriptions are created/updated/deleted by the Identifier entity.
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
-    @OrderBy("id")
+    @OrderBy("ordinalPosition ASC")
     private List<IdentifierDescription> descriptions;
 
     /**
      * Funders are created/updated/deleted by the Identifier entity.
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
-    @OrderBy("id")
+    @OrderBy("ordinalPosition ASC")
     private List<IdentifierFunder> funders;
 
     /**
@@ -145,7 +145,7 @@ public class Identifier implements Serializable {
     private Database database;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
-    @OrderBy("id")
+    @OrderBy("ordinalPosition ASC")
     private List<RelatedIdentifier> relatedIdentifiers;
 
     @Column

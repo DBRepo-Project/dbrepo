@@ -6,7 +6,7 @@ CREATE SEQUENCE seq_mfcc;
 CREATE TABLE mfcc
 (
     id    BIGINT PRIMARY KEY NOT NULL DEFAULT nextval(`seq_mfcc`),
-    value DECIMAL            NOT NULL,
+    value DECIMAL(10, 2)    NOT NULL,
     raw   LONGBLOB           NULL
 ) WITH SYSTEM VERSIONING;
 

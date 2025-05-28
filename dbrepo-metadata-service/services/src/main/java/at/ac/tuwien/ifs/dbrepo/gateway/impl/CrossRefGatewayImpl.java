@@ -4,7 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DoiNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.gateway.CrossRefGateway;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-@Log4j2
+@Slf4j
 @Service
 public class CrossRefGatewayImpl implements CrossRefGateway {
 

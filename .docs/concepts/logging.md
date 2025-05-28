@@ -11,9 +11,13 @@ forward logs to the [Search Database](../../api/search-db).
 
 ## Collection
 
-Logs are collected with a sidecar in each pod. They are collected with the `tail` plugin from the log files. 
+The [Data Service](../../api/data-service) and [Metadata Service](../../api/metadata-service) use Slf4j as logging
+facade. Logs are collected with a sidecar in each pod. They are collected with the `tail` plugin from the log files. 
 For the Data-, Metadata-, Analyse-, Dashboard- and Search Services, the application log is located in
-`/var/log/app/service/<name>/app.log` (e.g. `/var/log/app/service/search/app.log` for the Search Service).
+`/var/log/app/service/<name>/app.log` (e.g. `/var/log/app/service/search/app.log` for the Search Service). All log to
+console (`/dev/stdout`) as well to the log file simultaneously. The log files are structured and formatted according to
+the [Elastic Common Schema](https://www.elastic.co/docs/reference/ecs/logging/intro) (ECS) format such that no parsing
+(except `@timestamp`) is needed.
 
 ## Parse
 

@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 4,
+  "id": 5,
   "links": [
     {
       "asDropdown": false,
@@ -30,7 +30,7 @@
       "title": "Docs",
       "tooltip": "",
       "type": "link",
-      "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/"
+      "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/"
     }
   ],
   "panels": [
@@ -121,7 +121,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(up)*100/count(up)",
+          "expr": "sum(up{instance=~\".*-service.*|ui.*|.*-db-metrics.*\"})*100/count(up{instance=~\".*-service.*|ui.*|.*-db-metrics.*\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1838,7 +1838,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "up",
+          "expr": "up{instance=~\".*-service.*|ui.*|.*-db-metrics.*\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3050,6 +3050,6 @@
   "timezone": "browser",
   "title": "DBRepo",
   "uid": "bdz20owu8zn5se",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

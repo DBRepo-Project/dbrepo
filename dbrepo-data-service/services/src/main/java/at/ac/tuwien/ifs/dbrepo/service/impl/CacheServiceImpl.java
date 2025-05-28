@@ -12,7 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import com.github.benmanes.caffeine.cache.Cache;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class CacheServiceImpl implements CacheService {
 

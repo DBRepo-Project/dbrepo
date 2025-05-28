@@ -83,7 +83,7 @@ public class Table {
             @JoinColumn(name = "dbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
     })
     @Where(clause = "identifier_type='TABLE'")
-    @OrderBy("id DESC")
+    @OrderBy("created DESC")
     private List<Identifier> identifiers;
 
     @Embedded

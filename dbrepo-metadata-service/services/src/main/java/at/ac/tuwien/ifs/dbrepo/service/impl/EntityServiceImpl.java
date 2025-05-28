@@ -10,7 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.SparqlMapper;
 import at.ac.tuwien.ifs.dbrepo.service.EntityService;
 import at.ac.tuwien.ifs.dbrepo.service.OntologyService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.riot.RDFDataMgr;
@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Log4j2
+@Slf4j
 @Service
 public class EntityServiceImpl implements EntityService {
 

@@ -1,0 +1,31 @@
+tags:
+  - dashboard-endpoint
+summary: "Update dashboard access"
+operationId: update_dashboard_access
+description: "Updates a dashboard access in the Dashboard UI. Requires role `system`."
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - name: uid
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+  - name: username
+    in: path
+    required: true
+    schema:
+      type: string
+responses:
+  202:
+    description: Updated dashboard access successfully
+    content:
+      application/json:
+        schema:
+          type: object
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]

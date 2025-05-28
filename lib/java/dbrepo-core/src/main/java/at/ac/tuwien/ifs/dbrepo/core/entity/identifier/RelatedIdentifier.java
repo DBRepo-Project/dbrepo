@@ -25,6 +25,9 @@ public class RelatedIdentifier {
     @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
+    @Column
+    private Integer ordinalPosition;
+
     @Column(nullable = false)
     private String value;
 

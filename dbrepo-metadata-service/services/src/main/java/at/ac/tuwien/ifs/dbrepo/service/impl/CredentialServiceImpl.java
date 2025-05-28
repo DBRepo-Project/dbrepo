@@ -4,11 +4,11 @@ import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
 import com.github.benmanes.caffeine.cache.Cache;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Log4j2
+@Slf4j
 @Service
 public class CredentialServiceImpl implements CredentialService {
 
