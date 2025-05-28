@@ -127,4 +127,7 @@ public class IdentifierDto {
     @Schema(example = "draft")
     private IdentifierStatusTypeDto status;
 
+    @NotNull
+    private Instant created;
+
 }

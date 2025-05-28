@@ -15,27 +15,21 @@
           :identifier="identifier" />
       </v-list-item-subtitle>
       <template v-slot:append>
-        <v-tooltip
-          v-if="identifier.status === 'published'"
-          :text="$t('pages.identifier.pid.title')"
-          left>
-          <template
-            v-slot:activator="{ props }">
-            <v-icon
-              color="primary"
-              v-bind="props">mdi-identifier</v-icon>
-          </template>
-        </v-tooltip>
-        <v-tooltip
-          v-else
-          :text="$t('pages.identifier.draft.title')"
-          left>
-          <template
-            v-slot:activator="{ props }">
-            <v-icon
-              v-bind="props">mdi-pencil-outline</v-icon>
-          </template>
-        </v-tooltip>
+        <v-list-item-action>
+          <v-tooltip
+            :text="identifier.status === 'published' ? $t('pages.identifier.pid.title') : $t('pages.identifier.draft.title')"
+            left>
+            <template
+              v-slot:activator="{ props }">
+              {{ formatTimestampUTCLabel(identifier.created) }}
+              <v-icon
+                :color="identifier.status === 'published' ? 'primary' : null"
+                v-bind="props">
+                {{ identifier.status === 'published' ? 'mdi-identifier' : 'mdi-pencil-outline' }}
+              </v-icon>
+            </template>
+          </v-tooltip>
+        </v-list-item-action>
       </template>
     </v-list-item>
   </div>
@@ -43,6 +37,7 @@
 
 <script>
 import Banner from '@/components/identifier/Banner.vue'
+import { formatTimestampUTCLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -102,6 +97,7 @@ export default {
     this.init()
   },
   methods: {
+    formatTimestampUTCLabel,
     href (identifier) {
       if (!identifier) {
         return null

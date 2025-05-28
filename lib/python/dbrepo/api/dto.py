@@ -658,18 +658,18 @@ class Identifier(BaseModel):
     publisher: str
     creators: List[Creator]
     titles: List[IdentifierTitle]
-    descriptions: List[IdentifierDescription]
-    funders: Optional[List[IdentifierFunder]] = field(default_factory=list)
+    descriptions: Optional[List[IdentifierDescription]] = None
+    funders: Optional[List[IdentifierFunder]] = None
     doi: Optional[str] = None
     language: Optional[str] = None
-    licenses: Optional[List[License]] = field(default_factory=list)
+    licenses: Optional[List[License]] = None
     query_id: Optional[str] = None
     table_id: Optional[str] = None
     view_id: Optional[str] = None
     query: Optional[str] = None
     query_normalized: Optional[str] = None
     execution: Optional[str] = None
-    related_identifiers: Optional[List[RelatedIdentifier]] = field(default_factory=list)
+    related_identifiers: Optional[List[RelatedIdentifier]] = None
     result_hash: Optional[str] = None
     result_number: Optional[int] = None
     publication_day: Optional[int] = None
