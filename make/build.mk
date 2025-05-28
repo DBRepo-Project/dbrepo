@@ -13,7 +13,8 @@ build-java-lib: ## Build the Java Library.
 .PHONY: build-auth-event-listener
 build-auth-event-listener: ## Build the Auth Service Event Listener.
 	mvn -f ./dbrepo-auth-service/listeners/pom.xml -q clean package -DskipTests
-	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./helm/dbrepo/files/create-event-listener.jar
+	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./dbrepo-auth-service/listeners/create-event-listener.jar
+	cp ./dbrepo-auth-service/listeners/create-event-listener.jar ./helm/dbrepo/files/create-event-listener.jar
 
 .PHONY: build-ui
 build-ui: ## Build the UI.

@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface StorageService {
 
-    String putObject(byte[] content);
+    void putObject(String key, byte[] content);
 
     /**
      * Loads an object of a bucket from the Storage Service into an input stream.
@@ -47,29 +47,7 @@ public interface StorageService {
      */
     byte[] getBytes(String bucket, String key) throws StorageUnavailableException, StorageNotFoundException;
 
-    void deleteObject(String bucket, String key);
-
-    /**
-     * Loads an object of the default export bucket from the Storage Service into an export resource.
-     *
-     * @param key The object key.
-     * @return The export resource, if successful.
-     * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
-     * @throws StorageNotFoundException    The key was not found in the Storage Service.
-     */
-    ExportResourceDto getResource(String key) throws StorageUnavailableException, StorageNotFoundException;
-
-    /**
-     * Loads an object of a bucket from the Storage Service into an export resource.
-     *
-     * @param bucket The bucket name.
-     * @param key    The object key.
-     * @return The export resource, if successful.
-     * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
-     * @throws StorageNotFoundException    The key was not found in the Storage Service.
-     */
-    ExportResourceDto getResource(String bucket, String key) throws StorageUnavailableException,
-            StorageNotFoundException;
+    void deleteObject(String key);
 
     /**
      * Transforms the given dataset into a downloadable dataset.

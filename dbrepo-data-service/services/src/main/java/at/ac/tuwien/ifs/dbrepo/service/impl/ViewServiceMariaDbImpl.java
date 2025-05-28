@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.ViewMalformedException;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 
-@Log4j2
+@Slf4j
 @Service
 public class ViewServiceMariaDbImpl extends DataConnector implements ViewService {
 

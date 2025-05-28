@@ -374,11 +374,12 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
-    id         VARCHAR(36) NOT NULL DEFAULT UUID(),
-    pid        VARCHAR(36) NOT NULL,
-    title      TEXT        NOT NULL,
-    title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
-    language   VARCHAR(2),
+    id               VARCHAR(36) NOT NULL DEFAULT UUID(),
+    pid              VARCHAR(36) NOT NULL,
+    title            TEXT        NOT NULL,
+    title_type       ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
+    ordinal_position INT         NOT NULL,
+    language         VARCHAR(2),
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
@@ -394,6 +395,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
     award_number           VARCHAR(255),
     award_title            TEXT,
     language               VARCHAR(255),
+    ordinal_position       INT          NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
@@ -405,17 +407,19 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
     description      TEXT        NOT NULL,
     description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
     language         VARCHAR(2),
+    ordinal_position INT         NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
 (
-    id       VARCHAR(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          NOT NULL DEFAULT UUID(),
-    pid      VARCHAR(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          NOT NULL DEFAULT UUID(),
-    value    VARCHAR(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
-    type     ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
-    relation ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
+    id               VARCHAR(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          NOT NULL DEFAULT UUID(),
+    pid              VARCHAR(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          NOT NULL DEFAULT UUID(),
+    value            VARCHAR(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
+    type             ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
+    relation         ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
+    ordinal_position INT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  NOT NULL,
     PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`),
     UNIQUE (pid, value)
@@ -425,6 +429,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
     id                                VARCHAR(36)  NOT NULL               DEFAULT UUID(),
     pid                               VARCHAR(36)  NOT NULL,
+    ordinal_position                  INT          NOT NULL,
     given_names                       TEXT,
     family_name                       TEXT,
     creator_name                      VARCHAR(255) NOT NULL,

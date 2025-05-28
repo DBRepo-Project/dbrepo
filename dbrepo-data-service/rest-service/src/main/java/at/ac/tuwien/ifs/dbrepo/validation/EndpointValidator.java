@@ -9,7 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
 import at.ac.tuwien.ifs.dbrepo.endpoints.RestEndpoint;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.CacheService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Component
 public class EndpointValidator extends RestEndpoint {
 

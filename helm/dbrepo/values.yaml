@@ -141,7 +141,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.8.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.9.0
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -419,7 +419,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.8.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.9.0
   ## @param analyseservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -483,7 +483,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.8.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -583,7 +583,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.8.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.9.0
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -672,7 +672,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.8.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.9.0
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -724,7 +724,7 @@ searchservice:
     enabled: true
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.8.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.9.0
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -787,10 +787,33 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.8.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.9.0
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
+    containerSecurityContext:
+      ## @param storageservice.setupJob.containerSecurityContext.enabled Enabled containers' Security Context
+      enabled: true
+      ## @param storageservice.setupJob.containerSecurityContext.seLinuxOptions Set SELinux options in container
+      seLinuxOptions: { }
+      ## @param storageservice.setupJob.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+      runAsUser: 1001
+      ## @param storageservice.setupJob.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+      runAsGroup: 0
+      ## @param storageservice.setupJob.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+      runAsNonRoot: true
+      ## @param storageservice.setupJob.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+      allowPrivilegeEscalation: false
+      ## @param storageservice.setupJob.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+      readOnlyRootFilesystem: false
+      capabilities:
+        ## @param storageservice.setupJob.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+        drop: [ "ALL" ]
+        ## @param storageservice.setupJob.containerSecurityContext.capabilities.add Set container's Security Context runAsNonRoot
+        add: [ "NET_BIND_SERVICE" ]
+      seccompProfile:
+        ## @param storageservice.setupJob.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+        type: "RuntimeDefault"
     ## @param storageservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param storageservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -899,7 +922,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.8.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.9.0
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -1020,7 +1043,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.8.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.9.0
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1075,7 +1098,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.8.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.9.0
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1250,7 +1273,7 @@ gatewayservice:
     - name: empty-dir
       mountPath: /var/log/nginx
     - name: logging-config
-      mountPath: /app # irrelevant but needed from bitnami chart
+      mountPath: /tmp
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 

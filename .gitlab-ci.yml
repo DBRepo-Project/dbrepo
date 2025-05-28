@@ -11,12 +11,12 @@ variables:
   SONARQUBE_VERSION: "10.0"
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
-  DOC_VERSION: "1.8"
-  APP_VERSION: "1.8.2"
-  CHART_VERSION: "1.8.2"
-  SUPPORTED_VERSIONS: "1.7.3, 1.8.0, 1.8.1, 1.8.2"
+  DOC_VERSION: "1.9"
+  APP_VERSION: "1.9.0"
+  CHART_VERSION: "1.9.0"
+  SUPPORTED_VERSIONS: "1.8.0, 1.8.1, 1.8.2, 1.9.0"
   SUPPORTED_ARCH: "linux/amd64"
-  MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-db, search-service, search-service-init, storage-service-init, ui"
+  MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -26,7 +26,7 @@ variables:
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
 
-image: debian:12-slim
+image: alpine:${ALPINE_VERSION}
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
@@ -320,6 +320,10 @@ test-metadata-service:
 test-data-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
+  services:
+    - minio/minio:latest
+  variables:
+    SPRING_PROFILES_ACTIVE: ci
   only:
     - merge_requests
     - master
@@ -383,6 +387,7 @@ test-auth-service-init:
     - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev"
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
+    - "mkdir -p /var/log/app/service/auth"
   script:
     - cd ./dbrepo-auth-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
@@ -577,24 +582,22 @@ release-helm:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "mkdir -p ~/.gnupg"
-    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
-    - echo "$CI_GPG_KEYRING2" | base64 -d > ./pubring.gpg
+    - echo "$CI_GPG_KEYRING" | base64 -d > ~/secring.gpg
+    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/pubring.gpg
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
     - make build-helm
-    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ./secring.gpg --destination ./build"
+    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
-    - "helm sigstore upload --keyring ./pubring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
+    - "helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
 
 release-docs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   only:
-    refs:
-      - /^release-.*/
+    - tags
   before_script:
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
@@ -629,14 +632,14 @@ release-libs:
   only:
     - tags
   variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+    PIPENV_PIPFILE: "./lib/python/Pipfile"
   before_script:
     - "pip install pipenv twine build"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - "echo ${CI_PIPYRC} | base64 -d > /app/.pypirc"
+    - "pipenv install --dev --system --deploy"
+    - "echo ${CI_PIPYRC} | base64 -d > ./.pypirc"
   script:
-    - "python -m build"
-    - "python -m twine upload --config-file /app/.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*"
+    - "python -m build ./lib/python"
+    - "python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*"
 
 verify-install-script:
   image: docker.io/docker:${DOCKER_VERSION}-dind

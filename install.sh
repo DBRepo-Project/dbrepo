@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # preset
-APP_VERSION="1.8.2"
-DOC_VERSION="1.8"
 MIN_CPU=8
-MIN_RAM=20
+MIN_RAM=10
 SKIP_CHECKS=${SKIP_CHECKS:-0}
 DOWNLOAD_ONLY=${DOWNLOAD_ONLY:-0}
 
@@ -35,7 +33,7 @@ if [[ $SKIP_CHECKS -eq 0 ]] && [[ $DOWNLOAD_ONLY -ne 1 ]]; then
   if [[ $RAM -lt $MIN_RAM ]]; then
     echo "You do not have enough RAM free resources:"
     echo ""
-    echo "  - we found ${RAM}GB RAM (free) instead of necessary ${RAM}GB"
+    echo "  - we found ${RAM}GB RAM (free) instead of necessary ${MIN_RAM}GB"
     echo "  - if you believe this is a mistake, skip startup checks with the SKIP_CHECKS=1 flag"
     exit 4
   else
@@ -69,4 +67,4 @@ echo "Then start the local deployment with:"
 echo ""
 echo "  docker compose up -d"
 echo ""
-echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${DOC_VERSION}/installation/#next-steps"
+echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/installation/#next-steps"

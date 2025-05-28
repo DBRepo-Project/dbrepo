@@ -12,7 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -27,20 +27,21 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     private final DataMapper dataMapper;
-    private final GatewayConfig gatewayConfig;
     private final RestTemplate internalRestTemplate;
+    private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public MetadataServiceGatewayImpl(DataMapper dataMapper, GatewayConfig gatewayConfig,
-                                      @Qualifier("internalRestTemplate") RestTemplate internalRestTemplate) {
+    public MetadataServiceGatewayImpl(DataMapper dataMapper,
+                                      @Qualifier("internalRestTemplate") RestTemplate internalRestTemplate,
+                                      GatewayConfig gatewayConfig) {
         this.dataMapper = dataMapper;
-        this.gatewayConfig = gatewayConfig;
         this.internalRestTemplate = internalRestTemplate;
+        this.gatewayConfig = gatewayConfig;
     }
 
     @Override

@@ -9,7 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.ContainerNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.service.impl.ContainerServiceImpl;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-@Log4j2
+@Slf4j
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ContainerEndpointUnitTest extends BaseTest {

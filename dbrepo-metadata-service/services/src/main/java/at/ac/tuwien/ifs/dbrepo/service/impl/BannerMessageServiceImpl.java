@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.MessageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.repository.BannerMessageRepository;
 import at.ac.tuwien.ifs.dbrepo.service.BannerMessageService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Log4j2
+@Slf4j
 @Service
 public class BannerMessageServiceImpl implements BannerMessageService {
 

@@ -18,18 +18,18 @@
 
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>metadata-service</artifactId>
-    <version>1.8.2</version>
+    <version>1.9.0</version>
 
     <packaging>pom</packaging>
     <modules>
         <module>oai</module>
         <module>repositories</module>
-        <module>rest-service</module>
         <module>services</module>
+        <module>rest-service</module>
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -58,6 +58,9 @@
         <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
         <minio.version>8.5.7</minio.version>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ./report/target/site/jacoco-aggregate/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
         <CodeCacheSize>128m</CodeCacheSize>
         <extraJavaTestArgs></extraJavaTestArgs>
     </properties>
@@ -66,7 +69,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.8.2</version>
+            <version>1.9.0</version>
         </dependency>
         <!-- Data Source -->
         <dependency>
@@ -277,6 +280,9 @@
         <repository>
             <id>dbrepo-maven-repo</id>
             <url>file:///${project.basedir}/lib</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>

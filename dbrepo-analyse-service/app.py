@@ -30,9 +30,8 @@ dictConfig({
         'simple': {
             'format': '[%(asctime)s] [%(levelname)s] %(message)s',
         },
-        'ecs': {
-            'format': '{"@timestamp": "%(asctime)s", "log.level": "%(levelname)s", "log.logger": "%(module)s", "message": "%(message)s", "service_name": "analyse-service", "service_version": "1.8.2"}',
-            'datefmt': '%Y-%m-%dT%H:%M:%S'
+        "ecs": {
+            "()": "ecs_logging.StdlibFormatter"
         },
     },
     'handlers': {
@@ -200,7 +199,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "1.8.2",
+        "version": "1.9.0",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -212,7 +211,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/"
     },
     "servers": [
         {

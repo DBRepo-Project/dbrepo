@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * This class configures the MariaDB container for the integration tests.
  */
-@Log4j2
+@Slf4j
 @Configuration
 public class MariaDbContainerConfig extends BaseTest {
 

@@ -10,7 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceException;
 import at.ac.tuwien.ifs.dbrepo.gateway.DashboardServiceGateway;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -23,7 +23,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-@Log4j2
+@Slf4j
 @Service
 public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
 

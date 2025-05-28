@@ -16,6 +16,9 @@ spec:
         - name: init
           image: {{ .Values.storageservice.setupJob.image.name }}
           imagePullPolicy: {{ .Values.storageservice.setupJob.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.storageservice.setupJob.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.storageservice.setupJob.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           env:
             - name: POD_IP
               valueFrom:

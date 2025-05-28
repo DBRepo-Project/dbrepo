@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.8.2"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.9.0"
 ```
 
 ## Prerequisites
@@ -34,7 +34,7 @@ variable when you increase the available Pod memory for performance.
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.8.2"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.9.0"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -324,22 +324,32 @@ mqtt.prefetch = 10
 
 ### Storage Service
 
-| Name                                          | Description                                                                                                       | Value                            |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `storageservice.enabled`                      | Enable the Storage Service.                                                                                       | `true`                           |
-| `storageservice.mariadb.enabled`              | Enables the MariaDB database needed for the filer.                                                                | `true`                           |
-| `storageservice.mariadb.auth.rootPassword`    | The password for the root user.                                                                                   | `seaweedfsfiler`                 |
-| `storageservice.filer.enabled`                | Cannot use the filer in the standard component since it's incompatible with OpenShift                             | `true`                           |
-| `storageservice.s3.bucket`                    | The S3-bucket name.                                                                                               | `dbrepo`                         |
-| `storageservice.s3.auth.enabled`              | Enable the S3 service.                                                                                            | `true`                           |
-| `storageservice.s3.auth.adminAccessKeyId`     | The S3 access key id for the admin user. In some systems this is named `username`.                                | `seaweedfsadmin`                 |
-| `storageservice.s3.auth.adminSecretAccessKey` | The S3 secret access key for the admin user. In some systems this is named `password`.                            | `seaweedfsadmin`                 |
-| `storageservice.s3.auth.readAccessKeyId`      | The S3 access key id for the read only user.                                                                      | `seaweedfsuser`                  |
-| `storageservice.s3.auth.readSecretAccessKey`  | The S3 secret access key for the read only user.                                                                  | `seaweedfsuser`                  |
-| `storageservice.setupJob.enabled`             | Enable the setup job that creates the bucket in the s3 endpoint.                                                  | `true`                           |
-| `storageservice.setupJob.s3.endpoint`         | The S3-capable endpoint the microservice connects to.                                                             | `http://storage-service-s3:8333` |
-| `storageservice.setupJob.resourcesPreset`     | The container resource preset                                                                                     | `nano`                           |
-| `storageservice.setupJob.resources`           | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
+| Name                                                                        | Description                                                                                                       | Value                            |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `storageservice.enabled`                                                    | Enable the Storage Service.                                                                                       | `true`                           |
+| `storageservice.mariadb.enabled`                                            | Enables the MariaDB database needed for the filer.                                                                | `true`                           |
+| `storageservice.mariadb.auth.rootPassword`                                  | The password for the root user.                                                                                   | `seaweedfsfiler`                 |
+| `storageservice.filer.enabled`                                              | Cannot use the filer in the standard component since it's incompatible with OpenShift                             | `true`                           |
+| `storageservice.s3.bucket`                                                  | The S3-bucket name.                                                                                               | `dbrepo`                         |
+| `storageservice.s3.auth.enabled`                                            | Enable the S3 service.                                                                                            | `true`                           |
+| `storageservice.s3.auth.adminAccessKeyId`                                   | The S3 access key id for the admin user. In some systems this is named `username`.                                | `seaweedfsadmin`                 |
+| `storageservice.s3.auth.adminSecretAccessKey`                               | The S3 secret access key for the admin user. In some systems this is named `password`.                            | `seaweedfsadmin`                 |
+| `storageservice.s3.auth.readAccessKeyId`                                    | The S3 access key id for the read only user.                                                                      | `seaweedfsuser`                  |
+| `storageservice.s3.auth.readSecretAccessKey`                                | The S3 secret access key for the read only user.                                                                  | `seaweedfsuser`                  |
+| `storageservice.setupJob.enabled`                                           | Enable the setup job that creates the bucket in the s3 endpoint.                                                  | `true`                           |
+| `storageservice.setupJob.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.                                                             | `http://storage-service-s3:8333` |
+| `storageservice.setupJob.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                              | `true`                           |
+| `storageservice.setupJob.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                             |
+| `storageservice.setupJob.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1001`                           |
+| `storageservice.setupJob.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `0`                              |
+| `storageservice.setupJob.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                           |
+| `storageservice.setupJob.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                          |
+| `storageservice.setupJob.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                          |
+| `storageservice.setupJob.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`                        |
+| `storageservice.setupJob.containerSecurityContext.capabilities.add`         | Set container's Security Context runAsNonRoot                                                                     | `["NET_BIND_SERVICE"]`           |
+| `storageservice.setupJob.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`                 |
+| `storageservice.setupJob.resourcesPreset`                                   | The container resource preset                                                                                     | `nano`                           |
+| `storageservice.setupJob.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
 
 ### Identity Service
 

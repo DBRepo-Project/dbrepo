@@ -13,12 +13,12 @@
         <url>https://www.tuwien.ac.at</url>
     </organization>
 
-    <name>data-service</name>
-    <description>Service that manages the data</description>
-
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
-    <version>1.8.2</version>
+    <name>data-service</name>
+    <version>1.9.0</version>
+
+    <description>Service that manages the data</description>
 
     <packaging>pom</packaging>
     <modules>
@@ -28,7 +28,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.8/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -66,6 +66,9 @@
         <!-- see https://github.com/apache/spark/blob/cde8e4a82e20a363861f451ebd5138efb3194ab8/pom.xml -->
         <hadoop.version>3.4.0</hadoop.version>
         <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ./report/target/site/jacoco-aggregate/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
         <CodeCacheSize>128m</CodeCacheSize>
         <extraJavaTestArgs>
             -XX:+IgnoreUnrecognizedVMOptions
@@ -93,7 +96,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.8.2</version>
+            <version>1.9.0</version>
         </dependency>
         <!-- Spark -->
         <dependency>
@@ -165,6 +168,12 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>${aws-s3.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Monitoring -->
         <dependency>
@@ -203,6 +212,12 @@
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>${commons-validator.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
@@ -297,6 +312,8 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/*.properties</include>
+                    <include>**/jars/*.jar</include>
                 </includes>
             </resource>
         </resources>

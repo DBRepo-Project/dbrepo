@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Log4j2
+@Slf4j
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

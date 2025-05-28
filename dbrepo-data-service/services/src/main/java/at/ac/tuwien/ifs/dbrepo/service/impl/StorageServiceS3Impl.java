@@ -1,14 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
-import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.RandomStringUtils;
+import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.apache.spark.sql.types.StructField;
@@ -28,7 +27,7 @@ import java.util.Map;
 
 import static scala.collection.JavaConverters.asScalaIteratorConverter;
 
-@Log4j2
+@Slf4j
 @Service
 public class StorageServiceS3Impl implements StorageService {
 
@@ -44,15 +43,12 @@ public class StorageServiceS3Impl implements StorageService {
     }
 
     @Override
-    public String putObject(byte[] content) {
-        final String key = "dbr_" + RandomStringUtils.randomAlphanumeric(96)
-                .toLowerCase();
+    public void putObject(String key, byte[] content) {
         s3Client.putObject(PutObjectRequest.builder()
                 .key(key)
                 .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromBytes(content));
         log.debug("put object in S3 bucket {} with key: {}", s3Config.getS3Bucket(), key);
-        return key;
     }
 
     @Override
@@ -89,31 +85,20 @@ public class StorageServiceS3Impl implements StorageService {
     }
 
     @Override
-    public void deleteObject(String bucket, String key) {
-        log.trace("delete object with key {} from bucket: {}", key, bucket);
+    public void deleteObject(String key) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Config.getS3Bucket())
                 .key(key)
                 .build());
+        log.atDebug()
+                .setMessage("deleted object " + key + " in bucket " + s3Config.getS3Bucket())
+                .addKeyValue("key", key)
+                .addKeyValue("bucket", s3Config.getS3Bucket())
+                .log();
     }
 
     @Override
-    public ExportResourceDto getResource(String key) throws StorageNotFoundException, StorageUnavailableException {
-        return getResource(s3Config.getS3Bucket(), key);
-    }
-
-    @Override
-    public ExportResourceDto getResource(String bucket, String key) throws StorageNotFoundException,
-            StorageUnavailableException {
-        final InputStreamResource resource = new InputStreamResource(getObject(bucket, key));
-        log.trace("return export resource with filename: {}", key);
-        return ExportResourceDto.builder()
-                .resource(resource)
-                .filename(key)
-                .build();
-    }
-
-    @Override
+    // TODO should be export to S3 -> load from S3
     public ExportResourceDto transformDataset(Dataset<Row> dataset) throws StorageUnavailableException {
         final List<Map<String, String>> inMemory = dataset.collectAsList()
                 .stream()
@@ -159,32 +144,58 @@ public class StorageServiceS3Impl implements StorageService {
     public Dataset<Row> loadDataset(List<String> columns, String key, String delimiter, Boolean withHeader)
             throws StorageNotFoundException, StorageUnavailableException, MalformedException, TableMalformedException {
         final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key;
-        log.debug("read dataset from s3 path: {} using header: {}", path, withHeader);
+        log.atDebug()
+                .setMessage("read dataset " + key + " using header: " + withHeader)
+                .addKeyValue("s3_key", key)
+                .addKeyValue("s3_bucket", s3Config.getS3Bucket())
+                .addKeyValue("header", withHeader)
+                .log();
         Dataset<Row> dataset;
         try {
-            final String logDelimiter = delimiter.equals("\t") ? "[tab]" : delimiter;
-            log.trace("spark read conf: header={}, delimiter={}", withHeader, logDelimiter);
             dataset = sparkSession.read()
                     .option("delimiter", delimiter)
                     .option("header", withHeader)
-                    .csv(path);
+                    .csv(path)
+                    .toDF(columns.toArray(new String[0]));
         } catch (Exception e) {
             if (e instanceof AnalysisException) {
                 final AnalysisException exception = (AnalysisException) e;
                 if (exception.getSimpleMessage().contains("PATH_NOT_FOUND")) {
-                    log.error("Failed to find dataset {} in storage service: {}", key, e.getMessage());
+                    log.atError()
+                            .setMessage("Failed to find dataset " + key + " in storage service")
+                            .addKeyValue("s3_key", key)
+                            .setCause(e)
+                            .log();
                     throw new StorageNotFoundException("Failed to find dataset in storage service: " + e.getMessage());
                 }
                 if (exception.getSimpleMessage().contains("UNRESOLVED_COLUMN")) {
-                    log.error("Failed to resolve column from dataset in database: {}", e.getMessage());
+                    log.atError()
+                            .setMessage("Failed to resolve column from dataset in database")
+                            .addKeyValue("s3_key", key)
+                            .setCause(e)
+                            .log();
                     throw new TableMalformedException("Failed to resolve column from dataset in database: " + e.getMessage());
                 }
+            } else if (e instanceof IllegalArgumentException) {
+                log.atError()
+                        .setMessage("Failed to map columns: " + e.getMessage())
+                        .addKeyValue("s3_key", key)
+                        .setCause(e)
+                        .log();
+                throw new MalformedException("Failed to map columns: " + e.getMessage());
             }
-            log.error("Failed to connect to storage service: {}", e.getMessage());
+            log.atError()
+                    .setMessage("Failed to connect to storage service")
+                    .addKeyValue("s3_key", key)
+                    .setCause(e)
+                    .log();
             throw new StorageUnavailableException("Failed to connect to storage service: " + e.getMessage());
         }
         if (!withHeader) {
-            log.debug("no header provided: use table column names: {}", columns);
+            log.atDebug()
+                    .setMessage("no header provided: use table column names")
+                    .addKeyValue("columns", columns)
+                    .log();
             try {
                 dataset = dataset.toDF(asScalaIteratorConverter(columns.iterator())
                         .asScala()
@@ -203,15 +214,22 @@ public class StorageServiceS3Impl implements StorageService {
         final List<Column> columnOrder = columns.stream()
                 .map(Column::new)
                 .toList();
-        log.trace("ordered columns: {}", columnOrder);
         try {
             return dataset.select(columnOrder.toArray(new Column[0]));
         } catch (Exception e) {
             if (e instanceof ExtendedAnalysisException exception) {
-                log.error("Failed to resolve column from dataset in database: {}", exception.getSimpleMessage());
+                log.atError()
+                        .setMessage("Failed to resolve column from dataset in database")
+                        .addKeyValue("s3_key", key)
+                        .setCause(e)
+                        .log();
                 throw new TableMalformedException("Failed to resolve column from dataset in database: " + exception.getSimpleMessage());
             }
-            log.error("Failed to select columns from dataset: {}", e.getMessage());
+            log.atError()
+                    .setMessage("Failed to select columns from dataset")
+                    .addKeyValue("s3_key", key)
+                    .setCause(e)
+                    .log();
             throw new MalformedException("Failed to select columns from dataset: " + e.getMessage());
         }
     }

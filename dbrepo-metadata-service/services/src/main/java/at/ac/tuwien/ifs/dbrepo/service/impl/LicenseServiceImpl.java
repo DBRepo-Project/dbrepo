@@ -4,13 +4,13 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.License;
 import at.ac.tuwien.ifs.dbrepo.core.exception.LicenseNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.LicenseService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Log4j2
+@Slf4j
 @Service
 public class LicenseServiceImpl implements LicenseService {
 

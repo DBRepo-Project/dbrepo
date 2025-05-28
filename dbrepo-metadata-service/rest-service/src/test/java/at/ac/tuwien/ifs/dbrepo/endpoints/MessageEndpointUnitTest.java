@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MessageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.service.BannerMessageService;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class MessageEndpointUnitTest extends BaseTest {

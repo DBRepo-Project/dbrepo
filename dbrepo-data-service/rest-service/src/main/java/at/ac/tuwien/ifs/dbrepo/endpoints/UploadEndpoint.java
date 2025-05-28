@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@Log4j2
+@Slf4j
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/upload")
@@ -52,14 +52,18 @@ public class UploadEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UploadResponseDto> create(@NotNull @RequestParam("file") MultipartFile file) throws DatabaseUnavailableException,
-            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
-        log.debug("endpoint upload file, file.originalFilename={}", file.getOriginalFilename());
+    public ResponseEntity<UploadResponseDto> create(@NotNull @RequestParam("file") MultipartFile file)
+            throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
+            ViewMalformedException, MetadataServiceException {
+        log.atDebug()
+                .setMessage("endpoint upload file")
+                .addKeyValue("file", file)
+                .log();
         try {
-            final String key = storageService.putObject(file.getBytes());
+            storageService.putObject(file.getOriginalFilename(), file.getBytes());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(UploadResponseDto.builder()
-                            .s3Key(key)
+                            .s3Key(file.getOriginalFilename())
                             .build());
         } catch (IOException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
