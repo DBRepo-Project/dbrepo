@@ -2,6 +2,8 @@ import json
 
 from flask import Flask, render_template, Blueprint, request, jsonify
 import dbrepo.RestClient
+from flask_babel import Babel, gettext as _, get_locale
+
 
 repo = dbrepo.RestClient.RestClient(endpoint='https://dbrepo1.ec.tuwien.ac.at')
 
@@ -15,7 +17,7 @@ def show_record(db_id):
     view = repo.get_view(database_id=db_id, view_id=database.views[0].id)
     view_data = repo.get_view_data(database_id=db_id, view_id=database.views[0].id).to_dict(orient='records')
     queries = repo.get_queries(database_id=db_id)
-    print(view_data)
+    print(get_locale())
     return render_template('records/detail.html', database=database, view=view, data=view_data,
                            doi_id=0, queries=queries)
 
