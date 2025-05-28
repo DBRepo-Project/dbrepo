@@ -630,20 +630,15 @@ class CreateIdentifier(BaseModel):
     publication_year: int
     publisher: str
     titles: List[CreateIdentifierTitle]
-    descriptions: List[CreateIdentifierDescription]
-    funders: Optional[List[CreateIdentifierFunder]] = field(default_factory=list)
+    descriptions: Optional[List[CreateIdentifierDescription]] = None
+    funders: Optional[List[CreateIdentifierFunder]] = None
     doi: Optional[str] = None
     language: Optional[str] = None
-    licenses: Optional[List[License]] = field(default_factory=list)
+    licenses: Optional[List[License]] = None
     query_id: Optional[str] = None
     table_id: Optional[str] = None
     view_id: Optional[str] = None
-    query: Optional[str] = None
-    query_normalized: Optional[str] = None
-    execution: Optional[str] = None
-    related_identifiers: Optional[List[CreateRelatedIdentifier]] = field(default_factory=list)
-    result_hash: Optional[str] = None
-    result_number: Optional[int] = None
+    related_identifiers: Optional[List[CreateRelatedIdentifier]] = None
     publication_day: Optional[int] = None
     publication_month: Optional[int] = None
 
