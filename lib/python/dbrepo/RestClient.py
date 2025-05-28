@@ -1673,7 +1673,7 @@ class RestClient:
         """
         url = f'/api/identifier/{identifier_id}/publish'
         response = self._wrapper(method="put", url=url, force_auth=True)
-        if response.status_code == 202:
+        if response.status_code == 201:
             body = response.json()
             return Identifier.model_validate(body)
         if response.status_code == 400:
