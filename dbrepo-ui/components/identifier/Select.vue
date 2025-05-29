@@ -21,7 +21,7 @@
             left>
             <template
               v-slot:activator="{ props }">
-              {{ formatTimestampUTCLabel(identifier.created) }}
+              <span class="mr-2">{{ formatTimestampUTCLabel(identifier.created) }}</span>
               <v-icon
                 :color="identifier.status === 'published' ? 'primary' : null"
                 v-bind="props">
@@ -124,7 +124,7 @@ export default {
       return identifierService.identifierPreferEnglishTitle(identifier)
     },
     isActive (identifier) {
-      if (!identifier) {
+      if (!identifier || !this.identifier) {
         return false
       }
       return this.identifier.id === identifier.id
@@ -136,7 +136,7 @@ export default {
       return identifier.status === 'published' ? 'primary' : null
     },
     init () {
-      if (!this.identifiers) {
+      if (!this.identifiers || !this.identifier) {
         return null
       }
       this.idx = this.identifiers.map(i => i.id).indexOf(this.identifier.id)

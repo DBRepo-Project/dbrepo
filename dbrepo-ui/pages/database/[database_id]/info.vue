@@ -9,7 +9,6 @@
           v-if="identifier"
           :identifier="identifier" />
         <v-card
-          v-if="identifier"
           variant="flat"
           rounded="0">
           <v-card-text>
