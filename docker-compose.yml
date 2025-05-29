@@ -326,6 +326,14 @@ services:
       - search-db-data:/bitnami/opensearch/data
     ports:
       - "9200:9200"
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+        limits:
+          cpus: '0.50'
+          memory: 2048M
     healthcheck:
       test: curl -sSL 127.0.0.1:9200
       <<: *healthcheck-params
