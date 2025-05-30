@@ -110,9 +110,13 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     @Transactional(rollbackFor = {Exception.class})
     public Identifier create(Database database, User user, CreateIdentifierDto data) throws DataServiceException,
             DataServiceConnectionException, MalformedException, ViewNotFoundException, DatabaseNotFoundException,
-            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
-        data.setDoi(remoteSave(identifierService.create(database, user, data), DataCiteDoiEvent.REGISTER));
-        return identifierService.create(database, user, data);
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException,
+            IdentifierNotFoundException {
+        final Identifier identifier = identifierService.create(database, user, data);
+        data.setDoi(remoteSave(identifier, DataCiteDoiEvent.REGISTER));
+        final IdentifierSaveDto dto = metadataMapper.identifierCreateDtoToIdentifierSaveDto(data);
+        dto.setId(identifier.getId());
+        return identifierService.save(database, user, dto);
     }
 
     /**

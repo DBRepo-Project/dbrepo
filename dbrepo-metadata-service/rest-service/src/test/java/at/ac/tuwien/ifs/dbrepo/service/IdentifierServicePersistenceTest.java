@@ -476,7 +476,8 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     @Test
     public void create_hasDoi_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
             QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException {
+            SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException,
+            IdentifierNotFoundException {
 
         /* test */
         final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);

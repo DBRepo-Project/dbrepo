@@ -328,7 +328,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException,
             MalformedException, DataServiceConnectionException, IdentifierNotFoundException, ExternalServiceException {
         log.debug("endpoint publish identifier, identifierId={}", identifierId);
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity.accepted()
                 .body(metadataMapper.identifierToIdentifierDto(
                         identifierService.publish(identifierService.find(identifierId))));
     }

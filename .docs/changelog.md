@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixes
 
+* Fixed a bug where another PID was registered when using the DOI profile in the Metadata Service.
 * Fixed a bug where titles, descriptions, creators, etc. were not sorted to the user-specified ordering
   in [#531](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/531).
 * Fixed a design issue where the `get_identifier_data` method in the Python library only fetched the first 10.000 rows

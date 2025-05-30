@@ -1,12 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.OrcidNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
@@ -17,8 +18,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -28,13 +27,11 @@ import static org.mockito.Mockito.*;
 public class OrcidGatewayUnitTest extends BaseTest {
 
     @MockBean
+    @Qualifier("restTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
     private OrcidGateway orcidGateway;
-
-    public OrcidGatewayUnitTest() throws IOException {
-    }
 
     @Test
     public void findByUrl_succeeds() throws OrcidNotFoundException {
