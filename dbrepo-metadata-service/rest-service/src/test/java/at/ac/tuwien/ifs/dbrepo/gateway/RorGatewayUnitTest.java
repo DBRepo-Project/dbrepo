@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.*;
 public class RorGatewayUnitTest extends BaseTest {
 
     @MockBean
+    @Qualifier("restTemplate")
     private RestTemplate restTemplate;
 
     @Autowired

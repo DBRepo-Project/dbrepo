@@ -1,10 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
+import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantExchangePermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantVirtualHostPermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.TopicPermissionDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.VirtualHostPermissionDto;
-import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.BrokerServiceConnectionException;
@@ -12,15 +13,20 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.BrokerServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.utils.AmqpUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -29,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 @Testcontainers
@@ -43,6 +51,10 @@ public class BrokerServiceIntegrationTest extends BaseTest {
     @Autowired
     private BrokerService brokerService;
 
+    @Autowired
+    @Qualifier("brokerRestTemplate")
+    private RestTemplate restTemplate;
+
     @Container
     private static final RabbitMQContainer rabbitContainer = new RabbitMQContainer("rabbitmq:3-management")
             .withUser(USER_1_USERNAME, USER_1_PASSWORD, Set.of("administrator"))
@@ -51,6 +63,12 @@ public class BrokerServiceIntegrationTest extends BaseTest {
     @DynamicPropertySource
     static void rabbitProperties(DynamicPropertyRegistry registry) {
         registry.add("dbrepo.endpoints.brokerService", rabbitContainer::getHttpUrl);
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        restTemplate.setInterceptors(List.of(new BasicAuthenticationInterceptor(rabbitContainer.getAdminUsername(),
+                rabbitContainer.getAdminPassword())));
     }
 
     @Test
@@ -168,20 +186,18 @@ public class BrokerServiceIntegrationTest extends BaseTest {
                 .read("")
                 .write("")
                 .build();
-        final AmqpUtils amqpUtils = new AmqpUtils(rabbitContainer.getHttpUrl());
 
         /* mock */
-        amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, permissions);
+        AmqpUtils.setVirtualHostPermissions(restTemplate, REALM_DBREPO_NAME, USER_1_USERNAME, permissions);
 
         /* test */
         brokerService.setVirtualHostPermissions(USER_1);
-        return amqpUtils.getVirtualHostPermissions(USER_1_USERNAME);
+        return AmqpUtils.getVirtualHostPermissions(restTemplate, USER_1_USERNAME);
     }
 
     @Transactional(readOnly = true)
     protected TopicPermissionDto setTopicExchangePermissions_generic(List<DatabaseAccess> accesses)
             throws BrokerServiceException, BrokerServiceConnectionException {
-        final AmqpUtils amqpUtils = new AmqpUtils(rabbitContainer.getHttpUrl());
         final GrantExchangePermissionsDto request = GrantExchangePermissionsDto.builder()
                 .exchange(rabbitConfig.getExchangeName())
                 .read("")
@@ -194,12 +210,12 @@ public class BrokerServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
-        amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
-        amqpUtils.setTopicPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, request);
+        AmqpUtils.setVirtualHostPermissions(restTemplate, REALM_DBREPO_NAME, USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        AmqpUtils.setTopicPermissions(restTemplate, REALM_DBREPO_NAME, USER_1_USERNAME, request);
 
         /* test */
         brokerService.setTopicExchangePermissions(user);
-        return amqpUtils.getTopicPermissions(USER_1_USERNAME);
+        return AmqpUtils.getTopicPermissions(restTemplate, USER_1_USERNAME);
     }
 
 }
