@@ -35,6 +35,8 @@ public class StorageServiceS3Impl implements StorageService {
     private final S3Client s3Client;
     private final SparkSession sparkSession;
 
+    private static final String S3_KEY = "s3_key";
+
     @Autowired
     public StorageServiceS3Impl(S3Config s3Config, S3Client s3Client, SparkSession sparkSession) {
         this.s3Config = s3Config;
@@ -98,7 +100,6 @@ public class StorageServiceS3Impl implements StorageService {
     }
 
     @Override
-    // TODO should be export to S3 -> load from S3
     public ExportResourceDto transformDataset(Dataset<Row> dataset) throws StorageUnavailableException {
         final List<Map<String, String>> inMemory = dataset.collectAsList()
                 .stream()
@@ -146,7 +147,7 @@ public class StorageServiceS3Impl implements StorageService {
         final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key;
         log.atDebug()
                 .setMessage("read dataset " + key + " using header: " + withHeader)
-                .addKeyValue("s3_key", key)
+                .addKeyValue(S3_KEY, key)
                 .addKeyValue("s3_bucket", s3Config.getS3Bucket())
                 .addKeyValue("header", withHeader)
                 .log();
@@ -163,7 +164,7 @@ public class StorageServiceS3Impl implements StorageService {
                 if (exception.getSimpleMessage().contains("PATH_NOT_FOUND")) {
                     log.atError()
                             .setMessage("Failed to find dataset " + key + " in storage service")
-                            .addKeyValue("s3_key", key)
+                            .addKeyValue(S3_KEY, key)
                             .setCause(e)
                             .log();
                     throw new StorageNotFoundException("Failed to find dataset in storage service: " + e.getMessage());
@@ -171,7 +172,7 @@ public class StorageServiceS3Impl implements StorageService {
                 if (exception.getSimpleMessage().contains("UNRESOLVED_COLUMN")) {
                     log.atError()
                             .setMessage("Failed to resolve column from dataset in database")
-                            .addKeyValue("s3_key", key)
+                            .addKeyValue(S3_KEY, key)
                             .setCause(e)
                             .log();
                     throw new TableMalformedException("Failed to resolve column from dataset in database: " + e.getMessage());
@@ -179,14 +180,14 @@ public class StorageServiceS3Impl implements StorageService {
             } else if (e instanceof IllegalArgumentException) {
                 log.atError()
                         .setMessage("Failed to map columns: " + e.getMessage())
-                        .addKeyValue("s3_key", key)
+                        .addKeyValue(S3_KEY, key)
                         .setCause(e)
                         .log();
                 throw new MalformedException("Failed to map columns: " + e.getMessage());
             }
             log.atError()
                     .setMessage("Failed to connect to storage service")
-                    .addKeyValue("s3_key", key)
+                    .addKeyValue(S3_KEY, key)
                     .setCause(e)
                     .log();
             throw new StorageUnavailableException("Failed to connect to storage service: " + e.getMessage());
@@ -220,14 +221,14 @@ public class StorageServiceS3Impl implements StorageService {
             if (e instanceof ExtendedAnalysisException exception) {
                 log.atError()
                         .setMessage("Failed to resolve column from dataset in database")
-                        .addKeyValue("s3_key", key)
+                        .addKeyValue(S3_KEY, key)
                         .setCause(e)
                         .log();
                 throw new TableMalformedException("Failed to resolve column from dataset in database: " + exception.getSimpleMessage());
             }
             log.atError()
                     .setMessage("Failed to select columns from dataset")
-                    .addKeyValue("s3_key", key)
+                    .addKeyValue(S3_KEY, key)
                     .setCause(e)
                     .log();
             throw new MalformedException("Failed to select columns from dataset: " + e.getMessage());
