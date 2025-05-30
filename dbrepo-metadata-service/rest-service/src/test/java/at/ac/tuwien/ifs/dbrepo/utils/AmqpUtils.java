@@ -4,19 +4,13 @@ import at.ac.tuwien.ifs.dbrepo.core.api.amqp.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.support.BasicAuthenticationInterceptor;
-import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -28,17 +22,7 @@ public class AmqpUtils extends BaseTest {
 
     private static final String BASIC_AUTH = new String(Base64.encodeBase64((USER_1_USERNAME + ":" + USER_1_PASSWORD).getBytes(Charset.defaultCharset())));
 
-    private final RestTemplate restTemplate;
-
-    public AmqpUtils(String endpoint) {
-        final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(endpoint));
-        restTemplate.getInterceptors()
-                .add(new BasicAuthenticationInterceptor(USER_1_USERNAME, USER_1_PASSWORD));
-        this.restTemplate = restTemplate;
-    }
-
-    public boolean exchangeExists(String exchange) {
+    public static boolean exchangeExists(RestTemplate restTemplate, String exchange) {
         final String url = "/api/exchanges";
         log.debug("get exchange: {}", url);
         final ResponseEntity<ExchangeDto[]> response = restTemplate.exchange(url, HttpMethod.GET, null, ExchangeDto[].class);
@@ -58,7 +42,7 @@ public class AmqpUtils extends BaseTest {
         return true;
     }
 
-    public VirtualHostPermissionDto getVirtualHostPermissions(String username) {
+    public static VirtualHostPermissionDto getVirtualHostPermissions(RestTemplate restTemplate, String username) {
         final String url = "/api/users/" + username + "/permissions";
         log.debug("get virtual host permissions: {}", url);
         final ResponseEntity<VirtualHostPermissionDto[]> response = restTemplate.exchange(url, HttpMethod.GET, null, VirtualHostPermissionDto[].class);
@@ -75,7 +59,7 @@ public class AmqpUtils extends BaseTest {
         return response.getBody()[0];
     }
 
-    public TopicPermissionDto getTopicPermissions(String username) {
+    public static TopicPermissionDto getTopicPermissions(RestTemplate restTemplate, String username) {
         final String url = "/api/topic-permissions/dbrepo/" + username;
         log.debug("get topic permissions: {}", url);
         final ResponseEntity<TopicPermissionDto[]> response = restTemplate.exchange(url, HttpMethod.GET, null, TopicPermissionDto[].class);
@@ -92,7 +76,7 @@ public class AmqpUtils extends BaseTest {
         return response.getBody()[0];
     }
 
-    public void createUser(String username, CreateUserDto data) {
+    public static void createUser(RestTemplate restTemplate, String username, CreateUserDto data) {
         final String url = "/api/users/" + username;
         log.debug("add user: {}", url);
         log.trace("body: {}", data);
@@ -103,7 +87,7 @@ public class AmqpUtils extends BaseTest {
         }
     }
 
-    public void setVirtualHostPermissions(String vhost, String username, GrantVirtualHostPermissionsDto data) {
+    public static void setVirtualHostPermissions(RestTemplate restTemplate, String vhost, String username, GrantVirtualHostPermissionsDto data) {
         final String url = "/api/permissions/" + vhost + "/" + username;
         log.trace("body: {}", data);
         final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
@@ -116,7 +100,7 @@ public class AmqpUtils extends BaseTest {
         }
     }
 
-    public void setTopicPermissions(String vhost, String username, GrantExchangePermissionsDto data) {
+    public static void setTopicPermissions(RestTemplate restTemplate, String vhost, String username, GrantExchangePermissionsDto data) {
         final String url = "/api/topic-permissions/" + vhost + "/" + username;
         log.debug("set topic permissions: {}", url);
         log.trace("body: {}", data);
@@ -129,7 +113,7 @@ public class AmqpUtils extends BaseTest {
         }
     }
 
-    public boolean queueExists(String queue) {
+    public static boolean queueExists(RestTemplate restTemplate, String queue) {
         final ResponseEntity<QueueDto[]> response = restTemplate.exchange("/api/queues/{1}/", HttpMethod.GET, new HttpEntity<>(null), QueueDto[].class, "/");
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find queue, code is {}", response.getStatusCode());

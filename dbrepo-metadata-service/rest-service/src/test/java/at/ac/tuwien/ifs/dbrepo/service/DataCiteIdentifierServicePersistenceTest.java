@@ -9,13 +9,12 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.NameIdentifierSchemeType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +45,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@SpringBootTest(properties = "spring.profiles.active=local,junit,doi")
+@SpringBootTest(properties = "spring.profiles.active=doi")
 public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
     @MockBean
@@ -145,7 +144,10 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
-        dataCiteIdentifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        assertEquals(7, dataCiteIdentifierService.findAll().size());
+        final Identifier response = dataCiteIdentifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        assertEquals(IDENTIFIER_1_DOI, response.getDoi());
+        assertEquals(7, dataCiteIdentifierService.findAll().size());
     }
 
     @Test
@@ -185,8 +187,8 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
     @Test
     public void create_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
             QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
-            ExternalServiceException {
+            SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException,
+            IdentifierNotFoundException {
         final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .body(IDENTIFIER_1_DATA_CITE);
 
@@ -195,15 +197,17 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(mock);
 
         /* test */
+        assertEquals(7, dataCiteIdentifierService.findAll().size());
         final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO);
         assertNotNull(response.getDoi());
+        assertEquals(8, dataCiteIdentifierService.findAll().size());
     }
 
     @Test
     public void create_hasDoi_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
             QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceConnectionException, ViewNotFoundException,
-            ExternalServiceException {
+            SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException,
+            IdentifierNotFoundException {
         final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .body(IDENTIFIER_1_DATA_CITE);
 
@@ -212,8 +216,10 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(mock);
 
         /* test */
+        assertEquals(7, dataCiteIdentifierService.findAll().size());
         final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
+        assertEquals(8, dataCiteIdentifierService.findAll().size());
     }
 
     @Test
@@ -227,9 +233,11 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(mock);
 
         /* test */
+        assertEquals(7, dataCiteIdentifierService.findAll().size());
         final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7);
         assertEquals(IDENTIFIER_7.getId(), response.getId());
         assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
+        assertEquals(7, dataCiteIdentifierService.findAll().size());
     }
 
     @Test

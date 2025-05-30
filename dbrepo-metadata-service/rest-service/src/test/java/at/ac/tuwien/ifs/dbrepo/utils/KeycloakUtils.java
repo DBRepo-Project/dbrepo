@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.utils;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.UserCreateDto;
 import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
+import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.UserCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import jakarta.ws.rs.core.Response;

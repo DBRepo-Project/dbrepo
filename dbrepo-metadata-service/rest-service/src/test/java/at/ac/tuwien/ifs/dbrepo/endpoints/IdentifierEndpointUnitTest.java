@@ -967,7 +967,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         final ResponseEntity<IdentifierDto> response = identifierEndpoint.publish(IDENTIFIER_1_ID);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
     }

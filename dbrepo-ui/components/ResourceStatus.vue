@@ -55,7 +55,10 @@ export default {
       return this.$t(`pages.database.status.${this.mode}`)
     },
     hasIdentifier () {
-      return this.resource.identifiers?.length > 0
+      if (this.resource.identifiers?.length === 0) {
+        return false
+      }
+      return this.resource.identifiers.filter(i => i.status === 'published').length > 0
     },
     color () {
       if (this.hasIdentifier) {

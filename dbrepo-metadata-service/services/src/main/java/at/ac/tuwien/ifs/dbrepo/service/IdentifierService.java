@@ -142,7 +142,7 @@ public interface IdentifierService {
      */
     Identifier create(Database database, User user, CreateIdentifierDto data) throws DataServiceException,
             DataServiceConnectionException, MalformedException, ViewNotFoundException, DatabaseNotFoundException,
-            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException;
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException, IdentifierNotFoundException;
 
     /**
      * Export metadata for a identifier
