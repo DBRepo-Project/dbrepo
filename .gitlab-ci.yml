@@ -166,6 +166,8 @@ build-metadata-service:
     paths:
       - ./dbrepo-metadata-service/oai/target/classes
       - ./dbrepo-metadata-service/repositories/target/classes
+      - ./dbrepo-metadata-service/repositories/target/classes
+      - ./dbrepo-metadata-service/repositories/target/generated-sources
       - ./dbrepo-metadata-service/rest-service/target/classes
       - ./dbrepo-metadata-service/services/target/classes
     expire_in: 1 days
@@ -229,9 +231,11 @@ build-data-service:
   artifacts:
     when: always
     paths:
-      - ./dbrepo-data-service/services/target/classes
-      - ./dbrepo-data-service/rest-service/target/classes
       - ./dbrepo-data-service/querystore/target/classes
+      - ./dbrepo-data-service/rest-service/target/classes
+      - ./dbrepo-data-service/rest-service/target/test-classes
+      - ./dbrepo-data-service/services/target/classes
+      - ./dbrepo-data-service/services/target/generated-sources
     expire_in: 1 days
 
 build-ui:
