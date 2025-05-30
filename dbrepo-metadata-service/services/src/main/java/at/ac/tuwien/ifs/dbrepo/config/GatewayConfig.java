@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -50,7 +51,7 @@ public class GatewayConfig {
 
     @Value("${dbrepo.system.password}")
     private String systemPassword;
-    
+
     private final CredentialService credentialService;
 
     @Autowired
@@ -58,7 +59,6 @@ public class GatewayConfig {
         this.credentialService = credentialService;
     }
 
-    @Profile("!junit")
     @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
