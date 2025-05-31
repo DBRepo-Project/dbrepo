@@ -22,7 +22,7 @@ build-ui: ## Build the UI.
 
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
-	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-search-service/lib/* ./dbrepo-dashboard-service/lib/*
+	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-search-service/lib/* ./dbrepo-dashboard-service/lib/* ./dbrepo-auth-service/init/lib/*
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib
@@ -31,6 +31,8 @@ build-python-lib: ## Build the Python Library.
 	PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv lock
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib
 	PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv lock
+	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-auth-service/init/lib
+	PIPENV_PIPFILE=./dbrepo-auth-service/init/Pipfile pipenv lock
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.

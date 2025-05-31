@@ -6,12 +6,12 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>data-service</artifactId>
-        <version>1.9.0</version>
+        <version>1.9.1</version>
     </parent>
 
     <name>querystore</name>
     <artifactId>querystore</artifactId>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
 
     <dependencies/>
 
