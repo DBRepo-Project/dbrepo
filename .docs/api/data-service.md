@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.9.0`](https://hub.docker.com/r/dbrepo/data-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.9.1`](https://hub.docker.com/r/dbrepo/data-service)
 
     * Ports: 9093/tcp
     * Info: `http://<hostname>:9093/actuator/info`
