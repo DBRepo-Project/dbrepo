@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.9.0`](https://hub.docker.com/r/dbrepo/analyse-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.9.1`](https://hub.docker.com/r/dbrepo/analyse-service)
 
     * Ports: 5000/tcp
     * Prometheus: `http://<hostname>:5000/metrics`

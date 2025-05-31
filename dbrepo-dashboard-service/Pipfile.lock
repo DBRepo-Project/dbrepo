@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3b53fdc68c4705c6d377819efb99c8c60517b7d75ae1a40b3f9be1240d175dc0"
+            "sha256": "4addd51108f7ad13a3a58c75b68a40dbfe8fa1ce02622f00741cea9c3c3a3ae7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -272,11 +272,10 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:76f0ab97d1e914a779aa51b5e5a17591b2f1c88f15dc9df27273deb4dc7ed125",
-                "sha256:f01ee3102dc405c00b5e61cd1d62a46f9644ca33d131912cc25130a5ec304378"
+                "sha256:b6d7b9f5efeade2274249f1e48517820dd58dce5b24c0bf092cb4fc4be59c602"
             ],
-            "path": "./lib/dbrepo-1.9.0.tar.gz",
-            "version": "==1.9.0"
+            "path": "./lib/dbrepo-1.9.1.tar.gz",
+            "version": "==1.9.1"
         },
         "ecs-logging": {
             "hashes": [
