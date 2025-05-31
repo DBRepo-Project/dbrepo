@@ -373,7 +373,7 @@ services:
     build:
       context: ./dbrepo-ui
       args:
-        APP_VERSION: ${CI_COMMIT_TAG:-latest}
+        APP_VERSION: ${APP_VERSION:-latest}
         COMMIT: ${CI_COMMIT_SHORT_SHA:-}
       network: host
     environment:
