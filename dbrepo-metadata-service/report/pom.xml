@@ -16,6 +16,11 @@
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+            <artifactId>rest-service</artifactId>
+            <version>1.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>services</artifactId>
             <version>1.9.1</version>
         </dependency>
