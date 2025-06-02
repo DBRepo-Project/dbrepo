@@ -28,7 +28,6 @@ def show_view_record(database_id, view_id):
     view_data = repo.get_view_data(database_id=database_id, view_id=view_id).to_dict(orient='records')
     database = repo.get_database(database_id=database_id)
 
-
     return render_template('view_records/detail.html', database=database, metadata=view,
                            data=view_data, type="view")
 

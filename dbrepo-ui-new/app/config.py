@@ -1,5 +1,3 @@
-BABEL_DEFAULT_LOCALE = 'en'
-
 DETAIL_SIDE_BAR_TEMPLATES = [
   "/records/details/side_bar/identifiers.html",
   "/records/details/side_bar/identifier.html",

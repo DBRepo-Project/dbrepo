@@ -30,18 +30,4 @@ def create_app():
 
     app.register_blueprint(records_bp)
 
-
-
-    @app.route('/debug-locale')
-    def debug_locale():
-        return f"Current locale: {get_locale()}"
-
-    @app.route("/test-translation")
-    def test_translation():
-        translations_dir = current_app.config.get("BABEL_TRANSLATION_DIRECTORIES", "translations")
-        print(translations_dir)
-        print(get_locale())
-
-        return _("test")
-
     return app
