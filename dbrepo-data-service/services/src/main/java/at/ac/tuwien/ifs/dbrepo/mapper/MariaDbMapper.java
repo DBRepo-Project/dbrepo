@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -71,12 +72,52 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String databaseFindAccessQuery() {
+        final StringBuilder statement = new StringBuilder("SHOW GRANTS FOR ?@`%`;");
+        log.trace("mapped database find access statement: {}", statement);
+        return statement.toString();
+    }
+
+    default Map<String, Set<String>> resultSetToGrants(ResultSet resultSet) throws SQLException,
+            DatabaseMalformedException {
+        final Pattern grantPattern = Pattern.compile("GRANT (.*) ON");
+        final Matcher grantMatcher = grantPattern.matcher(resultSet.getString(1));
+        final Set<String> grants = new HashSet<>();
+        if (grantMatcher.find()) {
+            Arrays.asList(grantMatcher.group(1)
+                            .split(","))
+                    .forEach(g -> grants.add(g.trim()));
+        } else {
+            log.debug("no grants were found in the result set");
+        }
+        final Map<String, Set<String>> map = new HashMap<>();
+        final Pattern databasePattern = Pattern.compile("ON `?([a-zA-Z0-9*]+)`?");
+        final Matcher databaseMatcher = databasePattern.matcher(resultSet.getString(1));
+        if (databaseMatcher.find()) {
+            final String databaseName = databaseMatcher.group(1)
+                    .trim();
+            if (!databaseName.equals("PROCEDURE")) {
+                map.put(databaseName, grants);
+                log.trace("grant on {} has privilege(s): {}", databaseName, grants);
+            }
+            return map;
+        }
+        log.debug("no database name was found in the result set");
+        throw new DatabaseMalformedException("No database name was found in the result set");
+    }
+
     default String databaseCreateUserQuery(String username, String password) {
         final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
                 .append(username)
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
                 .append(password)
                 .append("';");
+        return statement.toString();
+    }
+
+    default String databaseAccessRawQuery() {
+        final StringBuilder statement = new StringBuilder(";");
+        log.trace("mapped database access statement: {}", statement);
         return statement.toString();
     }
 

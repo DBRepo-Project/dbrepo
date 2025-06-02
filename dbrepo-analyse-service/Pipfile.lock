@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "683dd8c657d5355de5fbe9fb26daa0807a4b6a5d66f8293468a7bbca16ffa88c"
+            "sha256": "e7cad9c3a5bea16afca5b7fa00c5d81a390fadf857606d4ee96555c1f3c8db30"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -323,10 +323,10 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:32a72a27077bcaefafed362feae8c025348ed222b438e0dfe855779aed686584"
+                "sha256:57796d53aabbfea68cc48bb238e1cdb00efc28df196fb80121affa589cce641f"
             ],
-            "path": "./lib/dbrepo-1.9.1.tar.gz",
-            "version": "==1.9.1"
+            "path": "./lib/dbrepo-1.9.2.tar.gz",
+            "version": "==1.9.2"
         },
         "ecs-logging": {
             "hashes": [
@@ -971,7 +971,7 @@
                 "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3",
                 "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==2.9.0.post0"
         },
         "pytz": {
@@ -1200,7 +1200,7 @@
                 "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
                 "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.17.0"
         },
         "typing-extensions": {
@@ -1713,7 +1713,7 @@
                 "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3",
                 "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==2.9.0.post0"
         },
         "requests": {
@@ -1737,7 +1737,7 @@
                 "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
                 "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.17.0"
         },
         "testcontainers-core": {

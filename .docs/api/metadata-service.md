@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.1`](https://hub.docker.com/r/dbrepo/metadata-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.2`](https://hub.docker.com/r/dbrepo/metadata-service)
 
     * Ports: 9099/tcp
     * Info: `http://<hostname>:9099/actuator/info`

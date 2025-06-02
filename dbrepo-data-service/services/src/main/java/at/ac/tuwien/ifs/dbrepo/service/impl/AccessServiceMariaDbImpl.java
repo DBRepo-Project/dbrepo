@@ -25,7 +25,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     @Value("${dbrepo.grant.default.write}")
     private String grantDefaultWrite;
 
-    private MariaDbMapper mariaDbMapper;
+    private final MariaDbMapper mariaDbMapper;
 
     @Autowired
     public AccessServiceMariaDbImpl(MariaDbMapper mariaDbMapper) {
@@ -71,8 +71,8 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     }
 
     @Override
-    public void update(DatabaseDto database, UserDto user, AccessTypeDto access)
-            throws DatabaseMalformedException, SQLException {
+    public void update(DatabaseDto database, UserDto user, AccessTypeDto access) throws DatabaseMalformedException,
+            SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {

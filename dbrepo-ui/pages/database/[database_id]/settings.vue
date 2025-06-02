@@ -97,13 +97,27 @@
           :subtitle="$t('pages.database.subpages.access.subtitle')" >
           <v-data-table
             :headers="headers"
-            :items="database.accesses"
+            :items="accesses"
             :items-per-page="10">
+            <template v-slot:item.type="{ item }">
+              <v-chip
+                size="small"
+                :append-icon="`mdi-${item.type.startsWith(item.grants?.type) ? 'checkbox-marked-circle' : 'close-circle'}`">
+                {{ item.type }}
+              </v-chip>
+            </template>
             <template v-slot:item.qualified_name="{ item }">
               <span
                 v-if="item && item.user">
                 {{ item.user.qualified_name }}
               </span>
+            </template>
+            <template v-slot:item.grants="{ item }">
+              <v-skeleton-loader
+                v-if="item.loading"
+                type="text" />
+              <span
+                v-else>{{ item.grants.grants.join(', ') }}</span>
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
@@ -331,8 +345,13 @@ export default {
           sortable: false
         },
         {
-          title: this.$t('pages.database.subpages.access.title'),
+          title: this.$t('pages.database.subpages.access.type.label'),
           value: 'type',
+          sortable: false
+        },
+        {
+          title: this.$t('pages.database.subpages.access.grants'),
+          value: 'grants',
           sortable: false
         },
         {
@@ -489,6 +508,8 @@ export default {
     this.modifyVisibility.is_schema_public = this.database.is_schema_public
     this.modifyVisibility.is_dashboard_enabled = this.database.is_dashboard_enabled
     this.modifyOwner.id = this.database.owner.id
+    this.accesses = this.database.accesses
+    this.accesses.forEach(a => this.findGrant(a.user.id))
   },
   methods: {
     submit () {
@@ -512,6 +533,26 @@ export default {
         })
         .finally(() => {
           this.loading = false
+        })
+    },
+    findGrant (userId) {
+      if (!this.database) {
+        return false
+      }
+      const access = this.accesses.filter(a => a.user.id === userId)[0]
+      console.debug('===>', access)
+      access['loading'] = true
+      const grantService = useGrantService()
+      grantService.findOne(this.database.id, userId)
+        .then((grant) => {
+          access['grants'] = grant
+          access['loading'] = false
+        })
+        .catch(() => {
+          access['loading'] = false
+        })
+        .finally(() => {
+          access['loading'] = false
         })
     },
     uploadFile () {

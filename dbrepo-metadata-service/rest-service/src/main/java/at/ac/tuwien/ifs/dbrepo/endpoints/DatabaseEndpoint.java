@@ -41,6 +41,7 @@ import java.util.UUID;
 public class DatabaseEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
+    private final AccessService accessService;
     private final MetadataMapper metadataMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
@@ -48,10 +49,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     private final DashboardService dashboardService;
 
     @Autowired
-    public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
+    public DatabaseEndpoint(UserService userService, AccessService accessService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService,
                             DashboardService dashboardService) {
         this.userService = userService;
+        this.accessService = accessService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;

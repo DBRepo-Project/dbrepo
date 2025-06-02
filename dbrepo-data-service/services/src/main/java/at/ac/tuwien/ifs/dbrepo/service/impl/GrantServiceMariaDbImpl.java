@@ -1,0 +1,90 @@
+package at.ac.tuwien.ifs.dbrepo.service.impl;
+
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.service.GrantService;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
+@Service
+public class GrantServiceMariaDbImpl extends DataConnector implements GrantService {
+
+    @Value("${dbrepo.grant.default.read}")
+    private String grantDefaultRead;
+
+    @Value("${dbrepo.grant.default.write}")
+    private String grantDefaultWrite;
+
+    private final MariaDbMapper mariaDbMapper;
+    private final MetadataMapper metadataMapper;
+
+    @Autowired
+    public GrantServiceMariaDbImpl(MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper) {
+        this.mariaDbMapper = mariaDbMapper;
+        this.metadataMapper = metadataMapper;
+    }
+
+    @Override
+    public DatabaseGrantsDto find(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException {
+        final Map<String, DatabaseGrantsDto> grants = findAll(database, user);
+        if (!grants.containsKey(database.getInternalName())) {
+            log.atError()
+                    .setMessage("Failed to find access grant(s) for database: " + database.getInternalName())
+                    .addKeyValue("user_id", user.getId())
+                    .addKeyValue("database_id", database.getId())
+                    .log();
+            /* there must be at least 1 grant otherwise the user does not exist in the database which indicates malformed */
+            throw new DatabaseMalformedException("Failed to find access grant(s) for database: " + database.getInternalName());
+        }
+        final DatabaseGrantsDto grant = grants.get(database.getInternalName());
+        log.debug("found grant: {}", grant);
+        return grant;
+    }
+
+    @Override
+    public Map<String, DatabaseGrantsDto> findAll(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        final Map<String, DatabaseGrantsDto> grants = new HashMap<>();
+        try {
+            /* get access */
+            long start = System.currentTimeMillis();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseFindAccessQuery());
+            statement.setString(1, user.getUsername());
+            log.trace("1={}", user.getUsername());
+            final ResultSet resultSet = statement.executeQuery();
+            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            while (resultSet.next()) {
+                mariaDbMapper.resultSetToGrants(resultSet)
+                        .forEach((k, v) -> grants.put(k,
+                                metadataMapper.grantsToDatabaseGrantDto(v, grantDefaultRead, grantDefaultWrite)));
+            }
+            log.atInfo()
+                    .setMessage("Found " + grants.size() + " access grant(s) for user with id: " + user.getId())
+                    .addKeyValue("user_id", user.getId())
+                    .log();
+            return grants;
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to list database access: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to list database access: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+}
