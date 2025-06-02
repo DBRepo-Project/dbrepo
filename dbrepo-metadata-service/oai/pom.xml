@@ -6,12 +6,12 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>metadata-service</artifactId>
-        <version>1.9.1</version>
+        <version>1.9.2</version>
     </parent>
 
     <name>oai</name>
     <artifactId>oai</artifactId>
-    <version>1.9.1</version>
+    <version>1.9.2</version>
 
     <dependencies/>
 

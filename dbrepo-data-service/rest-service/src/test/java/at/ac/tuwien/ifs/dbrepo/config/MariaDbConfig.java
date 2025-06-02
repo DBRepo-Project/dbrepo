@@ -30,6 +30,21 @@ public class MariaDbConfig {
         log.debug("created database {}", database);
     }
 
+    public static void revokeAccess(DatabaseDto database, String username) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            connection.prepareStatement("REVOKE ALL PRIVILEGES, GRANT OPTION FROM `" + username + "`@`%`;")
+                    .executeUpdate();
+            connection.prepareStatement("FLUSH PRIVILEGES;")
+                    .executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to revoke access", e);
+            throw new SQLException("Failed to revoke access", e);
+        }
+        log.debug("revoked access from user {} in database {}", username, database.getInternalName());
+    }
+
     public static void createInitDatabase(DatabaseDto database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort();
         log.trace("connect to database {}", jdbc);
@@ -41,11 +56,11 @@ public class MariaDbConfig {
         log.debug("created init database {}", database.getInternalName());
     }
 
-    public static void grantWriteAccess(DatabaseDto database, String username) {
+    public static void grantAccess(DatabaseDto database, String grants, String username) {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
-            connection.prepareStatement("GRANT SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE ON *.* TO `" + username + "`@`%`;")
+            connection.prepareStatement("GRANT " + grants + " ON `" + database.getInternalName() + "`.* TO `" + username + "`@`%`;")
                     .executeUpdate();
             connection.prepareStatement("FLUSH PRIVILEGES;")
                     .executeUpdate();

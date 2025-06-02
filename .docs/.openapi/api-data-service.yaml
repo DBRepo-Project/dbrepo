@@ -11,11 +11,11 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "1.9.0"
+    "version": "1.9.2"
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9.0/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9.2/system-services-metadata/"
   },
   "servers": [
     {
@@ -1299,6 +1299,170 @@
         ]
       }
     },
+    "/api/database/{databaseId}/grant/{userId}": {
+      "get": {
+        "tags": [
+          "grant-endpoint"
+        ],
+        "summary": "Get grants",
+        "description": "Get the grant permissions for a user of a given database.",
+        "operationId": "find",
+        "parameters": [
+          {
+            "name": "databaseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DatabaseAccessDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not database owner or foreign user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Grants malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "grant-endpoint"
+        ],
+        "summary": "Get grants",
+        "description": "Get the grant permissions for a user of a given database.",
+        "operationId": "find_1",
+        "parameters": [
+          {
+            "name": "databaseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DatabaseAccessDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not database owner or foreign user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Grants malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/database/{databaseId}/subset/{queryId}": {
       "put": {
         "tags": [
@@ -2105,6 +2269,66 @@
           "status"
         ]
       },
+      "DatabaseAccessDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserBriefDto"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "read",
+              "write_own",
+              "write_all"
+            ],
+            "example": "read"
+          }
+        },
+        "required": [
+          "type",
+          "user"
+        ]
+      },
+      "UserBriefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4"
+          },
+          "username": {
+            "type": "string",
+            "description": "Only contains lowercase characters",
+            "example": "jcarberry"
+          },
+          "name": {
+            "type": "string",
+            "example": "Josiah Carberry"
+          },
+          "orcid": {
+            "type": "string",
+            "example": "0000-0002-1825-0097"
+          },
+          "qualified_name": {
+            "type": "string",
+            "example": "Josiah Carberry — @jcarberry"
+          },
+          "given_name": {
+            "type": "string",
+            "example": "Josiah"
+          },
+          "family_name": {
+            "type": "string",
+            "example": "Carberry"
+          }
+        },
+        "required": [
+          "id",
+          "username"
+        ]
+      },
       "TupleUpdateDto": {
         "type": "object",
         "properties": {
@@ -2803,45 +3027,6 @@
           "query",
           "query_hash",
           "query_normalized"
-        ]
-      },
-      "UserBriefDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4"
-          },
-          "username": {
-            "type": "string",
-            "description": "Only contains lowercase characters",
-            "example": "jcarberry"
-          },
-          "name": {
-            "type": "string",
-            "example": "Josiah Carberry"
-          },
-          "orcid": {
-            "type": "string",
-            "example": "0000-0002-1825-0097"
-          },
-          "qualified_name": {
-            "type": "string",
-            "example": "Josiah Carberry — @jcarberry"
-          },
-          "given_name": {
-            "type": "string",
-            "example": "Josiah"
-          },
-          "family_name": {
-            "type": "string",
-            "example": "Carberry"
-          }
-        },
-        "required": [
-          "id",
-          "username"
         ]
       },
       "CreatorDto": {

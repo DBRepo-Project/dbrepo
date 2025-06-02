@@ -661,13 +661,14 @@
       },
       "subpages": {
         "access": {
-          "title": "Access to database",
+          "title": "Database Access",
           "subtitle": "Overview on users with their access to the database",
           "read": "Read all contents",
           "write-own": "Read all contents & write own tables",
           "write-all": "Read all contents & write all tables",
           "revoke": "No access",
           "action": "Action",
+          "grants": "Grants",
           "username": {
             "label": "Username",
             "hint": "Required"
