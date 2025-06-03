@@ -1,17 +1,16 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
-import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.message.MapMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,8 +40,12 @@ public class ContainerServiceMariaDbImpl extends DataConnector implements Contai
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
             connection.commit();
+            log.atDebug()
+                    .setMessage("created database: " + data.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_database")
+                    .log();
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to create database access: {}", e.getMessage());
@@ -74,19 +77,35 @@ public class ContainerServiceMariaDbImpl extends DataConnector implements Contai
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("created query store in database: " + databaseName)
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_query_store")
+                    .log();
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery())
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("created query store hash table procedure in database: " + databaseName)
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_procedure_hash_table")
+                    .log();
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery())
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("created query store procedure in database: " + databaseName)
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_procedure_store_query")
+                    .log();
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery())
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("created internal query store procedure in database: " + databaseName)
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_procedure_internal_store_query")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();

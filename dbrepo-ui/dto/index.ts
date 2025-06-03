@@ -227,6 +227,11 @@ interface IdentifierFunderSaveDto {
   award_title: string;
 }
 
+interface DatabaseGrantsDto {
+  grants: string[];
+  type: string | null;
+}
+
 interface IdentifierDto {
   id: string;
   database_id: string;

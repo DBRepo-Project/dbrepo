@@ -104,6 +104,37 @@ public interface MetadataMapper {
     })
     DataTypeDto dataTypeToDataTypeDto(DataType data);
 
+    default DatabaseGrantsDto grantsToDatabaseGrantDto(Set<String> grants, String grantDefaultRead,
+                                                       String grantDefaultWrite) {
+        final Set<String> read = Arrays.asList(grantDefaultRead.split(","))
+                .stream()
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+        final Set<String> write = Arrays.asList(grantDefaultWrite.split(","))
+                .stream()
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+        grants = grants.stream()
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .filter(g -> !g.equals("USAGE"))
+                .collect(Collectors.toSet());
+        final GrantTypeDto type;
+        if (write.containsAll(grants) && grants.containsAll(write)) {
+            type = GrantTypeDto.WRITE;
+        } else if (read.containsAll(grants) && grants.containsAll(read)) {
+            type = GrantTypeDto.READ;
+        } else {
+            type = null;
+        }
+        return DatabaseGrantsDto.builder()
+                .grants(grants)
+                .type(type)
+                .build();
+    }
+
     @Mappings({
             @Mapping(target = "databaseName", source = "internalName"),
             @Mapping(target = "ownerUsername", source = "owner.username")

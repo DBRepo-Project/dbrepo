@@ -216,6 +216,61 @@
           "dashboard-endpoint"
         ]
       }
+    },
+    "/api/dashboard/{uid}/access/{username}": {
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates a dashboard access in the Dashboard UI. Requires role `system`.",
+        "operationId": "update_dashboard_access",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uid",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Updated dashboard access successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ],
+        "summary": "Update dashboard access",
+        "tags": [
+          "dashboard-endpoint"
+        ]
+      }
     }
   },
   "servers": [

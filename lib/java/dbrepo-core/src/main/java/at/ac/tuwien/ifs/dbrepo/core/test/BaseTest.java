@@ -7339,6 +7339,20 @@ public class BaseTest {
             .user(USER_1_BRIEF_DTO)
             .build();
 
+    public final DatabaseGrantsDto READ_GRANT_DTO = DatabaseGrantsDto.builder()
+            .type(GrantTypeDto.READ)
+            .grants(Set.of("SELECT", "EXECUTE"))
+            .build();
+
+    public final DatabaseGrantsDto WRITE_GRANT_DTO = DatabaseGrantsDto.builder()
+            .type(GrantTypeDto.WRITE)
+            .grants(Set.of("SELECT", "CREATE", "CREATE VIEW", "CREATE ROUTINE", "CREATE TEMPORARY TABLES", "EXECUTE", "LOCK TABLES", "INDEX", "TRIGGER", "INSERT", "UPDATE", "DELETE"))
+            .build();
+
+    public final DatabaseGrantsDto UNKNOWN_GRANT_DTO = DatabaseGrantsDto.builder()
+            .grants(Set.of("MONITOR"))
+            .build();
+
     public final DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)

@@ -316,14 +316,6 @@ services:
       - search-db-data:/bitnami/opensearch/data
     ports:
       - "9200:9200"
-    deploy:
-      resources:
-        reservations:
-          cpus: '0.25'
-          memory: 512M
-        limits:
-          cpus: '0.50'
-          memory: 2048M
     healthcheck:
       test: curl -sSL 127.0.0.1:9200
       <<: *healthcheck-params
@@ -389,7 +381,7 @@ services:
     ports:
       - "80:8080"
     volumes:
-      - ./conf/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
+      - ./config/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy

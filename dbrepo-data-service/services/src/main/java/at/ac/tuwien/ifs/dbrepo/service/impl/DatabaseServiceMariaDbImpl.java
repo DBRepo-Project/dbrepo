@@ -1,8 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
@@ -10,6 +7,9 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.Unique
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement1.setString(2, viewName);
             log.trace("1={}, 2={}", database.getInternalName(), viewName);
             final ResultSet resultSet1 = statement1.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("inspected view: " + viewName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_view_schema")
+                    .log();
             if (!resultSet1.next()) {
                 throw new ViewNotFoundException("Failed to find view in the information schema");
             }
@@ -63,7 +67,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement2.setString(2, view.getInternalName());
             log.trace("1={}, 2={}", database.getInternalName(), view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("inspect view columns: " + viewName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_view_columns")
+                    .log();
             TableDto tmp = TableDto.builder()
                     .columns(new LinkedList<>())
                     .build();
@@ -95,7 +103,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(database.getInternalName(),
                             data))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("created table: " + tableName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_table")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -131,24 +143,32 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                 .databaseId(database.getId())
                 .columns(new LinkedList<>())
                 .build();
-        log.debug("creating view: {}.{}", database.getInternalName(), view.getInternalName());
         try {
             /* create view if not exists */
-            final long start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), query))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_view")
+                    .log();
             /* select view columns */
+            start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, database.getInternalName());
             statement2.setString(2, view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
+            log.atDebug()
+                    .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_view_columns")
+                    .log();
             while (resultSet2.next()) {
                 view = dataMapper.resultSetToTable(resultSet2, view);
             }
             connection.commit();
         } catch (SQLException e) {
-            log.error("Failed to create table", e);
             connection.rollback();
             log.error("Failed to create view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to create view: " + e.getMessage(), e);
@@ -171,7 +191,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement.setString(1, database.getInternalName());
             final long start = System.currentTimeMillis();
             final ResultSet resultSet1 = statement.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("explored views in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_views")
+                    .log();
             while (resultSet1.next()) {
                 final String viewName = resultSet1.getString(1);
                 if (viewName.length() == 64) {
@@ -208,7 +232,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
             statement.setString(1, database.getInternalName());
             final ResultSet resultSet1 = statement.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("explored tables in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_tables")
+                    .log();
             while (resultSet1.next()) {
                 final String tableName = resultSet1.getString(1);
                 if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
@@ -243,7 +271,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement1.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("inspected table: " + tableName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_table_schema")
+                    .log();
             /* obtain columns metadata */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
@@ -251,7 +283,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement2.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("inspect table columns: " + tableName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_table_columns")
+                    .log();
             while (resultSet2.next()) {
                 table = dataMapper.resultSetToTable(resultSet2, table);
             }
@@ -262,7 +298,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement3.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet3 = statement3.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("inspect table check constraints: " + tableName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_table_constraints_check")
+                    .log();
             while (resultSet3.next()) {
                 final String clause = resultSet3.getString(1);
                 table.getConstraints()
@@ -277,7 +317,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement4.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet4 = statement4.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("inspect table constraints: " + tableName + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "select_table_constraints")
+                    .log();
             while (resultSet4.next()) {
                 table = dataMapper.resultSetToConstraint(resultSet4, table);
                 for (UniqueDto uk : table.getConstraints().getUniques()) {
@@ -315,7 +359,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseSetPasswordQuery(data.getUsername(), data.getPassword()))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("updated user password: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "update_user_password")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();

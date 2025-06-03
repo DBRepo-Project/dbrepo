@@ -47,8 +47,11 @@ public class QueueServiceRabbitMqImpl extends DataConnector implements QueueServ
             }
             final long start = System.currentTimeMillis();
             preparedStatement.executeUpdate();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
-            log.trace("successfully inserted tuple");
+            log.atDebug()
+                    .setMessage("successfully inserted tuple")
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "insert_tuple")
+                    .log();
         } finally {
             dataSource.close();
         }

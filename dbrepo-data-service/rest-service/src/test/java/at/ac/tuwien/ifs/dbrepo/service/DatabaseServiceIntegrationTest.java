@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
+import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
@@ -16,8 +18,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.Unique
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -49,6 +50,9 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private DatabaseService databaseService;
+
+    @Value("${dbrepo.grant.default.write}")
+    private String grantDefaultWrite;
 
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
@@ -109,7 +113,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
-        MariaDbConfig.grantWriteAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);
 
         /* pre-condition */
         MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_1_PASSWORD);

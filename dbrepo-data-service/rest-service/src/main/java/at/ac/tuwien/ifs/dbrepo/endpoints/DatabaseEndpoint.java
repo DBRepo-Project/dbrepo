@@ -93,6 +93,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         try {
             final DatabaseDto database = containerService.createDatabase(container, data);
             containerService.createQueryStore(container, data.getInternalName());
+            accessService.create(database, dataMapper.createDatabaseDtoToUserDto(data), AccessTypeDto.WRITE_ALL);
             accessService.create(database, dataMapper.createDatabaseDtoToPrivilegedUserDto(data), AccessTypeDto.WRITE_ALL);
             accessService.create(database, dataMapper.createDatabaseDtoToReadonlyUserDto(data), AccessTypeDto.READ);
             return ResponseEntity.status(HttpStatus.CREATED)
