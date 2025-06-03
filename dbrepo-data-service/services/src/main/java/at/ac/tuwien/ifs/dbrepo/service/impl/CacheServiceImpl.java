@@ -56,10 +56,16 @@ public class CacheServiceImpl implements CacheService {
         if (!forceReload) {
             final DatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
             if (cacheDatabase != null) {
-                log.trace("found database with id {} in cache", id);
+                log.atTrace()
+                        .setMessage("found database with id " + id + " in cache")
+                        .addKeyValue("cache_hit", true)
+                        .log();
                 return cacheDatabase;
             }
-            log.debug("database with id {} not it cache (anymore): reload from metadata service", id);
+            log.atTrace()
+                    .setMessage("reload database from metadata service with id " + id + " in cache")
+                    .addKeyValue("cache_hit", false)
+                    .log();
         }
         final DatabaseDto database = gateway.getDatabaseById(id);
         databaseCache.put(id, database);
@@ -77,10 +83,16 @@ public class CacheServiceImpl implements CacheService {
             MetadataServiceException, TableNotFoundException {
         final TableDto cacheTable = tableCache.getIfPresent(tableId);
         if (cacheTable != null) {
-            log.trace("found table with id {} in cache", tableId);
+            log.atTrace()
+                    .setMessage("found table with id " + tableId + " in cache")
+                    .addKeyValue("cache_hit", true)
+                    .log();
             return cacheTable;
         }
-        log.debug("table with id {} not it cache (anymore): reload from metadata service", tableId);
+        log.atTrace()
+                .setMessage("reload table from metadata service with id " + tableId + " in cache")
+                .addKeyValue("cache_hit", false)
+                .log();
         final TableDto table = gateway.getTableById(databaseId, tableId);
         tableCache.put(tableId, table);
         return table;
@@ -91,10 +103,16 @@ public class CacheServiceImpl implements CacheService {
             TableMalformedException, QueryMalformedException, SQLException {
         final TableStatisticDto cacheStatistic = statisticCache.getIfPresent(view.getId());
         if (cacheStatistic != null) {
-            log.trace("found view statistic with id {} in cache", view.getId());
+            log.atTrace()
+                    .setMessage("found view with id " + view.getId() + " in cache")
+                    .addKeyValue("cache_hit", true)
+                    .log();
             return cacheStatistic;
         }
-        log.debug("view statistic with id {} not it cache (anymore): reload", view.getId());
+        log.atTrace()
+                .setMessage("reload view from metadata service with id " + view.getId() + " in cache")
+                .addKeyValue("cache_hit", false)
+                .log();
         final TableStatisticDto statistic = tableService.getStatistics(database, view.getInternalName());
         statistic.setTotalRows(tableService.getCount(database, view.getInternalName(), Instant.now()));
         statisticCache.put(view.getId(), statistic);
@@ -106,10 +124,16 @@ public class CacheServiceImpl implements CacheService {
             ContainerNotFoundException {
         final ContainerDto cacheContainer = containerCache.getIfPresent(id);
         if (cacheContainer != null) {
-            log.trace("found container with id {} in cache", id);
+            log.atTrace()
+                    .setMessage("found container with id " + id + " in cache")
+                    .addKeyValue("cache_hit", true)
+                    .log();
             return cacheContainer;
         }
-        log.debug("container with id {} not it cache (anymore): reload from metadata service", id);
+        log.atTrace()
+                .setMessage("reload container from metadata service with id " + id + " in cache")
+                .addKeyValue("cache_hit", false)
+                .log();
         final ContainerDto container = gateway.getContainerById(id);
         containerCache.put(id, container);
         return container;
@@ -120,10 +144,16 @@ public class CacheServiceImpl implements CacheService {
             MetadataServiceException, ViewNotFoundException {
         final ViewDto cacheView = viewCache.getIfPresent(viewId);
         if (cacheView != null) {
-            log.trace("found view with id {} in cache", viewId);
+            log.atTrace()
+                    .setMessage("found view with id " + viewId + " in cache")
+                    .addKeyValue("cache_hit", true)
+                    .log();
             return cacheView;
         }
-        log.debug("view with id {} not it cache (anymore): reload from metadata service", viewId);
+        log.atTrace()
+                .setMessage("reload view from metadata service with id " + viewId + " in cache")
+                .addKeyValue("cache_hit", false)
+                .log();
         final ViewDto view = gateway.getViewById(databaseId, viewId);
         viewCache.put(viewId, view);
         return view;
@@ -134,10 +164,16 @@ public class CacheServiceImpl implements CacheService {
             UserNotFoundException {
         final UserDto cacheUser = userCache.getIfPresent(id);
         if (cacheUser != null) {
-            log.trace("found user with id {} in cache", id);
+            log.atTrace()
+                    .setMessage("found user with id " + id + " in cache")
+                    .addKeyValue("cache_hit", true)
+                    .log();
             return cacheUser;
         }
-        log.debug("user with id {} not it cache (anymore): reload from metadata service", id);
+        log.atTrace()
+                .setMessage("reload user from metadata service with id " + id + " in cache")
+                .addKeyValue("cache_hit", false)
+                .log();
         final UserDto user = gateway.getUserById(id);
         userCache.put(id, user);
         return user;
@@ -148,10 +184,16 @@ public class CacheServiceImpl implements CacheService {
             MetadataServiceException, NotAllowedException {
         final DatabaseAccessDto cacheAccess = accessCache.getIfPresent(databaseId);
         if (cacheAccess != null) {
-            log.trace("found access for user with id {} to database with id {} in cache", userId, databaseId);
+            log.atTrace()
+                    .setMessage("found access for user with id " + userId + " in cache")
+                    .addKeyValue("cache_hit", true)
+                    .log();
             return cacheAccess;
         }
-        log.debug("access for user with id {} to database with id {} not it cache (anymore): reload from metadata service", userId, databaseId);
+        log.atTrace()
+                .setMessage("reload access from metadata service with user id " + userId + " in cache")
+                .addKeyValue("cache_hit", false)
+                .log();
         final DatabaseAccessDto access = gateway.getAccess(databaseId, userId);
         accessCache.put(databaseId, access);
         return access;
