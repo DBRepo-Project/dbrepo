@@ -96,8 +96,8 @@ lint-helm-chart:
   before_script:
     - apk add --no-cache helm git bash wget
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
-    - diff <(yq '.appVersion' ./helm/dbrepo/Chart.yaml) <(echo "${VERSION}")
-    - diff <(yq '.version' ./helm/dbrepo/Chart.yaml) <(echo "${VERSION}")
+    - diff <(yq '.appVersion' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
+    - diff <(yq '.version' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
     - cp ./helm/dbrepo/values.schema.json ./CI_values.schema.json
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm package ./helm/seaweedfs --destination ./build
