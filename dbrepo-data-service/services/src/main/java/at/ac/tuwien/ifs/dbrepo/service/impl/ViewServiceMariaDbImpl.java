@@ -37,7 +37,11 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
             connection.prepareStatement(mariaDbMapper.dropViewRawQuery(database.getInternalName(),
                             view.getInternalName()))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("delete view: " + view.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "view_delete")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -61,7 +65,11 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
                             database.getInternalName(), view.getInternalName(), timestamp))
                     .executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "count_view")
+                    .log();
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {
