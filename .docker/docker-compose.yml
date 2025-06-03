@@ -381,7 +381,7 @@ services:
     ports:
       - "80:8080"
     volumes:
-      - ./conf/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
+      - ./config/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
