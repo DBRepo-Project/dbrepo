@@ -90,6 +90,9 @@ lint-docker-compose:
 lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
+  variables:
+    VERSION: 4.45.1
+    BINARY: yq_linux_amd64
   before_script:
     - apk add --no-cache helm git bash wget
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
