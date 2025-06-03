@@ -326,14 +326,6 @@ services:
       - search-db-data:/bitnami/opensearch/data
     ports:
       - "9200:9200"
-    deploy:
-      resources:
-        reservations:
-          cpus: '0.25'
-          memory: 512M
-        limits:
-          cpus: '0.50'
-          memory: 2048M
     healthcheck:
       test: curl -sSL 127.0.0.1:9200
       <<: *healthcheck-params
@@ -373,7 +365,7 @@ services:
     build:
       context: ./dbrepo-ui
       args:
-        APP_VERSION: ${CI_COMMIT_TAG:-latest}
+        APP_VERSION: ${APP_VERSION:-latest}
         COMMIT: ${CI_COMMIT_SHORT_SHA:-}
       network: host
     environment:
@@ -576,8 +568,8 @@ services:
       COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[2]}"
       EXCHANGE_NAME: "${EXCHANGE_NAME:-dbrepo}"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
-      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT}"
-      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT, EXECUTE}"
+      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: ${LOG_LEVEL:-info}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}

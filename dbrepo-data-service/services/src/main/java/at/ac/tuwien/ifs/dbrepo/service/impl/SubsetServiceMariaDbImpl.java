@@ -50,13 +50,20 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     @Override
     public Dataset<Row> getData(DatabaseDto database, String query) throws QueryMalformedException, TableNotFoundException {
         try {
-            return sparkSession.read()
+            final long start = System.currentTimeMillis();
+            final Dataset<Row> dataset = sparkSession.read()
                     .format("jdbc")
                     .option("user", database.getContainer().getUsername())
                     .option("password", database.getContainer().getPassword())
                     .option("url", getSparkUrl(database))
                     .option("query", query)
                     .load();
+            log.atDebug()
+                    .setMessage("get data from url: " + getSparkUrl(database))
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "jdbc_get_data")
+                    .log();
+            return dataset;
         } catch (Exception e) {
             if (e instanceof ExtendedAnalysisException && e.getMessage().contains("TABLE_OR_VIEW_NOT_FOUND")
                     || e instanceof SQLSyntaxErrorException && e.getMessage().contains("doesn't exist")) {
@@ -98,7 +105,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 log.trace("filter persisted only {}", filterPersisted);
             }
             final ResultSet resultSet = statement.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("list subsets in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "list_queries")
+                    .log();
             final List<QueryDto> queries = new LinkedList<>();
             while (resultSet.next()) {
                 final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
@@ -132,7 +143,13 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.countRawSelectQuery(statement, timestamp))
                     .executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("count subset in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "count_query")
+                    .addKeyValue("query", statement)
+                    .addKeyValue("timestamp", timestamp)
+                    .log();
             return mariaDbMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
@@ -152,7 +169,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreFindQueryRawQuery());
             preparedStatement.setString(1, String.valueOf(queryId));
             final ResultSet resultSet = preparedStatement.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("find query in query store of database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "find_query")
+                    .log();
             if (!resultSet.next()) {
                 throw new QueryNotFoundException("Failed to find query");
             }
@@ -190,7 +211,12 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             callableStatement.setTimestamp(3, Timestamp.from(timestamp));
             callableStatement.registerOutParameter(4, Types.VARCHAR);
             callableStatement.executeUpdate();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("store query in query store of database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "store_query")
+                    .addKeyValue("query", query)
+                    .log();
             queryId = UUID.fromString(callableStatement.getString(4));
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
@@ -217,7 +243,12 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             preparedStatement.setBoolean(1, persist);
             preparedStatement.setString(2, String.valueOf(queryId));
             preparedStatement.executeUpdate();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("persist query in query store of database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "persist_query")
+                    .addKeyValue("query_id", queryId)
+                    .log();
         } catch (SQLException e) {
             log.error("Failed to (un-)persist query: {}", e.getMessage());
             throw new QueryStorePersistException("Failed to (un-)persist query", e);
@@ -235,7 +266,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreDeleteStaleQueriesRawQuery())
                     .executeUpdate();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("delete stale queries in query store of database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "delete_stale_queries")
+                    .log();
         } catch (SQLException e) {
             log.error("Failed to delete stale queries: {}", e.getMessage());
             throw new QueryStoreGCException("Failed to delete stale queries: " + e.getMessage(), e);

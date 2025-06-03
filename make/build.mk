@@ -22,7 +22,7 @@ build-ui: ## Build the UI.
 
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
-	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-search-service/lib/* ./dbrepo-dashboard-service/lib/* ./dbrepo-auth-service/init/lib/*
+	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock ./dbrepo-auth-service/init/lib/* ./dbrepo-auth-service/init/Pipfile.lock
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib

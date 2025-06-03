@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.9.0
+  version: 1.9.2
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -982,6 +982,105 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
+  '/api/database/{databaseId}/grant/{userId}':
+    get:
+      tags:
+        - grant-endpoint
+      summary: Get grants
+      description: Get the grant permissions for a user of a given database.
+      operationId: find
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Access found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatabaseAccessDto'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not database owner or foreign user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '409':
+          description: Grants malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - basicAuth: []
+        - bearerAuth: []
+    head:
+      tags:
+        - grant-endpoint
+      summary: Get grants
+      description: Get the grant permissions for a user of a given database.
+      operationId: find_1
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Access found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatabaseAccessDto'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not database owner or foreign user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '409':
+          description: Grants malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - basicAuth: []
+        - bearerAuth: []
   '/api/database/{databaseId}/subset/{queryId}':
     put:
       tags:
@@ -1452,7 +1551,7 @@ paths:
         authentication. Foreign user information can only be obtained if
         additional role `find-foreign-user` is present. Finding information
         about internal users results in a 404 error.
-      operationId: find
+      operationId: find1
       parameters:
         - name: userId
           in: path
@@ -1544,7 +1643,7 @@ paths:
         authentication. Foreign user information can only be obtained if
         additional role `find-foreign-user` is present. Finding information
         about internal users results in a 404 error.
-      operationId: find_1
+      operationId: find_11
       parameters:
         - name: userId
           in: path
@@ -4680,6 +4779,50 @@ components:
         - code
         - message
         - status
+    DatabaseAccessDto:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserBriefDto'
+        type:
+          type: string
+          enum:
+            - read
+            - write_own
+            - write_all
+          example: read
+      required:
+        - type
+        - user
+    UserBriefDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+        qualified_name:
+          type: string
+          example: Josiah Carberry — @jcarberry
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
+      required:
+        - id
+        - username
     TupleUpdateDto:
       type: object
       properties:
@@ -5296,35 +5439,6 @@ components:
         - query
         - query_hash
         - query_normalized
-    UserBriefDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
-        username:
-          type: string
-          description: Only contains lowercase characters
-          example: jcarberry
-        name:
-          type: string
-          example: Josiah Carberry
-        orcid:
-          type: string
-          example: 0000-0002-1825-0097
-        qualified_name:
-          type: string
-          example: Josiah Carberry — @jcarberry
-        given_name:
-          type: string
-          example: Josiah
-        family_name:
-          type: string
-          example: Carberry
-      required:
-        - id
-        - username
     CreatorDto:
       type: object
       properties:
@@ -6263,21 +6377,6 @@ components:
         - is_schema_public
         - name
         - owner_id
-    DatabaseAccessDto:
-      type: object
-      properties:
-        user:
-          $ref: '#/components/schemas/UserBriefDto'
-        type:
-          type: string
-          enum:
-            - read
-            - write_own
-            - write_all
-          example: read
-      required:
-        - type
-        - user
     UserUpdateDto:
       type: object
       properties:

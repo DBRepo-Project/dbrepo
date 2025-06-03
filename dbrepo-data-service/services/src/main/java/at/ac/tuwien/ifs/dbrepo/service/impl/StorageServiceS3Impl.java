@@ -46,21 +46,33 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public void putObject(String key, byte[] content) {
+        final long start = System.currentTimeMillis();
         s3Client.putObject(PutObjectRequest.builder()
                 .key(key)
                 .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromBytes(content));
-        log.debug("put object in S3 bucket {} with key: {}", s3Config.getS3Bucket(), key);
+        log.atDebug()
+                .setMessage("put object in bucket with key: " + key)
+                .addKeyValue("duration", System.currentTimeMillis() - start)
+                .addKeyValue("action", "s3_put_object")
+                .log();
     }
 
     @Override
     public InputStream getObject(String bucket, String key) throws StorageNotFoundException,
             StorageUnavailableException {
         try {
-            return s3Client.getObject(GetObjectRequest.builder()
+            final long start = System.currentTimeMillis();
+            final InputStream object = s3Client.getObject(GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(key)
                     .build());
+            log.atDebug()
+                    .setMessage("get object from bucket with key: " + key)
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "s3_get_object")
+                    .log();
+            return object;
         } catch (NoSuchKeyException e) {
             log.error("Failed to find object: not found: {}", e.getMessage());
             throw new StorageNotFoundException("Failed to find object: not found: " + e.getMessage(), e);
@@ -88,19 +100,21 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public void deleteObject(String key) {
+        final long start = System.currentTimeMillis();
         s3Client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(s3Config.getS3Bucket())
                 .key(key)
                 .build());
         log.atDebug()
-                .setMessage("deleted object " + key + " in bucket " + s3Config.getS3Bucket())
-                .addKeyValue("key", key)
-                .addKeyValue("bucket", s3Config.getS3Bucket())
+                .setMessage("delete object from bucket with key: " + key)
+                .addKeyValue("duration", System.currentTimeMillis() - start)
+                .addKeyValue("action", "s3_delete_object")
                 .log();
     }
 
     @Override
     public ExportResourceDto transformDataset(Dataset<Row> dataset) throws StorageUnavailableException {
+        long start = System.currentTimeMillis();
         final List<Map<String, String>> inMemory = dataset.collectAsList()
                 .stream()
                 .map(row -> {
@@ -111,7 +125,12 @@ public class StorageServiceS3Impl implements StorageService {
                     return map;
                 })
                 .toList();
-        log.debug("collected dataset with {} row(s)", inMemory.size());
+        log.atDebug()
+                .setMessage("transformed dataset with rows: " + inMemory.size())
+                .addKeyValue("duration", System.currentTimeMillis() - start)
+                .addKeyValue("action", "dataset_transform")
+                .log();
+        start = System.currentTimeMillis();
         try {
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             try (Writer w = new OutputStreamWriter(byteArrayOutputStream, Charset.defaultCharset())) {
@@ -131,9 +150,15 @@ public class StorageServiceS3Impl implements StorageService {
                 }
                 w.flush();
             }
+            final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+            log.atDebug()
+                    .setMessage("transformed dataset to input stream resource")
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "dataset_export")
+                    .log();
             return ExportResourceDto.builder()
                     .filename("dataset.csv")
-                    .resource(new InputStreamResource(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())))
+                    .resource(resource)
                     .build();
         } catch (IOException e) {
             log.error("Failed to transform in-memory dataset: {}", e.getMessage());

@@ -25,7 +25,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     @Value("${dbrepo.grant.default.write}")
     private String grantDefaultWrite;
 
-    private MariaDbMapper mariaDbMapper;
+    private final MariaDbMapper mariaDbMapper;
 
     @Autowired
     public AccessServiceMariaDbImpl(MariaDbMapper mariaDbMapper) {
@@ -42,22 +42,38 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery(user.getUsername(), user.getPassword()))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("create user in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "create_user")
+                    .log();
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("grant user privileges in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "grant_user_privileges")
+                    .log();
             /* grant query store */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantProcedureQuery(user.getUsername(), "store_query"))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("grant procedure privileges in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "grant_procedure_privileges")
+                    .log();
             /* apply access rights */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("flush privileges in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "flush_privileges")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -71,8 +87,8 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     }
 
     @Override
-    public void update(DatabaseDto database, UserDto user, AccessTypeDto access)
-            throws DatabaseMalformedException, SQLException {
+    public void update(DatabaseDto database, UserDto user, AccessTypeDto access) throws DatabaseMalformedException,
+            SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -81,7 +97,11 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("update privileges in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "grant_user_privileges")
+                    .log();
             /* apply access rights */
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
             connection.commit();
@@ -105,12 +125,20 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(user.getUsername()))
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("revoke privileges in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "grant_user_privileges")
+                    .log();
             /* apply access rights */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery())
                     .execute();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("flush privileges in database: " + database.getInternalName())
+                    .addKeyValue("duration", System.currentTimeMillis() - start)
+                    .addKeyValue("action", "flush_privileges")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();

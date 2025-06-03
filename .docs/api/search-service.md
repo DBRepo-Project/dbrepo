@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/search-service:1.9.1`](https://hub.docker.com/r/dbrepo/search-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/search-service:1.9.2`](https://hub.docker.com/r/dbrepo/search-service)
 
     * Ports: 4000/tcp
     * Health: `http://<hostname>:4000/api/search/health`

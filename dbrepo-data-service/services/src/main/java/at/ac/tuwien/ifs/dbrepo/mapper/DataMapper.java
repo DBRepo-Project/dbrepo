@@ -1,7 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -57,6 +60,11 @@ public interface DataMapper {
             @Mapping(target = "password", source = "privilegedPassword"),
     })
     UserDto createDatabaseDtoToPrivilegedUserDto(CreateDatabaseDto data);
+
+    @Mappings({
+            @Mapping(target = "id", source = "userId"),
+    })
+    UserDto createDatabaseDtoToUserDto(CreateDatabaseDto data);
 
     @Mappings({
             @Mapping(target = "username", source = "readonlyUsername"),
