@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.*;
@@ -53,8 +54,8 @@ public class StorageServiceS3Impl implements StorageService {
                 .build(), RequestBody.fromBytes(content));
         log.atDebug()
                 .setMessage("put object in bucket with key: " + key)
-                .addKeyValue("duration", System.currentTimeMillis() - start)
-                .addKeyValue("action", "s3_put_object")
+                .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                .addKeyValue(Constants.ACTION, "s3_put_object")
                 .log();
     }
 
@@ -69,8 +70,8 @@ public class StorageServiceS3Impl implements StorageService {
                     .build());
             log.atDebug()
                     .setMessage("get object from bucket with key: " + key)
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "s3_get_object")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "s3_get_object")
                     .log();
             return object;
         } catch (NoSuchKeyException e) {
@@ -107,8 +108,8 @@ public class StorageServiceS3Impl implements StorageService {
                 .build());
         log.atDebug()
                 .setMessage("delete object from bucket with key: " + key)
-                .addKeyValue("duration", System.currentTimeMillis() - start)
-                .addKeyValue("action", "s3_delete_object")
+                .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                .addKeyValue(Constants.ACTION, "s3_delete_object")
                 .log();
     }
 
@@ -127,8 +128,8 @@ public class StorageServiceS3Impl implements StorageService {
                 .toList();
         log.atDebug()
                 .setMessage("transformed dataset with rows: " + inMemory.size())
-                .addKeyValue("duration", System.currentTimeMillis() - start)
-                .addKeyValue("action", "dataset_transform")
+                .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                .addKeyValue(Constants.ACTION, "dataset_transform")
                 .log();
         start = System.currentTimeMillis();
         try {
@@ -153,8 +154,8 @@ public class StorageServiceS3Impl implements StorageService {
             final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
             log.atDebug()
                     .setMessage("transformed dataset to input stream resource")
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "dataset_export")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "dataset_export")
                     .log();
             return ExportResourceDto.builder()
                     .filename("dataset.csv")

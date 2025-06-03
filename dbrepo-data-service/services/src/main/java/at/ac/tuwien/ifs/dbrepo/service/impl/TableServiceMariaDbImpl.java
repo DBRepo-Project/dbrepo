@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
@@ -71,8 +72,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .size()));
             log.atDebug()
                     .setMessage("get table statistics: " + tableName + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "get_table_statistics")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "get_table_statistics")
                     .log();
             statistic.setAvgRowLength(tmpTable.getAvgRowLength());
             statistic.setDataLength(tmpTable.getDataLength());
@@ -115,8 +116,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             statement.executeUpdate();
             log.atDebug()
                     .setMessage("update table comment: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "update_table_comment")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "update_table_comment")
                     .log();
             connection.commit();
         } catch (SQLException e) {
@@ -141,8 +142,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .execute();
             log.atDebug()
                     .setMessage("delete table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "delete_table")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "delete_table")
                     .log();
             connection.commit();
         } catch (SQLException e) {
@@ -169,8 +170,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .executeQuery();
             log.atDebug()
                     .setMessage("get table history: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "get_table_history")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "get_table_history")
                     .log();
             history = dataMapper.resultSetToTableHistory(resultSet);
             connection.commit();
@@ -199,8 +200,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .executeQuery();
             log.atDebug()
                     .setMessage("get table count: " + tableName + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "get_table_count")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "get_table_count")
                     .log();
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
@@ -239,8 +240,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
             log.atDebug()
                     .setMessage("copy table schema from " + table.getInternalName() + "." + database.getInternalName() + " into temporary table: " + temporaryTable + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_copy_schema")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_copy_schema")
                     .log();
         } catch (SQLException e) {
             connection.rollback();
@@ -259,8 +260,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .jdbc(getSparkUrl(database), temporaryTable, properties);
             log.atDebug()
                     .setMessage("write data into temporary table: " + temporaryTable + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_import_data")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_import_data")
                     .log();
         } catch (Exception e) {
             log.atError()
@@ -278,8 +279,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
             log.atDebug()
                     .setMessage("merge data from temporary table " + temporaryTable + "." + database.getInternalName() + " into table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_merge_data")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_merge_data")
                     .log();
         } catch (SQLException e) {
             connection.rollback();
@@ -298,8 +299,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
             log.atDebug()
                     .setMessage("delete temporary table: " + temporaryTable + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_delete_schema")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_delete_schema")
                     .log();
             dataSource.close();
         }
@@ -328,8 +329,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             statement.executeUpdate();
             log.atDebug()
                     .setMessage("delete tuple in table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_delete_tuple")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_delete_tuple")
                     .log();
             connection.commit();
         } catch (SQLException e) {
@@ -377,8 +378,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             statement.executeUpdate();
             log.atDebug()
                     .setMessage("create tuple in table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_create_tuple")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_create_tuple")
                     .log();
             connection.commit();
         } catch (SQLException e) {
@@ -418,8 +419,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             statement.executeUpdate();
             log.atDebug()
                     .setMessage("update tuple in table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "table_update_tuple")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_update_tuple")
                     .log();
             connection.commit();
         } catch (SQLException e) {

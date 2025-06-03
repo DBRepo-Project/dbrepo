@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
@@ -68,16 +69,16 @@ public class GrantServiceMariaDbImpl extends DataConnector implements GrantServi
             statement.setString(1, user.getUsername());
             log.trace("1={}", user.getUsername());
             final ResultSet resultSet = statement.executeQuery();
-            log.trace(EXECUTED_STATEMENT_MS, System.currentTimeMillis() - start);
+            log.atDebug()
+                    .setMessage("successfully found grants")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "list_grants")
+                    .log();
             while (resultSet.next()) {
                 mariaDbMapper.resultSetToGrants(resultSet)
                         .forEach((k, v) -> grants.put(k,
                                 metadataMapper.grantsToDatabaseGrantDto(v, grantDefaultRead, grantDefaultWrite)));
             }
-            log.atInfo()
-                    .setMessage("Found " + grants.size() + " access grant(s) for user with id: " + user.getId())
-                    .addKeyValue("user_id", user.getId())
-                    .log();
             return grants;
         } catch (SQLException e) {
             connection.rollback();
