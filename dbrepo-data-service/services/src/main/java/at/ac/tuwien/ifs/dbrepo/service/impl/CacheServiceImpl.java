@@ -57,13 +57,13 @@ public class CacheServiceImpl implements CacheService {
             final DatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
             if (cacheDatabase != null) {
                 log.atTrace()
-                        .setMessage("found database with id " + id + " in cache")
+                        .setMessage("found database with id " + id)
                         .addKeyValue("cache_hit", true)
                         .log();
                 return cacheDatabase;
             }
             log.atTrace()
-                    .setMessage("reload database from metadata service with id " + id + " in cache")
+                    .setMessage("reload database from metadata service with id " + id)
                     .addKeyValue("cache_hit", false)
                     .log();
         }
@@ -84,13 +84,13 @@ public class CacheServiceImpl implements CacheService {
         final TableDto cacheTable = tableCache.getIfPresent(tableId);
         if (cacheTable != null) {
             log.atTrace()
-                    .setMessage("found table with id " + tableId + " in cache")
+                    .setMessage("found table with id " + tableId)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheTable;
         }
         log.atTrace()
-                .setMessage("reload table from metadata service with id " + tableId + " in cache")
+                .setMessage("reload table from metadata service with id " + tableId)
                 .addKeyValue("cache_hit", false)
                 .log();
         final TableDto table = gateway.getTableById(databaseId, tableId);
@@ -104,13 +104,13 @@ public class CacheServiceImpl implements CacheService {
         final TableStatisticDto cacheStatistic = statisticCache.getIfPresent(view.getId());
         if (cacheStatistic != null) {
             log.atTrace()
-                    .setMessage("found view with id " + view.getId() + " in cache")
+                    .setMessage("found view with id " + view.getId())
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheStatistic;
         }
         log.atTrace()
-                .setMessage("reload view from metadata service with id " + view.getId() + " in cache")
+                .setMessage("reload view from metadata service with id " + view.getId())
                 .addKeyValue("cache_hit", false)
                 .log();
         final TableStatisticDto statistic = tableService.getStatistics(database, view.getInternalName());
@@ -125,13 +125,13 @@ public class CacheServiceImpl implements CacheService {
         final ContainerDto cacheContainer = containerCache.getIfPresent(id);
         if (cacheContainer != null) {
             log.atTrace()
-                    .setMessage("found container with id " + id + " in cache")
+                    .setMessage("found container with id " + id)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheContainer;
         }
         log.atTrace()
-                .setMessage("reload container from metadata service with id " + id + " in cache")
+                .setMessage("reload container from metadata service with id " + id)
                 .addKeyValue("cache_hit", false)
                 .log();
         final ContainerDto container = gateway.getContainerById(id);
@@ -145,13 +145,13 @@ public class CacheServiceImpl implements CacheService {
         final ViewDto cacheView = viewCache.getIfPresent(viewId);
         if (cacheView != null) {
             log.atTrace()
-                    .setMessage("found view with id " + viewId + " in cache")
+                    .setMessage("found view with id " + viewId)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheView;
         }
         log.atTrace()
-                .setMessage("reload view from metadata service with id " + viewId + " in cache")
+                .setMessage("reload view from metadata service with id " + viewId)
                 .addKeyValue("cache_hit", false)
                 .log();
         final ViewDto view = gateway.getViewById(databaseId, viewId);
@@ -165,13 +165,13 @@ public class CacheServiceImpl implements CacheService {
         final UserDto cacheUser = userCache.getIfPresent(id);
         if (cacheUser != null) {
             log.atTrace()
-                    .setMessage("found user with id " + id + " in cache")
+                    .setMessage("found user with id " + id)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheUser;
         }
         log.atTrace()
-                .setMessage("reload user from metadata service with id " + id + " in cache")
+                .setMessage("reload user from metadata service with id " + id)
                 .addKeyValue("cache_hit", false)
                 .log();
         final UserDto user = gateway.getUserById(id);
@@ -185,13 +185,13 @@ public class CacheServiceImpl implements CacheService {
         final DatabaseAccessDto cacheAccess = accessCache.getIfPresent(databaseId);
         if (cacheAccess != null) {
             log.atTrace()
-                    .setMessage("found access for user with id " + userId + " in cache")
+                    .setMessage("found access for user with id " + userId)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheAccess;
         }
         log.atTrace()
-                .setMessage("reload access from metadata service with user id " + userId + " in cache")
+                .setMessage("reload access from metadata service with user id " + userId)
                 .addKeyValue("cache_hit", false)
                 .log();
         final DatabaseAccessDto access = gateway.getAccess(databaseId, userId);

@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.QueueService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -49,8 +50,8 @@ public class QueueServiceRabbitMqImpl extends DataConnector implements QueueServ
             preparedStatement.executeUpdate();
             log.atDebug()
                     .setMessage("successfully inserted tuple")
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "insert_tuple")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "insert_tuple")
                     .log();
         } finally {
             dataSource.close();

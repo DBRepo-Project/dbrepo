@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ViewMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -39,8 +40,8 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
                     .execute();
             log.atDebug()
                     .setMessage("delete view: " + view.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "view_delete")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "view_delete")
                     .log();
             connection.commit();
         } catch (SQLException e) {
@@ -67,8 +68,8 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
                     .executeQuery();
             log.atDebug()
                     .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "count_view")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "count_view")
                     .log();
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();

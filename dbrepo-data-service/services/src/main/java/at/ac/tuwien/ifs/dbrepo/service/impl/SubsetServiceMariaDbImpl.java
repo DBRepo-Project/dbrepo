@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -60,8 +61,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .load();
             log.atDebug()
                     .setMessage("get data from url: " + getSparkUrl(database))
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "jdbc_get_data")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "jdbc_get_data")
                     .log();
             return dataset;
         } catch (Exception e) {
@@ -107,8 +108,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final ResultSet resultSet = statement.executeQuery();
             log.atDebug()
                     .setMessage("list subsets in database: " + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "list_queries")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "list_queries")
                     .log();
             final List<QueryDto> queries = new LinkedList<>();
             while (resultSet.next()) {
@@ -145,8 +146,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .executeQuery();
             log.atDebug()
                     .setMessage("count subset in database: " + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "count_query")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "count_query")
                     .addKeyValue("query", statement)
                     .addKeyValue("timestamp", timestamp)
                     .log();
@@ -171,8 +172,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final ResultSet resultSet = preparedStatement.executeQuery();
             log.atDebug()
                     .setMessage("find query in query store of database: " + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "find_query")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "find_query")
                     .log();
             if (!resultSet.next()) {
                 throw new QueryNotFoundException("Failed to find query");
@@ -213,8 +214,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             callableStatement.executeUpdate();
             log.atDebug()
                     .setMessage("store query in query store of database: " + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "store_query")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "store_query")
                     .addKeyValue("query", query)
                     .log();
             queryId = UUID.fromString(callableStatement.getString(4));
@@ -245,8 +246,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             preparedStatement.executeUpdate();
             log.atDebug()
                     .setMessage("persist query in query store of database: " + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "persist_query")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "persist_query")
                     .addKeyValue("query_id", queryId)
                     .log();
         } catch (SQLException e) {
@@ -268,8 +269,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .executeUpdate();
             log.atDebug()
                     .setMessage("delete stale queries in query store of database: " + database.getInternalName())
-                    .addKeyValue("duration", System.currentTimeMillis() - start)
-                    .addKeyValue("action", "delete_stale_queries")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "delete_stale_queries")
                     .log();
         } catch (SQLException e) {
             log.error("Failed to delete stale queries: {}", e.getMessage());
