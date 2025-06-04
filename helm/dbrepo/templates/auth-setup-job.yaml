@@ -35,9 +35,15 @@ spec:
           envFrom:
             - secretRef:
                 name: auth-service-secret
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/auth
           {{- if .Values.authservice.setupJob.resources }}
           resources: {{- toYaml .Values.authservice.setupJob.resources | nindent 12 }}
           {{- else if ne .Values.authservice.setupJob.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.authservice.setupJob.resourcesPreset) | nindent 12 }}
           {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
 {{- end }}

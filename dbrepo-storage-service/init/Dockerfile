@@ -7,6 +7,9 @@ RUN apk --no-cache add \
 
 WORKDIR /app
 
+RUN mkdir -p /app/config && \
+    chown -R 1001:1001 /app/config
+
 RUN mkdir -p /var/log/app/service/storage && \
     chown -R 1001:1001 /var/log/app/service/storage
 
