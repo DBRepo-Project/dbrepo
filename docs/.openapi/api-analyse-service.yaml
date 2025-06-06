@@ -1,0 +1,332 @@
+{
+  "components": {
+    "schemas": {
+      "AnalysisDto": {
+        "properties": {
+          "columns": {
+            "items": {
+              "properties": {
+                "column_name": {
+                  "$ref": "#/components/schemas/ColumnAnalysisDto"
+                }
+              }
+            },
+            "type": "array"
+          },
+          "line_termination": {
+            "example": "\r\n",
+            "type": "string"
+          },
+          "separator": {
+            "example": ",",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApiError": {
+        "properties": {
+          "code": {
+            "example": "error.dashboard.create",
+            "type": "string"
+          },
+          "message": {
+            "example": "Message",
+            "type": "string"
+          },
+          "status": {
+            "example": "BAD_REQUEST",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ColumnAnalysisDto": {
+        "properties": {
+          "d": {
+            "example": 4,
+            "type": "integer"
+          },
+          "enums": {
+            "example": null,
+            "properties": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "null_allowed": {
+            "type": "boolean"
+          },
+          "sets": {
+            "example": null,
+            "properties": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "size": {
+            "example": 10,
+            "type": "integer"
+          },
+          "type": {
+            "example": "decimal",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "KeysDto": {
+        "properties": {
+          "keys": {
+            "items": {
+              "properties": {
+                "column_name": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "in": "header",
+        "scheme": "basic",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "in": "header",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Sourcecode Documentation",
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/"
+  },
+  "info": {
+    "contact": {
+      "email": "andreas.rauber@tuwien.ac.at",
+      "name": "Prof. Andreas Rauber"
+    },
+    "description": "Service that analyses data structures",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "title": "Database Repository Analyse Service API",
+    "version": "1.9.3"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/analyse/datatypes": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Determines MySQL 8 datatypes of a given dataset. Requires role `table-semantic-analyse`.",
+        "operationId": "analyse_datatypes",
+        "parameters": [
+          {
+            "example": "filename_s3_key",
+            "in": "query",
+            "name": "filename",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "example": ",",
+            "in": "query",
+            "name": "separator",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "example": "false",
+            "in": "query",
+            "name": "enum",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "example": "2.5",
+            "in": "query",
+            "name": "enum_tol",
+            "required": false,
+            "schema": {
+              "type": "float"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisDto"
+                }
+              }
+            },
+            "description": "Determined data types successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Failed to determine data types"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Failed to find file in Storage Service"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unexpected system error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ],
+        "summary": "Determine datatypes",
+        "tags": [
+          "analyse-endpoint"
+        ]
+      }
+    },
+    "/api/analyse/keys": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Determines primary keys of a given dataset. Requires role `table-semantic-analyse`.",
+        "operationId": "analyse_keys",
+        "parameters": [
+          {
+            "example": "filename_s3_key",
+            "in": "query",
+            "name": "filename",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "example": ",",
+            "in": "query",
+            "name": "separator",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeysDto"
+                }
+              }
+            },
+            "description": "Determined keys successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Failed to determine keys"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Failed to find file in Storage Service or is empty"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unexpected system error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ],
+        "summary": "Determine keys",
+        "tags": [
+          "analyse-endpoint"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Generated server url",
+      "url": "http://localhost"
+    },
+    {
+      "description": "Sandbox",
+      "url": "https://test.dbrepo.tuwien.ac.at"
+    }
+  ]
+}

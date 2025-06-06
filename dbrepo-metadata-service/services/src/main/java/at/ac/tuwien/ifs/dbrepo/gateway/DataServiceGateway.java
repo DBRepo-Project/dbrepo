@@ -116,8 +116,10 @@ public interface DataServiceGateway {
      * @return The created view, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws ColumnNotFoundException        The data service could not find a column from the filter or sorting specification of the view data.
      */
-    ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException;
+    ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException,
+            ColumnNotFoundException;
 
     /**
      * Deletes a given view in the given database.

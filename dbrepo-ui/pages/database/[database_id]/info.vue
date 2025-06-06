@@ -38,19 +38,21 @@
                 v-if="previewImage"
                 :title="$t('pages.database.image.title')"
                 density="compact">
-                <v-img
-                  :src="previewImage"
-                  :alt="$t('pages.database.image.alt')"
-                  :title="$t('pages.database.image.alt')"
-                  :max-width="maxWidth"
-                  :max-height="maxHeight" />
+                <NuxtLink
+                  :href="previewImage">
+                  <v-img
+                    :src="previewImage"
+                    :alt="$t('pages.database.image.alt')"
+                    :title="$t('pages.database.image.alt')"
+                    :max-width="maxWidth"
+                    :max-height="maxHeight" />
+                </NuxtLink>
               </v-list-item>
               <v-list-item
                 v-if="canViewDashboard"
                 :title="$t('pages.database.dashboard.title')"
                 density="compact">
                 <NuxtLink
-                  target="_blank"
                   :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}`">
                   {{ $t('pages.database.dashboard.text') }}
                 </NuxtLink>

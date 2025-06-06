@@ -63,6 +63,11 @@ public class GrantEndpoint extends RestEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find access",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "409",
                     description = "Grants malformed",
                     content = {@Content(
@@ -74,7 +79,7 @@ public class GrantEndpoint extends RestEndpoint {
                                                   Principal principal,
                                                   @NotNull HttpServletRequest request) throws DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseMalformedException,
-            DatabaseUnavailableException, UserNotFoundException, NotAllowedException {
+            DatabaseUnavailableException, UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint check access to database, databaseId={}", databaseId);
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         final UserDto user = cacheService.getUser(userId);

@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 
 import java.sql.SQLException;
@@ -15,10 +16,12 @@ public interface GrantService {
      * @param database The database.
      * @param user The user.
      * @return The database access grants.
+     * @throws AccessNotFoundException    The database access was not found.
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    DatabaseGrantsDto find(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException;
+    DatabaseGrantsDto find(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException,
+            AccessNotFoundException;
 
     Map<String, DatabaseGrantsDto> findAll(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException;
 }

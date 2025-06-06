@@ -87,7 +87,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                       | `{}`                                                                   |
 | `metadatadb.resourcesPreset`             | The container resource preset                                                                                                          | `xlarge`                                                               |
 | `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
-| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `1`                                                                    |
+| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
 
 ### Dashboard Database Enable the Dashboard Database.
 
@@ -130,27 +130,19 @@ The command removes all the Kubernetes components associated with the chart and 
 | `datadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
 | `datadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
 | `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
-| `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `1`                                                                    |
+| `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
 | `datadb.resourcesPreset`             | The container resource preset                                                                                                          | `xlarge`                                                               |
 | `datadb.initdbScriptsConfigMap`      | The setup data to load into the database on first start.                                                                               | `data-db-setup`                                                        |
 | `datadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
 ### Search Database
 
-| Name                                    | Description                         | Value       |
-| --------------------------------------- | ----------------------------------- | ----------- |
-| `searchdb.enabled`                      | Enable the Data datadb.             | `true`      |
-| `searchdb.host`                         | The hostname for the microservices. | `search-db` |
-| `searchdb.port`                         | The port for the microservices.     | `9200`      |
-| `searchdb.coordinating.resourcesPreset` | The container resource preset       | `small`     |
-| `searchdb.coordinating.replicaCount`    | The number of pod replicas.         | `1`         |
-| `searchdb.ingest.resourcesPreset`       | The container resource preset       | `micro`     |
-| `searchdb.ingest.replicaCount`          | The number of pod replicas.         | `1`         |
-| `searchdb.master.resourcesPreset`       | The container resource preset       | `small`     |
-| `searchdb.master.replicaCount`          | The number of pod replicas.         | `1`         |
-| `searchdb.data.resourcesPreset`         | The container resource preset       | `medium`    |
-| `searchdb.data.replicaCount`            | The number of pod replicas.         | `1`         |
-| `searchdb.clusterName`                  | The cluster name.                   | `search-db` |
+| Name                   | Description                         | Value       |
+| ---------------------- | ----------------------------------- | ----------- |
+| `searchdb.enabled`     | Enable the Data datadb.             | `true`      |
+| `searchdb.host`        | The hostname for the microservices. | `search-db` |
+| `searchdb.port`        | The port for the microservices.     | `9200`      |
+| `searchdb.clusterName` | The cluster name.                   | `search-db` |
 
 ### Broker Service
 
@@ -188,7 +180,7 @@ mqtt.vhost = dbrepo
 mqtt.exchange = dbrepo
 mqtt.prefetch = 10
 ` |
-| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `1`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `3`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ### Analyse Service
 

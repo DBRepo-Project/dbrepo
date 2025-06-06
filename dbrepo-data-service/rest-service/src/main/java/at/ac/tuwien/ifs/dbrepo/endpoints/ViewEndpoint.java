@@ -154,7 +154,8 @@ public class ViewEndpoint extends RestEndpoint {
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                           @Valid @RequestBody CreateViewDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException,
-            TableNotFoundException, ImageNotFoundException, QueryMalformedException, ViewNotFoundException {
+            TableNotFoundException, ImageNotFoundException, QueryMalformedException, ViewNotFoundException,
+            ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         /* check */
         endpointValidator.validateSubsetParams(data.getQuery());
