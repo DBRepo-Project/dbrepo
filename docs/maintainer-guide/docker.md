@@ -65,7 +65,7 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 :material-numeric-3-circle-outline:.
 
 <figure markdown>
-![Keycloka identitiy provider list](images/screenshots/auth-service-ldap-1.png){ .img-border }
+![Keycloak identitiy provider list](images/screenshots/auth-service-ldap-1.png){ .img-border }
 <figcaption>Figure 1: Select the Identity Service provider.</figcaption>
 </figure>
 
