@@ -601,6 +601,7 @@
       "title": "Database",
       "image": {
         "title": "Preview Image",
+        "warn": "This is a only preview of your dataset image and changes are not yet saved.",
         "alt": "Database preview image representing the dataset"
       },
       "dashboard": {

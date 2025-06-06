@@ -51,7 +51,7 @@ public interface ViewService {
      */
     View create(Database database, User user, CreateViewDto data) throws MalformedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException;
+            SearchServiceConnectionException, ColumnNotFoundException;
 
     /**
      * Updates the view in the metadata database and search service.

@@ -63,7 +63,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
             SQLException, DatabaseUnavailableException, MetadataServiceException, TableNotFoundException,
-            ImageNotFoundException, QueryMalformedException, ViewNotFoundException {
+            ImageNotFoundException, QueryMalformedException, ViewNotFoundException, ColumnNotFoundException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))

@@ -1068,7 +1068,7 @@ public class BaseTest {
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNAL_NAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_HOST = "localhost";
-    public final static Integer CONTAINER_2_PORT = 3309;
+    public final static Integer CONTAINER_2_PORT = 3308;
     public final static Integer CONTAINER_2_QUOTA = 3;
     public final static Integer CONTAINER_2_COUNT = 3;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
@@ -1122,7 +1122,7 @@ public class BaseTest {
     public final static String CONTAINER_3_NAME = "u03";
     public final static String CONTAINER_3_INTERNAL_NAME = "dbrepo-userdb-u03";
     public final static String CONTAINER_3_HOST = "localhost";
-    public final static Integer CONTAINER_3_PORT = 3310;
+    public final static Integer CONTAINER_3_PORT = 3308;
     public final static Integer CONTAINER_3_QUOTA = 20;
     public final static String CONTAINER_3_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
@@ -1147,7 +1147,7 @@ public class BaseTest {
     public final static String CONTAINER_4_NAME = "u04";
     public final static String CONTAINER_4_INTERNAL_NAME = "dbrepo-userdb-u04";
     public final static String CONTAINER_4_HOST = "localhost";
-    public final static Integer CONTAINER_4_PORT = 3311;
+    public final static Integer CONTAINER_4_PORT = 3308;
     public final static Integer CONTAINER_4_QUOTA = 0;
     public final static String CONTAINER_4_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
@@ -1166,6 +1166,28 @@ public class BaseTest {
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .databases(null) /* DATABASE_4 */
+            .build();
+
+    public final ContainerDto CONTAINER_4_DTO = ContainerDto.builder()
+            .id(CONTAINER_4_ID)
+            .name(CONTAINER_4_NAME)
+            .internalName(CONTAINER_4_INTERNAL_NAME)
+            .image(IMAGE_1_DTO)
+            .host(CONTAINER_4_HOST)
+            .port(CONTAINER_4_PORT)
+            .lastRetrieved(Instant.now())
+            .build();
+
+    public final ContainerDto CONTAINER_4_PRIVILEGED_DTO = ContainerDto.builder()
+            .id(CONTAINER_4_ID)
+            .name(CONTAINER_4_NAME)
+            .internalName(CONTAINER_4_INTERNAL_NAME)
+            .image(IMAGE_1_DTO)
+            .host(CONTAINER_4_HOST)
+            .port(CONTAINER_4_PORT)
+            .lastRetrieved(Instant.now())
+            .username(CONTAINER_4_PRIVILEGED_USERNAME)
+            .password(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
 
     public final static String EXCHANGE_DBREPO_NAME = "dbrepo";

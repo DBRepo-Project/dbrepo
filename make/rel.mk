@@ -13,6 +13,10 @@ tag-images: build-images ## Tag the docker images.
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
 	docker tag dbrepo-ui:latest "${REPOSITORY_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
 
+.PHONY: tag-jupyter-image
+tag-jupyter-image: build-jupyter-image
+	docker tag starter-notebook:latest "${REPOSITORY_URL}/starter-notebook:${APP_VERSION}${BUILD_VERSION}"
+
 .PHONY: release-images
 release-images: tag-images ## Release the docker images.
 	docker push "${REPOSITORY_URL}/analyse-service:${APP_VERSION}${BUILD_VERSION}"
@@ -25,6 +29,10 @@ release-images: tag-images ## Release the docker images.
 	docker push "${REPOSITORY_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
 	docker push "${REPOSITORY_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
 	docker push "${REPOSITORY_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
+
+.PHONY: release-juypter-image
+release-jupyter-image: tag-jupyter-image
+	docker push "${REPOSITORY_URL}/starter-notebook:${APP_VERSION}${BUILD_VERSION}"
 
 .PHONY: release-helm
 release-helm: gen-helm-doc ## Release the DBRepo and DBRepo MariaDB Galera Helm charts.

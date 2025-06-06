@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
@@ -41,18 +42,23 @@ public class GrantServiceMariaDbImpl extends DataConnector implements GrantServi
     }
 
     @Override
-    public DatabaseGrantsDto find(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException {
+    public DatabaseGrantsDto find(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException,
+            AccessNotFoundException {
         final Map<String, DatabaseGrantsDto> grants = findAll(database, user);
-        if (!grants.containsKey(database.getInternalName())) {
-            log.atError()
-                    .setMessage("Failed to find access grant(s) for database: " + database.getInternalName())
-                    .addKeyValue("user_id", user.getId())
-                    .addKeyValue("database_id", database.getId())
-                    .log();
-            /* there must be at least 1 grant otherwise the user does not exist in the database which indicates malformed */
-            throw new DatabaseMalformedException("Failed to find access grant(s) for database: " + database.getInternalName());
+        String key = database.getInternalName();
+        if (!grants.containsKey(key)) {
+            key = "*";
+            if (!grants.containsKey(key)) {
+                log.atError()
+                        .setMessage("Failed to find access grant(s) for database: " + database.getInternalName() + " or fallback key *")
+                        .addKeyValue("user_id", user.getId())
+                        .addKeyValue("database_id", database.getId())
+                        .log();
+                /* there must be at least 1 grant otherwise the user does not exist in the database which indicates malformed */
+                throw new AccessNotFoundException("Failed to find access grant(s) for database: " + database.getInternalName() + " or fallback key *");
+            }
         }
-        final DatabaseGrantsDto grant = grants.get(database.getInternalName());
+        final DatabaseGrantsDto grant = grants.get(key);
         log.debug("found grant: {}", grant);
         return grant;
     }
@@ -70,7 +76,7 @@ public class GrantServiceMariaDbImpl extends DataConnector implements GrantServi
             log.trace("1={}", user.getUsername());
             final ResultSet resultSet = statement.executeQuery();
             log.atDebug()
-                    .setMessage("successfully found grants")
+                    .setMessage("found user " + user.getUsername() + " grant(s) in database(s): " + grants.keySet())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "list_grants")
                     .log();

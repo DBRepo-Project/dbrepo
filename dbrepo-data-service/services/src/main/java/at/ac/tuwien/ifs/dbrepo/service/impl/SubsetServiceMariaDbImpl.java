@@ -82,7 +82,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     @Override
     public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
-            ImageNotFoundException, ViewMalformedException, ViewNotFoundException {
+            ImageNotFoundException, ViewMalformedException, ViewNotFoundException, ColumnNotFoundException {
         final String statement = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
         return storeQuery(database, statement, timestamp, userId);
     }

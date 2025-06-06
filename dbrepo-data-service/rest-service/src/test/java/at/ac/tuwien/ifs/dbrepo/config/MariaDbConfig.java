@@ -110,26 +110,27 @@ public class MariaDbConfig {
         log.debug("dropped database {}", database);
     }
 
-    public static List<String> getPrivileges(DatabaseDto database, String username) throws SQLException {
+    public static Set<String> getPrivileges(DatabaseDto database, String username) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
-            final String query = "SHOW GRANTS FOR `" + username + "`;";
+            final String query = "SHOW GRANTS FOR ?@`%`;";
             log.trace("prepare statement '{}'", query);
             final PreparedStatement statement = connection.prepareStatement(query);
-            final ResultSet set = statement.executeQuery();
+            statement.setString(1, username);
+            final ResultSet resultSet = statement.executeQuery();
             statement.close();
-            if (set.next()) {
-                final Matcher matcher = Pattern.compile("GRANT (.*) ON.*").matcher(set.getString(1));
+            final Set<String> privileges = new HashSet<>();
+            while (resultSet.next()) {
+                final Matcher matcher = Pattern.compile("GRANT (.*) ON.*").matcher(resultSet.getString(1));
                 if (matcher.find()) {
-                    final List<String> privileges = Arrays.asList(matcher.group(1).split(","));
-                    ;
+                    privileges.addAll(Arrays.stream(matcher.group(1).split(",")).map(String::trim).toList());
                     log.trace("found privileges: {}", privileges);
-                    return privileges;
                 }
             }
+            privileges.remove("USAGE");
+            return privileges;
         }
-        throw new SQLException("Failed to get privileges");
     }
 
     public static void dropTable(DatabaseDto database, String table) throws SQLException {

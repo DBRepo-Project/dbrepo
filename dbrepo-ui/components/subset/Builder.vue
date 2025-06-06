@@ -666,6 +666,7 @@ export default {
           this.loadingQuery = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -680,12 +681,7 @@ export default {
       this.$refs.form.validate()
     },
     addFirstSort () {
-      if (this.sorts.length === 0) {
-        this.columns.filter(c => this.table.constraints.primary_key.map(pk =>
-          pk.column.id).includes(c.id)).forEach(pk => this.sorts.push({ column_id: pk.id, direction: 'asc' }))
-      } else {
-        this.sorts.push({ column_id: null, direction: null})
-      }
+      this.sorts.push({ column_id: null, direction: null})
       this.$refs.form.validate()
     },
     addAnd () {

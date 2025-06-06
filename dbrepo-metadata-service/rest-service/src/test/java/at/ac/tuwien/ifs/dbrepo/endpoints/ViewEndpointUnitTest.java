@@ -64,7 +64,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"list-views"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
     public void findAll_publicHasRole_succeeds() throws UserNotFoundException, AccessNotFoundException,
             DatabaseNotFoundException {
 
@@ -73,7 +73,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"list-views"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
     public void findAll_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, AccessNotFoundException,
             DatabaseNotFoundException {
 
@@ -82,7 +82,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void findAll_publicNoRole_succeeds() throws UserNotFoundException, AccessNotFoundException,
             DatabaseNotFoundException {
 
@@ -101,7 +101,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"create-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
     public void create_publicHasRole_fails() {
 
         /* test */
@@ -111,7 +111,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"create-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
     public void create_publicHasRoleHasAccess_fails() {
 
         /* test */
@@ -121,7 +121,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void create_publicNoRole_fails() {
 
         /* test */
@@ -135,7 +135,8 @@ public class ViewEndpointUnitTest extends BaseTest {
     public void create_succeeds() throws UserNotFoundException, SearchServiceException, MalformedException,
             NotAllowedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException,
             SearchServiceConnectionException, DataServiceConnectionException, DashboardServiceException,
-            DashboardServiceConnectionException, TableNotFoundException, ViewExistsException, ImageNotFoundException {
+            DashboardServiceConnectionException, TableNotFoundException, ViewExistsException, ImageNotFoundException,
+            ColumnNotFoundException {
 
         /* test */
         create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
@@ -161,7 +162,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"find-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database-view"})
     public void find_publicHasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
@@ -170,7 +171,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void find_publicNoRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
@@ -179,7 +180,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void find_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
@@ -198,7 +199,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"delete-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database-view"})
     public void delete_publicHasRole_fails() {
 
         /* test */
@@ -208,7 +209,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void delete_publicNoRole_fails() {
 
         /* test */
@@ -218,7 +219,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"delete-database-view"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-database-view"})
     public void delete_publicOwner_succeeds() throws NotAllowedException, DataServiceException, UserNotFoundException,
             DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException, ViewNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
@@ -242,7 +243,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"list-views"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
     public void findAll_privateHasRole_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
@@ -251,7 +252,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"list-views"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
     public void findAll_privateHasRoleHasAccess_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
@@ -260,7 +261,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void findAll_privateNoRole_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
@@ -279,7 +280,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"create-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
     public void create_privateHasRole_fails() {
 
         /* test */
@@ -289,7 +290,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"create-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
     public void create_privateHasRoleHasAccess_fails() {
 
         /* test */
@@ -299,7 +300,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void create_privateNoRole_fails() {
 
         /* test */
@@ -318,7 +319,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"find-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database-view"})
     public void find_privateHasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
@@ -327,7 +328,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void find_privateNoRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
@@ -336,7 +337,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void find_privateHasRoleHasAccess_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
@@ -355,7 +356,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"delete-database-view"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database-view"})
     public void delete_privateHasRole_fails() {
 
         /* test */
@@ -365,7 +366,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void delete_privateNoRole_fails() {
 
         /* test */
@@ -406,7 +407,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"modify-view-visibility"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-view-visibility"})
     public void update_notOwner_fails() {
 
         /* test */
@@ -460,8 +461,8 @@ public class ViewEndpointUnitTest extends BaseTest {
                                   User user, DatabaseAccess access) throws MalformedException, DataServiceException,
             DataServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
-            ImageNotFoundException, ViewExistsException, DashboardServiceException,
-            DashboardServiceConnectionException {
+            ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException,
+            ColumnNotFoundException {
         final CreateViewDto request = CreateViewDto.builder()
                 .name(viewName)
                 .query(VIEW_1_SUBSET_DTO)

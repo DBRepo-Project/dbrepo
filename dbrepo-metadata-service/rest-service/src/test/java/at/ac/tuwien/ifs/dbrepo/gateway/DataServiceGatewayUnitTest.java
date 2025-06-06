@@ -578,7 +578,8 @@ public class DataServiceGatewayUnitTest extends BaseTest {
     }
 
     @Test
-    public void createView_succeeds() throws DataServiceException, DataServiceConnectionException {
+    public void createView_succeeds() throws DataServiceException, DataServiceConnectionException,
+            ColumnNotFoundException {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(ViewDto.class)))
