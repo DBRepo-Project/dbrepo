@@ -141,6 +141,14 @@
     </v-form>
     <v-main>
       <v-container>
+        <noscript>
+          <v-alert
+            style="margin-top: 5rem;"
+            color="error"
+            type="error"
+            title="JavaScript Disabled"
+            text="No JavaScript is available. It is needed to load content dynamically, we do not track you or monitor anything, it is needed purely for your convenience." />
+        </noscript>
         <JumboBox
           v-if="error"
           :title="$t(errorCodeKey(error).title, { resource })"

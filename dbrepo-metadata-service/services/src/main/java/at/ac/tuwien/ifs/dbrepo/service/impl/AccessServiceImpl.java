@@ -90,7 +90,11 @@ public class AccessServiceImpl implements AccessService {
             DataServiceConnectionException, AccessNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in data database */
-        dataServiceGateway.updateAccess(database.getId(), user.getId(), access);
+        try {
+            dataServiceGateway.updateAccess(database.getId(), user.getId(), access);
+        } catch (AccessNotFoundException e) {
+            /* ignore */
+        }
         /* update in metadata database */
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
@@ -114,7 +118,11 @@ public class AccessServiceImpl implements AccessService {
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* delete in data database */
-        dataServiceGateway.deleteAccess(database.getId(), user.getId());
+        try {
+            dataServiceGateway.deleteAccess(database.getId(), user.getId());
+        } catch (AccessNotFoundException e) {
+            /* ignore */
+        }
         /* delete in metadata database */
         database.getAccesses()
                 .remove(find(database, user));

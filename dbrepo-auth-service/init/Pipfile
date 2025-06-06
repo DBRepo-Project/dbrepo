@@ -7,7 +7,7 @@ name = "pypi"
 requests = "*"
 mariadb = "*"
 ecs_logging = "*"
-dbrepo = {path = "./lib/dbrepo-1.9.2.tar.gz"}
+dbrepo = {path = "./lib/dbrepo-1.9.3.tar.gz"}
 
 [dev-packages]
 coverage = "*"

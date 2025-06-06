@@ -6,8 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -261,17 +261,22 @@ public class AccessServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void update_dataService404_fails() {
+    public void update_dataService404_succeeds() throws SearchServiceException, DataServiceException,
+            AccessNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
+            DataServiceConnectionException {
 
         /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(dataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
+                .thenReturn(ResponseEntity.accepted()
+                        .build());
 
         /* test */
-        assertThrows(AccessNotFoundException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
-        });
+        accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
     }
 
     @Test
@@ -399,17 +404,24 @@ public class AccessServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void delete_dataService404_fails() {
+    public void delete_dataService404_fails() throws SearchServiceException, DataServiceException,
+            AccessNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
+            DataServiceConnectionException {
 
         /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(dataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
+                .thenReturn(ResponseEntity.accepted()
+                        .build());
 
         /* test */
-        assertThrows(AccessNotFoundException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
-        });
+        accessService.delete(DATABASE_1, USER_1);
     }
 
     @Test

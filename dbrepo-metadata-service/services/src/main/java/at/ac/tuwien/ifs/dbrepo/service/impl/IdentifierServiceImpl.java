@@ -262,40 +262,60 @@ public class IdentifierServiceImpl implements IdentifierService {
                     .stream()
                     .map(metadataMapper::creatorCreateDtoToCreator)
                     .toList());
+            final int[] idx = new int[]{0};
             identifier.getCreators()
-                    .forEach(c -> c.setIdentifier(identifier));
+                    .forEach(c -> {
+                        c.setOrdinalPosition(idx[0]++);
+                        c.setIdentifier(identifier);
+                    });
         }
         if (data.getRelatedIdentifiers() != null) {
             identifier.setRelatedIdentifiers(data.getRelatedIdentifiers()
                     .stream()
                     .map(metadataMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
                     .toList());
+            final int[] idx = new int[]{0};
             identifier.getRelatedIdentifiers()
-                    .forEach(r -> r.setIdentifier(identifier));
+                    .forEach(r -> {
+                        r.setOrdinalPosition(idx[0]++);
+                        r.setIdentifier(identifier);
+                    });
         }
         if (data.getTitles() != null) {
             identifier.setTitles(data.getTitles()
                     .stream()
                     .map(metadataMapper::identifierCreateTitleDtoToIdentifierTitle)
                     .toList());
+            final int[] idx = new int[]{0};
             identifier.getTitles()
-                    .forEach(t -> t.setIdentifier(identifier));
+                    .forEach(t -> {
+                        t.setOrdinalPosition(idx[0]++);
+                        t.setIdentifier(identifier);
+                    });
         }
         if (data.getDescriptions() != null) {
             identifier.setDescriptions(data.getDescriptions()
                     .stream()
                     .map(metadataMapper::identifierCreateDescriptionDtoToIdentifierDescription)
                     .toList());
+            final int[] idx = new int[]{0};
             identifier.getDescriptions()
-                    .forEach(d -> d.setIdentifier(identifier));
+                    .forEach(d -> {
+                        d.setOrdinalPosition(idx[0]++);
+                        d.setIdentifier(identifier);
+                    });
         }
         if (data.getFunders() != null) {
             identifier.setFunders(data.getFunders()
                     .stream()
                     .map(metadataMapper::identifierFunderSaveDtoToIdentifierFunder)
                     .toList());
+            final int[] idx = new int[]{0};
             identifier.getFunders()
-                    .forEach(f -> f.setIdentifier(identifier));
+                    .forEach(f -> {
+                        f.setOrdinalPosition(idx[0]++);
+                        f.setIdentifier(identifier);
+                    });
         }
         return save(identifier);
     }

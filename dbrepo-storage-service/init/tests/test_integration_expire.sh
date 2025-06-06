@@ -1,6 +1,6 @@
 #!/bin/bash
 DOCKER_OPTS="--log-level ERROR"
-S3CMD_OPTS="--config=/app/.s3cfg"
+S3CMD_OPTS="--config=/app/config/.s3cfg"
 
 export S3_ACCESS_KEY_ID="seaweedfsadmin"
 export S3_BUCKET="dbrepo"

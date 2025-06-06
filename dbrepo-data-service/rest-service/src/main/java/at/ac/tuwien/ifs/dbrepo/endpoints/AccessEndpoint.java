@@ -78,13 +78,14 @@ public class AccessEndpoint extends RestEndpoint {
                                        @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody CreateAccessDto data)
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException,
+            AccessNotFoundException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         final UserDto user = cacheService.getUser(userId);
         if (database.getAccesses().stream().anyMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to create access to user with id {}: already has access", userId);
-            throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
+            throw new AccessNotFoundException("Failed to create access to user with id " + userId + ": already has access");
         }
         try {
             accessService.create(database, user, data.getType());
@@ -132,16 +133,16 @@ public class AccessEndpoint extends RestEndpoint {
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
-                                       @Valid @RequestBody CreateAccessDto access) throws NotAllowedException,
-            DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseMalformedException, MetadataServiceException {
+                                       @Valid @RequestBody CreateAccessDto access) throws DatabaseUnavailableException,
+            DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
+            MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         final UserDto user = cacheService.getUser(userId);
-        if (database.getAccesses().stream().noneMatch(a -> a.getHuserid().equals(userId))) {
+        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
-            throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
+            throw new AccessNotFoundException("Failed to update access to user with id " + userId + ": no access");
         }
         try {
             accessService.update(database, user, access.getType());
@@ -188,15 +189,15 @@ public class AccessEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                       @PathVariable("userId") UUID userId) throws NotAllowedException,
-            DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseMalformedException, MetadataServiceException {
+                                       @PathVariable("userId") UUID userId) throws DatabaseUnavailableException,
+            DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
+            MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         final UserDto user = cacheService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to delete access to user with id {}: no access", userId);
-            throw new NotAllowedException("Failed to delete access to user with id " + userId + ": no access");
+            throw new AccessNotFoundException("Failed to delete access to user with id " + userId + ": no access");
         }
         try {
             accessService.delete(database, user);

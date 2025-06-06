@@ -509,6 +509,7 @@ class DatabaseModifyDashboard(BaseModel):
 class ModifyVisibility(BaseModel):
     is_public: bool
     is_schema_public: bool
+    is_dashboard_enabled: bool
 
 
 class ModifyOwner(BaseModel):

@@ -47,7 +47,7 @@ public class GrantEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void find_succeeds() throws UserNotFoundException, DatabaseUnavailableException, NotAllowedException,
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException,
-            DatabaseMalformedException, SQLException {
+            DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
         when(cacheService.getDatabase(DATABASE_1_ID))
@@ -72,7 +72,7 @@ public class GrantEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void find_own_succeeds() throws UserNotFoundException, DatabaseUnavailableException, NotAllowedException,
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException,
-            DatabaseMalformedException, SQLException {
+            DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
         when(cacheService.getDatabase(DATABASE_2_ID))
@@ -97,7 +97,7 @@ public class GrantEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void find_head_succeeds() throws UserNotFoundException, DatabaseUnavailableException, NotAllowedException,
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException,
-            DatabaseMalformedException, SQLException {
+            DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
         when(cacheService.getDatabase(DATABASE_1_ID))
@@ -130,6 +130,25 @@ public class GrantEndpointUnitTest extends BaseTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             grantEndpoint.find(DATABASE_1_ID, USER_1_ID, USER_2_PRINCIPAL, httpServletRequest);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void find_foreign_fails() throws UserNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException {
+
+        /* mock */
+        when(cacheService.getDatabase(any(UUID.class)))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(cacheService.getUser(USER_4_ID))
+                .thenReturn(USER_4_DTO);
+        when(cacheService.getUser(USER_1_ID))
+                .thenReturn(USER_1_DTO);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            grantEndpoint.find(DATABASE_1_ID, USER_4_ID, USER_2_PRINCIPAL, httpServletRequest);
         });
     }
 

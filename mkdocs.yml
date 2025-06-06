@@ -4,50 +4,48 @@ repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-service
 repo_name: fda-services
 site_author: Research Unit Data Science, Technische Universit&auml;t Wien
 copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
-docs_dir: .docs
 nav:
   - Get Started:
     - Welcome to DBRepo: index.md
     - Why use DBRepo: why.md
     - Help with DBRepo: help.md
-    - Installation: installation.md
-    - Kubernetes: kubernetes.md
-    - changelog.md
-    - contributing.md
-  - Concepts:
-    - Overview: concepts/index.md
-    - Authentication: concepts/authentication.md
-    - Data Versioning: concepts/data-versioning.md
-    - Dashboards: concepts/dashboards.md
-    - Data Visibility: concepts/data-visibility.md
-    - Logging: concepts/logging.md
-    - Messaging: concepts/messaging.md
-    - Monitoring: concepts/monitoring.md
-    - Persistent Identifier: concepts/pid.md
-    - Search: concepts/search.md
+  - User Guide:
+    - Overview: user-guide/index.md
+    - user-guide/quickstart.md
+    - Account Management:
+      - Create Account: user-guide/create-account.md
+    - Database Management:
+      - Create Database: user-guide/create-database.md
+      - Database Access: user-guide/database-access.md
+      - Database Dashboard: user-guide/database-dashboard.md
+      - Database Visibility: user-guide/update-visibility.md
+      - Delete Database: user-guide/delete-database.md
+    - Data Management:
+      - Create Persistent Identifier: user-guide/create-pid.md
+      - Create Subset: user-guide/create-subset.md
+      - Fetch Data: user-guide/get-data.md
+      - Import Dataset: user-guide/import-dataset.md
+      - Import Live Data: user-guide/import-live-data.md
+  - Maintainer Guide:
+    - maintainer-guide/index.md
+    - Deployments:
+      - Install on Docker: maintainer-guide/docker.md
+      - Install on Kubernetes: maintainer-guide/kubernetes.md
+      - Install on VM: maintainer-guide/vm.md
+      - Build from Sourcecode: maintainer-guide/build.md
+    - Management:
+      - Import Dump: maintainer-guide/import-dump.md
+    - maintainer-guide/troubleshooting.md
+    - Updating the Application: maintainer-guide/updating.md
   - API:
     - Overview: api/index.md
-    - Databases:
-      - Data Database: api/data-db.md
-      - Metadata Database: api/metadata-db.md
-      - Metric Database: api/metric-db.md
-      - Search Database: api/search-db.md
-    - SDK:
-      - Python Library: api/python.md
-      - Swagger / OpenAPI: api/open-api.md
-    - Services:
-      - Analyse Service: api/analyse-service.md
-      - Auth Service: api/auth-service.md
-      - Broker Service: api/broker-service.md
-      - Data Service: api/data-service.md
-      - Gateway Service: api/gateway-service.md
-      - Identity Service: api/identity-service.md
-      - Metadata Service: api/metadata-service.md
-      - Search Service: api/search-service.md
-      - Storage Service: api/storage-service.md
-    - UI:
-      - Repository: api/ui.md
-  - Examples:
+    - Python API: api/python.md
+    - REST API: api/rest.md
+    - AMQP / MQTT API: api/broker.md
+    - OAI-PMH API: api/oai-pmh.md
+    - JSON-LD API: api/json-ld.md
+    - FAIR Signposting API: api/fair-signposting.md
+  - Use Cases:
     - Air Quality Data: examples/air.md
     - COVID-19 Data: examples/covid-19.md
     - Hazard Data: examples/hazard.md
@@ -59,16 +57,37 @@ nav:
     - Theater Data: examples/theater.md
     - Transportation Data: examples/transportation.md
     - XPS Data: examples/xps-data.md
+  - Development:
+    - dev/index.md
+    - Databases:
+        - Data Database: dev/services/data-db.md
+        - Metadata Database: dev/services/metadata-db.md
+        - Metric Database: dev/services/metric-db.md
+        - Search Database: dev/services/search-db.md
+    - Services:
+        - Analyse Service: dev/services/analyse-service.md
+        - Auth Service: dev/services/auth-service.md
+        - Broker Service: dev/services/broker-service.md
+        - Data Service: dev/services/data-service.md
+        - Gateway Service: dev/services/gateway-service.md
+        - Identity Service: dev/services/identity-service.md
+        - Metadata Service: dev/services/metadata-service.md
+        - Search Service: dev/services/search-service.md
+        - Storage Service: dev/services/storage-service.md
+    - UI:
+        - Repository: dev/services/ui.md
+    - Changelog: dev/changelog.md
+    - Contributing: dev/contributing.md
   - publications.md
   - contact.md
 extra_css:
   - stylesheets/extra.css
 theme:
   favicon: images/favicon.ico
-  custom_dir: .docs/overrides
+  custom_dir: docs/overrides
   font:
-    text: IBM Plex Serif
-    code: IBM Plex Mono
+    text: Roboto
+    code: Roboto Mono
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -118,7 +137,12 @@ markdown_extensions:
       emoji_generator: !!python/name:materialx.emoji.to_svg
       options:
         custom_icons:
-          - .docs/overrides/.icons
+          - docs/overrides/.icons
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/
   version:
@@ -127,8 +151,6 @@ extra:
   social:
     - icon: simple/artifacthub
       link: https://artifacthub.io/packages/helm/dbrepo/dbrepo
-    - icon: fontawesome/brands/docker
-      link: https://hub.docker.com/search?q=dbrepo
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/dbrepo/
     - icon: fontawesome/brands/gitlab

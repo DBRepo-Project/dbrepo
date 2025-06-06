@@ -253,7 +253,7 @@ public class SubsetEndpoint extends RestEndpoint {
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, StorageNotFoundException,
             QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
             NotAllowedException, UserNotFoundException, MetadataServiceException, TableNotFoundException,
-            ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException {
+            ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException {
         log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}, data.datasource_id={}",
                 databaseId, page, size, timestamp, data.getDatasourceId());
         /* check */

@@ -75,7 +75,6 @@ venv/
 # Docs
 swagger.json
 container.md
-database.md
 query.md
 table.md
 .git.bfg-report/

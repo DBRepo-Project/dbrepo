@@ -294,7 +294,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException, SQLException,
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
-            ImageNotFoundException, FormatNotAvailableException {
+            ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -326,7 +326,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             PaginationException, StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
-            ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException {
+            ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -378,7 +378,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             TableMalformedException, NotAllowedException, SQLException, QueryNotFoundException, PaginationException,
             DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
             QueryNotSupportedException, StorageNotFoundException, TableNotFoundException, ViewMalformedException,
-            ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException {
+            ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -408,7 +408,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
             StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
             StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
-            ImageNotFoundException, FormatNotAvailableException {
+            ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */

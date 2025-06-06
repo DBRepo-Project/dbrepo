@@ -273,8 +273,8 @@ class RestClient:
 
         :param name: The name of the database.
         :param container_id: The container id.
-        :param is_public: The visibility of the data. If set to true the data will be publicly visible. Optional. Default: `True`.
-        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible. Optional. Default: `True`.
+        :param is_public: The visibility of the data. If set to `True` the data will be publicly visible. Optional. Default: `True`.
+        :param is_schema_public: The visibility of the schema metadata. If set to `True` the schema metadata will be publicly visible. Optional. Default: `True`.
 
         :returns: The database, if successful.
 
@@ -352,13 +352,15 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create container: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def update_database_visibility(self, database_id: str, is_public: bool, is_schema_public: bool) -> Database:
+    def update_database_visibility(self, database_id: str, is_public: bool, is_schema_public: bool,
+                                   is_dashboard_enabled: bool) -> Database:
         """
         Updates the database visibility of a database with given database id.
 
         :param database_id: The database id.
-        :param is_public: The visibility of the data. If set to true the data will be publicly visible.
-        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible.
+        :param is_public: The visibility of the data. If set to `True` the data will be publicly visible.
+        :param is_schema_public: The visibility of the schema metadata. If set to `True` the schema metadata will be publicly visible.
+        :param is_dashboard_enabled: If set to `True`, the provisioned dashboard for this database is enabled.
 
         :returns: The database, if successful.
 
@@ -371,7 +373,8 @@ class RestClient:
         """
         url = f'/api/database/{database_id}/visibility'
         response = self._wrapper(method="put", url=url, force_auth=True,
-                                 payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public))
+                                 payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public,
+                                                          is_dashboard_enabled=is_dashboard_enabled))
         if response.status_code == 202:
             body = response.json()
             return Database.model_validate(body)
@@ -470,8 +473,8 @@ class RestClient:
 
         :param database_id: The database id.
         :param name: The name of the created table.
-        :param is_public: The visibility of the data. If set to true the data will be publicly visible.
-        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible.
+        :param is_public: The visibility of the data. If set to `True` the data will be publicly visible.
+        :param is_schema_public: The visibility of the schema metadata. If set to `True` the schema metadata will be publicly visible.
         :param dataframe: The `pandas` dataframe.
         :param description: The description of the created table. Optional.
         :param with_data: If set to `True`, the data will be included in the new table. Optional. Default: `True`.
@@ -732,8 +735,8 @@ class RestClient:
         :param database_id: The database id.
         :param name: The name of the created view.
         :param query: The query definition of the view.
-        :param is_public: The visibility of the data. If set to true the data will be publicly visible. Optional. Default: `True`.
-        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible. Optional. Default: `True`.
+        :param is_public: The visibility of the data. If set to `True` the data will be publicly visible. Optional. Default: `True`.
+        :param is_schema_public: The visibility of the schema metadata. If set to `True` the schema metadata will be publicly visible. Optional. Default: `True`.
 
         :returns: The created view, if successful.
 
@@ -921,7 +924,7 @@ class RestClient:
         :param dataframe: The dataframe to be uploaded.
 
         :returns: The S3 key if successful.
-        
+
         :raises ResponseCodeError: If something went wrong with the insert.
         """
         buffer = BytesIO()
@@ -975,7 +978,7 @@ class RestClient:
         Import a csv dataset from a file and analyse it for the possible enums, line encoding and column data types.
 
         :param dataframe: The dataframe.
-        :param enum: If set to true, enumerations should be guessed, otherwise no guessing. Optional.
+        :param enum: If set to `True`, enumerations should be guessed, otherwise no guessing. Optional.
         :param enum_tol: The tolerance for guessing enumerations (ignored if enum=False). Optional.
 
         :returns: The determined data types, if successful.
@@ -1504,7 +1507,7 @@ class RestClient:
 
         :param database_id: The database id.
         :param subset_id: The subset id.
-        :param persist: If set to true, the query will be saved and visible in the user interface, otherwise the query \
+        :param persist: If set to `True`, the query will be saved and visible in the user interface, otherwise the query \
                 is marked for deletion in the future and not visible in the user interface.
 
         :returns: The query, if successful.
@@ -1925,34 +1928,3 @@ class RestClient:
         if response.status_code == 503:
             raise ServiceError(f'Failed to update column: failed to save in search service')
         raise ResponseCodeError(f'Failed to update column: response code: {response.status_code} is not 202 (ACCEPTED)')
-
-    def update_database_dashboard(self, database_id: str, uid: str) -> None:
-        """
-        Update semantic information of a table column by given database id and table id and column id.
-
-        :param database_id: The database id.
-        :param uid: The database uid.
-
-        :raises MalformedError: If the payload is rejected by the service.
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
-        :raises ServiceError: If something went wrong with obtaining the information in the search service.
-        :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
-        """
-        url = f'/api/database/{database_id}/dashboard'
-        response = self._wrapper(method="put", url=url, force_auth=True,
-                                 payload=DatabaseModifyDashboard(uid=uid))
-        if response.status_code == 202:
-            return
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to update database dashboard: {response.text}')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to update database dashboard: not found')
-        if response.status_code == 502:
-            raise ServiceConnectionError(
-                f'Failed to update database dashboard: failed to establish connection to search service')
-        if response.status_code == 503:
-            raise ServiceError(f'Failed to update database dashboard: failed to save in search service')
-        raise ResponseCodeError(
-            f'Failed to update database dashboard: response code: {response.status_code} is not 202 (ACCEPTED)')
