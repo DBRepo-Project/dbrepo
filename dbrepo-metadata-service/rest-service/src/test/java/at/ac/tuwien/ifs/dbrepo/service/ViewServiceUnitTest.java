@@ -45,7 +45,7 @@ public class ViewServiceUnitTest extends BaseTest {
     @Test
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
-            ImageNotFoundException {
+            ImageNotFoundException, ColumnNotFoundException {
         final CreateViewDto request = CreateViewDto.builder()
                 .name(VIEW_1_NAME)
                 .query(VIEW_1_SUBSET_DTO)

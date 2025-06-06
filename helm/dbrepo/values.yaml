@@ -77,7 +77,7 @@ metadatadb:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
     enabled: true
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 1
+  replicaCount: 3
 
 ## @section Dashboard Database Enable the Dashboard Database.
 
@@ -141,7 +141,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.9.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.9.3
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -213,7 +213,7 @@ datadb:
     ## @skip datadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 1
+  replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
@@ -235,28 +235,9 @@ searchdb:
   host: search-db
   ## @param searchdb.port The port for the microservices.
   port: 9200
-  coordinating:
-    ## @param searchdb.coordinating.resourcesPreset The container resource preset
-    resourcesPreset: "small"
-    ## @param searchdb.coordinating.replicaCount The number of pod replicas.
-    replicaCount: 1
   ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
     enabled: false
-    ## @param searchdb.ingest.resourcesPreset The container resource preset
-    resourcesPreset: "micro"
-    ## @param searchdb.ingest.replicaCount The number of pod replicas.
-    replicaCount: 1
-  master:
-    ## @param searchdb.master.resourcesPreset The container resource preset
-    resourcesPreset: "small"
-    ## @param searchdb.master.replicaCount The number of pod replicas.
-    replicaCount: 1
-  data:
-    ## @param searchdb.data.resourcesPreset The container resource preset
-    resourcesPreset: "medium"
-    ## @param searchdb.data.replicaCount The number of pod replicas.
-    replicaCount: 1
   security:
     ## @skip searchdb.security.enabled
     enabled: false
@@ -410,7 +391,7 @@ brokerservice:
     - name: logging-config
       mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 1
+  replicaCount: 3
 
 ## @section Analyse Service
 
@@ -419,7 +400,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.9.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.9.3
   ## @param analyseservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -483,7 +464,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.3
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -583,7 +564,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.9.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.9.3
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -672,7 +653,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.9.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.9.3
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -724,7 +705,7 @@ searchservice:
     enabled: true
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.9.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.9.3
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -787,7 +768,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.9.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.9.3
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -922,7 +903,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.9.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.9.3
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -1043,7 +1024,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.9.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.9.3
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1098,7 +1079,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.9.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.9.3
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1272,8 +1253,6 @@ gatewayservice:
   extraVolumeMounts:
     - name: empty-dir
       mountPath: /var/log/nginx
-    - name: logging-config
-      mountPath: /tmp
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 

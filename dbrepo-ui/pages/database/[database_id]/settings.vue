@@ -26,7 +26,7 @@
                     v-if="file"
                     border="start"
                     color="warning">
-                    This is a only preview of your dataset image and changes are not yet saved.
+                    {{ $t('pages.database.image.warn') }}
                   </v-alert>
                   <v-img
                     class="mt-2"
@@ -117,7 +117,7 @@
                 v-if="item.loading"
                 type="text" />
               <span
-                v-else>{{ item.grants.grants.join(', ') }}</span>
+                v-else>{{ item.grants?.grants.join(', ') }}</span>
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
@@ -495,6 +495,7 @@ export default {
       }
       this.modifyVisibility.is_public = this.database.is_public
       this.modifyOwner.id = this.database.owner.id
+      this.findGrants()
     }
   },
   mounted () {
@@ -508,16 +509,18 @@ export default {
     this.modifyVisibility.is_schema_public = this.database.is_schema_public
     this.modifyVisibility.is_dashboard_enabled = this.database.is_dashboard_enabled
     this.modifyOwner.id = this.database.owner.id
-    this.accesses = this.database.accesses
-    this.accesses.forEach(a => this.findGrant(a.user.id))
   },
   methods: {
     submit () {
       this.$refs.form.validate()
     },
+    findGrants () {
+      this.accesses = this.database.accesses
+      this.accesses.forEach(a => this.findGrant(a.user.id))
+    },
     closeDialog () {
-      this.cacheStore.reloadDatabase()
       this.editAccessDialog = false
+      this.cacheStore.reloadDatabase()
     },
     updateDatabaseVisibility () {
       this.loading = true
@@ -540,7 +543,6 @@ export default {
         return false
       }
       const access = this.accesses.filter(a => a.user.id === userId)[0]
-      console.debug('===>', access)
       access['loading'] = true
       const grantService = useGrantService()
       grantService.findOne(this.database.id, userId)
@@ -593,6 +595,7 @@ export default {
           toast.success(this.$t('success.database.image.update'))
           this.modifyImage.key = null
           this.loadingImage = false
+          this.file = null;
         })
         .catch(({code}) => {
           this.loadingImage = false

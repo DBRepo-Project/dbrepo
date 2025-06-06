@@ -18,8 +18,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Set;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
@@ -51,10 +53,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        for (String privilege : grantDefaultRead.split(",")) {
-            assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
-        }
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
     @Test
@@ -62,10 +62,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        for (String privilege : grantDefaultWrite.split(",")) {
-            assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
-        }
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
     @Test
@@ -73,10 +71,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        for (String privilege : grantDefaultWrite.split(",")) {
-            assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
-        }
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
     @Test
@@ -84,10 +80,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        for (String privilege : grantDefaultRead.split(",")) {
-            assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
-        }
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
     @Test
@@ -95,10 +89,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        for (String privilege : grantDefaultWrite.split(",")) {
-            assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
-        }
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
     @Test
@@ -106,10 +98,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        for (String privilege : grantDefaultWrite.split(",")) {
-            assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
-        }
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
     @Test
@@ -126,9 +116,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         accessService.delete(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        assertEquals(1, privileges.size());
-        assertEquals("USAGE", privileges.get(0));
+        final Set<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        containsInAnyOrder(new String[]{"USAGE"}, privileges.toArray());
     }
 
     @Test

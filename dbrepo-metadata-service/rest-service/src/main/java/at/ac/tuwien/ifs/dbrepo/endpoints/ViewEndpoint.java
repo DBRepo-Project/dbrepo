@@ -143,7 +143,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                                                Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
-            ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException {
+            ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwner().getId().equals(getId(principal))) {

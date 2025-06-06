@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 @Slf4j
@@ -51,7 +52,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
+            connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(database.getInternalName(), user.getUsername(), grants))
                     .execute();
             log.atDebug()
                     .setMessage("grant user privileges in database: " + database.getInternalName())
@@ -96,7 +97,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
+            connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(database.getInternalName(), user.getUsername(), grants))
                     .execute();
             log.atDebug()
                     .setMessage("update privileges in database: " + database.getInternalName())
@@ -124,7 +125,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         try {
             /* revoke access */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(user.getUsername()))
+            connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))
                     .execute();
             log.atDebug()
                     .setMessage("revoke privileges in database: " + database.getInternalName())

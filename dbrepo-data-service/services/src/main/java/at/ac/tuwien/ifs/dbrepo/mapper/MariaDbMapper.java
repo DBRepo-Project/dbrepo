@@ -2,11 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.mapper;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.OperatorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.OrderDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
@@ -91,7 +89,7 @@ public interface MariaDbMapper {
             log.debug("no grants were found in the result set");
         }
         final Map<String, Set<String>> map = new HashMap<>();
-        final Pattern databasePattern = Pattern.compile("ON `?([a-zA-Z0-9*]+)`?");
+        final Pattern databasePattern = Pattern.compile("ON `?([a-zA-Z0-9*_]+)`?");
         final Matcher databaseMatcher = databasePattern.matcher(resultSet.getString(1));
         if (databaseMatcher.find()) {
             final String databaseName = databaseMatcher.group(1)
@@ -121,18 +119,22 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String databaseGrantPrivilegesQuery(String username, String grants) {
+    default String databaseGrantPrivilegesQuery(String database, String username, String grants) {
         final StringBuilder statement = new StringBuilder("GRANT ")
                 .append(grants)
-                .append(" ON *.* TO `")
+                .append(" ON `")
+                .append(database)
+                .append("`.* TO `")
                 .append(username)
                 .append("`@`%`;");
         log.trace("mapped grant privileges statement: {}", statement);
         return statement.toString();
     }
 
-    default String databaseRevokePrivilegesQuery(String username) {
-        final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON *.* FROM `")
+    default String databaseRevokePrivilegesQuery(String database, String username) {
+        final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON `")
+                .append(database)
+                .append("`.* FROM `")
                 .append(username)
                 .append("`@`%`;");
         log.trace("mapped revoke privileges statement: {}", statement);
@@ -858,7 +860,7 @@ public interface MariaDbMapper {
     }
 
     default SelectConditionStep<Record> subsetDtoToSelectConditions(SelectJoinStep<Record> step, DatabaseDto database,
-                                                                    SubsetDto data) throws TableNotFoundException,
+                                                                    SubsetDto data) throws ColumnNotFoundException,
             ImageNotFoundException {
         if (data.getFilter() == null || data.getFilter().isEmpty()) {
             return step.where();
@@ -867,14 +869,14 @@ public interface MariaDbMapper {
         FilterTypeDto next = null;
         for (int i = 0; i < data.getFilter().size(); i++) {
             final FilterDto filter = data.getFilter().get(i);
-            final ColumnDto column = columnIdToColumnDto(database, filter.getColumnId());
+            final String columnName = columnIdToColumnName(database, data.getDatasourceType(), filter.getColumnId());
             if (i == 0) {
-                conditions = step.where(filterDtoToCondition(database, column, filter));
+                conditions = step.where(filterDtoToCondition(database, columnName, filter));
             } else if (next != null) {
                 if (next.equals(FilterTypeDto.OR)) {
-                    conditions = conditions.or(filterDtoToCondition(database, column, filter));
+                    conditions = conditions.or(filterDtoToCondition(database, columnName, filter));
                 } else if (next.equals(FilterTypeDto.AND)) {
-                    conditions = conditions.and(filterDtoToCondition(database, column, filter));
+                    conditions = conditions.and(filterDtoToCondition(database, columnName, filter));
                 }
             }
             next = filter.getType();
@@ -882,63 +884,72 @@ public interface MariaDbMapper {
         return conditions;
     }
 
-    default Condition filterDtoToCondition(DatabaseDto database, ColumnDto column, FilterDto data)
+    default String columnIdToColumnName(DatabaseDto database, DatasourceType type, UUID columnId) throws ColumnNotFoundException {
+        return switch (type) {
+            case VIEW -> columnIdToViewColumnDto(database, columnId)
+                    .getInternalName();
+            case TABLE -> columnIdToColumnDto(database, columnId)
+                    .getInternalName();
+        };
+    }
+
+    default Condition filterDtoToCondition(DatabaseDto database, String columnName, FilterDto data)
             throws ImageNotFoundException {
         final String operator = operatorIdToOperatorDto(database, data.getOperatorId()).getValue();
         switch (operator) {
             case "=":
             case "<=>":
-                return field(name(column.getInternalName())).eq(data.getValue());
+                return field(name(columnName)).eq(data.getValue());
             case "<":
-                return field(name(column.getInternalName())).lt(data.getValue());
+                return field(name(columnName)).lt(data.getValue());
             case "<=":
-                return field(name(column.getInternalName())).le(data.getValue());
+                return field(name(columnName)).le(data.getValue());
             case ">":
-                return field(name(column.getInternalName())).gt(data.getValue());
+                return field(name(columnName)).gt(data.getValue());
             case ">=":
-                return field(name(column.getInternalName())).ge(data.getValue());
+                return field(name(columnName)).ge(data.getValue());
             case "!=":
-                return field(name(column.getInternalName())).ne(data.getValue());
+                return field(name(columnName)).ne(data.getValue());
             case "LIKE":
-                return field(name(column.getInternalName())).like(data.getValue());
+                return field(name(columnName)).like(data.getValue());
             case "NOT LIKE":
-                return field(name(column.getInternalName())).notLike(data.getValue());
+                return field(name(columnName)).notLike(data.getValue());
             case "IN":
-                return field(name(column.getInternalName())).in(data.getValue());
+                return field(name(columnName)).in(data.getValue());
             case "NOT IN":
-                return field(name(column.getInternalName())).notIn(data.getValue());
+                return field(name(columnName)).notIn(data.getValue());
             case "IS NOT NULL":
-                return field(name(column.getInternalName())).isNotNull();
+                return field(name(columnName)).isNotNull();
             case "IS NULL":
-                return field(name(column.getInternalName())).isNull();
+                return field(name(columnName)).isNull();
             case "REGEXP":
-                return field(name(column.getInternalName())).likeRegex(data.getValue());
+                return field(name(columnName)).likeRegex(data.getValue());
             case "NOT REGEXP":
-                return field(name(column.getInternalName())).notLikeRegex(data.getValue());
+                return field(name(columnName)).notLikeRegex(data.getValue());
         }
         log.error("Failed to map operator: {}", operator);
         throw new IllegalArgumentException("Failed to map operator: " + operator);
     }
 
     default SelectSeekStepN<Record> subsetDtoToSelectOrder(SelectConditionStep<Record> step, DatabaseDto database,
-                                                           SubsetDto data) throws TableNotFoundException {
+                                                           SubsetDto data) throws ColumnNotFoundException {
         final List<OrderField<Object>> sort = new LinkedList<>();
         for (OrderDto order : data.getOrder()) {
-            final ColumnDto column = columnIdToColumnDto(database, order.getColumnId());
+            final String columnName = columnIdToColumnName(database, data.getDatasourceType(), order.getColumnId());
             if (order.getDirection() == null) {
-                sort.add(field(name(column.getInternalName())));
+                sort.add(field(name(columnName)));
                 continue;
             }
             switch (order.getDirection()) {
-                case ASC -> sort.add(field(name(column.getInternalName())).asc());
-                case DESC -> sort.add(field(name(column.getInternalName())).desc());
+                case ASC -> sort.add(field(name(columnName)).asc());
+                case DESC -> sort.add(field(name(columnName)).desc());
             }
         }
         return step.orderBy(sort);
     }
 
     default String subsetDtoToRawQuery(DSLContext context, DatabaseDto database, SubsetDto data)
-            throws TableNotFoundException, ImageNotFoundException, ViewNotFoundException {
+            throws TableNotFoundException, ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
         final String datasourceName;
         final List<Field<Object>> columns = switch (data.getDatasourceType()) {
             case TABLE -> {
@@ -960,6 +971,7 @@ public interface MariaDbMapper {
                         .toList();
             }
         };
+        log.debug("datasource is of type {} and has name: {}", data.getDatasourceType(), datasourceName);
         final SelectJoinStep<Record> query = context.select(columns)
                 .from(name(datasourceName));
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
@@ -980,13 +992,32 @@ public interface MariaDbMapper {
                 .filter(c -> c.getId().equals(columnId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find filtered column with id: {}", columnId);
-            throw new TableNotFoundException("Failed to find filtered column");
+            log.error("Failed to find filtered column: {}", columnId);
+            throw new TableNotFoundException("Failed to find filtered column: " + columnId);
         }
         return optional.get();
     }
 
-    default ColumnDto columnIdToColumnDto(DatabaseDto database, UUID columnId) throws TableNotFoundException {
+    default ViewColumnDto columnIdToViewColumnDto(DatabaseDto database, UUID columnId) throws ColumnNotFoundException {
+        if (columnId == null) {
+            return null;
+        }
+        final Optional<ViewColumnDto> optional = database.getViews()
+                .stream()
+                .map(ViewDto::getColumns)
+                .flatMap(List::stream)
+                .filter(column -> column.getId().equals(columnId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find column: {}", columnId);
+            throw new ColumnNotFoundException("Failed to find column: " + columnId);
+        }
+        final ViewColumnDto column = optional.get();
+        log.trace("mapped column id {} to view column: {}", columnId, column.getInternalName());
+        return column;
+    }
+
+    default ColumnDto columnIdToColumnDto(DatabaseDto database, UUID columnId) throws ColumnNotFoundException {
         if (columnId == null) {
             return null;
         }
@@ -998,9 +1029,11 @@ public interface MariaDbMapper {
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find column: {}", columnId);
-            throw new TableNotFoundException("Failed to find column");
+            throw new ColumnNotFoundException("Failed to find column: " + columnId);
         }
-        return optional.get();
+        final ColumnDto column = optional.get();
+        log.trace("mapped column id {} to column: {}", columnId, column.getInternalName());
+        return column;
     }
 
     default OperatorDto operatorIdToOperatorDto(DatabaseDto database, UUID operatorId) throws ImageNotFoundException {
@@ -1011,8 +1044,8 @@ public interface MariaDbMapper {
                 .filter(op -> op.getId().equals(operatorId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find operator with id: {}", operatorId);
-            throw new ImageNotFoundException("Failed to find operator");
+            log.error("Failed to find operator: {}", operatorId);
+            throw new ImageNotFoundException("Failed to find operator: " + operatorId);
         }
         return optional.get();
     }
@@ -1023,9 +1056,9 @@ public interface MariaDbMapper {
                 .filter(t -> t.getId().equals(tableId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find table with id: {}", tableId);
+            log.error("Failed to find table: {}", tableId);
             log.trace("known table ids: {}", database.getTables().stream().map(TableDto::getId).collect(Collectors.toList()));
-            throw new TableNotFoundException("Failed to find table id: " + tableId);
+            throw new TableNotFoundException("Failed to find table: " + tableId);
         }
         return optional.get();
     }
@@ -1036,9 +1069,9 @@ public interface MariaDbMapper {
                 .filter(v -> v.getId().equals(viewId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id: {}", viewId);
+            log.error("Failed to find view: {}", viewId);
             log.trace("known view ids: {}", database.getViews().stream().map(ViewDto::getId).collect(Collectors.toList()));
-            throw new ViewNotFoundException("Failed to find view id: " + viewId);
+            throw new ViewNotFoundException("Failed to find view: " + viewId);
         }
         return optional.get();
     }

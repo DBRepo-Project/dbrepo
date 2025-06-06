@@ -238,7 +238,8 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException {
+    public ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException,
+            DataServiceException, ColumnNotFoundException {
         final ResponseEntity<ViewDto> response;
         final String path = "/api/database/" + databaseId + "/view";
         log.trace("create view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
@@ -250,6 +251,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to create view: {}", e.getMessage());
             throw new DataServiceException("Failed to create view: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to create view: not found: {}", e.getMessage());
+            throw new ColumnNotFoundException("Failed to create view: not found: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create view: wrong http code: {}", response.getStatusCode());

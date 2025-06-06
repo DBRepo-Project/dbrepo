@@ -74,7 +74,7 @@ public class ViewServiceImpl implements ViewService {
     @Transactional
     public View create(Database database, User creator, CreateViewDto data) throws MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, ColumnNotFoundException {
         /* create in metadata database */
         final View view = View.builder()
                 .database(database)

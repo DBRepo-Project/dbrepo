@@ -283,7 +283,8 @@ class DatabaseUnitTest(unittest.TestCase):
             response = RestClient(username="a", password="b").update_database_visibility(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                 is_public=True,
-                is_schema_public=True)
+                is_schema_public=True,
+                is_dashboard_enabled=True)
             self.assertEqual(response.is_public, True)
 
     def test_update_database_visibility_400_fails(self):
@@ -295,7 +296,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 RestClient(username="a", password="b").update_database_visibility(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     is_public=True,
-                    is_schema_public=True)
+                    is_schema_public=True,
+                    is_dashboard_enabled=True)
             except MalformedError:
                 pass
 
@@ -308,7 +310,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 response = RestClient(username="a", password="b").update_database_visibility(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     is_public=True,
-                    is_schema_public=True)
+                    is_schema_public=True,
+                    is_dashboard_enabled=True)
             except ForbiddenError:
                 pass
 
@@ -321,7 +324,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 response = RestClient(username="a", password="b").update_database_visibility(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     is_public=True,
-                    is_schema_public=True)
+                    is_schema_public=True,
+                    is_dashboard_enabled=True)
             except NotExistsError:
                 pass
 
@@ -334,7 +338,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 RestClient(username="a", password="b").update_database_visibility(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     is_public=True,
-                    is_schema_public=True)
+                    is_schema_public=True,
+                    is_dashboard_enabled=True)
             except ServiceConnectionError:
                 pass
 
@@ -347,7 +352,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 RestClient(username="a", password="b").update_database_visibility(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     is_public=True,
-                    is_schema_public=True)
+                    is_schema_public=True,
+                    is_dashboard_enabled=True)
             except ServiceError:
                 pass
 
@@ -360,7 +366,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 RestClient(username="a", password="b").update_database_visibility(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     is_public=True,
-                    is_schema_public=True)
+                    is_schema_public=True,
+                    is_dashboard_enabled=True)
             except ResponseCodeError:
                 pass
 
@@ -368,7 +375,9 @@ class DatabaseUnitTest(unittest.TestCase):
         # test
         try:
             RestClient().update_database_visibility(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                                    is_public=True, is_schema_public=True)
+                                                    is_public=True,
+                                                    is_schema_public=True,
+                                                    is_dashboard_enabled=True)
         except AuthenticationError:
             pass
 

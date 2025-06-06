@@ -183,7 +183,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "1.9.2",
+        "version": "1.9.3",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"

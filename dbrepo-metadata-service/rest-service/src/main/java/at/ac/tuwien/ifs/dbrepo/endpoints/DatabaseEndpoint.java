@@ -455,50 +455,6 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                         databaseService.modifyImage(database, image))));
     }
 
-    @PutMapping("/{databaseId}/dashboard")
-    @Transactional
-    @PreAuthorize("hasAuthority('system')")
-    @Observed(name = "dbrepo_database_dashboard")
-    @Operation(summary = "Update database dashboard uid",
-            description = "Updates the dashboard uid for a database with given id. Only the database owner can perform this operation. Requires role `system`.",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Modify of dashboard uid was successful",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Malformed payload",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))})
-    })
-    public ResponseEntity<DatabaseBriefDto> modifyDashboard(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                            @Valid @RequestBody DatabaseModifyDashboardDto data)
-            throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint modify database dashboard uid, databaseId={}, data.uid={}", databaseId, data.getUid());
-        final Database database = databaseService.findById(databaseId);
-        return ResponseEntity.accepted()
-                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyDashboard(database, data.getUid()))));
-    }
-
     @GetMapping("/{databaseId}/image")
     @Transactional
     @Observed(name = "dbrepo_database_image_view")
