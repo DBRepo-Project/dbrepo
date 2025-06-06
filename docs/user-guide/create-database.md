@@ -10,8 +10,8 @@ A database can be created by choosing a name (e.g. My Database), selecting an en
 visibility, this can be [changed later](../update-visibility).
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/create-database.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/create-database.mp4" type="video/mp4" />
+  <source src="../../videos/create-database.webm" type="video/webm" />
+  <source src="../../videos/create-database.mp4" type="video/mp4" />
 </video>
 
 ### Python

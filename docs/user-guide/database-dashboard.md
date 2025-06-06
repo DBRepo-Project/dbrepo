@@ -19,8 +19,8 @@ Everytime the views of the database change (e.g. a new view is added, a view is 
 this database is provisioned.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/database-dashboard.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/database-dashboard.mp4" type="video/mp4" />
+  <source src="../../videos/database-dashboard.webm" type="video/webm" />
+  <source src="../../videos/database-dashboard.mp4" type="video/mp4" />
 </video>
 
 !!! abstract "Note"
@@ -34,8 +34,8 @@ A user wants to create a dashboard of available data sources and add personal cu
 As a database owner, you can disable database dashboards. They are enabled by default.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/disable-dashboard.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/disable-dashboard.mp4" type="video/mp4" />
+  <source src="../../videos/disable-dashboard.webm" type="video/webm" />
+  <source src="../../videos/disable-dashboard.mp4" type="video/mp4" />
 </video>
 
 ### Python

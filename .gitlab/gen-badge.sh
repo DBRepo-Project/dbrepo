@@ -22,3 +22,8 @@ echo "[DEBUG] obtain security project badge from url: $URL ..."
 curl -fsSL $URL > "./final/${DOC_VERSION}/images/security.svg"
 
 echo "[INFO] retrieved badges"
+
+URL="https://registry.datalab.tuwien.ac.at/api/v2.0/projects/dbrepo/repositories/data-service"
+echo "[DEBUG] obtain pull count from url: $URL"
+PULL_COUNT=$(curl -fsSL "$URL" | jq .pull_count)
+anybadge --label "docker pulls" --color "#007ec6" --value $PULL_COUNT > "./final/${DOC_VERSION}/images/pulls.svg"

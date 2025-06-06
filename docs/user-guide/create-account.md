@@ -14,7 +14,7 @@ A user wants to create an account in DBRepo.
 To create a new account in DBRepo with the UI, provide your details in the Auth Service.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/create-account.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/create-account.mp4" type="video/mp4" />
+  <source src="../../videos/create-account.webm" type="video/webm" />
+  <source src="../../videos/create-account.mp4" type="video/mp4" />
 </video>
 

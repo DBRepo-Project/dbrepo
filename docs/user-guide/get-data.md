@@ -36,15 +36,15 @@ The UI can be used to fetch data. The data preview can be used to explore data b
 with the arrows and selecting a bigger page size.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/fetch-data.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/fetch-data.mp4" type="video/mp4" />
+  <source src="../../videos/fetch-data.webm" type="video/webm" />
+  <source src="../../videos/fetch-data.mp4" type="video/mp4" />
 </video>
 
 Export the complete data of the data source by clicking the "Download" button.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/export-data.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/export-data.mp4" type="video/mp4" />
+  <source src="../../videos/export-data.webm" type="video/webm" />
+  <source src="../../videos/export-data.mp4" type="video/mp4" />
 </video>
 
 ### Python

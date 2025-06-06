@@ -50,8 +50,8 @@ A datasource therefore can have four possible visibility states:
 ### UI
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/update-visibility.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/update-visibility.mp4" type="video/mp4" />
+  <source src="../../videos/update-visibility.webm" type="video/webm" />
+  <source src="../../videos/update-visibility.mp4" type="video/mp4" />
 </video>
 
 ### Python
