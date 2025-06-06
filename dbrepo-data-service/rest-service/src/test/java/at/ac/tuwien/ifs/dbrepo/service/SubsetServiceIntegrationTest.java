@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -66,7 +66,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findAll_succeeds()  throws SQLException, QueryNotFoundException,
+    public void findAll_succeeds() throws SQLException, QueryNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
             UserNotFoundException {
 
@@ -78,7 +78,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findAll_onlyPersisted_succeeds()  throws SQLException, QueryNotFoundException,
+    public void findAll_onlyPersisted_succeeds() throws SQLException, QueryNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException,
             UserNotFoundException {
 
@@ -244,7 +244,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     @Test
     public void create_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
-            TableNotFoundException, QueryMalformedException, ImageNotFoundException, ViewNotFoundException {
+            TableNotFoundException, QueryMalformedException, ImageNotFoundException, ViewNotFoundException,
+            ColumnNotFoundException {
 
         /* test */
         final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_ID);
@@ -255,7 +256,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     @MethodSource("create_arguments")
     public void create_illegalQuery_succeeds(String name, String injection) throws TableNotFoundException,
             QueryStoreInsertException, ViewMalformedException, SQLException, QueryMalformedException,
-            ImageNotFoundException, ViewNotFoundException {
+            ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
         final SubsetDto request = SubsetDto.builder()
                 .datasourceId(TABLE_1_ID)
                 .datasourceType(DatasourceType.TABLE)

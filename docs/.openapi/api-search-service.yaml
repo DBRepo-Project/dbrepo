@@ -1,0 +1,404 @@
+{
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "properties": {
+          "code": {
+            "example": "error.dashboard.create",
+            "type": "string"
+          },
+          "message": {
+            "example": "Message",
+            "type": "string"
+          },
+          "status": {
+            "example": "BAD_REQUEST",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IndexDto": {
+        "properties": {
+          "results": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "Same as the requested type",
+            "enum": [
+              "database",
+              "table",
+              "view",
+              "column",
+              "user",
+              "identifier",
+              "concept",
+              "unit"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "type"
+        ]
+      },
+      "IndexFieldDto": {
+        "properties": {
+          "attr_friendly_name": {
+            "example": "Name",
+            "type": "string"
+          },
+          "attr_name": {
+            "example": "name",
+            "type": "string"
+          },
+          "type": {
+            "description": "OpenSearch data types.",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attr_name",
+          "attr_friendly_name",
+          "type"
+        ],
+        "type": "object"
+      },
+      "IndexFieldsDto": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/IndexFieldDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "type": "object"
+      },
+      "SearchRequestDto": {
+        "properties": {
+          "field_value_pairs": {
+            "type": "object"
+          },
+          "search_term": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "search_term",
+          "field_value_pairs"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "in": "header",
+        "scheme": "basic",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "in": "header",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Sourcecode Documentation",
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/"
+  },
+  "info": {
+    "contact": {
+      "email": "andreas.rauber@tuwien.ac.at",
+      "name": "Prof. Andreas Rauber"
+    },
+    "description": "Service that searches the search database",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "title": "Database Repository Search Service API",
+    "version": "1.9.3"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/search": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Performs a fuzzy search",
+        "operationId": "post_fuzzy_search",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK, contains the elements formatted as an array of JSON arrays"
+          },
+          "415": {
+            "description": "Wrong accept type"
+          }
+        },
+        "summary": "Performs a fuzzy search",
+        "tags": [
+          "search-endpoint"
+        ]
+      }
+    },
+    "/api/search/{field_type}": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Performs a general search",
+        "operationId": "post_general_search",
+        "parameters": [
+          {
+            "description": "The search type.",
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "database",
+                "table",
+                "view",
+                "column",
+                "user",
+                "identifier",
+                "concept",
+                "unit"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "t1",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "t2",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestDto"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "results": {
+                      "items": {
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "type": {
+                      "description": "Same as the requested type",
+                      "enum": [
+                        "database",
+                        "table",
+                        "view",
+                        "column",
+                        "user",
+                        "identifier",
+                        "concept",
+                        "unit"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK, contains the elements formatted as an array of JSON arrays"
+          }
+        },
+        "summary": "Performs a general search",
+        "tags": [
+          "search-endpoint"
+        ]
+      }
+    },
+    "/api/search/{field_type}/fields": {
+      "get": {
+        "operationId": "get_fields",
+        "parameters": [
+          {
+            "description": "The search type.",
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "database",
+                "table",
+                "view",
+                "column",
+                "user",
+                "identifier",
+                "concept",
+                "unit"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexFieldsDto"
+                }
+              }
+            },
+            "description": "List of fields"
+          },
+          "404": {
+            "description": "Invalid type."
+          }
+        },
+        "summary": "Get searchable fields",
+        "tags": [
+          "search-endpoint"
+        ]
+      }
+    },
+    "/api/search/{index}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Gets the index",
+        "operationId": "get_index",
+        "parameters": [
+          {
+            "description": "The search type.",
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "database",
+                "table",
+                "view",
+                "column",
+                "user",
+                "identifier",
+                "concept",
+                "unit"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "field_value_pairs": {
+                  "type": "object"
+                },
+                "search_term": {
+                  "example": "air quality",
+                  "type": "string"
+                },
+                "t1": {
+                  "example": 0,
+                  "type": "integer"
+                },
+                "t2": {
+                  "example": 100,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexDto"
+                }
+              }
+            },
+            "description": "OK, contains the elements formatted as an array of JSON arrays"
+          }
+        },
+        "summary": "Gets the index",
+        "tags": [
+          "search-endpoint"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Generated server url",
+      "url": "http://localhost:4000"
+    },
+    {
+      "description": "Sandbox",
+      "url": "https://test.dbrepo.tuwien.ac.at"
+    }
+  ]
+}

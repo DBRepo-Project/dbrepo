@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.GrantTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
@@ -47,12 +48,15 @@ public class GrantServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbConfig.dropDatabase(CONTAINER_4_PRIVILEGED_DTO, DATABASE_4_INTERNAL_NAME);
         MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_4_PRIVILEGED_DTO);
         MariaDbConfig.revokeAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        MariaDbConfig.revokeAccess(DATABASE_4_PRIVILEGED_DTO, USER_4_USERNAME);
     }
 
     @Test
-    public void find_read_succeeds() throws SQLException, DatabaseMalformedException {
+    public void find_read_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
         MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
@@ -65,7 +69,20 @@ public class GrantServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void find_write_succeeds() throws SQLException, DatabaseMalformedException {
+    public void find_read2_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
+
+        /* mock */
+        MariaDbConfig.grantAccess(DATABASE_4_PRIVILEGED_DTO, grantDefaultRead, USER_4_USERNAME);
+
+        /* test */
+        final DatabaseGrantsDto response = grantService.find(DATABASE_4_PRIVILEGED_DTO, USER_4_DTO);
+        assertNotNull(response);
+        assertEquals(GrantTypeDto.READ, response.getType());
+        assertEquals(Arrays.stream(grantDefaultRead.split(",")).map(String::trim).map(String::toUpperCase).collect(Collectors.toSet()), response.getGrants());
+    }
+
+    @Test
+    public void find_write_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
         MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);

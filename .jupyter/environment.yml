@@ -1,0 +1,4 @@
+name: main
+dependencies:
+  - dbrepo=1.9.1
+  - python-dotenv
