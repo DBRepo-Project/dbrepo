@@ -22,6 +22,7 @@ anybadge = "==1.14.0"
 gunicorn = "*"
 
 [dev-packages]
+sphinx-markdown-builder = "*"
 
 [requires]
 python_version = "3.11"

@@ -17,6 +17,6 @@ gen-helm-doc: build-helm ## Generate Helm documentation and schema
 gen-docs-doc: ## Generate DBRepo documentation.
 	mkdocs build
 
-.PHONY: gen-lib-doc
-gen-lib-doc: ## Generate Python Library documentation.
+.PHONY: gen-python-doc
+gen-python-doc: ## Generate Python Library documentation.
 	bash ./lib/python/build-site.sh

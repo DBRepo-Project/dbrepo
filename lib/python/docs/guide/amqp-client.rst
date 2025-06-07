@@ -1,5 +1,5 @@
-AMQP API Client
-===============
+AMQP API
+--------
 
 .. automodule:: dbrepo.AmqpClient
     :members:
