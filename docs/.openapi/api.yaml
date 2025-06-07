@@ -15,7 +15,7 @@ info:
   license:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
-  title: DBRepo REST API
+  title: REST API
   version: 1.9.3
 servers:
   - description: Test Instance

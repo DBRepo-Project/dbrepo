@@ -616,7 +616,7 @@ release-docs:
     - "mkdir -p ./final/${DOC_VERSION}/rest"
     - "mkdir -p ./final/${APP_VERSION}"
   script:
-    - "make gen-lib-doc gen-docs-doc package-config"
+    - "make gen-python-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
     - "cp ./docs/.openapi/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # openapi
     - "cp ./docs/.openapi/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # openapi

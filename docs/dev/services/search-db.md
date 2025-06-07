@@ -20,7 +20,7 @@ The Search Database contains duplicate metadata from the Metadata Database for f
 
 ## Configuration
 
-This section will be expanded soon.
+This section will be expanded in the future.
 
 ## Limitations
 
