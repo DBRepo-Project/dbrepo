@@ -3,9 +3,11 @@
 .PHONY: gen-openapi-doc
 gen-openapi-doc: build-images ## Generate Swagger documentation and fetch.
 	docker compose up -d
-	bash .docs/.openapi/openapi-generate.sh
+	bash ./docs/.openapi/openapi-generate.sh
 	docker compose down
-	openapi-merge-cli --config .docs/.openapi/openapi-merge.json
+	openapi-merge-cli --config ./docs/.openapi/openapi-merge.json
+	cp ./docs/api/rest.tpl ./docs/api/rest.md
+	openapi-to-md ./docs/.openapi/api.yaml >> ./docs/api/rest.md
 
 .PHONY: gen-helm-doc
 gen-helm-doc: build-helm ## Generate Helm documentation and schema
