@@ -1,10 +1,15 @@
 #!/bin/bash
 
-#python3 -m venv ./lib/python/venv
-#source ./lib/python/venv/bin/activate
-#PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev
-#sphinx-apidoc -o ./lib/python/docs/source ./lib/python/dbrepo
-#sphinx-build -M html ./lib/python/docs/ ./lib/python/docs/build/
+echo "[DEBUG] Activate venv ..."
+python3 -m venv ./lib/python/venv
+source ./lib/python/venv/bin/activate
+PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev
+
+echo "[DEBUG] Build api docs ..."
+sphinx-apidoc -o ./lib/python/docs/source ./lib/python/dbrepo
+
+echo "[DEBUG] Build html docs ..."
+sphinx-build -M html ./lib/python/docs/ ./lib/python/docs/build/
 
 echo "[DEBUG] Build markdown docs ..."
 sphinx-build -M markdown ./lib/python/docs/ ./lib/python/docs/build/
