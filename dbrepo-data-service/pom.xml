@@ -16,7 +16,7 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
     <name>data-service</name>
-    <version>1.9.3</version>
+    <version>1.10.0</version>
 
     <description>Service that manages the data</description>
 
@@ -55,16 +55,17 @@
         <jackson.version>2.15.2</jackson.version>
         <c3p0.version>0.10.2</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
-        <aws-s3.version>2.25.23</aws-s3.version>
+        <aws-sdk.version>2.20.18</aws-sdk.version>
         <minio.version>8.5.7</minio.version>
         <guava.version>33.3.0-jre</guava.version>
-        <spark.version>4.0.0-preview2</spark.version>
+        <spark.version>4.0.0</spark.version>
         <keycloak.version>26.0.4</keycloak.version>
         <scala.version>2.13</scala.version>
-        <antlr-runtime.version>3.5.2</antlr-runtime.version>
+        <duckdb.version>1.2.2.0</duckdb.version>
         <micrometer.version>1.10.0</micrometer.version>
-        <!-- see https://github.com/apache/spark/blob/cde8e4a82e20a363861f451ebd5138efb3194ab8/pom.xml -->
+        <!-- hadoop version is defined in the bitnami/spark image -->
         <hadoop.version>3.4.0</hadoop.version>
+        <!-- spark needs one major version below spring boot -->
         <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
         <sonar.coverage.jacoco.xmlReportPaths>
             ./report/target/site/jacoco-aggregate/jacoco.xml
@@ -96,7 +97,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.9.3</version>
+            <version>1.10.0</version>
         </dependency>
         <!-- Spark -->
         <dependency>
@@ -109,11 +110,6 @@
                     <artifactId>log4j-slf4j2-impl</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr-runtime</artifactId>
-            <version>${antlr-runtime.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -136,12 +132,11 @@
             <artifactId>hadoop-aws</artifactId>
             <version>${hadoop.version}</version>
         </dependency>
-        <!-- Api -->
+        <!-- Data Guess -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
+            <groupId>org.duckdb</groupId>
+            <artifactId>duckdb_jdbc</artifactId>
+            <version>${duckdb.version}</version>
         </dependency>
         <!-- Data Source -->
         <dependency>
@@ -167,7 +162,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>${aws-s3.version}</version>
+            <version>${aws-sdk.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>

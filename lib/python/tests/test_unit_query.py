@@ -101,7 +101,8 @@ class QueryUnitTest(unittest.TestCase):
             mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
             mock.post(f'/api/database/{self.database.id}/subset', json=exp,
-                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8'}, status_code=201)
+                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8', 'X-Headers': 'id,username'},
+                      status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
@@ -271,7 +272,8 @@ class QueryUnitTest(unittest.TestCase):
             mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
             mock.post(f'/api/database/{self.database.id}/subset', json=exp,
-                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8'}, status_code=201)
+                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8', 'X-Headers': 'id,username'},
+                      status_code=201)
             # test
 
             client = RestClient()
@@ -300,7 +302,7 @@ class QueryUnitTest(unittest.TestCase):
                         identifiers=[])
             # mock
             mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     json=exp.model_dump())
+                     headers={'X-Headers': 'id,username'}, json=exp.model_dump())
             # test
             response = RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939")
@@ -370,7 +372,7 @@ class QueryUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get(f'/api/database/{self.database.id}/subset', json=[])
+            mock.get(f'/api/database/{self.database.id}/subset', headers={'X-Headers': ''}, json=[])
             # test
             response = RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(exp, response)
@@ -391,8 +393,7 @@ class QueryUnitTest(unittest.TestCase):
                         identifiers=[])
             # mock
             mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     json=exp.model_dump(),
-                     status_code=202)
+                     json=exp.model_dump(), headers={'X-Headers': 'id,username'}, status_code=202)
             # test
             response = RestClient(username='foo', password='bar').update_subset(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732", subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939",
@@ -502,7 +503,8 @@ class QueryUnitTest(unittest.TestCase):
                          result_number=None,
                          identifiers=[])]
             # mock
-            mock.get(f'/api/database/{self.database.id}/subset', json=[exp[0].model_dump()])
+            mock.get(f'/api/database/{self.database.id}/subset', headers={'X-Headers': 'id,username'},
+                     json=[exp[0].model_dump()])
             # test
             response = RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(exp, response)
@@ -550,11 +552,11 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_data_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
-            df = DataFrame.from_records(json.dumps(exp))
+            df = DataFrame.from_records(exp)
             # mock
             mock.get(
                 '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939/data',
-                json=json.dumps(exp))
+                headers={'X-Headers': 'id,username'}, json=exp)
             # test
             response = RestClient().get_subset_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939")
@@ -563,11 +565,11 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_data_dataframe_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
-            df = DataFrame.from_records(json.dumps(exp))
+            df = DataFrame.from_records(exp)
             # mock
             mock.get(
                 '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939/data',
-                json=json.dumps(exp))
+                headers={'X-Headers': 'id,username'}, json=exp)
             # test
             response = RestClient().get_subset_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939")

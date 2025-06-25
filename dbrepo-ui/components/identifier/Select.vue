@@ -23,10 +23,16 @@
               v-slot:activator="{ props }">
               <span class="mr-2">{{ formatTimestampUTCLabel(identifier.created) }}</span>
               <v-icon
+                v-if="identifier.status === 'published'"
                 :color="identifier.status === 'published' ? 'primary' : null"
                 v-bind="props">
-                {{ identifier.status === 'published' ? 'mdi-identifier' : 'mdi-pencil-outline' }}
+                mdi-identifier
               </v-icon>
+              <span
+                v-else
+                class="text-uppercase">
+                {{ $t('navigation.draft') }}
+              </span>
             </template>
           </v-tooltip>
         </v-list-item-action>
@@ -102,7 +108,8 @@ export default {
         return null
       }
       if (identifier.status === 'published') {
-        return `/pid/${identifier.id}`
+        const identifierService = useIdentifierService()
+        return identifierService.identifierToUrl(identifier)
       }
       switch (identifier.type) {
         case 'database':

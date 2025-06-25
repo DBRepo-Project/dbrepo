@@ -204,7 +204,6 @@ services:
     image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:${APP_VERSION}
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
-      ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://analyse-service:8080}"
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
@@ -256,30 +255,6 @@ services:
         condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-analyse-service:
-    restart: "no"
-    container_name: dbrepo-analyse-service
-    hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:${APP_VERSION}
-    environment:
-      AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
-      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
-      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
-      JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
-      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
-      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_ENDPOINT: "${S3_ENDPOINT:-storage-service:9000}"
-      S3_PROTO: "${S3_PROTO:-http}"
-      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
-      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
-      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
-      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
-    healthcheck:
-      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
-      <<: *healthcheck-params
     logging:
       driver: json-file
 
@@ -384,8 +359,6 @@ services:
     volumes:
       - ./config/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
     depends_on:
-      dbrepo-analyse-service:
-        condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
       dbrepo-metadata-service:
@@ -530,11 +503,11 @@ services:
       BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
-      COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[2]}"
+      COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[*]}"
       EXCHANGE_NAME: "${EXCHANGE_NAME:-dbrepo}"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
-      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT}"
-      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT, EXECUTE}"
+      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: ${LOG_LEVEL:-info}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}

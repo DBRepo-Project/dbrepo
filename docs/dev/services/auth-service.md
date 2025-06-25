@@ -19,21 +19,22 @@ author: Martin Weise
 
 ## Overview
 
-By default, users are created using the [User Interface](../ui) and the sign-up page in the User Interface.
-This creates a new user in Keycloak. The user identity is then managed by the Auth Service. Only a very small subset
-of immutable properties (id, username) is mirrored in the [Metadata Database](../metadata-db) for faster access.
+By default, users are created using the [User Interface](/infrastructures/dbrepo/dev/services/ui) and the sign-up page
+in the User Interface. This creates a new user in Keycloak. The user identity is then managed by the Auth Service. Only
+a very small subset of immutable properties (id, username) is mirrored in
+the [Metadata Database](/infrastructures/dbrepo/dev/services/metadata-db) for faster access.
 
 ## Identities
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.5
 
-Identities are managed via LDAP through the [Identity Service](../identity-service). The normal workflow is that the
-[Metadata Service](../metadata-service) adds identities when user register. In some cases, where this is not possible
-(e.g. in workshop-scenarios where accounts are created before the workshop starts), identities need to be created
-manually in Keycloak. The recommended workflow is:
+Identities are managed via LDAP through the [Identity Service](/infrastructures/dbrepo/dev/services/identity-service).
+The normal workflow is that the [Metadata Service](/infrastructures/dbrepo/dev/services/metadata-service) adds
+identities when user register. In some cases, where this is not possible (e.g. in workshop-scenarios where accounts are
+created before the workshop starts), identities need to be created manually in Keycloak. The recommended workflow is:
 
 1. Login to the Auth Service as **Admin** and in the dbrepo realm navigate to **Users**
-2. Click the **Add user** button and fill out the Username field and assign the group `researchers` by clicking 
+2. Click the **Add user** button and fill out the Username field and assign the group `researchers` by clicking
    the **Join Groups** and selecting it. Click **Join** and **Create**.
 3. Click the **Credentials** tab above and **Set password**. In the popup window assign a secure password to the user
    and set **Temporary** to `Off`.
@@ -41,7 +42,7 @@ manually in Keycloak. The recommended workflow is:
     !!! example "Create user with specific id"
 
         The user id is created automatically. In case you need to create a user with specific id such as in migration
-        scenarios, you need to change the `entryUUID` in the [Identity Service](../identity-service) by modifying this
+        scenarios, you need to change the `entryUUID` in the [Identity Service](/infrastructures/dbrepo/dev/services/identity-service) by modifying this
         protected attribute in `relax` mode:
 
         ```bash
@@ -54,7 +55,7 @@ manually in Keycloak. The recommended workflow is:
         ```
 
 4. Finally you need to query the user info once by navigating again to **Users**
-   and search for the **Username** and click :arrow_right: to search. Click the username and ensure that the 
+   and search for the **Username** and click :arrow_right: to search. Click the username and ensure that the
    **User metadata** contains the entry **LDAP_ID**.
 
 ## Groups
@@ -75,8 +76,7 @@ We organize the roles into default- and escalated composite roles. There are thr
 Each of the composite role has a set of other associated composite roles.
 
 <figure markdown>
-![Grouped Roles](../images/groups-roles.png)
-<figcaption>Three groups (Researchers, Developers, Data Stewards) and their composite roles associated.</figcaption>
+![Grouped Roles](/infrastructures/dbrepo/images/groups-roles.png)
 </figure>
 
 There is one role for one specific action in the services. For example: the `create-database` role authorizes a user to
@@ -91,7 +91,7 @@ which is imported into Keycloak on startup.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

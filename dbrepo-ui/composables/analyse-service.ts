@@ -1,21 +1,21 @@
 import {axiosErrorToApiError} from '@/utils'
 
 export const useAnalyseService = (): any => {
-  async function suggest (data: DetermineDataTypesDto): Promise<DataTypesDto[]> {
+  async function determineSchema (s3key: string): Promise<SchemaAnalysisResultDto> {
     const axios = useAxiosInstance()
     console.debug('suggest data types for columns')
-    return new Promise<DataTypesDto[]>((resolve, reject) => {
-      axios.get<DataTypesDto[]>('/api/analyse/datatypes', { params: data })
+    return new Promise<SchemaAnalysisResultDto>((resolve, reject) => {
+      axios.get<SchemaAnalysisResultDto>('/api/analyse/schema/' + s3key)
         .then((response) => {
-          console.info('Suggested data types for column(s)')
+          console.info('Determined schema for dataset')
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to suggest data types for columns', error)
+          console.error('Failed to determine schema for dataset', error)
           reject(axiosErrorToApiError(error))
         })
     })
   }
 
-  return {suggest}
+  return {determineSchema}
 }

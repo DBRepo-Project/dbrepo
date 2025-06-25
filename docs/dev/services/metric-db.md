@@ -18,18 +18,10 @@ author: Martin Weise
 
 ## Overview
 
-The Metric Database is responsible for saving time-series data for the [Dashboard Service](../../api/dashboard-service).
+The Metric Database is responsible for saving time-series data for 
+the [Dashboard Service](/infrastructures/dbrepo/infrastructures/dbrepo/dev/services/dashboard-service/).
 
 ## Metrics
-
-## Analyse Service
-
-| **Metric**                  | **Description**                             |
-|-----------------------------|---------------------------------------------|
-| `dbrepo_analyse_datatypes`  | Time needed to analyse datatypes of dataset |
-| `dbrepo_analyse_keys`       | Time needed to analyse keys of dataset      |
-| `dbrepo_analyse_table_stat` | Time needed to analyse table statistics     |
-| `dbrepo_analyse_table_stat` | Time needed to analyse table statistics     |
 
 ## Auth Service
 
@@ -42,13 +34,6 @@ See [RabbitMQ documentation](https://www.rabbitmq.com/docs/prometheus).
 ## Databases
 
 See [MariaDB Galera documentation](https://galeracluster.com/documentation/html_docs_20210213-1355-master/documentation/galera-manager-monitoring-clusters.html).
-
-The [Data Database Sidecar](#) metrics are:
-
-| **Metric**                      | **Description**                       |
-|---------------------------------|---------------------------------------|
-| `dbrepo_sidecar_import_dataset` | Time needed to import dataset from S3 |
-| `dbrepo_sidecar_export_dataset` | Time needed to export dataset to S3   |
 
 ## Data Service
 
@@ -153,7 +138,7 @@ The [Data Database Sidecar](#) metrics are:
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

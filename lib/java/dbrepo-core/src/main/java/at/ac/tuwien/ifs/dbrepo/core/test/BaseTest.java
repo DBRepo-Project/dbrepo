@@ -158,7 +158,7 @@ public class BaseTest {
     public final static String[] DEFAULT_DATABASE_HANDLING = new String[]{"default-database-handling",
             "update-database-access", "modify-database-visibility", "create-database", "modify-database-owner",
             "delete-database-access", "check-database-access", "list-databases", "modify-database-image",
-            "create-database-access", "find-database", "import-database-data"};
+            "create-database-access", "find-database", "import-database-data", "analyse-datatypes"};
 
     public final static String[] ESCALATED_DATABASE_HANDLING = new String[]{"escalated-database-handling",
             "delete-database"};

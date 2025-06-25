@@ -48,7 +48,11 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     private final IdentifierService identifierService;
     private final IdentifierRepository identifierRepository;
 
-    private static final String LOG_MINT_FAILED = "Failed to mint doi";
+    private static final String LOG_MINT_FAILED = "Failed to mint doi: ";
+    private static final String LOG_EVENT = "event";
+    private static final String LOG_TYPE = "type";
+    private static final String LOG_DOI = "doi";
+    private static final String LOG_ATTRIBUTES = "attributes";
 
     private final ParameterizedTypeReference<DataCiteBody<DataCiteDoi>> dataCiteBodyParameterizedTypeReference = new ParameterizedTypeReference<>() {
     };
@@ -76,7 +80,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     public Identifier publish(Identifier identifier) throws MalformedException, DataServiceConnectionException,
             ExternalServiceException {
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
-        identifier.setDoi(remoteSave(identifier, DataCiteDoiEvent.PUBLISH));
+        identifier.setDoi(remoteSave(identifier, DataCiteDoiEvent.REGISTER));
         return identifierRepository.save(identifier);
     }
 
@@ -102,7 +106,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             DataServiceConnectionException, MalformedException, DatabaseNotFoundException, IdentifierNotFoundException,
             ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ExternalServiceException {
-        data.setDoi(remoteSave(identifierService.save(database, user, data), DataCiteDoiEvent.REGISTER));
+        data.setDoi(remoteSave(identifierService.save(database, user, data), null));
         return identifierService.save(database, user, data);
     }
 
@@ -113,7 +117,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException,
             IdentifierNotFoundException {
         final Identifier identifier = identifierService.create(database, user, data);
-        data.setDoi(remoteSave(identifier, DataCiteDoiEvent.REGISTER));
+        data.setDoi(remoteCreate());
         final IdentifierSaveDto dto = metadataMapper.identifierCreateDtoToIdentifierSaveDto(data);
         dto.setId(identifier.getId());
         return identifierService.save(database, user, dto);
@@ -122,8 +126,79 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     /**
      * Saves the PID remotely in DataCite Fabrica
      *
+     * @return The DOI for this PID.
+     * @throws MalformedException
+     * @throws DataServiceConnectionException
+     * @throws ExternalServiceException
+     */
+    public String remoteCreate() throws MalformedException, DataServiceConnectionException,
+            ExternalServiceException {
+        final String type = "dois";
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
+        final DataCiteCreateDoi attributes = DataCiteCreateDoi.builder()
+                .prefix(dataCiteConfig.getPrefix())
+                .build();
+        final HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(
+                DataCiteBody.<DataCiteCreateDoi>builder()
+                        .data(DataCiteData.<DataCiteCreateDoi>builder()
+                                .type(type)
+                                .attributes(attributes)
+                                .build())
+                        .build(),
+                headers
+        );
+        final String url = dataCiteConfig.getUrl() + "/" + type;
+        log.atDebug()
+                .setMessage("create new doi from url: " + url)
+                .addKeyValue(LOG_TYPE, type)
+                .addKeyValue(LOG_ATTRIBUTES, attributes)
+                .log();
+        log.trace("create new doi from url {}", url);
+        try {
+            final ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
+                    request, dataCiteBodyParameterizedTypeReference);
+            if (response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
+                log.atError()
+                        .setMessage(LOG_MINT_FAILED + response)
+                        .addKeyValue(LOG_TYPE, type)
+                        .addKeyValue(LOG_ATTRIBUTES, attributes)
+                        .log();
+                throw new ExternalServiceException(LOG_MINT_FAILED + response.getBody());
+            }
+            final String doi = response.getBody()
+                    .getData()
+                    .getAttributes()
+                    .getDoi();
+            log.atInfo()
+                    .setMessage("Successfully created new doi: " + doi)
+                    .addKeyValue(LOG_DOI, doi)
+                    .log();
+            return doi;
+        } catch (HttpClientErrorException e) {
+            log.atError()
+                    .setMessage(LOG_MINT_FAILED)
+                    .addKeyValue(LOG_TYPE, type)
+                    .addKeyValue(LOG_ATTRIBUTES, attributes)
+                    .setCause(e)
+                    .log();
+            throw new MalformedException(LOG_MINT_FAILED + e.getMessage(), e);
+        } catch (RestClientException e) {
+            log.atError()
+                    .setMessage(LOG_MINT_FAILED)
+                    .addKeyValue(LOG_TYPE, type)
+                    .addKeyValue(LOG_ATTRIBUTES, attributes)
+                    .setCause(e)
+                    .log();
+            throw new DataServiceConnectionException(LOG_MINT_FAILED + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Saves the PID remotely in DataCite Fabrica
+     *
      * @param identifier The identifier information
-     * @param event      The PID status event, e.g. publish
      * @return The DOI for this PID.
      * @throws MalformedException
      * @throws DataServiceConnectionException
@@ -131,57 +206,70 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
      */
     public String remoteSave(Identifier identifier, DataCiteDoiEvent event) throws MalformedException,
             DataServiceConnectionException, ExternalServiceException {
+        final String type = "dois";
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
-        final DataCiteCreateDoi attributes = metadataMapper.identifierToDataCiteCreateDoi(identifier,
-                endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
-                dataCiteConfig.getPrefix(), event);
+        final DataCiteCreateDoi attributes = metadataMapper.identifierToDataCiteCreateDoi(identifier);
+        attributes.setEvent(event);
+        attributes.setUrl(endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        attributes.setPrefix(dataCiteConfig.getPrefix());
         final HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(
                 DataCiteBody.<DataCiteCreateDoi>builder()
                         .data(DataCiteData.<DataCiteCreateDoi>builder()
-                                .type("dois")
+                                .type(type)
                                 .attributes(attributes)
                                 .build())
                         .build(),
                 headers
         );
-        final String url = dataCiteConfig.getUrl() + "/dois";
+        final String url = dataCiteConfig.getUrl() + "/" + type;
         log.atDebug()
-                .setMessage("register doi from datacite url: " + url)
-                .addKeyValue("type", "dois")
-                .addKeyValue("event", event)
-                .addKeyValue("attributes", attributes)
+                .setMessage("register doi from url: " + url)
+                .addKeyValue(LOG_TYPE, type)
+                .addKeyValue(LOG_EVENT, event)
+                .addKeyValue(LOG_ATTRIBUTES, attributes)
                 .log();
         log.trace("request doi from url {}", url);
         try {
             final ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
                     request, dataCiteBodyParameterizedTypeReference);
             if (response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
-                log.error(LOG_MINT_FAILED + ": {}", response);
-                throw new ExternalServiceException(LOG_MINT_FAILED + ": " + response.getBody());
+                log.atError()
+                        .setMessage(LOG_MINT_FAILED + response)
+                        .addKeyValue(LOG_TYPE, type)
+                        .addKeyValue(LOG_EVENT, event)
+                        .addKeyValue(LOG_ATTRIBUTES, attributes)
+                        .log();
+                throw new ExternalServiceException(LOG_MINT_FAILED + response.getBody());
             }
             final String doi = response.getBody()
                     .getData()
                     .getAttributes()
                     .getDoi();
             log.atInfo()
-                    .setMessage("Saved doi: " + doi)
-                    .addKeyValue("doi", doi)
+                    .setMessage("Successfully requested doi: " + doi)
+                    .addKeyValue(LOG_DOI, doi)
                     .log();
             return doi;
         } catch (HttpClientErrorException e) {
             log.atError()
                     .setMessage(LOG_MINT_FAILED)
+                    .addKeyValue(LOG_TYPE, type)
+                    .addKeyValue(LOG_EVENT, event)
+                    .addKeyValue(LOG_ATTRIBUTES, attributes)
                     .setCause(e)
                     .log();
-            throw new MalformedException(LOG_MINT_FAILED + ": " + e.getMessage(), e);
+            throw new MalformedException(LOG_MINT_FAILED + e.getMessage(), e);
         } catch (RestClientException e) {
             log.atError()
                     .setMessage(LOG_MINT_FAILED)
+                    .addKeyValue(LOG_TYPE, type)
+                    .addKeyValue(LOG_EVENT, event)
+                    .addKeyValue(LOG_ATTRIBUTES, attributes)
                     .setCause(e)
                     .log();
-            throw new DataServiceConnectionException(LOG_MINT_FAILED + ": " + e.getMessage(), e);
+            throw new DataServiceConnectionException(LOG_MINT_FAILED + e.getMessage(), e);
         }
     }
 
