@@ -421,8 +421,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
     relation         ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
     ordinal_position INT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  NOT NULL,
     PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`),
-    UNIQUE (pid, value)
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`

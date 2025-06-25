@@ -45,7 +45,6 @@ public abstract class RestEndpoint {
         return UUID.fromString(user.getId());
     }
 
-    /* FIXME: Heap may run OOM */
     public List<Map<String, Object>> transform(Dataset<Row> dataset) {
         return dataset.collectAsList()
                 .stream()
@@ -58,9 +57,14 @@ public abstract class RestEndpoint {
                         }
                         try {
                             map.put(dataset.columns()[i], Integer.parseInt(String.valueOf(row.get(i))));
-                            map.put(dataset.columns()[i], Double.parseDouble(String.valueOf(row.get(i))));
-                        } catch (NumberFormatException e) {
-                            /* ignore */
+                            continue;
+                        } catch (NumberFormatException e0) {
+                            try {
+                                map.put(dataset.columns()[i], Double.parseDouble(String.valueOf(row.get(i))));
+                                continue;
+                            } catch (NumberFormatException e1) {
+                                /* ignore */
+                            }
                         }
                         map.put(dataset.columns()[i], String.valueOf(row.get(i)));
                     }

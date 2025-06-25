@@ -65,10 +65,10 @@ nav:
         - Metric Database: dev/services/metric-db.md
         - Search Database: dev/services/search-db.md
     - Services:
-        - Analyse Service: dev/services/analyse-service.md
         - Auth Service: dev/services/auth-service.md
         - Broker Service: dev/services/broker-service.md
         - Data Service: dev/services/data-service.md
+        - Dashboard Service: dev/services/dashboard-service.md
         - Gateway Service: dev/services/gateway-service.md
         - Identity Service: dev/services/identity-service.md
         - Metadata Service: dev/services/metadata-service.md

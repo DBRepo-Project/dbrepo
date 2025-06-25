@@ -19,4 +19,4 @@ Reference:
 
 Related:
 
-* [User Interface](../../dev/services/ui)
+* [User Interface](/infrastructures/dbrepo/dev/services/ui)

@@ -15,16 +15,14 @@ original form in this record. This record forms the basis of an analysis carried
 Wien.
 
 <figure markdown>
-![Grafana Dashboard](../../images/screenshots/air-dashboard.png)
-<figcaption>Figure 1: Grafana dashboard visualizing the dataset.</figcaption>
+![Grafana Dashboard](/infrastructures/dbrepo/images/screenshots/air-dashboard.png)
 </figure>
 
 The analysis was carried out in a Jupyter Notebook hosted by our IT-department
 [JupyterHub](https://science.datalab.tuwien.ac.at/) as part of TU Wien's virtual research environment.
 
 <figure markdown>
-![Jupyter Notebook](../../images/screenshots/air-notebook.png){ .img-border }
-<figcaption>Figure 2: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
+![Jupyter Notebook](/infrastructures/dbrepo/images/screenshots/air-notebook.png){ .img-border }
 </figure>
 
 ## Solution
@@ -46,4 +44,4 @@ database schema and a web scraper that scrapes live air quality data from the
 
 This work was part of a cooperation with the [Umweltbundesamt](https://www.umweltbundesamt.at/).
 
-<img src="../../images/logos/umweltbundesamt.png" width=100 />
+<img src="/infrastructures/dbrepo/images/logos/umweltbundesamt.png" width=100 />

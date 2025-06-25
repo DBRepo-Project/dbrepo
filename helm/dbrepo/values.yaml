@@ -13,7 +13,7 @@ global:
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
   loggingSidecar:
-    ## @param global.loggingSidecar.enabled Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.
+    ## @param global.loggingSidecar.enabled Enable the logging sidecars for the dashboard-, data-, gateway-, metadata- and search service.
     enabled: true
     image:
       ## @param global.loggingSidecar.image.name The logging sidecar image.
@@ -141,7 +141,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.9.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.10.0
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -391,71 +391,7 @@ brokerservice:
     - name: logging-config
       mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 1
-
-## @section Analyse Service
-
-analyseservice:
-  ## @param analyseservice.enabled Enable the Broker Service.
-  enabled: true
-  image:
-    ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.9.3
-  ## @param analyseservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: { }
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:
-    ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled: true
-    ## @param analyseservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy: Always
-    ## @param analyseservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls: [ ]
-    ## @param analyseservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups: [ ]
-    ## @param analyseservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup: 1001
-  containerSecurityContext:
-    ## @param analyseservice.containerSecurityContext.enabled Enabled containers' Security Context
-    enabled: true
-    ## @param analyseservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: { }
-    ## @param analyseservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser: 1001
-    ## @param analyseservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup: 1001
-    ## @param analyseservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot: true
-    ## @param analyseservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation: false
-    ## @param analyseservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem: false
-    capabilities:
-      ## @param analyseservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop: [ "ALL" ]
-    seccompProfile:
-      ## @param analyseservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type: "RuntimeDefault"
-  ## @param analyseservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
-  ## @param analyseservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
-  ## @param analyseservice.endpoint The url of the endpoint.
-  endpoint: http://analyse-service
-  s3:
-    ## @param analyseservice.s3.proto The protocol of the storage service endpoint.
-    proto: http
-    ## @param analyseservice.s3.endpoint The hostname and port of the storage service endpoint.
-    endpoint: storage-service-s3:8333
-  ## @param analyseservice.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 3
 
 ## @section Metadata Service
 
@@ -464,7 +400,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -564,7 +500,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.9.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.0
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -653,7 +589,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.9.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.0
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -705,7 +641,7 @@ searchservice:
     enabled: true
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.9.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.10.0
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -768,7 +704,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.9.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.0
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -903,7 +839,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.9.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.0
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -1024,7 +960,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.9.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.10.0
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1079,7 +1015,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.9.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.10.0
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1171,7 +1107,6 @@ metricdb:
         metrics_path: '/metrics'
         static_configs:
           - targets:
-              - analyse-service
               - auth-service-metrics:9000
               - broker-service:9419
               - dashboard-db-metrics:9187
@@ -1256,11 +1191,25 @@ gatewayservice:
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 
-## @section Analytics Service
+## @section Compute Service
 
 computeservice:
-  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
-  endpoint: local[2]
+  ## @param computeservice.enabled Enable the Compute Service.
+  enabled: true
+  ## @skip computeservice.fullnameOverride
+  fullnameOverride: compute-service
+  image:
+    ## @skip computeservice.image.registry
+    registry: registry.datalab.tuwien.ac.at
+    ## @skip computeservice.image.repository
+    repository: dbrepo/compute-service
+    ## @skip computeservice.image.tag
+    tag: 1.10.0
+  worker:
+    ## @skip computeservice.worker.replicaCount
+    replicaCount: 5
+  ## @param computeservice.endpoint Configure the number of parallel workers with local[n] or unbound: local[*]
+  endpoint: spark://compute-service-master:7077
 
 
 ## @section Ingress

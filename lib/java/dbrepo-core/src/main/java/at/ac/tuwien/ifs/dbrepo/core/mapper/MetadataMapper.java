@@ -79,7 +79,10 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+import org.mapstruct.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,27 +194,7 @@ public interface MetadataMapper {
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 
-    @Mappings({
-            @Mapping(target = "titles", source = "."),
-            @Mapping(target = "publisher", source = "publisher"),
-            @Mapping(target = "publicationYear", source = "publicationYear"),
-            @Mapping(target = "publicationMonth", source = "publicationMonth"),
-            @Mapping(target = "publicationDay", source = "publicationDay"),
-            @Mapping(target = "language", source = "language"),
-            @Mapping(target = "creators", source = "creators"),
-    })
     DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier);
-
-    default DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier, String url, String prefix,
-                                                            DataCiteDoiEvent event) {
-        return addParametersToCreateDoi(
-                identifierToDataCiteCreateDoi(identifier),
-                url,
-                prefix,
-                DataCiteDoiTypes.DATASET,
-                event
-        );
-    }
 
     DataCiteDoiTitle identifierTitleToDataCiteDoiTitle(IdentifierTitle data);
 
@@ -236,9 +219,6 @@ public interface MetadataMapper {
                 .map(this::identifierTitleToDataCiteDoiTitle)
                 .toList();
     }
-
-    DataCiteCreateDoi addParametersToCreateDoi(@MappingTarget DataCiteCreateDoi target, String url, String prefix,
-                                               DataCiteDoiTypes types, DataCiteDoiEvent event);
 
     @Mappings({
             @Mapping(target = "rights", source = "identifier"),
@@ -769,6 +749,7 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "ownedBy", source = "owner.id"),
+            @Mapping(target = "tdbid", source = "databaseId"),
             @Mapping(target = "database", ignore = true)
     })
     Table tableDtoToTable(TableDto data);
@@ -956,7 +937,8 @@ public interface MetadataMapper {
     ViewBriefDto viewToViewBriefDto(View data);
 
     @Mappings({
-            @Mapping(target = "database", ignore = true)
+            @Mapping(target = "database", ignore = true),
+            @Mapping(target = "ownedBy", source = "owner.id"),
     })
     View viewDtoToView(ViewDto data);
 

@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.spark.SparkException;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.apache.spark.sql.types.StructField;
@@ -37,6 +38,8 @@ public class StorageServiceS3Impl implements StorageService {
     private final SparkSession sparkSession;
 
     private static final String S3_KEY = "s3_key";
+    private static final String LOG_HEADER = "header";
+    private static final String LOG_S3_BUCKET = "s3_bucket";
 
     @Autowired
     public StorageServiceS3Impl(S3Config s3Config, S3Client s3Client, SparkSession sparkSession) {
@@ -174,14 +177,14 @@ public class StorageServiceS3Impl implements StorageService {
         log.atDebug()
                 .setMessage("read dataset " + key + " using header: " + withHeader)
                 .addKeyValue(S3_KEY, key)
-                .addKeyValue("s3_bucket", s3Config.getS3Bucket())
-                .addKeyValue("header", withHeader)
+                .addKeyValue(LOG_S3_BUCKET, s3Config.getS3Bucket())
+                .addKeyValue(LOG_HEADER, withHeader)
                 .log();
         Dataset<Row> dataset;
         try {
             dataset = sparkSession.read()
                     .option("delimiter", delimiter)
-                    .option("header", withHeader)
+                    .option(LOG_HEADER, withHeader)
                     .csv(path)
                     .toDF(columns.toArray(new String[0]));
         } catch (Exception e) {
@@ -203,6 +206,16 @@ public class StorageServiceS3Impl implements StorageService {
                             .log();
                     throw new TableMalformedException("Failed to resolve column from dataset in database: " + e.getMessage());
                 }
+            } else if (e instanceof SparkException) {
+                final SparkException exception = (SparkException) e;
+                if (exception.getMessage().contains("FAILED_READ_FILE")) {
+                    log.atError()
+                            .setMessage("Failed to read dataset " + key + ": " + e.getMessage())
+                            .addKeyValue(S3_KEY, key)
+                            .setCause(e)
+                            .log();
+                    throw new StorageUnavailableException("Failed to read dataset " + key + ": " + e.getMessage());
+                }
             } else if (e instanceof IllegalArgumentException) {
                 log.atError()
                         .setMessage("Failed to map columns: " + e.getMessage())
@@ -212,7 +225,7 @@ public class StorageServiceS3Impl implements StorageService {
                 throw new MalformedException("Failed to map columns: " + e.getMessage());
             }
             log.atError()
-                    .setMessage("Failed to connect to storage service")
+                    .setMessage("Failed to connect to storage service: " + e.getMessage())
                     .addKeyValue(S3_KEY, key)
                     .setCause(e)
                     .log();

@@ -58,7 +58,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto`                               |
 | `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`                                 |
-| `global.loggingSidecar.enabled`                       | Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.                                                                                                                                                                                                                                                            | `true`                               |
+| `global.loggingSidecar.enabled`                       | Enable the logging sidecars for the dashboard-, data-, gateway-, metadata- and search service.                                                                                                                                                                                                                                                                      | `true`                               |
 | `global.loggingSidecar.image.name`                    | The logging sidecar image.                                                                                                                                                                                                                                                                                                                                          | `docker.io/bitnami/fluent-bit:4.0.0` |
 | `global.loggingSidecar.resourcesPreset`               | The resource definitions for the logging sidecar.                                                                                                                                                                                                                                                                                                                   | `nano`                               |
 
@@ -180,34 +180,7 @@ mqtt.vhost = dbrepo
 mqtt.exchange = dbrepo
 mqtt.prefetch = 10
 ` |
-| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `1`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-
-### Analyse Service
-
-| Name                                                               | Description                                                                                                       | Value                     |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `analyseservice.enabled`                                           | Enable the Broker Service.                                                                                        | `true`                    |
-| `analyseservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                      |
-| `analyseservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                    |
-| `analyseservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                | `Always`                  |
-| `analyseservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                    | `[]`                      |
-| `analyseservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                       | `[]`                      |
-| `analyseservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                       | `1001`                    |
-| `analyseservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                              | `true`                    |
-| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                      |
-| `analyseservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1001`                    |
-| `analyseservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `1001`                    |
-| `analyseservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                    |
-| `analyseservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                   |
-| `analyseservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                   |
-| `analyseservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`                 |
-| `analyseservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`          |
-| `analyseservice.resourcesPreset`                                   | The container resource preset                                                                                     | `micro`                   |
-| `analyseservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                      |
-| `analyseservice.endpoint`                                          | The url of the endpoint.                                                                                          | `http://analyse-service`  |
-| `analyseservice.s3.proto`                                          | The protocol of the storage service endpoint.                                                                     | `http`                    |
-| `analyseservice.s3.endpoint`                                       | The hostname and port of the storage service endpoint.                                                            | `storage-service-s3:8333` |
-| `analyseservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                       |
+| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `3`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ### Metadata Service
 
@@ -470,11 +443,12 @@ mqtt.prefetch = 10
 | `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-setup` |
 | `gatewayservice.replicaCount`                 | The number of replicas.                       | `3`                     |
 
-### Analytics Service
+### Compute Service
 
-| Name                      | Description                                            | Value      |
-| ------------------------- | ------------------------------------------------------ | ---------- |
-| `computeservice.endpoint` | Configure the number of parallel workers with local[n] | `local[2]` |
+| Name                      | Description                                                                 | Value                                 |
+| ------------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
+| `computeservice.enabled`  | Enable the Compute Service.                                                 | `true`                                |
+| `computeservice.endpoint` | Configure the number of parallel workers with local[n] or unbound: local[*] | `spark://compute-service-master:7077` |
 
 ### Ingress
 

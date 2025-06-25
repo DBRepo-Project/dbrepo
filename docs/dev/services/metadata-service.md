@@ -6,25 +6,24 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.3`](https://hub.docker.com/r/dbrepo/metadata-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.0`](https://hub.docker.com/r/dbrepo/metadata-service)
 
-    * Ports: 9099/tcp
-    * Info: `http://<hostname>:9099/actuator/info`
-    * Health: `http://<hostname>:9099/actuator/health`
-        - Readiness: `http://<hostname>:9099/actuator/health/readiness`
-        - Liveness: `http://<hostname>:9099/actuator/health/liveness`
-    * Prometheus: `http://<hostname>:9099/actuator/prometheus`
-    * Swagger UI: `http://<hostname>:9099/swagger-ui/index.html`
+    * Info: `http://<container_ip>:8080/actuator/info`
+    * Health: `http://<container_ip>:8080/actuator/health`
+        - Readiness: `http://<container_ip>:8080/actuator/health/readiness`
+        - Liveness: `http://<container_ip>:8080/actuator/health/liveness`
+    * Prometheus: `http://<container_ip>:8080/actuator/prometheus`
+    * Swagger UI: `http://<container_ip>:8080/swagger-ui/index.html`
 
     To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
 
     ```shell
-    kubectl [-n namespace] port-forward svc/metadata-service 9099:80
+    kubectl [-n namespace] port-forward svc/metadata-service 8080:80
     ```
 
 ## Overview
 
-The metadata service manages metadata of identities, the [Broker Service](../broker-service) (i.e. obtaining queue
+The metadata service manages metadata of identities, the [Broker Service](/infrastructures/dbrepo/broker-service) (i.e. obtaining queue
 types), semantic concepts (i.e. ontologies) and relational metadata (databases, tables, queries, views) and identifiers.
 
 ## Generation
@@ -59,7 +58,7 @@ To activate DOI minting, pass your DataCite Fabrica credentials in the environme
 ```yaml title="docker-compose.yml"
 services:
   dbrepo-metadata-service:
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.9.3
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.0
     environment:
       spring_profiles_active: doi
       DATACITE_URL: https://api.datacite.org
@@ -71,7 +70,8 @@ services:
 
 ## Semantics
 
-The service provides metadata to the table columns in the [Metadata Database](../metadata-db) fromregistered ontologies
+The service provides metadata to the table columns in 
+the [Metadata Database](/infrastructures/dbrepo/dev/services/metadata-db) from registered ontologies
 like Wikidata [`wd:`](https://wikidata.org), Ontology of Units of
 Measurement [`om2:`](https://www.ontology-of-units-of-measure.org/resource/om-2), Friend of a
 Friend [`foaf:`](http://xmlns.com/foaf/0.1/), the [`prov:`](http://www.w3.org/ns/prov#) namespace, etc.
@@ -84,7 +84,7 @@ Friend [`foaf:`](http://xmlns.com/foaf/0.1/), the [`prov:`](http://www.w3.org/ns
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

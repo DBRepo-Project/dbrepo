@@ -7,6 +7,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.0) - 2025-06-??
+
+### Changes
+
+* Added the [`WWW-Authenticate`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/WWW-Authenticate)
+  header to prompt browser for Basic Authentication in the services when none is provided for all `GET` requests
+  that require authentication.
+
+#### Removals
+
+* Removed the Analyse Service in favor of DuckDB in the Data Service covering the same functionality.
+
 ## [v1.9.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.9.3) - 2025-06-06
 
 ### Features
@@ -68,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Features
 
 * Added structured logging through the `fluentd` protocol via the lightweight fluentbit in a
-  separate [Logging Service](../api/logging-service)
+  separate Logging Service.
   in [#524](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/524).
 * Added a separate database for the Dashboard Service for high-availability deployment of Grafana
   in [#526](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/526).
@@ -348,7 +360,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Features
 
-* Added [Dashboard Service](../api/dashboard-service/) and monitoring in default setup.
+* Added [Dashboard Service](/infrastructures/dbrepo/api/dashboard-service/) and monitoring in default setup.
 
 #### Changes
 

@@ -19,8 +19,7 @@ We wrote an algorithm that parses open data (available) information from Wiener 
 agency directly and feeds it, after some cleaning, into DBRepo on a 5-minute interval.
 
 <figure markdown>
-![Subway Transportation Data Dashboard](../../images/screenshots/transportation-dashboard.png)
-<caption>Figure 1: Dashboard visualizing the live data of the current interruptions.</caption>
+![Subway Transportation Data Dashboard](/infrastructures/dbrepo/images/screenshots/transportation-dashboard.png)
 </figure>
 
 ## DBRepo Features

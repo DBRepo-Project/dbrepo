@@ -806,14 +806,14 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete view: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_view_data(self, database_id: str, view_id: str, page: int = 0, size: int = 10) -> DataFrame:
+    def get_view_data(self, database_id: str, view_id: str, page: int = 0, size: int = 1000000) -> DataFrame:
         """
         Get data of a view in a database with given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
         :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10`.
+        :param size: The result pagination size. Optional. Default: `1000000`.
 
         :returns: The view data, if successful.
 
@@ -846,7 +846,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get view data: response code: {response.status_code} is not '
                                 f'200 (OK):{response.text}')
 
-    def get_table_data(self, database_id: str, table_id: str, page: int = 0, size: int = 10,
+    def get_table_data(self, database_id: str, table_id: str, page: int = 0, size: int = 1000000,
                        timestamp: datetime.datetime = None) -> DataFrame:
         """
         Get data of a table in a database with given database id and table id.
@@ -854,7 +854,7 @@ class RestClient:
         :param database_id: The database id.
         :param table_id: The table id.
         :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10`.
+        :param size: The result pagination size. Optional. Default: `1000000`.
         :param timestamp: The query execution time. Optional.
 
         :returns: The table data, if successful.
@@ -1326,7 +1326,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete database access: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_subset(self, database_id: str, query: QueryDefinition, page: int = 0, size: int = 10,
+    def create_subset(self, database_id: str, query: QueryDefinition, page: int = 0, size: int = 1000000,
                       timestamp: datetime.datetime = None) -> DataFrame:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
@@ -1336,7 +1336,7 @@ class RestClient:
         :param database_id: The database id.
         :param query: The query definition.
         :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10`.
+        :param size: The result pagination size. Optional. Default: `1000000`.
         :param timestamp: The timestamp at which the data validity is set. Optional. Default: <current timestamp>.
 
         :returns: The result set, if successful.
@@ -1362,7 +1362,7 @@ class RestClient:
                                  payload=subset)
         if response.status_code == 201:
             logging.info(f'Created subset with id: {response.headers["X-Id"]}')
-            return DataFrame.from_records(response.json(), columns=query.columns)
+            return DataFrame.from_records(response.json())
         if response.status_code == 400:
             raise MalformedError(f'Failed to create subset: {response.text}')
         if response.status_code == 403:
@@ -1378,15 +1378,14 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create subset: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def get_subset_data(self, database_id: str, subset_id: str, page: int = 0, size: int = 10) -> DataFrame:
+    def get_subset_data(self, database_id: str, subset_id: str, page: int = 0, size: int = 1000000) -> DataFrame:
         """
         Re-executes a query in a database with given database id and query id.
 
         :param database_id: The database id.
         :param subset_id: The subset id.
         :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10`.
-        :param size: The result pagination size. Optional. Default: `10`.
+        :param size: The result pagination size. Optional. Default: `1000000`.
 
         :returns: The subset data, if successful.
 
@@ -1807,13 +1806,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get identifier: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_identifier_data(self, identifier_id: str, page: int = 0, size: int = 10000) -> DataFrame:
+    def get_identifier_data(self, identifier_id: str, page: int = 0, size: int = 1000000) -> DataFrame:
         """
         Get the identifier data by given id.
 
         :param identifier_id: The identifier id.
         :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10000`.
+        :param size: The result pagination size. Optional. Default: `1000000`.
 
         :returns: The identifier, if successful.
 

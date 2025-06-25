@@ -16,20 +16,31 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM amazoncorretto:17-alpine3.21 AS runtime
+FROM --platform=$BUILDPLATFORM bitnami/java:17 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk --no-cache add \
-    bash \
-    curl \
-    jq
+ARG DUCKDB_VERSION="v1.2.2"
 
-WORKDIR /app
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    jq && \
+    apt-get clean
+
+COPY ./lib/httpfs.duckdb_extension.gz /tmp/httpfs.duckdb_extension.gz
+
+WORKDIR /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+
+RUN gunzip /tmp/httpfs.duckdb_extension.gz && \
+    mv /tmp/httpfs.duckdb_extension /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/httpfs.duckdb_extension && \
+    rm -f /tmp/httpfs.duckdb_extension.gz
 
 RUN mkdir -p /var/log/app/service/data && \
     chown -R 1001:1001 /var/log/app/service/data
 
-RUN adduser -D dbrepo --uid 1001 && \
+WORKDIR /app
+
+RUN adduser dbrepo --uid 1001 && \
     chown -R 1001:1001 /app
 
 USER 1001

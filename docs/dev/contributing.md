@@ -9,13 +9,13 @@ We welcome contributions to DBRepo!
 Local development depends on the following packages for Debian 12:
 
 ```shell
-apt install -y maven openjdk-17-jdk make
+apt install maven openjdk-17-jdk make nodejs npm
 ```
 
-Required tools with their own installing guides:
+Required tools for local development:
 
-* [Docker Engine](https://docs.docker.com/engine/install/) 24+
-* [Minikube](https://minikube.sigs.k8s.io/docs/start/) 1.32.0
+* [Docker Engine](https://docs.docker.com/engine/install/) (`docker --version` must be at least `24.x`)
+* [Minikube](https://minikube.sigs.k8s.io/docs/start/) (`minikube version` must be at least `1.32.x`)
 
 ## Getting Started
 
@@ -42,7 +42,7 @@ smells.
 ### Branching Strategy
 
 <figure markdown>
-![Branching strategy from the master-dev-feature branches and release branches](../images/branching-strategy.svg)
+![Branching strategy from the master-dev-feature branches and release branches](/infrastructures/dbrepo/images/branching-strategy.svg)
 </figure>
 
 ### CI/CD
@@ -51,8 +51,7 @@ We get compute resources in-kind from [dataLAB](https://www.it.tuwien.ac.at/en/s
 to run our pipeline:
 
 <figure markdown>
-![Gitlab runner configuration in the cluster](../images/gitlab-runner.png)
-<figcaption>Figure 2: Gitlab runner configuration in the cluster.</figcaption>
+![Gitlab runner configuration in the cluster](/infrastructures/dbrepo/images/gitlab-runner.png)
 </figure>
 
 For each job in the CI/CD pipeline, a pod with three containers is started:

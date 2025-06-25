@@ -6,18 +6,18 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>data-service</artifactId>
-        <version>1.9.3</version>
+        <version>1.10.0</version>
     </parent>
 
     <name>rest-service</name>
     <artifactId>rest-service</artifactId>
-    <version>1.9.3</version>
+    <version>1.10.0</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>services</artifactId>
-            <version>1.9.3</version>
+            <version>1.10.0</version>
         </dependency>
     </dependencies>
 
