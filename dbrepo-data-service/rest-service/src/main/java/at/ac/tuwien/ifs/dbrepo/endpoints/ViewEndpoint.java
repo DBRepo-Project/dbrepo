@@ -110,7 +110,7 @@ public class ViewEndpoint extends RestEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, MetadataServiceException, ViewNotFoundException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
             return ResponseEntity.ok(databaseService.exploreViews(database));
         } catch (SQLException e) {
@@ -300,7 +300,7 @@ public class ViewEndpoint extends RestEndpoint {
                 cacheService.getAccess(databaseId, getId(principal));
             }
         }
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
@@ -373,7 +373,7 @@ public class ViewEndpoint extends RestEndpoint {
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException, ViewNotFoundException,
             QueryMalformedException {
         log.debug("endpoint generate view statistic, databaseId={}, viewId={}", databaseId, viewId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         final ViewDto view = cacheService.getView(databaseId, viewId);
         try {
             return ResponseEntity.ok(cacheService.getStatistic(database, view));

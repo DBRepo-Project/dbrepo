@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
@@ -21,9 +23,12 @@ import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.AnalyseDataTypesException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
+import org.duckdb.DuckDBResultSet;
 import org.jetbrains.annotations.NotNull;
 import org.keycloak.representations.AccessTokenResponse;
 import org.mapstruct.Mapper;
@@ -42,6 +47,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -257,29 +264,87 @@ public interface DataMapper {
         return view;
     }
 
+    default SchemaAnalysisResultDto resultSetToSchemaAnalysisResult(DuckDBResultSet resultSet) throws SQLException,
+            AnalyseDataTypesException {
+        if (!resultSet.next()) {
+            log.error("Failed to analyse data types: no result");
+            throw new AnalyseDataTypesException("Failed to analyse data types: no result");
+        }
+        try {
+            return SchemaAnalysisResultDto.builder()
+                    .delimiter(resultSet.getString("Delimiter"))
+                    .quote(resultSet.getString("Quote"))
+                    .escape(resultSet.getString("Escape"))
+                    .newlineDelimiter(resultSet.getString("NewLineDelimiter"))
+                    .comment(resultSet.getString("Comment"))
+                    .skipRows(resultSet.getInt("SkipRows"))
+                    .hasHeader(resultSet.getBoolean("HasHeader"))
+                    .columns(structListToColumnAnalysisResultDtoList(resultSet.getString("Columns")))
+                    .dateFormat(resultSet.getString("DateFormat"))
+                    .timestampFormat(resultSet.getString("TimestampFormat"))
+                    .prompt(resultSet.getString("Prompt"))
+                    .build();
+        } catch (JsonProcessingException e) {
+            log.error("Failed to analyse data types: parse columns: " + e.getMessage());
+            throw new AnalyseDataTypesException("Failed to analyse data types: parse columns", e);
+        }
+    }
+
+    default Map<String, ColumnAnalysisResultDto> resultSetToConstraintResult(ResultSet resultSet) throws SQLException {
+        final Map<String, ColumnAnalysisResultDto> constraints = new HashMap<>();
+        while (resultSet.next()) {
+            constraints.put(resultSet.getString("column_name"),
+                    ColumnAnalysisResultDto.builder()
+                            .name(resultSet.getString("column_name"))
+                            .nullAllowed(resultSet.getString("null").equals("YES"))
+                            .build());
+        }
+        return constraints;
+    }
+
+    default List<ColumnAnalysisResultDto> structListToColumnAnalysisResultDtoList(String data)
+            throws JsonProcessingException {
+        log.trace("raw columns: {}", data);
+        final Pattern pattern = Pattern.compile("\\{name=([^,]+), type=([^}]+)");
+        final Matcher matcher = pattern.matcher(data);
+        final List<ColumnAnalysisResultDto> columns = new LinkedList<>();
+        while (matcher.find()) {
+            final ColumnAnalysisResultDto analysis = ColumnAnalysisResultDto.builder()
+                    .name(matcher.group(1))
+                    .datatype(dataTypeToColumnTypeDto(matcher.group(2)))
+                    .build();
+            if (analysis.getDatatype().equals(ColumnTypeDto.VARCHAR)) {
+                analysis.setSize(255);
+            }
+            columns.add(analysis);
+        }
+        return columns;
+    }
+
+    default ColumnTypeDto dataTypeToColumnTypeDto(String data) {
+        if (data.equals("BOOLEAN")) {
+            return ColumnTypeDto.BOOL;
+        }
+        return ColumnTypeDto.valueOf(data);
+    }
+
     default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
-        final QueryDto subset = QueryDto.builder()
+        return QueryDto.builder()
                 .id(UUID.fromString(data.getString(1)))
-                .query(data.getString(4))
+                .query(data.getString(3))
                 .queryNormalized(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
                 .owner(UserBriefDto.builder()
-                        .id(UUID.fromString(data.getString(3)))
+                        .id(UUID.fromString(data.getString(2)))
                         .build())
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
                 .build();
-        if (data.getString(3) != null) {
-            subset.setOwner(UserBriefDto.builder()
-                    .id(UUID.fromString(data.getString(3)))
-                    .build());
-        }
-        return subset;
     }
 
     default List<TableHistoryDto> resultSetToTableHistory(ResultSet resultSet) throws SQLException {

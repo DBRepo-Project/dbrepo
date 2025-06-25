@@ -15,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -51,8 +52,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public TableStatisticDto getStatistics(DatabaseDto database, String tableName) throws SQLException, TableMalformedException,
-            TableNotFoundException {
+    @Timed(value = "dbrepo_data_get_statistics", description = "Time spent obtaining simple table statistics", histogram = true)
+    public TableStatisticDto getStatistics(DatabaseDto database, String tableName) throws SQLException,
+            TableMalformedException, TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         final TableStatisticDto statistic;
@@ -82,7 +84,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             /* add to statistic dto */
             tmpTable.getColumns()
                     .stream()
-                    .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
+                    .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()) || !MariaDbUtil.stringDataTypes.contains(column.getColumnType()))
                     .forEach(column -> ColumnStatisticDto.builder()
                             .name(column.getInternalName())
                             .build());
@@ -98,6 +100,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_update_table_comment", description = "Time spent updating the table comment", histogram = true)
     public void updateTable(DatabaseDto database, TableDto table, TableUpdateDto data) throws SQLException,
             TableMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -187,6 +190,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_count_table_data", description = "Time spent counting the table data", histogram = true)
     public Long getCount(DatabaseDto database, String tableName, Instant timestamp) throws SQLException,
             QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -217,6 +221,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
     public void importDataset(DatabaseDto database, TableDto table, ImportDto data) throws MalformedException,
             StorageNotFoundException, StorageUnavailableException, SQLException, QueryMalformedException,
             TableMalformedException {
@@ -309,6 +314,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_delete_tuple", description = "Time spent deleting a table tuple", histogram = true)
     public void deleteTuple(DatabaseDto database, TableDto table, TupleDeleteDto data) throws SQLException,
             TableMalformedException, QueryMalformedException {
         log.trace("delete tuple: {}", data);
@@ -344,6 +350,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_create_tuple", description = "Time spent creating a table tuple", histogram = true)
     public void createTuple(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple: {}", data);
@@ -393,6 +400,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_update_tuple", description = "Time spent updating a table tuple", histogram = true)
     public void updateTuple(DatabaseDto database, TableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException {
         log.trace("update tuple: {}", data);

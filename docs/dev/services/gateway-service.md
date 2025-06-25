@@ -42,12 +42,14 @@ If your TLS private key as a password, you need to specify it in the `dbrepo.con
 ### Connection Timeouts
 
 The reverse proxy has a defined timeout of 90 seconds on all requests (these are also enforced in the 
-[User Interface](../ui) using the [`axios`](https://www.npmjs.com/package/axios) module). For large databases these
-timeouts may need to be increased, e.g. the timeout for creating subsets is by default already increased to 600 seconds.
+[User Interface](/infrastructures/dbrepo/dev/services/ui) using the [`axios`](https://www.npmjs.com/package/axios) 
+module). For large databases these timeouts may need to be increased, e.g. the timeout for creating subsets is by 
+default already increased to 600 seconds.
 
 ### User Interface
 
-To serve the [User Interface](../ui/) under different port than `80`, change the port mapping in
+To serve the [User Interface](/infrastructures/dbrepo/dev/services/ui/) under different port than `80`, change the port
+mapping in
 the `docker-compose.yml` to e.g. port `8000`:
 
 ```yaml title="docker-compose.yml"
@@ -101,7 +103,7 @@ scrape_configs:
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

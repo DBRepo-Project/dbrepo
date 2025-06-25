@@ -4,17 +4,15 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.duckdb.DuckDBConnection;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @Slf4j
 @Service
 public abstract class DataConnector {
-
-    public static final String EXECUTED_STATEMENT_MS = "executed statement in {} ms";
 
     public ComboPooledDataSource getDataSource(ContainerDto container, String databaseName) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
@@ -60,6 +58,10 @@ public abstract class DataConnector {
                     .append(databaseName);
         }
         return stringBuilder.toString();
+    }
+
+    public final DuckDBConnection getDuckDbConnection() throws SQLException {
+        return (DuckDBConnection) DriverManager.getConnection("jdbc:duckdb:");
     }
 
 }

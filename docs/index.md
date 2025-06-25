@@ -4,17 +4,17 @@ author: Martin Weise
 
 # DBRepo
 
-[![CI/CD Status](./images/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
-[![CI/CD Coverage](./images/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![CI/CD Status](/infrastructures/dbrepo/images/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![CI/CD Coverage](/infrastructures/dbrepo/images/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![Latest Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![PyPI Library version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/){ tabindex=-1 }
-[![Image Pulls](./images/pulls.svg)](https://registry.datalab.tuwien.ac.at/api/v2.0/projects/dbrepo/repositories/data-service){ tabindex=-1 }
+[![Image Pulls](/infrastructures/dbrepo/images/pulls.svg)](https://registry.datalab.tuwien.ac.at/api/v2.0/projects/dbrepo/repositories/data-service){ tabindex=-1 }
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
-![Maintainability Rating](./images/maintainability.svg)
-![Security Rating](./images/security.svg)
+![Maintainability Rating](/infrastructures/dbrepo/images/maintainability.svg)
+![Security Rating](/infrastructures/dbrepo/images/security.svg)
 
-Documentation for version: [v1.9.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
+Documentation for version: [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 
 DBRepo is an open-source database repository that cover the data life cycle supporting data evolution, 
 -citation and -versioning. It implements the query store of the [RDA WGDC](https://doi.org/10.1162/99608f92.be565013) on

@@ -13,6 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -49,6 +50,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    @Timed(value = "dbrepo_data_get_subset_data", description = "Time spent getting data from subset", histogram = true)
     public Dataset<Row> getData(DatabaseDto database, String query) throws QueryMalformedException, TableNotFoundException {
         try {
             final long start = System.currentTimeMillis();
@@ -80,19 +82,22 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    @Timed(value = "dbrepo_data_create_subset", description = "Time spent creating a subset", histogram = true)
     public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewMalformedException, ViewNotFoundException, ColumnNotFoundException {
-        final String statement = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
-        return storeQuery(database, statement, timestamp, userId);
+        final String query = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
+        return storeQuery(database, query, timestamp, userId);
     }
 
     @Override
+    @Timed(value = "dbrepo_data_count_subset_data", description = "Time spent counting subset data", histogram = true)
     public Long reExecuteCount(DatabaseDto database, QueryDto query) throws SQLException, QueryMalformedException {
         return executeCountNonPersistent(database, query.getQuery(), query.getExecution());
     }
 
     @Override
+    @Timed(value = "dbrepo_data_find_subsets", description = "Time spent finding all subsets", histogram = true)
     public List<QueryDto> findAll(DatabaseDto database, Boolean filterPersisted) throws SQLException,
             QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException, UserNotFoundException {
         final List<IdentifierBriefDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
@@ -136,6 +141,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    @Timed(value = "dbrepo_data_execute_subset", description = "Time spent executing a specific subset", histogram = true)
     public Long executeCountNonPersistent(DatabaseDto database, String statement, Instant timestamp)
             throws SQLException, QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -161,6 +167,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    @Timed(value = "dbrepo_data_find_subset", description = "Time spent finding a specific subset", histogram = true)
     public QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException, SQLException,
             UserNotFoundException, RemoteUnavailableException, MetadataServiceException {
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -193,8 +200,9 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    @Timed(value = "dbrepo_data_store_subset_query", description = "Time spent storing a subset query in the query store", histogram = true)
     public UUID storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
-            QueryStoreInsertException {
+            QueryStoreInsertException, QueryMalformedException {
         /* save */
         final UUID queryId;
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -209,8 +217,9 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 callableStatement.setNull(1, Types.VARCHAR);
             }
             callableStatement.setString(2, query);
-            callableStatement.setTimestamp(3, Timestamp.from(timestamp));
-            callableStatement.registerOutParameter(4, Types.VARCHAR);
+            callableStatement.setString(3, mariaDbMapper.normalizeQuery(query, timestamp));
+            callableStatement.setTimestamp(4, Timestamp.from(timestamp));
+            callableStatement.registerOutParameter(5, Types.VARCHAR);
             callableStatement.executeUpdate();
             log.atDebug()
                     .setMessage("store query in query store of database: " + database.getInternalName())
@@ -218,7 +227,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .addKeyValue(Constants.ACTION, "store_query")
                     .addKeyValue("query", query)
                     .log();
-            queryId = UUID.fromString(callableStatement.getString(4));
+            queryId = UUID.fromString(callableStatement.getString(5));
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
             connection.commit();
@@ -233,6 +242,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    @Timed(value = "dbrepo_data_persist_subset", description = "Time spent persisting a query in the query store", histogram = true)
     public void persist(DatabaseDto database, UUID queryId, Boolean persist) throws SQLException,
             QueryStorePersistException {
         final ComboPooledDataSource dataSource = getDataSource(database);

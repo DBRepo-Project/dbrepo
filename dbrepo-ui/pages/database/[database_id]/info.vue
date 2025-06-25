@@ -1,25 +1,26 @@
 <template>
   <div
-    v-if="identifier || canViewInfo">
+    v-if="canViewInfo">
     <DatabaseToolbar />
     <v-window
       v-model="tab">
       <v-window-item value="1">
-        <Summary
-          v-if="identifier"
-          :identifier="identifier" />
-        <v-card
-          v-if="identifier"
-          variant="flat"
-          rounded="0">
-          <v-card-text>
-            <Select
-              :identifiers="identifiers"
-              :identifier="identifier" />
-          </v-card-text>
-        </v-card>
-        <v-divider
-          v-if="identifier" />
+        <span
+          v-if="viewIdentifiers">
+          <Summary
+            v-if="identifier"
+            :identifier="identifier" />
+          <v-card
+            variant="flat"
+            rounded="0">
+            <v-card-text>
+              <Select
+                :identifiers="database?.identifiers"
+                :identifier="identifier" />
+            </v-card-text>
+          </v-card>
+          <v-divider />
+        </span>
         <v-card
           v-if="canViewInfo"
           :title="$t('pages.database.title')"
@@ -56,6 +57,13 @@
                   :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}`">
                   {{ $t('pages.database.dashboard.text') }}
                 </NuxtLink>
+              </v-list-item>
+              <v-list-item
+                :title="$t('pages.database.id.title')"
+                density="compact">
+                <div>
+                  {{ database.id }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.database.name.title')"
@@ -270,12 +278,6 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    identifiers () {
-      if (!this.database || !this.database.identifiers) {
-        return []
-      }
-      return this.database.identifiers.filter(i => i.query_id === this.$route.params.subset_id)
-    },
     pid () {
       return this.$route.query.pid
     },
@@ -334,6 +336,18 @@ export default {
     },
     databaseExtraInfo () {
       return this.$config.public.database.extra
+    },
+    viewIdentifiers () {
+      if (!this.database) {
+        return false
+      }
+      if (this.database.identifiers.filter(i => i.status === 'published').length > 0) {
+        return true
+      }
+      if (!this.cacheUser) {
+        return false
+      }
+      return this.database.identifiers.filter(i => i.owner.id === this.cacheUser.uid).length > 0
     },
     databaseSize () {
       if (!this.database) {

@@ -38,8 +38,8 @@ As a database owner, you can give specific users access to your database, only y
 another user, you can use the box to search and specify the level of access.
 
 <video autoplay loop>
-  <source src="../../videos/database-access.webm" type="video/webm" />
-  <source src="../../videos/database-access.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/videos/database-access.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/videos/database-access.mp4" type="video/mp4" />
 </video>
 
 ### Python

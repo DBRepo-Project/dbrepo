@@ -105,7 +105,7 @@ public interface SubsetService {
      * @throws QueryStoreInsertException The query store failed to insert the query.
      */
     UUID storeQuery(DatabaseDto database, String statement, Instant timestamp, UUID userId) throws SQLException,
-            QueryStoreInsertException, ViewMalformedException;
+            QueryStoreInsertException, ViewMalformedException, QueryMalformedException;
 
     /**
      * Persists a query to be displayed in the frontend.
