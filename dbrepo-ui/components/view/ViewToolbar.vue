@@ -17,6 +17,14 @@
     </v-toolbar-title>
     <v-spacer />
     <v-btn
+      v-if="canCreateSubset"
+      :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-wrench' : null"
+      color="secondary"
+      variant="flat"
+      :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+      class="mr-2 white--text"
+      :to="`/database/${$route.params.database_id}/subset/create`" />
+    <v-btn
       v-if="canCreatePid"
       class="mr-2"
       :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
@@ -140,6 +148,15 @@ export default {
         return false
       }
       return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
+    },
+    canCreateSubset () {
+      if (!this.database) {
+        return false
+      }
+      if (this.database.is_public) {
+        return true
+      }
+      return this.hasReadAccess
     },
     identifiers () {
       if (!this.view) {

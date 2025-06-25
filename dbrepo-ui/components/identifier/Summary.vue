@@ -5,8 +5,14 @@
     rounded="0">
     <v-card-text>
       <v-list
+        v-if="identifier"
         lines="two"
         dense>
+        <v-list-item
+          :title="$t('pages.identifier.id.title')"
+          density="compact">
+          {{ identifier.id }}
+        </v-list-item>
         <v-list-item
           :title="$t('pages.identifier.pid.title')"
           density="compact">
@@ -179,12 +185,21 @@ export default {
       return `/pid/${this.database.identifier.id}`
     },
     identifierLang () {
+      if (!this.identifier) {
+        return null
+      }
       return this.identifier.language ? formatLanguage(this.identifier.language.toLowerCase()) : null
     },
     hasLicenses () {
+      if (!this.identifier) {
+        return null
+      }
       return this.identifier.licenses && this.identifier.licenses.length > 0
     },
     publication () {
+      if (!this.identifier) {
+        return null
+      }
       if (this.identifier.publication_year && !this.identifier.publication_month && !this.identifier.publication_day) {
         return this.identifier.publication_year
       } else if (this.identifier.publication_year && this.identifier.publication_month && this.identifier.publication_day) {
@@ -196,7 +211,10 @@ export default {
       }
     },
     canCitation () {
-      return this.identifier && this.identifier.status === 'published'
+      if (!this.identifier) {
+        return null
+      }
+      return this.identifier.status === 'published'
     }
   }
 }

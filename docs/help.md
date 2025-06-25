@@ -10,8 +10,8 @@ The [User Guide]() documentation is the most complete guide on how to use DBRepo
 
 ## API Documentation
 
-The [API documentation](../api/) present reference docs for all APIs.
+The [API documentation](/infrastructures/dbrepo/api/) present reference docs for all APIs.
 
 !!! info "Additional Help"
 
-    [Contact us](../contact) via e-mail.
+    [Contact us](/infrastructures/dbrepo/contact) via e-mail.

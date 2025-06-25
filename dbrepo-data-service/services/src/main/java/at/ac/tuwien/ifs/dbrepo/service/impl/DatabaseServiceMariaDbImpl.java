@@ -105,7 +105,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                             data))
                     .execute();
             log.atDebug()
-                    .setMessage("created table: " + tableName + "." + database.getInternalName())
+                    .setMessage("created table: " + database.getInternalName() + "." + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_table")
                     .log();
@@ -267,13 +267,25 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         try {
             /* obtain only table metadata */
             long start = System.currentTimeMillis();
+            final PreparedStatement statement0 = connection.prepareStatement(mariaDbMapper.analyseTableRawQuery());
+            statement0.setString(1, database.getInternalName());
+            statement0.setString(2, tableName);
+            log.trace("1={}, 2={}", database.getInternalName(), tableName);
+            statement0.execute();
+            log.atDebug()
+                    .setMessage("analysed table: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_table_schema")
+                    .log();
+            /* obtain only table metadata */
+            start = System.currentTimeMillis();
             final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
             statement1.setString(1, database.getInternalName());
             statement1.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
             log.atDebug()
-                    .setMessage("inspected table: " + tableName + "." + database.getInternalName())
+                    .setMessage("inspected table: " + database.getInternalName() + "." + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_schema")
                     .log();
@@ -285,7 +297,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
-                    .setMessage("inspect table columns: " + tableName + "." + database.getInternalName())
+                    .setMessage("inspect table columns: " + database.getInternalName() + "." + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_columns")
                     .log();
@@ -300,7 +312,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet3 = statement3.executeQuery();
             log.atDebug()
-                    .setMessage("inspect table check constraints: " + tableName + "." + database.getInternalName())
+                    .setMessage("inspect table check constraints: " + database.getInternalName() + "." + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_constraints_check")
                     .log();
@@ -319,7 +331,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet4 = statement4.executeQuery();
             log.atDebug()
-                    .setMessage("inspect table constraints: " + tableName + "." + database.getInternalName())
+                    .setMessage("inspect table constraints: " + database.getInternalName() + "." + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_constraints")
                     .log();

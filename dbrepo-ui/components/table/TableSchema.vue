@@ -42,7 +42,6 @@
             item-title="display_name"
             item-value="value"
             required
-            :disabled="loadingColumnTypes"
             :rules="[v => !!v || $t('validation.required')]"
             persistent-hint
             :variant="inputVariant"
@@ -187,7 +186,7 @@
             variant="flat"
             size="small"
             :loading="loading"
-            :disabled="disabled || !valid || showPrimaryKeyWarning || this.columns.length === 0"
+            :disabled="disabled || !valid || columns.length === 0"
             :text="submitText"
             @click="submit" />
         </v-col>

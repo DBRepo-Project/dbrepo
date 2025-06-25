@@ -25,7 +25,7 @@ this database is provisioned.
 
 !!! abstract "Note"
 
-    Database dashboards are only available for non-hidden databases, see [Update Visibility](../update-visibility).
+    Database dashboards are only available for non-hidden databases, see [Update Visibility](/infrastructures/dbrepo/update-visibility).
 
 A user wants to create a dashboard of available data sources and add personal customization.
 

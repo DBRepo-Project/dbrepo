@@ -1,5 +1,5 @@
-REST API Client
-===============
+Python API
+----------
 
 .. automodule:: dbrepo.RestClient
     :members:

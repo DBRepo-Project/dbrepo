@@ -19,8 +19,8 @@ author: Martin Weise
 ## Overview
 
 This optional service holds the user identities which we simply call identities in the following. It is integrated into
-the [Auth Service](../auth-service) through an LDAP federation, allowing any identity to authenticate through the Auth
-Service. The LDAP protocol is not used for authentication. 
+the [Auth Service](/infrastructures/dbrepo/dev/services/auth-service) through an LDAP federation, allowing any identity
+to authenticate through the Auth Service. The LDAP protocol is not used for authentication. 
 
 The Identity Service can be optionally replaced with your existing LDAP solution. Your LDAP solution should store
 users using the RFC 2798 [`InetOrgPerson`](https://datatracker.ietf.org/doc/html/rfc2798) schema which is standard
@@ -45,7 +45,7 @@ Auth Service and can be empty `""`.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

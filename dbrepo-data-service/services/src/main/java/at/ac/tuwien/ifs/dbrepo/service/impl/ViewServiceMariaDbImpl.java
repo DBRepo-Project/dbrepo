@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
     }
 
     @Override
+    @Timed(value = "dbrepo_data_count_view_data", description = "Time spent counting view data", histogram = true)
     public Long count(DatabaseDto database, ViewDto view, Instant timestamp) throws SQLException,
             QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);

@@ -15,7 +15,7 @@ and electronic, each genre contains 100 files, the genre will be used as label f
 vectors and training a SVM, the ML-model can classify emotions of the provided .mp3 files with and accuracy of 76.25%.
 
 <figure markdown>
-![](../../images/screenshots/mfcc-jupyter.png){ .img-border }
+![](/infrastructures/dbrepo/images/screenshots/mfcc-jupyter.png){ .img-border }
 <figcaption>Figure 1: Accuracy of predictions matrix in Jupyter Notebook.</figcaption>
 </figure>
 

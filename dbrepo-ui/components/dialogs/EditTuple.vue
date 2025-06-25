@@ -84,6 +84,7 @@
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
+                :error-messages="floatingPointErrors(column, tuple[column.internal_name])"
                 :hint="hint(column)"
                 type="number">
                 <template
@@ -521,6 +522,22 @@ export default {
         .finally(() => {
           this.loadContainer = false
         })
+    },
+    floatingPointErrors (column, value) {
+      if (!value && column.null_allowed) {
+        return null
+      } else if (!value && !column.null_allowed) {
+        return this.$t('validation.required')
+      }
+      const beforeComma = value.substring(0, value.indexOf('.') - 1)
+      const afterComma = value.substring(value.indexOf('.') + 1, value.length)
+      if (beforeComma.length > column.size) {
+        return this.$t('validation.size', {'size': column.size})
+      }
+      if (afterComma.length > column.d) {
+        return this.$t('validation.d', {'size': column.d})
+      }
+      return null
     }
   }
 }

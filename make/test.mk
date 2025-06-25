@@ -23,7 +23,3 @@ test-lib: ## Test the Python Library.
 .PHONY: test-ui
 test-ui: ## Test the UI.
 	bash ./dbrepo-ui/test/test_heap.sh
-
-.PHONY: test-upload-service
-test-upload-service: ## Test the Upload Service
-	mvn -f ./dbrepo-upload-service/pom.xml clean test

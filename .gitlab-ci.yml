@@ -12,11 +12,11 @@ variables:
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.9"
-  APP_VERSION: "1.9.3"
-  CHART_VERSION: "1.9.3"
-  SUPPORTED_VERSIONS: "1.8.0, 1.8.1, 1.8.2, 1.9.0, 1.9.1, 1.9.2, 1.9.3"
+  APP_VERSION: "1.10.0"
+  CHART_VERSION: "1.10.0"
+  SUPPORTED_VERSIONS: "1.8.0, 1.8.1, 1.8.2, 1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.10.0"
   SUPPORTED_ARCH: "linux/amd64"
-  MAINTAINED_SERVICES: "analyse-service, auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
+  MAINTAINED_SERVICES: "auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -63,7 +63,6 @@ lint-docker-compose:
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
     - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
     - "IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-auth-service-init'"
@@ -163,7 +162,7 @@ build-metadata-service:
   needs:
     - build-java-lib
   before_script:
-    - mvn -f ./lib/java/dbrepo-core/pom.xml -q clean install $MAVEN_OPTS -DskipTests
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
@@ -177,18 +176,6 @@ build-metadata-service:
       - ./dbrepo-metadata-service/rest-service/target/classes
       - ./dbrepo-metadata-service/services/target/classes
     expire_in: 1 days
-
-build-analyse-service:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: build
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install --dev --system --deploy"
 
 build-python-lib:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
@@ -210,14 +197,11 @@ build-java-lib:
     - master
   script:
     - "mvn -f ./lib/java/dbrepo-core/pom.xml clean package install $MAVEN_OPTS -DskipTests"
-    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
-    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   artifacts:
     when: always
     paths:
       - ./lib/java/dbrepo-core/target/classes
-      - ./dbrepo-data-service/lib
-      - ./dbrepo-metadata-service/lib
+      - ./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar
 
 build-data-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -230,7 +214,7 @@ build-data-service:
   dependencies:
     - build-java-lib
   before_script:
-    - mvn -f ./lib/java/dbrepo-core/pom.xml -q clean install $MAVEN_OPTS -DskipTests
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
@@ -314,6 +298,8 @@ test-metadata-service:
     - build-metadata-service
   dependencies:
     - build-java-lib
+  before_script:
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -342,6 +328,8 @@ test-data-service:
     - build-data-service
   dependencies:
     - build-java-lib
+  before_script:
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -354,36 +342,6 @@ test-data-service:
     reports:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-analyse-service:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  needs:
-    - build-analyse-service
-  dependencies:
-    - build-analyse-service
-  before_script:
-    - "pip install pipenv"
-    - "pipenv install --dev --system --deploy"
-    - "mkdir -p /var/log/app/service/analyse"
-  script:
-    - cd ./dbrepo-analyse-service/ && coverage run --rcfile=.coveragerc -m pytest tests/test_determine_dt.py tests/test_determine_pk.py && coverage html && coverage xml && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - /var/log/app/service/analyse/app.log
-      - ./dbrepo-analyse-service/coverage.xml
-      - ./dbrepo-analyse-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-analyse-service/coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-auth-service-init:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
@@ -557,7 +515,6 @@ release-images:
     REPOSITORY_URL: $CI_REGISTRY2_URL
   dependencies:
     - clean-images
-    - test-analyse-service
     - test-auth-service-init
     - test-data-service
     - test-python-lib
@@ -613,10 +570,11 @@ release-docs:
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
+    - "python -m build --sdist ./lib/python && python -m build --wheel ./lib/python && pip install ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
     - "mkdir -p ./final/${APP_VERSION}"
   script:
-    - "make gen-lib-doc gen-docs-doc package-config"
+    - "make gen-python-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
     - "cp ./docs/.openapi/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # openapi
     - "cp ./docs/.openapi/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # openapi
@@ -694,7 +652,6 @@ scan-sonarqube:
     - master
   needs:
     - build-java-lib
-    - test-analyse-service
     - test-dashboard-service
     - build-data-service
     - test-data-service
@@ -703,7 +660,6 @@ scan-sonarqube:
     - test-search-service
   dependencies:
     - build-java-lib
-    - test-analyse-service
     - test-dashboard-service
     - build-data-service
     - test-data-service

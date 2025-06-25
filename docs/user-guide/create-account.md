@@ -5,7 +5,7 @@ author: Martin Weise
 !!! abstract "Note"
 
     The contents in this section do not apply to the instances that have affilation login mechanism (see
-    [Quickstart](../quickstart/#how-to-login)).
+    [Quickstart](/infrastructures/dbrepo/quickstart/#how-to-login)).
 
 A user wants to create an account in DBRepo.
 

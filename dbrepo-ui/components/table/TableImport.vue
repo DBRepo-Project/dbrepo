@@ -1,12 +1,14 @@
 <template>
   <div>
-    <v-stepper-header>
+    <v-stepper-header
+      v-if="!create">
       <v-stepper-item
         :title="$t('pages.table.subpages.import.schema.title')"
         :complete="validStep1"
         :value="1"/>
     </v-stepper-header>
     <v-stepper-window
+      v-if="!create"
       direction="vertical">
       <v-form
         ref="form"
@@ -112,7 +114,7 @@
               variant="flat"
               color="tertiary"
               label>
-              {{ $t('pages.table.subpages.import.storage.text') }}
+              {{ $route.query.location }}
             </v-chip>
           </v-col>
         </v-row>
@@ -200,7 +202,7 @@
                 cols="8">
                 <v-btn
                   v-if="create && !$route.query.location"
-                  :disabled="!isAnalyseAllowed || !validStep1 || !validStep2 || disabled"
+                  :disabled="!isAnalyseAllowed || (!create && !validStep1) || !validStep2 || disabled"
                   :loading="loading"
                   :variant="buttonVariant"
                   color="secondary"
@@ -209,7 +211,7 @@
                   @click="uploadAndAnalyse"/>
                 <v-btn
                   v-if="!create && !$route.query.location"
-                  :disabled="!isAnalyseAllowed || !validStep1 || !validStep2 || disabled"
+                  :disabled="!isAnalyseAllowed || (create && !validStep1) || !validStep2 || disabled"
                   :loading="loading || loadingImport"
                   :variant="buttonVariant"
                   color="secondary"
@@ -294,7 +296,7 @@ export default {
   },
   data() {
     return {
-      step: 2,
+      step: 1,
       validStep1: false,
       validStep2: false,
       validStep3: false,
@@ -487,43 +489,36 @@ export default {
           })
       })
     },
-    analyse(filename) {
+    analyse(s3key) {
       const analyseService = useAnalyseService()
-      const payload = { filename }
-      if (this.tableImport.separator) {
-        payload.separator = this.tableImport.separator
-      }
       this.loading = true
-      analyseService.suggest(payload)
+      analyseService.determineSchema(s3key)
         .then((analysis) => {
-          const {columns, separator, line_termination} = analysis
-          this.columns = Object.entries(columns)
-            .map(([name, analyse]) => {
-              return {
-                name: name.trim(),
-                type: analyse.type,
-                null_allowed: analyse.null_allowed,
-                primary_key: false,
-                size: analyse.size,
-                d: analyse.d,
-                enums: analyse.enums,
-                sets: analyse.sets
-              }
-            })
-          this.suggestedAnalyseSeparator = separator
-          this.suggestedAnalyseLineTerminator = line_termination
-          this.tableImport.location = filename
+          const {columns, delimiter, newline_delimiter, quote} = analysis
+          this.columns = columns.map(column => {
+            return {
+              name: column.name.trim(),
+              type: column.datatype,
+              null_allowed: column.null_allowed,
+              primary_key: false,
+              size: column.size,
+              d: column.d,
+              enums: column.enums,
+              sets: column.sets
+            }
+          })
+          this.tableImport.location = s3key
           this.step = 3
           this.cacheStore.setUploadProgress(null)
           const toast = useToastInstance()
           toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {
             columns: this.columns,
-            filename,
-            line_termination: line_termination === '\\n' ? '\n' : JSON.stringify(line_termination).replaceAll('"', ''),
-            separator: this.tableImport.separator,
-            header: this.tableImport.header,
-            quote: this.tableImport.quote,
+            filename: s3key,
+            line_termination: newline_delimiter === '\\n' ? '\n' : JSON.stringify(newline_delimiter).replaceAll('"', ''),
+            separator: delimiter,
+            header: columns.map(column => column.name.trim()),
+            quote: quote,
           })
           this.loading = false
         })

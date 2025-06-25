@@ -235,7 +235,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void storeQuery_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException {
+    public void storeQuery_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
+            QueryMalformedException {
 
         /* test */
         final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_ID);
@@ -284,6 +285,15 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         /* test */
         assertThrows(QueryStoreInsertException.class, () -> {
             subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "DROP DATABASE `weather`", QUERY_1_CREATED, USER_1_ID);
+        });
+    }
+
+    @Test
+    public void storeQuery_malformed_fails() {
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1", QUERY_1_CREATED, USER_1_ID);
         });
     }
 

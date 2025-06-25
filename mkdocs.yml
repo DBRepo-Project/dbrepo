@@ -46,6 +46,7 @@ nav:
     - JSON-LD API: api/json-ld.md
     - FAIR Signposting API: api/fair-signposting.md
   - Use Cases:
+    - Overview: examples/index.md
     - Air Quality Data: examples/air.md
     - COVID-19 Data: examples/covid-19.md
     - Hazard Data: examples/hazard.md
@@ -58,17 +59,17 @@ nav:
     - Transportation Data: examples/transportation.md
     - XPS Data: examples/xps-data.md
   - Development:
-    - dev/index.md
+    - Overview: dev/index.md
     - Databases:
         - Data Database: dev/services/data-db.md
         - Metadata Database: dev/services/metadata-db.md
         - Metric Database: dev/services/metric-db.md
         - Search Database: dev/services/search-db.md
     - Services:
-        - Analyse Service: dev/services/analyse-service.md
         - Auth Service: dev/services/auth-service.md
         - Broker Service: dev/services/broker-service.md
         - Data Service: dev/services/data-service.md
+        - Dashboard Service: dev/services/dashboard-service.md
         - Gateway Service: dev/services/gateway-service.md
         - Identity Service: dev/services/identity-service.md
         - Metadata Service: dev/services/metadata-service.md

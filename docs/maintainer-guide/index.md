@@ -14,7 +14,7 @@ Before you can use GeoNetwork on your own computer, you need to install it:
 
     Quick and simple Docker Compose deployment for local testing purposes.
 
-    [:octicons-arrow-right-24: Getting started](../maintainer-guide/docker)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/maintainer-guide/docker)
 
 -   :material-kubernetes:{ .lg .middle } **Install on Kubernetes**
 
@@ -22,7 +22,7 @@ Before you can use GeoNetwork on your own computer, you need to install it:
 
     Production-ready deployment on Kubernetes (recommended).
 
-    [:octicons-arrow-right-24: Getting started](../maintainer-guide/kubernetes)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/maintainer-guide/kubernetes)
 
 -   :material-remote-desktop:{ .lg .middle } **Install on VM**
 
@@ -30,7 +30,7 @@ Before you can use GeoNetwork on your own computer, you need to install it:
 
     Use our pre-configured VM image for local testing purposes.
 
-    [:octicons-arrow-right-24: Getting started](../maintainer-guide/vm)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/maintainer-guide/vm)
 
 -   :material-wrench:{ .lg .middle } **Build from Sourcecode**
 
@@ -38,6 +38,6 @@ Before you can use GeoNetwork on your own computer, you need to install it:
 
     Use our pre-configured VM image for local testing purposes.
 
-    [:octicons-arrow-right-24: Getting started](../maintainer-guide/build)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/maintainer-guide/build)
 
 </div>

@@ -40,4 +40,8 @@ img.img-border {
     color: var(--md-primary-fg-color--dark);
     border-bottom: 2px solid var(--md-primary-fg-color--dark); }
 
-/*# sourceMappingURL=extra.css.map */
+.support-active {
+  color: darkgreen; }
+
+.support-inactive {
+  color: darkred; }

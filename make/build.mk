@@ -3,6 +3,11 @@
 .PHONY: build-images
 build-images: build-java-lib ## Build Docker images.
 	docker compose build
+	docker build -t dbrepo-compute-service:latest ./dbrepo-compute-service
+
+.PHONY: build-jupyter-image
+build-jupyter-image:
+	docker build -t starter-notebook ./.jupyter
 
 .PHONY: build-jupyter-image
 build-jupyter-image:
@@ -26,11 +31,9 @@ build-ui: ## Build the UI.
 
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
-	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock ./dbrepo-auth-service/init/lib/* ./dbrepo-auth-service/init/Pipfile.lock
+	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock ./dbrepo-auth-service/init/lib/* ./dbrepo-auth-service/init/Pipfile.lock
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
-	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib
-	PIPENV_PIPFILE=./dbrepo-analyse-service/Pipfile pipenv lock
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib
 	PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv lock
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib

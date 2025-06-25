@@ -27,6 +27,10 @@
               v-if="view"
               dense>
               <v-list-item
+                :title="$t('pages.view.id.title')">
+                {{ view.id }}
+              </v-list-item>
+              <v-list-item
                 :title="$t('pages.view.name.title')">
                 {{ view.internal_name }}
               </v-list-item>

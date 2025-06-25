@@ -1,6 +1,7 @@
 {
   "navigation": {
     "logo": "Logo",
+    "draft": "Draft",
     "information": "Information",
     "search": "Search",
     "container": "Engines",
@@ -47,6 +48,9 @@
       "title": "Identifier",
       "export": {
         "text": "Metadata Export"
+      },
+      "id": {
+        "title": "ID"
       },
       "pid": {
         "title": "Persistent Identifier"
@@ -616,6 +620,9 @@
       "creation": {
         "title": "Created"
       },
+      "id": {
+        "title": "ID"
+      },
       "name": {
         "title": "Name"
       },
@@ -931,6 +938,9 @@
         "info": "Info",
         "data": "Data"
       },
+      "id": {
+        "title": "ID"
+      },
       "name": {
         "title": "Name"
       },
@@ -974,6 +984,9 @@
     },
     "subset": {
       "title": "Subset",
+      "id": {
+        "title": "ID"
+      },
       "visibility": {
         "title": "Visibility"
       },
@@ -981,7 +994,11 @@
         "title": "Creator"
       },
       "query": {
-        "title": "Query"
+        "title": "Query",
+        "normalized": {
+          "title": "Normalized Query",
+          "help": "Exact query as it was executed"
+        }
       },
       "hash": {
         "title": "Hash",
@@ -1532,6 +1549,8 @@
     "min": "Value too small",
     "max": "Value too big",
     "matching": "Not matching!",
+    "size": "At most {size} digits before the comma .",
+    "d": "At most {size} digits after the comma .",
     "doi": {
       "invalid": "Invalid DOI. Must start with 10.xyz"
     },

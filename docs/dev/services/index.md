@@ -5,7 +5,7 @@ author: Martin Weise
 # Overview
 
 We developed a Python Library for communicating with DBRepo from e.g. Jupyter Notebooks. See
-the [Python Library](./open-api) page for more details.
+the [Python Library](/infrastructures/dbrepo/open-api) page for more details.
 
 We give usage examples of the most important use-cases we identified.
 
@@ -30,12 +30,11 @@ A user wants to create an account in DBRepo.
     button and provide a valid work e-mail address :material-numeric-1-circle-outline: and a username (in lowercase
     alphanumeric characters) :material-numeric-2-circle-outline:. Choose a secure password in field 
     :material-numeric-3-circle-outline: and repeat it in field :material-numeric-4-circle-outline:. Click "SUBMIT" and
-    the system creates a user account in Figure 1 with the [default roles](./system-services-authentication/#roles)
+    the system creates a user account in Figure 1 with the [default roles](/infrastructures/dbrepo/system-services-authentication/#roles)
     that your administrator has assigned.
 
     <figure markdown>
-    ![Create user account](../images/screenshots/create-account-step-1.png){ .img-border }
-    <figcaption>Figure 1: Create user account.</figcaption>
+    ![Create user account](/infrastructures/dbrepo/images/screenshots/create-account-step-1.png){ .img-border }
     </figure>
 
     To login in DBRepo, navigate to the login page by clicking the ":material-login: LOGIN" button and provide the
@@ -44,8 +43,7 @@ A user wants to create an account in DBRepo.
     authenticated with DBRepo in Figure 2.
 
     <figure markdown>
-    ![Create user account](../images/screenshots/create-account-step-2.png){ .img-border }
-    <figcaption>Figure 2: Login to the user account.</figcaption>
+    ![Create user account](/infrastructures/dbrepo/images/screenshots/create-account-step-2.png){ .img-border }
     </figure>
 
     You can view your user information upon clicking on your username :material-numeric-1-circle-outline: on the top. To
@@ -54,8 +52,7 @@ A user wants to create an account in DBRepo.
     identically in field :material-numeric-4-circle-outline:. 
 
     <figure markdown>
-    ![Change user account password](../images/screenshots/create-account-step-3.png){ .img-border }
-    <figcaption>Figure 3: Change user account password.</figcaption>
+    ![Change user account password](/infrastructures/dbrepo/images/screenshots/create-account-step-3.png){ .img-border }
     </figure>
 
 === "Terminal"
@@ -134,8 +131,7 @@ A user wants to create a database in DBRepo.
     Login and press the ":material-plus: DATABASE" button on the top right :material-numeric-1-circle-outline: as seen in Figure 4.
 
     <figure markdown>
-    ![Open the create database dialog](../images/screenshots/create-database-step-1.png){ .img-border }
-    <figcaption>Figure 4: Open the create database dialog.</figcaption>
+    ![Open the create database dialog](/infrastructures/dbrepo/images/screenshots/create-database-step-1.png){ .img-border }
     </figure>
 
     Give the database a meaningful title :material-numeric-1-circle-outline: that describes the contained data in few 
@@ -143,15 +139,13 @@ A user wants to create a database in DBRepo.
     finally create the database, press "Create" :material-numeric-3-circle-outline: as seen in Figure 5.
 
     <figure markdown>
-    ![Create database form](../images/screenshots/create-database-step-2.png){ .img-border }
-    <figcaption>Figure 5: Create database form.</figcaption>
+    ![Create database form](/infrastructures/dbrepo/images/screenshots/create-database-step-2.png){ .img-border }
     </figure>
 
     After a few seconds, you can see the created database in the "Recent Databases" list, as seen in Figure 6.
 
     <figure markdown>
-    ![View the created database](../images/screenshots/create-database-step-3.png){ .img-border }
-    <figcaption>Figure 6: View the created database.</figcaption>
+    ![View the created database](/infrastructures/dbrepo/images/screenshots/create-database-step-3.png){ .img-border }
     </figure>
 
 === "Terminal"
@@ -213,16 +207,14 @@ access to. This is the default for self-created databases like above in [Create 
     Figure 7.
 
     <figure markdown>
-    ![Open the import CSV form](../images/screenshots/import-dataset-step-1.png){ .img-border }
-    <figcaption>Figure 7: Open the import CSV form.</figcaption>
+    ![Open the import CSV form](/infrastructures/dbrepo/images/screenshots/import-dataset-step-1.png){ .img-border }
     </figure>
 
     Provide the table name :material-numeric-1-circle-outline: and optionally a table description :material-numeric-2-circle-outline:
     as seen in Figure 8.
 
     <figure markdown>
-    ![Basic table information](../images/screenshots/import-dataset-step-2.png){ .img-border }
-    <figcaption>Figure 8: Basic table information.</figcaption>
+    ![Basic table information](/infrastructures/dbrepo/images/screenshots/import-dataset-step-2.png){ .img-border }
     </figure>
 
     Next, provide the dataset metadata that is necessary for import into the table by providing the dataset separator
@@ -238,16 +230,14 @@ access to. This is the default for self-created databases like above in [Create 
     provide this information in :material-numeric-6-circle-outline:.
 
     <figure markdown>
-    ![Dataset metadata necessary for import](../images/screenshots/import-dataset-step-3.png){ .img-border }
-    <figcaption>Figure 9: Dataset metadata necessary for import.</figcaption>
+    ![Dataset metadata necessary for import](/infrastructures/dbrepo/images/screenshots/import-dataset-step-3.png){ .img-border }
     </figure>
 
     Select the dataset file from your local computer by clicking :material-numeric-1-circle-outline: or dragging the
     dataset file onto the field in Figure 10.
 
     <figure markdown>
-    ![Dataset import file](../images/screenshots/import-dataset-step-4.png){ .img-border }
-    <figcaption>Figure 10: Dataset import file.</figcaption>
+    ![Dataset import file](/infrastructures/dbrepo/images/screenshots/import-dataset-step-4.png){ .img-border }
     </figure>
 
     The table schema is suggested based on heuristics between the upload and the suggested schema in Figure 8. If your
@@ -261,8 +251,7 @@ access to. This is the default for self-created databases like above in [Create 
     definitions by clicking the "ADD COLUMN" button in Figure 11.
 
     <figure markdown>
-    ![Confirm the table schema and provide missing information](../images/screenshots/import-dataset-step-5.png){ .img-border }
-    <figcaption>Figure 11: Confirm the table schema and provide missing information.</figcaption>
+    ![Confirm the table schema and provide missing information](/infrastructures/dbrepo/images/screenshots/import-dataset-step-5.png){ .img-border }
     </figure>
 
     If a table column data type is of `DATE` or `TIMESTAMP` (or similar), provide a date format 
@@ -270,8 +259,7 @@ access to. This is the default for self-created databases like above in [Create 
     dataset as seen in Figure 12.
 
     <figure markdown>
-    ![Confirm the table schema and provide missing information](../images/screenshots/import-dataset-step-6.png){ .img-border }
-    <figcaption>Figure 12: Confirm the table schema and provide missing information.</figcaption>
+    ![Confirm the table schema and provide missing information](/infrastructures/dbrepo/images/screenshots/import-dataset-step-6.png){ .img-border }
     </figure>
 
     When you are finished with the table schema definition, the dataset is imported and a table is created. You are
@@ -284,8 +272,7 @@ access to. This is the default for self-created databases like above in [Create 
     13.
 
     <figure markdown>
-    ![Table data](../images/screenshots/import-dataset-step-7.png){ .img-border }
-    <figcaption>Figure 13: Table data.</figcaption>
+    ![Table data](/infrastructures/dbrepo/images/screenshots/import-dataset-step-7.png){ .img-border }
     </figure>
 
 === "Terminal"
@@ -425,23 +412,21 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     Setup a new connection in the MySQL Workbench (c.f. Figure 14) by clicking the small 
     ":material-plus-circle-outline:" button :material-numeric-1-circle-outline: to open the dialog. In the opened dialog
     fill out the connection parameters (for local deployments the hostname is `127.0.0.1` and port `3307` for the
-    [Data Database](./system-databases-data/) :material-numeric-2-circle-outline:.
+    [Data Database](/infrastructures/dbrepo/system-databases-data/) :material-numeric-2-circle-outline:.
 
     The default credentials are username `root` and password `dbrepo`, type the password in 
     :material-numeric-3-circle-outline: and click the "OK" button. Then finish the setup of the new connection by
     clicking the "OK" button :material-numeric-4-circle-outline:.
 
     <figure markdown>
-    ![Setup New Connection in MySQL Workbench](../images/screenshots/import-database-dump-step-1.png)
-    <figcaption>Figure 14: Setup New Connection in MySQL Workbench.</figcaption>
+    ![Setup New Connection in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-1.png)
     </figure>
 
     Now you should be able to see some statistics for the Data Database (c.f. Figure 15), especially that it is running
     :material-numeric-1-circle-outline: and basic connection and version information :material-numeric-2-circle-outline:.
 
     <figure markdown>
-    ![Server status of the Data Database in MySQL Workbench](../images/screenshots/import-database-dump-step-2.png)
-    <figcaption>Figure 15: Server status of the Data Database in MySQL Workbench.</figcaption>
+    ![Server status of the Data Database in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-2.png)
     </figure>
 
     Then proceed to import the database dump `dump.sql` by clicking "Data Import/Restore" 
@@ -451,8 +436,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     The import starts after clicking "Start Import" :material-numeric-5-circle-outline:.
 
     <figure markdown>
-    ![Data Import/Restore in MySQL Workbench](../images/screenshots/import-database-dump-step-3.png)
-    <figcaption>Figure 16: Data Import/Restore in MySQL Workbench.</figcaption>
+    ![Data Import/Restore in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-3.png)
     </figure>
 
 === "Terminal"
@@ -470,8 +454,8 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     gunzip < dump.sql.gz | mysql -H127.0.0.1 -p3307 -uUSERNAME -pYOURPASSWORD db_name
     ```
 
-    The [Metadata Service](./system-services-metadata) periodically (by default configuration every 60 seconds) checks
-    and adds missing tables and views to the [Metadata Database](./system-databases-metadata), the database dump
+    The [Metadata Service](/infrastructures/dbrepo/system-services-metadata) periodically (by default configuration every 60 seconds) checks
+    and adds missing tables and views to the [Metadata Database](/infrastructures/dbrepo/system-databases-metadata), the database dump
     will be visible afterwards. Currently, date formats for columns with time types (e.g. `DATE`, `TIMESTAMP`) are
     assumed to match the first date format found for the database image. This may need to be manually specified by the
     administrator.
@@ -479,7 +463,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     !!! example "Specifying a custom date format"
 
         In case the pre-defined date formats are not matching the found date format in the database dump, the system
-        administrator needs to add it manually in the [Metadata Database](./system-databases-metadata).
+        administrator needs to add it manually in the [Metadata Database](/infrastructures/dbrepo/system-databases-metadata).
 
         ```sql
         INSERT INTO `mdb_images_date` (`iid`, `database_format`, `unix_format`, `example`, `has_time`)
@@ -510,8 +494,7 @@ A user wants to import live data from e.g. sensor measurements fast and without 
     database via JDBC, you can obtain the connection string in the UI under the database info (c.f. Figure 14).
 
     <figure markdown>
-    ![JDBC connection information](../images/screenshots/database-jdbc.png){ .img-border }
-    <figcaption>Figure 14: JDBC connection information.</figcaption>
+    ![JDBC connection information](/infrastructures/dbrepo/images/screenshots/database-jdbc.png){ .img-border }
     </figure>
     
 
@@ -526,8 +509,7 @@ A user wants to import live data from e.g. sensor measurements fast and without 
     database via AMQP, you can obtain the connection string in the UI under the table info (c.f. Figure 14).
 
     <figure markdown>
-    ![AMQP connection information](../images/screenshots/table-amqp.png){ .img-border }
-    <figcaption>Figure 14: AMQP connection information.</figcaption>
+    ![AMQP connection information](/infrastructures/dbrepo/images/screenshots/table-amqp.png){ .img-border }
     </figure>
 
     ```python
@@ -550,8 +532,7 @@ A user wants to create a subset and export it as csv file.
     Figure 17.
 
     <figure markdown>
-    ![Open the create subset form](../images/screenshots/export-subset-step-1.png){ .img-border }
-    <figcaption>Figure 17: Open the create subset form.</figcaption>
+    ![Open the create subset form](/infrastructures/dbrepo/images/screenshots/export-subset-step-1.png){ .img-border }
     </figure>
 
     A subset can be created by using our query builder that is visible by default in the "SIMPLE" tab. First, a source 
@@ -562,8 +543,7 @@ A user wants to create a subset and export it as csv file.
     Once you are confident the query covers the desired result, click ":material-run: Create".
 
     <figure markdown>
-    ![Subset query building](../images/screenshots/export-subset-step-2.png){ .img-border }
-    <figcaption>Figure 18: Subset query building.</figcaption>
+    ![Subset query building](/infrastructures/dbrepo/images/screenshots/export-subset-step-2.png){ .img-border }
     </figure>
 
     Once the subset is created (may take some seconds), the user is presented with the result set in
@@ -571,8 +551,7 @@ A user wants to create a subset and export it as csv file.
     View" on the top (c.f. Figure 19).
 
     <figure markdown>
-    ![Subset result set](../images/screenshots/export-subset-step-3.png){ .img-border }
-    <figcaption>Figure 19: Subset result set.</figcaption>
+    ![Subset result set](/infrastructures/dbrepo/images/screenshots/export-subset-step-3.png){ .img-border }
     </figure>
 
     The subset information page in Figure 20 shows the most important metadata like subset query hash and result hash
@@ -584,8 +563,7 @@ A user wants to create a subset and export it as csv file.
     a csv file by clicking the ":material-download: DATA .CSV" button :material-numeric-2-circle-outline:.
 
     <figure markdown>
-    ![Subset information](../images/screenshots/export-subset-step-4.png){ .img-border }
-    <figcaption>Figure 20: Subset information.</figcaption>
+    ![Subset information](/infrastructures/dbrepo/images/screenshots/export-subset-step-4.png){ .img-border }
     </figure>
 
 === "Terminal"
@@ -648,8 +626,7 @@ A user wants to create a subset and export it as csv file.
     under the database info (c.f. Figure 20).
 
     <figure markdown>
-    ![JDBC connection information](../images/screenshots/database-jdbc.png){ .img-border }
-    <figcaption>Figure 20: JDBC connection information.</figcaption>
+    ![JDBC connection information](/infrastructures/dbrepo/images/screenshots/database-jdbc.png){ .img-border }
     </figure>
 
     ```sql
@@ -658,7 +635,7 @@ A user wants to create a subset and export it as csv file.
     ```
 
     Afterwards, you can see the subset in the UI with subset id `@subsetId` and persist it there. Only the administrator
-    can persist the subset in the [Data Database](./system-databases-data) through JDBC by setting the `persisted`
+    can persist the subset in the [Data Database](/infrastructures/dbrepo/system-databases-data) through JDBC by setting the `persisted`
     column to `true` in the `qs_queries` table.
 
 === "Python"
@@ -728,11 +705,10 @@ A user wants to assign a persistent identifier to a database owned by them.
     the ":material-identifier: GET PID" button :material-numeric-1-circle-outline: as seen in Figure 21.
 
     <figure markdown>
-    ![Open the get persisent identifier form](../images/screenshots/assign-database-pid-step-1.png){ .img-border }
-    <figcaption>Figure 21: Open the get persisent identifier form.</figcaption>
+    ![Open the get persisent identifier form](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-1.png){ .img-border }
     </figure>
 
-    First, provide information on the dataset creator(s). Since the [Metadata Service](./system-services-metadata) 
+    First, provide information on the dataset creator(s). Since the [Metadata Service](/infrastructures/dbrepo/system-services-metadata) 
     automatically resolves external PIDs, the easiest way is to provide the correct mandatory data is by filling the
     name identifier :material-numeric-1-circle-outline:. The creator type :material-numeric-2-circle-outline:
     denotes either a natural person or organization. Optionally fill out the given 
@@ -743,8 +719,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     :material-numeric-8-circle-outline:.
 
     <figure markdown>
-    ![Identifier creator fields](../images/screenshots/assign-database-pid-step-2.png){ .img-border }
-    <figcaption>Figure 22: Identifier creator fields.</figcaption>
+    ![Identifier creator fields](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-2.png){ .img-border }
     </figure>
 
     The identifier needs at least one title in the title field :material-numeric-1-circle-outline: and optionally a
@@ -753,8 +728,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     again :material-numeric-4-circle-outline: if they are not needed in Figure 23.
 
     <figure markdown>
-    ![JDBC connection information](../images/screenshots/assign-database-pid-step-3.png){ .img-border }
-    <figcaption>Figure 23: Identifier title fields.</figcaption>
+    ![JDBC connection information](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-3.png){ .img-border }
     </figure>
 
     The identifier needs at least one description in the description field :material-numeric-1-circle-outline: and 
@@ -764,8 +738,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     publication month and publication day in Figure 24.
 
     <figure markdown>
-    ![Identifier description fields and publishing information](../images/screenshots/assign-database-pid-step-4.png){ .img-border }
-    <figcaption>Figure 24: Identifier description fields and publishing information.</figcaption>
+    ![Identifier description fields and publishing information](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-4.png){ .img-border }
     </figure>
 
     Optionally reference other PIDs :material-numeric-1-circle-outline:, if you added too much, removing a related
@@ -775,11 +748,10 @@ A user wants to assign a persistent identifier to a database owned by them.
     your data.
 
     <figure markdown>
-    ![Related identifiers, license and language of the identifier](../images/screenshots/assign-database-pid-step-5.png){ .img-border }
-    <figcaption>Figure 25: Related identifiers, license and language of the identifier.</figcaption>
+    ![Related identifiers, license and language of the identifier](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-5.png){ .img-border }
     </figure>
 
-    Optionally add funding information, again the [Metadata Service](./system-services-metadata) 
+    Optionally add funding information, again the [Metadata Service](/infrastructures/dbrepo/system-services-metadata) 
     automatically resolves external PIDs, the easiest way is to provide the correct mandatory data is by filling the
     funder identifier :material-numeric-1-circle-outline: that attempts to get the funder
     name :material-numeric-2-circle-outline:. If you provide an award number :material-numeric-3-circle-outline: and/or
@@ -787,16 +759,14 @@ A user wants to assign a persistent identifier to a database owned by them.
     language on the identifier summary page (c.f. Figure 26).
 
     <figure markdown>
-    ![Identifier funder information](../images/screenshots/assign-database-pid-step-6.png){ .img-border }
-    <figcaption>Figure 26: Identifier funder information.</figcaption>
+    ![Identifier funder information](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-6.png){ .img-border }
     </figure>
 
     Scroll to the top again and click the ":material-content-save-outline: CREATE PID" button to create the PID. The
     result is displayed in Figure 27.
 
     <figure markdown>
-    ![Identifier summary page](../images/screenshots/assign-database-pid-step-7.png){ .img-border }
-    <figcaption>Figure 27: Identifier summary page.</figcaption>
+    ![Identifier summary page](/infrastructures/dbrepo/images/screenshots/assign-database-pid-step-7.png){ .img-border }
     </figure>
 
 === "Terminal"
@@ -817,11 +787,11 @@ A user wants to assign a persistent identifier to a database owned by them.
 
     !!! warning
 
-        Creating a PID directly in the [Metadata Database](./system-databases-metadata) is not recommended! It bypasses
+        Creating a PID directly in the [Metadata Database](/infrastructures/dbrepo/system-databases-metadata) is not recommended! It bypasses
         validation and creation of external PIDs (e.g. DOI) and may lead to inconstistent data locally compared to
         external systems (e.g. DataCite Fabrica).
 
-    Create a local PID directly in the [Metadata Database](./system-databases-metadata) by filling the tables in this
+    Create a local PID directly in the [Metadata Database](/infrastructures/dbrepo/system-databases-metadata) by filling the tables in this
     order (they have foreign key dependencies).
 
     1. `mdb_identifiers` ... identifier core information
@@ -884,8 +854,7 @@ A user wants a public database to be private and only give specific users access
     the dialog (c.f. Figure 28).
 
     <figure markdown>
-    ![Database settings for visibility and access](../images/screenshots/private-database-access-step-1.png){ .img-border }
-    <figcaption>Figure 28: Database settings for visibility and access.</figcaption>
+    ![Database settings for visibility and access](/infrastructures/dbrepo/images/screenshots/private-database-access-step-1.png){ .img-border }
     </figure>
 
     Give a user from the list access to the database by selecting the qualified username from the 
@@ -893,8 +862,7 @@ A user wants a public database to be private and only give specific users access
     allowing users to view the private data (c.f. Figure 29).
 
     <figure markdown>
-    ![Database acccess dialog](../images/screenshots/private-database-access-step-2.png){ .img-border }
-    <figcaption>Figure 29: Database acccess dialog.</figcaption>
+    ![Database acccess dialog](/infrastructures/dbrepo/images/screenshots/private-database-access-step-2.png){ .img-border }
     </figure>
 
 === "Terminal"
@@ -928,7 +896,7 @@ A user wants a public database to be private and only give specific users access
 === "JDBC"
 
     To change the visibility of a database as administrator with direct JDBC access to 
-    the [Metadata Database](./system-databases-metadata), change the visibility directly by executing the SQL-query
+    the [Metadata Database](/infrastructures/dbrepo/system-databases-metadata), change the visibility directly by executing the SQL-query
     in the `fda` schema:
 
     ```sql
