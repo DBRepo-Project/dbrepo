@@ -20,9 +20,6 @@ global:
       name: docker.io/bitnami/fluent-bit:4.0.0
     ## @param global.loggingSidecar.resourcesPreset The resource definitions for the logging sidecar.
     resourcesPreset: nano
-  security:
-    ## @param global.security.allowInsecureImages Allow the custom compute service image.
-    allowInsecureImages: true
 
 ## @section Common parameters
 
@@ -1262,22 +1259,8 @@ gatewayservice:
 ## @section Analytics Service
 
 computeservice:
-  ## @param computeservice.endpoint Configure the number of parallel workers with local[n] or unbound: local[*]
-  endpoint: spark://compute-service-master:7077
-  ## @param computeservice.enabled Enable the Compute Service.
-  enabled: true
-  ## @skip computeservice.fullnameOverride
-  fullnameOverride: compute-service
-  image:
-    ## @skip computeservice.image.registry
-    registry: registry.datalab.tuwien.ac.at
-    ## @skip computeservice.image.repository
-    repository: dbrepo/compute-service
-    ## @skip computeservice.image.tag
-    tag: 1.10.0
-  worker:
-    ## @skip computeservice.worker.replicaCount
-    replicaCount: 3
+  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
+  endpoint: local[*]
 
 
 ## @section Ingress
@@ -1296,4 +1279,5 @@ ingress:
   ## @example
   ## annotations:
   ##   cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+  ##   nginx.ingress.kubernetes.io/proxy-body-size: 2G
   annotations: { }

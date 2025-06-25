@@ -9,12 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.0) - 2025-06-??
 
-### Changes
-
-* Added the [`WWW-Authenticate`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/WWW-Authenticate)
-  header to prompt browser for Basic Authentication in the services when none is provided for all `GET` requests
-  that require authentication.
-
 #### Removals
 
 * Removed the Analyse Service in favor of DuckDB in the Data Service covering the same functionality.

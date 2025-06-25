@@ -5,6 +5,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.amqp.CreateVirtualHostDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.ExchangeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantVirtualHostPermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.QueueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.auth.CreateUserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
@@ -3141,6 +3143,43 @@ public class BaseTest {
                     .unit(UNIT_1)
                     .isNullAllowed(true)
                     .build());
+
+    public final static SchemaAnalysisResultDto TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO = SchemaAnalysisResultDto.builder()
+            .comment("")
+            .quote("\"")
+            .delimiter(",")
+            .escape("\\")
+            .newlineDelimiter("\n")
+            .hasHeader(true)
+            .skipRows(1)
+            .columns(new LinkedList<>(List.of(ColumnAnalysisResultDto.builder()
+                            .name("id")
+                            .datatype(ColumnTypeDto.BIGINT)
+                            .nullAllowed(true)
+                            .build(),
+                    ColumnAnalysisResultDto.builder()
+                            .name("Date")
+                            .datatype(ColumnTypeDto.VARCHAR)
+                            .nullAllowed(true)
+                            .size(255)
+                            .build(),
+                    ColumnAnalysisResultDto.builder()
+                            .name("Location")
+                            .datatype(ColumnTypeDto.VARCHAR)
+                            .nullAllowed(true)
+                            .size(255)
+                            .build(),
+                    ColumnAnalysisResultDto.builder()
+                            .name("MinTemp")
+                            .datatype(ColumnTypeDto.DOUBLE)
+                            .nullAllowed(true)
+                            .build(),
+                    ColumnAnalysisResultDto.builder()
+                            .name("Rainfall")
+                            .datatype(ColumnTypeDto.DOUBLE)
+                            .nullAllowed(true)
+                            .build())))
+            .build();
 
     public final static UUID QUERY_7_ID = UUID.fromString("fe73a325-30a0-444c-b74f-23ce1533e55f");
     public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";

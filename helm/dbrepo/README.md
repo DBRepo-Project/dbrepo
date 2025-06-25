@@ -61,7 +61,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | `global.loggingSidecar.enabled`                       | Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.                                                                                                                                                                                                                                                            | `true`                               |
 | `global.loggingSidecar.image.name`                    | The logging sidecar image.                                                                                                                                                                                                                                                                                                                                          | `docker.io/bitnami/fluent-bit:4.0.0` |
 | `global.loggingSidecar.resourcesPreset`               | The resource definitions for the logging sidecar.                                                                                                                                                                                                                                                                                                                   | `nano`                               |
-| `global.security.allowInsecureImages`                 | Allow the custom compute service image.                                                                                                                                                                                                                                                                                                                             | `true`                               |
 
 ### Common parameters
 
@@ -473,10 +472,9 @@ mqtt.prefetch = 10
 
 ### Analytics Service
 
-| Name                      | Description                                                                 | Value                                 |
-| ------------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
-| `computeservice.endpoint` | Configure the number of parallel workers with local[n] or unbound: local[*] | `spark://compute-service-master:7077` |
-| `computeservice.enabled`  | Enable the Compute Service.                                                 | `true`                                |
+| Name                      | Description                                            | Value      |
+| ------------------------- | ------------------------------------------------------ | ---------- |
+| `computeservice.endpoint` | Configure the number of parallel workers with local[n] | `local[*]` |
 
 ### Ingress
 
