@@ -46,6 +46,7 @@ nav:
     - JSON-LD API: api/json-ld.md
     - FAIR Signposting API: api/fair-signposting.md
   - Use Cases:
+    - Overview: examples/index.md
     - Air Quality Data: examples/air.md
     - COVID-19 Data: examples/covid-19.md
     - Hazard Data: examples/hazard.md
@@ -58,7 +59,7 @@ nav:
     - Transportation Data: examples/transportation.md
     - XPS Data: examples/xps-data.md
   - Development:
-    - dev/index.md
+    - Overview: dev/index.md
     - Databases:
         - Data Database: dev/services/data-db.md
         - Metadata Database: dev/services/metadata-db.md

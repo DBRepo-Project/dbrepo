@@ -65,8 +65,7 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 :material-numeric-3-circle-outline:.
 
 <figure markdown>
-![Keycloak identitiy provider list](images/screenshots/auth-service-ldap-1.png){ .img-border }
-<figcaption>Figure 1: Select the Identity Service provider.</figcaption>
+![Keycloak identitiy provider list](/infrastructures/dbrepo/images/screenshots/auth-service-ldap-1.png){ .img-border }
 </figure>
 
 If you plan to change the default admin username (c.f. Figure 2), modify the Bind DN :material-numeric-1-circle-outline:
@@ -74,8 +73,7 @@ but this is optional. Change the Bind credentials to the desired password :mater
 the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
 <figure markdown>
-![Keycloak identity provider settings](images/screenshots/auth-service-ldap-2.png){ .img-border }
-<figcaption>Figure 2: Update the Identity Service admin user credentials.</figcaption>
+![Keycloak identity provider settings](/infrastructures/dbrepo/images/screenshots/auth-service-ldap-2.png){ .img-border }
 </figure>
 
 Update the client secret of the `dbrepo-client`:

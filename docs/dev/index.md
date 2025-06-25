@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-# Development
-
 Development of DBRepo.
 
 ## Support

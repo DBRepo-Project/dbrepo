@@ -614,9 +614,9 @@ dataservice:
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
-    read: SELECT
+    read: SELECT, EXECUTE
     ## @param dataservice.grant.write The default database permissions for users with write access.
-    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
+    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
   rabbitmq:
     ## @param dataservice.rabbitmq.consumerConcurrentMin The minimal number of RabbitMQ consumers.
     consumerConcurrentMin: 2
@@ -1259,8 +1259,27 @@ gatewayservice:
 ## @section Analytics Service
 
 computeservice:
+<<<<<<< Updated upstream
   ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
   endpoint: local[2]
+=======
+  ## @param computeservice.enabled Enable the Compute Service.
+  enabled: true
+  ## @skip computeservice.fullnameOverride
+  fullnameOverride: compute-service
+  image:
+    ## @skip computeservice.image.registry
+    registry: registry.datalab.tuwien.ac.at
+    ## @skip computeservice.image.repository
+    repository: dbrepo/compute-service
+    ## @skip computeservice.image.tag
+    tag: 1.10.0
+  worker:
+    ## @skip computeservice.worker.replicaCount
+    replicaCount: 3
+  ## @param computeservice.endpoint Configure the number of parallel workers with local[n] or unbound: local[*]
+  endpoint: spark://compute-service-master:7077
+>>>>>>> Stashed changes
 
 
 ## @section Ingress
