@@ -16,7 +16,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
 Import the database dump `dump.sql` via the [MySQL Workbench](https://www.mysql.com/products/workbench/) client which is 
 semi-compatible with MariaDB databases, i.e. core features work some status/performance features do not.
 
-Setup a new connection in the MySQL Workbench (c.f. Figure 14) by clicking the small 
+Setup a new connection in the MySQL Workbench by clicking the small 
 ":material-plus-circle-outline:" button :material-numeric-1-circle-outline: to open the dialog. In the opened dialog
 fill out the connection parameters (for local deployments the hostname is `127.0.0.1` and port `3307` for the
 Data Database :material-numeric-2-circle-outline:.
@@ -26,16 +26,13 @@ The default credentials are username `root` and password `dbrepo`, type the pass
 clicking the "OK" button :material-numeric-4-circle-outline:.
 
 <figure markdown>
-![Setup New Connection in MySQL Workbench](../images/screenshots/import-database-dump-step-1.png)
-<figcaption>Figure 14: Setup New Connection in MySQL Workbench.</figcaption>
-</figure>
+![Setup New Connection in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-1.png)
 
-Now you should be able to see some statistics for the Data Database (c.f. Figure 15), especially that it is running
+Now you should be able to see some statistics for the Data Database, especially that it is running
 :material-numeric-1-circle-outline: and basic connection and version information :material-numeric-2-circle-outline:.
 
 <figure markdown>
-![Server status of the Data Database in MySQL Workbench](../images/screenshots/import-database-dump-step-2.png)
-<figcaption>Figure 15: Server status of the Data Database in MySQL Workbench.</figcaption>
+![Server status of the Data Database in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-2.png)
 </figure>
 
 Then proceed to import the database dump `dump.sql` by clicking "Data Import/Restore" 
@@ -45,8 +42,7 @@ into :material-numeric-4-circle-outline: (you can also create a new database for
 The import starts after clicking "Start Import" :material-numeric-5-circle-outline:.
 
 <figure markdown>
-![Data Import/Restore in MySQL Workbench](../images/screenshots/import-database-dump-step-3.png)
-<figcaption>Figure 16: Data Import/Restore in MySQL Workbench.</figcaption>
+![Data Import/Restore in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-3.png)
 </figure>
 
 ### Terminal

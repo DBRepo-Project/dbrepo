@@ -510,7 +510,7 @@
       "description" : "${default-database-handling}",
       "composite" : true,
       "composites" : {
-        "realm" : [ "modify-database-image", "modify-database-owner", "update-database-access", "create-database", "list-databases", "create-database-access", "find-database", "modify-database-visibility", "import-database-data", "delete-database-access", "check-database-access" ]
+        "realm" : [ "modify-database-image", "modify-database-owner", "update-database-access", "create-database", "list-databases", "create-database-access", "find-database", "modify-database-visibility", "analyse-datatypes", "import-database-data", "delete-database-access", "check-database-access" ]
       },
       "clientRole" : false,
       "containerId" : "82c39861-d877-4667-a0f3-4daa2ee230e0",
@@ -561,6 +561,14 @@
       "composites" : {
         "realm" : [ "find-user" ]
       },
+      "clientRole" : false,
+      "containerId" : "82c39861-d877-4667-a0f3-4daa2ee230e0",
+      "attributes" : { }
+    }, {
+      "id" : "661b0600-1517-457d-8e5d-a330c175317c",
+      "name" : "analyse-datatypes",
+      "description" : "${analyse-datatypes}",
+      "composite" : false,
       "clientRole" : false,
       "containerId" : "82c39861-d877-4667-a0f3-4daa2ee230e0",
       "attributes" : { }
@@ -2429,7 +2437,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     }, {
       "id" : "1849e52a-b8c9-44a8-af3d-ee19376a1ed1",
@@ -2455,7 +2463,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     } ],
     "org.keycloak.userprofile.UserProfileProvider" : [ {
@@ -2479,8 +2487,8 @@
           "config" : {
             "ldap.attribute" : [ "createTimestamp" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "createTimestamp" ]
           }
         }, {
@@ -2491,8 +2499,8 @@
           "config" : {
             "ldap.attribute" : [ "sn" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "read.only" : [ "false" ],
             "always.read.value.from.ldap" : [ "true" ],
+            "read.only" : [ "false" ],
             "user.model.attribute" : [ "lastName" ]
           }
         }, {
@@ -3209,12 +3217,13 @@
     "actionTokenGeneratedByUserLifespan-idp-verify-account-via-email" : "",
     "parRequestUriLifespan" : "60",
     "clientSessionMaxLifespan" : "0",
-    "organizationsEnabled" : "false",
     "shortVerificationUri" : ""
   },
-  "keycloakVersion" : "26.0.4",
+  "keycloakVersion" : "26.2.4",
   "userManagedAccessAllowed" : false,
   "organizationsEnabled" : false,
+  "verifiableCredentialsEnabled" : false,
+  "adminPermissionsEnabled" : false,
   "clientProfiles" : {
     "profiles" : [ ]
   },

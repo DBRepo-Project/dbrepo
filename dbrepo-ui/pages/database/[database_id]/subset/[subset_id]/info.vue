@@ -27,6 +27,10 @@
           lines="two"
           dense>
           <v-list-item
+            :title="$t('pages.subset.id.title')">
+            {{ subset.id }}
+          </v-list-item>
+          <v-list-item
             v-if="database"
             :title="$t('pages.subset.visibility.title')"
             density="compact">
@@ -52,6 +56,12 @@
             density="compact">
             <pre
               class="line-break">{{ subset.query }}</pre>
+          </v-list-item>
+          <v-list-item
+            :title="$t('pages.subset.query.normalized.title')"
+            density="compact">
+            <pre
+              class="line-break">{{ subset.query_normalized }}</pre>
           </v-list-item>
           <v-list-item
             :title="`${$t('pages.subset.query.title')} ${$t('pages.subset.hash.title')}`"
@@ -205,7 +215,7 @@ export default {
       if (!this.subset) {
         return null
       }
-      return formatTimestampUTCLabel(this.subset.created)
+      return formatTimestampUTCLabel(this.subset.execution)
     }
   }
 }

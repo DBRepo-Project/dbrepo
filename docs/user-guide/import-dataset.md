@@ -14,7 +14,7 @@ graph LR
 A user wants to import a static dataset (e.g. from a .csv file). In this action, a table will be created in the
 database.
 
-Importing a dataset required at least `write-own` access, see [Database Access](../database-access). If you are the
+Importing a dataset required at least `write-own` access, see [Database Access](/infrastructures/dbrepo/database-access). If you are the
 owner of the database, you are good to go by default.
 
 ### UI
@@ -30,20 +30,9 @@ the dataset will be fully visible to the world.
 
 In the next step, provide the dataset structure, the default will be sufficient for most cases.
 
-Select the column separator according to your CSV file (open it in a text editor to make sure, this prevents most
-errors).
-
-The first line of a CSV usually contains the column names, if that is not the case, select "Data only" to indicate that 
-your CSV does not have a first-line with headers.
-
-Values in a CSV usually are in double quotes when they contain the separator, if your CSV uses a different quote 
-encoding, select the correct one.
-
-Many CSV have a newline character `\n` at the end of the line. If you are using a special newline encoding, select the
-correct one from the box.
-
-Finally, select the CSV dataset, it will upload the dataset automatically and analyse the contents to recommend the
-table structure.
+Select the CSV dataset, it will upload the dataset automatically and analyse the contents to recommend the
+table structure including separator (e.g. `,`), newline terminator (e.g. `\n`), comments and lines to skip to infer the
+headers.
 
 <video autoplay loop>
   <source src="/infrastructures/dbrepo/videos/import-dataset-2.webm" type="video/webm" />

@@ -22,6 +22,11 @@ anybadge = "==1.14.0"
 gunicorn = "*"
 
 [dev-packages]
+sphinx-markdown-builder = "*"
+rdflib = "*"
+boto3 = "*"
+build = "*"
+setuptools = "*"
 
 [requires]
 python_version = "3.11"

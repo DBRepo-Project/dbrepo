@@ -396,7 +396,7 @@ public class SubsetEndpoint extends RestEndpoint {
                         .build();
             }
             subset.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
-            final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp,
+            final String query = mariaDbMapper.paginateSubset(subset.getQuery(),
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);

@@ -9,7 +9,7 @@ public class MariaDbUtil {
     /**
      * https://mariadb.com/kb/en/string-data-types/
      */
-    final static List<ColumnTypeDto> stringDataTypes = List.of(
+    final public static List<ColumnTypeDto> stringDataTypes = List.of(
             ColumnTypeDto.BINARY,
             ColumnTypeDto.VARBINARY,
             ColumnTypeDto.TINYBLOB,

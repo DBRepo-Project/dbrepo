@@ -2362,21 +2362,6 @@
                 }
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "/.*analyse-service.*/"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "super-light-orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
           }
         ]
       },
@@ -3035,7 +3020,6 @@
     "metadata",
     "data",
     "gateway",
-    "analyse",
     "metrics",
     "auth"
   ],

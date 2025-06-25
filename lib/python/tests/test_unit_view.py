@@ -271,15 +271,15 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = ViewBrief(id="1b3449d2-780e-4683-9af0-8733e608a4aa",
-                       name="Data",
-                       internal_name="data",
-                       database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                       initial_view=False,
-                       query="SELECT id FROM some_table WHERE id IN (1,2)",
-                       query_hash="94c74728b11a690e51d64719868824735f0817b7",
-                       owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
-                       is_public=True,
-                       is_schema_public=True)
+                            name="Data",
+                            internal_name="data",
+                            database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                            initial_view=False,
+                            query="SELECT id FROM some_table WHERE id IN (1,2)",
+                            query_hash="94c74728b11a690e51d64719868824735f0817b7",
+                            owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
+                            is_public=True,
+                            is_schema_public=True)
             # mock
             mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
@@ -594,7 +594,7 @@ class ViewUnitTest(unittest.TestCase):
             # mock
             mock.get(
                 '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
-                json=json.dumps(exp))
+                headers={'X-Headers': 'id,username'}, json=json.dumps(exp))
             # test
             response = RestClient().get_view_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                   view_id="1b3449d2-780e-4683-9af0-8733e608a4aa")
@@ -607,7 +607,7 @@ class ViewUnitTest(unittest.TestCase):
             # mock
             mock.get(
                 '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
-                json=json.dumps(exp))
+                headers={'X-Headers': 'id,username'}, json=json.dumps(exp))
             # test
             response: DataFrame = RestClient().get_view_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                              view_id="1b3449d2-780e-4683-9af0-8733e608a4aa")

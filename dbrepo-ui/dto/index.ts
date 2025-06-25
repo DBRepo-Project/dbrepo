@@ -168,10 +168,22 @@ interface DetermineDataTypesDto {
   separator: string | null;
 }
 
-interface DataTypesDto {
-  columns: any[];
-  line_termination: string;
-  separator: string;
+interface SchemaAnalysisResultDto {
+  delimiter: string;
+  quote: string;
+  escape: string;
+  newline_delimiter: string;
+  comment: string;
+  skip_rows: number;
+  has_header: boolean;
+  columns: ColumnAnalysisResultDto[];
+  date_format: string | null;
+  timestamp_format: string | null;
+}
+
+interface ColumnAnalysisResultDto {
+  name: string;
+  datatype: string;
 }
 
 interface UniqueDto {

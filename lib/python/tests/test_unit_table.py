@@ -28,7 +28,7 @@ class TableUnitTest(unittest.TestCase):
             dataframe = DataFrame.from_records([{'id': 1, 'name': 'foobar'}], index=['id'])
             # mock
             mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table', json=exp.model_dump(),
-                      status_code=201)
+                      headers={'X-Headers': 'id,name'}, status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_table(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Test",
@@ -483,11 +483,11 @@ class TableUnitTest(unittest.TestCase):
     def test_get_table_data_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
-            df = DataFrame.from_records(json.dumps(exp))
+            df = DataFrame.from_records(exp)
             # mock
             mock.get(
                 '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/data',
-                json=json.dumps(exp))
+                headers={'X-Headers': 'id,username'}, json=exp)
             # test
             response = RestClient().get_table_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                    table_id="b3230b86-4743-498d-9015-3fad58049692",
@@ -498,11 +498,11 @@ class TableUnitTest(unittest.TestCase):
     def test_get_table_data_dataframe_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
-            df = DataFrame.from_records(json.dumps(exp))
+            df = DataFrame.from_records(exp)
             # mock
             mock.get(
                 '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/data',
-                json=json.dumps(exp))
+                headers={'X-Headers': 'id,username'}, json=exp)
             # test
             response = RestClient().get_table_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                    table_id="b3230b86-4743-498d-9015-3fad58049692")

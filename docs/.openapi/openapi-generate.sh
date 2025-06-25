@@ -1,5 +1,5 @@
 #!/bin/bash
-ENDPOINTS="analyse-service:8080,search-service:8080,dashboard-service:8080,data-service:8080,metadata-service:8080"
+ENDPOINTS="search-service:8080,dashboard-service:8080,data-service:8080,metadata-service:8080"
 
 # requires https://github.com/mikefarah/yq/ -> v4.44.3
 
@@ -18,8 +18,8 @@ function retrieve () {
   URL=$(url $1)
   HOSTNAME=$(hostname $1)
   echo "... retrieve json api from URL: $URL"
-  touch "./.docs/.openapi/api-$HOSTNAME.yaml"
-  curl -sSL $URL | yq -o=json - > "./.docs/.openapi/api-$HOSTNAME.yaml"
+  touch "./docs/.openapi/api-$HOSTNAME.yaml"
+  curl -sSL $URL | yq -o=json - > "./docs/.openapi/api-$HOSTNAME.yaml"
 }
 
 function url () {

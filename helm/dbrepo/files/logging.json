@@ -844,7 +844,6 @@
     "metadata",
     "data",
     "gateway",
-    "analyse",
     "metrics",
     "auth",
     "search"
@@ -860,11 +859,6 @@
         "label": "Service",
         "name": "service",
         "options": [
-          {
-            "selected": false,
-            "text": "analyse-service",
-            "value": "analyse-service"
-          },
           {
             "selected": false,
             "text": "dashboard-service",
@@ -886,7 +880,7 @@
             "value": "search-service"
           }
         ],
-        "query": "analyse-service, dashboard-service, data-service, metadata-service, search-service",
+        "query": "dashboard-service, data-service, metadata-service, search-service",
         "type": "custom"
       }
     ]

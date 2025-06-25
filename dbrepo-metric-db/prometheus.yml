@@ -20,7 +20,6 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets:
-        - analyse-service:8080
         - auth-service:9000
         - broker-service:15692
         - data-db-metrics:9104

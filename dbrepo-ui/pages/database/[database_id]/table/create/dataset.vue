@@ -49,7 +49,7 @@
               <v-form
                 ref="form"
                 v-model="validStep1"
-                :disabled="step > 4"
+                :disabled="step > 3"
                 @submit.prevent="submit">
                 <v-container>
                   <v-row
@@ -144,14 +144,14 @@
             </v-stepper-window>
             <TableImport
               :create="true"
-              :disabled="!validStep1 || step > 4"
+              :disabled="!validStep1 || step > 3"
               :table="table"
               @analyse="onAnalyse"/>
             <v-stepper-header>
               <v-stepper-item
                 :title="$t('pages.table.subpages.import.preview.title')"
                 :complete="validStep4"
-                :value="4"/>
+                :value="3"/>
             </v-stepper-header>
             <v-stepper-window
               direction="vertical">
@@ -159,7 +159,7 @@
                 <TableSchema
                   ref="schema"
                   :back="false"
-                  :disabled="step !== 4"
+                  :disabled="step !== 3"
                   :loading="loading"
                   :submit-text="$t('navigation.continue')"
                   :columns="tableCreate.columns"
@@ -169,10 +169,10 @@
             <v-stepper-header>
               <v-stepper-item
                 :title="$t('pages.table.subpages.import.summary.title')"
-                :value="5"/>
+                :value="4"/>
             </v-stepper-header>
             <v-stepper-window
-              v-if="step >= 5"
+              v-if="step >= 4"
               direction="vertical">
               <v-container>
                 <v-row dense>
@@ -378,7 +378,7 @@ export default {
           this.table = table
           const toast = useToastInstance()
           toast.success(this.$t('success.table.created', { table: table.internal_name }))
-          this.step = 5
+          this.step = 4
         })
         .catch(({code, message}) => {
           this.loading = false
@@ -395,15 +395,14 @@ export default {
         })
     },
     onAnalyse({columns, filename, line_termination, separator, header, quote}) {
-      console.debug('analysed', columns)
       this.tableCreate.columns = columns
       this.tableImport.location = filename
       this.tableImport.line_termination = line_termination
       this.tableImport.separator = separator
-      this.tableImport.header = header
+      this.tableImport.header = header?.length > 0
       this.tableImport.quote = quote
       if (filename) {
-        this.step = 4
+        this.step = 3
       }
     },
     async onImport () {

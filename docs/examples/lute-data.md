@@ -34,4 +34,4 @@ tbd
 
 This work was part of a cooperation with the University of Vienna in the context of [E-LAUTE](https://e-laute.info/).
 
-<img src="../../images/logos/univie_small.png" width=100 />
+<img src="/infrastructures/dbrepo/images/logos/univie_small.png" width=100 />

@@ -11,11 +11,11 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "1.9.3"
+    "version": "1.10.0"
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9.3/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.0/system-services-metadata/"
   },
   "servers": [
     {
@@ -2192,6 +2192,36 @@
           }
         ]
       }
+    },
+    "/api/analyse/schema/{key}": {
+      "get": {
+        "tags": [
+          "analyse-endpoint"
+        ],
+        "operationId": "analyseDatatypes",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaAnalysisResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4054,6 +4084,140 @@
           "event",
           "timestamp",
           "total"
+        ]
+      },
+      "ColumnAnalysisResultDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "age"
+          },
+          "datatype": {
+            "type": "string",
+            "enum": [
+              "char",
+              "varchar",
+              "binary",
+              "varbinary",
+              "tinyblob",
+              "tinytext",
+              "text",
+              "blob",
+              "mediumtext",
+              "mediumblob",
+              "longtext",
+              "longblob",
+              "enum",
+              "set",
+              "serial",
+              "bit",
+              "tinyint",
+              "bool",
+              "smallint",
+              "mediumint",
+              "int",
+              "bigint",
+              "float",
+              "double",
+              "decimal",
+              "date",
+              "datetime",
+              "timestamp",
+              "time",
+              "year"
+            ],
+            "example": "BIGINT"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "example": 20
+          },
+          "d": {
+            "type": "integer",
+            "format": "int32",
+            "example": 10
+          },
+          "enums": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "null_allowed": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "datatype",
+          "name"
+        ]
+      },
+      "SchemaAnalysisResultDto": {
+        "type": "object",
+        "properties": {
+          "delimiter": {
+            "type": "string",
+            "example": ","
+          },
+          "quote": {
+            "type": "string",
+            "example": "\""
+          },
+          "escape": {
+            "type": "string",
+            "example": "\\"
+          },
+          "comment": {
+            "type": "string",
+            "example": "#"
+          },
+          "columns": {
+            "type": "array",
+            "example": "[\"name\":\"VARCHAR\",\"age\":\"BIGINT\"]",
+            "items": {
+              "$ref": "#/components/schemas/ColumnAnalysisResultDto"
+            }
+          },
+          "newline_delimiter": {
+            "type": "string",
+            "example": "\\n"
+          },
+          "skip_rows": {
+            "type": "integer",
+            "format": "int32",
+            "example": "#"
+          },
+          "has_header": {
+            "type": "boolean",
+            "example": true
+          },
+          "date_format": {
+            "type": "string",
+            "example": "%d/%m/%Y"
+          },
+          "timestamp_format": {
+            "type": "string",
+            "example": "%Y-%m-%dT%H:%M:%S.%f"
+          }
+        },
+        "required": [
+          "columns",
+          "comment",
+          "delimiter",
+          "escape",
+          "has_header",
+          "newline_delimiter",
+          "quote",
+          "skip_rows"
         ]
       },
       "TupleDeleteDto": {
