@@ -36,5 +36,10 @@ The logs can be inspected in the operational dashboard in `https://<hostname>/da
 insight on potential errors.
 
 <figure markdown>
+<<<<<<<< HEAD:docs/dev/old/logging.md
 ![Grafana dashboard showing log frequency and detail](/infrastructures/dbrepo/images/screenshots/dashboard_ops-logs.png)
+========
+![Grafana dashboard showing log frequency and detail](../../images/screenshots/dashboard_ops-logs.png)
+<figcaption>Figure 1: Operational Dashboard for Logging</figcaption>
+>>>>>>>> master:docs/dev/concepts/logging.md
 </figure>

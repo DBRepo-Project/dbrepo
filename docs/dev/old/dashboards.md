@@ -17,7 +17,12 @@ Everytime the views of the database change (e.g. a new view is added, a view is 
 database is provisioned.
 
 <figure id="fig1" markdown>
+<<<<<<<< HEAD:docs/dev/old/dashboards.md
 ![Generated dashboard containing managed (green) and unmanaged (yellow) content](/infrastructures/dbrepo//infrastructures/dbrepo/images/screenshots/dashboard-managed.png)
+========
+![Generated dashboard containing managed (green) and unmanaged (yellow) content](../../images/screenshots/dashboard-managed.png)
+<figcaption>Figure 1: Generated dashboard containing unmanaged (yellow) and managed (green) content.</figcaption>
+>>>>>>>> master:docs/dev/concepts/dashboards.md
 </figure>
 
 !!! question "How do I disable managed dashboards?"
