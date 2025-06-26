@@ -8,8 +8,8 @@ A subset can be created by specifying a source view (e.g. My View), select the c
 and optionally filter by values (e.g. `lot_shape` = `Reg`).
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/create-subset.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/create-subset.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-subset.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-subset.mp4" type="video/mp4" />
 </video>
 
 ### Python

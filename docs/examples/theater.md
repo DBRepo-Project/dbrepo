@@ -24,4 +24,4 @@ We host a mirror from the [public data](https://www.stadttheater.uni-hamburg.de/
 
 This work was part of a cooperation with the [University of Hamburg](https://www.uni-hamburg.de/en.html).
 
-<img src="/infrastructures/dbrepo/images/logos/uhh.png" width=100 />
+<img src="/infrastructures/dbrepo/1.10/images/logos/uhh.png" width=100 />

@@ -145,9 +145,9 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 extra:
-  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/
   version:
-    default: 1.9
+    default: 1.10
     provider: mike
   social:
     - icon: simple/artifacthub

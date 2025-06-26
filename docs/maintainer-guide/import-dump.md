@@ -26,13 +26,13 @@ The default credentials are username `root` and password `dbrepo`, type the pass
 clicking the "OK" button :material-numeric-4-circle-outline:.
 
 <figure markdown>
-![Setup New Connection in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-1.png)
+![Setup New Connection in MySQL Workbench](/infrastructures/dbrepo/1.10/images/screenshots/import-database-dump-step-1.png)
 
 Now you should be able to see some statistics for the Data Database, especially that it is running
 :material-numeric-1-circle-outline: and basic connection and version information :material-numeric-2-circle-outline:.
 
 <figure markdown>
-![Server status of the Data Database in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-2.png)
+![Server status of the Data Database in MySQL Workbench](/infrastructures/dbrepo/1.10/images/screenshots/import-database-dump-step-2.png)
 </figure>
 
 Then proceed to import the database dump `dump.sql` by clicking "Data Import/Restore" 
@@ -42,7 +42,7 @@ into :material-numeric-4-circle-outline: (you can also create a new database for
 The import starts after clicking "Start Import" :material-numeric-5-circle-outline:.
 
 <figure markdown>
-![Data Import/Restore in MySQL Workbench](/infrastructures/dbrepo/images/screenshots/import-database-dump-step-3.png)
+![Data Import/Restore in MySQL Workbench](/infrastructures/dbrepo/1.10/images/screenshots/import-database-dump-step-3.png)
 </figure>
 
 ### Terminal
