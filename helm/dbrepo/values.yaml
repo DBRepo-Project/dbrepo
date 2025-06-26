@@ -14,7 +14,7 @@ global:
   storageClass: ""
   loggingSidecar:
     ## @param global.loggingSidecar.enabled Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.
-    enabled: true
+    enabled: false
     image:
       ## @param global.loggingSidecar.image.name The logging sidecar image.
       name: docker.io/bitnami/fluent-bit:4.0.0
@@ -336,60 +336,60 @@ brokerservice:
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
   ## @skip brokerservice.sidecars
-  sidecars:
-    - name: logging-agent
-      image: docker.io/bitnami/fluent-bit:4.0.0
-      imagePullPolicy: IfNotPresent
-      securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
-        readOnlyRootFilesystem: false
-        runAsGroup: 1001
-        runAsNonRoot: true
-        runAsUser: 1001
-        seLinuxOptions: { }
-        seccompProfile:
-          type: RuntimeDefault
-      volumeMounts:
-        - name: logging-config
-          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-          subPath: fluent-bit.conf
-        - name: logging-config
-          mountPath: /opt/bitnami/fluent-bit/conf/parsers.conf
-          subPath: parsers.conf
-        - name: empty-dir
-          mountPath: /opt/bitnami/rabbitmq/var/log/rabbitmq
-          subPath: app-logs-dir
-      livenessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 150
-        periodSeconds: 10
-      readinessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 30
-        periodSeconds: 10
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-          ephemeral-storage: 50Mi
-        limits:
-          cpu: 150m
-          memory: 192Mi
-          ephemeral-storage: 2Gi
-  ## @skip brokerservice.extraVolumes
-  extraVolumes:
-    - name: logging-config
-      configMap:
-        name: broker-service-config
-  ## @skip brokerservice.extraVolumeMounts
-  extraVolumeMounts:
-    - name: logging-config
-      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
+  sidecars: [ ]
+#    - name: logging-agent
+#      image: docker.io/bitnami/fluent-bit:4.0.0
+#      imagePullPolicy: IfNotPresent
+#      securityContext:
+#        allowPrivilegeEscalation: false
+#        capabilities:
+#          drop:
+#            - ALL
+#        readOnlyRootFilesystem: false
+#        runAsGroup: 1001
+#        runAsNonRoot: true
+#        runAsUser: 1001
+#        seLinuxOptions: { }
+#        seccompProfile:
+#          type: RuntimeDefault
+#      volumeMounts:
+#        - name: logging-config
+#          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+#          subPath: fluent-bit.conf
+#        - name: logging-config
+#          mountPath: /opt/bitnami/fluent-bit/conf/parsers.conf
+#          subPath: parsers.conf
+#        - name: empty-dir
+#          mountPath: /opt/bitnami/rabbitmq/var/log/rabbitmq
+#          subPath: app-logs-dir
+#      livenessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 150
+#        periodSeconds: 10
+#      readinessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 30
+#        periodSeconds: 10
+#      resources:
+#        requests:
+#          cpu: 100m
+#          memory: 128Mi
+#          ephemeral-storage: 50Mi
+#        limits:
+#          cpu: 150m
+#          memory: 192Mi
+#          ephemeral-storage: 2Gi
+#  ## @skip brokerservice.extraVolumes
+#  extraVolumes:
+#    - name: logging-config
+#      configMap:
+#        name: broker-service-config
+#  ## @skip brokerservice.extraVolumeMounts
+#  extraVolumeMounts:
+#    - name: logging-config
+#      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
 
@@ -1203,56 +1203,54 @@ gatewayservice:
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
   ## @skip gatewayservice.sidecars
-  sidecars:
-    - name: logging-agent
-      image: docker.io/bitnami/fluent-bit:4.0.0
-      imagePullPolicy: IfNotPresent
-      securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
-        readOnlyRootFilesystem: false
-        runAsGroup: 1001
-        runAsNonRoot: true
-        runAsUser: 1001
-        seLinuxOptions: { }
-        seccompProfile:
-          type: RuntimeDefault
-      volumeMounts:
-        - name: logging-config
-          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-          subPath: fluent-bit.conf
-        - name: empty-dir
-          mountPath: /var/log/nginx/
-      livenessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 150
-        periodSeconds: 10
-      readinessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 30
-        periodSeconds: 10
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-          ephemeral-storage: 50Mi
-        limits:
-          cpu: 150m
-          memory: 192Mi
-          ephemeral-storage: 2Gi
-  ## @skip gatewayservice.extraVolumes
-  extraVolumes:
-    - name: logging-config
-      configMap:
-        name: gateway-service-config
-  ## @skip gatewayservice.extraVolumeMounts
-  extraVolumeMounts:
-    - name: empty-dir
-      mountPath: /var/log/nginx
+  sidecars: [ ]
+#    - name: logging-agent
+#      image: docker.io/bitnami/fluent-bit:4.0.0
+#      imagePullPolicy: IfNotPresent
+#      securityContext:
+#        allowPrivilegeEscalation: false
+#        capabilities:
+#          drop:
+#            - ALL
+#        readOnlyRootFilesystem: false
+#        runAsGroup: 1001
+#        runAsNonRoot: true
+#        runAsUser: 1001
+#        seLinuxOptions: { }
+#        seccompProfile:
+#          type: RuntimeDefault
+#      volumeMounts:
+#        - name: logging-config
+#          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+#          subPath: fluent-bit.conf
+#        - name: empty-dir
+#          mountPath: /var/log/nginx/
+#      livenessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 150
+#        periodSeconds: 10
+#      readinessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 30
+#        periodSeconds: 10
+#      resources:
+#        requests:
+#          cpu: 100m
+#          memory: 128Mi
+#          ephemeral-storage: 50Mi
+#        limits:
+#          cpu: 150m
+#          memory: 192Mi
+#          ephemeral-storage: 2Gi
+#  extraVolumes:
+#    - name: logging-config
+#      configMap:
+#        name: gateway-service-config
+#  extraVolumeMounts:
+#    - name: empty-dir
+#      mountPath: /var/log/nginx
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 
