@@ -11,7 +11,7 @@ components:
       type: http
 externalDocs:
   description: Project Website
-  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/
 info:
   contact:
     email: andreas.rauber@tuwien.ac.at
