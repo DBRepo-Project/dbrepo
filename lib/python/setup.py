@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
+import os
 from distutils.core import setup
 
+app_version = f'{os.environ.get("APP_VERSION", "1.10.0")}{os.environ.get("BUILD_VERSION", "")}'
+doc_version = os.environ.get("DOC_VERSION", "1.10")
+
 setup(name="dbrepo",
-      version="1.10.0",
+      version=str(app_version),
       description="A library for communicating with DBRepo",
-      url="https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/",
+      url=f"https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/{doc_version}/",
       author="Martin Weise",
       license="Apache-2.0",
       author_email="martin.weise@tuwien.ac.at",
       packages=[
-            "dbrepo",
-            "dbrepo.api",
-            "dbrepo.core",
-            "dbrepo.core.api",
-            "dbrepo.core.client",
-            "dbrepo.core.omlib",
-            "dbrepo.core.omlib.exceptions",
-            "dbrepo.core.omlib.rdf",
+          "dbrepo",
+          "dbrepo.api",
+          "dbrepo.core",
+          "dbrepo.core.api",
+          "dbrepo.core.client",
+          "dbrepo.core.omlib",
+          "dbrepo.core.omlib.exceptions",
+          "dbrepo.core.omlib.rdf",
       ])
