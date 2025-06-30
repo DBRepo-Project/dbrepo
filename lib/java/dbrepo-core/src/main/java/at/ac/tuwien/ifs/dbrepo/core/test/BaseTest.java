@@ -1017,6 +1017,10 @@ public class BaseTest {
     public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
     public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
+    public final static String CONTAINER_1_READONLY_USERNAME = "readonly";
+    @SuppressWarnings("java:S2068")
+    public final static String CONTAINER_1_READONLY_PASSWORD = "readonly";
+    public final static String CONTAINER_1_READONLY_HASHED_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629L) /* 2023-02-26 08:20:29 (UTC) */;
 
     public final Container CONTAINER_1 = Container.builder()
@@ -1232,6 +1236,8 @@ public class BaseTest {
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .userId(USER_1_ID)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();

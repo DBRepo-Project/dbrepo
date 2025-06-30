@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
@@ -61,8 +61,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
         /* mock */
-        final UUID queryId = MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        final UUID queryId = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
 
         /* test */
         findById_generic(queryId);
@@ -125,7 +125,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             InterruptedException {
 
         /* mock */
-        final UUID queryId2 = MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
+        final UUID queryId2 = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
 
@@ -142,7 +142,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             InterruptedException {
 
         /* mock */
-        final UUID queryId1 = MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        final UUID queryId1 = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
 
@@ -276,7 +276,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         subsetService.create(DATABASE_1_PRIVILEGED_DTO, request, QUERY_1_CREATED, USER_1_ID);
-        assertEquals(1, MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1 WHERE EXISTS (SELECT * FROM `weather_location`)", Set.of()).size());
+        assertEquals(1, MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1 WHERE EXISTS (SELECT * FROM `weather_location`)", Set.of()).size());
     }
 
     @Test
@@ -323,8 +323,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
+        MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null))
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_5_BRIEF_DTO));
 

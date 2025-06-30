@@ -104,13 +104,16 @@ public interface MariaDbMapper {
         throw new DatabaseMalformedException("No database name was found in the result set");
     }
 
-    default String databaseCreateUserQuery(String username, String password) {
-        final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
-                .append(username)
-                .append("`@`%` IDENTIFIED BY PASSWORD '")
-                .append(password)
-                .append("';");
-        return statement.toString();
+    default String databaseCreateUserQuery() {
+        final String statement = "CREATE USER IF NOT EXISTS `?`@`%` IDENTIFIED BY PASSWORD '?';";
+        log.trace("mapped create user query: {}", statement);
+        return statement;
+    }
+
+    default String databaseCreateUserRawQuery() {
+        final String statement = "CREATE USER IF NOT EXISTS `?`@`%` IDENTIFIED BY '?';";
+        log.trace("mapped create user raw query: {}", statement);
+        return statement;
     }
 
     default String databaseAccessRawQuery() {
@@ -261,8 +264,8 @@ public interface MariaDbMapper {
         return statement;
     }
 
-    default String viewCreateRawQuery(String viewName, String query) {
-        final String statement = "CREATE VIEW IF NOT EXISTS `" + viewName + "` AS (" + query + ")";
+    default String viewCreateRawQuery() {
+        final String statement = "CREATE VIEW IF NOT EXISTS `?` AS (?)";
         log.trace("mapped create view statement: {}", statement);
         return statement;
     }
