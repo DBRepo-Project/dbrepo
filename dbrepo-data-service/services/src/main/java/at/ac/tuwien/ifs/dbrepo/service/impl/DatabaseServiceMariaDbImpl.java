@@ -147,8 +147,11 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         try {
             /* create view if not exists */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), query))
-                    .execute();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.viewCreateRawQuery());
+            statement.setString(1, view.getInternalName());
+            statement.setString(2, query);
+            log.trace("1={}, 2={}", view.getInternalName(), query);
+            statement.execute();
             log.atDebug()
                     .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)

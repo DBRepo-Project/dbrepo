@@ -533,6 +533,7 @@ release-images:
     - "make release-images"
     - "APP_VERSION=$DOC_VERSION make release-images"
     - "make release-jupyter-image"
+    - "APP_VERSION=$DOC_VERSION make release-jupyter-image"
 
 release-helm:
   stage: release

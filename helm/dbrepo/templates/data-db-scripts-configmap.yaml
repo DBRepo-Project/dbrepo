@@ -3,9 +3,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: data-db-config
+  name: data-db-scripts-config
   namespace: {{ include "common.names.namespace" . | quote }}
 data:
+  1_grant-user.sql: |-
+    GRANT SELECT ON *.* TO `{{ .Values.datadb.db.user }}`@`%`;
   my.cnf: |-
     # https://gist.github.com/fevangelou/fb72f36bbe333e059b66
 

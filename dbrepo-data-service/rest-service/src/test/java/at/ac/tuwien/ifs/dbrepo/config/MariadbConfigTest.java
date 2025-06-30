@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,8 +38,8 @@ public class MariadbConfigTest extends BaseTest {
     @SuppressWarnings("java:S2925")
     public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -46,7 +47,7 @@ public class MariadbConfigTest extends BaseTest {
     public void longRunningQuery_succeeds() throws SQLException {
 
         /* test */
-        MariaDbConfig.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(8);"); // -2
+        MariaDbUtil.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(8);"); // -2
         assertTrue(true);
     }
 
@@ -55,7 +56,7 @@ public class MariadbConfigTest extends BaseTest {
 
         /* test */
         assertThrows(SQLTimeoutException.class, () -> {
-            MariaDbConfig.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(12);"); // +2
+            MariaDbUtil.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(12);"); // +2
         });
     }
 

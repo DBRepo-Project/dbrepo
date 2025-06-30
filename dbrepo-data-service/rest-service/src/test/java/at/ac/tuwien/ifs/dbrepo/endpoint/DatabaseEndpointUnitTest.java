@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoint;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -53,7 +54,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
             QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException,
-            MetadataServiceException, SQLException {
+            MetadataServiceException, SQLException, MalformedException {
 
         /* mock */
         when(credentialService.getContainer(CONTAINER_1_ID))
@@ -92,6 +93,40 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void create_readonlyPasswordHashed_fails() throws RemoteUnavailableException, ContainerNotFoundException,
+            SQLException, QueryStoreCreateException, DatabaseMalformedException, MetadataServiceException {
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
+                .internalName(DATABASE_1_INTERNAL_NAME)
+                .containerId(CONTAINER_1_ID)
+                .username(USER_1_USERNAME)
+                .password(USER_1_PASSWORD)
+                .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+                .readonlyPassword(CONTAINER_1_READONLY_HASHED_PASSWORD)
+                .userId(USER_1_ID)
+                .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
+                .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
+                .build();
+
+        /* mock */
+        when(credentialService.getContainer(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_DTO);
+        when(containerService.createDatabase(CONTAINER_1_DTO, request))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        doNothing()
+                .when(containerService)
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
+        doNothing()
+                .when(accessService)
+                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            databaseEndpoint.create(request);
         });
     }
 

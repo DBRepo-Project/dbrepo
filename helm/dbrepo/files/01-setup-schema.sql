@@ -20,20 +20,20 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
 
 CREATE TABLE IF NOT EXISTS `mdb_images`
 (
-    id            VARCHAR(36)  NOT NULL DEFAULT UUID(),
-    registry      VARCHAR(255) NOT NULL DEFAULT 'docker.io',
-    name          VARCHAR(255) NOT NULL,
-    version       VARCHAR(255) NOT NULL,
-    DEFAULT_port  INT          NOT NULL,
-    dialect       VARCHAR(255) NOT NULL,
-    driver_class  VARCHAR(255) NOT NULL,
-    jdbc_method   VARCHAR(255) NOT NULL,
-    is_DEFAULT    BOOLEAN      NOT NULL DEFAULT FALSE,
-    created       TIMESTAMP    NOT NULL DEFAULT NOW(),
-    last_modified TIMESTAMP,
+    id              VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    registry        VARCHAR(255) NOT NULL DEFAULT 'docker.io',
+    name            VARCHAR(255) NOT NULL,
+    version         VARCHAR(255) NOT NULL,
+    default_port    INT          NOT NULL,
+    dialect         VARCHAR(255) NOT NULL,
+    driver_class    VARCHAR(255) NOT NULL,
+    jdbc_method     VARCHAR(255) NOT NULL,
+    is_default      BOOLEAN      NOT NULL DEFAULT FALSE,
+    created         TIMESTAMP    NOT NULL DEFAULT NOW(),
+    last_modified   TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE (`name`, `version`),
-    UNIQUE (`is_DEFAULT`)
+    UNIQUE (`is_default`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
@@ -475,12 +475,12 @@ CREATE TABLE IF NOT EXISTS `mdb_image_types`
     value         VARCHAR(255) NOT NULL,
     size_min      INT UNSIGNED,
     size_max      INT UNSIGNED,
-    size_DEFAULT  INT UNSIGNED,
+    size_default  INT UNSIGNED,
     size_required BOOLEAN comment 'When setting NULL, the service assumes the data type has no size',
     size_step     INT UNSIGNED,
     d_min         INT UNSIGNED,
     d_max         INT UNSIGNED,
-    d_DEFAULT     INT UNSIGNED,
+    d_default     INT UNSIGNED,
     d_required    BOOLEAN comment 'When setting NULL, the service assumes the data type has no d',
     d_step        INT UNSIGNED,
     type_hint     TEXT,
@@ -516,12 +516,12 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
-INSERT INTO `mdb_images` (id, name, registry, version, DEFAULT_port, dialect, driver_class, jdbc_method)
+INSERT INTO `mdb_images` (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
 VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'mariadb', 'docker.io', '11.1.3', 3306,
         'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
 
-INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_DEFAULT, size_required,
-                               size_step, d_min, d_max, d_DEFAULT, d_required, d_step, type_hint, data_hint,
+INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_default, size_required,
+                               size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
                                documentation, is_quoted, is_buildable, is_generated)
 VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BIGINT(size)', 'bigint', 0, null, null, FALSE, 1, null, null, null,
         null, null, null, null, 'https://mariadb.com/kb/en/bigint/', FALSE, TRUE, FALSE),

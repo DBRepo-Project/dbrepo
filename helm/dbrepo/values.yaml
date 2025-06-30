@@ -189,18 +189,13 @@ datadb:
     user: root
     ## @param datadb.rootUser.password The root user password.
     password: dbrepo
-  readonlyUser:
-    ## @param datadb.readonlyUser.user The readonly username.
-    user: readonly
-    ## @param datadb.readonlyUser.password The readonly password.
-    password: readonly
   db:
     ## @param datadb.db.name The database name.
     name: dbrepo
-    ## @param datadb.db.user The database username for the dashboard service.
-    user: user
-    ## @param datadb.db.password The database user password for the dashboard service.
-    password: user
+    ## @param datadb.db.user The readonly username.
+    user: readonly
+    ## @param datadb.db.password The readonly password.
+    password: readonly
   galera:
     mariabackup:
       ## @param datadb.galera.mariabackup.user The database backup username.
@@ -216,8 +211,10 @@ datadb:
   replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
+  ## @param datadb.configurationConfigMap The configmap name holding the `my.cnf` key that defines the mariadb configuration.
+  configurationConfigMap: "data-db-config"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
-  initdbScriptsConfigMap: "data-db-setup"
+  initdbScriptsConfigMap: "data-db-scripts-config"
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true

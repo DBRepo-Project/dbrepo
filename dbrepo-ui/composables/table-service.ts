@@ -242,7 +242,7 @@ export const useTableService = (): any => {
 
   function prepareConstraints(columns: InternalColumnDto[]): ConstraintsCreateDto {
     const primaryKeyColumns = columns.filter(column => column.primary_key)
-    const uniqueColumns = columns.filter(column => column.unique)
+    const uniqueColumns = columns.filter(column => column.unique).filter(column => !column.primary_key)
     return {
       primary_key: primaryKeyColumns.length > 0 ? primaryKeyColumns.map(column => column.name) : [],
       uniques: uniqueColumns.length > 0 ? columns.filter(column => column.unique).map(c => [c.name]) : [],

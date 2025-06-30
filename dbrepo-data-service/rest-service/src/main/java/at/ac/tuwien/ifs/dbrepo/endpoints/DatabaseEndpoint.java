@@ -64,7 +64,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "400",
-                    description = "Database create query is malformed or image is not supported",
+                    description = "Database create query is malformed or readonly password is hashed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -86,7 +86,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     })
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data)
             throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
-            DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
+            DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException, MalformedException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
         final ContainerDto container = cacheService.getContainer(data.getContainerId());
@@ -95,6 +95,10 @@ public class DatabaseEndpoint extends RestEndpoint {
             containerService.createQueryStore(container, data.getInternalName());
             accessService.create(database, dataMapper.createDatabaseDtoToUserDto(data), AccessTypeDto.WRITE_ALL);
             accessService.create(database, dataMapper.createDatabaseDtoToPrivilegedUserDto(data), AccessTypeDto.WRITE_ALL);
+            if (data.getReadonlyPassword().startsWith("*")) {
+                log.error("Failed to give readonly user read-access: password is hashed");
+                throw new MalformedException("Failed to give readonly user read-access: password is hashed");
+            }
             accessService.create(database, dataMapper.createDatabaseDtoToReadonlyUserDto(data), AccessTypeDto.READ);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(database);
