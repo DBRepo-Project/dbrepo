@@ -105,13 +105,13 @@ public interface MariaDbMapper {
     }
 
     default String databaseCreateUserQuery() {
-        final String statement = "CREATE USER IF NOT EXISTS `?`@`%` IDENTIFIED BY PASSWORD '?';";
+        final String statement = "CREATE USER IF NOT EXISTS ?@`%` IDENTIFIED BY PASSWORD ?;";
         log.trace("mapped create user query: {}", statement);
         return statement;
     }
 
     default String databaseCreateUserRawQuery() {
-        final String statement = "CREATE USER IF NOT EXISTS `?`@`%` IDENTIFIED BY '?';";
+        final String statement = "CREATE USER IF NOT EXISTS ?@`%` IDENTIFIED BY ?;";
         log.trace("mapped create user raw query: {}", statement);
         return statement;
     }
