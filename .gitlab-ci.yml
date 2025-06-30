@@ -483,12 +483,11 @@ clean-images:
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
-  rules:
-    - if: $CI_COMMIT_TAG
-      variables:
-        APP_VERSION: "${CI_COMMIT_TAG:1}"
+  only:
+    - tags
   variables:
-    REPOSITORY_URL: $CI_REGISTRY2_URL
+    REPOSITORY_URL: "$CI_REGISTRY2_URL"
+    APP_VERSION: "${CI_COMMIT_TAG:1}"
   dependencies:
     - clean-images
     - test-auth-service-init
@@ -512,10 +511,8 @@ release-images:
 release-helm:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
-  rules:
-    - if: $CI_COMMIT_TAG
-      variables:
-        APP_VERSION: "${CI_COMMIT_TAG:1}"
+  variables:
+    APP_VERSION: "${CI_COMMIT_TAG:1}"
   needs:
     - build-helm
   dependencies:
@@ -577,12 +574,11 @@ release-docs:
 release-libs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  rules:
-    - if: $CI_COMMIT_TAG
-      variables:
-        APP_VERSION: "${CI_COMMIT_TAG:1}"
+  only:
+    - tags
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
+    APP_VERSION: "${CI_COMMIT_TAG:1}"
   before_script:
     - "pip install pipenv twine build"
     - "pipenv install --dev --system --deploy"
