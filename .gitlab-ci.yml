@@ -1,5 +1,4 @@
 variables:
-  BUILD_VERSION: ""
   HOSTALIASES: "./hosts"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: "/var/run/dind/docker.sock"
@@ -36,9 +35,9 @@ cache:
 
 workflow:
   rules:
-    - if: $CI_COMMIT_REF_NAME == "dev"
+    - if: "$CI_COMMIT_TAG"
       variables:
-        BUILD_VERSION: "-dev.git.${CI_COMMIT_SHORT_SHA}"
+        APP_VERSION: "${CI_COMMIT_TAG:1}"
     - when: always
 
 stages:
