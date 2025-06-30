@@ -171,7 +171,7 @@ authservice:
       mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
       subPath: create-event-listener.jar
   ## @skip authservice.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
 
 ## @section Data Database
 
