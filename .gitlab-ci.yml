@@ -1,4 +1,5 @@
 variables:
+  BUILD_VERSION: ""
   HOSTALIASES: "./hosts"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: "/var/run/dind/docker.sock"
@@ -32,6 +33,13 @@ cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - .m2/repository
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "dev"
+      variables:
+        BUILD_VERSION: "-dev.git.${CI_COMMIT_SHORT_SHA}"
+    - when: always
 
 stages:
   - lint
@@ -86,6 +94,8 @@ lint-helm-schema:
   before_script:
     - apk add --no-cache helm git bash wget
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+    - diff <(yq '.appVersion' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
+    - diff <(yq '.version' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
     - cp ./helm/dbrepo/values.schema.json ./CI_values.schema.json
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm package ./helm/seaweedfs --destination ./build
@@ -124,6 +134,23 @@ lint-helm-files:
   stage: lint
   script:
     - diff ./dbrepo-metadata-db/1_setup-schema.sql ./helm/dbrepo/files/01-setup-schema.sql
+
+lint-open-api-version:
+  image: docker.io/alpine:${ALPINE_VERSION}
+  stage: lint
+  variables:
+    VERSION: 4.45.1
+    BINARY: yq_linux_amd64
+  before_script:
+    - echo "${DOC_VERSION}" > ./doc-version.txt
+    - echo "${APP_VERSION}" > ./app-version.txt
+    - 'apk add --no-cache bash wget'
+    - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+  script:
+    - yq '.externalDocs.url' ./docs/.openapi/api.base.yaml | grep -o "${DOC_VERSION}" > ./openapi-doc-version.txt
+    - diff ./openapi-doc-version.txt ./doc-version.txt
+    - yq '.info.version' ./docs/.openapi/api.base.yaml | grep -o "${APP_VERSION}" > ./openapi-app-version.txt
+    - diff ./openapi-app-version.txt ./app-version.txt
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -487,7 +514,6 @@ release-images:
     - tags
   variables:
     REPOSITORY_URL: "$CI_REGISTRY2_URL"
-    APP_VERSION: "${CI_COMMIT_TAG:1}"
   dependencies:
     - clean-images
     - test-auth-service-init
@@ -511,8 +537,6 @@ release-images:
 release-helm:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
-  variables:
-    APP_VERSION: "${CI_COMMIT_TAG:1}"
   needs:
     - build-helm
   dependencies:
@@ -578,7 +602,6 @@ release-libs:
     - tags
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
-    APP_VERSION: "${CI_COMMIT_TAG:1}"
   before_script:
     - "pip install pipenv twine build"
     - "pipenv install --dev --system --deploy"
