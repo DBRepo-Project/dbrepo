@@ -197,8 +197,8 @@ public class TableServiceImpl implements TableService {
     @Override
     @Transactional
     public void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceConnectionException,
+            SearchServiceException {
         /* delete at data service */
         dataServiceGateway.deleteTable(table.getDatabase().getId(), table.getId());
         /* update in metadata database */

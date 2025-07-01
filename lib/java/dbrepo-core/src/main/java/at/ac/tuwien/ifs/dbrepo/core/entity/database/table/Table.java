@@ -110,9 +110,9 @@ public class Table {
     @Column(name = "avg_row_length")
     private Long avgRowLength;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "table", orphanRemoval = true)
     private List<TableColumn> columns;
 
     @EqualsAndHashCode.Exclude
