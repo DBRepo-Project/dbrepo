@@ -1,20 +1,20 @@
-####### FIRST STAGE ######
-#FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
-#LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
-#
-#COPY ./pom.xml ./
-#
-#RUN mvn -fn dependency:go-offline
-#
-#COPY ./lib ./lib
-#COPY ./oai ./oai
-#COPY ./report ./report
-#COPY ./repositories ./repositories
-#COPY ./rest-service ./rest-service
-#COPY ./services ./services
-#
-## Make sure it compiles
-#RUN mvn -q clean package -DskipTests
+###### FIRST STAGE ######
+FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
+
+COPY ./pom.xml ./
+
+RUN mvn -fn dependency:go-offline
+
+COPY ./lib ./lib
+COPY ./oai ./oai
+COPY ./report ./report
+COPY ./repositories ./repositories
+COPY ./rest-service ./rest-service
+COPY ./services ./services
+
+# Make sure it compiles
+RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
 FROM --platform=$BUILDPLATFORM amazoncorretto:17-alpine3.21 AS runtime
@@ -35,8 +35,7 @@ RUN adduser -D dbrepo --uid 1001 && \
 
 USER 1001
 
-#COPY --from=build --chown=1001 ./rest-service/target/*service*.jar ./metadata-service.jar
-COPY --chown=1001 ./rest-service/target/*service-*.jar ./metadata-service.jar
+COPY --from=build --chown=1001 ./rest-service/target/*service*.jar ./metadata-service.jar
 
 # non-root port
 EXPOSE 8080
