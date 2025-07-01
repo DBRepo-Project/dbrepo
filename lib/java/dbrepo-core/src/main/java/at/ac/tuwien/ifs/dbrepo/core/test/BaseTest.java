@@ -3162,28 +3162,37 @@ public class BaseTest {
                             .name("id")
                             .datatype(ColumnTypeDto.BIGINT)
                             .nullAllowed(true)
+                            .primaryKey(true)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("Date")
                             .datatype(ColumnTypeDto.VARCHAR)
                             .nullAllowed(true)
+                            .primaryKey(false)
                             .size(255)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("Location")
                             .datatype(ColumnTypeDto.VARCHAR)
                             .nullAllowed(true)
+                            .primaryKey(false)
                             .size(255)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("MinTemp")
                             .datatype(ColumnTypeDto.DOUBLE)
                             .nullAllowed(true)
+                            .primaryKey(false)
+                            .size(10)
+                            .d(4)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("Rainfall")
                             .datatype(ColumnTypeDto.DOUBLE)
                             .nullAllowed(true)
+                            .primaryKey(false)
+                            .size(10)
+                            .d(4)
                             .build())))
             .build();
 

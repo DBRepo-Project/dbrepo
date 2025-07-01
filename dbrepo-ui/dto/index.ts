@@ -184,6 +184,11 @@ interface SchemaAnalysisResultDto {
 interface ColumnAnalysisResultDto {
   name: string;
   datatype: string;
+  primary_key: boolean;
+  size: number | null;
+  d: number | null;
+  sets: string[] | null;
+  enums: string[] | null;
 }
 
 interface UniqueDto {

@@ -1,19 +1,19 @@
-###### FIRST STAGE ######
-FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
-LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
-
-COPY ./pom.xml ./
-
-RUN mvn -fn dependency:go-offline
-
-COPY ./lib ./lib
-COPY ./querystore ./querystore
-COPY ./report ./report
-COPY ./rest-service ./rest-service
-COPY ./services ./services
-
-# Make sure it compiles
-RUN mvn -q clean package -DskipTests
+####### FIRST STAGE ######
+#FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
+#LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
+#
+#COPY ./pom.xml ./
+#
+#RUN mvn -fn dependency:go-offline
+#
+#COPY ./lib ./lib
+#COPY ./querystore ./querystore
+#COPY ./report ./report
+#COPY ./rest-service ./rest-service
+#COPY ./services ./services
+#
+## Make sure it compiles
+#RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
 FROM --platform=$BUILDPLATFORM bitnami/java:17 AS runtime
@@ -45,7 +45,8 @@ RUN adduser dbrepo --uid 1001 && \
 
 USER 1001
 
-COPY --from=build --chown=1001 ./rest-service/target/*service-*.jar ./data-service.jar
+#COPY --from=build --chown=1001 ./rest-service/target/*service-*.jar ./data-service.jar
+COPY --chown=1001 ./rest-service/target/*service-*.jar ./data-service.jar
 
 # non-root port
 EXPOSE 8080

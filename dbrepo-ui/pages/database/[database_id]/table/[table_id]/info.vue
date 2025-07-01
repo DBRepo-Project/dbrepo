@@ -25,6 +25,10 @@
         <v-list
           dense>
           <v-list-item
+            :title="$t('pages.table.id.title')">
+            {{ table.id }}
+          </v-list-item>
+          <v-list-item
             :title="$t('pages.table.name.title')">
             {{ table.internal_name }}
           </v-list-item>

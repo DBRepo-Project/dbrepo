@@ -85,6 +85,7 @@
           v-if="canDropTable"
           variant="flat"
           rounded="0"
+          :loading="loadingDelete"
           :title="$t('pages.table.delete.title')"
           :subtitle="$t('pages.table.delete.subtitle', { table: table.internal_name })">
           <v-card-text>
@@ -124,6 +125,7 @@ export default {
       tab: 0,
       valid: true,
       loading: false,
+      loadingDelete: false,
       modify: {
         description: null,
         is_public: null,
@@ -305,6 +307,7 @@ export default {
       const tableService = useTableService()
       tableService.remove(this.database.id, this.table.id)
         .then(() => {
+          this.loadingDelete = false
           console.info('Deleted table with id ', this.table.id)
           this.cacheStore.reloadDatabase()
           const toast = useToastInstance()
@@ -312,6 +315,7 @@ export default {
           this.$router.push(`/database/${this.$route.params.database_id}/table`)
         })
         .catch(({code, message}) => {
+          this.loadingDelete = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
             return

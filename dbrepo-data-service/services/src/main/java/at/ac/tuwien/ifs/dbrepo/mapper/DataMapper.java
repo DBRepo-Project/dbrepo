@@ -3,6 +3,8 @@ package at.ac.tuwien.ifs.dbrepo.mapper;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.DataTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
@@ -24,6 +26,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AnalyseDataTypesException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
@@ -293,13 +296,31 @@ public interface DataMapper {
     default Map<String, ColumnAnalysisResultDto> resultSetToConstraintResult(ResultSet resultSet) throws SQLException {
         final Map<String, ColumnAnalysisResultDto> constraints = new HashMap<>();
         while (resultSet.next()) {
-            constraints.put(resultSet.getString("column_name"),
-                    ColumnAnalysisResultDto.builder()
-                            .name(resultSet.getString("column_name"))
-                            .nullAllowed(resultSet.getString("null").equals("YES"))
-                            .build());
+            final String columnName = resultSet.getString("column_name");
+            final String nullAllowed = resultSet.getString("null");
+            final String key = resultSet.getString("key");
+            constraints.put(columnName, ColumnAnalysisResultDto.builder()
+                    .name(columnName)
+                    .nullAllowed(nullAllowed != null && columnName.equals("YES"))
+                    .primaryKey(key != null && key.equals("YES"))
+                    .build());
         }
         return constraints;
+    }
+
+    default DataTypeDto imageDtoTypeNameToDataTypeDto(ImageDto image, ColumnTypeDto columnType) throws ImageInvalidException {
+        final String type = columnType.toString()
+                .toLowerCase(Locale.ENGLISH);
+        final Optional<DataTypeDto> optional = image.getDataTypes()
+                .stream()
+                .filter(t -> t.getValue().toLowerCase().equals(type))
+                .findFirst();
+        if (optional.isEmpty()) {
+            final List<String> dataTypes = image.getDataTypes().stream().map(t -> t.getValue().toLowerCase()).toList();
+            log.error("Failed to find data type {} in image datatypes: {}", type, dataTypes);
+            throw new ImageInvalidException("Failed to find data type " + type + " in image datatypes: " + Arrays.toString(dataTypes.toArray()));
+        }
+        return optional.get();
     }
 
     default List<ColumnAnalysisResultDto> structListToColumnAnalysisResultDtoList(String data)

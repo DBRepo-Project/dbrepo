@@ -1,12 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -26,10 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,6 +44,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
+    @Autowired
+    private MariaDbMapper mariaDbMapper;
 
     public static Stream<Arguments> create_arguments() {
         return Stream.of(
@@ -241,6 +241,12 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         /* test */
         final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_ID);
         assertNotNull(response);
+        final List<Map<String, Object>> subsets = MariaDbUtil.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
+        assertEquals(1, subsets.size());
+        final Map<String, Object> subset0 = subsets.get(0);
+        assertEquals(USER_1_ID, UUID.fromString("" + subset0.get("created_by")));
+        assertEquals(QUERY_1_STATEMENT, subset0.get("query"));
+        assertEquals(mariaDbMapper.normalizeQuery(QUERY_1_STATEMENT, QUERY_1_CREATED), subset0.get("query_normalized"));
     }
 
     @Test
