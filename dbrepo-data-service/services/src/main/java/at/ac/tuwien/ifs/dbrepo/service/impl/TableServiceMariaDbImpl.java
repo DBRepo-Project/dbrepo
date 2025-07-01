@@ -142,11 +142,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.dropTableQuery());
-            statement.setString(1, database.getInternalName());
-            statement.setString(2, table.getInternalName());
-            log.trace("1={}, 2={}", database.getInternalName(), table.getInternalName());
-            statement.executeUpdate();
+            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(),
+                            table.getInternalName()))
+                    .execute();
             log.atDebug()
                     .setMessage("delete table: " + table.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -305,11 +303,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } finally {
             /* delete temporary table */
             start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.dropTableQuery(false));
-            statement.setString(1, database.getInternalName());
-            statement.setString(2, table.getInternalName());
-            log.trace("1={}, 2={}", database.getInternalName(), table.getInternalName());
-            statement.executeUpdate();
+            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
+                            false))
+                    .execute();
             log.debug("deleted temporary table: {}", temporaryTable);
             connection.commit();
             log.atDebug()

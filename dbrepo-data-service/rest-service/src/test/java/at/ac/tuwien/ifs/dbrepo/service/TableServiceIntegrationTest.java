@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.SparkConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.google.common.io.Files;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -271,6 +271,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.delete(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO);
+        assertFalse(MariaDbUtil.tableExists(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME));
     }
 
     @Test

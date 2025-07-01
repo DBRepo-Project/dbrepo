@@ -548,16 +548,28 @@ public interface MariaDbMapper {
     }
 
     @Named("dropTableQuery")
-    default String dropTableQuery() {
-        return dropTableQuery(true);
+    default String dropTableRawQuery(String databaseName, String tableName) {
+        return dropTableRawQuery(databaseName, tableName, true);
     }
 
-    default String dropTableQuery(Boolean force) {
+
+    /**
+     * Map the table delete query as raw query since prepared statements do not (yet) support database wildcards.
+     * @param databaseName The database name.
+     * @param tableName The table name.
+     * @param force If true, force the deletion and throw an error if the table does not exists. Otherwise ignore errors.
+     * @return The raw query statement.
+     */
+    default String dropTableRawQuery(String databaseName, String tableName, Boolean force) {
         final StringBuilder statement = new StringBuilder("DROP TABLE ");
         if (!force) {
             statement.append("IF EXISTS ");
         }
-        statement.append("`?`.`?`;");
+        statement.append("`")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableName)
+                .append("`;");
         log.trace("mapped drop table query: {}", statement);
         return statement.toString();
     }
