@@ -42,7 +42,7 @@ public interface TableService {
      * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException The drop table query is malformed.
      */
-    void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException;
+    void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException, TableNotFoundException;
 
     /**
      * Obtains the table history for a given table object.

@@ -267,7 +267,7 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void delete_succeeds() throws SQLException, QueryMalformedException {
+    public void delete_succeeds() throws SQLException, QueryMalformedException, TableNotFoundException {
 
         /* test */
         tableService.delete(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO);
@@ -280,7 +280,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         MariaDbUtil.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
+        assertThrows(TableNotFoundException.class, () -> {
             tableService.delete(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO);
         });
     }

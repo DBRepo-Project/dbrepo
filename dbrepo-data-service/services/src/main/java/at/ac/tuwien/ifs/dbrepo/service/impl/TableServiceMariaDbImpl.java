@@ -108,13 +108,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(
-                    mariaDbMapper.tableNameToUpdateTableRawQuery(database.getInternalName(), table.getInternalName()));
-            log.trace("1={}", data.getDescription());
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tableNameToUpdateTableQuery());
+            statement.setString(1, database.getInternalName());
+            statement.setString(2, table.getInternalName());
+            log.trace("1={}, 2={}, 3={}", database.getInternalName(), table.getInternalName(), data.getDescription());
             if (data.getDescription() == null) {
-                statement.setString(1, "");
+                statement.setString(3, "");
             } else {
-                statement.setString(1, data.getDescription());
+                statement.setString(3, data.getDescription());
             }
             statement.executeUpdate();
             log.atDebug()
@@ -134,15 +135,18 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException {
+    public void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException,
+            TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(),
-                            table.getInternalName()))
-                    .execute();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.dropTableQuery());
+            statement.setString(1, database.getInternalName());
+            statement.setString(2, table.getInternalName());
+            log.trace("1={}, 2={}", database.getInternalName(), table.getInternalName());
+            statement.executeUpdate();
             log.atDebug()
                     .setMessage("delete table: " + table.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -151,6 +155,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+            if (e.getMessage().toLowerCase().contains("unknown table")) {
+                log.error("Failed to delete table: not found: {}", e.getMessage());
+                throw new TableNotFoundException("Failed to delete table: not found", e);
+            }
             log.error("Failed to delete table: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete table: " + e.getMessage(), e);
         } finally {
@@ -297,9 +305,11 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } finally {
             /* delete temporary table */
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
-                            false))
-                    .execute();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.dropTableQuery(false));
+            statement.setString(1, database.getInternalName());
+            statement.setString(2, table.getInternalName());
+            log.trace("1={}, 2={}", database.getInternalName(), table.getInternalName());
+            statement.executeUpdate();
             log.debug("deleted temporary table: {}", temporaryTable);
             connection.commit();
             log.atDebug()

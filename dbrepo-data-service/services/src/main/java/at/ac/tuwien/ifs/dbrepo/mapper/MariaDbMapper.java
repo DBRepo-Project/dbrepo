@@ -367,14 +367,10 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tableNameToUpdateTableRawQuery(String databaseName, String internalName) {
-        final StringBuilder stringBuilder = new StringBuilder("ALTER TABLE `")
-                .append(databaseName)
-                .append("`.`")
-                .append(internalName)
-                .append("` COMMENT = ?;");
-        log.trace("mapped update table statement: {}", stringBuilder);
-        return stringBuilder.toString();
+    default String tableNameToUpdateTableQuery() {
+        final String statement = "ALTER TABLE `?`.`?` COMMENT = ?;";
+        log.trace("mapped update table statement: {}", statement);
+        return statement;
     }
 
     default String tableCreateDtoToCreateTableRawQuery(String databaseName,
@@ -552,20 +548,16 @@ public interface MariaDbMapper {
     }
 
     @Named("dropTableQuery")
-    default String dropTableRawQuery(String databaseName, String tableName) {
-        return dropTableRawQuery(databaseName, tableName, true);
+    default String dropTableQuery() {
+        return dropTableQuery(true);
     }
 
-    default String dropTableRawQuery(String databaseName, String tableName, Boolean force) {
+    default String dropTableQuery(Boolean force) {
         final StringBuilder statement = new StringBuilder("DROP TABLE ");
         if (!force) {
             statement.append("IF EXISTS ");
         }
-        statement.append("`")
-                .append(databaseName)
-                .append("`.`")
-                .append(tableName)
-                .append("`;");
+        statement.append("`?`.`?`;");
         log.trace("mapped drop table query: {}", statement);
         return statement.toString();
     }
