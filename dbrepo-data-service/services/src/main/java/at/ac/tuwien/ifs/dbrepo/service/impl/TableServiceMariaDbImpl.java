@@ -102,20 +102,19 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Override
     @Timed(value = "dbrepo_data_update_table_comment", description = "Time spent updating the table comment", histogram = true)
     public void updateTable(DatabaseDto database, TableDto table, TableUpdateDto data) throws SQLException,
-            TableMalformedException {
+            TableMalformedException, TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tableNameToUpdateTableQuery());
-            statement.setString(1, database.getInternalName());
-            statement.setString(2, table.getInternalName());
-            log.trace("1={}, 2={}, 3={}", database.getInternalName(), table.getInternalName(), data.getDescription());
+            final PreparedStatement statement = connection.prepareStatement(
+                    mariaDbMapper.tableNameToUpdateTableRawQuery(database.getInternalName(), table.getInternalName()));
+            log.trace("1={}", data.getDescription());
             if (data.getDescription() == null) {
-                statement.setString(3, "");
+                statement.setString(1, "");
             } else {
-                statement.setString(3, data.getDescription());
+                statement.setString(1, data.getDescription());
             }
             statement.executeUpdate();
             log.atDebug()
@@ -126,6 +125,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+            if (e.getMessage().toLowerCase().contains("doesn't exist")) {
+                log.error("Failed to delete table: not found: {}", e.getMessage());
+                throw new TableNotFoundException("Failed to delete table: not found", e);
+            }
             log.error("Failed to update table: {}", e.getMessage());
             throw new TableMalformedException("Failed to update table: " + e.getMessage(), e);
         } finally {

@@ -327,6 +327,26 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    public void updateTable_succeeds() throws SQLException, TableNotFoundException, TableMalformedException {
+
+        /* test */
+        tableService.updateTable(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, TABLE_8_UPDATE_DTO);
+        assertEquals("", MariaDbUtil.tableDescription(DATABASE_3_PRIVILEGED_DTO, TABLE_8_INTERNAL_NAME));
+    }
+
+    @Test
+    public void updateTable_notExists_fails() {
+        final TableDto request = TableDto.builder()
+                .internalName("i_do_not_exist")
+                .build();
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.updateTable(DATABASE_3_PRIVILEGED_DTO, request, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
     public void history_notFound_fails() throws SQLException {
 
         /* mock */

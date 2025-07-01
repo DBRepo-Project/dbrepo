@@ -212,6 +212,24 @@ public class MariaDbUtil {
         return false;
     }
 
+    public static String tableDescription(DatabaseDto database, String table) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            final String query = "SELECT t.TABLE_COMMENT FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = '" + database.getInternalName() + "' AND t.TABLE_NAME = '" + table + "';";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                final String comment = resultSet.getString(1);
+                statement.close();
+                return comment;
+            }
+            statement.close();
+        }
+        throw new SQLException("Failed to get ResultSet");
+    }
+
     public static void mockQuery(String hostname, Integer port, String database, String query, String username, String password)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + hostname + ":" + port + "/" + database;

@@ -367,10 +367,20 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tableNameToUpdateTableQuery() {
-        final String statement = "ALTER TABLE `?`.`?` COMMENT = ?;";
-        log.trace("mapped update table statement: {}", statement);
-        return statement;
+    /**
+     * Updates a table comment as raw query statement. Currently, preparing statements for database name and table name are not supported by the driver.
+     * @param databaseName The database name.
+     * @param tableName The table name.
+     * @return The raw query statement.
+     */
+    default String tableNameToUpdateTableRawQuery(String databaseName, String tableName) {
+        final StringBuilder stringBuilder = new StringBuilder("ALTER TABLE `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableName)
+                .append("` COMMENT = ?;");
+        log.trace("mapped update table statement: {}", stringBuilder);
+        return stringBuilder.toString();
     }
 
     default String tableCreateDtoToCreateTableRawQuery(String databaseName,
@@ -554,10 +564,10 @@ public interface MariaDbMapper {
 
 
     /**
-     * Map the table delete query as raw query since prepared statements do not (yet) support database wildcards.
+     * Map the table delete query as raw query. Currently, preparing statements for database name and table name are not supported by the driver.
      * @param databaseName The database name.
      * @param tableName The table name.
-     * @param force If true, force the deletion and throw an error if the table does not exists. Otherwise ignore errors.
+     * @param force If true, force the deletion and throw an error if the table does not exists, otherwise ignore errors.
      * @return The raw query statement.
      */
     default String dropTableRawQuery(String databaseName, String tableName, Boolean force) {
