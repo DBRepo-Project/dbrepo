@@ -12,6 +12,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,13 +55,13 @@ public class IdentifierDto {
     private IdentifierTypeDto type;
 
     @NotNull
-    private List<IdentifierTitleDto> titles;
+    private List<IdentifierTitleDto> titles = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierDescriptionDto> descriptions;
+    private List<IdentifierDescriptionDto> descriptions = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierFunderDto> funders;
+    private List<IdentifierFunderDto> funders = new LinkedList<>();
 
     @NotBlank
     @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
@@ -72,7 +73,7 @@ public class IdentifierDto {
     private String queryNormalized;
 
     @JsonProperty("related_identifiers")
-    private List<RelatedIdentifierDto> relatedIdentifiers;
+    private List<RelatedIdentifierDto> relatedIdentifiers = new LinkedList<>();
 
     @NotBlank
     @JsonProperty("query_hash")
@@ -118,10 +119,10 @@ public class IdentifierDto {
     private LanguageTypeDto language;
 
     @NotNull
-    private List<LicenseDto> licenses;
+    private List<LicenseDto> licenses = new LinkedList<>();
 
     @NotNull
-    private List<CreatorDto> creators;
+    private List<CreatorDto> creators = new LinkedList<>();
 
     @NotNull
     @Schema(example = "draft")

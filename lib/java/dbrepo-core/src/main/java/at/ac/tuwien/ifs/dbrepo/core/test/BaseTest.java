@@ -48,6 +48,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.ContainerImage;
+import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.DataType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.Operator;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -541,6 +542,7 @@ public class BaseTest {
             .attributes(USER_1_ATTRIBUTES_DTO)
             .name(USER_1_NAME)
             .qualifiedName(USER_1_QUALIFIED_NAME)
+            .password(USER_1_DATABASE_PASSWORD)
             .build();
 
     public final CreateUserDto USER_1_CREATE_USER_DTO = CreateUserDto.builder()
@@ -632,6 +634,7 @@ public class BaseTest {
             .name(USER_2_NAME)
             .qualifiedName(USER_2_QUALIFIED_NAME)
             .attributes(USER_2_ATTRIBUTES_DTO)
+            .password(USER_2_DATABASE_PASSWORD)
             .build();
 
     public final UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
@@ -705,6 +708,7 @@ public class BaseTest {
             .name(USER_3_NAME)
             .qualifiedName(USER_3_QUALIFIED_NAME)
             .attributes(USER_3_ATTRIBUTES_DTO)
+            .password(USER_3_DATABASE_PASSWORD)
             .build();
 
     public final UserBriefDto USER_3_BRIEF_DTO = UserBriefDto.builder()
@@ -777,6 +781,7 @@ public class BaseTest {
             .name(USER_4_NAME)
             .attributes(USER_4_ATTRIBUTES_DTO)
             .qualifiedName(USER_4_QUALIFIED_NAME)
+            .password(USER_4_DATABASE_PASSWORD)
             .build();
 
     public final UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
@@ -827,6 +832,7 @@ public class BaseTest {
             .name(USER_5_NAME)
             .qualifiedName(USER_5_QUALIFIED_NAME)
             .attributes(USER_5_ATTRIBUTES_DTO)
+            .password(USER_5_DATABASE_PASSWORD)
             .build();
 
     public final UserBriefDto USER_5_BRIEF_DTO = UserBriefDto.builder()
@@ -896,6 +902,7 @@ public class BaseTest {
             .username(USER_6_USERNAME)
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
+            .password(USER_6_DATABASE_PASSWORD)
             .build();
 
     public final UserDetails USER_6_DETAILS = UserDetailsDto.builder()
@@ -946,7 +953,8 @@ public class BaseTest {
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_DEFAULT_PORT)
             .isDefault(IMAGE_1_IS_DEFAULT)
-            .operators(null)
+            .operators(null /* IMAGE_1_OPERATORS */)
+            .dataTypes(null /* IMAGE_1_DATA_TYPES */)
             .build();
 
     public final ImageDto IMAGE_1_DTO = ImageDto.builder()
@@ -955,7 +963,8 @@ public class BaseTest {
             .version(IMAGE_1_VERSION)
             .isDefault(IMAGE_1_IS_DEFAULT)
             .jdbcMethod(IMAGE_1_JDBC_METHOD)
-            .operators(null) /* IMAGE_1_OPERATORS_DTO */
+            .operators(null /* IMAGE_1_OPERATORS_DTO */)
+            .dataTypes(null /* IMAGE_1_DATA_TYPES_DTO */)
             .build();
 
     public final ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
@@ -1003,6 +1012,47 @@ public class BaseTest {
                     .value(IMAGE_1_OPERATORS_2_VALUE)
                     .documentation(IMAGE_1_OPERATORS_2_DOCUMENTATION)
                     .build()));
+
+    public final static UUID IMAGE_1_DATA_TYPE_1_ID = UUID.fromString("d79cb089-363c-488b-9717-649e44d8fcc5");
+    public final static String IMAGE_1_DATA_TYPE_1_DISPLAY_NAME = "BIGINT(size)";
+    public final static String IMAGE_1_DATA_TYPE_1_VALUE = "bigint";
+    public final static Integer IMAGE_1_DATA_TYPE_1_SIZE_MIN = 0;
+    public final static Boolean IMAGE_1_DATA_TYPE_1_SIZE_REQUIRED = false;
+    public final static Integer IMAGE_1_DATA_TYPE_1_SIZE_STEP = 1;
+    public final static Boolean IMAGE_1_DATA_TYPE_1_D_REQUIRED = false;
+    public final static String IMAGE_1_DATA_TYPE_1_DOCUMENTATION = "https://mariadb.com/kb/en/bigint/";
+    public final static Boolean IMAGE_1_DATA_TYPE_1_IS_QUOTED = false;
+    public final static Boolean IMAGE_1_DATA_TYPE_1_IS_BUILDABLE = false;
+
+    public final List<DataType> IMAGE_1_DATA_TYPES = new LinkedList<>(List.of(
+            DataType.builder()
+                    .id(IMAGE_1_DATA_TYPE_1_ID)
+                    .displayName(IMAGE_1_DATA_TYPE_1_DISPLAY_NAME)
+                    .value(IMAGE_1_DATA_TYPE_1_VALUE)
+                    .sizeMin(IMAGE_1_DATA_TYPE_1_SIZE_MIN)
+                    .sizeRequired(IMAGE_1_DATA_TYPE_1_SIZE_REQUIRED)
+                    .sizeStep(IMAGE_1_DATA_TYPE_1_SIZE_STEP)
+                    .dRequired(IMAGE_1_DATA_TYPE_1_D_REQUIRED)
+                    .documentation(IMAGE_1_DATA_TYPE_1_DOCUMENTATION)
+                    .quoted(IMAGE_1_DATA_TYPE_1_IS_QUOTED)
+                    .buildable(IMAGE_1_DATA_TYPE_1_IS_BUILDABLE)
+                    .build()
+    ));
+
+    public final List<DataTypeDto> IMAGE_1_DATA_TYPES_DTO = new LinkedList<>(List.of(
+            DataTypeDto.builder()
+                    .id(IMAGE_1_DATA_TYPE_1_ID)
+                    .displayName(IMAGE_1_DATA_TYPE_1_DISPLAY_NAME)
+                    .value(IMAGE_1_DATA_TYPE_1_VALUE)
+                    .sizeMin(IMAGE_1_DATA_TYPE_1_SIZE_MIN)
+                    .sizeRequired(IMAGE_1_DATA_TYPE_1_SIZE_REQUIRED)
+                    .sizeStep(IMAGE_1_DATA_TYPE_1_SIZE_STEP)
+                    .dRequired(IMAGE_1_DATA_TYPE_1_D_REQUIRED)
+                    .documentation(IMAGE_1_DATA_TYPE_1_DOCUMENTATION)
+                    .quoted(IMAGE_1_DATA_TYPE_1_IS_QUOTED)
+                    .buildable(IMAGE_1_DATA_TYPE_1_IS_BUILDABLE)
+                    .build()
+    ));
 
     public final static UUID CONTAINER_1_ID = UUID.fromString("7ddb7e87-b965-43a2-9a24-4fa406d998f4");
     public final static String CONTAINER_1_NAME = "u01";
@@ -1609,8 +1659,8 @@ public class BaseTest {
                     .internalName("id")
                     .columnType(ColumnTypeDto.SERIAL)
                     .isNullAllowed(false)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_1_2_ID)
@@ -1621,8 +1671,8 @@ public class BaseTest {
                     .internalName("date")
                     .columnType(ColumnTypeDto.DATE)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_1_3_ID)
@@ -1634,8 +1684,8 @@ public class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_1_4_ID)
@@ -1648,8 +1698,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_1_5_ID)
@@ -1664,8 +1714,8 @@ public class BaseTest {
                     .concept(CONCEPT_1_BRIEF_DTO)
                     .unit(UNIT_1_BRIEF_DTO)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build());
 
     public final CreateTableConstraintsDto TABLE_1_CREATE_TABLE_CONSTRAINTS_DTO =
@@ -1808,8 +1858,8 @@ public class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_2_2_ID)
@@ -1821,8 +1871,8 @@ public class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_2_3_ID)
@@ -1834,8 +1884,8 @@ public class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build());
 
     public final ColumnBriefDto TABLE_2_COLUMNS_BRIEF_2_DTO = ColumnBriefDto.builder()
@@ -2296,6 +2346,8 @@ public class BaseTest {
                     .internalName("timestamp")
                     .columnType(TableColumnType.TIMESTAMP)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_2_ID)
@@ -2305,6 +2357,8 @@ public class BaseTest {
                     .internalName("value")
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final List<CreateTableColumnDto> TABLE_4_COLUMNS_CREATE_DTO = List.of(CreateTableColumnDto.builder()
@@ -2506,8 +2560,8 @@ public class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_9_2_ID)
@@ -2519,8 +2573,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_9_3_ID)
@@ -2532,8 +2586,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final List<ColumnDto> TABLE_9_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -2544,8 +2598,8 @@ public class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_9_2_ID)
@@ -2556,8 +2610,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_9_3_ID)
@@ -2568,8 +2622,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final Constraints TABLE_9_CONSTRAINTS = Constraints.builder()
@@ -2823,6 +2877,8 @@ public class BaseTest {
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
                     .columnType(COLUMN_8_1_TYPE)
                     .isNullAllowed(COLUMN_8_1_NULL)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_8_2_ID)
@@ -2831,9 +2887,11 @@ public class BaseTest {
                     .name(COLUMN_8_2_NAME)
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
                     .columnType(COLUMN_8_2_TYPE)
-                    .isNullAllowed(COLUMN_8_2_NULL)
                     .size(COLUMN_8_2_SIZE)
                     .d(COLUMN_8_2_D)
+                    .isNullAllowed(COLUMN_8_2_NULL)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_8_3_ID)
@@ -2843,6 +2901,8 @@ public class BaseTest {
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
                     .columnType(COLUMN_8_3_TYPE)
                     .isNullAllowed(COLUMN_8_3_NULL)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -2852,6 +2912,8 @@ public class BaseTest {
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
                     .columnType(COLUMN_8_1_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_1_NULL)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_8_2_ID)
@@ -2860,6 +2922,8 @@ public class BaseTest {
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
                     .columnType(COLUMN_8_2_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_2_NULL)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_8_3_ID)
@@ -2868,6 +2932,8 @@ public class BaseTest {
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
                     .columnType(COLUMN_8_3_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_3_NULL)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
@@ -2919,11 +2985,12 @@ public class BaseTest {
 
     public final static UUID QUERY_1_ID = UUID.fromString("60494137-f000-459e-acd3-4fcadbdf14ca");
     public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` ORDER BY id ASC";
-    public final static Long QUERY_1_RESULT_NUMBER = 2L;
+    public final static String QUERY_1_STATEMENT_NORMALIZED = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP'2025-03-07 11:58:07' ORDER BY id ASC";
+    public final static Long QUERY_1_RESULT_NUMBER = 3L;
     public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
     public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
-    public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L);
-    public final static Instant QUERY_1_EXECUTION = Instant.now();
+    public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L) /* 2025-03-07 11:58:07 */;
+    public final static Instant QUERY_1_EXECUTION = Instant.ofEpochSecond(1677648377L) /* 2025-03-07 11:58:07 */;
     public final static Boolean QUERY_1_PERSISTED = true;
 
     public final SubsetDto QUERY_1_SUBSET_DTO = SubsetDto.builder()
@@ -2966,6 +3033,7 @@ public class BaseTest {
             .id(QUERY_1_ID)
             .databaseId(DATABASE_1_ID)
             .query(QUERY_1_STATEMENT)
+            .queryNormalized(QUERY_1_STATEMENT_NORMALIZED)
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .execution(QUERY_1_EXECUTION)
@@ -2977,9 +3045,9 @@ public class BaseTest {
     public final static UUID QUERY_2_ID = UUID.fromString("4e0ac92a-7cb3-4222-9b85-0498c73e0afd");
     public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
     public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
-    public final static Long QUERY_2_RESULT_NUMBER = 2L;
+    public final static Long QUERY_2_RESULT_NUMBER = 3L;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
-    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_2_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Boolean QUERY_2_PERSISTED = false;
 
     public final static UUID QUERY_3_ID = UUID.fromString("a9849020-45a7-40a8-9a19-d4ae2b28dd46");
@@ -3105,6 +3173,8 @@ public class BaseTest {
                     .internalName("id")
                     .columnType(TableColumnType.SERIAL)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_2_ID)
@@ -3114,6 +3184,8 @@ public class BaseTest {
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_3_ID)
@@ -3124,6 +3196,8 @@ public class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_4_ID)
@@ -3135,6 +3209,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_5_ID)
@@ -3148,6 +3224,8 @@ public class BaseTest {
                     .concept(CONCEPT_1)
                     .unit(UNIT_1)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final static SchemaAnalysisResultDto TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO = SchemaAnalysisResultDto.builder()
@@ -3162,28 +3240,37 @@ public class BaseTest {
                             .name("id")
                             .datatype(ColumnTypeDto.BIGINT)
                             .nullAllowed(true)
+                            .primaryKey(true)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("Date")
                             .datatype(ColumnTypeDto.VARCHAR)
                             .nullAllowed(true)
+                            .primaryKey(false)
                             .size(255)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("Location")
                             .datatype(ColumnTypeDto.VARCHAR)
                             .nullAllowed(true)
+                            .primaryKey(false)
                             .size(255)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("MinTemp")
                             .datatype(ColumnTypeDto.DOUBLE)
                             .nullAllowed(true)
+                            .primaryKey(false)
+                            .size(10)
+                            .d(4)
                             .build(),
                     ColumnAnalysisResultDto.builder()
                             .name("Rainfall")
                             .datatype(ColumnTypeDto.DOUBLE)
                             .nullAllowed(true)
+                            .primaryKey(false)
+                            .size(10)
+                            .d(4)
                             .build())))
             .build();
 
@@ -3270,8 +3357,8 @@ public class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_2_2_ID)
@@ -3283,8 +3370,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_2_3_ID)
@@ -3296,8 +3383,8 @@ public class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .enums(null)
-                    .sets(null)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final static UUID COLUMN_3_1_ID = UUID.fromString("49cc2735-ba75-4e12-8ac7-8aec87ed7724");
@@ -4152,6 +4239,8 @@ public class BaseTest {
                     .internalName("id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_2_ID)
@@ -4161,6 +4250,8 @@ public class BaseTest {
                     .internalName("animal_name")
                     .columnType(TableColumnType.VARCHAR)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_3_ID)
@@ -4170,6 +4261,8 @@ public class BaseTest {
                     .internalName("hair")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_4_ID)
@@ -4179,6 +4272,8 @@ public class BaseTest {
                     .internalName("feathers")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_5_ID)
@@ -4188,6 +4283,8 @@ public class BaseTest {
                     .internalName("bread")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_6_ID)
@@ -4197,6 +4294,8 @@ public class BaseTest {
                     .internalName("eggs")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_7_ID)
@@ -4206,6 +4305,8 @@ public class BaseTest {
                     .internalName("milk")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_8_ID)
@@ -4215,6 +4316,8 @@ public class BaseTest {
                     .internalName("water")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_9_ID)
@@ -4224,6 +4327,8 @@ public class BaseTest {
                     .internalName("airborne")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_10_ID)
@@ -4233,6 +4338,8 @@ public class BaseTest {
                     .internalName("waterborne")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_11_ID)
@@ -4242,6 +4349,8 @@ public class BaseTest {
                     .internalName("aquantic")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_12_ID)
@@ -4260,6 +4369,8 @@ public class BaseTest {
                     .internalName("backbone")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_14_ID)
@@ -4269,6 +4380,8 @@ public class BaseTest {
                     .internalName("breathes")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_15_ID)
@@ -4278,6 +4391,8 @@ public class BaseTest {
                     .internalName("venomous")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_16_ID)
@@ -4287,6 +4402,8 @@ public class BaseTest {
                     .internalName("fin")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_17_ID)
@@ -4296,6 +4413,8 @@ public class BaseTest {
                     .internalName("legs")
                     .columnType(TableColumnType.INT)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_18_ID)
@@ -4305,6 +4424,8 @@ public class BaseTest {
                     .internalName("tail")
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_19_ID)
@@ -4314,6 +4435,8 @@ public class BaseTest {
                     .internalName("domestic")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_20_ID)
@@ -4323,6 +4446,8 @@ public class BaseTest {
                     .internalName("catsize")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_21_ID)
@@ -4332,6 +4457,8 @@ public class BaseTest {
                     .internalName("class_type")
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
     public final List<ColumnDto> TABLE_5_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_5_1_ID)
@@ -4341,6 +4468,8 @@ public class BaseTest {
                     .internalName("id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_2_ID)
@@ -4350,6 +4479,8 @@ public class BaseTest {
                     .internalName("animal_name")
                     .columnType(ColumnTypeDto.VARCHAR)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_3_ID)
@@ -4359,6 +4490,8 @@ public class BaseTest {
                     .internalName("hair")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_4_ID)
@@ -4368,6 +4501,8 @@ public class BaseTest {
                     .internalName("feathers")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_5_ID)
@@ -4377,6 +4512,8 @@ public class BaseTest {
                     .internalName("bread")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_6_ID)
@@ -4386,6 +4523,8 @@ public class BaseTest {
                     .internalName("eggs")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_7_ID)
@@ -4395,6 +4534,8 @@ public class BaseTest {
                     .internalName("milk")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_8_ID)
@@ -4404,6 +4545,8 @@ public class BaseTest {
                     .internalName("water")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_9_ID)
@@ -4413,6 +4556,8 @@ public class BaseTest {
                     .internalName("airborne")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_10_ID)
@@ -4422,6 +4567,8 @@ public class BaseTest {
                     .internalName("waterborne")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_11_ID)
@@ -4431,6 +4578,8 @@ public class BaseTest {
                     .internalName("aquantic")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_12_ID)
@@ -4440,6 +4589,8 @@ public class BaseTest {
                     .internalName("predator")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_13_ID)
@@ -4449,6 +4600,8 @@ public class BaseTest {
                     .internalName("backbone")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_14_ID)
@@ -4458,6 +4611,8 @@ public class BaseTest {
                     .internalName("breathes")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_15_ID)
@@ -4467,6 +4622,8 @@ public class BaseTest {
                     .internalName("venomous")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_16_ID)
@@ -4476,6 +4633,8 @@ public class BaseTest {
                     .internalName("fin")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_17_ID)
@@ -4485,6 +4644,8 @@ public class BaseTest {
                     .internalName("legs")
                     .columnType(ColumnTypeDto.INT)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_18_ID)
@@ -4494,6 +4655,8 @@ public class BaseTest {
                     .internalName("tail")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_19_ID)
@@ -4503,6 +4666,8 @@ public class BaseTest {
                     .internalName("domestic")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_20_ID)
@@ -4512,6 +4677,8 @@ public class BaseTest {
                     .internalName("catsize")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_21_ID)
@@ -4521,6 +4688,8 @@ public class BaseTest {
                     .internalName("class_type")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final List<CreateForeignKeyDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(CreateForeignKeyDto.builder()
@@ -4704,6 +4873,8 @@ public class BaseTest {
                     .internalName("id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_6_2_ID)
@@ -4713,6 +4884,8 @@ public class BaseTest {
                     .internalName("firstname")
                     .columnType(TableColumnType.VARCHAR)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_6_3_ID)
@@ -4722,6 +4895,8 @@ public class BaseTest {
                     .internalName("lastname")
                     .columnType(TableColumnType.VARCHAR)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_6_4_ID)
@@ -4731,6 +4906,8 @@ public class BaseTest {
                     .internalName("birth")
                     .columnType(TableColumnType.YEAR)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_6_5_ID)
@@ -4740,6 +4917,8 @@ public class BaseTest {
                     .internalName("reminder")
                     .columnType(TableColumnType.TIME)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_6_6_ID)
@@ -4749,6 +4928,8 @@ public class BaseTest {
                     .internalName("ref_id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(true)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final ColumnBriefDto TABLE_6_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
@@ -4874,6 +5055,8 @@ public class BaseTest {
                     .internalName("name_id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_7_2_ID)
@@ -4883,6 +5066,8 @@ public class BaseTest {
                     .internalName("zoo_id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final List<ColumnDto> TABLE_7_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -4893,6 +5078,8 @@ public class BaseTest {
                     .internalName("name_id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_7_2_ID)
@@ -4902,6 +5089,8 @@ public class BaseTest {
                     .internalName("zoo_id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
+                    .sets(new LinkedList<>())
+                    .enums(new LinkedList<>())
                     .build());
 
     public final static UUID VIEW_1_ID = UUID.fromString("7d712cf7-78c7-4a47-90b0-d6b9f7f19b70");
@@ -5181,6 +5370,7 @@ public class BaseTest {
             .internalName(VIEW_2_INTERNAL_NAME)
             .isPublic(VIEW_2_PUBLIC)
             .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
+            .identifiers(new LinkedList<>())
             .columns(VIEW_2_COLUMNS_DTO)
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
@@ -5323,6 +5513,7 @@ public class BaseTest {
             .internalName(VIEW_3_INTERNAL_NAME)
             .isPublic(VIEW_3_PUBLIC)
             .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
+            .identifiers(new LinkedList<>())
             .columns(VIEW_3_COLUMNS_DTO)
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
@@ -5528,6 +5719,7 @@ public class BaseTest {
             .internalName(VIEW_4_INTERNAL_NAME)
             .isPublic(VIEW_4_PUBLIC)
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
+            .identifiers(new LinkedList<>())
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -5733,6 +5925,7 @@ public class BaseTest {
             .internalName(VIEW_5_INTERNAL_NAME)
             .isPublic(VIEW_5_PUBLIC)
             .isSchemaPublic(VIEW_5_SCHEMA_PUBLIC)
+            .identifiers(new LinkedList<>())
             .query(VIEW_5_QUERY)
             .queryHash(VIEW_5_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -5844,7 +6037,7 @@ public class BaseTest {
             .build();
 
     public final static UUID CREATOR_1_ID = UUID.fromString("a0417f34-80ff-419f-821d-ce179021484a");
-    public final static String CREATOR_1_ORCID = "00000-00000-00000";
+    public final static String CREATOR_1_ORCID = "https://orcid.org/00000-00000-00000";
     public final static String CREATOR_1_AFFIL = "TU Graz";
     public final static String CREATOR_1_AFFIL_ROR = "https://ror.org/04wn28048";
     public final static String CREATOR_1_AFFIL_URI = "https://ror.org/";
@@ -5886,7 +6079,7 @@ public class BaseTest {
 
     public final static UUID CREATOR_2_ID = UUID.fromString("56b70dae-17a7-4f76-9c1e-a493762ba760");
     public final static Long CREATOR_2_QUERY_ID = 1L;
-    public final static String CREATOR_2_ORCID = "00000-00000-00000";
+    public final static String CREATOR_2_ORCID = "https://orcid.org/00000-00000-00000";
     public final static String CREATOR_2_AFFIL = "TU Wien";
     public final static String CREATOR_2_FIRSTNAME = "Martina";
     public final static String CREATOR_2_LASTNAME = "Mustermann";
@@ -5894,7 +6087,7 @@ public class BaseTest {
 
     public final static UUID CREATOR_3_ID = UUID.fromString("a2dfea46-7d88-4069-9b93-2417e1fb578b");
     public final static Long CREATOR_3_QUERY_ID = 1L;
-    public final static String CREATOR_3_ORCID = "00000-00000-00000";
+    public final static String CREATOR_3_ORCID = "https://orcid.org/00000-00000-00000";
     public final static String CREATOR_3_AFFIL = "TU Graz";
     public final static String CREATOR_3_AFFIL_ROR = "https://ror.org/04wn28048";
     public final static AffiliationIdentifierSchemeType CREATOR_3_AFFIL_SCHEME_TYPE = AffiliationIdentifierSchemeType.ROR;
@@ -5927,11 +6120,12 @@ public class BaseTest {
     public final static String IDENTIFIER_1_PUBLISHER = "Austrian Government";
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
-    public final static IdentifierStatusType IDENTIFIER_1_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_1_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public final static IdentifierStatusType IDENTIFIER_1_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public final static IdentifierStatusTypeDto IDENTIFIER_1_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
 
     public final static UUID IDENTIFIER_1_TITLE_1_ID = UUID.fromString("3df6b286-9bd2-4ae3-b8f4-29c217544bef");
     public final static String IDENTIFIER_1_TITLE_1_TITLE = "Austrian weather data";
+    public final static Integer IDENTIFIER_1_TITLE_1_ORD_POS = 0;
     public final static String IDENTIFIER_1_TITLE_1_TITLE_MODIFY = "Austrian weather some data";
     public final static TitleType IDENTIFIER_1_TITLE_1_TYPE = null;
     public final static TitleTypeDto IDENTIFIER_1_TITLE_1_TYPE_DTO = null;
@@ -5940,6 +6134,7 @@ public class BaseTest {
 
     public final IdentifierTitle IDENTIFIER_1_TITLE_1 = IdentifierTitle.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
+            .ordinalPosition(IDENTIFIER_1_TITLE_1_ORD_POS)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE)
             .language(IDENTIFIER_1_TITLE_1_LANG)
@@ -5960,12 +6155,21 @@ public class BaseTest {
             .build();
 
     public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
+            .id(null)
+            .title(IDENTIFIER_1_TITLE_1_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_SAVE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
     public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_UPDATE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
@@ -5975,12 +6179,14 @@ public class BaseTest {
     public final static String IDENTIFIER_1_TITLE_2_TITLE = "Österreichische Wetterdaten";
     public final static String IDENTIFIER_1_TITLE_2_TITLE_MODIFY = "Österreichische Wetterdaten übersetzt";
     public final static TitleType IDENTIFIER_1_TITLE_2_TYPE = TitleType.TRANSLATED_TITLE;
+    public final static Integer IDENTIFIER_1_TITLE_2_ORD_POS = 1;
     public final static TitleTypeDto IDENTIFIER_1_TITLE_2_TYPE_DTO = TitleTypeDto.TRANSLATED_TITLE;
     public final static LanguageType IDENTIFIER_1_TITLE_2_LANG = LanguageType.EN;
     public final static LanguageTypeDto IDENTIFIER_1_TITLE_2_LANG_DTO = LanguageTypeDto.EN;
 
     public final IdentifierTitle IDENTIFIER_1_TITLE_2 = IdentifierTitle.builder()
             .id(IDENTIFIER_1_TITLE_2_ID)
+            .ordinalPosition(IDENTIFIER_1_TITLE_2_ORD_POS)
             .title(IDENTIFIER_1_TITLE_2_TITLE)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE)
             .language(IDENTIFIER_1_TITLE_2_LANG)
@@ -6001,6 +6207,14 @@ public class BaseTest {
             .build();
 
     public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_CREATE_DTO = SaveIdentifierTitleDto.builder()
+            .id(null)
+            .title(IDENTIFIER_1_TITLE_2_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_SAVE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_1_TITLE_2_ID)
             .title(IDENTIFIER_1_TITLE_2_TITLE)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
@@ -6016,12 +6230,14 @@ public class BaseTest {
     public final static String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Austrian table";
     public final static String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
     public final static DescriptionType IDENTIFIER_1_DESCRIPTION_1_TYPE = null;
+    public final static Integer IDENTIFIER_1_DESCRIPTION_1_ORD_POS = 0;
     public final static DescriptionTypeDto IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO = null;
     public final static LanguageType IDENTIFIER_1_DESCRIPTION_1_LANG = LanguageType.EN;
     public final static LanguageTypeDto IDENTIFIER_1_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
 
     public final IdentifierDescription IDENTIFIER_1_DESCRIPTION_1 = IdentifierDescription.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
+            .ordinalPosition(IDENTIFIER_1_DESCRIPTION_1_ORD_POS)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG)
@@ -6048,11 +6264,21 @@ public class BaseTest {
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
+    public final SaveIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_1_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
+            .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
+            .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
+            .build();
+
     public final static UUID IDENTIFIER_1_CREATOR_1_ID = UUID.fromString("667cd1d6-4f94-4808-b5cb-12e5ec0788d8");
+    public final static Integer IDENTIFIER_1_CREATOR_1_ORD_POS = 0;
     public final static String IDENTIFIER_1_CREATOR_1_FIRSTNAME = CREATOR_1_FIRSTNAME;
     public final static String IDENTIFIER_1_CREATOR_1_LASTNAME = CREATOR_1_LASTNAME;
     public final static String IDENTIFIER_1_CREATOR_1_NAME = CREATOR_1_NAME;
+    public final static NameType IDENTIFIER_1_CREATOR_1_NAME_TYPE = NameType.PERSONAL;
     public final static String IDENTIFIER_1_CREATOR_1_ORCID = CREATOR_1_ORCID;
+    public final static String IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
     public final NameIdentifierSchemeType IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE = NameIdentifierSchemeType.ORCID;
     public final NameIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
     public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION = CREATOR_1_AFFIL;
@@ -6063,12 +6289,14 @@ public class BaseTest {
 
     public final Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_1_CREATOR_1_ID)
+            .ordinalPosition(IDENTIFIER_1_CREATOR_1_ORD_POS)
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
-            .nameType(NameType.PERSONAL)
+            .nameType(IDENTIFIER_1_CREATOR_1_NAME_TYPE)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_URI)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
             .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
             .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME)
@@ -6083,6 +6311,7 @@ public class BaseTest {
             .nameType(NameTypeDto.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_URI)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
             .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
             .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO)
@@ -6096,41 +6325,61 @@ public class BaseTest {
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
             .nameType(NameTypeDto.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
-            .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
             .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
-            .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO)
             .build();
 
-    public final static UUID FUNDER_1_ID = UUID.fromString("8deb273d-6dd6-407d-970a-01534035ac01");
-    public final static String FUNDER_1_NAME = "European Commission";
-    public final static String FUNDER_1_IDENTIFIER = "https://doi.org/10.13039/501100000780";
-    public final static String FUNDER_1_IDENTIFIER_ID_ONLY = "10.13039/501100000780";
-    public final IdentifierFunderType FUNDER_1_IDENTIFIER_TYPE = IdentifierFunderType.CROSSREF_FUNDER_ID;
-    public final IdentifierFunderTypeDto FUNDER_1_IDENTIFIER_TYPE_DTO = IdentifierFunderTypeDto.CROSSREF_FUNDER_ID;
-    public final static String FUNDER_1_AWARD_TITLE = "Institutionalizing global genetic-resource commons. Global Strategies for accessing and using essential public knowledge assets in the life science";
+    public final SaveIdentifierCreatorDto IDENTIFIER_1_CREATOR_1_SAVE_DTO = SaveIdentifierCreatorDto.builder()
+            .id(IDENTIFIER_1_CREATOR_1_ID)
+            .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameTypeDto.PERSONAL)
+            .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
+            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
+            .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
+            .build();
+
+    public final static UUID IDENTIFIER_1_FUNDER_1_ID = UUID.fromString("8deb273d-6dd6-407d-970a-01534035ac01");
+    public final static String IDENTIFIER_1_FUNDER_1_NAME = "European Commission";
+    public final static String IDENTIFIER_1_FUNDER_1_IDENTIFIER = "https://doi.org/10.13039/501100000780";
+    public final static String IDENTIFIER_1_FUNDER_1_IDENTIFIER_ID_ONLY = "10.13039/501100000780";
+    public final static Integer IDENTIFIER_1_FUNDER_1_ORD_POS = 0;
+    public final IdentifierFunderType IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE = IdentifierFunderType.CROSSREF_FUNDER_ID;
+    public final IdentifierFunderTypeDto IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE_DTO = IdentifierFunderTypeDto.CROSSREF_FUNDER_ID;
+    public final static String IDENTIFIER_1_FUNDER_1_AWARD_TITLE = "Institutionalizing global genetic-resource commons. Global Strategies for accessing and using essential public knowledge assets in the life science";
 
     public final IdentifierFunder IDENTIFIER_1_FUNDER_1 = IdentifierFunder.builder()
-            .id(FUNDER_1_ID)
-            .funderName(FUNDER_1_NAME)
-            .funderIdentifier(FUNDER_1_IDENTIFIER)
-            .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE)
-            .awardTitle(FUNDER_1_AWARD_TITLE)
+            .id(IDENTIFIER_1_FUNDER_1_ID)
+            .ordinalPosition(IDENTIFIER_1_FUNDER_1_ORD_POS)
+            .funderName(IDENTIFIER_1_FUNDER_1_NAME)
+            .funderIdentifier(IDENTIFIER_1_FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE)
+            .awardTitle(IDENTIFIER_1_FUNDER_1_AWARD_TITLE)
             .build();
 
     public final IdentifierFunderDto IDENTIFIER_1_FUNDER_1_DTO = IdentifierFunderDto.builder()
-            .id(FUNDER_1_ID)
-            .funderName(FUNDER_1_NAME)
-            .funderIdentifier(FUNDER_1_IDENTIFIER)
-            .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE_DTO)
-            .awardTitle(FUNDER_1_AWARD_TITLE)
+            .id(IDENTIFIER_1_FUNDER_1_ID)
+            .funderName(IDENTIFIER_1_FUNDER_1_NAME)
+            .funderIdentifier(IDENTIFIER_1_FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE_DTO)
+            .awardTitle(IDENTIFIER_1_FUNDER_1_AWARD_TITLE)
             .build();
 
     public final SaveIdentifierFunderDto IDENTIFIER_1_FUNDER_1_CREATE_DTO = SaveIdentifierFunderDto.builder()
-            .funderName(FUNDER_1_NAME)
-            .funderIdentifier(FUNDER_1_IDENTIFIER)
-            .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE_DTO)
-            .awardTitle(FUNDER_1_AWARD_TITLE)
+            .id(null)
+            .funderName(IDENTIFIER_1_FUNDER_1_NAME)
+            .funderIdentifier(IDENTIFIER_1_FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE_DTO)
+            .awardTitle(IDENTIFIER_1_FUNDER_1_AWARD_TITLE)
+            .build();
+
+    public final SaveIdentifierFunderDto IDENTIFIER_1_FUNDER_1_SAVE_DTO = SaveIdentifierFunderDto.builder()
+            .id(IDENTIFIER_1_FUNDER_1_ID)
+            .funderName(IDENTIFIER_1_FUNDER_1_NAME)
+            .funderIdentifier(IDENTIFIER_1_FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE_DTO)
+            .awardTitle(IDENTIFIER_1_FUNDER_1_AWARD_TITLE)
             .build();
 
     public final DataCiteBody<DataCiteDoi> IDENTIFIER_1_DATA_CITE = DataCiteBody.<DataCiteDoi>builder()
@@ -6144,21 +6393,14 @@ public class BaseTest {
 
     public final Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .queryId(QUERY_1_ID)
             .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2)))
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1)))
             .doi(IDENTIFIER_1_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
-            .execution(IDENTIFIER_1_EXECUTION)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .queryHash(QUERY_1_QUERY_HASH)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .query(QUERY_1_STATEMENT)
-            .queryNormalized(QUERY_1_STATEMENT)
-            .resultNumber(QUERY_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
             .owner(USER_1)
@@ -6166,6 +6408,7 @@ public class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1)))
+            .relatedIdentifiers(new LinkedList<>())
             .status(IDENTIFIER_1_STATUS_TYPE)
             .build();
 
@@ -6176,21 +6419,16 @@ public class BaseTest {
                     .self("/api/identifier/" + IDENTIFIER_1_ID)
                     .selfHtml("/pid/" + IDENTIFIER_1_ID)
                     .build())
-            .queryId(QUERY_1_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO)))
             .doi(IDENTIFIER_1_DOI)
-            .execution(IDENTIFIER_1_EXECUTION)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .queryHash(QUERY_1_QUERY_HASH)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .query(QUERY_1_STATEMENT)
-            .queryNormalized(QUERY_1_STATEMENT)
-            .resultNumber(QUERY_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
             .owner(USER_1_BRIEF_DTO)
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_DTO)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_DTO)))
@@ -6223,6 +6461,7 @@ public class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
             .build();
 
     public final CreateIdentifierDto IDENTIFIER_1_CREATE_WITH_DOI_DTO = CreateIdentifierDto.builder()
@@ -6240,20 +6479,22 @@ public class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
             .build();
 
     public final IdentifierSaveDto IDENTIFIER_1_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
-            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
-            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO)))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO, IDENTIFIER_1_TITLE_2_SAVE_DTO)))
             .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
-            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_SAVE_DTO)))
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
+            .doi(IDENTIFIER_1_DOI)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
@@ -6276,7 +6517,7 @@ public class BaseTest {
     public final static String IDENTIFIER_5_DOI = "10.12345/13/50BBFCFE08A12";
     public final static Instant IDENTIFIER_5_CREATED = Instant.ofEpochSecond(1641588352L);
     public final static Instant IDENTIFIER_5_MODIFIED = Instant.ofEpochSecond(1541588352L);
-    public final static Instant IDENTIFIER_5_EXECUTION = Instant.ofEpochSecond(1541588352L);
+    public final static Instant IDENTIFIER_5_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Integer IDENTIFIER_5_PUBLICATION_DAY = 14;
     public final static Integer IDENTIFIER_5_PUBLICATION_MONTH = 7;
     public final static Integer IDENTIFIER_5_PUBLICATION_YEAR = 2022;
@@ -6296,10 +6537,12 @@ public class BaseTest {
     public final static LanguageType IDENTIFIER_5_TITLE_1_LANG = LanguageType.DE;
     public final static LanguageTypeDto IDENTIFIER_5_TITLE_1_LANG_DTO = LanguageTypeDto.DE;
     public final static TitleType IDENTIFIER_5_TITLE_1_TYPE = TitleType.SUBTITLE;
+    public final static Integer IDENTIFIER_5_TITLE_1_ORD_POS = 0;
     public final static TitleTypeDto IDENTIFIER_5_TITLE_1_TYPE_DTO = TitleTypeDto.SUBTITLE;
 
     public final IdentifierTitle IDENTIFIER_5_TITLE_1 = IdentifierTitle.builder()
             .id(IDENTIFIER_5_TITLE_1_ID)
+            .ordinalPosition(IDENTIFIER_5_TITLE_1_ORD_POS)
             .title(IDENTIFIER_5_TITLE_1_TITLE)
             .language(IDENTIFIER_5_TITLE_1_LANG)
             .titleType(IDENTIFIER_5_TITLE_1_TYPE)
@@ -6321,12 +6564,14 @@ public class BaseTest {
     public final static UUID IDENTIFIER_5_DESCRIPTION_1_ID = UUID.fromString("ab49bdca-f373-4823-9947-2a0cbfa88350");
     public final static String IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION = "Alle Wetterdaten in Australien";
     public final static LanguageType IDENTIFIER_5_DESCRIPTION_1_LANG = LanguageType.DE;
+    public final static Integer IDENTIFIER_5_DESCRIPTION_1_ORD_POS = 0;
     public final static LanguageTypeDto IDENTIFIER_5_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.DE;
     public final static DescriptionType IDENTIFIER_5_DESCRIPTION_1_TYPE = DescriptionType.ABSTRACT;
     public final static DescriptionTypeDto IDENTIFIER_5_DESCRIPTION_1_TYPE_DTO = DescriptionTypeDto.ABSTRACT;
 
     public final IdentifierDescription IDENTIFIER_5_DESCRIPTION_1 = IdentifierDescription.builder()
             .id(IDENTIFIER_5_DESCRIPTION_1_ID)
+            .ordinalPosition(IDENTIFIER_5_DESCRIPTION_1_ORD_POS)
             .description(IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_5_DESCRIPTION_1_LANG)
             .descriptionType(IDENTIFIER_5_DESCRIPTION_1_TYPE)
@@ -6347,88 +6592,106 @@ public class BaseTest {
             .build();
 
     public final static UUID IDENTIFIER_5_CREATOR_1_ID = UUID.fromString("6844b684-93e4-47d2-a615-5939127fdafe");
+    public final static Integer IDENTIFIER_5_CREATOR_1_ORD_POS = 0;
+    public final static String IDENTIFIER_5_CREATOR_1_FIRSTNAME = "Max";
+    public final static String IDENTIFIER_5_CREATOR_1_LASTNAME = "Mustermann";
+    public final static String IDENTIFIER_5_CREATOR_1_NAME = IDENTIFIER_5_CREATOR_1_LASTNAME + ", " + IDENTIFIER_5_CREATOR_1_FIRSTNAME;
+    public final static String IDENTIFIER_5_CREATOR_1_AFFIL = "TU Graz";
+    public final static String IDENTIFIER_5_CREATOR_1_AFFIL_ROR = "https://ror.org/04wn28048";
+    public final static String IDENTIFIER_5_CREATOR_1_AFFIL_URI = "https://ror.org/";
+    public final static AffiliationIdentifierSchemeType IDENTIFIER_5_CREATOR_1_AFFIL_SCHEME = AffiliationIdentifierSchemeType.ROR;
+    public final static String IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
+    public final static NameIdentifierSchemeType IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
+    public final static NameIdentifierSchemeTypeDto IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static String IDENTIFIER_5_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_5_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_5_CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE)
-            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
+            .ordinalPosition(IDENTIFIER_5_CREATOR_1_ORD_POS)
+            .firstname(IDENTIFIER_5_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_5_CREATOR_1_AFFIL)
+            .identifier(null /* IDENTIFIER_5 */)
             .build();
 
     public final CreatorDto IDENTIFIER_5_CREATOR_1_DTO = CreatorDto.builder()
             .id(IDENTIFIER_5_CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
-            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
+            .firstname(IDENTIFIER_5_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_5_CREATOR_1_AFFIL)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
+            .firstname(IDENTIFIER_5_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER)
+            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_1_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(null) /* <<<< */
-            .nameIdentifierScheme(null) /* <<<< */
-            .affiliation(CREATOR_1_AFFIL)
+            .firstname(IDENTIFIER_5_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
+            .affiliation(null) // <<<
             .build();
 
     public final static UUID IDENTIFIER_5_CREATOR_2_ID = UUID.fromString("14943ad6-a935-49f5-b07e-f9eb789b8604");
+    public final static Integer IDENTIFIER_5_CREATOR_2_ORD_POS = 1;
+    public final static String IDENTIFIER_5_CREATOR_2_AFFIL = "TU Wien";
+    public final static String IDENTIFIER_5_CREATOR_2_FIRSTNAME = "Martina";
+    public final static String IDENTIFIER_5_CREATOR_2_LASTNAME = "Mustermann";
+    public final static String IDENTIFIER_5_CREATOR_2_NAME = IDENTIFIER_5_CREATOR_2_LASTNAME + ", " + IDENTIFIER_5_CREATOR_2_FIRSTNAME;
+    public final static String IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
+    public final static NameIdentifierSchemeType IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
+    public final static NameIdentifierSchemeTypeDto IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static String IDENTIFIER_5_CREATOR_2_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_5_CREATOR_2 = Creator.builder()
             .id(IDENTIFIER_5_CREATOR_2_ID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .creatorName(CREATOR_2_NAME)
-            .nameIdentifier(CREATOR_2_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
-            .affiliation(CREATOR_2_AFFIL)
+            .ordinalPosition(IDENTIFIER_5_CREATOR_2_ORD_POS)
+            .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameIdentifier(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_2_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_5_CREATOR_2_AFFIL)
+            .identifier(null /* IDENTIFIER_5 */)
             .build();
 
     public final CreatorDto IDENTIFIER_5_CREATOR_2_DTO = CreatorDto.builder()
             .id(IDENTIFIER_5_CREATOR_2_ID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .creatorName(CREATOR_2_NAME)
-            .nameIdentifier(CREATOR_2_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_2_AFFIL)
+            .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameIdentifier(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_2_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_5_CREATOR_2_AFFIL)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_2_CREATE_DTO = SaveIdentifierCreatorDto.builder()
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .creatorName(CREATOR_2_NAME)
-            .nameIdentifier(CREATOR_2_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_2_AFFIL)
+            .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameIdentifier(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER)
+            .affiliation(IDENTIFIER_5_CREATOR_2_AFFIL)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_2_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .creatorName(CREATOR_2_NAME)
+            .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
+            .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
+            .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
             .nameIdentifier(null) /* <<<< */
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
@@ -6456,6 +6719,9 @@ public class BaseTest {
             .ownedBy(USER_2_ID)
             .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1, IDENTIFIER_5_CREATOR_2)))
             .status(IDENTIFIER_5_STATUS_TYPE)
+            .funders(new LinkedList<>())
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .relatedIdentifiers(new LinkedList<>())
             .build();
 
     public final IdentifierDto IDENTIFIER_5_DTO = IdentifierDto.builder()
@@ -6484,6 +6750,9 @@ public class BaseTest {
             .type(IDENTIFIER_5_TYPE_DTO)
             .owner(USER_2_BRIEF_DTO)
             .status(IDENTIFIER_5_STATUS_TYPE_DTO)
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1_DTO, IDENTIFIER_5_CREATOR_2_DTO)))
             .build();
 
@@ -6529,9 +6798,10 @@ public class BaseTest {
             .id(IDENTIFIER_5_ID)
             .queryId(QUERY_2_ID)
             .databaseId(DATABASE_2_ID)
+            .doi(IDENTIFIER_5_DOI)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_5_TITLE_1_CREATE_DTO)))
-            .relatedIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
             .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
@@ -6620,103 +6890,144 @@ public class BaseTest {
             .build();
 
     public final static UUID IDENTIFIER_6_CREATOR_1_ID = UUID.fromString("f8a52dca-8aec-46c1-b0e1-603dbe6a1a65");
+    public final static Integer IDENTIFIER_6_CREATOR_1_ORD_POS = 0;
+    public final static String IDENTIFIER_6_CREATOR_1_FIRSTNAME = "Max";
+    public final static String IDENTIFIER_6_CREATOR_1_LASTNAME = "Mustermann";
+    public final static String IDENTIFIER_6_CREATOR_1_NAME = IDENTIFIER_5_CREATOR_1_LASTNAME + ", " + IDENTIFIER_5_CREATOR_1_FIRSTNAME;
+    public final static String IDENTIFIER_6_CREATOR_1_AFFIL = "TU Graz";
+    public final static String IDENTIFIER_6_CREATOR_1_AFFIL_ROR = "https://ror.org/04wn28048";
+    public final static String IDENTIFIER_6_CREATOR_1_AFFIL_URI = "https://ror.org/";
+    public final static AffiliationIdentifierSchemeType IDENTIFIER_6_CREATOR_1_AFFIL_SCHEME = AffiliationIdentifierSchemeType.ROR;
+    public final static AffiliationIdentifierSchemeTypeDto IDENTIFIER_6_CREATOR_1_AFFIL_SCHEME_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
+    public final static String IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
+    public final static NameIdentifierSchemeType IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
+    public final static NameIdentifierSchemeTypeDto IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static String IDENTIFIER_6_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_6_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_6_CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE)
-            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
+            .firstname(IDENTIFIER_6_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_6_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_6_CREATOR_1_AFFIL)
+            .affiliationIdentifier(IDENTIFIER_6_CREATOR_1_AFFIL_ROR)
+            .affiliationIdentifierScheme(IDENTIFIER_6_CREATOR_1_AFFIL_SCHEME)
+            .affiliationIdentifierSchemeUri(IDENTIFIER_6_CREATOR_1_AFFIL_URI)
             .build();
 
     public final CreatorDto IDENTIFIER_6_CREATOR_1_DTO = CreatorDto.builder()
             .id(IDENTIFIER_6_CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
-            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
+            .firstname(IDENTIFIER_6_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_6_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_6_CREATOR_1_AFFIL)
+            .affiliationIdentifier(IDENTIFIER_6_CREATOR_1_AFFIL_ROR)
+            .affiliationIdentifierScheme(IDENTIFIER_6_CREATOR_1_AFFIL_SCHEME_DTO)
+            .affiliationIdentifierSchemeUri(IDENTIFIER_6_CREATOR_1_AFFIL_URI)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_6_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
+            .id(IDENTIFIER_6_CREATOR_1_ID)
+            .firstname(IDENTIFIER_6_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_1_NAME_IDENTIFIER)
+            .affiliation(IDENTIFIER_6_CREATOR_1_AFFIL)
+            .affiliationIdentifier(IDENTIFIER_6_CREATOR_1_AFFIL_ROR)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_6_CREATOR_1_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(null) /* <<<< */
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ISNI) /* <<<< */
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
+            .id(IDENTIFIER_6_CREATOR_1_ID)
+            .firstname(IDENTIFIER_6_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_1_NAME)
+            .nameIdentifier(null) // <<<
+            .affiliation(IDENTIFIER_6_CREATOR_1_AFFIL)
+            .affiliationIdentifier(IDENTIFIER_6_CREATOR_1_AFFIL_ROR)
             .build();
 
     public final static UUID IDENTIFIER_6_CREATOR_2_ID = UUID.fromString("eeae78cb-75a1-42e2-b608-7082e5fbecc6");
+    public final static Integer IDENTIFIER_6_CREATOR_2_ORD_POS = 1;
+    public final static String IDENTIFIER_6_CREATOR_2_FIRSTNAME = "Martina";
+    public final static String IDENTIFIER_6_CREATOR_2_LASTNAME = "Mustermann";
+    public final static String IDENTIFIER_6_CREATOR_2_NAME = IDENTIFIER_5_CREATOR_2_LASTNAME + ", " + IDENTIFIER_5_CREATOR_2_FIRSTNAME;
+    public final static String IDENTIFIER_6_CREATOR_2_AFFIL = "TU Wien";
+    public final static AffiliationIdentifierSchemeType IDENTIFIER_6_CREATOR_2_AFFIL_SCHEME = AffiliationIdentifierSchemeType.ROR;
+    public final static String IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
+    public final static NameIdentifierSchemeType IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
+    public final static NameIdentifierSchemeTypeDto IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static String IDENTIFIER_6_CREATOR_2_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_6_CREATOR_2 = Creator.builder()
             .id(IDENTIFIER_6_CREATOR_2_ID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .creatorName(CREATOR_2_NAME)
-            .nameIdentifier(CREATOR_2_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
-            .affiliation(CREATOR_2_AFFIL)
+            .firstname(IDENTIFIER_6_CREATOR_2_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_2_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_2_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_6_CREATOR_2_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_6_CREATOR_2_AFFIL)
             .build();
 
     public final CreatorDto IDENTIFIER_6_CREATOR_2_DTO = CreatorDto.builder()
             .id(IDENTIFIER_6_CREATOR_2_ID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .creatorName(CREATOR_2_NAME)
-            .nameIdentifier(CREATOR_2_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_2_AFFIL)
+            .firstname(IDENTIFIER_6_CREATOR_2_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_2_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_2_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_6_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_6_CREATOR_2_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_6_CREATOR_2_AFFIL)
             .build();
 
     public final static UUID IDENTIFIER_6_CREATOR_3_ID = UUID.fromString("700058f1-6314-4cd1-9c0c-62e75c8f422b");
+    public final static Integer IDENTIFIER_6_CREATOR_3_ORD_POS = 2;
+    public final static String IDENTIFIER_6_CREATOR_3_FIRSTNAME = "Martina";
+    public final static String IDENTIFIER_6_CREATOR_3_LASTNAME = "Mustermann";
+    public final static String IDENTIFIER_6_CREATOR_3_NAME = IDENTIFIER_5_CREATOR_2_LASTNAME + ", " + IDENTIFIER_5_CREATOR_2_FIRSTNAME;
+    public final static String IDENTIFIER_6_CREATOR_3_AFFIL = "TU Wien";
+    public final static AffiliationIdentifierSchemeType IDENTIFIER_6_CREATOR_3_AFFIL_SCHEME = AffiliationIdentifierSchemeType.ROR;
+    public final static String IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
+    public final static NameIdentifierSchemeType IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
+    public final static NameIdentifierSchemeTypeDto IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static String IDENTIFIER_6_CREATOR_3_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
+    public final static String IDENTIFIER_6_CREATOR_3_AFFIL_ROR = "https://ror.org/04wn28048";
+    public final static String IDENTIFIER_6_CREATOR_3_AFFIL_URI = "https://ror.org/";
+    public final static AffiliationIdentifierSchemeType IDENTIFIER_6_CREATOR_3_AFFIL_SCHEME_TYPE = AffiliationIdentifierSchemeType.ROR;
+    public final static AffiliationIdentifierSchemeTypeDto IDENTIFIER_6_CREATOR_3_AFFIL_SCHEME_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
 
     public final Creator IDENTIFIER_6_CREATOR_3 = Creator.builder()
             .id(IDENTIFIER_6_CREATOR_3_ID)
-            .firstname(CREATOR_3_FIRSTNAME)
-            .lastname(CREATOR_3_LASTNAME)
-            .creatorName(CREATOR_3_NAME)
-            .nameIdentifier(CREATOR_3_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
-            .affiliation(CREATOR_3_AFFIL)
-            .affiliationIdentifier(CREATOR_3_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_3_AFFIL_SCHEME_TYPE)
-            .affiliationIdentifierSchemeUri(CREATOR_3_AFFIL_URI)
+            .firstname(IDENTIFIER_6_CREATOR_3_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_3_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_3_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER_SCHEMA_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_6_CREATOR_3_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_6_CREATOR_3_AFFIL)
+            .affiliationIdentifier(IDENTIFIER_6_CREATOR_3_AFFIL_ROR)
+            .affiliationIdentifierScheme(IDENTIFIER_6_CREATOR_3_AFFIL_SCHEME_TYPE)
+            .affiliationIdentifierSchemeUri(IDENTIFIER_6_CREATOR_3_AFFIL_URI)
             .build();
 
     public final CreatorDto IDENTIFIER_6_CREATOR_3_DTO = CreatorDto.builder()
             .id(IDENTIFIER_6_CREATOR_3_ID)
-            .firstname(CREATOR_3_FIRSTNAME)
-            .lastname(CREATOR_3_LASTNAME)
-            .creatorName(CREATOR_3_NAME)
-            .nameIdentifier(CREATOR_3_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_3_AFFIL)
-            .affiliationIdentifier(CREATOR_3_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_3_AFFIL_SCHEME_TYPE_DTO)
-            .affiliationIdentifierSchemeUri(CREATOR_3_AFFIL_URI)
+            .firstname(IDENTIFIER_6_CREATOR_3_FIRSTNAME)
+            .lastname(IDENTIFIER_6_CREATOR_3_LASTNAME)
+            .creatorName(IDENTIFIER_6_CREATOR_3_NAME)
+            .nameIdentifier(IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER)
+            .nameIdentifierScheme(IDENTIFIER_6_CREATOR_3_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_6_CREATOR_3_IDENTIFIER_SCHEME_URI)
+            .affiliation(IDENTIFIER_6_CREATOR_3_AFFIL)
+            .affiliationIdentifier(IDENTIFIER_6_CREATOR_3_AFFIL_ROR)
+            .affiliationIdentifierScheme(IDENTIFIER_6_CREATOR_3_AFFIL_SCHEME_TYPE_DTO)
+            .affiliationIdentifierSchemeUri(IDENTIFIER_6_CREATOR_3_AFFIL_URI)
             .build();
 
     public final Identifier IDENTIFIER_6 = Identifier.builder()
@@ -6743,6 +7054,7 @@ public class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1, IDENTIFIER_6_CREATOR_2, IDENTIFIER_6_CREATOR_3)))
             .status(IDENTIFIER_6_STATUS_TYPE)
+            .funders(new LinkedList<>())
             .build();
 
     public final IdentifierDto IDENTIFIER_6_DTO = IdentifierDto.builder()
@@ -6770,6 +7082,8 @@ public class BaseTest {
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE_DTO)
             .owner(USER_3_BRIEF_DTO)
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1_DTO, IDENTIFIER_6_CREATOR_2_DTO, IDENTIFIER_6_CREATOR_3_DTO)))
             .status(IDENTIFIER_6_STATUS_TYPE_DTO)
@@ -6834,14 +7148,18 @@ public class BaseTest {
             .build();
 
     public final static UUID IDENTIFIER_7_CREATOR_1_ID = UUID.fromString("b899c367-06c7-4f47-8aea-5f15061ee3ee");
+    public final static Integer IDENTIFIER_7_CREATOR_1_ORD_POS = 0;
+    public final static String IDENTIFIER_7_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_7_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_7_CREATOR_1_ID)
+            .ordinalPosition(IDENTIFIER_7_CREATOR_1_ORD_POS)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
             .nameIdentifier(CREATOR_1_ORCID)
             .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
+            .nameIdentifierSchemeUri(IDENTIFIER_7_CREATOR_1_IDENTIFIER_SCHEME_URI)
             .affiliation(CREATOR_1_AFFIL)
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE)
@@ -6855,6 +7173,7 @@ public class BaseTest {
             .creatorName(CREATOR_1_NAME)
             .nameIdentifier(CREATOR_1_ORCID)
             .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
+            .nameIdentifierSchemeUri(IDENTIFIER_7_CREATOR_1_IDENTIFIER_SCHEME_URI)
             .affiliation(CREATOR_1_AFFIL)
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
@@ -6892,7 +7211,6 @@ public class BaseTest {
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
             .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
             .affiliation(CREATOR_1_AFFIL)
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
@@ -6909,6 +7227,7 @@ public class BaseTest {
             .descriptions(new LinkedList<>())
             .titles(new LinkedList<>())
             .relatedIdentifiers(new LinkedList<>())
+            .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1_CREATE_DTO)))
@@ -6922,7 +7241,7 @@ public class BaseTest {
     public final static String IDENTIFIER_2_DOI = null;
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1651588352L);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1551588352L);
-    public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1551588352L);
+    public final static Instant IDENTIFIER_2_EXECUTION = QUERY_1_EXECUTION;
     public final static Integer IDENTIFIER_2_PUBLICATION_DAY = 10;
     public final static Integer IDENTIFIER_2_PUBLICATION_MONTH = 7;
     public final static Integer IDENTIFIER_2_PUBLICATION_YEAR = 2023;
@@ -6934,8 +7253,8 @@ public class BaseTest {
     public final static String IDENTIFIER_2_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static IdentifierStatusType IDENTIFIER_2_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_2_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public final static IdentifierStatusType IDENTIFIER_2_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public final static IdentifierStatusTypeDto IDENTIFIER_2_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
 
     public final CreateIdentifierDto IDENTIFIER_2_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(DATABASE_1_ID)
@@ -6970,6 +7289,8 @@ public class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>())
             .status(IDENTIFIER_2_STATUS_TYPE)
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .build();
 
     public final IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
@@ -6996,6 +7317,8 @@ public class BaseTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .owner(USER_1_BRIEF_DTO)
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>())
             .status(IDENTIFIER_2_STATUS_TYPE_DTO)
@@ -7020,12 +7343,15 @@ public class BaseTest {
             .descriptions(new LinkedList<>())
             .titles(new LinkedList<>())
             .relatedIdentifiers(new LinkedList<>())
+            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
             .creators(new LinkedList<>())
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .queryId(QUERY_1_ID)
             .build();
 
@@ -7045,8 +7371,8 @@ public class BaseTest {
     public final static String IDENTIFIER_3_PUBLISHER = "Polish Government";
     public final static IdentifierType IDENTIFIER_3_TYPE = IdentifierType.VIEW;
     public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.VIEW;
-    public final static IdentifierStatusType IDENTIFIER_3_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_3_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public final static IdentifierStatusType IDENTIFIER_3_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public final static IdentifierStatusTypeDto IDENTIFIER_3_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
 
     public final Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
@@ -7072,6 +7398,8 @@ public class BaseTest {
             .ownedBy(USER_1_ID)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>())
+            .funders(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
             .status(IDENTIFIER_3_STATUS_TYPE)
             .build();
 
@@ -7099,6 +7427,8 @@ public class BaseTest {
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
             .owner(USER_1_BRIEF_DTO)
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>())
             .status(IDENTIFIER_3_STATUS_TYPE_DTO)
@@ -7131,12 +7461,49 @@ public class BaseTest {
             .descriptions(new LinkedList<>())
             .titles(new LinkedList<>())
             .relatedIdentifiers(new LinkedList<>())
+            .publicationDay(IDENTIFIER_3_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
             .creators(new LinkedList<>())
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .funders(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
+            .build();
+
+    public final static UUID IDENTIFIER_4_CREATOR_1_ID = UUID.fromString("adbfe9ac-0a6d-492f-9782-8915d0bdc76f");
+    public final static Integer IDENTIFIER_4_CREATOR_1_ORD_POS = 0;
+    public final static String IDENTIFIER_4_CREATOR_1_NAME = CREATOR_4_NAME;
+    public final static NameType IDENTIFIER_4_CREATOR_1_NAME_TYPE = NameType.PERSONAL;
+    public final static NameTypeDto IDENTIFIER_4_CREATOR_1_NAME_TYPE_DTO = NameTypeDto.PERSONAL;
+
+    public final Creator IDENTIFIER_4_CREATOR_1 = Creator.builder()
+            .id(IDENTIFIER_4_CREATOR_1_ID)
+            .ordinalPosition(IDENTIFIER_4_CREATOR_1_ORD_POS)
+            .creatorName(IDENTIFIER_4_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_4_CREATOR_1_NAME_TYPE)
+            .build();
+
+    public final CreatorDto IDENTIFIER_4_CREATOR_1_DTO = CreatorDto.builder()
+            .id(IDENTIFIER_4_CREATOR_1_ID)
+            .creatorName(IDENTIFIER_4_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_4_CREATOR_1_NAME_TYPE_DTO)
+            .build();
+
+    public final static UUID IDENTIFIER_4_TITLE_1_ID = UUID.fromString("7409c03c-35ab-4e19-9876-88967ef37024");
+    public final static String IDENTIFIER_4_TITLE_1_TITLE = "Austrian weather data";
+    public final static Integer IDENTIFIER_4_TITLE_1_ORD_POS = 0;
+
+    public final IdentifierTitle IDENTIFIER_4_TITLE_1 = IdentifierTitle.builder()
+            .id(IDENTIFIER_4_TITLE_1_ID)
+            .ordinalPosition(IDENTIFIER_4_TITLE_1_ORD_POS)
+            .title(IDENTIFIER_4_TITLE_1_TITLE)
+            .build();
+
+    public final IdentifierTitleDto IDENTIFIER_4_TITLE_1_DTO = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_4_TITLE_1_ID)
+            .title(IDENTIFIER_4_TITLE_1_TITLE)
             .build();
 
     public final static UUID IDENTIFIER_4_ID = UUID.fromString("3bd69bb8-f7e3-48e4-9717-823787e7ba23");
@@ -7159,7 +7526,7 @@ public class BaseTest {
             .id(IDENTIFIER_4_ID)
             .tableId(TABLE_1_ID)
             .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .titles(new LinkedList<>(List.of(IDENTIFIER_4_TITLE_1)))
             .doi(IDENTIFIER_4_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_4_CREATED)
@@ -7168,15 +7535,15 @@ public class BaseTest {
             .publicationDay(IDENTIFIER_4_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_4_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
-            .resultHash(IDENTIFIER_4_RESULT_HASH)
-            .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
             .owner(USER_1)
             .ownedBy(USER_1_ID)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_4_CREATOR_1)))
             .status(IDENTIFIER_4_STATUS_TYPE)
+            .funders(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
             .build();
 
     public final IdentifierDto IDENTIFIER_4_DTO = IdentifierDto.builder()
@@ -7189,7 +7556,7 @@ public class BaseTest {
                     .data("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID + "/data")
                     .build())
             .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .titles(new LinkedList<>(List.of(IDENTIFIER_4_TITLE_1_DTO)))
             .doi(IDENTIFIER_4_DOI)
             .execution(IDENTIFIER_4_EXECUTION)
             .publicationDay(IDENTIFIER_4_PUBLICATION_DAY)
@@ -7201,7 +7568,9 @@ public class BaseTest {
             .type(IDENTIFIER_4_TYPE_DTO)
             .owner(USER_1_BRIEF_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_4_CREATOR_1_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
             .status(IDENTIFIER_4_STATUS_TYPE_DTO)
             .build();
 
@@ -7209,7 +7578,7 @@ public class BaseTest {
             .id(IDENTIFIER_4_ID)
             .databaseId(DATABASE_1_ID)
             .tableId(TABLE_1_ID)
-            .titles(new LinkedList<>())
+            .titles(new LinkedList<>(List.of(IDENTIFIER_4_TITLE_1_DTO)))
             .doi(IDENTIFIER_4_DOI)
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_4_PUBLISHER)
@@ -8287,6 +8656,7 @@ public class BaseTest {
             .id(QUERY_1_ID)
             .databaseId(DATABASE_1_ID)
             .query(QUERY_1_STATEMENT)
+            .queryNormalized(QUERY_1_STATEMENT_NORMALIZED)
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .execution(QUERY_1_EXECUTION)
@@ -8366,8 +8736,10 @@ public class BaseTest {
 
     public BaseTest() {
         IMAGE_1_DTO.setOperators(IMAGE_1_OPERATORS_DTO);
+        IMAGE_1_DTO.setDataTypes(IMAGE_1_DATA_TYPES_DTO);
         CONTAINER_1_DTO.setImage(IMAGE_1_DTO);
         IMAGE_1.setOperators(new LinkedList<>(IMAGE_1_OPERATORS));
+        IMAGE_1.setDataTypes(new LinkedList<>(IMAGE_1_DATA_TYPES));
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
         CONTAINER_4.setDatabases(new LinkedList<>(List.of(DATABASE_4)));
         /* DATABASE 1 */
@@ -8417,6 +8789,11 @@ public class BaseTest {
         VIEW_3.setDatabase(DATABASE_1);
         VIEW_3.setColumns(new LinkedList<>(VIEW_3_COLUMNS));
         IDENTIFIER_1.setDatabase(DATABASE_1);
+        IDENTIFIER_1_CREATOR_1.setIdentifier(IDENTIFIER_1);
+        IDENTIFIER_1_TITLE_1.setIdentifier(IDENTIFIER_1);
+        IDENTIFIER_1_TITLE_2.setIdentifier(IDENTIFIER_1);
+        IDENTIFIER_1_DESCRIPTION_1.setIdentifier(IDENTIFIER_1);
+        IDENTIFIER_1_FUNDER_1.setIdentifier(IDENTIFIER_1);
         IDENTIFIER_2.setDatabase(DATABASE_1);
         IDENTIFIER_3.setDatabase(DATABASE_1);
         IDENTIFIER_4.setDatabase(DATABASE_1);
@@ -8453,6 +8830,10 @@ public class BaseTest {
         TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(1).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_1_DTO);
         VIEW_4.setDatabase(DATABASE_2);
         IDENTIFIER_5.setDatabase(DATABASE_2);
+        IDENTIFIER_5_CREATOR_1.setIdentifier(IDENTIFIER_5);
+        IDENTIFIER_5_CREATOR_2.setIdentifier(IDENTIFIER_5);
+        IDENTIFIER_5_TITLE_1.setIdentifier(IDENTIFIER_5);
+        IDENTIFIER_5_DESCRIPTION_1.setIdentifier(IDENTIFIER_5);
         /* DATABASE 3 */
         DATABASE_3.setTables(new LinkedList<>(List.of(TABLE_8)));
         DATABASE_3.setViews(new LinkedList<>(List.of(VIEW_5)));
@@ -8489,6 +8870,7 @@ public class BaseTest {
         TABLE_9_DTO.setConstraints(TABLE_9_CONSTRAINTS_DTO);
         IDENTIFIER_7.setStatus(IdentifierStatusType.DRAFT);
         IDENTIFIER_7.setDatabase(DATABASE_4);
+        IDENTIFIER_7_CREATOR_1.setIdentifier(IDENTIFIER_7);
     }
 
 }

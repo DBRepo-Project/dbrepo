@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,23 +93,23 @@ public class Database implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='DATABASE'")
     @OrderBy("created DESC")
-    private List<Identifier> identifiers;
+    private List<Identifier> identifiers = new LinkedList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='SUBSET'")
     @OrderBy("created DESC")
-    private List<Identifier> subsets;
+    private List<Identifier> subsets = new LinkedList<>();
 
     @OrderBy("created DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
-    private List<at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table> tables;
+    private List<at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table> tables = new LinkedList<>();
 
     @OrderBy("created DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
-    private List<View> views;
+    private List<View> views = new LinkedList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
-    private List<DatabaseAccess> accesses;
+    private List<DatabaseAccess> accesses = new LinkedList<>();
 
     @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isPublic;

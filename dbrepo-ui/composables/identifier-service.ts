@@ -169,10 +169,8 @@ export const useIdentifierService = (): any => {
           creator_name: c.creator_name,
           name_type: c.name_type,
           name_identifier: c.name_identifier,
-          name_identifier_scheme: identifierToIdentifierScheme(c.name_identifier),
           affiliation: c.affiliation,
           affiliation_identifier: c.affiliation_identifier,
-          affiliation_identifier_scheme: identifierToIdentifierScheme(c.affiliation_identifier)
         }
       }),
       publication_day: data.publication_day,

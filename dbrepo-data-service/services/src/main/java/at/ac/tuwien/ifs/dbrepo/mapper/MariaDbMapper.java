@@ -105,13 +105,13 @@ public interface MariaDbMapper {
     }
 
     default String databaseCreateUserQuery() {
-        final String statement = "CREATE USER IF NOT EXISTS `?`@`%` IDENTIFIED BY PASSWORD '?';";
+        final String statement = "CREATE USER IF NOT EXISTS ?@`%` IDENTIFIED BY PASSWORD ?;";
         log.trace("mapped create user query: {}", statement);
         return statement;
     }
 
     default String databaseCreateUserRawQuery() {
-        final String statement = "CREATE USER IF NOT EXISTS `?`@`%` IDENTIFIED BY '?';";
+        final String statement = "CREATE USER IF NOT EXISTS ?@`%` IDENTIFIED BY ?;";
         log.trace("mapped create user raw query: {}", statement);
         return statement;
     }
@@ -188,7 +188,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateInternalStoreQueryProcedureRawQuery() {
-        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
+        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query_normalized, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
         log.trace("mapped create query store _store_query procedure statement: {}", statement);
         return statement;
     }
@@ -264,8 +264,14 @@ public interface MariaDbMapper {
         return statement;
     }
 
-    default String viewCreateRawQuery() {
-        final String statement = "CREATE VIEW IF NOT EXISTS `?` AS (?)";
+    /**
+     * Creates a view with given name from a provided query statement. Currently, preparing statements for database name and table name are not supported by the driver.
+     * @param viewName The view name.
+     * @param query The query statement.
+     * @return The raw query statement to create the view.
+     */
+    default String viewCreateRawQuery(String viewName, String query) {
+        final String statement = "CREATE VIEW IF NOT EXISTS `" + viewName + "` AS (" + query + ")";
         log.trace("mapped create view statement: {}", statement);
         return statement;
     }
@@ -367,11 +373,17 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tableNameToUpdateTableRawQuery(String databaseName, String internalName) {
+    /**
+     * Updates a table comment as raw query statement. Currently, preparing statements for database name and table name are not supported by the driver.
+     * @param databaseName The database name.
+     * @param tableName The table name.
+     * @return The raw query statement.
+     */
+    default String tableNameToUpdateTableRawQuery(String databaseName, String tableName) {
         final StringBuilder stringBuilder = new StringBuilder("ALTER TABLE `")
                 .append(databaseName)
                 .append("`.`")
-                .append(internalName)
+                .append(tableName)
                 .append("` COMMENT = ?;");
         log.trace("mapped update table statement: {}", stringBuilder);
         return stringBuilder.toString();
@@ -556,6 +568,14 @@ public interface MariaDbMapper {
         return dropTableRawQuery(databaseName, tableName, true);
     }
 
+
+    /**
+     * Map the table delete query as raw query. Currently, preparing statements for database name and table name are not supported by the driver.
+     * @param databaseName The database name.
+     * @param tableName The table name.
+     * @param force If true, force the deletion and throw an error if the table does not exists, otherwise ignore errors.
+     * @return The raw query statement.
+     */
     default String dropTableRawQuery(String databaseName, String tableName, Boolean force) {
         final StringBuilder statement = new StringBuilder("DROP TABLE ");
         if (!force) {
@@ -866,7 +886,7 @@ public interface MariaDbMapper {
             throw new QueryStoreInsertException("Not a select query: " + query);
         }
         /* query check (this is enforced by the db also) */
-        final Pattern pattern = Pattern.compile("[fF][rR][oO][mM] ([^ ]+ )");
+        final Pattern pattern = Pattern.compile("[fF][rR][oO][mM] ([^ ]+)");
         final Matcher matcher = pattern.matcher(query);
         if (!matcher.find()) {
             log.atError()
@@ -878,9 +898,9 @@ public interface MariaDbMapper {
         final String group = matcher.group(1);
         final int idx = query.indexOf(group);
         final StringBuilder statement = new StringBuilder(query.substring(0, idx + group.length()));
-        statement.append("FOR SYSTEM_TIME AS OF TIMESTAMP '")
+        statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
                 .append(mariaDbFormatter.format(timestamp))
-                .append("' ")
+                .append("'")
                 .append(query.substring(idx + group.length()));
         log.trace("mapped normalized query: {}", statement);
         return statement.toString();

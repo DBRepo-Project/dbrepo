@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,13 +46,13 @@ public class IdentifierBriefDto {
     private IdentifierTypeDto type;
 
     @NotNull
-    private List<CreatorBriefDto> creators;
+    private List<CreatorBriefDto> creators = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierTitleDto> titles;
+    private List<IdentifierTitleDto> titles = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierDescriptionDto> descriptions;
+    private List<IdentifierDescriptionDto> descriptions = new LinkedList<>();
 
     @Schema(example = "10.1038/nphys1170")
     private String doi;

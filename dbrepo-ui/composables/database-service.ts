@@ -1,6 +1,22 @@
 import {axiosErrorToApiError} from '@/utils'
 
 export const useDatabaseService = (): any => {
+  async function determineSchema (databaseId: string, s3key: string): Promise<SchemaAnalysisResultDto> {
+    const axios = useAxiosInstance()
+    console.debug(`suggest data types for dataset: ${s3key}`)
+    return new Promise<SchemaAnalysisResultDto>((resolve, reject) => {
+      axios.get<SchemaAnalysisResultDto>(`/api/database/${databaseId}/analyse/schema/${s3key}`)
+        .then((response) => {
+          console.info('Determined schema for dataset')
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to determine schema for dataset', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
   async function findAll(): Promise<DatabaseDto[]> {
     const axios = useAxiosInstance();
     console.debug('find databases');
@@ -218,6 +234,7 @@ export const useDatabaseService = (): any => {
   }
 
   return {
+    determineSchema,
     findAll,
     refreshTablesMetadata,
     refreshViewsMetadata,

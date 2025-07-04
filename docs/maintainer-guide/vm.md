@@ -13,8 +13,8 @@ author: Martin Weise
 Download the KVM configuration and virtual disk:
 
 ```shell
-curl -sSL -o kvm.xml https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9.3/kvm.xml && \
-curl -sSL https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9.3/dbrepo.qcow2.tar.gz | tar xzf -
+curl -sSL -o kvm.xml https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/1.9.3/kvm.xml && \
+curl -sSL https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/1.9.3/dbrepo.qcow2.tar.gz | tar xzf -
 ```
 
 Then start DBRepo and visit [`http://localhost`](http://localhost) in the VM browser:

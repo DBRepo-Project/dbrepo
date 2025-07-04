@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,7 +59,7 @@ public class ContainerImage {
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
-    private List<Container> containers;
+    private List<Container> containers = new LinkedList<>();
 
     @EqualsAndHashCode.Exclude
     @CreatedDate
@@ -73,11 +74,11 @@ public class ContainerImage {
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")
-    private List<DataType> dataTypes;
+    private List<DataType> dataTypes = new LinkedList<>();
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")
-    private List<Operator> operators;
+    private List<Operator> operators = new LinkedList<>();
 
     @PrePersist
     public void prePersist() {

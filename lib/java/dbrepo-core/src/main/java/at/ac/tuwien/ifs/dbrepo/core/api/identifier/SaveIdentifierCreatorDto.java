@@ -42,19 +42,11 @@ public class SaveIdentifierCreatorDto {
     @Schema(example = "0000-0002-1825-0097")
     private String nameIdentifier;
 
-    @JsonProperty("name_identifier_scheme")
-    @Schema(example = "ORCID")
-    private NameIdentifierSchemeTypeDto nameIdentifierScheme;
-
     @Schema(example = "Wesleyan University")
     private String affiliation;
 
     @JsonProperty("affiliation_identifier")
     @Schema(example = "https://ror.org/04d836q62")
     private String affiliationIdentifier;
-
-    @JsonProperty("affiliation_identifier_scheme")
-    @Schema(example = "ROR")
-    private AffiliationIdentifierSchemeTypeDto affiliationIdentifierScheme;
 
 }

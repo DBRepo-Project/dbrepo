@@ -396,12 +396,12 @@ public class SubsetEndpoint extends RestEndpoint {
                         .build();
             }
             subset.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
-            final String query = mariaDbMapper.paginateSubset(subset.getQuery(),
+            final String query = mariaDbMapper.paginateSubset(subset.getQueryNormalized(),
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
             final String viewName = subset.getQueryHash();
-            databaseService.createView(database, viewName, subset.getQuery());
+            databaseService.createView(database, viewName, subset.getQueryNormalized());
             final ViewDto view = databaseService.inspectView(database, viewName);
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));

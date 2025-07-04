@@ -8,13 +8,12 @@ variables:
   PYTHON_VERSION: "3.11"
   JAVA_VERSION: "17"
   NODE_VERSION: "18"
-  SONARQUBE_VERSION: "10.0"
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
-  DOC_VERSION: "1.9"
+  DOC_VERSION: "1.10"
   APP_VERSION: "1.10.0"
   CHART_VERSION: "1.10.0"
-  SUPPORTED_VERSIONS: "1.8.0, 1.8.1, 1.8.2, 1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.10.0"
+  SUPPORTED_VERSIONS: "1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.10.0"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
@@ -86,7 +85,7 @@ lint-docker-compose:
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
     - "diff ./.env ./.docker/.env"
 
-lint-helm-chart:
+lint-helm-schema:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   variables:
@@ -130,37 +129,42 @@ lint-helm-readme:
       - ./helm/dbrepo/README.md
     expire_in: 1 days
 
+lint-java-lib:
+  image: docker.io/maven:3-openjdk-${JAVA_VERSION}
+  stage: lint
+  script:
+    - mvn -f ./lib/java/dbrepo-core/pom.xml dependency:analyze
+
+lint-data-service:
+  image: docker.io/maven:3-openjdk-${JAVA_VERSION}
+  stage: lint
+  script:
+    - mvn -f ./dbrepo-data-service/pom.xml dependency:analyze
+
+lint-metadata-service:
+  image: docker.io/maven:3-openjdk-${JAVA_VERSION}
+  stage: lint
+  script:
+    - mvn -f ./dbrepo-metadata-service/pom.xml dependency:analyze
+
 lint-helm-files:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   script:
-    - diff dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
-
-lint-open-api-version:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: lint
-  variables:
-    VERSION: 4.45.1
-    BINARY: yq_linux_amd64
-  before_script:
-    - echo "${DOC_VERSION}" > ./doc-version.txt
-    - echo "${APP_VERSION}" > ./app-version.txt
-    - 'apk add --no-cache bash wget'
-    - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
-  script:
-    - yq '.externalDocs.url' ./docs/.openapi/api.base.yaml | grep -o "${DOC_VERSION}" > ./openapi-doc-version.txt
-    - diff ./openapi-doc-version.txt ./doc-version.txt
-    - yq '.info.version' ./docs/.openapi/api.base.yaml | grep -o "${APP_VERSION}" > ./openapi-app-version.txt
-    - diff ./openapi-app-version.txt ./app-version.txt
+    - diff ./dbrepo-metadata-db/1_setup-schema.sql ./helm/dbrepo/files/01-setup-schema.sql
 
 build-metadata-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
+  image: docker.io/maven:3-openjdk-${JAVA_VERSION}
   stage: build
   only:
     - merge_requests
     - master
   needs:
     - build-java-lib
+    - lint-metadata-service
+  dependencies:
+    - build-java-lib
+    - lint-metadata-service
   before_script:
     - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
@@ -195,6 +199,10 @@ build-java-lib:
   only:
     - merge_requests
     - master
+  needs:
+    - lint-java-lib
+  dependencies:
+    - lint-java-lib
   script:
     - "mvn -f ./lib/java/dbrepo-core/pom.xml clean package install $MAVEN_OPTS -DskipTests"
   artifacts:
@@ -211,8 +219,10 @@ build-data-service:
     - master
   needs:
     - build-java-lib
+    - lint-data-service
   dependencies:
     - build-java-lib
+    - lint-data-service
   before_script:
     - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
@@ -279,7 +289,6 @@ build-helm:
   only:
     - merge_requests
     - tags
-    - /^release-.*/
   before_script:
     - apk add --no-cache helm make
     - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
@@ -511,8 +520,10 @@ clean-images:
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
+  only:
+    - tags
   variables:
-    REPOSITORY_URL: $CI_REGISTRY2_URL
+    REPOSITORY_URL: "$CI_REGISTRY2_URL"
   dependencies:
     - clean-images
     - test-auth-service-init
@@ -521,8 +532,6 @@ release-images:
     - test-metadata-service
     - test-search-service
     - test-ui
-  only:
-    - tags
   before_script:
     - "apk add --no-cache make maven openjdk17-jdk"
     - "docker logout ${CI_REGISTRY_URL}"
@@ -554,6 +563,8 @@ release-helm:
     - echo "$CI_GPG_PUBRING" | base64 -d > ~/pubring.gpg
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
+    - sed -r "s/^(version:\s*).*/\1\"${APP_VERSION}\"/" -i ./helm/dbrepo/Chart.yaml
+    - sed -r "s/^(appVersion:\s*).*/\1\"${APP_VERSION}\"/" -i ./helm/dbrepo/Chart.yaml
     - make build-helm
     - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"

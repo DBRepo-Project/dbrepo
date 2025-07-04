@@ -295,39 +295,6 @@
                 "extraPlugins": {
                     "type": "string"
                 },
-                "extraVolumeMounts": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mountPath": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
-                "extraVolumes": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "configMap": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
                 "fullnameOverride": {
                     "type": "string"
                 },
@@ -442,151 +409,7 @@
                     }
                 },
                 "sidecars": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "image": {
-                                "type": "string"
-                            },
-                            "imagePullPolicy": {
-                                "type": "string"
-                            },
-                            "livenessProbe": {
-                                "type": "object",
-                                "properties": {
-                                    "httpGet": {
-                                        "type": "object",
-                                        "properties": {
-                                            "port": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    },
-                                    "initialDelaySeconds": {
-                                        "type": "integer"
-                                    },
-                                    "periodSeconds": {
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "readinessProbe": {
-                                "type": "object",
-                                "properties": {
-                                    "httpGet": {
-                                        "type": "object",
-                                        "properties": {
-                                            "port": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    },
-                                    "initialDelaySeconds": {
-                                        "type": "integer"
-                                    },
-                                    "periodSeconds": {
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "resources": {
-                                "type": "object",
-                                "properties": {
-                                    "limits": {
-                                        "type": "object",
-                                        "properties": {
-                                            "cpu": {
-                                                "type": "string"
-                                            },
-                                            "ephemeral-storage": {
-                                                "type": "string"
-                                            },
-                                            "memory": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
-                                    "requests": {
-                                        "type": "object",
-                                        "properties": {
-                                            "cpu": {
-                                                "type": "string"
-                                            },
-                                            "ephemeral-storage": {
-                                                "type": "string"
-                                            },
-                                            "memory": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "securityContext": {
-                                "type": "object",
-                                "properties": {
-                                    "allowPrivilegeEscalation": {
-                                        "type": "boolean"
-                                    },
-                                    "capabilities": {
-                                        "type": "object",
-                                        "properties": {
-                                            "drop": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    },
-                                    "readOnlyRootFilesystem": {
-                                        "type": "boolean"
-                                    },
-                                    "runAsGroup": {
-                                        "type": "integer"
-                                    },
-                                    "runAsNonRoot": {
-                                        "type": "boolean"
-                                    },
-                                    "runAsUser": {
-                                        "type": "integer"
-                                    },
-                                    "seLinuxOptions": {
-                                        "type": "object"
-                                    },
-                                    "seccompProfile": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "volumeMounts": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "mountPath": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "subPath": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    "type": "array"
                 },
                 "virtualHost": {
                     "type": "string"
@@ -854,6 +677,9 @@
         "datadb": {
             "type": "object",
             "properties": {
+                "configurationConfigMap": {
+                    "type": "string"
+                },
                 "db": {
                     "type": "object",
                     "properties": {
@@ -915,17 +741,6 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
-                        }
-                    }
-                },
-                "readonlyUser": {
-                    "type": "object",
-                    "properties": {
-                        "password": {
-                            "type": "string"
-                        },
-                        "user": {
-                            "type": "string"
                         }
                     }
                 },
@@ -1117,39 +932,6 @@
                 "existingServerBlockConfigmap": {
                     "type": "string"
                 },
-                "extraVolumeMounts": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mountPath": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
-                "extraVolumes": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "configMap": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
                 "fullnameOverride": {
                     "type": "string"
                 },
@@ -1173,151 +955,7 @@
                     }
                 },
                 "sidecars": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "image": {
-                                "type": "string"
-                            },
-                            "imagePullPolicy": {
-                                "type": "string"
-                            },
-                            "livenessProbe": {
-                                "type": "object",
-                                "properties": {
-                                    "httpGet": {
-                                        "type": "object",
-                                        "properties": {
-                                            "port": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    },
-                                    "initialDelaySeconds": {
-                                        "type": "integer"
-                                    },
-                                    "periodSeconds": {
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "readinessProbe": {
-                                "type": "object",
-                                "properties": {
-                                    "httpGet": {
-                                        "type": "object",
-                                        "properties": {
-                                            "port": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    },
-                                    "initialDelaySeconds": {
-                                        "type": "integer"
-                                    },
-                                    "periodSeconds": {
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "resources": {
-                                "type": "object",
-                                "properties": {
-                                    "limits": {
-                                        "type": "object",
-                                        "properties": {
-                                            "cpu": {
-                                                "type": "string"
-                                            },
-                                            "ephemeral-storage": {
-                                                "type": "string"
-                                            },
-                                            "memory": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
-                                    "requests": {
-                                        "type": "object",
-                                        "properties": {
-                                            "cpu": {
-                                                "type": "string"
-                                            },
-                                            "ephemeral-storage": {
-                                                "type": "string"
-                                            },
-                                            "memory": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "securityContext": {
-                                "type": "object",
-                                "properties": {
-                                    "allowPrivilegeEscalation": {
-                                        "type": "boolean"
-                                    },
-                                    "capabilities": {
-                                        "type": "object",
-                                        "properties": {
-                                            "drop": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    },
-                                    "readOnlyRootFilesystem": {
-                                        "type": "boolean"
-                                    },
-                                    "runAsGroup": {
-                                        "type": "integer"
-                                    },
-                                    "runAsNonRoot": {
-                                        "type": "boolean"
-                                    },
-                                    "runAsUser": {
-                                        "type": "integer"
-                                    },
-                                    "seLinuxOptions": {
-                                        "type": "object"
-                                    },
-                                    "seccompProfile": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "volumeMounts": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "mountPath": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "subPath": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    "type": "array"
                 }
             }
         },

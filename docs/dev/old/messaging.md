@@ -5,7 +5,7 @@ author: Martin Weise
 We use the message broker RabbitMQ and a single exchange with distributed (`quorum`) queue. Both are named `dbrepo`.
 
 <figure markdown>
-<img src="/infrastructures/dbrepo/images/exchange-binding.png" />
+<img src="/infrastructures/dbrepo/1.10/images/exchange-binding.png" />
 </figure>
 
 ## Tuple

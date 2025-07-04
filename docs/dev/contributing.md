@@ -42,7 +42,7 @@ smells.
 ### Branching Strategy
 
 <figure markdown>
-![Branching strategy from the master-dev-feature branches and release branches](/infrastructures/dbrepo/images/branching-strategy.svg)
+![Branching strategy from the master-dev-feature branches and release branches](/infrastructures/dbrepo/1.10/images/branching-strategy.svg)
 </figure>
 
 ### CI/CD
@@ -51,7 +51,7 @@ We get compute resources in-kind from [dataLAB](https://www.it.tuwien.ac.at/en/s
 to run our pipeline:
 
 <figure markdown>
-![Gitlab runner configuration in the cluster](/infrastructures/dbrepo/images/gitlab-runner.png)
+![Gitlab runner configuration in the cluster](/infrastructures/dbrepo/1.10/images/gitlab-runner.png)
 </figure>
 
 For each job in the CI/CD pipeline, a pod with three containers is started:

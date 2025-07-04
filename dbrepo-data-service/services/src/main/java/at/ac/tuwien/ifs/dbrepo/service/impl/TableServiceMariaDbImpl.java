@@ -102,7 +102,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Override
     @Timed(value = "dbrepo_data_update_table_comment", description = "Time spent updating the table comment", histogram = true)
     public void updateTable(DatabaseDto database, TableDto table, TableUpdateDto data) throws SQLException,
-            TableMalformedException {
+            TableMalformedException, TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -125,6 +125,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+            if (e.getMessage().toLowerCase().contains("doesn't exist")) {
+                log.error("Failed to delete table: not found: {}", e.getMessage());
+                throw new TableNotFoundException("Failed to delete table: not found", e);
+            }
             log.error("Failed to update table: {}", e.getMessage());
             throw new TableMalformedException("Failed to update table: " + e.getMessage(), e);
         } finally {
@@ -134,7 +138,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException {
+    public void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException,
+            TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -151,6 +156,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+            if (e.getMessage().toLowerCase().contains("unknown table")) {
+                log.error("Failed to delete table: not found: {}", e.getMessage());
+                throw new TableNotFoundException("Failed to delete table: not found", e);
+            }
             log.error("Failed to delete table: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete table: " + e.getMessage(), e);
         } finally {

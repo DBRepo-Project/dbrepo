@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 
 @Getter
@@ -35,18 +36,18 @@ public class LdDatasetDto {
     private String url;
 
     @NotNull
-    private List<String> identifier;
+    private List<String> identifier = new LinkedList<>();
 
     private String license;
 
     @NotNull
-    private List<LdCreatorDto> creator;
+    private List<LdCreatorDto> creator = new LinkedList<>();
 
     @NotNull
     private String citation;
 
     @NotNull
-    private List<LdDatasetDto> hasPart;
+    private List<LdDatasetDto> hasPart = new LinkedList<>();
 
     @NotNull
     private String temporalCoverage;

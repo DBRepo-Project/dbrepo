@@ -184,6 +184,11 @@ interface SchemaAnalysisResultDto {
 interface ColumnAnalysisResultDto {
   name: string;
   datatype: string;
+  primary_key: boolean;
+  size: number | null;
+  d: number | null;
+  sets: string[] | null;
+  enums: string[] | null;
 }
 
 interface UniqueDto {
@@ -372,9 +377,7 @@ interface CreatorSaveDto {
   creator_name: string;
   name_type: string | null;
   name_identifier: string | null;
-  name_identifier_scheme: string | null;
   affiliation_identifier: string | null;
-  affiliation_identifier_scheme: string | null;
 }
 
 interface RelatedIdentifierSaveDto {

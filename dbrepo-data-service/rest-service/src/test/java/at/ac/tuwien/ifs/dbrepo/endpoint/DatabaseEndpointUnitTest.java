@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
@@ -7,10 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.DatabaseEndpoint;
-import at.ac.tuwien.ifs.dbrepo.service.AccessService;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
-import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -48,7 +46,10 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     private DatabaseService databaseService;
 
     @MockitoBean
-    private CacheService credentialService;
+    private CacheService cacheService;
+
+    @MockitoBean
+    private AnalyseService analyseService;
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
@@ -57,7 +58,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             MetadataServiceException, SQLException, MalformedException {
 
         /* mock */
-        when(credentialService.getContainer(CONTAINER_1_ID))
+        when(cacheService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_DTO);
         when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
@@ -79,7 +80,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             SQLException, QueryStoreCreateException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getContainer(CONTAINER_1_ID))
+        when(cacheService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_DTO);
         when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
@@ -113,7 +114,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getContainer(CONTAINER_1_ID))
+        when(cacheService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_DTO);
         when(containerService.createDatabase(CONTAINER_1_DTO, request))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
@@ -136,7 +137,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             SQLException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getContainer(CONTAINER_1_ID))
+        when(cacheService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_DTO);
         doThrow(SQLException.class)
                 .when(containerService)
@@ -155,7 +156,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getContainer(CONTAINER_1_ID);
 
         /* test */
@@ -171,7 +172,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getContainer(CONTAINER_1_ID);
         when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
@@ -191,7 +192,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -204,7 +205,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException, MetadataServiceException, SQLException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
@@ -221,7 +222,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -237,7 +238,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(credentialService)
+                .when(cacheService)
                 .getDatabase(DATABASE_1_ID);
 
         /* test */
@@ -252,7 +253,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
+        when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(DatabaseMalformedException.class)
                 .when(databaseService)
@@ -262,6 +263,34 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         assertThrows(DatabaseMalformedException.class, () -> {
             databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"analyse-datatypes"})
+    public void analyseDatatypes_succeeds() throws DatabaseUnavailableException, StorageNotFoundException,
+            AnalyseDataTypesException, ImageInvalidException, RemoteUnavailableException, MetadataServiceException,
+            DatabaseNotFoundException, ColumnNotFoundException {
+
+        /* mock */
+        when(cacheService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(analyseService.determineDataTypes(any(ImageDto.class), anyString()))
+                .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
+
+        /* test */
+        final ResponseEntity<SchemaAnalysisResultDto> response = databaseEndpoint.analyseDatatypes(DATABASE_1_ID, "s3key");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final SchemaAnalysisResultDto body = response.getBody();
+        assertNotNull(body);
+        assertEquals(TABLE_1_COLUMNS.size(), body.getColumns().size());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getComment(), body.getComment());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getEscape(), body.getEscape());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getDelimiter(), body.getDelimiter());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getNewlineDelimiter(), body.getNewlineDelimiter());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getQuote(), body.getQuote());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getTimestampFormat(), body.getTimestampFormat());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getDateFormat(), body.getDateFormat());
+        assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getPrompt(), body.getPrompt());
     }
 
 }

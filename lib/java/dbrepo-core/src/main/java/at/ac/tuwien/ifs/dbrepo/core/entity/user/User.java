@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +58,7 @@ public class User {
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)
     })
-    private List<DatabaseAccess> accesses;
+    private List<DatabaseAccess> accesses = new LinkedList<>();
 
     @Column(nullable = false)
     private String theme;

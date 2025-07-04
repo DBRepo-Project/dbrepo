@@ -1,7 +1,0 @@
-@misc{dbrepo2022,
-  author = {Mustermann, Max},
-  title = {Austrian weather data},
-  doi = {10.1000/183},
-  month = {5},
-  year = {2022}
-}

@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.SparkConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.google.common.io.Files;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -267,10 +267,11 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void delete_succeeds() throws SQLException, QueryMalformedException {
+    public void delete_succeeds() throws SQLException, QueryMalformedException, TableNotFoundException {
 
         /* test */
         tableService.delete(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO);
+        assertFalse(MariaDbUtil.tableExists(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME));
     }
 
     @Test
@@ -280,7 +281,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         MariaDbUtil.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
+        assertThrows(TableNotFoundException.class, () -> {
             tableService.delete(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO);
         });
     }
@@ -323,6 +324,26 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(history0.getTimestamp());
         assertEquals(HistoryEventTypeDto.INSERT, history0.getEvent());
         assertEquals(3, history0.getTotal());
+    }
+
+    @Test
+    public void updateTable_succeeds() throws SQLException, TableNotFoundException, TableMalformedException {
+
+        /* test */
+        tableService.updateTable(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, TABLE_8_UPDATE_DTO);
+        assertEquals("", MariaDbUtil.tableDescription(DATABASE_3_PRIVILEGED_DTO, TABLE_8_INTERNAL_NAME));
+    }
+
+    @Test
+    public void updateTable_notExists_fails() {
+        final TableDto request = TableDto.builder()
+                .internalName("i_do_not_exist")
+                .build();
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.updateTable(DATABASE_3_PRIVILEGED_DTO, request, TABLE_8_UPDATE_DTO);
+        });
     }
 
     @Test
