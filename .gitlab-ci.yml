@@ -138,12 +138,30 @@ lint-java-lib:
 lint-data-service:
   image: docker.io/maven:3-openjdk-${JAVA_VERSION}
   stage: lint
+  only:
+    - merge_requests
+    - master
+  needs:
+    - build-java-lib
+  dependencies:
+    - build-java-lib
+  before_script:
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - mvn -f ./dbrepo-data-service/pom.xml dependency:analyze
 
 lint-metadata-service:
   image: docker.io/maven:3-openjdk-${JAVA_VERSION}
   stage: lint
+  only:
+    - merge_requests
+    - master
+  needs:
+    - build-java-lib
+  dependencies:
+    - build-java-lib
+  before_script:
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - mvn -f ./dbrepo-metadata-service/pom.xml dependency:analyze
 
