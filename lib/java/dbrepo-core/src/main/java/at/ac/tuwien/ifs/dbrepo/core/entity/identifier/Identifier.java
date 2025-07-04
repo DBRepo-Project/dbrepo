@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,7 +57,7 @@ public class Identifier implements Serializable {
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("ordinalPosition ASC")
-    private List<Creator> creators;
+    private List<Creator> creators = new LinkedList<>();
 
     @Column(nullable = false)
     private String publisher;
@@ -74,21 +75,21 @@ public class Identifier implements Serializable {
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("ordinalPosition ASC")
-    private List<IdentifierTitle> titles;
+    private List<IdentifierTitle> titles = new LinkedList<>();
 
     /**
      * Descriptions are created/updated/deleted by the Identifier entity.
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("ordinalPosition ASC")
-    private List<IdentifierDescription> descriptions;
+    private List<IdentifierDescription> descriptions = new LinkedList<>();
 
     /**
      * Funders are created/updated/deleted by the Identifier entity.
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("ordinalPosition ASC")
-    private List<IdentifierFunder> funders;
+    private List<IdentifierFunder> funders = new LinkedList<>();
 
     /**
      * Licenses are never created/updated/deleted by the Identifier entity.
@@ -99,7 +100,7 @@ public class Identifier implements Serializable {
             joinColumns = @JoinColumn(name = "pid", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "license_id", referencedColumnName = "identifier")
     )
-    private List<License> licenses;
+    private List<License> licenses = new LinkedList<>();
 
     @Column(name = "identifier_type", nullable = false, columnDefinition = "ENUM('SUBSET', 'DATABASE', 'VIEW', 'TABLE')")
     @Enumerated(EnumType.STRING)
@@ -146,7 +147,7 @@ public class Identifier implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("ordinalPosition ASC")
-    private List<RelatedIdentifier> relatedIdentifiers;
+    private List<RelatedIdentifier> relatedIdentifiers = new LinkedList<>();
 
     @Column
     private String doi;

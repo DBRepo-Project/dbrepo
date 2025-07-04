@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
@@ -8,10 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.service.AccessService;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
-import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,15 +37,18 @@ public class DatabaseEndpoint extends RestEndpoint {
     private final DataMapper dataMapper;
     private final CacheService cacheService;
     private final AccessService accessService;
+    private final AnalyseService analyseService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
     public DatabaseEndpoint(DataMapper dataMapper, CacheService cacheService, AccessService accessService,
-                            DatabaseService databaseService, ContainerService containerService) {
+                            AnalyseService analyseService, DatabaseService databaseService,
+                            ContainerService containerService) {
         this.dataMapper = dataMapper;
         this.cacheService = cacheService;
         this.accessService = accessService;
+        this.analyseService = analyseService;
         this.databaseService = databaseService;
         this.containerService = containerService;
     }
@@ -147,6 +148,41 @@ public class DatabaseEndpoint extends RestEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
+    }
+
+    @GetMapping("/{databaseId}/analyse/schema/{key}")
+    @PreAuthorize("hasAuthority('analyse-datatypes')")
+    @Operation(summary = "Analyse datatypes of a dataset",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Analysed dataset"),
+            @ApiResponse(responseCode = "400",
+                    description = "Image datatypes malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Dataset not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<SchemaAnalysisResultDto> analyseDatatypes(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                    @PathVariable("key") String key)
+            throws AnalyseDataTypesException, DatabaseUnavailableException, StorageNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, ImageInvalidException, DatabaseNotFoundException,
+            ColumnNotFoundException {
+        log.debug("endpoint analyse datatypes, databaseId={}, key={}", databaseId, key);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        return ResponseEntity.ok()
+                .body(analyseService.determineDataTypes(database.getContainer().getImage(), key));
     }
 
 }

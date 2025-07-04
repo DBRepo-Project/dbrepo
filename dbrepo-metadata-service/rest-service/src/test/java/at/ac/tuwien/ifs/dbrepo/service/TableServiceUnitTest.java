@@ -607,4 +607,20 @@ public class TableServiceUnitTest extends BaseTest {
         });
     }
 
+    @Test
+    public void delete_dataServiceNotFound_succeeds() throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException, SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
+
+        /* mock */
+        doThrow(TableNotFoundException.class)
+                .when(dataServiceGateway)
+                .deleteTable(DATABASE_1_ID, TABLE_4_ID);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        tableService.deleteTable(TABLE_4);
+    }
+
 }

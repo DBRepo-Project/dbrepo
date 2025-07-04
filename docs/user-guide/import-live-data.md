@@ -18,7 +18,7 @@ commonly used by Internet of Things (IoT) infrastructures: AMQP and the lightwei
 Find the advanced data import details for importing live data on the data source info page.
 
 <figure markdown>
-![AMQP connection information](/infrastructures/dbrepo/images/screenshots/import-live-data.png)
+![AMQP connection information](/infrastructures/dbrepo/1.10/images/screenshots/import-live-data.png)
 </figure>
 
 A user wants to import live data from e.g. sensor measurements into a table in DBRepo. The user needs to have at least

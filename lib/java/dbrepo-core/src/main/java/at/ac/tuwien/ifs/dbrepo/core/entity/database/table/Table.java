@@ -18,6 +18,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,7 +85,7 @@ public class Table {
     })
     @Where(clause = "identifier_type='TABLE'")
     @OrderBy("created DESC")
-    private List<Identifier> identifiers;
+    private List<Identifier> identifiers = new LinkedList<>();
 
     @Embedded
     private Constraints constraints;
@@ -110,10 +111,10 @@ public class Table {
     @Column(name = "avg_row_length")
     private Long avgRowLength;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
-    private List<TableColumn> columns;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "table", orphanRemoval = true)
+    private List<TableColumn> columns = new LinkedList<>();
 
     @EqualsAndHashCode.Exclude
     @CreatedDate

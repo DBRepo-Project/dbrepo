@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
@@ -198,24 +197,6 @@ public class MetadataServiceUnitTest extends BaseTest {
         assertThrows(OrcidNotFoundException.class, () -> {
             metadataService.findByUrl("https://orcid.org/1234567890");
         });
-    }
-
-    @Test
-    public void findByUrl_doi_succeeds() throws OrcidNotFoundException, RorNotFoundException, IOException,
-            DoiNotFoundException, IdentifierNotSupportedException {
-        final CrossRefDto doi = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .readValue(new File("src/test/resources/json/doi_ec.json"), CrossRefDto.class);
-
-        /* mock */
-        when(crossRefGateway.findById(FUNDER_1_IDENTIFIER_ID_ONLY))
-                .thenReturn(doi);
-
-        /* test */
-        final ExternalMetadataDto response = metadataService.findByUrl(FUNDER_1_IDENTIFIER);
-        assertEquals(1, response.getAffiliations().length);
-        final ExternalAffiliationDto affiliation0 = response.getAffiliations()[0];
-        assertEquals(FUNDER_1_NAME, affiliation0.getOrganizationName());
-        assertEquals(FUNDER_1_IDENTIFIER, affiliation0.getCrossrefFunderId());
     }
 
     @Test

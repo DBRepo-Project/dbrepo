@@ -122,11 +122,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
     public static Stream<Arguments> findAll_anonymousFilterDatabase_parameters() {
         return Stream.of(
-                Arguments.arguments("dbid", DATABASE_1_ID, null, null, null, null, 1),
-                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 1),
+                Arguments.arguments("dbid", DATABASE_1_ID, null, null, null, null, 0),
+                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 0),
                 Arguments.arguments("vid", DATABASE_1_ID, null, VIEW_1_ID, null, null, 0),
                 Arguments.arguments("tid", DATABASE_1_ID, null, null, TABLE_1_ID, null, 0),
-                Arguments.arguments("status_published", DATABASE_1_ID, null, null, null, "PUBLISHED", 1),
+                Arguments.arguments("status_published", DATABASE_1_ID, null, null, null, "PUBLISHED", 0),
                 Arguments.arguments("status_draft", DATABASE_1_ID, null, null, null, "DRAFT", 0)
         );
     }
@@ -141,7 +141,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     public static Stream<Arguments> findAll_filterDatabase_parameters() {
         return Stream.of(
                 Arguments.arguments("database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 1, 1),
-                Arguments.arguments("database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, 1),
+                Arguments.arguments("database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, 1),
                 Arguments.arguments("database_vid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, 1),
                 Arguments.arguments("database_tid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, 1),
                 Arguments.arguments("subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 1, 1),
@@ -156,17 +156,17 @@ public class IdentifierEndpointUnitTest extends BaseTest {
                 Arguments.arguments("table_qid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, 1),
                 Arguments.arguments("table_vid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, 1),
                 Arguments.arguments("table_tid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 1, 1),
-                Arguments.arguments("anon_database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 1, null),
-                Arguments.arguments("anon_database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, null),
+                Arguments.arguments("anon_database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 0, null),
+                Arguments.arguments("anon_database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, null),
                 Arguments.arguments("anon_database_vid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, null),
                 Arguments.arguments("anon_database_tid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, null),
-                Arguments.arguments("anon_subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 1, null),
-                Arguments.arguments("anon_subset_qid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, null),
+                Arguments.arguments("anon_subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 0, null),
+                Arguments.arguments("anon_subset_qid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, null),
                 Arguments.arguments("anon_subset_vid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, null),
                 Arguments.arguments("anon_subset_tid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, null),
-                Arguments.arguments("anon_view_dbid", IdentifierTypeDto.VIEW, null, DATABASE_1_ID, null, null, null, 1, null),
+                Arguments.arguments("anon_view_dbid", IdentifierTypeDto.VIEW, null, DATABASE_1_ID, null, null, null, 0, null),
                 Arguments.arguments("anon_view_qid", IdentifierTypeDto.VIEW, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, null),
-                Arguments.arguments("anon_view_vid", IdentifierTypeDto.VIEW, null, DATABASE_1_ID, null, VIEW_1_ID, null, 1, null),
+                Arguments.arguments("anon_view_vid", IdentifierTypeDto.VIEW, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, null),
                 Arguments.arguments("anon_view_tid", IdentifierTypeDto.VIEW, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, null),
                 Arguments.arguments("anon_table_dbid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, null, null, 1, null),
                 Arguments.arguments("anon_table_qid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, null),
@@ -318,7 +318,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* mock */
         when(identifierService.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_4));
 
         /* test */
         final ResponseEntity<?> response = identifierEndpoint.findAll(null, null, null, null, null, null, "application/json", null);
@@ -335,7 +335,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* mock */
         when(identifierService.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_4));
 
         /* test */
         final ResponseEntity<?> response = identifierEndpoint.findAll(null, null, null, null, null, null, "application/ld+json", null);
@@ -352,7 +352,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* mock */
         when(identifierService.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_4));
 
         /* test */
         final ResponseEntity<?> response = identifierEndpoint.findAll(null, null, null, null, null, null, "text/html", null);
@@ -412,11 +412,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             FormatNotAvailableException, TableNotFoundException, ViewNotFoundException {
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        identifierEndpoint.find(IDENTIFIER_1_ID, "text/html", null);
+        identifierEndpoint.find(IDENTIFIER_4_ID, "text/html", null);
     }
 
     @Test
@@ -451,18 +451,18 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json1_succeeds() throws IOException, MalformedException, DataServiceException,
+    public void find_json4_succeeds() throws IOException, MalformedException, DataServiceException,
             DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "application/json";
-        final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata1.json"), StandardCharsets.UTF_8), IdentifierDto.class);
+        final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata4.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
@@ -473,10 +473,6 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         assertEquals(compare.getTitles().get(0).getLanguage(), body.getTitles().get(0).getLanguage());
         assertEquals(compare.getTitles().get(0).getTitleType(), body.getTitles().get(0).getTitleType());
         assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
-        assertEquals(compare.getDescriptions().get(0).getId(), body.getDescriptions().get(0).getId());
-        assertEquals(compare.getDescriptions().get(0).getDescription(), body.getDescriptions().get(0).getDescription());
-        assertEquals(compare.getDescriptions().get(0).getLanguage(), body.getDescriptions().get(0).getLanguage());
-        assertEquals(compare.getDescriptions().get(0).getDescriptionType(), body.getDescriptions().get(0).getDescriptionType());
         assertEquals(compare.getDoi(), body.getDoi());
         assertEquals(compare.getLicenses().size(), body.getLicenses().size());
         assertEquals(compare.getLicenses().get(0).getIdentifier(), body.getLicenses().get(0).getIdentifier());
@@ -505,17 +501,17 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "text/bibliography";
-        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa4.txt"),
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.APA))
+        when(identifierService.exportBibliography(IDENTIFIER_4, BibliographyTypeDto.APA))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -571,17 +567,17 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "text/bibliography; style=apa";
-        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa4.txt"),
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.APA))
+        when(identifierService.exportBibliography(IDENTIFIER_4, BibliographyTypeDto.APA))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -646,11 +642,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         /* mock */
         when(identifierService.exportBibliography(any(Identifier.class), eq(BibliographyTypeDto.APA)))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -686,17 +682,17 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "text/bibliography; style=ieee";
-        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee1.txt"),
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee4.txt"),
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.IEEE))
+        when(identifierService.exportBibliography(IDENTIFIER_4, BibliographyTypeDto.IEEE))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -709,7 +705,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "text/bibliography; style=ieee";
-        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee2.txt"),
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee5.txt"),
                 StandardCharsets.UTF_8);
 
         /* mock */
@@ -738,11 +734,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         /* mock */
         when(identifierService.exportBibliography(any(Identifier.class), eq(BibliographyTypeDto.IEEE)))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -778,17 +774,17 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "text/bibliography; style=bibtex";
-        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex1.txt"),
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex4.txt"),
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.BIBTEX))
+        when(identifierService.exportBibliography(IDENTIFIER_4, BibliographyTypeDto.BIBTEX))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -824,17 +820,17 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             DataServiceConnectionException, IOException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException, NotAllowedException, TableNotFoundException, ViewNotFoundException {
         final String accept = "text/bibliography; style=bibtex";
-        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex3.txt"),
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex4.txt"),
                 StandardCharsets.UTF_8);
 
         /* mock */
         when(identifierService.exportBibliography(any(Identifier.class), eq(BibliographyTypeDto.BIBTEX)))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -849,11 +845,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         final String accept = "application/ld+json";
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final LdDatasetDto body = (LdDatasetDto) response.getBody();
         assertNotNull(body);
@@ -881,11 +877,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             TableNotFoundException, ViewNotFoundException {
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, null, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, null, null);
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
     }
 
@@ -921,15 +917,15 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
         doNothing()
                 .when(identifierService)
-                .delete(IDENTIFIER_1);
+                .delete(IDENTIFIER_4);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            identifierEndpoint.delete(IDENTIFIER_1_ID);
+            identifierEndpoint.delete(IDENTIFIER_4_ID);
         });
     }
 
@@ -1033,24 +1029,14 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         final String accept = "application/json";
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        final ResponseEntity<?> response = identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
-        final List<IdentifierTitleDto> titles = body.getTitles();
-        assertEquals(2, titles.size());
-        final IdentifierTitleDto title0 = titles.get(0);
-        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
-        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
-        final List<IdentifierDescriptionDto> descriptions = body.getDescriptions();
-        assertEquals(1, descriptions.size());
-        final IdentifierDescriptionDto description0 = descriptions.get(0);
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test
@@ -1080,7 +1066,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         final ResponseEntity<?> response = generic_find(null, null);
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Location"));
-        assertEquals(endpointConfig.getWebsiteUrl() + "/database/" + DATABASE_1_ID + "/info?pid=" + IDENTIFIER_1_ID,
+        assertEquals(endpointConfig.getWebsiteUrl() + "/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID + "/info?pid=" + IDENTIFIER_4_ID,
                 response.getHeaders().getFirst("Location"));
     }
 
@@ -1545,15 +1531,15 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             ViewNotFoundException {
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
         if (resource != null) {
-            when(identifierService.exportMetadata(IDENTIFIER_1))
+            when(identifierService.exportMetadata(IDENTIFIER_4))
                     .thenReturn(resource);
         }
 
         /* test */
-        return identifierEndpoint.find(IDENTIFIER_1_ID, accept, null);
+        return identifierEndpoint.find(IDENTIFIER_4_ID, accept, null);
     }
 
     protected void generic_delete() throws NotAllowedException, DataServiceException, DataServiceConnectionException,

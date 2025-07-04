@@ -1,0 +1,1 @@
+[1] Mustermann, Martina, “Austrian weather data“, Example Publisher, 2023, Available: http://localhost:3000/pid/2.

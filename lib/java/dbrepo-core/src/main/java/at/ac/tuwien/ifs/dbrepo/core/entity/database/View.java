@@ -14,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,7 +83,7 @@ public class View {
     })
     @Where(clause = "identifier_type='VIEW'")
     @OrderBy("created DESC")
-    private List<Identifier> identifiers;
+    private List<Identifier> identifiers = new LinkedList<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -96,7 +97,7 @@ public class View {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "view")
     @OrderBy("ordinalPosition")
-    private List<ViewColumn> columns;
+    private List<ViewColumn> columns = new LinkedList<>();
 
     @EqualsAndHashCode.Exclude
     @CreatedDate

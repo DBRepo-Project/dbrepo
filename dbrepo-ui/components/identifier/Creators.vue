@@ -80,7 +80,6 @@ export default {
       this.affiliations.push({
         name: personOrOrg.affiliation,
         name_identifier: personOrOrg.affiliation_identifier,
-        name_identifier_scheme: personOrOrg.affiliation_identifier_scheme
       })
       creator.affiliation_index = this.getIndex(creator) + 1
     })

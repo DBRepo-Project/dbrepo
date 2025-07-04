@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-Data in DBRepo always has attached metadata (stored in the [Metadata Database](/infrastructures/dbrepo/dev/services//metadata-db/)). This metadata
+Data in DBRepo always has attached metadata (stored in the [Metadata Database](/infrastructures/dbrepo/1.10/dev/services//metadata-db/)). This metadata
 is provided as machine-understandable context in various open-source formats that is available, even when the original
 data is not available anymore due to e.g. a retracted dataset (hence the name **persistent**). A persistent identifier
 globally, uniquely identifies a data record such as:

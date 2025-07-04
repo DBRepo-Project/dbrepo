@@ -47,6 +47,7 @@ public class IdentifierFunder implements Serializable {
     private String awardTitle;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)

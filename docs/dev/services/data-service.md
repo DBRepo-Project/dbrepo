@@ -30,7 +30,7 @@ Data Service up.
 ## Data Analytics
 
 The Data Service uses [Apache Spark](https://spark.apache.org/), a open-source data analytics engine to load data
-from/into the [Data Database](/infrastructures/dbrepo/data-db) with a wide range of open-source connectors. Retrieving data from a subset
+from/into the [Data Database](/infrastructures/dbrepo/1.10/data-db) with a wide range of open-source connectors. Retrieving data from a subset
 internally generates a view with the 64-character hash of the query. This view is not automatically deleted currently.
 
 The Data Service also uses [DuckDB](), a open-source column-oriented database for large-data analytics. It is used as
@@ -39,7 +39,7 @@ in-memory data type analytics database to suggest data types from a (big) datase
 ## Caching
 
 The Data Service uses [Caffeine](https://github.com/ben-manes/caffeine), a caching solution that is used to temporarily
-cache the connection details from the [Metadata Service](/infrastructures/dbrepo/metadata-service) such that they don't have to be queried
+cache the connection details from the [Metadata Service](/infrastructures/dbrepo/1.10/metadata-service) such that they don't have to be queried
 everytime e.g. a sensor measurement is inserted. By default, this information is stored for 60 minutes. System
 administrators can disable this behavior by setting `CREDENTIAL_CACHE_TIMEOUT=0` (cache is deleted after 0 seconds).
 
@@ -65,7 +65,7 @@ of cron syntax.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.10/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public class Unique {
                     @JoinColumn(name = "cid", referencedColumnName = "id")
             }
     )
-    private List<TableColumn> columns;
+    private List<TableColumn> columns = new LinkedList<>();
 
     @PrePersist
     public void prePersist() {

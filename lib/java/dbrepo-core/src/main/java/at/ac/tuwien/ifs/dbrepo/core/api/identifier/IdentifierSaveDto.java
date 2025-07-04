@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class IdentifierSaveDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "null")
+    @Schema(example = "d002e8d5-8db4-4ff7-ab3a-bc3f52d9ec44")
     private UUID databaseId;
 
     @JsonProperty("query_id")
@@ -52,13 +53,17 @@ public class IdentifierSaveDto {
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierTitleDto> titles;
+    private List<SaveIdentifierTitleDto> titles = new LinkedList<>();
 
-    private List<SaveIdentifierDescriptionDto> descriptions;
+    @NotNull
+    @NotEmpty
+    private List<SaveIdentifierDescriptionDto> descriptions = new LinkedList<>();
 
-    private List<SaveIdentifierFunderDto> funders;
+    @NotNull
+    private List<SaveIdentifierFunderDto> funders = new LinkedList<>();
 
-    private List<LicenseDto> licenses;
+    @NotNull
+    private List<LicenseDto> licenses = new LinkedList<>();
 
     @JsonProperty("publication_day")
     @Schema(example = "15")
@@ -81,9 +86,10 @@ public class IdentifierSaveDto {
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierCreatorDto> creators;
+    private List<SaveIdentifierCreatorDto> creators = new LinkedList<>();
 
+    @NotNull
     @JsonProperty("related_identifiers")
-    private List<SaveRelatedIdentifierDto> relatedIdentifiers;
+    private List<SaveRelatedIdentifierDto> relatedIdentifiers = new LinkedList<>();
 
 }

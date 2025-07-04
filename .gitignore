@@ -4,9 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# large
-dbrepo-compute-service/bundle-2.20.18.jar
-
 # generated
 ready
 schema.xsd
@@ -18,6 +15,7 @@ tmp.yaml
 .scannerwork/
 .docker/config/
 .docker/dist.tar.gz
+docs/.openapi/api.base.yaml
 
 # docs
 .docs/.swagger/dist/

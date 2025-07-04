@@ -22,7 +22,7 @@ Three defined views allow for a simpler exploration of the study data. The analy
 Wien's virtual research environment using [JupyterHub](https://science.datalab.tuwien.ac.at/) as well as the chart
 
 <figure markdown>
-![Jupyter Notebook](/infrastructures/dbrepo/images/screenshots/tre-notebook.png){ .img-border }
+![Jupyter Notebook](/infrastructures/dbrepo/1.10/images/screenshots/tre-notebook.png){ .img-border }
 <figcaption>Figure 1: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
 </figure>
 
@@ -38,4 +38,4 @@ Wien's virtual research environment using [JupyterHub](https://science.datalab.t
 
 This work was part of a cooperation with the [Research Unit of Data Science](https://informatics.tuwien.ac.at/orgs/e194-04).
 
-<img src="/infrastructures/dbrepo/images/logos/ds-ifs.png" width=100 />
+<img src="/infrastructures/dbrepo/1.10/images/logos/ds-ifs.png" width=100 />
