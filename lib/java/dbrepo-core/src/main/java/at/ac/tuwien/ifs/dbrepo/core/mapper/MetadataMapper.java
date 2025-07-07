@@ -91,7 +91,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", imports = {LinkedList.class, ExternalResultType.class},
+@Mapper(componentModel = "spring", imports = {LinkedList.class, ExternalResultType.class, DataCiteDoiTypes.class},
         nullValueIterableMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
 public interface MetadataMapper {
 
@@ -192,6 +192,9 @@ public interface MetadataMapper {
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 
+    @Mappings({
+            @Mapping(target = "types", expression = "java(DataCiteDoiTypes.DATASET)")
+    })
     DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier);
 
     DataCiteDoiTitle identifierTitleToDataCiteDoiTitle(IdentifierTitle data);
@@ -281,8 +284,8 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "relatedIdentifier", source = "value"),
-            @Mapping(target = "relatedIdentifierType", source = "type"),
-            @Mapping(target = "relationType", source = "relation"),
+            @Mapping(target = "relatedIdentifierType", expression = "java(relatedIdentifier.getType().toString())"),
+            @Mapping(target = "relationType", expression = "java(relatedIdentifier.getRelation().toString())")
     })
     DataCiteDoiRelatedIdentifier relatedIdentifierToDoiRelatedIdentifier(RelatedIdentifier relatedIdentifier);
 
@@ -446,9 +449,100 @@ public interface MetadataMapper {
                 .build();
     }
 
-    Identifier createIdentifierDtoToIdentifier(CreateIdentifierDto data);
+    @Mappings({
+            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "nameIdentifierScheme", source = "nameIdentifier", qualifiedByName = "nameIdentifierSchemeMapper"),
+            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "affiliationIdentifierScheme", source = "affiliationIdentifier", qualifiedByName = "affiliationIdentifierSchemeMapper"),
+    })
+    Creator saveIdentifierCreatorDtoToCreator(SaveIdentifierCreatorDto data);
 
-    Identifier identifierSaveDtoToIdentifier(IdentifierSaveDto data);
+    IdentifierTitle saveIdentifierTitleDtoToIdentifierTitle(SaveIdentifierTitleDto data);
+
+    IdentifierDescription saveIdentifierDescriptionDtoToIdentifierDescription(SaveIdentifierDescriptionDto data);
+
+    IdentifierFunder saveIdentifierFunderDtoToIdentifierFunder(SaveIdentifierFunderDto data);
+
+    RelatedIdentifier saveRelatedIdentifierDtoToRelatedIdentifier(SaveRelatedIdentifierDto data);
+
+    default Identifier identifierSaveDtoToIdentifier(IdentifierSaveDto data) {
+        if (data == null) {
+            return null;
+        }
+        final Identifier identifier = Identifier.builder()
+                .id(data.getId())
+                .queryId(data.getQueryId())
+                .tableId(data.getTableId())
+                .viewId(data.getViewId())
+                .creators(new LinkedList<>(data.getCreators()
+                        .stream()
+                        .map(this::saveIdentifierCreatorDtoToCreator)
+                        .toList()))
+                .publisher(data.getPublisher())
+                .language(languageTypeDtoToLanguageType(data.getLanguage()))
+                .titles(new LinkedList<>(data.getTitles()
+                        .stream()
+                        .map(this::saveIdentifierTitleDtoToIdentifierTitle)
+                        .toList()))
+                .descriptions(new LinkedList<>(data.getDescriptions()
+                        .stream()
+                        .map(this::saveIdentifierDescriptionDtoToIdentifierDescription)
+                        .toList()))
+                .funders(new LinkedList<>(data.getFunders()
+                        .stream()
+                        .map(this::saveIdentifierFunderDtoToIdentifierFunder)
+                        .toList()))
+                .licenses(new LinkedList<>(data.getLicenses()
+                        .stream()
+                        .map(this::licenseDtoToLicense)
+                        .toList()))
+                .type(identifierTypeDtoToIdentifierType(data.getType()))
+                .publicationDay(data.getPublicationDay())
+                .publicationMonth(data.getPublicationMonth())
+                .publicationYear(data.getPublicationYear())
+                .relatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
+                        .stream()
+                        .map(this::saveRelatedIdentifierDtoToRelatedIdentifier)
+                        .toList()))
+                .doi(data.getDoi())
+                .build();
+        final int[] idx = new int[]{0};
+        identifier.getCreators()
+                .forEach(c -> {
+                    c.setOrdinalPosition(idx[0]++);
+                    c.setIdentifier(identifier);
+                });
+        log.trace("mapped {} creator(s)", identifier.getCreators().size());
+        idx[0] = 0;
+        identifier.getTitles()
+                .forEach(t -> {
+                    t.setOrdinalPosition(idx[0]++);
+                    t.setIdentifier(identifier);
+                });
+        log.trace("mapped {} title(s)", identifier.getTitles().size());
+        idx[0] = 0;
+        identifier.getDescriptions()
+                .forEach(d -> {
+                    d.setOrdinalPosition(idx[0]++);
+                    d.setIdentifier(identifier);
+                });
+        log.trace("mapped {} description(s)", identifier.getDescriptions().size());
+        idx[0] = 0;
+        identifier.getRelatedIdentifiers()
+                .forEach(r -> {
+                    r.setOrdinalPosition(idx[0]++);
+                    r.setIdentifier(identifier);
+                });
+        log.trace("mapped {} related identifier(s)", identifier.getRelatedIdentifiers().size());
+        idx[0] = 0;
+        identifier.getFunders()
+                .forEach(f -> {
+                    f.setOrdinalPosition(idx[0]++);
+                    f.setIdentifier(identifier);
+                });
+        log.trace("mapped {} funder(s)", identifier.getDescriptions().size());
+        return identifier;
+    }
 
     IdentifierSaveDto identifierToIdentifierSaveDto(Identifier data);
 
@@ -464,7 +558,7 @@ public interface MetadataMapper {
 
     IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(SaveIdentifierFunderDto data);
 
-    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(CreateIdentifierDto data);
+    IdentifierSaveDto createIdentifierDtoToIdentifierSaveDto(CreateIdentifierDto data);
 
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 

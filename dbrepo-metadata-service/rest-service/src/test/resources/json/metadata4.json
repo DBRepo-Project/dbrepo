@@ -8,7 +8,12 @@
       "title": "Austrian weather data"
     }
   ],
-  "descriptions": [],
+  "descriptions": [
+    {
+      "id": "e616779b-7c46-46a9-89a9-92187441b7a3",
+      "description": "Weather data"
+    }
+  ],
   "publisher": "Example Publisher",
   "creators": [
     {

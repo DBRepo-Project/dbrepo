@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -44,6 +45,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
+@Validated
 @RequestMapping(path = "/api/identifier")
 public class IdentifierEndpoint extends AbstractEndpoint {
 
@@ -431,6 +433,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                 }
             }
         }
+
         return ResponseEntity.accepted()
                 .body(metadataMapper.identifierToIdentifierDto(identifierService.save(database, caller, data)));
     }
@@ -491,9 +494,8 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                 throw new NotAllowedException("Failed to create identifier: insufficient role");
             }
         }
-        final Identifier identifier = identifierService.create(database, caller, data);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.identifierToIdentifierDto(identifier));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.create(database, caller, data)));
     }
 
     @GetMapping("/retrieve")

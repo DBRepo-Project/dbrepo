@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
@@ -49,14 +49,14 @@ public class CreateIdentifierDto {
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierTitleDto> titles = new LinkedList<>();
+    private List<CreateIdentifierTitleDto> titles = new LinkedList<>();
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierDescriptionDto> descriptions = new LinkedList<>();
+    private List<CreateIdentifierDescriptionDto> descriptions = new LinkedList<>();
 
     @NotNull
-    private List<SaveIdentifierFunderDto> funders = new LinkedList<>();
+    private List<CreateIdentifierFunderDto> funders = new LinkedList<>();
 
     @NotNull
     private List<LicenseDto> licenses = new LinkedList<>();
@@ -82,10 +82,10 @@ public class CreateIdentifierDto {
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierCreatorDto> creators = new LinkedList<>();
+    private List<CreateIdentifierCreatorDto> creators = new LinkedList<>();
 
     @NotNull
     @JsonProperty("related_identifiers")
-    private List<SaveRelatedIdentifierDto> relatedIdentifiers = new LinkedList<>();
+    private List<CreateRelatedIdentifierDto> relatedIdentifiers = new LinkedList<>();
 
 }

@@ -12,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierTitle;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
@@ -22,7 +23,6 @@ import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.spi.LoggingEventBuilder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -163,87 +163,38 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier save(Database database, User user, IdentifierSaveDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
-        final Identifier identifier = find(data.getId());
+        final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(data);
+        setAdditionalMetadata(database, identifier, user);
+        /* save identifier in metadata database */
+        final Identifier entity = identifierRepository.save(identifier);
+        searchServiceGateway.update(identifier.getDatabase());
+        return entity;
+    }
+
+    private void setAdditionalMetadata(Database database, Identifier identifier, User user) throws DataServiceException,
+            QueryNotFoundException, DataServiceConnectionException, ViewNotFoundException {
         identifier.setDatabase(database);
         identifier.setOwnedBy(user.getId());
         identifier.setOwner(user);
         identifier.setStatus(IdentifierStatusType.DRAFT);
-        /* set from data */
-        identifier.setTableId(data.getTableId());
-        identifier.setQueryId(data.getQueryId());
-        identifier.setViewId(data.getViewId());
-        identifier.setDoi(data.getDoi());
-        identifier.setLanguage(metadataMapper.languageTypeDtoToLanguageType(data.getLanguage()));
-        identifier.setLicenses(new LinkedList<>(data.getLicenses()
-                .stream()
-                .map(metadataMapper::licenseDtoToLicense)
-                .toList()));
-        identifier.setPublicationDay(data.getPublicationDay());
-        identifier.setPublicationMonth(data.getPublicationMonth());
-        identifier.setPublicationYear(data.getPublicationYear());
-        identifier.setType(metadataMapper.identifierTypeDtoToIdentifierType(data.getType()));
-        /* create in metadata database */
-        if (data.getCreators() != null) {
-            identifier.setCreators(new LinkedList<>(data.getCreators()
-                    .stream()
-                    .map(metadataMapper::creatorCreateDtoToCreator)
-                    .toList()));
-            final int[] idx = new int[]{0};
-            identifier.getCreators()
-                    .forEach(c -> {
-                        c.setOrdinalPosition(idx[0]++);
-                        c.setIdentifier(identifier);
-                    });
+        if (identifier.getType().equals(IdentifierType.SUBSET)) {
+            log.debug("set additional metadata for subset: {}", identifier.getQueryId());
+            final QueryDto query = dataServiceGateway.findQuery(identifier.getDatabase().getId(), identifier.getQueryId());
+            identifier.setQuery(query.getQuery());
+            identifier.setQueryId(query.getId());
+            identifier.setQueryNormalized(query.getQueryNormalized());
+            identifier.setQueryHash(query.getQueryHash());
+            identifier.setExecution(query.getExecution());
+            identifier.setResultNumber(query.getResultNumber());
+            identifier.setResultHash(query.getResultHash());
+        } else if (identifier.getType().equals(IdentifierType.VIEW)) {
+            log.debug("set additional metadata for view: {}", identifier.getViewId());
+            final View view = viewService.findById(identifier.getDatabase(), identifier.getViewId());
+            identifier.setViewId(view.getId());
+            identifier.setQuery(view.getQuery());
+            identifier.setQueryNormalized(view.getQuery());
+            identifier.setQueryHash(view.getQueryHash());
         }
-        if (data.getRelatedIdentifiers() != null) {
-            identifier.setRelatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
-                    .stream()
-                    .map(metadataMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
-                    .toList()));
-            final int[] idx = new int[]{0};
-            identifier.getRelatedIdentifiers()
-                    .forEach(r -> {
-                        r.setOrdinalPosition(idx[0]++);
-                        r.setIdentifier(identifier);
-                    });
-        }
-        if (data.getTitles() != null) {
-            identifier.setTitles(new LinkedList<>(data.getTitles()
-                    .stream()
-                    .map(metadataMapper::identifierCreateTitleDtoToIdentifierTitle)
-                    .toList()));
-            final int[] idx = new int[]{0};
-            identifier.getTitles()
-                    .forEach(t -> {
-                        t.setOrdinalPosition(idx[0]++);
-                        t.setIdentifier(identifier);
-                    });
-        }
-        if (data.getDescriptions() != null) {
-            identifier.setDescriptions(new LinkedList<>(data.getDescriptions()
-                    .stream()
-                    .map(metadataMapper::identifierCreateDescriptionDtoToIdentifierDescription)
-                    .toList()));
-            final int[] idx = new int[]{0};
-            identifier.getDescriptions()
-                    .forEach(d -> {
-                        d.setOrdinalPosition(idx[0]++);
-                        d.setIdentifier(identifier);
-                    });
-        }
-        if (data.getFunders() != null) {
-            identifier.setFunders(new LinkedList<>(data.getFunders()
-                    .stream()
-                    .map(metadataMapper::identifierFunderSaveDtoToIdentifierFunder)
-                    .toList()));
-            final int[] idx = new int[]{0};
-            identifier.getFunders()
-                    .forEach(f -> {
-                        f.setOrdinalPosition(idx[0]++);
-                        f.setIdentifier(identifier);
-                    });
-        }
-        return save(identifier);
     }
 
     @Override
@@ -251,115 +202,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier create(Database database, User user, CreateIdentifierDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, ViewNotFoundException {
-        final Identifier identifier = metadataMapper.createIdentifierDtoToIdentifier(data);
-        identifier.setDatabase(database);
-        identifier.setOwnedBy(user.getId());
-        identifier.setOwner(user);
-        identifier.setStatus(IdentifierStatusType.DRAFT);
-        /* create in metadata database */
-        if (data.getCreators() != null) {
-            identifier.setCreators(data.getCreators()
-                    .stream()
-                    .map(metadataMapper::creatorCreateDtoToCreator)
-                    .toList());
-            final int[] idx = new int[]{0};
-            identifier.getCreators()
-                    .forEach(c -> {
-                        c.setOrdinalPosition(idx[0]++);
-                        c.setIdentifier(identifier);
-                    });
-        }
-        if (data.getRelatedIdentifiers() != null) {
-            identifier.setRelatedIdentifiers(data.getRelatedIdentifiers()
-                    .stream()
-                    .map(metadataMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
-                    .toList());
-            final int[] idx = new int[]{0};
-            identifier.getRelatedIdentifiers()
-                    .forEach(r -> {
-                        r.setOrdinalPosition(idx[0]++);
-                        r.setIdentifier(identifier);
-                    });
-        }
-        if (data.getTitles() != null) {
-            identifier.setTitles(data.getTitles()
-                    .stream()
-                    .map(metadataMapper::identifierCreateTitleDtoToIdentifierTitle)
-                    .toList());
-            final int[] idx = new int[]{0};
-            identifier.getTitles()
-                    .forEach(t -> {
-                        t.setOrdinalPosition(idx[0]++);
-                        t.setIdentifier(identifier);
-                    });
-        }
-        if (data.getDescriptions() != null) {
-            identifier.setDescriptions(data.getDescriptions()
-                    .stream()
-                    .map(metadataMapper::identifierCreateDescriptionDtoToIdentifierDescription)
-                    .toList());
-            final int[] idx = new int[]{0};
-            identifier.getDescriptions()
-                    .forEach(d -> {
-                        d.setOrdinalPosition(idx[0]++);
-                        d.setIdentifier(identifier);
-                    });
-        }
-        if (data.getFunders() != null) {
-            identifier.setFunders(data.getFunders()
-                    .stream()
-                    .map(metadataMapper::identifierFunderSaveDtoToIdentifierFunder)
-                    .toList());
-            final int[] idx = new int[]{0};
-            identifier.getFunders()
-                    .forEach(f -> {
-                        f.setOrdinalPosition(idx[0]++);
-                        f.setIdentifier(identifier);
-                    });
-        }
-        return save(identifier);
-    }
-
-    @Transactional
-    public Identifier save(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
-            ViewNotFoundException, DatabaseNotFoundException, QueryNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
-        LoggingEventBuilder loggingBuilder = log.atDebug()
-                .setMessage("save identifier")
-                .addKeyValue("type", identifier.getType())
-                .addKeyValue("database_id", identifier.getDatabase().getId());
-        /* save identifier */
-        switch (identifier.getType()) {
-            case SUBSET -> {
-                loggingBuilder = loggingBuilder.addKeyValue("query_id", identifier.getQueryId());
-                final QueryDto query = dataServiceGateway.findQuery(identifier.getDatabase().getId(), identifier.getQueryId());
-                identifier.setQuery(query.getQuery());
-                identifier.setQueryId(query.getId());
-                identifier.setQueryNormalized(query.getQueryNormalized());
-                identifier.setQueryHash(query.getQueryHash());
-                identifier.setExecution(query.getExecution());
-                identifier.setResultNumber(query.getResultNumber());
-                identifier.setResultHash(query.getResultHash());
-            }
-            case VIEW -> {
-                loggingBuilder = loggingBuilder.addKeyValue("view_id", identifier.getViewId());
-                final View view = viewService.findById(identifier.getDatabase(), identifier.getViewId());
-                identifier.setViewId(view.getId());
-                identifier.setQuery(view.getQuery());
-                identifier.setQueryNormalized(view.getQuery());
-                identifier.setQueryHash(view.getQueryHash());
-            }
-            case TABLE -> loggingBuilder = loggingBuilder.addKeyValue("table_id", identifier.getTableId());
-        }
-        loggingBuilder.log();
+        final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(metadataMapper.createIdentifierDtoToIdentifierSaveDto(data));
+        setAdditionalMetadata(database, identifier, user);
         /* save identifier in metadata database */
-        final Identifier out = identifierRepository.save(identifier);
+        final Identifier entity = identifierRepository.save(identifier);
         /* update in search database */
-        identifier.getDatabase()
-                .getIdentifiers()
-                .add(out);
         searchServiceGateway.update(identifier.getDatabase());
-        return out;
+        return entity;
     }
 
     @Override

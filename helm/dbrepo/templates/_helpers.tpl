@@ -118,7 +118,7 @@ Broker connections
 {{- define "dbrepo.broker.connections" -}}
 {{- $connections := "" }}
 {{- range .Values.ui.public.broker.connections }}
-{{- $connections = printf "%s%s%s%s://%s:%s" $connections (ternary "" "," (empty $connections)) (ternary "^" "" .encrypted) .protocol (.host | default $.Values.hostname) .port }}
+{{- $connections = printf "%s%s%s%s://%s:%s" $connections (ternary "" "," (empty $connections)) (ternary "^" "" .encrypted) .protocol (.host | default $.Values.ui.public.broker.host) .port }}
 {{- end }}
 {{- printf "%s" $connections }}
 {{- end }}

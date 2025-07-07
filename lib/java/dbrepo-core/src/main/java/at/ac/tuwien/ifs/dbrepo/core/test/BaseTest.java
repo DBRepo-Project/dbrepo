@@ -24,6 +24,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.Unique
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteBody;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteData;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoi;
+import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoiRelatedIdentifier;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.*;
@@ -6154,15 +6155,14 @@ public class BaseTest {
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
-    public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
-            .id(null)
+    public final CreateIdentifierTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = CreateIdentifierTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
     public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_SAVE_DTO = SaveIdentifierTitleDto.builder()
-            .id(IDENTIFIER_1_TITLE_1_ID)
+            .id(null)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
@@ -6206,8 +6206,7 @@ public class BaseTest {
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
             .build();
 
-    public final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_CREATE_DTO = SaveIdentifierTitleDto.builder()
-            .id(null)
+    public final CreateIdentifierTitleDto IDENTIFIER_1_TITLE_2_CREATE_DTO = CreateIdentifierTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_2_TITLE)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
@@ -6257,15 +6256,14 @@ public class BaseTest {
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final SaveIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
+    public final SaveIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
             .id(null)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final SaveIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
-            .id(IDENTIFIER_1_DESCRIPTION_1_ID)
+    public final CreateIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = CreateIdentifierDescriptionDto.builder()
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
@@ -6318,8 +6316,7 @@ public class BaseTest {
             .affiliationIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI)
             .build();
 
-    public final SaveIdentifierCreatorDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
-            .id(null)
+    public final CreateIdentifierCreatorDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = CreateIdentifierCreatorDto.builder()
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
@@ -6366,8 +6363,7 @@ public class BaseTest {
             .awardTitle(IDENTIFIER_1_FUNDER_1_AWARD_TITLE)
             .build();
 
-    public final SaveIdentifierFunderDto IDENTIFIER_1_FUNDER_1_CREATE_DTO = SaveIdentifierFunderDto.builder()
-            .id(null)
+    public final CreateIdentifierFunderDto IDENTIFIER_1_FUNDER_1_CREATE_DTO = CreateIdentifierFunderDto.builder()
             .funderName(IDENTIFIER_1_FUNDER_1_NAME)
             .funderIdentifier(IDENTIFIER_1_FUNDER_1_IDENTIFIER)
             .funderIdentifierType(IDENTIFIER_1_FUNDER_1_IDENTIFIER_TYPE_DTO)
@@ -6502,7 +6498,7 @@ public class BaseTest {
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
             .descriptions(new LinkedList<>(List.of())) // <<<
-            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))) // <<<
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))) // <<<
             .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -6603,6 +6599,8 @@ public class BaseTest {
     public final static String IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
     public final static NameIdentifierSchemeType IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
     public final static NameIdentifierSchemeTypeDto IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static NameType IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_TYPE = NameType.PERSONAL;
+    public final static NameTypeDto IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_TYPE_DTO = NameTypeDto.PERSONAL;
     public final static String IDENTIFIER_5_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_5_CREATOR_1 = Creator.builder()
@@ -6611,6 +6609,7 @@ public class BaseTest {
             .firstname(IDENTIFIER_5_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_TYPE)
             .nameIdentifier(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER)
             .nameIdentifierScheme(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE)
             .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_1_IDENTIFIER_SCHEME_URI)
@@ -6623,6 +6622,7 @@ public class BaseTest {
             .firstname(IDENTIFIER_5_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_TYPE_DTO)
             .nameIdentifier(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER)
             .nameIdentifierScheme(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
             .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_1_IDENTIFIER_SCHEME_URI)
@@ -6634,6 +6634,7 @@ public class BaseTest {
             .lastname(IDENTIFIER_5_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_1_NAME)
             .nameIdentifier(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER)
+            .nameType(IDENTIFIER_5_CREATOR_1_NAME_IDENTIFIER_TYPE_DTO)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
             .build();
 
@@ -6653,6 +6654,8 @@ public class BaseTest {
     public final static String IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER = "https://orcid.org/00000-00000-00000";
     public final static NameIdentifierSchemeType IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE = NameIdentifierSchemeType.ORCID;
     public final static NameIdentifierSchemeTypeDto IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static NameType IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_TYPE = NameType.PERSONAL;
+    public final static NameTypeDto IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_TYPE_DTO = NameTypeDto.PERSONAL;
     public final static String IDENTIFIER_5_CREATOR_2_IDENTIFIER_SCHEME_URI = "https://orcid.org/";
 
     public final Creator IDENTIFIER_5_CREATOR_2 = Creator.builder()
@@ -6661,6 +6664,7 @@ public class BaseTest {
             .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
             .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameType(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_TYPE)
             .nameIdentifier(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER)
             .nameIdentifierScheme(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE)
             .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_2_IDENTIFIER_SCHEME_URI)
@@ -6673,6 +6677,7 @@ public class BaseTest {
             .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
             .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameType(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_TYPE_DTO)
             .nameIdentifier(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER)
             .nameIdentifierScheme(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_SCHEMA_TYPE_DTO)
             .nameIdentifierSchemeUri(IDENTIFIER_5_CREATOR_2_IDENTIFIER_SCHEME_URI)
@@ -6683,6 +6688,7 @@ public class BaseTest {
             .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
             .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameType(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_TYPE_DTO)
             .nameIdentifier(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER)
             .affiliation(IDENTIFIER_5_CREATOR_2_AFFIL)
             .build();
@@ -6691,6 +6697,7 @@ public class BaseTest {
             .firstname(IDENTIFIER_5_CREATOR_2_FIRSTNAME)
             .lastname(IDENTIFIER_5_CREATOR_2_LASTNAME)
             .creatorName(IDENTIFIER_5_CREATOR_2_NAME)
+            .nameType(IDENTIFIER_5_CREATOR_2_NAME_IDENTIFIER_TYPE_DTO)
             .nameIdentifier(null) /* <<<< */
             .affiliation(CREATOR_2_AFFIL)
             .build();
@@ -6782,7 +6789,26 @@ public class BaseTest {
             .value(RELATED_IDENTIFIER_5_VALUE)
             .build();
 
-    public final SaveRelatedIdentifierDto IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO = SaveRelatedIdentifierDto.builder()
+    public final RelatedIdentifierDto IDENTIFIER_1_RELATED_IDENTIFIER_1_DTO = RelatedIdentifierDto.builder()
+            .id(RELATED_IDENTIFIER_5_ID)
+            .type(RELATED_IDENTIFIER_5_TYPE_DTO)
+            .relation(RELATED_IDENTIFIER_5_RELATION_TYPE_DTO)
+            .value(RELATED_IDENTIFIER_5_VALUE)
+            .build();
+
+    public final DataCiteDoiRelatedIdentifier IDENTIFIER_1_DATACITE_RELATED_IDENTIFIER_1_DTO = DataCiteDoiRelatedIdentifier.builder()
+            .relatedIdentifierType(RELATED_IDENTIFIER_5_TYPE.toString())
+            .relationType(RELATED_IDENTIFIER_5_RELATION_TYPE.toString())
+            .relatedIdentifier(RELATED_IDENTIFIER_5_VALUE)
+            .build();
+
+    public final CreateRelatedIdentifierDto IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO = CreateRelatedIdentifierDto.builder()
+            .value(RELATED_IDENTIFIER_5_VALUE)
+            .type(RELATED_IDENTIFIER_5_TYPE_DTO)
+            .relation(RELATED_IDENTIFIER_5_RELATION_TYPE_DTO)
+            .build();
+
+    public final SaveRelatedIdentifierDto IDENTIFIER_1_RELATED_IDENTIFIER_5_SAVE_DTO = SaveRelatedIdentifierDto.builder()
             .value(RELATED_IDENTIFIER_5_VALUE)
             .type(RELATED_IDENTIFIER_5_TYPE_DTO)
             .relation(RELATED_IDENTIFIER_5_RELATION_TYPE_DTO)
@@ -6809,6 +6835,7 @@ public class BaseTest {
             .publisher(IDENTIFIER_5_PUBLISHER)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .type(IDENTIFIER_5_TYPE_DTO)
+            .funders(new LinkedList<>())
             .build();
 
     public final static UUID IDENTIFIER_6_ID = UUID.fromString("a244204d-9671-42a0-be07-9b14402238fd");
@@ -7127,11 +7154,9 @@ public class BaseTest {
     public final static String IDENTIFIER_7_DOI = null;
     public final static Instant IDENTIFIER_7_CREATED = Instant.ofEpochSecond(1641588352L);
     public final static Instant IDENTIFIER_7_MODIFIED = Instant.ofEpochSecond(1541588352L);
-    public final static Instant IDENTIFIER_7_EXECUTION = Instant.ofEpochSecond(1541588352L);
     public final static Integer IDENTIFIER_7_PUBLICATION_DAY = 14;
     public final static Integer IDENTIFIER_7_PUBLICATION_MONTH = 7;
     public final static Integer IDENTIFIER_7_PUBLICATION_YEAR = 2022;
-    public final static Long IDENTIFIER_7_RESULT_NUMBER = 2L;
     public final static String IDENTIFIER_7_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_7_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_7_TYPE_DTO = IdentifierTypeDto.DATABASE;
@@ -7145,6 +7170,51 @@ public class BaseTest {
                             .doi(IDENTIFIER_7_DOI)
                             .build())
                     .build())
+            .build();
+
+    public final static UUID IDENTIFIER_7_TITLE_1_ID = UUID.fromString("fdd698a7-ebcf-444f-b972-00effb3e87b2");
+    public final static String IDENTIFIER_7_TITLE_1_TITLE = "Some data";
+    public final static Integer IDENTIFIER_7_TITLE_1_ORD_POS = 0;
+
+    public final IdentifierTitle IDENTIFIER_7_TITLE_1 = IdentifierTitle.builder()
+            .id(IDENTIFIER_7_TITLE_1_ID)
+            .ordinalPosition(IDENTIFIER_7_TITLE_1_ORD_POS)
+            .title(IDENTIFIER_7_TITLE_1_TITLE)
+            .build();
+
+    public final IdentifierTitleDto IDENTIFIER_7_TITLE_1_DTO = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_7_TITLE_1_ID)
+            .title(IDENTIFIER_7_TITLE_1_TITLE)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_7_TITLE_1_SAVE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_7_TITLE_1_ID)
+            .title(IDENTIFIER_7_TITLE_1_TITLE)
+            .build();
+
+    public final static UUID IDENTIFIER_7_DESCRIPTION_1_ID = UUID.fromString("dc4cbcb4-b1a1-496b-a65d-e4db23ae29d3");
+    public final static String IDENTIFIER_7_DESCRIPTION_1_DESCRIPTION = "The nicest data you will ever see";
+    public final static Integer IDENTIFIER_7_DESCRIPTION_1_ORD_POS = 0;
+    public final static LanguageType IDENTIFIER_7_DESCRIPTION_1_LANG = LanguageType.EN;
+    public final static LanguageTypeDto IDENTIFIER_7_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
+
+    public final IdentifierDescription IDENTIFIER_7_DESCRIPTION_1 = IdentifierDescription.builder()
+            .id(IDENTIFIER_7_DESCRIPTION_1_ID)
+            .ordinalPosition(IDENTIFIER_7_DESCRIPTION_1_ORD_POS)
+            .description(IDENTIFIER_7_DESCRIPTION_1_DESCRIPTION)
+            .language(IDENTIFIER_7_DESCRIPTION_1_LANG)
+            .build();
+
+    public final IdentifierDescriptionDto IDENTIFIER_7_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_7_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_7_DESCRIPTION_1_DESCRIPTION)
+            .language(IDENTIFIER_7_DESCRIPTION_1_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierDescriptionDto IDENTIFIER_7_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_7_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_7_DESCRIPTION_1_DESCRIPTION)
+            .language(IDENTIFIER_7_DESCRIPTION_1_LANG_DTO)
             .build();
 
     public final static UUID IDENTIFIER_7_CREATOR_1_ID = UUID.fromString("b899c367-06c7-4f47-8aea-5f15061ee3ee");
@@ -7188,19 +7258,17 @@ public class BaseTest {
                     .selfHtml("/pid/" + IDENTIFIER_7_ID)
                     .dashboardHtml("/d/" + DATABASE_4_DASHBOARD_UID)
                     .build())
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_7_DESCRIPTION_1_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_7_TITLE_1_DTO)))
             .doi(IDENTIFIER_7_DOI)
-            .execution(IDENTIFIER_7_EXECUTION)
             .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
-            .resultNumber(IDENTIFIER_7_RESULT_NUMBER)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE_DTO)
             .owner(USER_4_BRIEF_DTO)
             .relatedIdentifiers(new LinkedList<>())
-            .licenses(new LinkedList<>())
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .funders(new LinkedList<>())
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1_DTO)))
             .status(IDENTIFIER_7_STATUS_TYPE_DTO)
@@ -7224,17 +7292,41 @@ public class BaseTest {
     public final IdentifierSaveDto IDENTIFIER_7_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_7_ID)
             .databaseId(DATABASE_4_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_7_DESCRIPTION_1_SAVE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_7_TITLE_1_SAVE_DTO)))
             .relatedIdentifiers(new LinkedList<>())
             .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1_CREATE_DTO)))
             .funders(new LinkedList<>())
-            .licenses(new LinkedList<>())
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE_DTO)
+            .build();
+
+    public final static UUID IDENTIFIER_2_DESCRIPTION_1_ID = UUID.fromString("ab026bb6-9e1b-43cd-91bb-a556b76b65f4");
+    public final static String IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION = "Weather data collected";
+    public final static Integer IDENTIFIER_2_DESCRIPTION_1_ORD_POS = 0;
+
+    public final IdentifierDescription IDENTIFIER_2_DESCRIPTION_1 = IdentifierDescription.builder()
+            .id(IDENTIFIER_2_DESCRIPTION_1_ID)
+            .ordinalPosition(IDENTIFIER_2_DESCRIPTION_1_ORD_POS)
+            .description(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final IdentifierDescriptionDto IDENTIFIER_2_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_2_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final CreateIdentifierDescriptionDto IDENTIFIER_2_DESCRIPTION_1_CREATE_DTO = CreateIdentifierDescriptionDto.builder()
+            .description(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final SaveIdentifierDescriptionDto IDENTIFIER_2_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_2_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION)
             .build();
 
     public final static UUID IDENTIFIER_2_ID = UUID.fromString("fdb95f60-48e7-4e74-8122-d3c8d079c889");
@@ -7256,19 +7348,93 @@ public class BaseTest {
     public final static IdentifierStatusType IDENTIFIER_2_STATUS_TYPE = IdentifierStatusType.DRAFT;
     public final static IdentifierStatusTypeDto IDENTIFIER_2_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
 
-    public final CreateIdentifierDto IDENTIFIER_2_CREATE_DTO = CreateIdentifierDto.builder()
-            .databaseId(DATABASE_1_ID)
-            .queryId(QUERY_1_ID)
-            .type(IDENTIFIER_2_TYPE_DTO)
-            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-            .publisher(IDENTIFIER_2_PUBLISHER)
+    public final static UUID IDENTIFIER_2_CREATOR_1_ID = UUID.fromString("c541c1ab-0a27-4403-8278-333f6ff14139");
+    public final static Integer IDENTIFIER_2_CREATOR_1_ORD_POS = 0;
+    public final static String IDENTIFIER_2_CREATOR_1_NAME = "Siemens (Austria)";
+    public final static NameType IDENTIFIER_2_CREATOR_1_NAME_TYPE = NameType.ORGANIZATIONAL;
+    public final static NameTypeDto IDENTIFIER_2_CREATOR_1_NAME_TYPE_DTO = NameTypeDto.ORGANIZATIONAL;
+    public final static String IDENTIFIER_2_CREATOR_1_ROR = "https://ror.org/03794w632";
+    public final static String IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://ror.org/";
+    public final NameIdentifierSchemeType IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_TYPE = NameIdentifierSchemeType.ROR;
+    public final NameIdentifierSchemeTypeDto IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO = NameIdentifierSchemeTypeDto.ROR;
+
+    public final Creator IDENTIFIER_2_CREATOR_1 = Creator.builder()
+            .id(IDENTIFIER_2_CREATOR_1_ID)
+            .ordinalPosition(IDENTIFIER_2_CREATOR_1_ORD_POS)
+            .creatorName(IDENTIFIER_2_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_2_CREATOR_1_NAME_TYPE)
+            .nameIdentifier(IDENTIFIER_2_CREATOR_1_ROR)
+            .nameIdentifierScheme(IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .build();
+
+    public final CreatorDto IDENTIFIER_2_CREATOR_1_DTO = CreatorDto.builder()
+            .id(IDENTIFIER_2_CREATOR_1_ID)
+            .creatorName(IDENTIFIER_2_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_2_CREATOR_1_NAME_TYPE_DTO)
+            .nameIdentifier(IDENTIFIER_2_CREATOR_1_ROR)
+            .nameIdentifierScheme(IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_2_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .build();
+
+    public final SaveIdentifierCreatorDto IDENTIFIER_2_CREATOR_1_SAVE_DTO = SaveIdentifierCreatorDto.builder()
+            .id(IDENTIFIER_2_CREATOR_1_ID)
+            .creatorName(IDENTIFIER_2_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_2_CREATOR_1_NAME_TYPE_DTO)
+            .nameIdentifier(IDENTIFIER_2_CREATOR_1_ROR)
+            .build();
+
+    public final CreateIdentifierCreatorDto IDENTIFIER_2_CREATOR_1_CREATE_DTO = CreateIdentifierCreatorDto.builder()
+            .creatorName(IDENTIFIER_2_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_2_CREATOR_1_NAME_TYPE_DTO)
+            .nameIdentifier(IDENTIFIER_2_CREATOR_1_ROR)
+            .build();
+
+    public final static UUID IDENTIFIER_2_TITLE_1_ID = UUID.fromString("ddb41a2e-d9a2-4715-92f8-a785ab651b51");
+    public final static String IDENTIFIER_2_TITLE_1_TITLE = "Wetterdaten";
+    public final static Integer IDENTIFIER_2_TITLE_1_ORD_POS = 0;
+    public final static LanguageType IDENTIFIER_2_TITLE_1_LANG = LanguageType.DE;
+    public final static LanguageTypeDto IDENTIFIER_2_TITLE_1_LANG_DTO = LanguageTypeDto.DE;
+
+    public final IdentifierTitle IDENTIFIER_2_TITLE_1 = IdentifierTitle.builder()
+            .id(IDENTIFIER_2_TITLE_1_ID)
+            .ordinalPosition(IDENTIFIER_2_TITLE_1_ORD_POS)
+            .title(IDENTIFIER_2_TITLE_1_TITLE)
+            .language(IDENTIFIER_2_TITLE_1_LANG)
+            .build();
+
+    public final IdentifierTitleDto IDENTIFIER_2_TITLE_1_DTO = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_2_TITLE_1_ID)
+            .title(IDENTIFIER_2_TITLE_1_TITLE)
+            .language(IDENTIFIER_2_TITLE_1_LANG_DTO)
+            .build();
+
+    public final IdentifierTitleDto IDENTIFIER_2_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_2_TITLE_1_ID)
+            .language(IDENTIFIER_2_TITLE_1_LANG_DTO)
+            .build();
+
+    public final CreateIdentifierTitleDto IDENTIFIER_2_TITLE_1_CREATE_DTO = CreateIdentifierTitleDto.builder()
+            .title(IDENTIFIER_2_TITLE_1_TITLE)
+            .language(IDENTIFIER_2_TITLE_1_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_2_TITLE_1_SAVE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_2_TITLE_1_ID)
+            .title(IDENTIFIER_2_TITLE_1_TITLE)
+            .language(IDENTIFIER_2_TITLE_1_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_2_TITLE_1_UPDATE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_2_TITLE_1_ID)
+            .language(IDENTIFIER_2_TITLE_1_LANG_DTO)
             .build();
 
     public final Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(QUERY_1_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_2_DESCRIPTION_1)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_2_TITLE_1)))
             .doi(IDENTIFIER_2_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_2_CREATED)
@@ -7287,7 +7453,7 @@ public class BaseTest {
             .owner(USER_1)
             .ownedBy(USER_1_ID)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_2_CREATOR_1)))
             .status(IDENTIFIER_2_STATUS_TYPE)
             .relatedIdentifiers(new LinkedList<>())
             .funders(new LinkedList<>())
@@ -7302,8 +7468,8 @@ public class BaseTest {
                     .selfHtml("/pid/" + IDENTIFIER_2_ID)
                     .data("/api/database/" + DATABASE_1_ID + "/subset/" + QUERY_1_ID + "/data")
                     .build())
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_2_DESCRIPTION_1_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_2_TITLE_1_DTO)))
             .doi(IDENTIFIER_2_DOI)
             .execution(IDENTIFIER_2_EXECUTION)
             .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
@@ -7320,7 +7486,7 @@ public class BaseTest {
             .relatedIdentifiers(new LinkedList<>())
             .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_2_CREATOR_1_DTO)))
             .status(IDENTIFIER_2_STATUS_TYPE_DTO)
             .build();
 
@@ -7340,13 +7506,13 @@ public class BaseTest {
             .id(IDENTIFIER_2_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(QUERY_1_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_2_DESCRIPTION_1_SAVE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_2_TITLE_1_SAVE_DTO)))
             .relatedIdentifiers(new LinkedList<>())
             .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_2_CREATOR_1_SAVE_DTO)))
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
@@ -7355,11 +7521,129 @@ public class BaseTest {
             .queryId(QUERY_1_ID)
             .build();
 
+    public final CreateIdentifierDto IDENTIFIER_2_CREATE_DTO = CreateIdentifierDto.builder()
+            .databaseId(DATABASE_1_ID)
+            .queryId(QUERY_1_ID)
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_2_DESCRIPTION_1_CREATE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_2_TITLE_1_CREATE_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
+            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
+            .creators(new LinkedList<>(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO)))
+            .publisher(IDENTIFIER_2_PUBLISHER)
+            .type(IDENTIFIER_2_TYPE_DTO)
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
+            .queryId(QUERY_1_ID)
+            .build();
+
+    public final static UUID IDENTIFIER_3_CREATOR_1_ID = UUID.fromString("275b6f93-350a-4488-84d3-8b0471aaefd8");
+    public final static Integer IDENTIFIER_3_CREATOR_1_ORD_POS = 0;
+    public final static String IDENTIFIER_3_CREATOR_1_NAME = "WD-40 (United States)";
+    public final static NameType IDENTIFIER_3_CREATOR_1_NAME_TYPE = NameType.ORGANIZATIONAL;
+    public final static NameTypeDto IDENTIFIER_3_CREATOR_1_NAME_TYPE_DTO = NameTypeDto.ORGANIZATIONAL;
+    public final static String IDENTIFIER_3_CREATOR_1_ROR = "https://ror.org/01eac6f58";
+    public final static String IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_URI = "https://ror.org/";
+    public final NameIdentifierSchemeType IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_TYPE = NameIdentifierSchemeType.ROR;
+    public final NameIdentifierSchemeTypeDto IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO = NameIdentifierSchemeTypeDto.ROR;
+
+    public final Creator IDENTIFIER_3_CREATOR_1 = Creator.builder()
+            .id(IDENTIFIER_3_CREATOR_1_ID)
+            .ordinalPosition(IDENTIFIER_3_CREATOR_1_ORD_POS)
+            .creatorName(IDENTIFIER_3_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_3_CREATOR_1_NAME_TYPE)
+            .nameIdentifier(IDENTIFIER_3_CREATOR_1_ROR)
+            .nameIdentifierScheme(IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_TYPE)
+            .nameIdentifierSchemeUri(IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .build();
+
+    public final CreatorDto IDENTIFIER_3_CREATOR_1_DTO = CreatorDto.builder()
+            .id(IDENTIFIER_3_CREATOR_1_ID)
+            .creatorName(IDENTIFIER_3_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_3_CREATOR_1_NAME_TYPE_DTO)
+            .nameIdentifier(IDENTIFIER_3_CREATOR_1_ROR)
+            .nameIdentifierScheme(IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
+            .nameIdentifierSchemeUri(IDENTIFIER_3_CREATOR_1_IDENTIFIER_SCHEME_URI)
+            .build();
+
+    public final SaveIdentifierCreatorDto IDENTIFIER_3_CREATOR_1_SAVE_DTO = SaveIdentifierCreatorDto.builder()
+            .id(IDENTIFIER_3_CREATOR_1_ID)
+            .creatorName(IDENTIFIER_3_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_3_CREATOR_1_NAME_TYPE_DTO)
+            .nameIdentifier(IDENTIFIER_3_CREATOR_1_ROR)
+            .build();
+
+    public final static UUID IDENTIFIER_3_DESCRIPTION_1_ID = UUID.fromString("fb613521-470d-44f0-9dc9-687caf3a6cd3");
+    public final static String IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION = "Polish weather data";
+    public final static Integer IDENTIFIER_3_DESCRIPTION_1_ORD_POS = 0;
+
+    public final IdentifierDescription IDENTIFIER_3_DESCRIPTION_1 = IdentifierDescription.builder()
+            .id(IDENTIFIER_3_DESCRIPTION_1_ID)
+            .ordinalPosition(IDENTIFIER_3_DESCRIPTION_1_ORD_POS)
+            .description(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final IdentifierDescriptionDto IDENTIFIER_3_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_3_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final IdentifierDescriptionDto IDENTIFIER_3_DESCRIPTION_1_DTO_MODIFY = IdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_3_DESCRIPTION_1_ID)
+            .build();
+
+    public final SaveIdentifierDescriptionDto IDENTIFIER_3_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
+            .id(null)
+            .description(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final SaveIdentifierDescriptionDto IDENTIFIER_3_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_3_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final static UUID IDENTIFIER_3_TITLE_1_ID = UUID.fromString("02ef1fd4-de91-4510-9af3-732586fa2a06");
+    public final static String IDENTIFIER_3_TITLE_1_TITLE = "Poland weather data";
+    public final static Integer IDENTIFIER_3_TITLE_1_ORD_POS = 0;
+    public final static LanguageType IDENTIFIER_3_TITLE_1_LANG = LanguageType.PL;
+    public final static LanguageTypeDto IDENTIFIER_3_TITLE_1_LANG_DTO = LanguageTypeDto.PL;
+
+    public final IdentifierTitle IDENTIFIER_3_TITLE_1 = IdentifierTitle.builder()
+            .id(IDENTIFIER_3_TITLE_1_ID)
+            .ordinalPosition(IDENTIFIER_3_TITLE_1_ORD_POS)
+            .title(IDENTIFIER_3_TITLE_1_TITLE)
+            .language(IDENTIFIER_3_TITLE_1_LANG)
+            .build();
+
+    public final IdentifierTitleDto IDENTIFIER_3_TITLE_1_DTO = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_3_TITLE_1_ID)
+            .title(IDENTIFIER_3_TITLE_1_TITLE)
+            .language(IDENTIFIER_3_TITLE_1_LANG_DTO)
+            .build();
+
+    public final IdentifierTitleDto IDENTIFIER_3_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_3_TITLE_1_ID)
+            .language(IDENTIFIER_3_TITLE_1_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_3_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
+            .id(null)
+            .title(IDENTIFIER_3_TITLE_1_TITLE)
+            .language(IDENTIFIER_3_TITLE_1_LANG_DTO)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_3_TITLE_1_SAVE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_3_TITLE_1_ID)
+            .title(IDENTIFIER_3_TITLE_1_TITLE)
+            .language(IDENTIFIER_3_TITLE_1_LANG_DTO)
+            .build();
+
     public final static UUID IDENTIFIER_3_ID = UUID.fromString("e2d831c2-3694-4fdc-8c48-7a7e94b73c43");
     public final static String IDENTIFIER_3_DOI = null;
     public final static Instant IDENTIFIER_3_CREATED = Instant.ofEpochSecond(1651588352L);
     public final static Instant IDENTIFIER_3_MODIFIED = Instant.ofEpochSecond(1551588352L);
-    public final static Instant IDENTIFIER_3_EXECUTION = Instant.ofEpochSecond(1551588352L);
     public final static Integer IDENTIFIER_3_PUBLICATION_DAY = 10;
     public final static Integer IDENTIFIER_3_PUBLICATION_MONTH = 7;
     public final static Integer IDENTIFIER_3_PUBLICATION_YEAR = 2023;
@@ -7377,13 +7661,12 @@ public class BaseTest {
     public final Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
             .viewId(VIEW_1_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_3_DESCRIPTION_1)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_3_TITLE_1)))
             .doi(IDENTIFIER_3_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
-            .execution(IDENTIFIER_3_EXECUTION)
             .publicationDay(IDENTIFIER_3_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
@@ -7397,7 +7680,7 @@ public class BaseTest {
             .owner(USER_1)
             .ownedBy(USER_1_ID)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_3_CREATOR_1)))
             .funders(new LinkedList<>())
             .relatedIdentifiers(new LinkedList<>())
             .status(IDENTIFIER_3_STATUS_TYPE)
@@ -7412,10 +7695,9 @@ public class BaseTest {
                     .selfHtml("/pid/" + IDENTIFIER_3_ID)
                     .data("/api/database/" + DATABASE_1_ID + "/view/" + VIEW_1_ID + "/data")
                     .build())
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_3_DESCRIPTION_1_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_3_TITLE_1_DTO)))
             .doi(IDENTIFIER_3_DOI)
-            .execution(IDENTIFIER_3_EXECUTION)
             .publicationDay(IDENTIFIER_3_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
@@ -7430,7 +7712,7 @@ public class BaseTest {
             .relatedIdentifiers(new LinkedList<>())
             .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_3_CREATOR_1_DTO)))
             .status(IDENTIFIER_3_STATUS_TYPE_DTO)
             .build();
 
@@ -7449,6 +7731,7 @@ public class BaseTest {
     public final CreateIdentifierDto IDENTIFIER_3_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(DATABASE_1_ID)
             .viewId(VIEW_1_ID)
+            .doi(IDENTIFIER_3_DOI)
             .type(IDENTIFIER_3_TYPE_DTO)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_3_PUBLISHER)
@@ -7458,13 +7741,14 @@ public class BaseTest {
             .id(IDENTIFIER_3_ID)
             .databaseId(DATABASE_1_ID)
             .viewId(VIEW_1_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .doi(IDENTIFIER_3_DOI)
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_3_DESCRIPTION_1_SAVE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_3_TITLE_1_SAVE_DTO)))
             .relatedIdentifiers(new LinkedList<>())
             .publicationDay(IDENTIFIER_3_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_3_CREATOR_1_SAVE_DTO)))
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
@@ -7491,6 +7775,12 @@ public class BaseTest {
             .nameType(IDENTIFIER_4_CREATOR_1_NAME_TYPE_DTO)
             .build();
 
+    public final SaveIdentifierCreatorDto IDENTIFIER_4_CREATOR_1_SAVE_DTO = SaveIdentifierCreatorDto.builder()
+            .id(IDENTIFIER_4_CREATOR_1_ID)
+            .creatorName(IDENTIFIER_4_CREATOR_1_NAME)
+            .nameType(IDENTIFIER_4_CREATOR_1_NAME_TYPE_DTO)
+            .build();
+
     public final static UUID IDENTIFIER_4_TITLE_1_ID = UUID.fromString("7409c03c-35ab-4e19-9876-88967ef37024");
     public final static String IDENTIFIER_4_TITLE_1_TITLE = "Austrian weather data";
     public final static Integer IDENTIFIER_4_TITLE_1_ORD_POS = 0;
@@ -7504,6 +7794,31 @@ public class BaseTest {
     public final IdentifierTitleDto IDENTIFIER_4_TITLE_1_DTO = IdentifierTitleDto.builder()
             .id(IDENTIFIER_4_TITLE_1_ID)
             .title(IDENTIFIER_4_TITLE_1_TITLE)
+            .build();
+
+    public final SaveIdentifierTitleDto IDENTIFIER_4_TITLE_1_SAVE_DTO = SaveIdentifierTitleDto.builder()
+            .id(IDENTIFIER_4_TITLE_1_ID)
+            .title(IDENTIFIER_4_TITLE_1_TITLE)
+            .build();
+
+    public final static UUID IDENTIFIER_4_DESCRIPTION_1_ID = UUID.fromString("e616779b-7c46-46a9-89a9-92187441b7a3");
+    public final static String IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION = "Weather data";
+    public final static Integer IDENTIFIER_4_DESCRIPTION_1_ORD_POS = 0;
+
+    public final IdentifierDescription IDENTIFIER_4_DESCRIPTION_1 = IdentifierDescription.builder()
+            .id(IDENTIFIER_4_DESCRIPTION_1_ID)
+            .ordinalPosition(IDENTIFIER_4_DESCRIPTION_1_ORD_POS)
+            .description(IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final IdentifierDescriptionDto IDENTIFIER_4_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_4_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION)
+            .build();
+
+    public final SaveIdentifierDescriptionDto IDENTIFIER_4_DESCRIPTION_1_SAVE_DTO = SaveIdentifierDescriptionDto.builder()
+            .id(IDENTIFIER_4_DESCRIPTION_1_ID)
+            .description(IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION)
             .build();
 
     public final static UUID IDENTIFIER_4_ID = UUID.fromString("3bd69bb8-f7e3-48e4-9717-823787e7ba23");
@@ -7525,7 +7840,7 @@ public class BaseTest {
     public final Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
             .tableId(TABLE_1_ID)
-            .descriptions(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_4_DESCRIPTION_1)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_4_TITLE_1)))
             .doi(IDENTIFIER_4_DOI)
             .database(null /* DATABASE_1 */)
@@ -7555,7 +7870,7 @@ public class BaseTest {
                     .selfHtml("/pid/" + IDENTIFIER_4_ID)
                     .data("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID + "/data")
                     .build())
-            .descriptions(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_4_DESCRIPTION_1_DTO)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_4_TITLE_1_DTO)))
             .doi(IDENTIFIER_4_DOI)
             .execution(IDENTIFIER_4_EXECUTION)
@@ -7596,14 +7911,15 @@ public class BaseTest {
             .id(IDENTIFIER_4_ID)
             .databaseId(DATABASE_1_ID)
             .tableId(TABLE_1_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_4_DESCRIPTION_1_SAVE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_4_TITLE_1_SAVE_DTO)))
             .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_4_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_4_CREATOR_1_SAVE_DTO)))
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE_DTO)
+            .funders(new LinkedList<>())
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
@@ -8245,21 +8561,19 @@ public class BaseTest {
 
     public final Identifier IDENTIFIER_7 = Identifier.builder()
             .id(IDENTIFIER_7_ID)
-            .descriptions(new LinkedList<>())
-            .titles(new LinkedList<>())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_7_DESCRIPTION_1)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_7_TITLE_1)))
             .doi(IDENTIFIER_7_DOI)
             .created(IDENTIFIER_7_CREATED)
             .lastModified(IDENTIFIER_7_MODIFIED)
-            .execution(IDENTIFIER_7_EXECUTION)
             .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
-            .resultNumber(IDENTIFIER_7_RESULT_NUMBER)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE)
             .owner(USER_4)
             .ownedBy(USER_4_ID)
-            .licenses(new LinkedList<>())
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1)))
             .relatedIdentifiers(new LinkedList<>())
             .funders(new LinkedList<>())
@@ -8795,8 +9109,17 @@ public class BaseTest {
         IDENTIFIER_1_DESCRIPTION_1.setIdentifier(IDENTIFIER_1);
         IDENTIFIER_1_FUNDER_1.setIdentifier(IDENTIFIER_1);
         IDENTIFIER_2.setDatabase(DATABASE_1);
+        IDENTIFIER_2_CREATOR_1.setIdentifier(IDENTIFIER_2);
+        IDENTIFIER_2_TITLE_1.setIdentifier(IDENTIFIER_2);
+        IDENTIFIER_2_DESCRIPTION_1.setIdentifier(IDENTIFIER_2);
         IDENTIFIER_3.setDatabase(DATABASE_1);
+        IDENTIFIER_3_CREATOR_1.setIdentifier(IDENTIFIER_3);
+        IDENTIFIER_3_TITLE_1.setIdentifier(IDENTIFIER_3);
+        IDENTIFIER_3_DESCRIPTION_1.setIdentifier(IDENTIFIER_3);
         IDENTIFIER_4.setDatabase(DATABASE_1);
+        IDENTIFIER_4_CREATOR_1.setIdentifier(IDENTIFIER_4);
+        IDENTIFIER_4_TITLE_1.setIdentifier(IDENTIFIER_4);
+        IDENTIFIER_4_DESCRIPTION_1.setIdentifier(IDENTIFIER_4);
         /* DATABASE 2 */
         DATABASE_2.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS, DATABASE_2_USER_3_READ_ACCESS)));
         DATABASE_2.setTables(new LinkedList<>(List.of(TABLE_5, TABLE_6, TABLE_7)));
@@ -8856,6 +9179,10 @@ public class BaseTest {
         VIEW_5.setColumns(VIEW_5_COLUMNS);
         VIEW_5_DTO.setColumns(VIEW_5_COLUMNS_DTO);
         IDENTIFIER_6.setDatabase(DATABASE_3);
+        IDENTIFIER_6_CREATOR_1.setIdentifier(IDENTIFIER_6);
+        IDENTIFIER_6_CREATOR_2.setIdentifier(IDENTIFIER_6);
+        IDENTIFIER_6_TITLE_1.setIdentifier(IDENTIFIER_6);
+        IDENTIFIER_6_DESCRIPTION_1.setIdentifier(IDENTIFIER_6);
         /* DATABASE 4 */
         DATABASE_4.setAccesses(new LinkedList<>(List.of(DATABASE_4_USER_1_READ_ACCESS, DATABASE_4_USER_2_WRITE_OWN_ACCESS, DATABASE_4_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_4.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7)));
@@ -8871,6 +9198,8 @@ public class BaseTest {
         IDENTIFIER_7.setStatus(IdentifierStatusType.DRAFT);
         IDENTIFIER_7.setDatabase(DATABASE_4);
         IDENTIFIER_7_CREATOR_1.setIdentifier(IDENTIFIER_7);
+        IDENTIFIER_7_TITLE_1.setIdentifier(IDENTIFIER_7);
+        IDENTIFIER_7_DESCRIPTION_1.setIdentifier(IDENTIFIER_7);
     }
 
 }

@@ -44,6 +44,9 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     private DataServiceGateway dataServiceGateway;
 
     @MockBean
+    private ViewService viewService;
+
+    @MockBean
     private SearchServiceGateway searchServiceGateway;
 
     @MockBean
@@ -353,6 +356,10 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
             ExternalServiceException {
 
+        /* mock */
+        when(viewService.findById(DATABASE_1, VIEW_1_ID))
+                .thenReturn(VIEW_1);
+
         /* test */
         assertIdentifierEquals(IDENTIFIER_3, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_3_SAVE_DTO));
     }
@@ -416,7 +423,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             assertEquals(expectedCreator.getAffiliationIdentifier(), actualCreator.getAffiliationIdentifier());
             assertEquals(expectedCreator.getAffiliationIdentifierScheme(), actualCreator.getAffiliationIdentifierScheme());
             assertEquals(expectedCreator.getAffiliationIdentifierSchemeUri(), actualCreator.getAffiliationIdentifierSchemeUri());
-            assertNotNull(expectedCreator.getIdentifier());
+            assertNotNull(actualCreator.getIdentifier());
         }
         assertEquals(expected.getPublisher(), actual.getPublisher());
         assertEquals(expected.getStatus(), actual.getStatus());
