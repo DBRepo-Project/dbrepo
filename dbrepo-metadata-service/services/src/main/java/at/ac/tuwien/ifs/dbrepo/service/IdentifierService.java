@@ -119,10 +119,10 @@ public interface IdentifierService {
      * @throws SearchServiceException            The search service responded with an unexpected error code.
      * @throws SearchServiceConnectionException  The connection with the search service could not be established.
      */
-    Identifier save(Database database, User user, IdentifierSaveDto data) throws DataServiceException,
-            DataServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
-            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
-            ExternalServiceException;
+    Identifier save(Database database, User user, IdentifierSaveDto data)
+            throws DataServiceException, DataServiceConnectionException, IdentifierNotFoundException,
+            MalformedException, ViewNotFoundException, DatabaseNotFoundException, QueryNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, ExternalServiceException;
 
     /**
      * Creates a new identifier in the metadata database for a query or database.

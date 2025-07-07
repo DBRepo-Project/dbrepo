@@ -13,6 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -437,8 +439,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitles().size(), body.getTitles().size());
-        assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
+        assertEquals(compare.getTitles(), body.getTitles());
         assertEquals(compare.getDescriptions(), body.getDescriptions());
         assertEquals(compare.getDoi(), body.getDoi());
         assertEquals(compare.getLicenses().size(), body.getLicenses().size());
@@ -1077,13 +1078,21 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             QueryNotFoundException, IdentifierNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, TableNotFoundException, ExternalServiceException {
 
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
+
         /* test */
         generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL, USER_1);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_noAccess_fails() {
+    public void save_noAccess_fails() throws IdentifierNotFoundException {
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1099,6 +1108,8 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             SearchServiceException, SearchServiceConnectionException, TableNotFoundException, ExternalServiceException {
 
         /* mock */
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
         when(dataServiceGateway.findQuery(DATABASE_2_ID, QUERY_2_ID))
                 .thenReturn(QUERY_2_DTO);
 
@@ -1109,21 +1120,29 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("malformedSubset_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedSubset_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
+    public void save_malformedSubset_fails(String name, UUID queryId, UUID viewId, UUID tableId)
+            throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.SUBSET)
+                .licenses(List.of(LICENSE_1_DTO))
+                .funders(List.of())
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1134,21 +1153,29 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("malformedView_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedView_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
+    public void save_malformedView_fails(String name, UUID queryId, UUID viewId, UUID tableId)
+            throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.VIEW)
+                .licenses(List.of(LICENSE_1_DTO))
+                .funders(List.of())
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1159,21 +1186,29 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("malformedTable_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedTable_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
+    public void save_malformedTable_fails(String name, UUID queryId, UUID viewId, UUID tableId)
+            throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.TABLE)
+                .licenses(List.of(LICENSE_1_DTO))
+                .funders(List.of())
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1184,21 +1219,29 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("malformedDatabase_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_malformedDatabase_fails(String name, UUID queryId, UUID viewId, UUID tableId) {
+    public void save_malformedDatabase_fails(String name, UUID queryId, UUID viewId, UUID tableId)
+            throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .queryId(queryId)
                 .viewId(viewId)
                 .tableId(tableId)
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.DATABASE)
+                .funders(List.of())
+                .licenses(List.of(LICENSE_1_DTO))
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1208,19 +1251,26 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_invalidDateDay_fails() {
+    public void save_invalidDateDay_fails() throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
-                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_SAVE_DTO))
                 .publicationDay(32) // <<<
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.DATABASE)
+                .licenses(List.of(LICENSE_1_DTO))
+                .funders(List.of())
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1230,19 +1280,26 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_invalidDateMonth_fails() {
+    public void save_invalidDateMonth_fails() throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
-                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_SAVE_DTO))
                 .publicationDay(IDENTIFIER_1_PUBLICATION_DAY)
                 .publicationMonth(13) // <<<
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.DATABASE)
+                .funders(List.of())
+                .licenses(List.of(LICENSE_1_DTO))
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1254,11 +1311,13 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @MethodSource("save_foreign_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void save_foreign_fails(String name, Integer idx)
-            throws UserNotFoundException {
+            throws UserNotFoundException, IdentifierNotFoundException {
 
         /* mock */
         when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
         final Identifier identifier;
         final IdentifierSaveDto identifierSave = switch (idx) {
             case 2 -> {
@@ -1279,6 +1338,10 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             }
         };
 
+        /* mock */
+        when(identifierService.find(identifier.getId()))
+                .thenReturn(identifier);
+
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_save(DATABASE_1_ID, DATABASE_1, null, identifier, identifierSave, USER_1_PRINCIPAL, USER_1);
@@ -1287,20 +1350,27 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_invalidTable_fails() {
+    public void save_invalidTable_fails() throws IdentifierNotFoundException {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .id(IDENTIFIER_1_ID)
                 .viewId(UUID.randomUUID())  // <--
                 .databaseId(DATABASE_1_ID)
-                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
-                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_SAVE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_SAVE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_SAVE_DTO))
                 .publicationDay(IDENTIFIER_1_PUBLICATION_DAY)
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_1_CREATOR_1_SAVE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.TABLE)
+                .funders(List.of())
+                .licenses(List.of(LICENSE_1_DTO))
                 .build();
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -1311,7 +1381,8 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("save_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_noForeign_fails(String name, Integer dbIdx, Integer idIdx, Integer uIdx) {
+    public void save_noForeign_fails(String name, Integer dbIdx, Integer idIdx, Integer uIdx)
+            throws IdentifierNotFoundException {
         final UUID databaseId;
         final Database database = switch (dbIdx) {
             case 1 -> {
@@ -1361,6 +1432,10 @@ public class IdentifierEndpointUnitTest extends BaseTest {
                 yield null;
             }
         };
+
+        /* mock */
+        when(identifierService.find(identifier.getId()))
+                .thenReturn(identifier);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1430,6 +1505,87 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             identifierEndpoint.create(IDENTIFIER_1_CREATE_DTO, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_validateEmptyDescriptions_fails() {
+        final CreateIdentifierDto request = CreateIdentifierDto.builder()
+                .databaseId(DATABASE_1_ID)
+                .type(IDENTIFIER_1_TYPE_DTO)
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .descriptions(new LinkedList<>()) // <<<<
+                .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO)))
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .type(IDENTIFIER_1_TYPE_DTO)
+                .doi(IDENTIFIER_1_DOI)
+                .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+                .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
+                .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
+                .relatedIdentifiers(new LinkedList<>())
+                .build();
+
+        /* test */
+        assertThrows(ConstraintViolationException.class, () -> {
+            identifierEndpoint.create(request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_validateEmptyTitles_fails() {
+        final CreateIdentifierDto request = CreateIdentifierDto.builder()
+                .databaseId(DATABASE_1_ID)
+                .type(IDENTIFIER_1_TYPE_DTO)
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
+                .titles(new LinkedList<>()) // <<<<
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .type(IDENTIFIER_1_TYPE_DTO)
+                .doi(IDENTIFIER_1_DOI)
+                .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+                .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
+                .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
+                .relatedIdentifiers(new LinkedList<>())
+                .build();
+
+        /* test */
+        assertThrows(ConstraintViolationException.class, () -> {
+            identifierEndpoint.create(request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_validateEmptyCreators_fails() {
+        final CreateIdentifierDto request = CreateIdentifierDto.builder()
+                .databaseId(DATABASE_1_ID)
+                .type(IDENTIFIER_1_TYPE_DTO)
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
+                .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO)))
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .type(IDENTIFIER_1_TYPE_DTO)
+                .doi(IDENTIFIER_1_DOI)
+                .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+                .creators(new LinkedList<>()) // <<<<
+                .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
+                .relatedIdentifiers(new LinkedList<>())
+                .build();
+
+        /* test */
+        assertThrows(ConstraintViolationException.class, () -> {
+            identifierEndpoint.create(request, USER_1_PRINCIPAL);
         });
     }
 
@@ -1504,8 +1660,6 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             when(dataServiceGateway.findQuery(databaseId, QUERY_2_ID))
                     .thenReturn(QUERY_2_DTO);
         }
-        when(identifierService.find(identifier.getId()))
-                .thenReturn(identifier);
         when(userService.findById(user.getId()))
                 .thenReturn(user);
         when(databaseService.findById(databaseId))

@@ -181,33 +181,6 @@ mqtt.prefetch = 10
 ` |
 | `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `1`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
-### Analyse Service
-
-| Name                                                               | Description                                                                                                       | Value                     |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `analyseservice.enabled`                                           | Enable the Broker Service.                                                                                        | `true`                    |
-| `analyseservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                      |
-| `analyseservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                    |
-| `analyseservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                | `Always`                  |
-| `analyseservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                    | `[]`                      |
-| `analyseservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                       | `[]`                      |
-| `analyseservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                       | `1001`                    |
-| `analyseservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                              | `true`                    |
-| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                      |
-| `analyseservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1001`                    |
-| `analyseservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `1001`                    |
-| `analyseservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                    |
-| `analyseservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                   |
-| `analyseservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                   |
-| `analyseservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`                 |
-| `analyseservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`          |
-| `analyseservice.resourcesPreset`                                   | The container resource preset                                                                                     | `micro`                   |
-| `analyseservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                      |
-| `analyseservice.endpoint`                                          | The url of the endpoint.                                                                                          | `http://analyse-service`  |
-| `analyseservice.s3.proto`                                          | The protocol of the storage service endpoint.                                                                     | `http`                    |
-| `analyseservice.s3.endpoint`                                       | The hostname and port of the storage service endpoint.                                                            | `storage-service-s3:8333` |
-| `analyseservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                       |
-
 ### Metadata Service
 
 | Name                                                                | Description                                                                                                       | Value                            |

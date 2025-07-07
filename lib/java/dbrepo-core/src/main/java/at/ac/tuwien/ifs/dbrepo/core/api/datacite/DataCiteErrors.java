@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.core.api.datacite;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -13,12 +14,8 @@ import java.util.Map;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class DataCiteError {
+public class DataCiteErrors {
 
-    private String source;
-
-    private String title;
-
-    private String uid;
+    private List<DataCiteError> errors;
 
 }

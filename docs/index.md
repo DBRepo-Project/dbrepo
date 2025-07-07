@@ -11,8 +11,6 @@ author: Martin Weise
 [![Image Pulls](/infrastructures/dbrepo/1.10/images/pulls.svg)](https://registry.datalab.tuwien.ac.at/api/v2.0/projects/dbrepo/repositories/data-service){ tabindex=-1 }
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
-![Maintainability Rating](/infrastructures/dbrepo/1.10/images/maintainability.svg)
-![Security Rating](/infrastructures/dbrepo/1.10/images/security.svg)
 
 Documentation for version: [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 

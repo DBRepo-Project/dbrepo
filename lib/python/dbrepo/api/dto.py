@@ -570,11 +570,11 @@ class Creator(BaseModel):
     creator_name: str
     firstname: Optional[str] = None
     lastname: Optional[str] = None
-    affiliation: Optional[str] = None
-    name_type: Optional[str] = None
+    name_type: Optional[IdentifierNameType] = None
     name_identifier: Optional[str] = None
     name_identifier_scheme: Optional[NameIdentifierSchemeType] = None
     name_identifier_scheme_uri: Optional[str] = None
+    affiliation: Optional[str] = None
     affiliation_identifier: Optional[str] = None
     affiliation_identifier_scheme: Optional[str] = None
     affiliation_identifier_scheme_uri: Optional[str] = None
@@ -584,7 +584,7 @@ class CreatorBrief(BaseModel):
     id: str
     creator_name: str
     affiliation: Optional[str] = None
-    name_type: Optional[str] = None
+    name_type: Optional[IdentifierNameType] = None
     name_identifier: Optional[str] = None
     name_identifier_scheme: Optional[NameIdentifierSchemeType] = None
     affiliation_identifier: Optional[str] = None
@@ -598,9 +598,7 @@ class CreateIdentifierCreator(BaseModel):
     affiliation: Optional[str] = None
     name_type: Optional[IdentifierNameType] = None
     name_identifier: Optional[str] = None
-    name_identifier_scheme: Optional[str] = None
     affiliation_identifier: Optional[str] = None
-    affiliation_identifier_scheme: Optional[str] = None
 
 
 class SaveIdentifierCreator(CreateIdentifierCreator):
