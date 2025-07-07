@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
@@ -51,6 +52,11 @@ public class CacheConfig {
     @Bean
     public Cache<UUID, ContainerDto> containerCache() {
         return new ExpiryCache<UUID, ContainerDto>().build();
+    }
+
+    @Bean
+    public Cache<UUID, ImageDto> imageCache() {
+        return new ExpiryCache<UUID, ImageDto>().build();
     }
 
     @Bean

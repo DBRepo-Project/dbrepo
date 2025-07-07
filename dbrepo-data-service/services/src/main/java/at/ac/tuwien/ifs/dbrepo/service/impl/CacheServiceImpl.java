@@ -233,6 +233,7 @@ public class CacheServiceImpl implements CacheService {
         tableCache.invalidateAll();
         databaseCache.invalidateAll();
         containerCache.invalidateAll();
+        imageCache.invalidateAll();
         statisticCache.invalidateAll();
     }
 

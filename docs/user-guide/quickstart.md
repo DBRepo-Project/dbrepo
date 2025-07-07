@@ -9,18 +9,17 @@ these topics in the corresponding documentation pages on the left.
 
 The following instances have different login mechanisms:
 
-* Open for anyone:
+* Open for anyone, create an account with username and password:
 
     !!! warning "Ephemeral Data"
     
         This instance is intended for testing-purposes only and data may be deleted at any time.
         
-        [test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at) - Create an account and login via username and
-        password.
+    * [test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
 
-* By affiliation:
+* By affiliation (SSO):
 
-    * [dbrepo1.ec.tuwien.ac.at](https://dbrepo1.ec.tuwien.ac.at) - Login via TU SSO
+    * [dbrepo.datalab.tuwien.ac.at](https://dbrepo.datalab.tuwien.ac.at) with MQTT/AMQP endpoint `s155.datalab.tuwien.ac.at`
 
 ## Create Database
 
