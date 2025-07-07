@@ -1,6 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
@@ -8,7 +10,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import jakarta.validation.constraints.NotNull;
@@ -83,6 +84,33 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         container.getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         container.setLastRetrieved(Instant.now());
         return container;
+    }
+
+    @Override
+    public ImageDto getImageById(UUID imageId) throws RemoteUnavailableException,
+            ImageNotFoundException, MetadataServiceException {
+        final ResponseEntity<ImageDto> response;
+        final String url = "/api/image/" + imageId;
+        log.debug("get container info from metadata service: {}", url);
+        try {
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
+                    ImageDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to find image with id {}: {}", imageId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to find image: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to find image with id {}: {}", imageId, e.getMessage());
+            throw new ImageNotFoundException("Failed to find image: " + e.getMessage(), e);
+        }
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to find image with id {}: service responded unsuccessful: {}", imageId, response.getStatusCode());
+            throw new MetadataServiceException("Failed to find image: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to find image with id {}: body is empty", imageId);
+            throw new MetadataServiceException("Failed to find image with id " + imageId + ": body is empty");
+        }
+        return response.getBody();
     }
 
     @Override

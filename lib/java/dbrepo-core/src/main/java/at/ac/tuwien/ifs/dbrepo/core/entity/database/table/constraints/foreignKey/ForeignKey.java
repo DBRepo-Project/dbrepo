@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ public class ForeignKey {
     private Table referencedTable;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "foreignKey")
-    private List<ForeignKeyReference> references;
+    private List<ForeignKeyReference> references = new LinkedList<>();
 
     @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)

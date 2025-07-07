@@ -68,12 +68,11 @@ public interface TableService {
      * @throws DataServiceException             The data service responded with unexpected behavior.
      * @throws DataServiceConnectionException   The connection with the data service could not be established.
      * @throws DatabaseNotFoundException        The database was not found in the metadata service.
-     * @throws TableNotFoundException           The table was not found in the metadata service.
      * @throws SearchServiceException           The search service responded with an unexpected error code.
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
     void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException;
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Updates a given table from the database in the metadata database.

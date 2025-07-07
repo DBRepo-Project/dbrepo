@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,15 +20,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<ApiErrorDto> handle(TokenExpiredException e) {
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorDto> handle(ConstraintViolationException e) {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/problem+json");
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.UNAUTHORIZED)
+                .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
-                .code("error.token.expired")
+                .code("error.form.malformed")
                 .build();
         return new ResponseEntity<>(response, headers, response.getStatus());
     }
@@ -45,6 +46,22 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
         return new ResponseEntity<>(response, headers, response.getStatus());
     }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ApiErrorDto> handle(TokenExpiredException e) {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/problem+json");
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.UNAUTHORIZED)
+                .message(e.getLocalizedMessage())
+                .code("error.token.expired")
+                .build();
+        return new ResponseEntity<>(response, headers, response.getStatus());
+    }
+
+    //
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)

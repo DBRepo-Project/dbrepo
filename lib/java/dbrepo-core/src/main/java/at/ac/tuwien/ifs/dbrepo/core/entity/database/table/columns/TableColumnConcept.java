@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,7 +57,7 @@ public class TableColumnConcept {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
             },
             joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
-    private List<TableColumn> columns;
+    private List<TableColumn> columns = new LinkedList<>();
 
     @PrePersist
     public void prePersist() {

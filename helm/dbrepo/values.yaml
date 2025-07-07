@@ -14,7 +14,7 @@ global:
   storageClass: ""
   loggingSidecar:
     ## @param global.loggingSidecar.enabled Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.
-    enabled: true
+    enabled: false
     image:
       ## @param global.loggingSidecar.image.name The logging sidecar image.
       name: docker.io/bitnami/fluent-bit:4.0.0
@@ -171,7 +171,7 @@ authservice:
       mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
       subPath: create-event-listener.jar
   ## @skip authservice.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
 
 ## @section Data Database
 
@@ -189,18 +189,13 @@ datadb:
     user: root
     ## @param datadb.rootUser.password The root user password.
     password: dbrepo
-  readonlyUser:
-    ## @param datadb.readonlyUser.user The readonly username.
-    user: readonly
-    ## @param datadb.readonlyUser.password The readonly password.
-    password: readonly
   db:
     ## @param datadb.db.name The database name.
     name: dbrepo
-    ## @param datadb.db.user The database username for the dashboard service.
-    user: user
-    ## @param datadb.db.password The database user password for the dashboard service.
-    password: user
+    ## @param datadb.db.user The readonly username.
+    user: readonly
+    ## @param datadb.db.password The readonly password.
+    password: readonly
   galera:
     mariabackup:
       ## @param datadb.galera.mariabackup.user The database backup username.
@@ -216,8 +211,10 @@ datadb:
   replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
+  ## @param datadb.configurationConfigMap The configmap name holding the `my.cnf` key that defines the mariadb configuration.
+  configurationConfigMap: "data-db-config"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
-  initdbScriptsConfigMap: "data-db-setup"
+  initdbScriptsConfigMap: "data-db-scripts-config"
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true
@@ -336,126 +333,62 @@ brokerservice:
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
   ## @skip brokerservice.sidecars
-  sidecars:
-    - name: logging-agent
-      image: docker.io/bitnami/fluent-bit:4.0.0
-      imagePullPolicy: IfNotPresent
-      securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
-        readOnlyRootFilesystem: false
-        runAsGroup: 1001
-        runAsNonRoot: true
-        runAsUser: 1001
-        seLinuxOptions: { }
-        seccompProfile:
-          type: RuntimeDefault
-      volumeMounts:
-        - name: logging-config
-          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-          subPath: fluent-bit.conf
-        - name: logging-config
-          mountPath: /opt/bitnami/fluent-bit/conf/parsers.conf
-          subPath: parsers.conf
-        - name: empty-dir
-          mountPath: /opt/bitnami/rabbitmq/var/log/rabbitmq
-          subPath: app-logs-dir
-      livenessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 150
-        periodSeconds: 10
-      readinessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 30
-        periodSeconds: 10
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-          ephemeral-storage: 50Mi
-        limits:
-          cpu: 150m
-          memory: 192Mi
-          ephemeral-storage: 2Gi
-  ## @skip brokerservice.extraVolumes
-  extraVolumes:
-    - name: logging-config
-      configMap:
-        name: broker-service-config
-  ## @skip brokerservice.extraVolumeMounts
-  extraVolumeMounts:
-    - name: logging-config
-      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
+  sidecars: [ ]
+#    - name: logging-agent
+#      image: docker.io/bitnami/fluent-bit:4.0.0
+#      imagePullPolicy: IfNotPresent
+#      securityContext:
+#        allowPrivilegeEscalation: false
+#        capabilities:
+#          drop:
+#            - ALL
+#        readOnlyRootFilesystem: false
+#        runAsGroup: 1001
+#        runAsNonRoot: true
+#        runAsUser: 1001
+#        seLinuxOptions: { }
+#        seccompProfile:
+#          type: RuntimeDefault
+#      volumeMounts:
+#        - name: logging-config
+#          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+#          subPath: fluent-bit.conf
+#        - name: logging-config
+#          mountPath: /opt/bitnami/fluent-bit/conf/parsers.conf
+#          subPath: parsers.conf
+#        - name: empty-dir
+#          mountPath: /opt/bitnami/rabbitmq/var/log/rabbitmq
+#          subPath: app-logs-dir
+#      livenessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 150
+#        periodSeconds: 10
+#      readinessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 30
+#        periodSeconds: 10
+#      resources:
+#        requests:
+#          cpu: 100m
+#          memory: 128Mi
+#          ephemeral-storage: 50Mi
+#        limits:
+#          cpu: 150m
+#          memory: 192Mi
+#          ephemeral-storage: 2Gi
+#  ## @skip brokerservice.extraVolumes
+#  extraVolumes:
+#    - name: logging-config
+#      configMap:
+#        name: broker-service-config
+#  ## @skip brokerservice.extraVolumeMounts
+#  extraVolumeMounts:
+#    - name: logging-config
+#      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
-
-## @section Analyse Service
-
-analyseservice:
-  ## @param analyseservice.enabled Enable the Broker Service.
-  enabled: true
-  image:
-    ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.10.0
-  ## @param analyseservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: { }
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:
-    ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled: true
-    ## @param analyseservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy: Always
-    ## @param analyseservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls: [ ]
-    ## @param analyseservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups: [ ]
-    ## @param analyseservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup: 1001
-  containerSecurityContext:
-    ## @param analyseservice.containerSecurityContext.enabled Enabled containers' Security Context
-    enabled: true
-    ## @param analyseservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: { }
-    ## @param analyseservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser: 1001
-    ## @param analyseservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup: 1001
-    ## @param analyseservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot: true
-    ## @param analyseservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation: false
-    ## @param analyseservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem: false
-    capabilities:
-      ## @param analyseservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop: [ "ALL" ]
-    seccompProfile:
-      ## @param analyseservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type: "RuntimeDefault"
-  ## @param analyseservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
-  ## @param analyseservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
-  ## @param analyseservice.endpoint The url of the endpoint.
-  endpoint: http://analyse-service
-  s3:
-    ## @param analyseservice.s3.proto The protocol of the storage service endpoint.
-    proto: http
-    ## @param analyseservice.s3.endpoint The hostname and port of the storage service endpoint.
-    endpoint: storage-service-s3:8333
-  ## @param analyseservice.replicaCount The number of replicas.
-  replicaCount: 2
 
 ## @section Metadata Service
 
@@ -1203,56 +1136,54 @@ gatewayservice:
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
   ## @skip gatewayservice.sidecars
-  sidecars:
-    - name: logging-agent
-      image: docker.io/bitnami/fluent-bit:4.0.0
-      imagePullPolicy: IfNotPresent
-      securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
-        readOnlyRootFilesystem: false
-        runAsGroup: 1001
-        runAsNonRoot: true
-        runAsUser: 1001
-        seLinuxOptions: { }
-        seccompProfile:
-          type: RuntimeDefault
-      volumeMounts:
-        - name: logging-config
-          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-          subPath: fluent-bit.conf
-        - name: empty-dir
-          mountPath: /var/log/nginx/
-      livenessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 150
-        periodSeconds: 10
-      readinessProbe:
-        httpGet:
-          port: 2021
-        initialDelaySeconds: 30
-        periodSeconds: 10
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-          ephemeral-storage: 50Mi
-        limits:
-          cpu: 150m
-          memory: 192Mi
-          ephemeral-storage: 2Gi
-  ## @skip gatewayservice.extraVolumes
-  extraVolumes:
-    - name: logging-config
-      configMap:
-        name: gateway-service-config
-  ## @skip gatewayservice.extraVolumeMounts
-  extraVolumeMounts:
-    - name: empty-dir
-      mountPath: /var/log/nginx
+  sidecars: [ ]
+#    - name: logging-agent
+#      image: docker.io/bitnami/fluent-bit:4.0.0
+#      imagePullPolicy: IfNotPresent
+#      securityContext:
+#        allowPrivilegeEscalation: false
+#        capabilities:
+#          drop:
+#            - ALL
+#        readOnlyRootFilesystem: false
+#        runAsGroup: 1001
+#        runAsNonRoot: true
+#        runAsUser: 1001
+#        seLinuxOptions: { }
+#        seccompProfile:
+#          type: RuntimeDefault
+#      volumeMounts:
+#        - name: logging-config
+#          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+#          subPath: fluent-bit.conf
+#        - name: empty-dir
+#          mountPath: /var/log/nginx/
+#      livenessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 150
+#        periodSeconds: 10
+#      readinessProbe:
+#        httpGet:
+#          port: 2021
+#        initialDelaySeconds: 30
+#        periodSeconds: 10
+#      resources:
+#        requests:
+#          cpu: 100m
+#          memory: 128Mi
+#          ephemeral-storage: 50Mi
+#        limits:
+#          cpu: 150m
+#          memory: 192Mi
+#          ephemeral-storage: 2Gi
+#  extraVolumes:
+#    - name: logging-config
+#      configMap:
+#        name: gateway-service-config
+#  extraVolumeMounts:
+#    - name: empty-dir
+#      mountPath: /var/log/nginx
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 

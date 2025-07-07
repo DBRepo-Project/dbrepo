@@ -10,13 +10,16 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
 public class DataCiteDoiTypes implements Serializable {
 
-    public static final DataCiteDoiTypes DATASET = DataCiteDoiTypes.builder().resourceTypeGeneral("Dataset").build();
+    public static final DataCiteDoiTypes DATASET = DataCiteDoiTypes.builder()
+            .resourceTypeGeneral("Dataset")
+            .build();
 
     @NotNull
     private String resourceTypeGeneral;

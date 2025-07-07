@@ -42,8 +42,18 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         try {
             /* create user if not exists */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery(user.getUsername(), user.getPassword()))
-                    .execute();
+            final PreparedStatement statement;
+            if (user.getPassword().startsWith("*")) {
+                log.trace("password is hashed: use normal query");
+                statement = connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery());
+            } else {
+                log.trace("password is not hashed: use raw query");
+                statement = connection.prepareStatement(mariaDbMapper.databaseCreateUserRawQuery());
+            }
+            statement.setString(1, user.getUsername());
+            statement.setString(2, user.getPassword());
+            log.trace("1={}, 2={}", user.getUsername(), user.getPassword());
+            statement.execute();
             log.atDebug()
                     .setMessage("create user in database: " + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)

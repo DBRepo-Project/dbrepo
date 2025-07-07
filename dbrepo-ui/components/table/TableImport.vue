@@ -490,9 +490,9 @@ export default {
       })
     },
     analyse(s3key) {
-      const analyseService = useAnalyseService()
+      const databaseService = useDatabaseService()
       this.loading = true
-      analyseService.determineSchema(s3key)
+      databaseService.determineSchema(this.$route.params.database_id, s3key)
         .then((analysis) => {
           const {columns, delimiter, newline_delimiter, quote} = analysis
           this.columns = columns.map(column => {

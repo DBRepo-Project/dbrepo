@@ -8,14 +8,17 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
 public class DataCiteError {
 
-    private String message;
+    private String source;
 
-    private Map<String, String> position;
+    private String title;
+
+    private String uid;
 
 }

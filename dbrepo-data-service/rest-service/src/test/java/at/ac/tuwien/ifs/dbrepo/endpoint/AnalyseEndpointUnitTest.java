@@ -1,14 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import at.ac.tuwien.ifs.dbrepo.endpoints.AccessEndpoint;
 import at.ac.tuwien.ifs.dbrepo.endpoints.AnalyseEndpoint;
-import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +17,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.sql.SQLException;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 @SpringBootTest
@@ -38,16 +32,23 @@ public class AnalyseEndpointUnitTest extends BaseTest {
     @MockitoBean
     private AnalyseService analyseService;
 
+    @MockitoBean
+    private CacheService cacheService;
+
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"analyse-datatypes"})
-    public void create_succeeds() throws DatabaseUnavailableException, StorageNotFoundException, AnalyseDataTypesException {
+    public void create_succeeds() throws DatabaseUnavailableException, StorageNotFoundException,
+            AnalyseDataTypesException, ColumnNotFoundException, ImageInvalidException, RemoteUnavailableException,
+            MetadataServiceException, ImageNotFoundException {
 
         /* mock */
-        when(analyseService.determineDataTypes(anyString()))
+        when(cacheService.getImage(IMAGE_1_ID))
+                .thenReturn(IMAGE_1_DTO);
+        when(analyseService.determineDataTypes(IMAGE_1_DTO, "s3key"))
                 .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
 
         /* test */
-        final ResponseEntity<SchemaAnalysisResultDto> response = analyseEndpoint.analyseDatatypes("s3key");
+        final ResponseEntity<SchemaAnalysisResultDto> response = analyseEndpoint.analyseDatatypes(IMAGE_1_ID, "s3key");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final SchemaAnalysisResultDto body = response.getBody();
         assertNotNull(body);

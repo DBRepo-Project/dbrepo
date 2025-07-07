@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
@@ -28,6 +29,7 @@ public class CacheServiceImpl implements CacheService {
     private final MetadataServiceGateway gateway;
     private final Cache<UUID, UserDto> userCache;
     private final Cache<UUID, ViewDto> viewCache;
+    private final Cache<UUID, ImageDto> imageCache;
     private final Cache<UUID, TableDto> tableCache;
     private final Cache<UUID, DatabaseDto> databaseCache;
     private final Cache<UUID, ContainerDto> containerCache;
@@ -36,13 +38,15 @@ public class CacheServiceImpl implements CacheService {
 
     @Autowired
     public CacheServiceImpl(TableService tableService, MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
-                            Cache<UUID, ViewDto> viewCache, Cache<UUID, TableDto> tableCache,
-                            Cache<UUID, DatabaseAccessDto> accessCache, Cache<UUID, DatabaseDto> databaseCache,
-                            Cache<UUID, ContainerDto> containerCache, Cache<UUID, TableStatisticDto> statisticCache) {
+                            Cache<UUID, ViewDto> viewCache, Cache<UUID, ImageDto> imageCache,
+                            Cache<UUID, TableDto> tableCache, Cache<UUID, DatabaseAccessDto> accessCache,
+                            Cache<UUID, DatabaseDto> databaseCache, Cache<UUID, ContainerDto> containerCache,
+                            Cache<UUID, TableStatisticDto> statisticCache) {
         this.tableService = tableService;
         this.gateway = gateway;
         this.userCache = userCache;
         this.viewCache = viewCache;
+        this.imageCache = imageCache;
         this.tableCache = tableCache;
         this.accessCache = accessCache;
         this.databaseCache = databaseCache;
@@ -140,6 +144,26 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
+    public ImageDto getImage(UUID id) throws RemoteUnavailableException, MetadataServiceException,
+            ImageNotFoundException {
+        final ImageDto cacheImage = imageCache.getIfPresent(id);
+        if (cacheImage != null) {
+            log.atTrace()
+                    .setMessage("found image with id " + id)
+                    .addKeyValue("cache_hit", true)
+                    .log();
+            return cacheImage;
+        }
+        log.atTrace()
+                .setMessage("reload cacheImage from metadata service with id " + id)
+                .addKeyValue("cache_hit", false)
+                .log();
+        final ImageDto image = gateway.getImageById(id);
+        imageCache.put(id, image);
+        return image;
+    }
+
+    @Override
     public ViewDto getView(UUID databaseId, UUID viewId) throws RemoteUnavailableException,
             MetadataServiceException, ViewNotFoundException {
         final ViewDto cacheView = viewCache.getIfPresent(viewId);
@@ -209,6 +233,7 @@ public class CacheServiceImpl implements CacheService {
         tableCache.invalidateAll();
         databaseCache.invalidateAll();
         containerCache.invalidateAll();
+        imageCache.invalidateAll();
         statisticCache.invalidateAll();
     }
 

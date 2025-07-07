@@ -19,13 +19,13 @@ Everytime the views of the database change (e.g. a new view is added, a view is 
 this database is provisioned.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/database-dashboard.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/database-dashboard.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/database-dashboard.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/database-dashboard.mp4" type="video/mp4" />
 </video>
 
 !!! abstract "Note"
 
-    Database dashboards are only available for non-hidden databases, see [Update Visibility](/infrastructures/dbrepo/update-visibility).
+    Database dashboards are only available for non-hidden databases, see [Update Visibility](/infrastructures/dbrepo/1.10/update-visibility).
 
 A user wants to create a dashboard of available data sources and add personal customization.
 
@@ -34,8 +34,8 @@ A user wants to create a dashboard of available data sources and add personal cu
 As a database owner, you can disable database dashboards. They are enabled by default.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/disable-dashboard.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/disable-dashboard.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/disable-dashboard.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/disable-dashboard.mp4" type="video/mp4" />
 </video>
 
 ### Python

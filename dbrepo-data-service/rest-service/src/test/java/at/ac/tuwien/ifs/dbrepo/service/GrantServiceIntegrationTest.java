@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.GrantTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,19 +47,19 @@ public class GrantServiceIntegrationTest extends BaseTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.dropDatabase(CONTAINER_4_PRIVILEGED_DTO, DATABASE_4_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
-        MariaDbConfig.createInitDatabase(DATABASE_4_PRIVILEGED_DTO);
-        MariaDbConfig.revokeAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        MariaDbConfig.revokeAccess(DATABASE_4_PRIVILEGED_DTO, USER_4_USERNAME);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.dropDatabase(CONTAINER_4_PRIVILEGED_DTO, DATABASE_4_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.createInitDatabase(DATABASE_4_PRIVILEGED_DTO);
+        MariaDbUtil.revokeAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        MariaDbUtil.revokeAccess(DATABASE_4_PRIVILEGED_DTO, USER_4_USERNAME);
     }
 
     @Test
     public void find_read_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
-        MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
 
         /* test */
         final DatabaseGrantsDto response = grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
@@ -72,7 +72,7 @@ public class GrantServiceIntegrationTest extends BaseTest {
     public void find_read2_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
-        MariaDbConfig.grantAccess(DATABASE_4_PRIVILEGED_DTO, grantDefaultRead, USER_4_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_4_PRIVILEGED_DTO, grantDefaultRead, USER_4_USERNAME);
 
         /* test */
         final DatabaseGrantsDto response = grantService.find(DATABASE_4_PRIVILEGED_DTO, USER_4_DTO);
@@ -85,7 +85,7 @@ public class GrantServiceIntegrationTest extends BaseTest {
     public void find_write_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
-        MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);
 
         /* test */
         final DatabaseGrantsDto response = grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
@@ -98,7 +98,7 @@ public class GrantServiceIntegrationTest extends BaseTest {
     public void findAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* mock */
-        MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
 
         /* test */
         final Map<String, DatabaseGrantsDto> response = grantService.findAll(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);

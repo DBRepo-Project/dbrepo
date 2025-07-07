@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteBody;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoi;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
@@ -10,11 +11,9 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.NameIdentifierSchemeType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
+import at.ac.tuwien.ifs.dbrepo.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +49,9 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
     @MockBean
     private SearchServiceGateway searchServiceGateway;
+
+    @MockBean
+    private DataServiceGateway dataServiceGateway;
 
     @MockBean
     @Qualifier("dataCiteRestTemplate")
@@ -110,7 +112,7 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
         /* test */
         final List<Identifier> response = dataCiteIdentifierService.findAll(null, null, QUERY_1_ID, null, null);
-        assertEquals(2, response.size());
+        assertEquals(1, response.size());
     }
 
     @Test
@@ -134,11 +136,11 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
     public void save_database_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, MalformedException, IdentifierNotFoundException, ViewNotFoundException,
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
-        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.OK)
                 .body(IDENTIFIER_1_DATA_CITE);
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
                 .thenReturn(mock);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
@@ -155,9 +157,9 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
-        doThrow(HttpClientErrorException.BadRequest.class)
+        doThrow(HttpClientErrorException.UnprocessableEntity.class)
                 .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference));
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
@@ -168,19 +170,20 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
     }
 
     @Test
-    public void save_restClientException_fails() throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+    public void create_restClientException_fails() throws DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, DataServiceException, QueryNotFoundException,
+            DataServiceConnectionException {
 
         /* mock */
-        doThrow(RestClientException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference));
+        doThrow(DataServiceConnectionException.class)
+                .when(dataServiceGateway)
+                .findQuery(DATABASE_1_ID, QUERY_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            dataCiteIdentifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+            dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_2_CREATE_DTO);
         });
     }
 
@@ -189,12 +192,16 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
             QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException,
             IdentifierNotFoundException {
-        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> createResponse = ResponseEntity.status(HttpStatus.CREATED)
+                .body(IDENTIFIER_1_DATA_CITE);
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> saveResponse = ResponseEntity.status(HttpStatus.OK)
                 .body(IDENTIFIER_1_DATA_CITE);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
-                .thenReturn(mock);
+                .thenReturn(createResponse);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
+                .thenReturn(saveResponse);
 
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
@@ -208,12 +215,16 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
             QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException,
             IdentifierNotFoundException {
-        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> createResponse = ResponseEntity.status(HttpStatus.CREATED)
+                .body(IDENTIFIER_1_DATA_CITE);
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> saveResponse = ResponseEntity.status(HttpStatus.OK)
                 .body(IDENTIFIER_1_DATA_CITE);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
-                .thenReturn(mock);
+                .thenReturn(createResponse);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
+                .thenReturn(saveResponse);
 
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
@@ -225,11 +236,11 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
             DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
-        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.OK)
                 .body(IDENTIFIER_7_DATA_CITE);
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
                 .thenReturn(mock);
 
         /* test */

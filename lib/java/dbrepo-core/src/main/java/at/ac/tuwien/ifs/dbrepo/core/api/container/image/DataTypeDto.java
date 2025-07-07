@@ -48,6 +48,10 @@ public class DataTypeDto {
     @Schema(example = "false")
     private Boolean sizeRequired;
 
+    @JsonProperty("size_step")
+    @Schema(example = "1")
+    private Integer sizeStep;
+
     @JsonProperty("d_min")
     private Integer dMin;
 
@@ -59,6 +63,10 @@ public class DataTypeDto {
 
     @JsonProperty("d_required")
     private Boolean dRequired;
+
+    @JsonProperty("d_step")
+    @Schema(example = "1")
+    private Integer dStep;
 
     @NotNull
     @Schema(example = "https://mariadb.com/kb/en/time/")

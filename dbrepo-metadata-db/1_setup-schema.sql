@@ -24,16 +24,16 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
     registry      VARCHAR(255) NOT NULL DEFAULT 'docker.io',
     name          VARCHAR(255) NOT NULL,
     version       VARCHAR(255) NOT NULL,
-    DEFAULT_port  INT          NOT NULL,
+    default_port  INT          NOT NULL,
     dialect       VARCHAR(255) NOT NULL,
     driver_class  VARCHAR(255) NOT NULL,
     jdbc_method   VARCHAR(255) NOT NULL,
-    is_DEFAULT    BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_default    BOOLEAN      NOT NULL DEFAULT FALSE,
     created       TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE (`name`, `version`),
-    UNIQUE (`is_DEFAULT`)
+    UNIQUE (`is_default`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
@@ -118,24 +118,24 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
-    id               VARCHAR(36)     NOT NULL DEFAULT UUID(),
-    tID              VARCHAR(36)     NOT NULL,
+    id               VARCHAR(36)                                                                                                                                                                                                                                                                                NOT NULL DEFAULT UUID(),
+    tID              VARCHAR(36)                                                                                                                                                                                                                                                                                NOT NULL,
     cName            VARCHAR(64),
-    internal_name    VARCHAR(64)     NOT NULL,
-    Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','SERIAL','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    length           BIGINT UNSIGNED NULL,
-    ordinal_position INT             NOT NULL,
-    index_length     BIGINT UNSIGNED NULL,
+    internal_name    VARCHAR(64)                                                                                                                                                                                                                                                                                NOT NULL,
+    Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL') NOT NULL,
+    length           BIGINT UNSIGNED                                                                                                                                                                                                                                                                            NULL,
+    ordinal_position INT                                                                                                                                                                                                                                                                                        NOT NULL,
+    index_length     BIGINT UNSIGNED                                                                                                                                                                                                                                                                            NULL,
     description      VARCHAR(2048),
     size             BIGINT UNSIGNED,
     d                BIGINT UNSIGNED,
-    is_null_allowed  BOOLEAN         NOT NULL DEFAULT TRUE,
-    val_min          NUMERIC         NULL,
-    val_max          NUMERIC         NULL,
-    mean             NUMERIC         NULL,
-    median           NUMERIC         NULL,
-    std_dev          Numeric         NULL,
-    created          TIMESTAMP       NOT NULL DEFAULT NOW(),
+    is_null_allowed  BOOLEAN                                                                                                                                                                                                                                                                                    NOT NULL DEFAULT TRUE,
+    val_min          NUMERIC                                                                                                                                                                                                                                                                                    NULL,
+    val_max          NUMERIC                                                                                                                                                                                                                                                                                    NULL,
+    mean             NUMERIC                                                                                                                                                                                                                                                                                    NULL,
+    median           NUMERIC                                                                                                                                                                                                                                                                                    NULL,
+    std_dev          Numeric                                                                                                                                                                                                                                                                                    NULL,
+    created          TIMESTAMP                                                                                                                                                                                                                                                                                  NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
     FOREIGN KEY (`tID`) REFERENCES mdb_tables (`ID`) ON DELETE CASCADE,
     PRIMARY KEY (`ID`),
@@ -318,15 +318,15 @@ CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 
 CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
-    id               VARCHAR(36) NOT NULL DEFAULT UUID(),
-    view_id          VARCHAR(36) NOT NULL,
+    id               VARCHAR(36)                                                                                                                                                                                                                                                                                NOT NULL DEFAULT UUID(),
+    view_id          VARCHAR(36)                                                                                                                                                                                                                                                                                NOT NULL,
     name             VARCHAR(64),
-    internal_name    VARCHAR(64) NOT NULL,
-    column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    ordinal_position INT         NOT NULL,
+    internal_name    VARCHAR(64)                                                                                                                                                                                                                                                                                NOT NULL,
+    column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL') NOT NULL,
+    ordinal_position INT                                                                                                                                                                                                                                                                                        NOT NULL,
     size             BIGINT UNSIGNED,
     d                BIGINT UNSIGNED,
-    is_null_allowed  BOOLEAN     NOT NULL DEFAULT TRUE,
+    is_null_allowed  BOOLEAN                                                                                                                                                                                                                                                                                    NOT NULL DEFAULT TRUE,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`view_id`) REFERENCES mdb_view (`id`) ON DELETE CASCADE,
     UNIQUE (view_id, internal_name)
@@ -475,12 +475,12 @@ CREATE TABLE IF NOT EXISTS `mdb_image_types`
     value         VARCHAR(255) NOT NULL,
     size_min      INT UNSIGNED,
     size_max      INT UNSIGNED,
-    size_DEFAULT  INT UNSIGNED,
+    size_default  INT UNSIGNED,
     size_required BOOLEAN comment 'When setting NULL, the service assumes the data type has no size',
     size_step     INT UNSIGNED,
     d_min         INT UNSIGNED,
     d_max         INT UNSIGNED,
-    d_DEFAULT     INT UNSIGNED,
+    d_default     INT UNSIGNED,
     d_required    BOOLEAN comment 'When setting NULL, the service assumes the data type has no d',
     d_step        INT UNSIGNED,
     type_hint     TEXT,
@@ -516,12 +516,12 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
-INSERT INTO `mdb_images` (id, name, registry, version, DEFAULT_port, dialect, driver_class, jdbc_method)
+INSERT INTO `mdb_images` (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
 VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'mariadb', 'docker.io', '11.1.3', 3306,
         'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
 
-INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_DEFAULT, size_required,
-                               size_step, d_min, d_max, d_DEFAULT, d_required, d_step, type_hint, data_hint,
+INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_default, size_required,
+                               size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
                                documentation, is_quoted, is_buildable, is_generated)
 VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BIGINT(size)', 'bigint', 0, null, null, FALSE, 1, null, null, null,
         null, null, null, null, 'https://mariadb.com/kb/en/bigint/', FALSE, TRUE, FALSE),
@@ -542,10 +542,10 @@ VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BIGINT(size)', 'bigint', 0, nul
         null, null, 'fsp=microsecond precision, min. 1000-01-01 00:00:00.0, max. 9999-12-31 23:59:59.9',
         'e.g. YYYY-MM-DD HH:MM:SS, YY-MM-DD HH:MM:SS, YYYYMMDDHHMMSS, YYMMDDHHMMSS, YYYYMMDD, YYMMDD',
         'https://mariadb.com/kb/en/datetime/', TRUE, TRUE, FALSE),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DECIMAL(size, d)', 'decimal', 0, 65, null, FALSE, 1, 0, 38, null,
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DECIMAL(size, d)', 'decimal', 0, 65, 10, FALSE, 1, 0, 38, 4,
         FALSE, null, null, null, 'https://mariadb.com/kb/en/decimal/', FALSE, TRUE, FALSE),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DOUBLE(size, d)', 'double', null, null, null, FALSE, null, null, null,
-        null, FALSE, null, null, null, 'https://mariadb.com/kb/en/double/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DOUBLE(size, d)', 'double', null, null, 10, FALSE, null, null, null,
+        4, FALSE, null, null, null, 'https://mariadb.com/kb/en/double/', FALSE, TRUE, FALSE),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'ENUM(v1,v2,...)', 'enum', null, null, null, null, null, null, null,
         null, null, null, null, 'e.g. value1, value2, ...', 'https://mariadb.com/kb/en/enum/', TRUE, TRUE, FALSE),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'FLOAT(size)', 'float', null, null, null, FALSE, null, null, null, null,

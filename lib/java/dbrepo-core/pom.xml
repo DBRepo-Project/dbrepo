@@ -22,7 +22,7 @@
 
     <description>Core library for DBRepo</description>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -92,7 +92,7 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>

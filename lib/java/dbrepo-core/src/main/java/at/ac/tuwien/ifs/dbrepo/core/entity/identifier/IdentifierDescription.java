@@ -40,6 +40,7 @@ public class IdentifierDescription implements Serializable {
     private LanguageType language;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)

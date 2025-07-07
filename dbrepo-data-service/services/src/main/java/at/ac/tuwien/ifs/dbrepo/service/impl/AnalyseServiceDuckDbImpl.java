@@ -4,9 +4,10 @@ import at.ac.tuwien.ifs.dbrepo.config.DuckDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.AnalyseDataTypesException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseUnavailableException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.DataTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
@@ -53,8 +54,8 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     }
 
     @Override
-    public SchemaAnalysisResultDto determineDataTypes(String key) throws AnalyseDataTypesException,
-            DatabaseUnavailableException, StorageNotFoundException {
+    public SchemaAnalysisResultDto determineDataTypes(ImageDto image, String key) throws AnalyseDataTypesException,
+            DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException {
         /* download sample from storage service */
         try (Connection connection = getDuckDbConnection()) {
             setup(connection);
@@ -63,35 +64,43 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
             final DuckDBResultSet resultSet1 = (DuckDBResultSet) statement1.executeQuery();
             final SchemaAnalysisResultDto schema = dataMapper.resultSetToSchemaAnalysisResult(resultSet1);
             statement1.close();
-            /* create schema */
-            final PreparedStatement statement2 = connection.prepareStatement("CREATE TABLE _tmp AS FROM sniff_csv('s3://" + s3Config.getS3Bucket() + "/" + key + "');");
-            statement2.execute();
-            statement2.close();
             /* detect schema */
-            final PreparedStatement statement3 = connection.prepareStatement("DESCRIBE _tmp;");
-            final DuckDBResultSet resultSet3 = (DuckDBResultSet) statement3.executeQuery();
+            final PreparedStatement statement2 = connection.prepareStatement("DESCRIBE TABLE 's3://" + s3Config.getS3Bucket() + "/" + key + "';");
+            final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
             log.atDebug()
                     .setMessage("determined data types of s3://" + s3Config.getS3Bucket() + "/" + key)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "determine_datatypes")
                     .log();
-            final Map<String, ColumnAnalysisResultDto> constraints = dataMapper.resultSetToConstraintResult(resultSet3);
-            statement3.close();
-            schema.getColumns()
-                    .forEach(column ->
-                            column.setNullAllowed(constraints.getOrDefault(column.getName(), ColumnAnalysisResultDto.builder()
-                                            .nullAllowed(true)
-                                            .build())
-                                    .getNullAllowed()));
+            final Map<String, ColumnAnalysisResultDto> constraints = dataMapper.resultSetToConstraintResult(resultSet2);
+            resultSet2.close();
+            for (int i = 0; i < schema.getColumns().size(); i++) {
+                final ColumnAnalysisResultDto column = schema.getColumns()
+                        .get(i);
+                final ColumnAnalysisResultDto analysis = constraints.get(column.getName());
+                column.setPrimaryKey(analysis.getPrimaryKey());
+                column.setNullAllowed(analysis.getNullAllowed());
+                final DataTypeDto dataType = dataMapper.imageDtoTypeNameToDataTypeDto(image, column.getDatatype());
+                column.setD(dataType.getDDefault());
+                column.setSize(dataType.getSizeDefault());
+            }
             return schema;
         } catch (SQLException e) {
             if (e.getMessage().contains("404")) {
                 log.error("Failed to determine data types: not found: {}", e.getMessage());
                 throw new StorageNotFoundException("Failed to determine data types: the dataset " + key + " was not found", e);
             }
+            if (e.getMessage().contains("not find column")) {
+                log.error("Failed to determine data types: column not found: {}", e.getMessage());
+                throw new ColumnNotFoundException("Failed to determine data types: column not found", e);
+            }
             log.error("Failed to determine data types: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to determine data types: " + e.getMessage(), e);
         }
+    }
+
+    public SchemaAnalysisResultDto determineDataTypes(ImageDto image, SubsetDto subset) {
+        return null;
     }
 
 }

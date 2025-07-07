@@ -10,8 +10,6 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.util.List;
-
 @Getter
 @Slf4j
 @Profile("doi")
@@ -31,7 +29,7 @@ public class DataCiteConfig {
     private String password;
 
     @Bean("dataCiteRestTemplate")
-    public RestTemplate searchServiceRestTemplate() {
+    public RestTemplate dataCiteRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(url));
         log.debug("add basic authentication for data cite: username={}", username);

@@ -118,9 +118,8 @@ public class TableEndpoint extends RestEndpoint {
         /* create */
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
-            final TableDto table = databaseService.createTable(database, data);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(databaseService.inspectTable(database, table.getInternalName()));
+                    .body(databaseService.createTable(database, data));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

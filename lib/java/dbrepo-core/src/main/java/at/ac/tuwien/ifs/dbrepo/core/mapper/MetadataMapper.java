@@ -79,10 +79,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +91,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", imports = {LinkedList.class, ExternalResultType.class})
+@Mapper(componentModel = "spring", imports = {LinkedList.class, ExternalResultType.class, DataCiteDoiTypes.class},
+        nullValueIterableMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
 public interface MetadataMapper {
 
     Logger log = LoggerFactory.getLogger(MetadataMapper.class);
@@ -194,6 +192,9 @@ public interface MetadataMapper {
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 
+    @Mappings({
+            @Mapping(target = "types", expression = "java(DataCiteDoiTypes.DATASET)")
+    })
     DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier);
 
     DataCiteDoiTitle identifierTitleToDataCiteDoiTitle(IdentifierTitle data);
@@ -283,8 +284,8 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "relatedIdentifier", source = "value"),
-            @Mapping(target = "relatedIdentifierType", source = "type"),
-            @Mapping(target = "relationType", source = "relation"),
+            @Mapping(target = "relatedIdentifierType", expression = "java(relatedIdentifier.getType().toString())"),
+            @Mapping(target = "relationType", expression = "java(relatedIdentifier.getRelation().toString())")
     })
     DataCiteDoiRelatedIdentifier relatedIdentifierToDoiRelatedIdentifier(RelatedIdentifier relatedIdentifier);
 
@@ -419,30 +420,6 @@ public interface MetadataMapper {
     })
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
-    default IdentifierTitle identifierToIdentifierTitle(Identifier data, String lang) {
-        final Optional<IdentifierTitle> optional = data.getTitles()
-                .stream()
-                .filter(t -> lang == null || t.getLanguage().getName().equals(lang))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.warn("no title with language {} found", lang);
-            return identifierToIdentifierTitle(data, "en");
-        }
-        return optional.get();
-    }
-
-    default IdentifierDescription identifierToIdentifierDescription(Identifier data, String lang) {
-        final Optional<IdentifierDescription> optional = data.getDescriptions()
-                .stream()
-                .filter(t -> lang == null || t.getLanguage().getName().equals(lang))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.warn("no description with language {} found", lang);
-            return identifierToIdentifierDescription(data, "en");
-        }
-        return optional.get();
-    }
-
     @Mappings({
             @Mapping(target = "givenName", source = "firstname"),
             @Mapping(target = "familyName", source = "lastname"),
@@ -456,10 +433,8 @@ public interface MetadataMapper {
         return LdDatasetDto.builder()
                 .context("https://schema.org/")
                 .type("Dataset")
-                .name(identifierToIdentifierTitle(data, null)
-                        .getTitle())
-                .description(identifierToIdentifierDescription(data, null)
-                        .getDescription())
+                .name(data.getTitles().isEmpty() ? null : data.getTitles().get(0).getTitle())
+                .description(data.getDescriptions().isEmpty() ? null : data.getDescriptions().get(0).getDescription())
                 .url(identifierToLocationUrl(baseUrl, data))
                 .identifier(List.of())
                 .creator(data.getCreators()
@@ -474,9 +449,100 @@ public interface MetadataMapper {
                 .build();
     }
 
-    Identifier createIdentifierDtoToIdentifier(CreateIdentifierDto data);
+    @Mappings({
+            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "nameIdentifierScheme", source = "nameIdentifier", qualifiedByName = "nameIdentifierSchemeMapper"),
+            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "affiliationIdentifierScheme", source = "affiliationIdentifier", qualifiedByName = "affiliationIdentifierSchemeMapper"),
+    })
+    Creator saveIdentifierCreatorDtoToCreator(SaveIdentifierCreatorDto data);
 
-    Identifier identifierSaveDtoToIdentifier(IdentifierSaveDto data);
+    IdentifierTitle saveIdentifierTitleDtoToIdentifierTitle(SaveIdentifierTitleDto data);
+
+    IdentifierDescription saveIdentifierDescriptionDtoToIdentifierDescription(SaveIdentifierDescriptionDto data);
+
+    IdentifierFunder saveIdentifierFunderDtoToIdentifierFunder(SaveIdentifierFunderDto data);
+
+    RelatedIdentifier saveRelatedIdentifierDtoToRelatedIdentifier(SaveRelatedIdentifierDto data);
+
+    default Identifier identifierSaveDtoToIdentifier(IdentifierSaveDto data) {
+        if (data == null) {
+            return null;
+        }
+        final Identifier identifier = Identifier.builder()
+                .id(data.getId())
+                .queryId(data.getQueryId())
+                .tableId(data.getTableId())
+                .viewId(data.getViewId())
+                .creators(new LinkedList<>(data.getCreators()
+                        .stream()
+                        .map(this::saveIdentifierCreatorDtoToCreator)
+                        .toList()))
+                .publisher(data.getPublisher())
+                .language(languageTypeDtoToLanguageType(data.getLanguage()))
+                .titles(new LinkedList<>(data.getTitles()
+                        .stream()
+                        .map(this::saveIdentifierTitleDtoToIdentifierTitle)
+                        .toList()))
+                .descriptions(new LinkedList<>(data.getDescriptions()
+                        .stream()
+                        .map(this::saveIdentifierDescriptionDtoToIdentifierDescription)
+                        .toList()))
+                .funders(new LinkedList<>(data.getFunders()
+                        .stream()
+                        .map(this::saveIdentifierFunderDtoToIdentifierFunder)
+                        .toList()))
+                .licenses(new LinkedList<>(data.getLicenses()
+                        .stream()
+                        .map(this::licenseDtoToLicense)
+                        .toList()))
+                .type(identifierTypeDtoToIdentifierType(data.getType()))
+                .publicationDay(data.getPublicationDay())
+                .publicationMonth(data.getPublicationMonth())
+                .publicationYear(data.getPublicationYear())
+                .relatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
+                        .stream()
+                        .map(this::saveRelatedIdentifierDtoToRelatedIdentifier)
+                        .toList()))
+                .doi(data.getDoi())
+                .build();
+        final int[] idx = new int[]{0};
+        identifier.getCreators()
+                .forEach(c -> {
+                    c.setOrdinalPosition(idx[0]++);
+                    c.setIdentifier(identifier);
+                });
+        log.trace("mapped {} creator(s)", identifier.getCreators().size());
+        idx[0] = 0;
+        identifier.getTitles()
+                .forEach(t -> {
+                    t.setOrdinalPosition(idx[0]++);
+                    t.setIdentifier(identifier);
+                });
+        log.trace("mapped {} title(s)", identifier.getTitles().size());
+        idx[0] = 0;
+        identifier.getDescriptions()
+                .forEach(d -> {
+                    d.setOrdinalPosition(idx[0]++);
+                    d.setIdentifier(identifier);
+                });
+        log.trace("mapped {} description(s)", identifier.getDescriptions().size());
+        idx[0] = 0;
+        identifier.getRelatedIdentifiers()
+                .forEach(r -> {
+                    r.setOrdinalPosition(idx[0]++);
+                    r.setIdentifier(identifier);
+                });
+        log.trace("mapped {} related identifier(s)", identifier.getRelatedIdentifiers().size());
+        idx[0] = 0;
+        identifier.getFunders()
+                .forEach(f -> {
+                    f.setOrdinalPosition(idx[0]++);
+                    f.setIdentifier(identifier);
+                });
+        log.trace("mapped {} funder(s)", identifier.getDescriptions().size());
+        return identifier;
+    }
 
     IdentifierSaveDto identifierToIdentifierSaveDto(Identifier data);
 
@@ -492,7 +558,7 @@ public interface MetadataMapper {
 
     IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(SaveIdentifierFunderDto data);
 
-    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(CreateIdentifierDto data);
+    IdentifierSaveDto createIdentifierDtoToIdentifierSaveDto(CreateIdentifierDto data);
 
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
@@ -500,11 +566,19 @@ public interface MetadataMapper {
 
     NameIdentifierSchemeTypeDto nameIdentifierSchemeTypeToNameIdentifierSchemeTypeDto(NameIdentifierSchemeType data);
 
+    @Mappings({
+            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "nameIdentifierScheme", source = "nameIdentifier", qualifiedByName = "nameIdentifierSchemeDtoMapper"),
+            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "affiliationIdentifierScheme", source = "affiliationIdentifier", qualifiedByName = "affiliationIdentifierSchemeDtoMapper"),
+    })
     CreatorDto creatorToCreatorDto(Creator data);
 
     @Mappings({
-            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifierScheme", qualifiedByName = "nameSchemaMapper"),
-            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
+            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "nameIdentifierScheme", source = "nameIdentifier", qualifiedByName = "nameIdentifierSchemeMapper"),
+            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifier", qualifiedByName = "identifierSchemeUriMapper"),
+            @Mapping(target = "affiliationIdentifierScheme", source = "affiliationIdentifier", qualifiedByName = "affiliationIdentifierSchemeMapper"),
     })
     Creator creatorCreateDtoToCreator(SaveIdentifierCreatorDto data);
 
@@ -528,29 +602,98 @@ public interface MetadataMapper {
         }
     }
 
-    @Named("nameSchemaMapper")
-    default String nameIdentifierSchemeToNameIdentifierSchemeUri(NameIdentifierSchemeTypeDto data) {
+    @Named("identifierSchemeUriMapper")
+    default String identifierToIdentifierSchemeUri(String data) {
         if (data == null) {
             return null;
         }
-        return switch (data) {
-            case ROR -> "https://ror.org/";
-            case ORCID -> "https://orcid.org/";
-            case GRID -> "https://grid.ac/";
-            case ISNI -> "https://grid.ac/institutes/";
-        };
+        if (data.contains("ror.org")) {
+            return "https://ror.org/";
+        }
+        if (data.contains("orcid.org")) {
+            return "https://orcid.org/";
+        }
+        if (data.contains("grid.ac")) {
+            return "https://grid.ac/";
+        }
+        if (data.contains("isni.org")) {
+            return "https://isni.org/";
+        }
+        return null;
     }
 
-    @Named("affiliationSchemaMapper")
-    default String affiliationIdentifierSchemeTypeToAffiliationIdentifier(AffiliationIdentifierSchemeTypeDto data) {
+    @Named("nameIdentifierSchemeMapper")
+    default NameIdentifierSchemeType identifierToNameIdentifierSchemeType(String data) {
         if (data == null) {
             return null;
         }
-        return switch (data) {
-            case ROR -> "https://ror.org/";
-            case GRID -> "https://grid.ac/institutes/";
-            case ISNI -> "https://isni.org/";
-        };
+        if (data.contains("ror.org")) {
+            return NameIdentifierSchemeType.ROR;
+        }
+        if (data.contains("orcid.org")) {
+            return NameIdentifierSchemeType.ORCID;
+        }
+        if (data.contains("grid.ac")) {
+            return NameIdentifierSchemeType.GRID;
+        }
+        if (data.contains("isni.org")) {
+            return NameIdentifierSchemeType.ISNI;
+        }
+        return null;
+    }
+
+    @Named("nameIdentifierSchemeDtoMapper")
+    default NameIdentifierSchemeTypeDto identifierToNameIdentifierSchemeTypeDto(String data) {
+        if (data == null) {
+            return null;
+        }
+        if (data.contains("ror.org")) {
+            return NameIdentifierSchemeTypeDto.ROR;
+        }
+        if (data.contains("orcid.org")) {
+            return NameIdentifierSchemeTypeDto.ORCID;
+        }
+        if (data.contains("grid.ac")) {
+            return NameIdentifierSchemeTypeDto.GRID;
+        }
+        if (data.contains("isni.org")) {
+            return NameIdentifierSchemeTypeDto.ISNI;
+        }
+        return null;
+    }
+
+    @Named("affiliationIdentifierSchemeMapper")
+    default AffiliationIdentifierSchemeType identifierToAffiliationIdentifierSchemeType(String data) {
+        if (data == null) {
+            return null;
+        }
+        if (data.contains("ror.org")) {
+            return AffiliationIdentifierSchemeType.ROR;
+        }
+        if (data.contains("grid.ac")) {
+            return AffiliationIdentifierSchemeType.GRID;
+        }
+        if (data.contains("isni.org")) {
+            return AffiliationIdentifierSchemeType.ISNI;
+        }
+        return null;
+    }
+
+    @Named("affiliationIdentifierSchemeDtoMapper")
+    default AffiliationIdentifierSchemeTypeDto identifierToAffiliationIdentifierSchemeTypeDto(String data) {
+        if (data == null) {
+            return null;
+        }
+        if (data.contains("ror.org")) {
+            return AffiliationIdentifierSchemeTypeDto.ROR;
+        }
+        if (data.contains("grid.ac")) {
+            return AffiliationIdentifierSchemeTypeDto.GRID;
+        }
+        if (data.contains("isni.org")) {
+            return AffiliationIdentifierSchemeTypeDto.ISNI;
+        }
+        return null;
     }
 
     @Mappings({

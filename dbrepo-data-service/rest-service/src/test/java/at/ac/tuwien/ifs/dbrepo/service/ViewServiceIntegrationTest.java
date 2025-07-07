@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ViewMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -32,8 +32,8 @@ public class ViewServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test

@@ -1,12 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.License;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
@@ -23,9 +22,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -46,6 +42,9 @@ public class IdentifierServicePersistenceTest extends BaseTest {
 
     @MockBean
     private DataServiceGateway dataServiceGateway;
+
+    @MockBean
+    private ViewService viewService;
 
     @MockBean
     private SearchServiceGateway searchServiceGateway;
@@ -102,11 +101,14 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     }
 
     @Test
+    @Transactional
     public void findAll_queryId_succeeds() {
 
         /* test */
         final List<Identifier> response = identifierService.findAll(null, null, QUERY_1_ID, null, null);
-        assertEquals(2, response.size());
+        assertEquals(1, response.size());
+        final Identifier identifier0 = response.get(0);
+        assertIdentifierEquals(IDENTIFIER_2, identifier0);
     }
 
     @Test
@@ -118,24 +120,22 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     }
 
     @Test
-    @Transactional(readOnly = true)
+    @Transactional
     public void find_succeeds() throws IdentifierNotFoundException {
 
         /* test */
         final Identifier response = identifierService.find(IDENTIFIER_1_ID);
-        assertEquals(IDENTIFIER_1, response);
+        assertIdentifierEquals(IDENTIFIER_1, response);
     }
 
     @Test
+    @Transactional
     public void findByDatabaseIdAndQueryId_succeeds() {
 
         /* test */
-        final List<Identifier> response = identifierService.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID);
-        assertEquals(2, response.size());
-        final Identifier identifier0 = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier0.getId());
-        final Identifier identifier1 = response.get(1);
-        assertEquals(IDENTIFIER_2_ID, identifier1.getId());
+        final List<Identifier> response = identifierService.findByDatabaseIdAndQueryId(DATABASE_2_ID, QUERY_2_ID);
+        assertEquals(1, response.size());
+        assertIdentifierEquals(IDENTIFIER_5, response.get(0));
     }
 
     @Test
@@ -152,13 +152,23 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             MalformedException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
-        /* mock */
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
-                .thenReturn(ResponseEntity.ok(QUERY_1_DTO));
+
+        /* test */
+        final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        assertIdentifierEquals(IDENTIFIER_1, response);
+    }
+
+    @Test
+    public void save_idempotent_succeeds() throws DataServiceException, DataServiceConnectionException,
+            MalformedException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
 
         /* test */
-        identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        final Identifier response0 = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        assertIdentifierEquals(IDENTIFIER_1, response0);
+        final Identifier response1 = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        assertIdentifierEquals(IDENTIFIER_1, response1);
     }
 
     @Test
@@ -305,33 +315,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
-        final Identifier response = identifierService.save(DATABASE_2, USER_2, IDENTIFIER_5_SAVE_DTO);
-        assertNotNull(response.getTitles());
-        assertEquals(1, response.getTitles().size());
-        final IdentifierTitle title0 = response.getTitles().get(0);
-        assertEquals(IDENTIFIER_5_TITLE_1_TITLE, title0.getTitle());
-        assertEquals(IDENTIFIER_5_TITLE_1_LANG, title0.getLanguage());
-        assertEquals(IDENTIFIER_5_TITLE_1_TYPE, title0.getTitleType());
-        assertNotNull(response.getDescriptions());
-        assertEquals(1, response.getDescriptions().size());
-        final IdentifierDescription description0 = response.getDescriptions().get(0);
-        assertEquals(IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
-        assertEquals(IDENTIFIER_5_DESCRIPTION_1_LANG, description0.getLanguage());
-        assertEquals(IDENTIFIER_5_DESCRIPTION_1_TYPE, description0.getDescriptionType());
-        assertNull(response.getDoi());
-        assertEquals(IDENTIFIER_5_PUBLISHER, response.getPublisher());
-        assertEquals(DATABASE_2_ID, response.getDatabase().getId());
-        assertNull(response.getLanguage());
-        assertEquals(IDENTIFIER_5_PUBLICATION_YEAR, response.getPublicationYear());
-        assertEquals(IDENTIFIER_5_PUBLICATION_MONTH, response.getPublicationMonth());
-        assertEquals(IDENTIFIER_5_PUBLICATION_DAY, response.getPublicationDay());
-        assertNotNull(response.getRelatedIdentifiers());
-        final List<RelatedIdentifier> relatedIdentifiers = response.getRelatedIdentifiers();
-        assertEquals(1, relatedIdentifiers.size());
-        final RelatedIdentifier relatedIdentifier1 = relatedIdentifiers.get(0);
-        assertEquals(RELATED_IDENTIFIER_5_TYPE, relatedIdentifier1.getType());
-        assertEquals(RELATED_IDENTIFIER_5_RELATION_TYPE, relatedIdentifier1.getRelation());
-        assertEquals(RELATED_IDENTIFIER_5_VALUE, relatedIdentifier1.getValue());
+        assertIdentifierEquals(IDENTIFIER_5, identifierService.save(DATABASE_2, USER_2, IDENTIFIER_5_SAVE_DTO));
     }
 
     @Test
@@ -340,73 +324,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
-        final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
-        assertNotNull(response.getTitles());
-        final List<IdentifierTitle> titles = response.getTitles();
-        assertEquals(2, titles.size());
-        final IdentifierTitle title0 = titles.get(0);
-        assertEquals(IDENTIFIER_1.getTitles().get(0).getTitle(), title0.getTitle());
-        assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
-        assertEquals(IDENTIFIER_1_TITLE_1_TYPE, title0.getTitleType());
-        final IdentifierTitle title1 = titles.get(1);
-        assertEquals(IDENTIFIER_1_TITLE_2_TITLE, title1.getTitle());
-        assertEquals(IDENTIFIER_1_TITLE_2_LANG, title1.getLanguage());
-        assertEquals(IDENTIFIER_1_TITLE_2_TYPE, title1.getTitleType());
-        assertNotNull(response.getDescriptions());
-        assertEquals(1, response.getDescriptions().size());
-        final List<IdentifierDescription> descriptions = response.getDescriptions();
-        final IdentifierDescription description0 = descriptions.get(0);
-        assertNotNull(description0.getId());
-        assertEquals(IDENTIFIER_1.getDescriptions().get(0).getDescription(), description0.getDescription());
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG, description0.getLanguage());
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_TYPE, description0.getDescriptionType());
-        assertNotNull(response.getCreators());
-        assertEquals(1, response.getCreators().size());
-        final Creator creator0 = response.getCreators().get(0);
-        assertNotNull(creator0.getId());
-        assertEquals(IDENTIFIER_1_CREATOR_1_FIRSTNAME, creator0.getFirstname());
-        assertEquals(IDENTIFIER_1_CREATOR_1_LASTNAME, creator0.getLastname());
-        assertEquals(IDENTIFIER_1_CREATOR_1_NAME, creator0.getCreatorName());
-        assertEquals(IDENTIFIER_1_CREATOR_1_ORCID, creator0.getNameIdentifier());
-        assertEquals(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE, creator0.getNameIdentifierScheme());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION, creator0.getAffiliation());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER, creator0.getAffiliationIdentifier());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME, creator0.getAffiliationIdentifierScheme());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI, creator0.getAffiliationIdentifierSchemeUri());
-        assertNotNull(response.getFunders());
-        assertEquals(1, response.getFunders().size());
-        assertNotNull(response.getRelatedIdentifiers());
-        assertEquals(0, response.getRelatedIdentifiers().size());
-    }
-
-    @Test
-    public void save_repeatedRemoveChildren_succeeds() throws MalformedException, DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, IdentifierNotFoundException,
-            ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
-            ExternalServiceException {
-
-        /* test */
-        final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_MODIFY_DTO);
-        assertNotNull(response.getTitles());
-        final List<IdentifierTitle> titles = response.getTitles();
-        assertEquals(1, titles.size());
-        final IdentifierTitle title0 = titles.get(0);
-        assertEquals(IDENTIFIER_1.getTitles().get(0).getTitle(), title0.getTitle());
-        assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
-        assertEquals(IDENTIFIER_1_TITLE_1_TYPE, title0.getTitleType());
-        assertNotNull(response.getDescriptions());
-        assertEquals(0, response.getDescriptions().size());
-        assertNotNull(response.getCreators());
-        assertEquals(0, response.getCreators().size());
-        assertNotNull(response.getFunders());
-        assertEquals(0, response.getFunders().size());
-        assertNotNull(response.getLicenses());
-        assertEquals(0, response.getLicenses().size());
-        assertNotNull(response.getRelatedIdentifiers());
-        assertEquals(0, response.getRelatedIdentifiers().size());
-        final List<License> licenses = licenseRepository.findAll();
-        assertEquals(1, licenses.size());
-
+        assertIdentifierEquals(IDENTIFIER_1, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO));
     }
 
     @Test
@@ -415,15 +333,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
-        final Identifier response = identifierService.save(DATABASE_4, USER_4, IDENTIFIER_7_SAVE_DTO);
-        assertNotNull(response.getTitles());
-        assertEquals(0, response.getTitles().size());
-        assertNotNull(response.getDescriptions());
-        assertEquals(0, response.getDescriptions().size());
-        assertNotNull(response.getCreators());
-        assertEquals(1, response.getCreators().size());
-        assertNotNull(response.getFunders());
-        assertEquals(0, response.getFunders().size());
+        assertIdentifierEquals(IDENTIFIER_7, identifierService.save(DATABASE_4, USER_4, IDENTIFIER_7_SAVE_DTO));
     }
 
     @Test
@@ -437,13 +347,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(QUERY_1_DTO);
 
         /* test */
-        final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_2_SAVE_DTO);
-        assertEquals(DATABASE_1_ID, response.getDatabase().getId());
-        assertEquals(IDENTIFIER_2_QUERY, response.getQuery());
-        assertEquals(IDENTIFIER_2_QUERY_HASH, response.getQueryHash());
-        assertEquals(IDENTIFIER_2_RESULT_HASH, response.getResultHash());
-        assertEquals(0, response.getTitles().size());
-        assertEquals(0, response.getDescriptions().size());
+        assertIdentifierEquals(IDENTIFIER_2, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_2_SAVE_DTO));
     }
 
     @Test
@@ -452,15 +356,12 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
             ExternalServiceException {
 
+        /* mock */
+        when(viewService.findById(DATABASE_1, VIEW_1_ID))
+                .thenReturn(VIEW_1);
+
         /* test */
-        final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_3_SAVE_DTO);
-        assertEquals(DATABASE_1_ID, response.getDatabase().getId());
-        assertEquals(IDENTIFIER_3_QUERY, response.getQuery());
-        assertEquals(IDENTIFIER_3_QUERY_HASH, response.getQueryHash());
-        assertEquals(IDENTIFIER_3_RESULT_HASH, response.getResultHash());
-        assertEquals(0, response.getTitles().size());
-        assertEquals(0, response.getDescriptions().size());
-        assertEquals(1, response.getLicenses().size());
+        assertIdentifierEquals(IDENTIFIER_3, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_3_SAVE_DTO));
     }
 
     @Test
@@ -469,8 +370,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
 
         /* test */
-        final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO);
-        assertNotNull(response.getId());
+        assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO));
     }
 
     @Test
@@ -480,9 +380,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             IdentifierNotFoundException {
 
         /* test */
-        final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
-        assertNotNull(response.getId());
-        assertEquals(IDENTIFIER_1_DOI, response.getDoi());
+        assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO));
     }
 
     @Test
@@ -490,8 +388,120 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
-        final Identifier response = identifierService.publish(IDENTIFIER_7);
-        assertEquals(IDENTIFIER_7.getId(), response.getId());
-        assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
+        assertIdentifierEquals(IDENTIFIER_7, identifierService.publish(IDENTIFIER_7));
+    }
+
+    @Transactional
+    public void assertIdentifierEquals(Identifier expected, Identifier actual) {
+        assertIdentifierEquals(expected, actual, false);
+    }
+
+    @Transactional
+    public void assertIdentifierEquals(Identifier expected, Identifier actual, boolean withIds) {
+        if (withIds) {
+            assertEquals(expected.getId(), actual.getId());
+        }
+        assertEquals(expected.getQueryId(), actual.getQueryId());
+        assertEquals(expected.getQueryId(), actual.getQueryId());
+        assertEquals(expected.getTableId(), actual.getTableId());
+        assertEquals(expected.getViewId(), actual.getViewId());
+        assertEquals(expected.getCreators().size(), actual.getCreators().size());
+        for (int i = 0; i < expected.getCreators().size(); i++) {
+            final Creator expectedCreator = expected.getCreators().get(i);
+            final Creator actualCreator = actual.getCreators().get(i);
+            if (withIds) {
+                assertEquals(expectedCreator.getId(), actualCreator.getId());
+            }
+            assertEquals(expectedCreator.getOrdinalPosition(), actualCreator.getOrdinalPosition());
+            assertEquals(expectedCreator.getFirstname(), actualCreator.getFirstname());
+            assertEquals(expectedCreator.getLastname(), actualCreator.getLastname());
+            assertEquals(expectedCreator.getCreatorName(), actualCreator.getCreatorName());
+            assertEquals(expectedCreator.getNameType(), actualCreator.getNameType());
+            assertEquals(expectedCreator.getNameIdentifierScheme(), actualCreator.getNameIdentifierScheme());
+            assertEquals(expectedCreator.getNameIdentifierSchemeUri(), actualCreator.getNameIdentifierSchemeUri());
+            assertEquals(expectedCreator.getAffiliation(), actualCreator.getAffiliation());
+            assertEquals(expectedCreator.getAffiliationIdentifier(), actualCreator.getAffiliationIdentifier());
+            assertEquals(expectedCreator.getAffiliationIdentifierScheme(), actualCreator.getAffiliationIdentifierScheme());
+            assertEquals(expectedCreator.getAffiliationIdentifierSchemeUri(), actualCreator.getAffiliationIdentifierSchemeUri());
+            assertNotNull(actualCreator.getIdentifier());
+        }
+        assertEquals(expected.getPublisher(), actual.getPublisher());
+        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(expected.getLanguage(), actual.getLanguage());
+        assertEquals(expected.getTitles().size(), actual.getTitles().size());
+        for (int i = 0; i < expected.getTitles().size(); i++) {
+            final IdentifierTitle expectedTitle = expected.getTitles().get(i);
+            final IdentifierTitle actualTitle = actual.getTitles().get(i);
+            if (withIds) {
+                assertEquals(expectedTitle.getId(), actualTitle.getId());
+            }
+            assertEquals(expectedTitle.getOrdinalPosition(), actualTitle.getOrdinalPosition());
+            assertEquals(expectedTitle.getTitle(), actualTitle.getTitle());
+            assertEquals(expectedTitle.getTitleType(), actualTitle.getTitleType());
+            assertEquals(expectedTitle.getLanguage(), actualTitle.getLanguage());
+            assertNotNull(expectedTitle.getIdentifier());
+        }
+        assertEquals(expected.getDescriptions().size(), actual.getDescriptions().size());
+        for (int i = 0; i < expected.getDescriptions().size(); i++) {
+            final IdentifierDescription expectedDescription = expected.getDescriptions().get(i);
+            final IdentifierDescription actualDescription = actual.getDescriptions().get(i);
+            if (withIds) {
+                assertEquals(expectedDescription.getId(), actualDescription.getId());
+            }
+            assertEquals(expectedDescription.getOrdinalPosition(), actualDescription.getOrdinalPosition());
+            assertEquals(expectedDescription.getDescription(), actualDescription.getDescription());
+            assertEquals(expectedDescription.getDescriptionType(), actualDescription.getDescriptionType());
+            assertEquals(expectedDescription.getLanguage(), actualDescription.getLanguage());
+            assertNotNull(expectedDescription.getIdentifier());
+        }
+        assertEquals(expected.getFunders().size(), actual.getFunders().size());
+        for (int i = 0; i < expected.getFunders().size(); i++) {
+            final IdentifierFunder expectedFunder = expected.getFunders().get(i);
+            final IdentifierFunder actualFunder = actual.getFunders().get(i);
+            if (withIds) {
+                assertEquals(expectedFunder.getId(), actualFunder.getId());
+            }
+            assertEquals(expectedFunder.getOrdinalPosition(), actualFunder.getOrdinalPosition());
+            assertEquals(expectedFunder.getFunderName(), actualFunder.getFunderName());
+            assertEquals(expectedFunder.getFunderIdentifierType(), actualFunder.getFunderIdentifierType());
+            assertEquals(expectedFunder.getSchemeUri(), actualFunder.getSchemeUri());
+            assertEquals(expectedFunder.getAwardNumber(), actualFunder.getAwardNumber());
+            assertEquals(expectedFunder.getAwardTitle(), actualFunder.getAwardTitle());
+            assertNotNull(expectedFunder.getIdentifier());
+        }
+        assertEquals(expected.getLicenses().size(), actual.getLicenses().size());
+        for (int i = 0; i < expected.getLicenses().size(); i++) {
+            final License expectedLicense = expected.getLicenses().get(i);
+            final License actualLicense = actual.getLicenses().get(i);
+            assertEquals(expectedLicense.getIdentifier(), actualLicense.getIdentifier());
+            assertEquals(expectedLicense.getDescription(), actualLicense.getDescription());
+            assertEquals(expectedLicense.getUri(), actualLicense.getUri());
+        }
+        assertEquals(expected.getType(), actual.getType());
+        assertEquals(expected.getQuery(), actual.getQuery());
+        assertEquals(expected.getQueryHash(), actual.getQueryHash());
+        assertEquals(expected.getResultHash(), actual.getResultHash());
+        assertEquals(expected.getResultNumber(), actual.getResultNumber());
+        assertEquals(expected.getExecution(), actual.getExecution());
+        assertEquals(expected.getPublicationDay(), actual.getPublicationDay());
+        assertEquals(expected.getPublicationMonth(), actual.getPublicationMonth());
+        assertEquals(expected.getPublicationYear(), actual.getPublicationYear());
+        assertNotNull(actual.getDatabase());
+        assertEquals(expected.getRelatedIdentifiers().size(), actual.getRelatedIdentifiers().size());
+        for (int i = 0; i < expected.getRelatedIdentifiers().size(); i++) {
+            final RelatedIdentifier expectedRelated = expected.getRelatedIdentifiers().get(i);
+            final RelatedIdentifier actualRelated = actual.getRelatedIdentifiers().get(i);
+            if (withIds) {
+                assertEquals(expectedRelated.getId(), actualRelated.getId());
+            }
+            assertEquals(expectedRelated.getOrdinalPosition(), actualRelated.getOrdinalPosition());
+            assertEquals(expectedRelated.getValue(), actualRelated.getValue());
+            assertEquals(expectedRelated.getType(), actualRelated.getType());
+            assertEquals(expectedRelated.getRelation(), actualRelated.getRelation());
+            assertNotNull(actualRelated.getIdentifier());
+        }
+        assertEquals(expected.getDoi(), actual.getDoi());
+        assertEquals(expected.getOwnedBy(), actual.getOwnedBy());
+        assertNotNull(actual.getOwner());
     }
 }

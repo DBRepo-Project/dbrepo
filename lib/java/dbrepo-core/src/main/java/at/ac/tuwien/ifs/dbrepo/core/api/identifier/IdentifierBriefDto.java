@@ -2,11 +2,15 @@ package at.ac.tuwien.ifs.dbrepo.core.api.identifier;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,15 +33,15 @@ public class IdentifierBriefDto {
     private UUID databaseId;
 
     @JsonProperty("query_id")
-    @Schema(example = "1")
+    @Schema(example = "1413e257-f62a-4881-ac38-ae9a76e21b9c")
     private UUID queryId;
 
     @JsonProperty("table_id")
-    @Schema(example = "1")
+    @Schema(example = "67d23209-aec8-489a-8f86-71fd0fe09ce7")
     private UUID tableId;
 
     @JsonProperty("view_id")
-    @Schema(example = "1")
+    @Schema(example = "8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4")
     private UUID viewId;
 
     @NotNull
@@ -45,13 +49,13 @@ public class IdentifierBriefDto {
     private IdentifierTypeDto type;
 
     @NotNull
-    private List<CreatorBriefDto> creators;
+    private List<CreatorBriefDto> creators = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierTitleDto> titles;
+    private List<IdentifierTitleDto> titles = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierDescriptionDto> descriptions;
+    private List<IdentifierDescriptionDto> descriptions = new LinkedList<>();
 
     @Schema(example = "10.1038/nphys1170")
     private String doi;
@@ -73,5 +77,10 @@ public class IdentifierBriefDto {
     @JsonProperty("owned_by")
     @Schema(example = "2f45ef7a-7f9b-4667-9156-152c87fe1ca5")
     private UUID ownedBy;
+
+    @EqualsAndHashCode.Exclude
+    @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
+    private Instant created;
 
 }

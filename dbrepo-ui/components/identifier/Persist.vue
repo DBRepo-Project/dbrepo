@@ -1187,7 +1187,6 @@ export default {
     },
     retrieveCreator (creator) {
       if (!creator || !creator.name_identifier) {
-        creator.name_identifier_scheme = null
         return
       }
       creator.name_loading = true
@@ -1209,7 +1208,6 @@ export default {
               creator.affiliation = metadata.affiliations[0].organization_name
             }
           }
-          creator.name_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.name_identifier)
         })
         .catch(() => {
           creator.success = false
@@ -1281,9 +1279,7 @@ export default {
         lastname: null,
         affiliation: null,
         affiliation_identifier: null,
-        affiliation_identifier_scheme: null,
         name_identifier: null,
-        name_identifier_scheme: null,
         name_type: 'Personal',
         creator_name: null,
         name_loading: false /* removed later */,
@@ -1375,6 +1371,7 @@ export default {
           this.loadingSave = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(this.$t('error.pid.malformed'))
             return
           }
           toast.error(this.$t(code))

@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -87,11 +88,11 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "column")
-    private List<ColumnEnum> enums;
+    private List<ColumnEnum> enums = new LinkedList<>();
 
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "column")
-    private List<ColumnSet> sets;
+    private List<ColumnSet> sets = new LinkedList<>();
 
     @Column
     private Long size;

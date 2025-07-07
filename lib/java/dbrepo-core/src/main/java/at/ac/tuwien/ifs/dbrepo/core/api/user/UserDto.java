@@ -33,6 +33,7 @@ public class UserDto extends CacheableDto {
 
     @NotNull
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @Schema(example = "p4ssw0rd")
     private String password;
 
@@ -49,6 +50,7 @@ public class UserDto extends CacheableDto {
     private String lastname;
 
     @NotNull
+    @EqualsAndHashCode.Exclude
     private UserAttributesDto attributes;
 
     /* lombok limitations prevent from convenient builder functions */

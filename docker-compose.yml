@@ -158,7 +158,7 @@ services:
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost}"
-      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost}/admin/"
+      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost}"
       KEYCLOAK_PROXY_HEADERS: "xforwarded"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
