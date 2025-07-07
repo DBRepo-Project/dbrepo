@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
@@ -55,6 +56,19 @@ public interface CacheService {
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
     ContainerDto getContainer(UUID id) throws ContainerNotFoundException, RemoteUnavailableException,
+            MetadataServiceException;
+
+    /**
+     * Gets image metadata for a image with given id either from the cache (if not expired) or retrieves the information
+     * from the Metadata Service.
+     *
+     * @param id The image id.
+     * @return The credentials.
+     * @throws ImageNotFoundException The image was not found in the metadata service.
+     * @throws RemoteUnavailableException The remote service is not available.
+     * @throws MetadataServiceException   The remote service returned invalid data.
+     */
+    ImageDto getImage(UUID id) throws ImageNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
