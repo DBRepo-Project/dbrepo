@@ -18,6 +18,7 @@ tmp.yaml
 .scannerwork/
 .docker/config/
 .docker/dist.tar.gz
+docs/.openapi/api.base.yaml
 
 # docs
 .docs/.swagger/dist/

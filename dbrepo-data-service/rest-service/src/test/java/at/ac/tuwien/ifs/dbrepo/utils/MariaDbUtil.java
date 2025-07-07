@@ -1,8 +1,9 @@
-package at.ac.tuwien.ifs.dbrepo.config;
+package at.ac.tuwien.ifs.dbrepo.utils;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -15,7 +16,55 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Configuration
-public class MariaDbConfig {
+public class MariaDbUtil {
+
+    /**
+     * https://mariadb.com/kb/en/string-data-types/
+     */
+    final public static List<ColumnTypeDto> stringDataTypes = List.of(
+            ColumnTypeDto.BINARY,
+            ColumnTypeDto.VARBINARY,
+            ColumnTypeDto.TINYBLOB,
+            ColumnTypeDto.MEDIUMBLOB,
+            ColumnTypeDto.LONGBLOB,
+            ColumnTypeDto.BLOB,
+            ColumnTypeDto.CHAR,
+            ColumnTypeDto.VARCHAR,
+            ColumnTypeDto.ENUM,
+            ColumnTypeDto.SET,
+            ColumnTypeDto.TINYTEXT,
+            ColumnTypeDto.MEDIUMTEXT,
+            ColumnTypeDto.LONGTEXT,
+            ColumnTypeDto.TEXT);
+
+    /**
+     * https://mariadb.com/kb/en/numeric-data-type-overview/
+     */
+    final public static List<ColumnTypeDto> numericDataTypes = List.of(
+            ColumnTypeDto.TINYINT,
+            ColumnTypeDto.BOOL,
+            ColumnTypeDto.SMALLINT,
+            ColumnTypeDto.MEDIUMINT,
+            ColumnTypeDto.INT,
+            ColumnTypeDto.BIGINT,
+            ColumnTypeDto.DECIMAL,
+            ColumnTypeDto.FLOAT,
+            ColumnTypeDto.DOUBLE,
+            ColumnTypeDto.BIT);
+
+    /**
+     * https://mariadb.com/kb/en/date-and-time-data-types/
+     */
+    final static List<ColumnTypeDto> dateDataTypes = List.of(ColumnTypeDto.DATE,
+            ColumnTypeDto.DATETIME,
+            ColumnTypeDto.TIME,
+            ColumnTypeDto.TIMESTAMP,
+            ColumnTypeDto.YEAR);
+
+    public static boolean needValueQuotes(ColumnTypeDto columnType) {
+        return stringDataTypes.contains(columnType) || dateDataTypes.contains(columnType);
+    }
+
 
     public static void createDatabase(ContainerDto container, String database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
@@ -144,6 +193,41 @@ public class MariaDbConfig {
             statement.close();
         }
         log.debug("dropped table {}", table);
+    }
+
+    public static boolean tableExists(DatabaseDto database, String table) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            final String query = "SELECT 1 FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = '" + database.getInternalName() + "' AND t.TABLE_NAME = '" + table + "';";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                statement.close();
+                return true;
+            }
+            statement.close();
+        }
+        return false;
+    }
+
+    public static String tableDescription(DatabaseDto database, String table) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            final String query = "SELECT t.TABLE_COMMENT FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = '" + database.getInternalName() + "' AND t.TABLE_NAME = '" + table + "';";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                final String comment = resultSet.getString(1);
+                statement.close();
+                return comment;
+            }
+            statement.close();
+        }
+        throw new SQLException("Failed to get ResultSet");
     }
 
     public static void mockQuery(String hostname, Integer port, String database, String query, String username, String password)

@@ -9,18 +9,17 @@ these topics in the corresponding documentation pages on the left.
 
 The following instances have different login mechanisms:
 
-* Open for anyone:
+* Open for anyone, create an account with username and password:
 
     !!! warning "Ephemeral Data"
     
         This instance is intended for testing-purposes only and data may be deleted at any time.
         
-        [test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at) - Create an account and login via username and
-        password.
+    * [test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
 
-* By affiliation:
+* By affiliation (SSO):
 
-    * [dbrepo1.ec.tuwien.ac.at](https://dbrepo1.ec.tuwien.ac.at) - Login via TU SSO
+    * [dbrepo.datalab.tuwien.ac.at](https://dbrepo.datalab.tuwien.ac.at) with MQTT/AMQP endpoint `s155.datalab.tuwien.ac.at`
 
 ## Create Database
 
@@ -30,8 +29,8 @@ A database can be created by choosing a name (e.g. My Database), selecting an en
 visibility, this can be changed later.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/create-database.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/create-database.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-database.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-database.mp4" type="video/mp4" />
 </video>
 
 ### Python
@@ -60,8 +59,8 @@ Create a table from a dataset by choosing a name (e.g. My Table), giving info on
 selecting a primary key column and then importing the dataset.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/import-data.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/import-data.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/import-data.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/import-data.mp4" type="video/mp4" />
 </video>
 
 ### Python
@@ -89,8 +88,8 @@ A view can be created by specifying a source table (e.g. My Table), select the c
 and optionally filter by values (e.g. `street` = `Pave`).
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/create-view.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/create-view.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-view.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-view.mp4" type="video/mp4" />
 </video>
 
 ### Python
@@ -118,8 +117,8 @@ A subset can be created by specifying a source view (e.g. My View), select the c
 and optionally filter by values (e.g. `lot_shape` = `Reg`).
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/videos/create-subset.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/videos/create-subset.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-subset.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/create-subset.mp4" type="video/mp4" />
 </video>
 
 ### Python

@@ -1,11 +1,11 @@
 SET FOREIGN_KEY_CHECKS = 0;
 BEGIN;
-UPDATE mdb_users SET id = :old_id WHERE id = :new_id;
-UPDATE mdb_have_access SET user_id = :old_id WHERE user_id = :new_id;
-UPDATE mdb_databases SET owned_by = :old_id WHERE owned_by = :new_id;
-UPDATE mdb_databases SET contact_person = :old_id WHERE contact_person = :new_id;
-UPDATE mdb_tables SET owned_by = :old_id WHERE owned_by = :new_id;
-UPDATE mdb_view SET owned_by = :old_id WHERE owned_by = :new_id;
-UPDATE mdb_identifiers SET owned_by = :old_id WHERE owned_by = :new_id;
+UPDATE mdb_users SET id = :new_id WHERE id = :old_id;
+UPDATE mdb_have_access SET user_id = :new_id WHERE user_id = :old_id;
+UPDATE mdb_databases SET owned_by = :new_id WHERE owned_by = :old_id;
+UPDATE mdb_databases SET contact_person = :new_id WHERE contact_person = :old_id;
+UPDATE mdb_tables SET owned_by = :new_id WHERE owned_by = :old_id;
+UPDATE mdb_view SET owned_by = :new_id WHERE owned_by = :old_id;
+UPDATE mdb_identifiers SET owned_by = :new_id WHERE owned_by = :old_id;
 COMMIT;
 SET FOREIGN_KEY_CHECKS = 1;

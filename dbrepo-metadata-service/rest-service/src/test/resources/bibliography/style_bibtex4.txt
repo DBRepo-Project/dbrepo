@@ -1,0 +1,6 @@
+@misc{dbrepo2023,
+  author = {Mustermann, Martina},
+  title = {Austrian weather data},
+  month = {5},
+  year = {2023}
+}

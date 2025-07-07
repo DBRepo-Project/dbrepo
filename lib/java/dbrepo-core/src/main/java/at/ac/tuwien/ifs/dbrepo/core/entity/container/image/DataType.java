@@ -41,6 +41,9 @@ public class DataType {
     @Column(name = "size_required", nullable = false)
     private Boolean sizeRequired;
 
+    @Column(name = "size_step")
+    private Integer sizeStep;
+
     @Column(name = "d_min")
     private Integer dMin;
 
@@ -52,6 +55,9 @@ public class DataType {
 
     @Column(name = "d_required", nullable = false)
     private Boolean dRequired;
+
+    @Column(name = "d_step")
+    private Integer dStep;
 
     @Column(nullable = false)
     private String documentation;

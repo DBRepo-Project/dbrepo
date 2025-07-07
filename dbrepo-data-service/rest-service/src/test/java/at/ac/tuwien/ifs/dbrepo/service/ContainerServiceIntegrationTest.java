@@ -1,11 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,8 +44,8 @@ public class ContainerServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -53,7 +53,7 @@ public class ContainerServiceIntegrationTest extends BaseTest {
     public void create_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* mock */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
 
         /* test */
         final DatabaseDto response = containerService.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL);
@@ -88,7 +88,7 @@ public class ContainerServiceIntegrationTest extends BaseTest {
 
         /* test */
         containerService.createQueryStore(CONTAINER_1_PRIVILEGED_DTO, databaseName);
-        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
+        final List<Map<String, Object>> response = MariaDbUtil.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
         assertEquals(0, response.size());
     }
 }

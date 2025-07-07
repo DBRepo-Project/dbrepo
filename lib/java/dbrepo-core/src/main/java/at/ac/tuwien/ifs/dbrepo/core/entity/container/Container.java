@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,7 +60,7 @@ public class Container {
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })
-    private List<Database> databases;
+    private List<Database> databases = new LinkedList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST})
     @JoinColumns({

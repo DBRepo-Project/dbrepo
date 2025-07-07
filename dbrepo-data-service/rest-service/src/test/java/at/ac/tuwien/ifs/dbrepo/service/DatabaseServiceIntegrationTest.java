@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
@@ -65,10 +65,10 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_2_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_2_PRIVILEGED_DTO);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -113,12 +113,12 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
-        MariaDbConfig.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);
 
         /* pre-condition */
-        MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_1_PASSWORD);
+        MariaDbUtil.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_1_PASSWORD);
         try {
-            MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
+            MariaDbUtil.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
             fail();
         } catch (SQLException e) {
             /* ignore */
@@ -126,7 +126,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
 
         /* test */
         databaseService.update(DATABASE_1_PRIVILEGED_DTO, request);
-        MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug2 NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
+        MariaDbUtil.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNAL_NAME, "CREATE SEQUENCE debug2 NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
     }
 
     @Test
@@ -146,7 +146,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
     public void inspectTable_sameNameDifferentDb_succeeds() throws TableNotFoundException, SQLException {
 
         /* mock */
-        MariaDbConfig.execute(DATABASE_2_PRIVILEGED_DTO, "CREATE TABLE not_in_metadata_db (wrong_id BIGINT NOT NULL PRIMARY KEY, given_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), family_name VARCHAR(255) NOT NULL, age INT NOT NULL) WITH SYSTEM VERSIONING;");
+        MariaDbUtil.execute(DATABASE_2_PRIVILEGED_DTO, "CREATE TABLE not_in_metadata_db (wrong_id BIGINT NOT NULL PRIMARY KEY, given_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), family_name VARCHAR(255) NOT NULL, age INT NOT NULL) WITH SYSTEM VERSIONING;");
 
         /* test */
         final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db");
@@ -702,7 +702,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
             TableExistsException {
 
         /* mock */
-        MariaDbConfig.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME);
+        MariaDbUtil.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME);
 
         /* test */
         final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_CREATE_INTERNAL_DTO);

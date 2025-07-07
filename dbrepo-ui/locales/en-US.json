@@ -1266,9 +1266,8 @@
       "invalid": "Failed to obtain authentication metadata in the data service",
       "privileged": "Failed to fetch privileged metadata in the data service"
     },
-    "sidecar": {
-      "export": "Failed to export dataset to the database sidecar",
-      "import": "Failed to import dataset from the database sidecar"
+    "pid": {
+      "malformed": "Failed to save PID"
     },
     "queue": {
       "missing": "Failed to find queue in broker service"

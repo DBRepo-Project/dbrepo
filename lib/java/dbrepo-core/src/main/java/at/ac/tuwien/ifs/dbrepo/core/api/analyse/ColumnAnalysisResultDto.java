@@ -37,6 +37,10 @@ public class ColumnAnalysisResultDto {
     @Schema(example = "true")
     private Boolean nullAllowed;
 
+    @JsonProperty("primary_key")
+    @Schema(example = "true")
+    private Boolean primaryKey;
+
     private List<String> enums;
 
     private List<String> sets;

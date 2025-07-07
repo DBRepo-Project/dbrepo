@@ -10,12 +10,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
@@ -48,13 +49,17 @@ public class CreateIdentifierDto {
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierTitleDto> titles;
+    private List<CreateIdentifierTitleDto> titles = new LinkedList<>();
 
-    private List<SaveIdentifierDescriptionDto> descriptions;
+    @NotNull
+    @NotEmpty
+    private List<CreateIdentifierDescriptionDto> descriptions = new LinkedList<>();
 
-    private List<SaveIdentifierFunderDto> funders;
+    @NotNull
+    private List<CreateIdentifierFunderDto> funders = new LinkedList<>();
 
-    private List<LicenseDto> licenses;
+    @NotNull
+    private List<LicenseDto> licenses = new LinkedList<>();
 
     @JsonProperty("publication_day")
     @Schema(example = "15")
@@ -77,9 +82,10 @@ public class CreateIdentifierDto {
 
     @NotNull
     @NotEmpty
-    private List<SaveIdentifierCreatorDto> creators;
+    private List<CreateIdentifierCreatorDto> creators = new LinkedList<>();
 
+    @NotNull
     @JsonProperty("related_identifiers")
-    private List<SaveRelatedIdentifierDto> relatedIdentifiers;
+    private List<CreateRelatedIdentifierDto> relatedIdentifiers = new LinkedList<>();
 
 }

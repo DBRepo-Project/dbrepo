@@ -1,14 +1,30 @@
 {
   "id": "b216ae00-a31d-4ecb-95fb-37eb4da3946f",
   "type": "database",
-  "titles": [],
-  "descriptions": [],
+  "titles": [
+    {
+      "id": "fdd698a7-ebcf-444f-b972-00effb3e87b2",
+      "title": "Some data"
+    }
+  ],
+  "descriptions": [
+    {
+      "id": "dc4cbcb4-b1a1-496b-a65d-e4db23ae29d3",
+      "description": "The nicest data you will ever see",
+      "language": "en"
+    }
+  ],
   "doi": null,
   "publisher": "Swedish Government",
   "publication_day": 14,
   "publication_month": 7,
   "publication_year": 2022,
-  "licenses": [],
+  "licenses": [
+    {
+      "identifier": "MIT",
+      "uri": "https://opensource.org/license/mit/"
+    }
+  ],
   "creators": [
     {
       "id": "b899c367-06c7-4f47-8aea-5f15061ee3ee",

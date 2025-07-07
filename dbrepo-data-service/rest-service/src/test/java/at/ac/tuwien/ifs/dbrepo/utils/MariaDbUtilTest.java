@@ -2,11 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.utils;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

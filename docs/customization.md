@@ -31,7 +31,7 @@ docker run -v /path/to/your_logo.JPEG:/logo.JPEG ...
 ```
 
 <figure markdown>
-![](/infrastructures/dbrepo/images/custom_logo.png)
+![](/infrastructures/dbrepo/1.10/images/custom_logo.png)
 </figure>
 
 ## Custom Icon
@@ -43,7 +43,7 @@ docker run -v /path/to/your_logo.ico:/favicon.ico ...
 ```
 
 <figure markdown>
-![](/infrastructures/dbrepo/images/custom_icon.png)
+![](/infrastructures/dbrepo/1.10/images/custom_icon.png)
 </figure>
 
 In case your icon is not in ICO format, you need to change the environment variable `ICON` accordingly, e.g. for an icon

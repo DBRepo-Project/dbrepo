@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.SparkConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.google.common.io.Files;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,11 +54,11 @@ public class TableServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNAL_NAME);
-        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
-        MariaDbConfig.createInitDatabase(DATABASE_3_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
+        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.createInitDatabase(DATABASE_3_PRIVILEGED_DTO);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -105,7 +105,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -131,7 +131,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -157,7 +157,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -181,7 +181,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.createTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date"));
         assertEquals("Vienna", result.get(0).get("location"));
@@ -205,7 +205,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.createTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
-        final List<Map<String, byte[]>> result = MariaDbConfig.selectQueryByteArr(DATABASE_3_PRIVILEGED_DTO, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
+        final List<Map<String, byte[]>> result = MariaDbUtil.selectQueryByteArr(DATABASE_3_PRIVILEGED_DTO, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
         assertNotNull(result.get(0).get("raw"));
         assertArrayEquals(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")), result.get(0).get("raw"));
     }
@@ -226,7 +226,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.createTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date"));
         assertEquals("Vienna", result.get(0).get("location"));
@@ -245,7 +245,7 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.deleteTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
         assertEquals(0, result.size());
     }
 
@@ -262,25 +262,26 @@ public class TableServiceIntegrationTest extends BaseTest {
 
         /* test */
         tableService.deleteTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
+        final List<Map<String, String>> result = MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
         assertEquals(0, result.size());
     }
 
     @Test
-    public void delete_succeeds() throws SQLException, QueryMalformedException {
+    public void delete_succeeds() throws SQLException, QueryMalformedException, TableNotFoundException {
 
         /* test */
         tableService.delete(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO);
+        assertFalse(MariaDbUtil.tableExists(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME));
     }
 
     @Test
     public void delete_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
+        MariaDbUtil.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
+        assertThrows(TableNotFoundException.class, () -> {
             tableService.delete(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO);
         });
     }
@@ -305,7 +306,7 @@ public class TableServiceIntegrationTest extends BaseTest {
     public void getCount_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
+        MariaDbUtil.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
@@ -326,10 +327,30 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    public void updateTable_succeeds() throws SQLException, TableNotFoundException, TableMalformedException {
+
+        /* test */
+        tableService.updateTable(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, TABLE_8_UPDATE_DTO);
+        assertEquals("", MariaDbUtil.tableDescription(DATABASE_3_PRIVILEGED_DTO, TABLE_8_INTERNAL_NAME));
+    }
+
+    @Test
+    public void updateTable_notExists_fails() {
+        final TableDto request = TableDto.builder()
+                .internalName("i_do_not_exist")
+                .build();
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.updateTable(DATABASE_3_PRIVILEGED_DTO, request, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
     public void history_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
+        MariaDbUtil.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNAL_NAME);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {

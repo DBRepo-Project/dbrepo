@@ -65,7 +65,8 @@ public class MetadataMapperUnitTest extends BaseTest {
     public void identifierCreateDtoToIdentifier_withDoi_succeeds() {
 
         /* test */
-        final Identifier response = metadataMapper.createIdentifierDtoToIdentifier(IDENTIFIER_1_CREATE_WITH_DOI_DTO);
+        final Identifier response = metadataMapper.identifierSaveDtoToIdentifier(
+                metadataMapper.createIdentifierDtoToIdentifierSaveDto(IDENTIFIER_1_CREATE_WITH_DOI_DTO));
         assertNull(response.getDatabase());
         assertNull(response.getViewId());
         assertNull(response.getQueryId());
@@ -78,7 +79,8 @@ public class MetadataMapperUnitTest extends BaseTest {
     public void identifierCreateDtoToIdentifier_subset_succeeds() {
 
         /* test */
-        final Identifier response = metadataMapper.createIdentifierDtoToIdentifier(IDENTIFIER_2_CREATE_DTO);
+        final Identifier response = metadataMapper.identifierSaveDtoToIdentifier(
+                metadataMapper.createIdentifierDtoToIdentifierSaveDto(IDENTIFIER_2_CREATE_DTO));
         assertNull(response.getDatabase());
         assertNull(response.getViewId());
         assertNull(response.getTableId());
@@ -211,6 +213,13 @@ public class MetadataMapperUnitTest extends BaseTest {
 
         /* test */
         assertEquals(ONTOLOGY_1_DTO, metadataMapper.ontologyToOntologyDto(ONTOLOGY_1));
+    }
+
+    @Test
+    public void relatedIdentifierToDoiRelatedIdentifier_succeeds() {
+
+        /* test */
+        assertEquals(IDENTIFIER_1_DATACITE_RELATED_IDENTIFIER_1_DTO, metadataMapper.relatedIdentifierToDoiRelatedIdentifier(IDENTIFIER_1_RELATED_IDENTIFIER_1));
     }
 
 }

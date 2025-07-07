@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
@@ -8,10 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.service.AccessService;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
-import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,15 +37,18 @@ public class DatabaseEndpoint extends RestEndpoint {
     private final DataMapper dataMapper;
     private final CacheService cacheService;
     private final AccessService accessService;
+    private final AnalyseService analyseService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
     public DatabaseEndpoint(DataMapper dataMapper, CacheService cacheService, AccessService accessService,
-                            DatabaseService databaseService, ContainerService containerService) {
+                            AnalyseService analyseService, DatabaseService databaseService,
+                            ContainerService containerService) {
         this.dataMapper = dataMapper;
         this.cacheService = cacheService;
         this.accessService = accessService;
+        this.analyseService = analyseService;
         this.databaseService = databaseService;
         this.containerService = containerService;
     }
@@ -64,7 +65,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "400",
-                    description = "Database create query is malformed or image is not supported",
+                    description = "Database create query is malformed or readonly password is hashed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -86,7 +87,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     })
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data)
             throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
-            DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
+            DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException, MalformedException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
         final ContainerDto container = cacheService.getContainer(data.getContainerId());
@@ -95,6 +96,10 @@ public class DatabaseEndpoint extends RestEndpoint {
             containerService.createQueryStore(container, data.getInternalName());
             accessService.create(database, dataMapper.createDatabaseDtoToUserDto(data), AccessTypeDto.WRITE_ALL);
             accessService.create(database, dataMapper.createDatabaseDtoToPrivilegedUserDto(data), AccessTypeDto.WRITE_ALL);
+            if (data.getReadonlyPassword().startsWith("*")) {
+                log.error("Failed to give readonly user read-access: password is hashed");
+                throw new MalformedException("Failed to give readonly user read-access: password is hashed");
+            }
             accessService.create(database, dataMapper.createDatabaseDtoToReadonlyUserDto(data), AccessTypeDto.READ);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(database);
@@ -143,6 +148,41 @@ public class DatabaseEndpoint extends RestEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
+    }
+
+    @GetMapping("/{databaseId}/analyse/schema/{key}")
+    @PreAuthorize("hasAuthority('analyse-datatypes')")
+    @Operation(summary = "Analyse datatypes of a dataset",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Analysed dataset"),
+            @ApiResponse(responseCode = "400",
+                    description = "Image datatypes malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Dataset not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<SchemaAnalysisResultDto> analyseDatatypes(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                    @PathVariable("key") String key)
+            throws AnalyseDataTypesException, DatabaseUnavailableException, StorageNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, ImageInvalidException, DatabaseNotFoundException,
+            ColumnNotFoundException {
+        log.debug("endpoint analyse datatypes, databaseId={}, key={}", databaseId, key);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        return ResponseEntity.ok()
+                .body(analyseService.determineDataTypes(database.getContainer().getImage(), key));
     }
 
 }

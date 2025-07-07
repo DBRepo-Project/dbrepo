@@ -44,6 +44,7 @@
 <script>
 import Banner from '@/components/identifier/Banner.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   components: {

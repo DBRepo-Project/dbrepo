@@ -23,7 +23,7 @@ technologies. The conceptualized microservices (c.f. [Fig. 1](#fig1)) operate th
 
 <figure id="fig1" markdown>
 <<<<<<<< HEAD:docs/dev/old/index.md
-![DBRepo architecture](/infrastructures/dbrepo/images/architecture.svg)
+![DBRepo architecture](/infrastructures/dbrepo/1.10/images/architecture.svg)
 ========
 ![DBRepo architecture](../../images/architecture.svg)
 <figcaption>Fig. 1: Architecture of the services</figcaption>

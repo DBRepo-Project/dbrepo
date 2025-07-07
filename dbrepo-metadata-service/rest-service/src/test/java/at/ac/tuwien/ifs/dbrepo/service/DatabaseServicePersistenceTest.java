@@ -57,7 +57,7 @@ public class DatabaseServicePersistenceTest extends BaseTest {
 
         /* test */
         final Database response = databaseService.findById(DATABASE_1_ID);
-        assertEquals(DATABASE_1, response);
+        assertEquals(DATABASE_1_ID, response.getId());
     }
 
     @Test

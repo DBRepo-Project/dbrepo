@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
@@ -26,6 +27,18 @@ public interface MetadataServiceGateway {
      */
     ContainerDto getContainerById(UUID containerId) throws RemoteUnavailableException,
             ContainerNotFoundException, MetadataServiceException;
+
+    /**
+     * Get a image with given id from the metadata service.
+     *
+     * @param imageId The image id
+     * @return The image with data type and operator information, if successful.
+     * @throws ImageNotFoundException The image was not found in the metadata service.
+     * @throws RemoteUnavailableException The remote service is not available.
+     * @throws MetadataServiceException   The remote service returned invalid data.
+     */
+    ImageDto getImageById(UUID imageId) throws RemoteUnavailableException,
+            ImageNotFoundException, MetadataServiceException;
 
     /**
      * Get a database with given id from the metadata service.

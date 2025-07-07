@@ -6,12 +6,15 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,19 +34,19 @@ public class IdentifierDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "null")
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
     private UUID databaseId;
 
     @JsonProperty("query_id")
-    @Schema(example = "null")
+    @Schema(example = "1413e257-f62a-4881-ac38-ae9a76e21b9c")
     private UUID queryId;
 
     @JsonProperty("table_id")
-    @Schema(example = "null")
+    @Schema(example = "67d23209-aec8-489a-8f86-71fd0fe09ce7")
     private UUID tableId;
 
     @JsonProperty("view_id")
-    @Schema(example = "null")
+    @Schema(example = "8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4")
     private UUID viewId;
 
     @NotNull
@@ -54,13 +57,13 @@ public class IdentifierDto {
     private IdentifierTypeDto type;
 
     @NotNull
-    private List<IdentifierTitleDto> titles;
+    private List<IdentifierTitleDto> titles = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierDescriptionDto> descriptions;
+    private List<IdentifierDescriptionDto> descriptions = new LinkedList<>();
 
     @NotNull
-    private List<IdentifierFunderDto> funders;
+    private List<IdentifierFunderDto> funders = new LinkedList<>();
 
     @NotBlank
     @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
@@ -72,7 +75,7 @@ public class IdentifierDto {
     private String queryNormalized;
 
     @JsonProperty("related_identifiers")
-    private List<RelatedIdentifierDto> relatedIdentifiers;
+    private List<RelatedIdentifierDto> relatedIdentifiers = new LinkedList<>();
 
     @NotBlank
     @JsonProperty("query_hash")
@@ -118,13 +121,18 @@ public class IdentifierDto {
     private LanguageTypeDto language;
 
     @NotNull
-    private List<LicenseDto> licenses;
+    private List<LicenseDto> licenses = new LinkedList<>();
 
     @NotNull
-    private List<CreatorDto> creators;
+    private List<CreatorDto> creators = new LinkedList<>();
 
     @NotNull
     @Schema(example = "draft")
     private IdentifierStatusTypeDto status;
+
+    @EqualsAndHashCode.Exclude
+    @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
+    private Instant created;
 
 }

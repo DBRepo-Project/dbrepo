@@ -11,4 +11,4 @@ Reference:
 
 Related:
 
-* [Metadata Service](/infrastructures/dbrepo/dev/services/metadata-service)
+* [Metadata Service](/infrastructures/dbrepo/1.10/dev/services/metadata-service)

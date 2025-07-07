@@ -1,0 +1,33 @@
+{
+  "id": "3bd69bb8-f7e3-48e4-9717-823787e7ba23",
+  "table_id": "666d0b6b-f017-4f7c-80d8-a47174d8b539",
+  "type": "table",
+  "titles": [
+    {
+      "id": "7409c03c-35ab-4e19-9876-88967ef37024",
+      "title": "Austrian weather data"
+    }
+  ],
+  "descriptions": [
+    {
+      "id": "e616779b-7c46-46a9-89a9-92187441b7a3",
+      "description": "Weather data"
+    }
+  ],
+  "publisher": "Example Publisher",
+  "creators": [
+    {
+      "id": "adbfe9ac-0a6d-492f-9782-8915d0bdc76f",
+      "creator_name": "Mustermann, Martina"
+    }
+  ],
+  "licenses": [
+    {
+      "identifier": "MIT",
+      "uri": "https://opensource.org/license/mit/"
+    }
+  ],
+  "publication_day": 10,
+  "publication_month": 7,
+  "publication_year": 2023
+}

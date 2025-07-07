@@ -51,7 +51,7 @@ Only set the `BASE_URL` environment variable in `.env` when your hostname is **n
 
 ### Runtime Configuration
 
-The [Auth Service](/infrastructures/dbrepo/api/auth-service) can be configured easily when DBRepo is running. Start DBRepo temporarily:
+The [Auth Service](/infrastructures/dbrepo/1.10/api/auth-service) can be configured easily when DBRepo is running. Start DBRepo temporarily:
 
 ```shell
 docker compose up -d
@@ -63,7 +63,7 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 :material-numeric-3-circle-outline:.
 
 <figure markdown>
-![Keycloka identitiy provider list](/infrastructures/dbrepo/images/screenshots/auth-service-ldap-1.png){ .img-border }
+![Keycloka identitiy provider list](/infrastructures/dbrepo/1.10/images/screenshots/auth-service-ldap-1.png){ .img-border }
 </figure>
 
 If you plan to change the default admin username (c.f. Figure 2), modify the Bind DN :material-numeric-1-circle-outline:
@@ -71,7 +71,7 @@ but this is optional. Change the Bind credentials to the desired password :mater
 the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
 <figure markdown>
-![Keycloak identity provider settings](/infrastructures/dbrepo/images/screenshots/auth-service-ldap-2.png){ .img-border }
+![Keycloak identity provider settings](/infrastructures/dbrepo/1.10/images/screenshots/auth-service-ldap-2.png){ .img-border }
 </figure>
 
 Update the client secret of the `dbrepo-client`:
@@ -169,11 +169,11 @@ Please be warned that the default configuration is not intended for public deplo
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
 
-Next, create a [user account](/infrastructures/dbrepo/api/#create-user-account) and 
-then [create a database](/infrastructures/dbrepo/api/#create-database) to [import a dataset](/infrastructures/dbrepo/api/#import-dataset).
+Next, create a [user account](/infrastructures/dbrepo/1.10/api/#create-user-account) and 
+then [create a database](/infrastructures/dbrepo/1.10/api/#create-database) to [import a dataset](/infrastructures/dbrepo/1.10/api/#import-dataset).
 
 ## Limitations
 
 !!! info "Alternative Deployments"
 
-    Alternatively, you can also deploy DBRepo with [Kubernetes](/infrastructures/dbrepo/kubernetes) in your virtual machine instead.
+    Alternatively, you can also deploy DBRepo with [Kubernetes](/infrastructures/dbrepo/1.10/kubernetes) in your virtual machine instead.
