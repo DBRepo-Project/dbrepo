@@ -9,10 +9,6 @@ build-images: build-java-lib ## Build Docker images.
 build-jupyter-image:
 	docker build -t starter-notebook ./.jupyter
 
-.PHONY: build-jupyter-image
-build-jupyter-image:
-	docker build -t starter-notebook ./.jupyter
-
 .PHONY: build-java-lib
 build-java-lib: ## Build the Java Library.
 	APP_VERSION=$(APP_VERSION) mvn -f ./lib/java/dbrepo-core/pom.xml -q clean package install -DskipTests
