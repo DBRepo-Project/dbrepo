@@ -51,6 +51,7 @@
 
 <script>
 import { useCacheStore } from '@/stores/cache.js'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   data () {
@@ -107,6 +108,7 @@ export default {
     this.loadQueries()
   },
   methods: {
+    formatTimestampUTCLabel,
     loadQueries () {
       this.loadingSubsets = true
       const queryService = useQueryService()
@@ -148,7 +150,7 @@ export default {
     },
     subtitle (subset) {
       if (subset.identifiers.length === 0) {
-        return null
+        return formatTimestampUTCLabel(subset.execution)
       }
       const identifierService = useIdentifierService()
       return identifierService.identifierPreferEnglishDescription(subset.identifiers[0])

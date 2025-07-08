@@ -16,7 +16,7 @@
           lines="two"
           :title="table.name"
           :class="clazz(table)"
-          :subtitle="table.description ? table.description : ''"
+          :subtitle="subtitle(table)"
           :to="`/database/${$route.params.database_id}/table/${table.id}/info`">
           <template v-slot:append>
             <ResourceStatus
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -90,6 +90,7 @@ export default {
     }
   },
   methods: {
+    sizeToHumanLabel,
     closed (data) {
       console.debug('closed dialog', data)
       this.dialogSemantic = false
@@ -99,6 +100,12 @@ export default {
     },
     clazz (view) {
       return this.hasPublishedIdentifier(view) ? 'primary-text' : null
+    },
+    subtitle (table) {
+      if (!table.description) {
+        return sizeToHumanLabel(table.data_length)
+      }
+      return table.description
     },
     hasPublishedIdentifier (subset) {
       if (!subset.identifiers) {

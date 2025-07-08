@@ -11,6 +11,7 @@
         <v-list-item
           lines="two"
           :title="view.name"
+          :subtitle="view.query"
           :class="clazz(view)"
           :to="`/database/${$route.params.database_id}/view/${view.id}/info`">
           <template v-slot:append>
