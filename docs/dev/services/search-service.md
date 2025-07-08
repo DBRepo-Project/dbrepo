@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.0`](https://hub.docker.com/r/dbrepo/search-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.1`](https://hub.docker.com/r/dbrepo/search-service)
 
     * Health: `http://<container_ip>:8080/api/search/health`
     * Prometheus: `http://<container_ip>:8080/metrics`

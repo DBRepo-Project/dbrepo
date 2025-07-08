@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.0`](https://hub.docker.com/r/dbrepo/data-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.1`](https://hub.docker.com/r/dbrepo/data-service)
 
     * Info: `http://<container_ip>:8080/actuator/info`
     * Health: `http://<container_ip>:8080/actuator/health`
