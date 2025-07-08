@@ -183,11 +183,13 @@ services:
       context: ./dbrepo-auth-service/init
       network: host
     environment:
-      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
+      IDENTITY_SERVICE_ENDPOINT: "${IDENTITY_SERVICE_ENDPOINT:-ldap://identity-service:1389}"
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       METADATA_USERNAME: "root"
       READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
+      READONLY_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
     depends_on:

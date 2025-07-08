@@ -7,13 +7,14 @@ name = "pypi"
 requests = "*"
 mariadb = "*"
 ecs_logging = "*"
-dbrepo = { path = "./lib/dbrepo-1.10.0.tar.gz" }
+dbrepo = { path = "./lib/dbrepo-1.10.1.tar.gz" }
 
 [dev-packages]
 coverage = "*"
 pytest = "*"
 testcontainers-mysql = "*"
 requests-mock = "*"
+python-ldap = "*"
 
 [requires]
 python_version = "3.11"
