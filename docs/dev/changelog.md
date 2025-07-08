@@ -7,6 +7,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.10.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.1) - 2025-07-09
+
+#### Fixes
+
+* Fixed a bug where PID presentation in the UI did not select the newest PID.
+* Fixed a bug where a user could get a different id from the Identity Service when using a different authentication
+  provider (i.e. SAML)
+
 ## [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.0) - 2025-07-05
 
 #### Removals
@@ -15,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixes
 
-* Fix a bug where saving a PID multiple times broke the entity linking within Hibernate
+* Fixed a bug where saving a PID multiple times broke the entity linking within Hibernate
   in [#545](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/545).
 
 ## [v1.9.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.9.3) - 2025-06-06
