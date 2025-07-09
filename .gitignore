@@ -4,9 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# large
-dbrepo-compute-service/bundle-2.20.18.jar
-
 # generated
 ready
 schema.xsd
