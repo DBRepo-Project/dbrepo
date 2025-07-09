@@ -27,16 +27,14 @@ RUN apt-get update && \
     jq && \
     apt-get clean
 
-COPY ./lib/httpfs.duckdb_extension.gz /tmp/httpfs.duckdb_extension.gz
-
 WORKDIR /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
 
-RUN gunzip /tmp/httpfs.duckdb_extension.gz && \
-    mv /tmp/httpfs.duckdb_extension /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/httpfs.duckdb_extension && \
-    rm -f /tmp/httpfs.duckdb_extension.gz
+COPY ./lib/httpfs.duckdb_extension.gz /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/httpfs.duckdb_extension.gz
+COPY ./lib/mysql_scanner.duckdb_extension.gz /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/mysql_scanner.duckdb_extension.gz
 
-RUN mkdir -p /var/log/app/service/data && \
-    chown -R 1001:1001 /var/log/app/service/data
+RUN gunzip -r /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64 && \
+    mkdir -p /var/log/app/service/data && \
+    chown -R 1001:1001 /var/log/app/service/data /home/dbrepo/.duckdb
 
 WORKDIR /app
 

@@ -293,14 +293,35 @@ public interface DataMapper {
         }
     }
 
+    default ColumnTypeDto duckDbDataTypeToMariaDbColumnTypeDto(String data) {
+        final List<String> inCompatibleTypes = List.of("INTERVAL", "SQLNULL", "TIME_TZ", "TIMESTAMP_MS", "TIMESTAMP_NS",
+                "TIMESTAMP_S", "TIMESTAMP_TZ", "UUID");
+        if (inCompatibleTypes.contains(data)) {
+            log.warn("Failed to map data type: {}", data);
+            return null;
+        }
+        if (List.of("HUGEINT", "UBIGINT", "UHUGEINT").contains(data)) {
+            return ColumnTypeDto.BIGINT;
+        } else if (List.of("INTEGER", "UINTEGER").contains(data)) {
+            return ColumnTypeDto.INT;
+        } else if (data.equals("USMALLINT")) {
+            return ColumnTypeDto.SMALLINT;
+        } else if (data.equals("UTINYINT")) {
+            return ColumnTypeDto.TINYINT;
+        }
+        return ColumnTypeDto.valueOf(data);
+    }
+
     default Map<String, ColumnAnalysisResultDto> resultSetToConstraintResult(ResultSet resultSet) throws SQLException {
         final Map<String, ColumnAnalysisResultDto> constraints = new HashMap<>();
         while (resultSet.next()) {
             final String columnName = resultSet.getString("column_name");
+            final String columnType = resultSet.getString("column_type");
             final String nullAllowed = resultSet.getString("null");
             final String key = resultSet.getString("key");
             constraints.put(columnName, ColumnAnalysisResultDto.builder()
                     .name(columnName)
+                    .datatype(duckDbDataTypeToMariaDbColumnTypeDto(columnType))
                     .nullAllowed(nullAllowed != null && columnName.equals("YES"))
                     .primaryKey(key != null && key.equals("YES"))
                     .build());

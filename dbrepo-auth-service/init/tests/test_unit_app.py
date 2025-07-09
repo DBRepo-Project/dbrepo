@@ -3,7 +3,7 @@ import unittest
 
 import requests_mock
 
-from app import fetch
+from app import get_auth_user
 
 
 class AppUnitTest(unittest.TestCase):
@@ -28,7 +28,7 @@ class AppUnitTest(unittest.TestCase):
                       status_code=400)
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except IOError:
                 pass
 
@@ -39,7 +39,7 @@ class AppUnitTest(unittest.TestCase):
                       status_code=401)
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except IOError:
                 pass
 
@@ -52,7 +52,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except FileNotFoundError:
                 pass
 
@@ -65,7 +65,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except FileNotFoundError:
                 pass
 
@@ -78,7 +78,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except FileNotFoundError:
                 pass
 
@@ -93,7 +93,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except ModuleNotFoundError:
                 pass
 
@@ -109,7 +109,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except ImportError:
                 pass
 
@@ -127,7 +127,7 @@ class AppUnitTest(unittest.TestCase):
 
             # test
             try:
-                fetch('admin')
+                get_auth_user('admin')
             except EnvironmentError:
                 pass
 
@@ -144,6 +144,6 @@ class AppUnitTest(unittest.TestCase):
             }], status_code=200)
 
             # test
-            ldap_user_id, user_id = fetch('admin')
+            ldap_user_id, user_id = get_auth_user('admin')
             self.assertEqual("7a0b4b7f-77cd-4f28-a665-2da443024621", ldap_user_id)
             self.assertEqual("5b516520-67cb-4aa0-86a6-d12f8b8f1a20", user_id)

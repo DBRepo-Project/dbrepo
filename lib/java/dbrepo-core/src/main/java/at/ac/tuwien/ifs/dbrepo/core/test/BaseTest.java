@@ -2698,6 +2698,17 @@ public class BaseTest {
                             .build())))
             .build();
 
+    public final Map<String, ColumnAnalysisResultDto> QUERY_9_ANALYSIS_MAP_DTO = new HashMap<>() {{
+        put("lat", ColumnAnalysisResultDto.builder()
+                .name("lat")
+                .datatype(ColumnTypeDto.DECIMAL)
+                .build());
+        put("lng", ColumnAnalysisResultDto.builder()
+                .name("lng")
+                .datatype(ColumnTypeDto.DECIMAL)
+                .build());
+    }};
+
     public final static String QUEUE_NAME = "dbrepo";
     public final static String QUEUE_VHOST = "dbrepo";
     public final static Boolean QUEUE_AUTO_DELETE = false;
@@ -3122,6 +3133,17 @@ public class BaseTest {
             .isPersisted(QUERY_5_PERSISTED)
             .owner(USER_1_BRIEF_DTO)
             .build();
+
+    public final Map<String, ColumnAnalysisResultDto> QUERY_5_ANALYSIS_MAP_DTO = new HashMap<>() {{
+        put("id", ColumnAnalysisResultDto.builder()
+                .name("id")
+                .datatype(ColumnTypeDto.BIGINT)
+                .build());
+        put("value", ColumnAnalysisResultDto.builder()
+                .name("value")
+                .datatype(ColumnTypeDto.DECIMAL)
+                .build());
+    }};
 
     public final SubsetDto QUERY_5_SUBSET_DTO = SubsetDto.builder()
             .datasourceId(TABLE_8_ID)
@@ -6024,6 +6046,21 @@ public class BaseTest {
                 put("lat", -33.847927);
                 put("lng", 150.6517942);
             }}));
+
+    public final Map<String, ColumnAnalysisResultDto> QUERY_1_ANALYSIS_MAP_DTO = new HashMap<>() {{
+        put("location", ColumnAnalysisResultDto.builder()
+                .name("location")
+                .datatype(ColumnTypeDto.VARCHAR)
+                .build());
+        put("lat", ColumnAnalysisResultDto.builder()
+                .name("lat")
+                .datatype(ColumnTypeDto.DECIMAL)
+                .build());
+        put("lng", ColumnAnalysisResultDto.builder()
+                .name("lng")
+                .datatype(ColumnTypeDto.DECIMAL)
+                .build());
+    }};
 
     public final static String LICENSE_1_IDENTIFIER = "MIT";
     public final static String LICENSE_1_URI = "https://opensource.org/license/mit/";

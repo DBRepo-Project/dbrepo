@@ -6,10 +6,12 @@ import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.DataTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.DuckDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import lombok.extern.slf4j.Slf4j;
 import org.duckdb.DuckDBResultSet;
@@ -28,17 +30,20 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final DuckDbConfig duckDbConfig;
+    private final DuckDbMapper duckDbMapper;
 
     @Autowired
-    public AnalyseServiceDuckDbImpl(S3Config s3Config, DataMapper dataMapper, DuckDbConfig duckDbConfig) {
+    public AnalyseServiceDuckDbImpl(S3Config s3Config, DataMapper dataMapper, DuckDbConfig duckDbConfig,
+                                    DuckDbMapper duckDbMapper) {
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.duckDbConfig = duckDbConfig;
+        this.duckDbMapper = duckDbMapper;
     }
 
     @Override
-    public void setup(Connection connection) throws SQLException {
-        connection.prepareStatement("LOAD httpfs;")
+    public void setupS3(Connection connection) throws SQLException {
+        connection.prepareStatement("LOAD 'httpfs';")
                 .execute();
         connection.prepareStatement("SET s3_endpoint = '" + s3Config.getS3Endpoint().replaceAll("https?://", "") + "';")
                 .execute();
@@ -54,11 +59,17 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     }
 
     @Override
+    public void setupMySql(Connection connection) throws SQLException {
+        connection.prepareStatement("LOAD 'mysql';")
+                .execute();
+    }
+
+    @Override
     public SchemaAnalysisResultDto determineDataTypes(ImageDto image, String key) throws AnalyseDataTypesException,
             DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException {
         /* download sample from storage service */
         try (Connection connection = getDuckDbConnection()) {
-            setup(connection);
+            setupS3(connection);
             long start = System.currentTimeMillis();
             final PreparedStatement statement1 = connection.prepareStatement("FROM sniff_csv('s3://" + s3Config.getS3Bucket() + "/" + key + "');");
             final DuckDBResultSet resultSet1 = (DuckDBResultSet) statement1.executeQuery();
@@ -99,8 +110,28 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         }
     }
 
-    public SchemaAnalysisResultDto determineDataTypes(ImageDto image, SubsetDto subset) {
-        return null;
+    @Override
+    public Map<String, ColumnAnalysisResultDto> determineDataTypes(DatabaseDto database, QueryDto subset)
+            throws ColumnNotFoundException, DatabaseUnavailableException {
+        try (Connection connection = getDuckDbConnection()) {
+            setupMySql(connection);
+            /* attach to mariadb in duckdb */
+            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
+            statement1.executeUpdate();
+            statement1.close();
+            final PreparedStatement statement2 = connection.prepareStatement(duckDbMapper.queryDtoToRawDescribeQuery(subset));
+            final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
+            final Map<String, ColumnAnalysisResultDto> schema = dataMapper.resultSetToConstraintResult(resultSet2);
+            statement2.close();
+            return schema;
+        } catch (SQLException e) {
+            if (e.getMessage().contains("not find column")) {
+                log.error("Failed to determine data types: column not found: {}", e.getMessage());
+                throw new ColumnNotFoundException("Failed to determine data types: column not found", e);
+            }
+            log.error("Failed to determine data types: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to determine data types: " + e.getMessage(), e);
+        }
     }
 
 }
