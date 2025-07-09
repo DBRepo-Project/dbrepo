@@ -1,9 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
@@ -11,10 +11,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
-import at.ac.tuwien.ifs.dbrepo.service.StorageService;
-import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +37,7 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -51,20 +49,20 @@ public class SubsetEndpoint extends RestEndpoint {
     private final CacheService cacheService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
+    private final AnalyseService analyseService;
     private final StorageService storageService;
-    private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public SubsetEndpoint(CacheService cacheService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                          StorageService storageService, DatabaseService databaseService,
-                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                          StorageService storageService, EndpointValidator endpointValidator,
+                          MetadataServiceGateway metadataServiceGateway, AnalyseService analyseService) {
         this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
+        this.analyseService = analyseService;
         this.storageService = storageService;
-        this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -253,7 +251,8 @@ public class SubsetEndpoint extends RestEndpoint {
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, StorageNotFoundException,
             QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
             NotAllowedException, UserNotFoundException, MetadataServiceException, TableNotFoundException,
-            ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException {
+            ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException,
+            ColumnNotFoundException, AnalyseDataTypesException {
         log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}, data.datasource_id={}",
                 databaseId, page, size, timestamp, data.getDatasourceId());
         /* check */
@@ -350,8 +349,8 @@ public class SubsetEndpoint extends RestEndpoint {
                                      @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, QueryMalformedException, UserNotFoundException,
-            MetadataServiceException, TableNotFoundException, ViewNotFoundException, ViewMalformedException,
-            FormatNotAvailableException, StorageUnavailableException {
+            MetadataServiceException, TableNotFoundException, FormatNotAvailableException, StorageUnavailableException,
+            ColumnNotFoundException, AnalyseDataTypesException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, accept={} page={}, size={}", databaseId,
                 subsetId, accept, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -400,11 +399,9 @@ public class SubsetEndpoint extends RestEndpoint {
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
-            final String viewName = subset.getQueryHash();
-            databaseService.createView(database, viewName, subset.getQueryNormalized());
-            final ViewDto view = databaseService.inspectView(database, viewName);
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
-            headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
+            final Map<String, ColumnAnalysisResultDto> schema = analyseService.determineDataTypes(database, subset);
+            headers.set("X-Headers", String.join(",", schema.keySet()));
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:

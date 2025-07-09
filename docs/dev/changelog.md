@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed a bug where a user could get a different id from the Identity Service when using a different authentication
   provider (i.e. SAML)
 
+#### Changes
+
+* Modified the mechanism to obtain the subset columns to use DuckDB and now create views anymore.
+
 ## [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.0) - 2025-07-05
 
 #### Removals

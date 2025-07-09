@@ -12,6 +12,7 @@ variables:
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.10"
   APP_VERSION: "1.10.1"
+  DUCKDB_VERSION: "1.2.2"
   CHART_VERSION: "1.10.1"
   SUPPORTED_VERSIONS: "1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.10.0, 10.10.1"
   SUPPORTED_ARCH: "linux/amd64"
@@ -351,6 +352,9 @@ test-data-service:
     - build-java-lib
   before_script:
     - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+    - "mkdir -p ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64"
+    - "gunzip -r ./dbrepo-data-service/lib"
+    - "mv ./dbrepo-data-service/lib/* ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64"
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
