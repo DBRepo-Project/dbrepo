@@ -1,9 +1,7 @@
 import logging
 import os
 
-import ldap
 import mariadb
-from ldap.controls import RelaxRulesControl
 from requests import post, get
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
@@ -31,19 +29,19 @@ dictConfig({
             'stream': 'ext://sys.stdout',
             'formatter': 'simple'
         },
-        # 'file': {
-        #     'class': 'logging.handlers.TimedRotatingFileHandler',
-        #     'formatter': 'ecs',
-        #     'filename': '/var/log/app/service/auth/init.log',
-        #     'when': 'm',
-        #     'interval': 1,
-        #     'backupCount': 5,
-        #     'encoding': 'utf8'
-        # },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'formatter': 'ecs',
+            'filename': '/var/log/app/service/auth/init.log',
+            'when': 'm',
+            'interval': 1,
+            'backupCount': 5,
+            'encoding': 'utf8'
+        },
     },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['console']
+        'handlers': ['console', 'file']
     }
 })
 
@@ -63,21 +61,6 @@ def fetch_keycloak_master_access_token() -> str:
     if response.status_code != 200:
         raise IOError(f'Failed to obtain admin token: {response.status_code}')
     return response.json()["access_token"]
-
-
-def modify_identity(username: str, user_id: str) -> None:
-    endpoint = os.getenv('IDENTITY_SERVICE_ENDPOINT', 'ldap://identity-service:1389')
-    instance = ldap.initialize(endpoint)
-    instance.simple_bind_s(f"{os.getenv('IDENTITY_SERVICE_ADMIN_DN', 'cn=admin,dc=dbrepo,dc=at')}",
-                           os.getenv('IDENTITY_SERVICE_ADMIN_PASSWORD', 'admin'))
-    logging.debug(f'modify user id {user_id} in identity service for user: {username}')
-    try:
-        instance.modify_ext_s(f"uid={username},ou=users,{os.getenv('IDENTITY_SERVICE_ROOT', 'dc=dbrepo,dc=at')}",
-                              [(ldap.MOD_REPLACE, 'entryUUID', user_id.encode("utf-8"))],
-                              serverctrls=[RelaxRulesControl()])
-        logging.info(f'Modified user id {user_id} for user: {username}')
-    except ldap.NO_SUCH_OBJECT:
-        logging.warning(f'User {username} not found in identity service, skip')
 
 
 def get_auth_users() -> list[tuple[str, str]]:
@@ -151,7 +134,4 @@ if __name__ == '__main__':
     save_metadata_user(user_id, keycloak_id, system_username, system_password)
     user_id, keycloak_id = get_auth_user(readonly_username)
     save_metadata_user(user_id, keycloak_id, readonly_username, readonly_password)
-    logging.debug(f'initializing normal users ...')
-    for user_id, username in get_auth_users():
-        modify_identity(username, user_id)
     logging.info(f'Finished')

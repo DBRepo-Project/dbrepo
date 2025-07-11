@@ -40,10 +40,10 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void createAccess(UUID databaseId, UUID userId, AccessTypeDto access)
+    public void createAccess(UUID databaseId, String username, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/access/" + userId;
+        final String path = "/api/database/" + databaseId + "/access/" + username;
         log.trace("create access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST,
@@ -65,10 +65,10 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void updateAccess(UUID databaseId, UUID userId, AccessTypeDto access)
+    public void updateAccess(UUID databaseId, String username, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, AccessNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/access/" + userId;
+        final String path = "/api/database/" + databaseId + "/access/" + username;
         log.trace("update access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT,
@@ -90,10 +90,10 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void deleteAccess(UUID databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
+    public void deleteAccess(UUID databaseId, String username) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/access/" + userId;
+        final String path = "/api/database/" + databaseId + "/access/" + username;
         log.trace("delete access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);

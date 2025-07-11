@@ -241,13 +241,13 @@ public class MariaDbUtil {
         }
     }
 
-    public static UUID insertQueryStore(DatabaseDto database, QueryDto query, UUID userId) throws SQLException {
+    public static UUID insertQueryStore(DatabaseDto database, QueryDto query, String username) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             PreparedStatement prepareStatement = connection.prepareStatement(
                     "INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, created, executed) VALUES (?,?,?,?,?,?,?,?,?)");
-            prepareStatement.setString(1, String.valueOf(userId));
+            prepareStatement.setString(1, username);
             prepareStatement.setString(2, query.getQuery());
             prepareStatement.setString(3, query.getQuery());
             prepareStatement.setBoolean(4, query.getIsPersisted());

@@ -70,7 +70,7 @@ def upsert_dashboard(database: Database) -> None:
     db = dashboard_client().find(database.dashboard_uid)
     if db is None:
         db = dashboard_client().create(database.internal_name, database.dashboard_uid)
-        rest_client().update_database_dashboard(database.id, db['uid'])
+        dashboard_client().update(database)
     dashboard_client().update(database)
 
 

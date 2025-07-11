@@ -121,7 +121,7 @@
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
-                v-if="item && item.user && item.user.username !== cacheUser.username"
+                v-if="item && item.user && item.user.username !== cacheUser.preferred_username"
                 size="x-small"
                 variant="flat"
                 color="warning"
@@ -232,10 +232,10 @@
               <v-col
                 lg="8">
                 <v-select
-                  v-model="modifyOwner.id"
+                  v-model="modifyOwner.username"
                   :items="users"
                   item-title="username"
-                  item-value="id"
+                  item-value="username"
                   persistent-hint
                   :variant="inputVariant"
                   :hint="$t('pages.database.subpages.settings.ownership.hint')"
@@ -281,7 +281,7 @@
       <v-dialog
         v-model="editAccessDialog"
         max-width="640">
-        <EditAccess :user-id="userId" :access-type="accessType" @close-dialog="closeDialog" />
+        <EditAccess :user-id="username" :access-type="accessType" @close-dialog="closeDialog" />
       </v-dialog>
     </v-window>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -302,7 +302,7 @@ export default {
     return {
       dialogDelete: false,
       confirm: null,
-      userId: null,
+      username: null,
       accessType: null,
       users: [],
       loading: false,
@@ -321,7 +321,7 @@ export default {
         is_dashboard_enabled: null,
       },
       modifyOwner: {
-        id: null
+        username: null
       },
       modifyImage: {
         key: null
@@ -402,7 +402,7 @@ export default {
       if (!this.modifyOwner || !this.cacheUser) {
         return false
       }
-      return this.modifyOwner.id === this.cacheUser.uid
+      return this.modifyOwner.username === this.cacheUser.preferred_username
     },
     isSameVisibility () {
       if (!this.modifyVisibility || !this.database) {
@@ -450,7 +450,7 @@ export default {
       if (!this.database || !this.cacheUser) {
         return false
       }
-      return this.database.owner.id === this.cacheUser.uid
+      return this.database.owner.username === this.cacheUser.preferred_username
     },
     previewImage () {
       if (this.file) {
@@ -494,7 +494,7 @@ export default {
         return
       }
       this.modifyVisibility.is_public = this.database.is_public
-      this.modifyOwner.id = this.database.owner.id
+      this.modifyOwner.username = this.database.owner.username
       this.findGrants()
     }
   },
@@ -508,7 +508,7 @@ export default {
     this.modifyVisibility.is_public = this.database.is_public
     this.modifyVisibility.is_schema_public = this.database.is_schema_public
     this.modifyVisibility.is_dashboard_enabled = this.database.is_dashboard_enabled
-    this.modifyOwner.id = this.database.owner.id
+    this.modifyOwner.username = this.database.owner.username
   },
   methods: {
     submit () {
@@ -516,7 +516,7 @@ export default {
     },
     findGrants () {
       this.accesses = this.database.accesses
-      this.accesses.forEach(a => this.findGrant(a.user.id))
+      this.accesses.forEach(a => this.findGrant(a.user.username))
     },
     closeDialog () {
       this.editAccessDialog = false
@@ -538,14 +538,14 @@ export default {
           this.loading = false
         })
     },
-    findGrant (userId) {
+    findGrant (username) {
       if (!this.database) {
         return false
       }
-      const access = this.accesses.filter(a => a.user.id === userId)[0]
+      const access = this.accesses.filter(a => a.user.username === username)[0]
       access['loading'] = true
       const grantService = useGrantService()
-      grantService.findOne(this.database.id, userId)
+      grantService.findOne(this.database.id, username)
         .then((grant) => {
           access['grants'] = grant
           access['loading'] = false
@@ -634,7 +634,7 @@ export default {
     updateDatabaseOwner () {
       this.loading = true
       const databaseService = useDatabaseService()
-      databaseService.updateOwner(this.$route.params.database_id, { id: this.modifyOwner.id })
+      databaseService.updateOwner(this.$route.params.database_id, { username: this.modifyOwner.username })
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.database.transfer'))
@@ -680,12 +680,12 @@ export default {
         })
     },
     giveAccess () {
-      this.userId = null
+      this.username = null
       this.accessType = null
       this.editAccessDialog = true
     },
     modifyAccess (item) {
-      this.userId = item.user.id
+      this.username = item.user.username
       this.accessType = item.type
       this.editAccessDialog = true
     },

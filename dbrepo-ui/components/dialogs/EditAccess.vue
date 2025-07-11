@@ -12,7 +12,7 @@
             <v-col>
               <v-autocomplete
                 v-if="!isModification"
-                v-model="localUserId"
+                v-model="localUsername"
                 :items="eligibleUsers"
                 :disabled="loadingUsers"
                 :loading="loadingUsers"
@@ -21,7 +21,7 @@
                 :variant="inputVariant"
                 hide-selected
                 hide-details
-                item-value="id"
+                item-value="username"
                 item-title="qualified_name"
                 single-line
                 persistent-hint
@@ -69,7 +69,7 @@ import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
-    userId: {
+    username: {
       type: String,
       default () {
         return null
@@ -89,7 +89,7 @@ export default {
       loadingUsers: false,
       users: [],
       error: false,
-      localUserId: null,
+      localUsername: null,
       types: [
         { title: this.$t('pages.database.subpages.access.read'), value: 'read' },
         { title: this.$t('pages.database.subpages.access.write-own'), value: 'write_own' },
@@ -114,7 +114,7 @@ export default {
       return this.types
     },
     eligibleUsers () {
-      return this.users.filter(u => !this.database.accesses.map(a => a.user.id).includes(u.id))
+      return this.users.filter(u => !this.database.accesses.map(a => a.user.username).includes(u.username))
     },
     buttonColor () {
       if (!this.valid || this.loading || this.accessType === this.modify.type) {
@@ -126,7 +126,7 @@ export default {
       return 'warning'
     },
     isModification () {
-      return this.userId !== null
+      return this.username !== null
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -138,7 +138,7 @@ export default {
     }
   },
   watch: {
-    userId () {
+    username () {
       this.init()
     },
     accessType () {
@@ -169,7 +169,7 @@ export default {
     },
     revokeAccess () {
       const accessService = useAccessService()
-      accessService.remove(this.$route.params.database_id, this.localUserId)
+      accessService.remove(this.$route.params.database_id, this.localUsername)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.revoked', { access: this.modify.type }))
@@ -188,7 +188,7 @@ export default {
     },
     modifyAccess () {
       const accessService = useAccessService()
-      accessService.update(this.$route.params.database_id, this.localUserId, this.modify)
+      accessService.update(this.$route.params.database_id, this.localUsername, this.modify)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.modified', { access: this.modify.type }))
@@ -207,7 +207,7 @@ export default {
     },
     giveAccess () {
       const accessService = useAccessService()
-      accessService.create(this.$route.params.database_id, this.localUserId, this.modify)
+      accessService.create(this.$route.params.database_id, this.localUsername, this.modify)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.created', { access: this.modify.type }))
@@ -229,7 +229,7 @@ export default {
       const userService = useUserService()
       userService.findAll()
         .then((users) => {
-          this.users = users.filter(u => u.id !== this.database.owner.id)
+          this.users = users.filter(u => u.username !== this.database.owner.username)
         })
         .catch(({code}) => {
           const toast = useToastInstance()
@@ -243,10 +243,10 @@ export default {
         })
     },
     init () {
-      if (!this.userId) {
+      if (!this.username) {
         this.loadUsers()
       } else {
-        this.localUserId = this.userId
+        this.localUsername = this.username
       }
       if (!this.accessType) {
         this.modify.type = null

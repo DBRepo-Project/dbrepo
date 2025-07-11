@@ -81,25 +81,25 @@ public interface MetadataServiceGateway {
     /**
      * Get a user with given user id from the metadata service.
      *
-     * @param userId The user id.
+     * @param username The user username.
      * @return The user, if successful.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws UserNotFoundException      The user was not found in the metadata service.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
+    UserDto getUserByUsername(String username) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
 
     /**
      * Get database access for a given user and database id from the metadata service.
      *
      * @param databaseId The database id.
-     * @param userId     The user id.
+     * @param username     The username.
      * @return The database access, if successful.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws NotAllowedException        The access to this database is denied for the given user.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException, NotAllowedException,
+    DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException, NotAllowedException,
             MetadataServiceException;
 
     /**

@@ -107,7 +107,7 @@ public class UserEndpoint extends AbstractEndpoint {
                         userService.create(data)));
     }
 
-    @RequestMapping(value = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
     @Observed(name = "dbrepo_user_find")
@@ -131,13 +131,13 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> find(@NotNull @PathVariable("userId") UUID userId,
+    public ResponseEntity<UserDto> find(@NotNull @PathVariable("username") String username,
                                         Principal principal) throws NotAllowedException,
             UserNotFoundException {
-        log.debug("endpoint find a user, userId={}", userId);
+        log.debug("endpoint find a user, username={}", username);
         /* check */
-        final User user = userService.findById(userId);
-        if (!user.getId().equals(getId(principal)) && !hasRole(principal, "find-foreign-user")) {
+        final User user = userService.findByUsername(username);
+        if (!user.getUsername().equals(getUsername(principal)) && !hasRole(principal, "find-foreign-user")) {
             log.error("Failed to find user: foreign user");
             throw new NotAllowedException("Failed to find user: foreign user");
         }
@@ -156,12 +156,12 @@ public class UserEndpoint extends AbstractEndpoint {
                 .body(metadataMapper.userToUserDto(user));
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/{username}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")
     @Observed(name = "dbrepo_user_modify")
     @Operation(summary = "Update user",
-            description = "Updates user with id. Requires role `modify-user-information`.",
+            description = "Updates user with given username. Requires role `modify-user-information`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -190,15 +190,15 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
+    public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("username") String username,
                                                @NotNull @Valid @RequestBody UserUpdateDto data,
                                                Principal principal) throws NotAllowedException,
             UserNotFoundException, AuthServiceException {
-        log.debug("endpoint modify a user, userId={}, data={}", userId, data);
-        final User user = userService.findById(userId);
-        if (!user.getId().equals(getId(principal))) {
-            log.error("Failed to modify user: not current user {}", user.getId());
-            throw new NotAllowedException("Failed to modify user: not current user " + user.getId());
+        log.debug("endpoint modify a user, username={}, data={}", username, data);
+        final User user = userService.findByUsername(username);
+        if (!user.getUsername().equals(getUsername(principal))) {
+            log.error("Failed to modify user: not current user {}", user.getUsername());
+            throw new NotAllowedException("Failed to modify user: not current user " + user.getUsername());
         }
         return ResponseEntity.accepted()
                 .body(metadataMapper.userToUserBriefDto(

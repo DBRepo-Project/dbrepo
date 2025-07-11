@@ -27,7 +27,7 @@ public class CacheServiceImpl implements CacheService {
 
     private final TableService tableService;
     private final MetadataServiceGateway gateway;
-    private final Cache<UUID, UserDto> userCache;
+    private final Cache<String, UserDto> userCache;
     private final Cache<UUID, ViewDto> viewCache;
     private final Cache<UUID, ImageDto> imageCache;
     private final Cache<UUID, TableDto> tableCache;
@@ -37,7 +37,7 @@ public class CacheServiceImpl implements CacheService {
     private final Cache<UUID, TableStatisticDto> statisticCache;
 
     @Autowired
-    public CacheServiceImpl(TableService tableService, MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
+    public CacheServiceImpl(TableService tableService, MetadataServiceGateway gateway, Cache<String, UserDto> userCache,
                             Cache<UUID, ViewDto> viewCache, Cache<UUID, ImageDto> imageCache,
                             Cache<UUID, TableDto> tableCache, Cache<UUID, DatabaseAccessDto> accessCache,
                             Cache<UUID, DatabaseDto> databaseCache, Cache<UUID, ContainerDto> containerCache,
@@ -184,41 +184,41 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public UserDto getUser(UUID id) throws RemoteUnavailableException, MetadataServiceException,
+    public UserDto getUser(String username) throws RemoteUnavailableException, MetadataServiceException,
             UserNotFoundException {
-        final UserDto cacheUser = userCache.getIfPresent(id);
+        final UserDto cacheUser = userCache.getIfPresent(username);
         if (cacheUser != null) {
             log.atTrace()
-                    .setMessage("found user with id " + id)
+                    .setMessage("found user " + username)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheUser;
         }
         log.atTrace()
-                .setMessage("reload user from metadata service with id " + id)
+                .setMessage("reload user from metadata service " + username)
                 .addKeyValue("cache_hit", false)
                 .log();
-        final UserDto user = gateway.getUserById(id);
-        userCache.put(id, user);
+        final UserDto user = gateway.getUserByUsername(username);
+        userCache.put(username, user);
         return user;
     }
 
     @Override
-    public DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
+    public DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException,
             MetadataServiceException, NotAllowedException {
         final DatabaseAccessDto cacheAccess = accessCache.getIfPresent(databaseId);
         if (cacheAccess != null) {
             log.atTrace()
-                    .setMessage("found access for user with id " + userId)
+                    .setMessage("found access for user " + username)
                     .addKeyValue("cache_hit", true)
                     .log();
             return cacheAccess;
         }
         log.atTrace()
-                .setMessage("reload access from metadata service with user id " + userId)
+                .setMessage("reload access from metadata service for user " + username)
                 .addKeyValue("cache_hit", false)
                 .log();
-        final DatabaseAccessDto access = gateway.getAccess(databaseId, userId);
+        final DatabaseAccessDto access = gateway.getAccess(databaseId, username);
         accessCache.put(databaseId, access);
         return access;
     }

@@ -354,6 +354,7 @@ public interface DataMapper {
             final ColumnAnalysisResultDto analysis = ColumnAnalysisResultDto.builder()
                     .name(matcher.group(1))
                     .datatype(dataTypeToColumnTypeDto(matcher.group(2)))
+                    .nullAllowed(true)
                     .build();
             if (analysis.getDatatype().equals(ColumnTypeDto.VARCHAR)) {
                 analysis.setSize(255);
@@ -381,7 +382,7 @@ public interface DataMapper {
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
                 .owner(UserBriefDto.builder()
-                        .id(UUID.fromString(data.getString(2)))
+                        .username(data.getString(2))
                         .build())
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))

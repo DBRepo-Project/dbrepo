@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.10.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.1) - 2025-07-09
+## [v1.10.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.1) - 2025-07-10
 
 #### Fixes
 
@@ -17,7 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changes
 
-* Modified the mechanism to obtain the subset columns to use DuckDB and now create views anymore.
+* Changed the mechanism to obtain the subset columns to use DuckDB and now create views anymore.
+* Changed the internal user identifier from using the user id (i.e. `java.util.UUID`) to the username (i.e.
+  `java.lang.String`) for all interfaces including the query store due to continued instability from SSO-integrations
+  relying on the `EntryUUID` in the Identity Service.
 
 ## [v1.10.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.0) - 2025-07-05
 
@@ -54,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Features
 
-* Added an endpoint to check for database grants and display them in the UI (Database > Settings) for the owner 
+* Added an endpoint to check for database grants and display them in the UI (Database > Settings) for the owner
   in [#536](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/536).
 
 ## [v1.9.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.9.1) - 2025-05-31

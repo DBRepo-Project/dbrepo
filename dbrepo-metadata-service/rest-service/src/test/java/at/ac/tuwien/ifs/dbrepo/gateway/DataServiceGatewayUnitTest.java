@@ -50,7 +50,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+        dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
     }
 
     @Test
@@ -63,7 +63,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -77,7 +77,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -91,7 +91,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -105,7 +105,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.createAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -118,7 +118,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+        dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
     }
 
     @Test
@@ -131,7 +131,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -145,7 +145,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
-            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -159,7 +159,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -173,7 +173,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_ID, AccessTypeDto.READ);
+            dataServiceGateway.updateAccess(DATABASE_1_ID, USER_1_USERNAME, AccessTypeDto.READ);
         });
     }
 
@@ -186,7 +186,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_ID);
+        dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_USERNAME);
     }
 
     @Test
@@ -199,7 +199,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_ID);
+            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -213,7 +213,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
-            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_ID);
+            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -227,7 +227,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_ID);
+            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -241,7 +241,7 @@ public class DataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_ID);
+            dataServiceGateway.deleteAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 

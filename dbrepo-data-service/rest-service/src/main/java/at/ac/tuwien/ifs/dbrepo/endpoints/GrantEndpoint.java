@@ -42,7 +42,7 @@ public class GrantEndpoint extends RestEndpoint {
         this.grantService = grantService;
     }
 
-    @RequestMapping(path = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(path = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get grants",
             description = "Get the grant permissions for a user of a given database.",
@@ -75,15 +75,15 @@ public class GrantEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseGrantsDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                  @PathVariable("userId") UUID userId,
+                                                  @PathVariable("username") String username,
                                                   Principal principal,
                                                   @NotNull HttpServletRequest request) throws DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseMalformedException,
             DatabaseUnavailableException, UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint check access to database, databaseId={}", databaseId);
         final DatabaseDto database = cacheService.getDatabase(databaseId);
-        final UserDto user = cacheService.getUser(userId);
-        if (!database.getOwner().getId().equals(getId(principal)) && !user.getId().equals(getId(principal))) {
+        final UserDto user = cacheService.getUser(username);
+        if (!database.getOwner().getUsername().equals(getUsername(principal)) && !user.getUsername().equals(getUsername(principal))) {
             log.error("Failed to find access: not owner or foreign user");
             throw new NotAllowedException("Failed to find access: not owner or foreign user");
         }

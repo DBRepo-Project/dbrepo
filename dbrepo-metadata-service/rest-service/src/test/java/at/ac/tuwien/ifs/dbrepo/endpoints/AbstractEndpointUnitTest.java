@@ -37,31 +37,31 @@ public class AbstractEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    public void getId_fails() {
+    public void getUsername_fails() {
 
         /* test */
-        assertNull(accessEndpoint.getId(null));
+        assertNull(accessEndpoint.getUsername(null));
     }
 
     @Test
-    public void getId_noId_fails() {
+    public void getUsername_noId_fails() {
         final Principal principal = new UsernamePasswordAuthenticationToken(UserDetailsDto.builder()
                 .id(null) // <<<
                 .build(), null);
 
         /* test */
         assertThrows(IllegalArgumentException.class, () -> {
-            accessEndpoint.getId(principal);
+            accessEndpoint.getUsername(principal);
         });
     }
 
     @Test
-    public void getId_incompatible_fails() {
+    public void getUsername_incompatible_fails() {
         final Principal principal = new UsernamePasswordAuthenticationToken("", null);
 
         /* test */
         assertThrows(IllegalArgumentException.class, () -> {
-            accessEndpoint.getId(principal);
+            accessEndpoint.getUsername(principal);
         });
     }
 

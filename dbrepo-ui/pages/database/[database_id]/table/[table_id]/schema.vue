@@ -221,7 +221,7 @@ export default {
       if (!this.access) {
         return false
       }
-      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.id === this.cacheUser.uid)
+      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.username === this.cacheUser.preferred_username)
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

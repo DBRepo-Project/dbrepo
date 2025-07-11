@@ -210,22 +210,22 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
+    public UserDto getUserByUsername(String username) throws RemoteUnavailableException, UserNotFoundException,
             MetadataServiceException {
         final ResponseEntity<UserDto> response;
-        final String url = "/api/user/" + userId;
+        final String url = "/api/user/" + username;
         log.debug("get user info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
-            log.error("Failed to find user with id {}: {}", userId, e.getMessage());
+            log.error("Failed to find user {}: {}", username, e.getMessage());
             throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to find user with id {}: not found: {}", userId, e.getMessage());
+            log.error("Failed to find user {}: not found: {}", username, e.getMessage());
             throw new UserNotFoundException("Failed to find user: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
+            log.error("Failed to find user {}: service responded unsuccessful: {}", username, response.getStatusCode());
             throw new MetadataServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
         }
         final List<String> expectedHeaders = List.of("X-Username", "X-Password");
@@ -236,8 +236,8 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new MetadataServiceException("Failed to find all  user headers");
         }
         if (response.getBody() == null) {
-            log.error("Failed to find user with id {}: body is empty", userId);
-            throw new MetadataServiceException("Failed to find user with id " + userId + ": body is empty");
+            log.error("Failed to find user {}: body is empty", username);
+            throw new MetadataServiceException("Failed to find user " + username + ": body is empty");
         }
         final UserDto user = dataMapper.userDtoToUserDto(response.getBody());
         user.setUsername(response.getHeaders().get("X-Username").get(0));
@@ -247,22 +247,22 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
+    public DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ResponseEntity<DatabaseAccessDto> response;
-        final String url = "/api/database/" + databaseId + "/access/" + userId;
+        final String url = "/api/database/" + databaseId + "/access/" + username;
         log.debug("get database access from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseAccessDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
-            log.error("Failed to find database access for user with id {}: {}", userId, e.getMessage());
+            log.error("Failed to find database access for user {}: {}", username, e.getMessage());
             throw new RemoteUnavailableException("Failed to find database access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Forbidden | HttpClientErrorException.NotFound e) {
-            log.error("Failed to find database access for user with id {}: foreign user: {}", userId, e.getMessage());
+            log.error("Failed to find database access for user {}: foreign user: {}", username, e.getMessage());
             throw new NotAllowedException("Failed to find database access: foreign user: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed to find database access for user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
+            log.error("Failed to find database access for user {}: service responded unsuccessful: {}", username, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database access: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {

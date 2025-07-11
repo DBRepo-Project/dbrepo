@@ -960,6 +960,9 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "endpoint": {
+                    "type": "string"
+                },
                 "global": {
                     "type": "object",
                     "properties": {

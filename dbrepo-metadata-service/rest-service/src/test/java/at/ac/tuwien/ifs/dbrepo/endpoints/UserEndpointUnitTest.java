@@ -8,8 +8,8 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
@@ -77,7 +76,7 @@ public class UserEndpointUnitTest extends BaseTest {
         /* test */
         final List<UserBriefDto> response = findAll_generic(USER_2_USERNAME, USER_2);
         assertEquals(1, response.size());
-        assertEquals(USER_2_ID, response.get(0).getId());
+        assertEquals(USER_2_USERNAME, response.get(0).getUsername());
     }
 
     @Test
@@ -103,7 +102,7 @@ public class UserEndpointUnitTest extends BaseTest {
     public void find_self_succeeds() throws NotAllowedException, UserNotFoundException {
 
         /* test */
-        find_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL);
+        find_generic(USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -112,28 +111,28 @@ public class UserEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_2_ID, USER_2, USER_1_PRINCIPAL);
+            find_generic(USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"find-foreign-user"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"find-foreign-user"})
     public void find_hasRoleForeign_succeeds() throws UserNotFoundException, NotAllowedException {
         final Principal principal = new UsernamePasswordAuthenticationToken(USER_3_DETAILS, USER_3_PASSWORD, List.of(
                 new SimpleGrantedAuthority("find-foreign-user")));
 
         /* test */
-        find_generic(USER_2_ID, USER_2, principal);
+        find_generic(USER_2_USERNAME, USER_2, principal);
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"system"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"system"})
     public void find_system_succeeds() throws UserNotFoundException, NotAllowedException {
         final Principal principal = new UsernamePasswordAuthenticationToken(USER_3_DETAILS, USER_3_PASSWORD, List.of(
                 new SimpleGrantedAuthority("system")));
 
         /* test */
-        final ResponseEntity<UserDto> response = find_generic(USER_3_ID, USER_3, principal);
+        final ResponseEntity<UserDto> response = find_generic(USER_3_USERNAME, USER_3, principal);
         assertNotNull(response.getHeaders().get("X-Username"));
         assertEquals(USER_3.getUsername(), response.getHeaders().get("X-Username").get(0));
         assertNotNull(response.getHeaders().get("X-Password"));
@@ -149,7 +148,7 @@ public class UserEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_LOCAL_ADMIN_ID, USER_LOCAL, principal);
+            find_generic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL, principal);
         });
     }
 
@@ -181,12 +180,12 @@ public class UserEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            modify_generic(USER_4_ID, USER_4, USER_4_PRINCIPAL, request);
+            modify_generic(USER_4_USERNAME, USER_4, USER_4_PRINCIPAL, request);
         });
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"modify-user-information"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-user-information"})
     public void modify_hasRoleForeign_fails() {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
@@ -197,7 +196,7 @@ public class UserEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            modify_generic(USER_1_ID, USER_1, USER_2_PRINCIPAL, request);
+            modify_generic(USER_1_USERNAME, USER_1, USER_2_PRINCIPAL, request);
         });
     }
 
@@ -212,7 +211,7 @@ public class UserEndpointUnitTest extends BaseTest {
                 .build();
 
         /* test */
-        modify_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
+        modify_generic(USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, request);
     }
 
     @Test
@@ -226,7 +225,7 @@ public class UserEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME)
+    @WithMockUser(username = USER_2_USERNAME)
     public void create_notInternalUser_fails() {
 
         /* test */
@@ -276,39 +275,39 @@ public class UserEndpointUnitTest extends BaseTest {
         return response.getBody();
     }
 
-    protected ResponseEntity<UserDto> find_generic(UUID id, User user, Principal principal) throws NotAllowedException,
+    protected ResponseEntity<UserDto> find_generic(String username, User user, Principal principal) throws NotAllowedException,
             UserNotFoundException {
 
         /* mock */
         if (user != null) {
-            when(userService.findById(id))
+            when(userService.findByUsername(username))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .findById(id);
+                    .findByUsername(username);
         }
 
         /* test */
-        final ResponseEntity<UserDto> response = userEndpoint.find(id, principal);
+        final ResponseEntity<UserDto> response = userEndpoint.find(username, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final UserDto body = response.getBody();
         assertNotNull(body);
         return response;
     }
 
-    protected void modify_generic(UUID userId, User user, Principal principal, UserUpdateDto data)
+    protected void modify_generic(String username, User user, Principal principal, UserUpdateDto data)
             throws NotAllowedException, UserNotFoundException, AuthServiceException {
         /* mock */
         if (user != null) {
-            when(userService.findById(userId))
+            when(userService.findByUsername(username))
                     .thenReturn(user);
         }
         when(userService.modify(user, data))
                 .thenReturn(user);
 
         /* test */
-        final ResponseEntity<UserBriefDto> response = userEndpoint.modify(userId, data, principal);
+        final ResponseEntity<UserBriefDto> response = userEndpoint.modify(username, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final UserBriefDto body = response.getBody();
         assertNotNull(body);

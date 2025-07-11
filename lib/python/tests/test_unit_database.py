@@ -410,7 +410,7 @@ class DatabaseUnitTest(unittest.TestCase):
             client = RestClient(username="a", password="b")
             response = RestClient(username="a", password="b").update_database_owner(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                username='bar')
             self.assertEqual(response.owner.id, 'abdbf897-e599-4e5a-a3f0-7529884ea011')
 
     def test_update_database_owner_400_fails(self):
@@ -421,7 +421,7 @@ class DatabaseUnitTest(unittest.TestCase):
             try:
                 RestClient(username="a", password="b").update_database_owner(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except MalformedError:
                 pass
 
@@ -433,7 +433,7 @@ class DatabaseUnitTest(unittest.TestCase):
             try:
                 RestClient(username="a", password="b").update_database_owner(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ForbiddenError:
                 pass
 
@@ -445,7 +445,7 @@ class DatabaseUnitTest(unittest.TestCase):
             try:
                 RestClient(username="a", password="b").update_database_owner(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except NotExistsError:
                 pass
 
@@ -457,7 +457,7 @@ class DatabaseUnitTest(unittest.TestCase):
             try:
                 RestClient(username="a", password="b").update_database_owner(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceConnectionError:
                 pass
 
@@ -469,7 +469,7 @@ class DatabaseUnitTest(unittest.TestCase):
             try:
                 RestClient(username="a", password="b").update_database_owner(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceError:
                 pass
 
@@ -481,7 +481,7 @@ class DatabaseUnitTest(unittest.TestCase):
             try:
                 RestClient(username="a", password="b").update_database_owner(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ResponseCodeError:
                 pass
 
@@ -492,7 +492,7 @@ class DatabaseUnitTest(unittest.TestCase):
             # test
             try:
                 RestClient().update_database_owner(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                                   user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                                                   username='bar')
             except AuthenticationError:
                 pass
 
@@ -705,110 +705,110 @@ class DatabaseUnitTest(unittest.TestCase):
                              user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       json=exp.model_dump(),
                       status_code=202)
             # test
             response = RestClient(username="a", password="b").create_database_access(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                 type=AccessType.READ,
-                user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                username='bar')
             self.assertEqual(response, exp.type)
 
     def test_create_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").create_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except MalformedError:
                 pass
 
     def test_create_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=400)
             # test
             try:
                 RestClient().create_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     type=AccessType.READ,
-                                                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                                                    username='bar')
             except AuthenticationError:
                 pass
 
     def test_create_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").create_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ForbiddenError:
                 pass
 
     def test_create_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=404)
             # test
             try:
                 RestClient(username="a", password="b").create_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except NotExistsError:
                 pass
 
     def test_create_database_access_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").create_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceConnectionError:
                 pass
 
     def test_create_database_access_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").create_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceError:
                 pass
 
     def test_create_database_access_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=200)
             # test
             try:
                 RestClient(username="a", password="b").create_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ResponseCodeError:
                 pass
 
@@ -817,110 +817,110 @@ class DatabaseUnitTest(unittest.TestCase):
                              user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      json=exp.model_dump(),
                      status_code=202)
             # test
             response = RestClient(username="a", password="b").update_database_access(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                 type=AccessType.READ,
-                user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                username='bar')
             self.assertEqual(response, exp.type)
 
     def test_update_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").update_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except MalformedError:
                 pass
 
     def test_update_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").update_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ForbiddenError:
                 pass
 
     def test_update_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=404)
             # test
             try:
                 RestClient(username="a", password="b").update_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except NotExistsError:
                 pass
 
     def test_update_database_access_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").update_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceConnectionError:
                 pass
 
     def test_update_database_access_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").update_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceError:
                 pass
 
     def test_update_database_access_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=200)
             # test
             try:
                 RestClient(username="a", password="b").update_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                     type=AccessType.READ,
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ResponseCodeError:
                 pass
 
     def test_update_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=404)
             # test
             try:
                 RestClient().update_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     type=AccessType.READ,
-                                                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                                                    username='bar')
             except AuthenticationError:
                 pass
 
@@ -928,25 +928,25 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=202)
             # test
             client = RestClient(username="a", password="b")
             RestClient(username="a", password="b").delete_database_access(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                username='bar')
 
     def test_delete_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").delete_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except MalformedError:
                 pass
 
@@ -954,13 +954,13 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").delete_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ForbiddenError:
                 pass
 
@@ -968,13 +968,13 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=404)
             # test
             try:
                 RestClient(username="a", password="b").delete_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except NotExistsError:
                 pass
 
@@ -982,13 +982,13 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").delete_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceConnectionError:
                 pass
 
@@ -996,13 +996,13 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").delete_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ServiceError:
                 pass
 
@@ -1010,13 +1010,13 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=200)
             # test
             try:
                 RestClient(username="a", password="b").delete_database_access(
                     database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                    username='bar')
             except ResponseCodeError:
                 pass
 
@@ -1024,12 +1024,12 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/abdbf897-e599-4e5a-a3f0-7529884ea011',
+                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=404)
             # test
             try:
                 RestClient().delete_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                                                    username='bar')
             except AuthenticationError:
                 pass
 

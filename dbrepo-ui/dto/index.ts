@@ -31,7 +31,7 @@ interface DatabaseCreateDto {
   is_public: boolean;
 }
 
-interface DatabaseAccessDto {
+interface hasReadAccessDatabaseAccessDto {
   user: UserDto;
   type: string;
   created: Date;

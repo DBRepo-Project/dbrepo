@@ -179,20 +179,20 @@ export default {
       if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.cacheUser.uid
+      return this.roles.includes('modify-view-visibility') && this.view.owner.username === this.cacheUser.preferred_username
     },
     canDeleteView () {
       if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      return this.roles.includes('delete-database-view') && this.view.owner.id === this.cacheUser.uid
+      return this.roles.includes('delete-database-view') && this.view.owner.username === this.cacheUser.preferred_username
     },
     canViewSettings () {
       if (!this.view || !this.access || !this.cacheUser) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.view.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access) && this.view.owner.username === this.cacheUser.preferred_username
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

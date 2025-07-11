@@ -259,11 +259,11 @@ public class SubsetEndpoint extends RestEndpoint {
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateSubsetParams(data);
         /* parameters */
-        final UUID userId;
+        final String username;
         if (principal != null) {
-            userId = getId(principal);
+            username = getUsername(principal);
         } else {
-            userId = null;
+            username = null;
         }
         if (page == null) {
             page = 0L;
@@ -289,7 +289,7 @@ public class SubsetEndpoint extends RestEndpoint {
             }
         }
         try {
-            final UUID subsetId = subsetService.create(database, data, timestamp, userId);
+            final UUID subsetId = subsetService.create(database, data, timestamp, username);
             return getData(databaseId, subsetId, principal, "application/json", request, timestamp, page, size);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -361,7 +361,7 @@ public class SubsetEndpoint extends RestEndpoint {
                 throw new NotAllowedException("Failed to re-execute query: no authentication found");
             }
             if (!isSystem(principal)) {
-                cacheService.getAccess(databaseId, getId(principal));
+                cacheService.getAccess(databaseId, getUsername(principal));
             }
         }
         log.trace("visibility for database: is_public={}, is_schema_public={}", database.getIsPublic(), database.getIsSchemaPublic());
@@ -473,7 +473,7 @@ public class SubsetEndpoint extends RestEndpoint {
                 data.getPersist());
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         if (!isSystem(principal)) {
-            cacheService.getAccess(databaseId, getId(principal));
+            cacheService.getAccess(databaseId, getUsername(principal));
         }
         try {
             subsetService.persist(database, queryId, data.getPersist());

@@ -113,22 +113,22 @@ public class PrometheusEndpointMvcTest extends BaseTest {
 
         /* mock */
         try {
-            accessEndpoint.create(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO, USER_1_PRINCIPAL);
+            accessEndpoint.create(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO, USER_1_PRINCIPAL);
+            accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            accessEndpoint.find(DATABASE_1_ID, USER_1_ID, USER_1_PRINCIPAL);
+            accessEndpoint.find(DATABASE_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID, USER_1_PRINCIPAL);
+            accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -194,7 +194,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            databaseEndpoint.transfer(DATABASE_1_ID, DatabaseTransferDto.builder().id(USER_2_ID).build(), USER_1_PRINCIPAL);
+            databaseEndpoint.transfer(DATABASE_1_ID, DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -513,7 +513,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            tableEndpoint.analyseTableColumn(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), USER_1_PRINCIPAL);
+            tableEndpoint.analyseTableColumn(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId());
         } catch (Exception e) {
             /* ignore */
         }
@@ -543,12 +543,12 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            userEndpoint.find(USER_1_ID, USER_1_PRINCIPAL);
+            userEndpoint.find(USER_1_USERNAME, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            userEndpoint.modify(USER_1_ID, USER_1_UPDATE_DTO, USER_1_PRINCIPAL);
+            userEndpoint.modify(USER_1_USERNAME, USER_1_UPDATE_DTO, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

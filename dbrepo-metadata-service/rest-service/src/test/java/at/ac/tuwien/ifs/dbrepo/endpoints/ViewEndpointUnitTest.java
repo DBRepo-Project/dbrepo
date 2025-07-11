@@ -69,7 +69,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+        findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_3_USER_2_READ_ACCESS);
+        findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_3_USER_2_READ_ACCESS);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+        findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(DATABASE_3_ID, DATABASE_3, "View", USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+            create_generic(DATABASE_3_ID, DATABASE_3, "View", USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
         });
     }
 
@@ -116,7 +116,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(DATABASE_3_ID, DATABASE_3, "View", USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+            create_generic(DATABASE_3_ID, DATABASE_3, "View", USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
         });
     }
 
@@ -126,7 +126,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(DATABASE_3_ID, DATABASE_3, "View", USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+            create_generic(DATABASE_3_ID, DATABASE_3, "View", USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
         });
     }
 
@@ -139,7 +139,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             ColumnNotFoundException {
 
         /* test */
-        create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+        create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_1_PRINCIPAL, USER_1_USERNAME, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -148,7 +148,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(ViewExistsException.class, () -> {
-            create_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_NAME, USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+            create_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_NAME, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
         });
     }
 
@@ -167,7 +167,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* test */
-        find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+        find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
     }
 
     @Test
@@ -176,7 +176,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* test */
-        find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+        find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
     }
 
     @Test
@@ -185,7 +185,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* test */
-        find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+        find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
     }
 
     @Test
@@ -204,7 +204,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+            delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
         });
     }
 
@@ -214,7 +214,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+            delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
         });
     }
 
@@ -226,7 +226,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             DashboardServiceConnectionException {
 
         /* test */
-        delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_5_ID, VIEW_5, USER_3_PRINCIPAL, USER_3_ID, USER_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS);
+        delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_5_ID, VIEW_5, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS);
     }
 
     /* ################################################################################################### */
@@ -248,7 +248,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+        findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
     }
 
     @Test
@@ -257,7 +257,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_1_USER_2_READ_ACCESS);
+        findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_1_USER_2_READ_ACCESS);
     }
 
     @Test
@@ -266,7 +266,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+        findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
     }
 
     @Test
@@ -285,7 +285,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+            create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
         });
     }
 
@@ -295,7 +295,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+            create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
         });
     }
 
@@ -305,7 +305,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
+            create_generic(DATABASE_1_ID, DATABASE_1, "View", USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, null);
         });
     }
 
@@ -324,7 +324,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* test */
-        find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+        find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
     }
 
     @Test
@@ -333,7 +333,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* test */
-        find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+        find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
     }
 
     @Test
@@ -342,7 +342,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* test */
-        find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+        find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
     }
 
     @Test
@@ -361,7 +361,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+            delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
         });
     }
 
@@ -371,7 +371,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2.getAccesses().get(0));
+            delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2, DATABASE_2.getAccesses().get(0));
         });
     }
 
@@ -383,7 +383,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             DashboardServiceConnectionException {
 
         /* test */
-        delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+        delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -430,7 +430,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void findAll_generic(UUID databaseId, Database database, Principal principal, UUID userId, User user,
+    protected void findAll_generic(UUID databaseId, Database database, Principal principal, String username, User user,
                                    DatabaseAccess access) throws AccessNotFoundException, UserNotFoundException,
             DatabaseNotFoundException {
 
@@ -438,15 +438,15 @@ public class ViewEndpointUnitTest extends BaseTest {
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (principal != null) {
-            when(userService.findById(userId))
+            when(userService.findByUsername(username))
                     .thenReturn(user);
         }
         if (access != null) {
-            log.trace("mock access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock no access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenThrow(AccessNotFoundException.class);
         }
@@ -457,12 +457,12 @@ public class ViewEndpointUnitTest extends BaseTest {
         assertNotNull(response.getBody());
     }
 
-    protected void create_generic(UUID databaseId, Database database, String viewName, Principal principal, UUID userId,
-                                  User user, DatabaseAccess access) throws MalformedException, DataServiceException,
-            DataServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
-            AccessNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
-            ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException,
-            ColumnNotFoundException {
+    protected void create_generic(UUID databaseId, Database database, String viewName, Principal principal,
+                                  String username, User user, DatabaseAccess access) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, NotAllowedException, UserNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, TableNotFoundException, ImageNotFoundException, ViewExistsException,
+            DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         final CreateViewDto request = CreateViewDto.builder()
                 .name(viewName)
                 .query(VIEW_1_SUBSET_DTO)
@@ -473,15 +473,15 @@ public class ViewEndpointUnitTest extends BaseTest {
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (principal != null) {
-            when(userService.findById(userId))
+            when(userService.findByUsername(username))
                     .thenReturn(user);
         }
         if (access != null) {
-            log.trace("mock access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock no access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenThrow(AccessNotFoundException.class);
         }
@@ -497,23 +497,23 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     protected ResponseEntity<ViewDto> find_generic(UUID databaseId, Database database, Principal principal,
-                                                   UUID userId, User user, DatabaseAccess access)
+                                                   String username, User user, DatabaseAccess access)
             throws DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, ViewNotFoundException, NotAllowedException {
 
         /* mock */
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (access != null) {
-            log.trace("mock access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock no access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenThrow(AccessNotFoundException.class);
         }
         if (principal != null) {
-            when(userService.findById(userId))
+            when(userService.findByUsername(username))
                     .thenReturn(user);
             when(viewService.findById(any(Database.class), any(UUID.class)))
                     .thenReturn(VIEW_5);
@@ -531,7 +531,7 @@ public class ViewEndpointUnitTest extends BaseTest {
     }
 
     protected void delete_generic(UUID databaseId, Database database, UUID viewId, View view, Principal principal,
-                                  UUID userId, User user, DatabaseAccess access) throws NotAllowedException,
+                                  String username, User user, DatabaseAccess access) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException, ViewNotFoundException, UserNotFoundException,
             DashboardServiceException, DashboardServiceConnectionException {
@@ -540,11 +540,11 @@ public class ViewEndpointUnitTest extends BaseTest {
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (access != null) {
-            log.trace("mock access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access of database with id {} and user id {}", databaseId, userId);
+            log.trace("mock no access of database with id {} and user {}", databaseId, username);
             when(accessService.find(database, user))
                     .thenThrow(AccessNotFoundException.class);
         }

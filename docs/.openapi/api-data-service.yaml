@@ -11,11 +11,11 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "1.10.0"
+    "version": "1.10.1"
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.0/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.1/system-services-metadata/"
   },
   "servers": [
     {
@@ -1299,7 +1299,7 @@
         ]
       }
     },
-    "/api/database/{databaseId}/grant/{userId}": {
+    "/api/database/{databaseId}/grant/{username}": {
       "get": {
         "tags": [
           "grant-endpoint"
@@ -1318,12 +1318,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -1409,12 +1408,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -1981,6 +1979,82 @@
         ]
       }
     },
+    "/api/image/{imageId}/analyse/schema/{key}": {
+      "get": {
+        "tags": [
+          "analyse-endpoint"
+        ],
+        "summary": "Analyse schema",
+        "description": "Analyses a dataset stored at the Storage Service and attempts to map the datatypes, requires role `analyse-datatypes`.",
+        "operationId": "analyseDatatypes",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analysed schema successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaAnalysisResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Schema is malformed or does not fit the image",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Failed to find image or dataset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Failed to establish connection to metadata service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ]
+      }
+    },
     "/api/database/{databaseId}/table/{tableId}/history": {
       "get": {
         "tags": [
@@ -2191,36 +2265,6 @@
             "bearerAuth": []
           }
         ]
-      }
-    },
-    "/api/analyse/schema/{key}": {
-      "get": {
-        "tags": [
-          "analyse-endpoint"
-        ],
-        "operationId": "analyseDatatypes",
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SchemaAnalysisResultDto"
-                }
-              }
-            }
-          }
-        }
       }
     }
   },
@@ -2527,6 +2571,10 @@
             ],
             "example": "draft"
           },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
           "database_id": {
             "type": "string",
             "format": "uuid",
@@ -2535,17 +2583,17 @@
           "query_id": {
             "type": "string",
             "format": "uuid",
-            "example": 1
+            "example": "1413e257-f62a-4881-ac38-ae9a76e21b9c"
           },
           "table_id": {
             "type": "string",
             "format": "uuid",
-            "example": 1
+            "example": "67d23209-aec8-489a-8f86-71fd0fe09ce7"
           },
           "view_id": {
             "type": "string",
             "format": "uuid",
-            "example": 1
+            "example": "8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4"
           },
           "publication_year": {
             "type": "integer",
@@ -3438,25 +3486,29 @@
             ],
             "example": "draft"
           },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
           "database_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "fc29f89c-86a8-4020-9e36-4d954736c6cc"
           },
           "query_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "1413e257-f62a-4881-ac38-ae9a76e21b9c"
           },
           "table_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "67d23209-aec8-489a-8f86-71fd0fe09ce7"
           },
           "view_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4"
           },
           "query_normalized": {
             "type": "string",
@@ -4058,34 +4110,6 @@
           "datasource_type"
         ]
       },
-      "TableHistoryDto": {
-        "type": "object",
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2021-03-12T15:26:21Z"
-          },
-          "event": {
-            "type": "string",
-            "enum": [
-              "insert",
-              "delete"
-            ],
-            "example": "INSERT"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int64",
-            "example": 1
-          }
-        },
-        "required": [
-          "event",
-          "timestamp",
-          "total"
-        ]
-      },
       "ColumnAnalysisResultDto": {
         "type": "object",
         "properties": {
@@ -4154,6 +4178,10 @@
           "null_allowed": {
             "type": "boolean",
             "example": true
+          },
+          "primary_key": {
+            "type": "boolean",
+            "example": true
           }
         },
         "required": [
@@ -4218,6 +4246,34 @@
           "newline_delimiter",
           "quote",
           "skip_rows"
+        ]
+      },
+      "TableHistoryDto": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2021-03-12T15:26:21Z"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "insert",
+              "delete"
+            ],
+            "example": "INSERT"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          }
+        },
+        "required": [
+          "event",
+          "timestamp",
+          "total"
         ]
       },
       "TupleDeleteDto": {

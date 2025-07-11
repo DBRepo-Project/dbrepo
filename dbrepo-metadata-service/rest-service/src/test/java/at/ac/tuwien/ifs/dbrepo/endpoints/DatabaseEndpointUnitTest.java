@@ -108,7 +108,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(containerService.find(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(userService.findAllInternalUsers())
                 .thenReturn(List.of(USER_LOCAL));
@@ -131,7 +131,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(containerService.find(CONTAINER_4.getId()))
                 .thenReturn(CONTAINER_4);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
 
         /* test */
@@ -169,7 +169,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_2_ID))
+        when(userService.findByUsername(USER_2_USERNAME))
                 .thenReturn(USER_2);
         when(databaseService.updateTableMetadata(any(Database.class)))
                 .thenReturn(DATABASE_1);
@@ -190,7 +190,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(databaseService.updateTableMetadata(any(Database.class)))
                 .thenReturn(DATABASE_1);
@@ -210,7 +210,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(databaseService.updateViewMetadata(any(Database.class)))
                 .thenReturn(DATABASE_1);
@@ -228,7 +228,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_2_ID))
+        when(userService.findByUsername(USER_2_USERNAME))
                 .thenReturn(USER_2);
 
         /* test */
@@ -244,7 +244,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
 
         /* test */
@@ -260,7 +260,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
 
         /* test */
@@ -289,7 +289,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         assertTrue(DATABASE_3.getIsPublic());
 
         /* mock */
-        when(databaseService.findAllPublicOrSchemaPublicOrReadAccess(any(UUID.class)))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccess(anyString()))
                 .thenReturn(List.of(DATABASE_3));
 
         /* test */
@@ -304,7 +304,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         assertTrue(DATABASE_3.getIsPublic());
 
         /* mock */
-        when(databaseService.findAllPublicOrSchemaPublicOrReadAccess(USER_1_ID))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccess(USER_1_USERNAME))
                 .thenReturn(List.of(DATABASE_3));
 
         /* test */
@@ -316,7 +316,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     public void list_hasRoleFilter_succeeds() {
 
         /* mock */
-        when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_ID, DATABASE_3.getInternalName()))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_USERNAME, DATABASE_3.getInternalName()))
                 .thenReturn(List.of(DATABASE_3));
 
         /* test */
@@ -328,7 +328,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     public void list_hasRoleFilterNoResult_succeeds() {
 
         /* mock */
-        when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_ID, "i_do_not_exist"))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_USERNAME, "i_do_not_exist"))
                 .thenReturn(List.of());
 
         /* test */
@@ -394,7 +394,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
 
         /* test */
@@ -422,7 +422,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(userService.findById(USER_2_ID))
+        when(userService.findByUsername(USER_2_USERNAME))
                 .thenReturn(USER_2);
 
         /* test */
@@ -454,7 +454,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3);
-        when(userService.findById(USER_2_ID))
+        when(userService.findByUsername(USER_2_USERNAME))
                 .thenReturn(USER_2);
 
         /* test */
@@ -475,7 +475,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(storageService.getBytes(request.getKey()))
                 .thenReturn(new byte[]{1, 2, 3, 4, 5});
@@ -496,7 +496,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
 
         /* test */
@@ -507,7 +507,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void transfer_noRole_fails() {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .id(USER_4_ID)
+                .username(USER_4_USERNAME)
                 .build();
 
         /* test */
@@ -520,15 +520,15 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRoleForeign_fails() throws DatabaseNotFoundException, UserNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .id(USER_4_ID)
+                .username(USER_4_USERNAME)
                 .build();
 
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_2_ID))
+        when(userService.findByUsername(USER_2_USERNAME))
                 .thenReturn(USER_2);
-        when(userService.findById(USER_4_ID))
+        when(userService.findByUsername(USER_4_USERNAME))
                 .thenReturn(USER_4);
 
         /* test */
@@ -543,15 +543,15 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .id(USER_4_ID)
+                .username(USER_4_USERNAME)
                 .build();
 
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
-        when(userService.findById(USER_4_ID))
+        when(userService.findByUsername(USER_4_USERNAME))
                 .thenReturn(USER_4);
 
         /* test */
@@ -562,7 +562,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRoleUserNotExists_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .id(UUID.randomUUID())
+                .username("i_do_not_exist")
                 .build();
 
         /* mock */
@@ -570,7 +570,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1);
         doThrow(UserNotFoundException.class)
                 .when(userService)
-                .findById(any(UUID.class));
+                .findByUsername(anyString());
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {

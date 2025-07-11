@@ -77,7 +77,7 @@ export default {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.table.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access) && this.table.owner.username === this.cacheUser.preferred_username
     }
   }
 }
