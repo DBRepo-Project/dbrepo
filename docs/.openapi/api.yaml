@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: REST API
-  version: 1.9.3
+  version: 1.10.1
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/'
 paths:
   /api/analyse/datatypes:
     get:
@@ -982,7 +982,7 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
-  '/api/database/{databaseId}/grant/{userId}':
+  '/api/database/{databaseId}/grant/{username}':
     get:
       tags:
         - grant-endpoint
@@ -996,12 +996,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Access found
@@ -1051,12 +1050,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Access found
@@ -1414,6 +1412,54 @@ paths:
       security:
         - basicAuth: []
         - bearerAuth: []
+  '/api/image/{imageId}/analyse/schema/{key}':
+    get:
+      tags:
+        - analyse-endpoint
+      summary: Analyse schema
+      description: >-
+        Analyses a dataset stored at the Storage Service and attempts to map the
+        datatypes, requires role `analyse-datatypes`.
+      operationId: analyseDatatypes
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysed schema successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaAnalysisResultDto'
+        '400':
+          description: Schema is malformed or does not fit the image
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: Failed to find image or dataset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '503':
+          description: Failed to establish connection to metadata service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - basicAuth: []
   '/api/database/{databaseId}/table/{tableId}/history':
     get:
       tags:
@@ -1553,7 +1599,7 @@ paths:
       security:
         - basicAuth: []
         - bearerAuth: []
-  '/api/user/{userId}':
+  '/api/user/{username}':
     get:
       tags:
         - user-endpoint
@@ -1565,12 +1611,11 @@ paths:
         about internal users results in a 404 error.
       operationId: find1
       parameters:
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Found user
@@ -1597,15 +1642,16 @@ paths:
       tags:
         - user-endpoint
       summary: Update user
-      description: Updates user with id. Requires role `modify-user-information`.
+      description: >-
+        Updates user with given username. Requires role
+        `modify-user-information`.
       operationId: modify
       parameters:
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -1657,12 +1703,11 @@ paths:
         about internal users results in a 404 error.
       operationId: find_11
       parameters:
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Found user
@@ -1830,17 +1875,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DatabaseBriefDto'
-  '/api/database/{databaseId}/access/{userId}':
+  '/api/database/{databaseId}/access/{username}':
     get:
       tags:
         - access-endpoint
       summary: Find/Check access
       description: >-
-        Finds or checks access of a user with given id to a database with given
-        id. Requests with HTTP method **GET** return the access object, requests
-        with HTTP method **HEAD** only the status. When the user has at least
-        *READ* access, the status 200 is returned, 403 otherwise. Requires role
-        `check-database-access` or `check-foreign-database-access`.
+        Finds or checks access of a user with given username to a database with
+        given id. Requests with HTTP method **GET** return the access object,
+        requests with HTTP method **HEAD** only the status. When the user has at
+        least *READ* access, the status 200 is returned, 403 otherwise. Requires
+        role `check-database-access` or `check-foreign-database-access`.
       operationId: find_2
       parameters:
         - name: databaseId
@@ -1849,12 +1894,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Found database access
@@ -1882,7 +1926,7 @@ paths:
         - access-endpoint
       summary: Modify access
       description: >-
-        Modifies access of a user with given id to database with given id.
+        Modifies access of a user with given username to database with given id.
         Requires role `update-database-access`.
       operationId: update
       parameters:
@@ -1892,12 +1936,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -1949,7 +1992,7 @@ paths:
         - access-endpoint
       summary: Give access
       description: >-
-        Give a user with given id access to some database with given id.
+        Give a user with given username access to some database with given id.
         Requires role `create-database-access`.
       operationId: create_11
       parameters:
@@ -1959,12 +2002,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -2016,8 +2058,8 @@ paths:
         - access-endpoint
       summary: Delete access
       description: >-
-        Delete access of a user with id to a database with id. Requires role
-        `delete-database-access`.
+        Delete access of a user with given username to a database with id.
+        Requires role `delete-database-access`.
       operationId: revoke
       parameters:
         - name: databaseId
@@ -2026,12 +2068,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '202':
           description: Deleted access
@@ -2073,11 +2114,11 @@ paths:
         - access-endpoint
       summary: Find/Check access
       description: >-
-        Finds or checks access of a user with given id to a database with given
-        id. Requests with HTTP method **GET** return the access object, requests
-        with HTTP method **HEAD** only the status. When the user has at least
-        *READ* access, the status 200 is returned, 403 otherwise. Requires role
-        `check-database-access` or `check-foreign-database-access`.
+        Finds or checks access of a user with given username to a database with
+        given id. Requests with HTTP method **GET** return the access object,
+        requests with HTTP method **HEAD** only the status. When the user has at
+        least *READ* access, the status 200 is returned, 403 otherwise. Requires
+        role `check-database-access` or `check-foreign-database-access`.
       operationId: find_3
       parameters:
         - name: databaseId
@@ -2086,12 +2127,11 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: userId
+        - name: username
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Found database access
@@ -4887,6 +4927,9 @@ components:
             - draft
             - published
           example: draft
+        created:
+          type: string
+          format: date-time
         database_id:
           type: string
           format: uuid
@@ -4894,15 +4937,15 @@ components:
         query_id:
           type: string
           format: uuid
-          example: 1
+          example: 1413e257-f62a-4881-ac38-ae9a76e21b9c
         table_id:
           type: string
           format: uuid
-          example: 1
+          example: 67d23209-aec8-489a-8f86-71fd0fe09ce7
         view_id:
           type: string
           format: uuid
-          example: 1
+          example: 8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4
         publication_year:
           type: integer
           format: int32
@@ -5710,22 +5753,25 @@ components:
             - draft
             - published
           example: draft
+        created:
+          type: string
+          format: date-time
         database_id:
           type: string
           format: uuid
-          example: null
+          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
         query_id:
           type: string
           format: uuid
-          example: null
+          example: 1413e257-f62a-4881-ac38-ae9a76e21b9c
         table_id:
           type: string
           format: uuid
-          example: null
+          example: 67d23209-aec8-489a-8f86-71fd0fe09ce7
         view_id:
           type: string
           format: uuid
-          example: null
+          example: 8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4
         query_normalized:
           type: string
           example: >-
@@ -6204,6 +6250,116 @@ components:
         - columns
         - datasource_id
         - datasource_type
+    ColumnAnalysisResultDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: age
+        datatype:
+          type: string
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+          example: BIGINT
+        size:
+          type: integer
+          format: int32
+          example: 20
+        d:
+          type: integer
+          format: int32
+          example: 10
+        enums:
+          type: array
+          items:
+            type: string
+        sets:
+          type: array
+          items:
+            type: string
+        null_allowed:
+          type: boolean
+          example: true
+        primary_key:
+          type: boolean
+          example: true
+      required:
+        - datatype
+        - name
+    SchemaAnalysisResultDto:
+      type: object
+      properties:
+        delimiter:
+          type: string
+          example: ','
+        quote:
+          type: string
+          example: '"'
+        escape:
+          type: string
+          example: \
+        comment:
+          type: string
+          example: '#'
+        columns:
+          type: array
+          example: '["name":"VARCHAR","age":"BIGINT"]'
+          items:
+            $ref: '#/components/schemas/ColumnAnalysisResultDto'
+        newline_delimiter:
+          type: string
+          example: \n
+        skip_rows:
+          type: integer
+          format: int32
+          example: '#'
+        has_header:
+          type: boolean
+          example: true
+        date_format:
+          type: string
+          example: '%d/%m/%Y'
+        timestamp_format:
+          type: string
+          example: '%Y-%m-%dT%H:%M:%S.%f'
+      required:
+        - columns
+        - comment
+        - delimiter
+        - escape
+        - has_header
+        - newline_delimiter
+        - quote
+        - skip_rows
     TableHistoryDto:
       type: object
       properties:
@@ -6516,6 +6672,10 @@ components:
         size_required:
           type: boolean
           example: false
+        size_step:
+          type: integer
+          format: int32
+          example: 1
         d_min:
           type: integer
           format: int32
@@ -6527,6 +6687,10 @@ components:
           format: int32
         d_required:
           type: boolean
+        d_step:
+          type: integer
+          format: int32
+          example: 1
         data_hint:
           type: string
           example: 'e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S'
@@ -6831,7 +6995,7 @@ components:
         database_id:
           type: string
           format: uuid
-          example: null
+          example: d002e8d5-8db4-4ff7-ab3a-bc3f52d9ec44
         query_id:
           type: string
           format: uuid
@@ -6863,9 +7027,13 @@ components:
       required:
         - creators
         - database_id
+        - descriptions
+        - funders
         - id
+        - licenses
         - publication_year
         - publisher
+        - related_identifiers
         - titles
         - type
     SaveIdentifierCreatorDto:
@@ -6896,24 +7064,9 @@ components:
         name_identifier:
           type: string
           example: 0000-0002-1825-0097
-        name_identifier_scheme:
-          type: string
-          enum:
-            - ORCID
-            - ROR
-            - ISNI
-            - GRID
-          example: ORCID
         affiliation_identifier:
           type: string
           example: 'https://ror.org/04d836q62'
-        affiliation_identifier_scheme:
-          type: string
-          enum:
-            - ROR
-            - GRID
-            - ISNI
-          example: ROR
       required:
         - creator_name
         - id
@@ -7767,11 +7920,10 @@ components:
     DatabaseTransferDto:
       type: object
       properties:
-        id:
+        username:
           type: string
-          format: uuid
       required:
-        - id
+        - username
     DatabaseModifyImageDto:
       type: object
       properties:
@@ -7867,6 +8019,241 @@ components:
         - name
         - registry
         - version
+    CreateIdentifierCreatorDto:
+      type: object
+      properties:
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Wesleyan University
+        creator_name:
+          type: string
+          example: 'Carberry, Josiah'
+        name_type:
+          type: string
+          enum:
+            - Personal
+            - Organizational
+          example: Personal
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        affiliation_identifier:
+          type: string
+          example: 'https://ror.org/04d836q62'
+      required:
+        - creator_name
+    CreateIdentifierDescriptionDto:
+      type: object
+      properties:
+        description:
+          type: string
+          example: 'Air quality reports at Stephansplatz, Vienna'
+        language:
+          type: string
+          enum:
+            - ab
+            - aa
+            - af
+            - ak
+            - sq
+            - am
+            - ar
+            - an
+            - hy
+            - as
+            - av
+            - ae
+            - ay
+            - az
+            - bm
+            - ba
+            - eu
+            - be
+            - bn
+            - bh
+            - bi
+            - bs
+            - br
+            - bg
+            - my
+            - ca
+            - km
+            - ch
+            - ce
+            - ny
+            - zh
+            - cu
+            - cv
+            - kw
+            - co
+            - cr
+            - hr
+            - cs
+            - da
+            - dv
+            - nl
+            - dz
+            - en
+            - eo
+            - et
+            - ee
+            - fo
+            - fj
+            - fi
+            - fr
+            - ff
+            - gd
+            - gl
+            - lg
+            - ka
+            - de
+            - ki
+            - el
+            - kl
+            - gn
+            - gu
+            - ht
+            - ha
+            - he
+            - hz
+            - hi
+            - ho
+            - hu
+            - is
+            - io
+            - ig
+            - id
+            - ia
+            - ie
+            - iu
+            - ik
+            - ga
+            - it
+            - ja
+            - jv
+            - kn
+            - kr
+            - ks
+            - kk
+            - rw
+            - kv
+            - kg
+            - ko
+            - kj
+            - ku
+            - ky
+            - lo
+            - la
+            - lv
+            - lb
+            - li
+            - ln
+            - lt
+            - lu
+            - mk
+            - mg
+            - ms
+            - ml
+            - mt
+            - gv
+            - mi
+            - mr
+            - mh
+            - ro
+            - mn
+            - na
+            - nv
+            - nd
+            - ng
+            - ne
+            - se
+            - 'no'
+            - nb
+            - nn
+            - ii
+            - oc
+            - oj
+            - or
+            - om
+            - os
+            - pi
+            - pa
+            - ps
+            - fa
+            - pl
+            - pt
+            - qu
+            - rm
+            - rn
+            - ru
+            - sm
+            - sg
+            - sa
+            - sc
+            - sr
+            - sn
+            - sd
+            - si
+            - sk
+            - sl
+            - so
+            - st
+            - nr
+            - es
+            - su
+            - sw
+            - ss
+            - sv
+            - tl
+            - ty
+            - tg
+            - ta
+            - tt
+            - te
+            - th
+            - bo
+            - ti
+            - to
+            - ts
+            - tn
+            - tr
+            - tk
+            - tw
+            - ug
+            - uk
+            - ur
+            - uz
+            - ve
+            - vi
+            - vo
+            - wa
+            - cy
+            - fy
+            - wo
+            - xh
+            - yi
+            - yo
+            - za
+            - zu
+          example: en
+        type:
+          type: string
+          enum:
+            - Abstract
+            - Methods
+            - SeriesInformation
+            - TableOfContents
+            - TechnicalInfo
+            - Other
+          example: Abstract
+      required:
+        - description
     CreateIdentifierDto:
       type: object
       properties:
@@ -7884,15 +8271,15 @@ components:
         titles:
           type: array
           items:
-            $ref: '#/components/schemas/SaveIdentifierTitleDto'
+            $ref: '#/components/schemas/CreateIdentifierTitleDto'
         descriptions:
           type: array
           items:
-            $ref: '#/components/schemas/SaveIdentifierDescriptionDto'
+            $ref: '#/components/schemas/CreateIdentifierDescriptionDto'
         funders:
           type: array
           items:
-            $ref: '#/components/schemas/SaveIdentifierFunderDto'
+            $ref: '#/components/schemas/CreateIdentifierFunderDto'
         licenses:
           type: array
           items:
@@ -8090,7 +8477,7 @@ components:
         creators:
           type: array
           items:
-            $ref: '#/components/schemas/SaveIdentifierCreatorDto'
+            $ref: '#/components/schemas/CreateIdentifierCreatorDto'
         database_id:
           type: string
           format: uuid
@@ -8122,14 +8509,321 @@ components:
         related_identifiers:
           type: array
           items:
-            $ref: '#/components/schemas/SaveRelatedIdentifierDto'
+            $ref: '#/components/schemas/CreateRelatedIdentifierDto'
       required:
         - creators
         - database_id
+        - descriptions
+        - funders
+        - licenses
         - publication_year
         - publisher
+        - related_identifiers
         - titles
         - type
+    CreateIdentifierFunderDto:
+      type: object
+      properties:
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: 'http://doi.org/10.13039/501100000780'
+        funder_identifier_type:
+          type: string
+          enum:
+            - Crossref Funder ID
+            - ROR
+            - GND
+            - ISNI
+            - Other
+          example: Crossref Funder ID
+        scheme_uri:
+          type: string
+          example: 'http://doi.org/'
+        award_number:
+          type: string
+          example: 824087
+        award_title:
+          type: string
+          example: EOSC-Life
+      required:
+        - funder_name
+    CreateIdentifierTitleDto:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Airquality Demonstrator
+        language:
+          type: string
+          enum:
+            - ab
+            - aa
+            - af
+            - ak
+            - sq
+            - am
+            - ar
+            - an
+            - hy
+            - as
+            - av
+            - ae
+            - ay
+            - az
+            - bm
+            - ba
+            - eu
+            - be
+            - bn
+            - bh
+            - bi
+            - bs
+            - br
+            - bg
+            - my
+            - ca
+            - km
+            - ch
+            - ce
+            - ny
+            - zh
+            - cu
+            - cv
+            - kw
+            - co
+            - cr
+            - hr
+            - cs
+            - da
+            - dv
+            - nl
+            - dz
+            - en
+            - eo
+            - et
+            - ee
+            - fo
+            - fj
+            - fi
+            - fr
+            - ff
+            - gd
+            - gl
+            - lg
+            - ka
+            - de
+            - ki
+            - el
+            - kl
+            - gn
+            - gu
+            - ht
+            - ha
+            - he
+            - hz
+            - hi
+            - ho
+            - hu
+            - is
+            - io
+            - ig
+            - id
+            - ia
+            - ie
+            - iu
+            - ik
+            - ga
+            - it
+            - ja
+            - jv
+            - kn
+            - kr
+            - ks
+            - kk
+            - rw
+            - kv
+            - kg
+            - ko
+            - kj
+            - ku
+            - ky
+            - lo
+            - la
+            - lv
+            - lb
+            - li
+            - ln
+            - lt
+            - lu
+            - mk
+            - mg
+            - ms
+            - ml
+            - mt
+            - gv
+            - mi
+            - mr
+            - mh
+            - ro
+            - mn
+            - na
+            - nv
+            - nd
+            - ng
+            - ne
+            - se
+            - 'no'
+            - nb
+            - nn
+            - ii
+            - oc
+            - oj
+            - or
+            - om
+            - os
+            - pi
+            - pa
+            - ps
+            - fa
+            - pl
+            - pt
+            - qu
+            - rm
+            - rn
+            - ru
+            - sm
+            - sg
+            - sa
+            - sc
+            - sr
+            - sn
+            - sd
+            - si
+            - sk
+            - sl
+            - so
+            - st
+            - nr
+            - es
+            - su
+            - sw
+            - ss
+            - sv
+            - tl
+            - ty
+            - tg
+            - ta
+            - tt
+            - te
+            - th
+            - bo
+            - ti
+            - to
+            - ts
+            - tn
+            - tr
+            - tk
+            - tw
+            - ug
+            - uk
+            - ur
+            - uz
+            - ve
+            - vi
+            - vo
+            - wa
+            - cy
+            - fy
+            - wo
+            - xh
+            - yi
+            - yo
+            - za
+            - zu
+          example: en
+        type:
+          type: string
+          enum:
+            - AlternativeTitle
+            - Subtitle
+            - TranslatedTitle
+            - Other
+          example: Subtitle
+      required:
+        - title
+    CreateRelatedIdentifierDto:
+      type: object
+      properties:
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          enum:
+            - DOI
+            - URL
+            - URN
+            - ARK
+            - arXiv
+            - bibcode
+            - EAN13
+            - EISSN
+            - Handle
+            - IGSN
+            - ISBN
+            - ISTC
+            - LISSN
+            - LSID
+            - PMID
+            - PURL
+            - UPC
+            - w3id
+          example: DOI
+        relation:
+          type: string
+          enum:
+            - IsCitedBy
+            - Cites
+            - IsSupplementTo
+            - IsSupplementedBy
+            - IsContinuedBy
+            - Continues
+            - IsDescribedBy
+            - Describes
+            - HasMetadata
+            - IsMetadataFor
+            - HasVersion
+            - IsVersionOf
+            - IsNewVersionOf
+            - IsPreviousVersionOf
+            - IsPartOf
+            - HasPart
+            - IsPublishedIn
+            - IsReferencedBy
+            - References
+            - IsDocumentedBy
+            - Documents
+            - IsCompiledBy
+            - Compiles
+            - IsVariantFormOf
+            - IsOriginalFormOf
+            - IsIdenticalTo
+            - IsReviewedBy
+            - Reviews
+            - IsDerivedFrom
+            - IsSourceOf
+            - IsRequiredBy
+            - Requires
+            - IsObsoletedBy
+            - Obsoletes
+          example: Cites
+      required:
+        - relation
+        - type
+        - value
     CreateDatabaseDto:
       type: object
       properties:
@@ -8579,14 +9273,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         untilDate:
           type: string
           format: date-time
         fromDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       type: object
       properties:
