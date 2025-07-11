@@ -112,7 +112,7 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getHdbid().equals(getId(principal)))
+                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (optional.isPresent()) {
                 access = optional.get();
@@ -170,7 +170,7 @@ public class TableEndpoint extends AbstractEndpoint {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getId().equals(getId(principal))) {
+        if (!table.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to analyse table semantics: not owner");
             throw new NotAllowedException("Failed to analyse table semantics: not owner");
         }
@@ -222,7 +222,7 @@ public class TableEndpoint extends AbstractEndpoint {
         log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getId().equals(getId(principal)) && !isSystem(principal)) {
+        if (!table.getOwner().getUsername().equals(getUsername(principal)) && !isSystem(principal)) {
             log.error("Failed to update table statistics: not owner");
             throw new NotAllowedException("Failed to update table statistics: not owner");
         }
@@ -284,7 +284,7 @@ public class TableEndpoint extends AbstractEndpoint {
         final Table table = tableService.findById(database, tableId);
         if (!hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(database, principal, true);
-            endpointValidator.validateOnlyOwnerOrWriteAll(table, userService.findById(getId(principal)));
+            endpointValidator.validateOnlyOwnerOrWriteAll(table, userService.findByUsername(getUsername(principal)));
         }
         return ResponseEntity.accepted()
                 .body(metadataMapper.tableColumnToColumnDto(tableService.update(
@@ -322,8 +322,7 @@ public class TableEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                          @NotNull @PathVariable("tableId") UUID tableId,
-                                                                         @NotNull @PathVariable("columnId") UUID columnId,
-                                                                         Principal principal)
+                                                                         @NotNull @PathVariable("columnId") UUID columnId)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}",
                 databaseId, tableId, columnId);
@@ -444,7 +443,7 @@ public class TableEndpoint extends AbstractEndpoint {
                 databaseId, data.getIsPublic(), data.getIsSchemaPublic());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getId().equals(getId(principal))) {
+        if (!table.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
@@ -490,7 +489,7 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getHuserid().equals(getId(principal)))
+                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (table.getIsPublic() || table.getIsSchemaPublic() || optional.isPresent()) {
                 return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
@@ -549,7 +548,7 @@ public class TableEndpoint extends AbstractEndpoint {
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */
-        if (!table.getOwner().getId().equals(getId(principal)) && !hasRole(principal, "delete-foreign-table")) {
+        if (!table.getOwner().getUsername().equals(getUsername(principal)) && !hasRole(principal, "delete-foreign-table")) {
             log.error("Failed to delete table: not owned by current user");
             throw new NotAllowedException("Failed to delete table: not owned by current user");
         }

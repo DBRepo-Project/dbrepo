@@ -25,8 +25,8 @@ public class CacheConfig {
     private Integer credentialCacheTimeout;
 
     @Bean
-    public Cache<UUID, UserDto> userCache() {
-        return new ExpiryCache<UUID, UserDto>().build();
+    public Cache<String, UserDto> userCache() {
+        return new ExpiryCache<String, UserDto>().build();
     }
 
     @Bean

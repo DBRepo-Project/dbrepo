@@ -122,13 +122,13 @@
             <v-list-item
               v-if="cacheUser"
               exact
-              :to="`/search?type=database&owner.username=${cacheUser.username}`">
+              :to="`/search?type=database&owner.username=${cacheUser.preferred_username}`">
               {{ $t('navigation.databases') + ' ' + $t('navigation.mine')}}
             </v-list-item>
             <v-list-item
               v-if="cacheUser"
               exact
-              :to="`/search?type=identifier&identifiers.creator.username=${cacheUser.username}`">
+              :to="`/search?type=identifier&identifiers.creator.username=${cacheUser.preferred_username}`">
               {{ $t('navigation.identifiers') + ' ' + $t('navigation.mine') }}
             </v-list-item>
             <v-list-item
@@ -330,7 +330,7 @@ export default {
           }
         }
         /* load database and optional access */
-        this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.uid)
+        this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.preferred_username)
         this.cacheStore.setRouteDatabase(newObj.database_id)
           .catch((error) => {
             this.databaseError = error

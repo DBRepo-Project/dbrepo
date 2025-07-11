@@ -52,7 +52,7 @@ public class GrantEndpointUnitTest extends BaseTest {
         /* mock */
         when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_1_ID))
+        when(cacheService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         when(grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO))
                 .thenReturn(READ_GRANT_DTO);
@@ -60,7 +60,7 @@ public class GrantEndpointUnitTest extends BaseTest {
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<DatabaseGrantsDto> response = grantEndpoint.find(DATABASE_1_ID, USER_1_ID, USER_1_PRINCIPAL, httpServletRequest);
+        final ResponseEntity<DatabaseGrantsDto> response = grantEndpoint.find(DATABASE_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, httpServletRequest);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final DatabaseGrantsDto body = response.getBody();
@@ -77,7 +77,7 @@ public class GrantEndpointUnitTest extends BaseTest {
         /* mock */
         when(cacheService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_1_ID))
+        when(cacheService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         when(grantService.find(DATABASE_2_PRIVILEGED_DTO, USER_1_DTO))
                 .thenReturn(READ_GRANT_DTO);
@@ -85,7 +85,7 @@ public class GrantEndpointUnitTest extends BaseTest {
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<DatabaseGrantsDto> response = grantEndpoint.find(DATABASE_2_ID, USER_1_ID, USER_1_PRINCIPAL, httpServletRequest);
+        final ResponseEntity<DatabaseGrantsDto> response = grantEndpoint.find(DATABASE_2_ID, USER_1_USERNAME, USER_1_PRINCIPAL, httpServletRequest);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final DatabaseGrantsDto body = response.getBody();
@@ -102,7 +102,7 @@ public class GrantEndpointUnitTest extends BaseTest {
         /* mock */
         when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_1_ID))
+        when(cacheService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         when(grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO))
                 .thenReturn(READ_GRANT_DTO);
@@ -110,7 +110,7 @@ public class GrantEndpointUnitTest extends BaseTest {
                 .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<DatabaseGrantsDto> response = grantEndpoint.find(DATABASE_1_ID, USER_1_ID, USER_1_PRINCIPAL, httpServletRequest);
+        final ResponseEntity<DatabaseGrantsDto> response = grantEndpoint.find(DATABASE_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, httpServletRequest);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -122,14 +122,14 @@ public class GrantEndpointUnitTest extends BaseTest {
         /* mock */
         when(cacheService.getDatabase(any(UUID.class)))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_2_ID))
+        when(cacheService.getUser(USER_2_USERNAME))
                 .thenReturn(USER_2_DTO);
-        when(cacheService.getUser(USER_1_ID))
+        when(cacheService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            grantEndpoint.find(DATABASE_1_ID, USER_1_ID, USER_2_PRINCIPAL, httpServletRequest);
+            grantEndpoint.find(DATABASE_1_ID, USER_1_USERNAME, USER_2_PRINCIPAL, httpServletRequest);
         });
     }
 
@@ -141,14 +141,14 @@ public class GrantEndpointUnitTest extends BaseTest {
         /* mock */
         when(cacheService.getDatabase(any(UUID.class)))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_4_ID))
+        when(cacheService.getUser(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
-        when(cacheService.getUser(USER_1_ID))
+        when(cacheService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            grantEndpoint.find(DATABASE_1_ID, USER_4_ID, USER_2_PRINCIPAL, httpServletRequest);
+            grantEndpoint.find(DATABASE_1_ID, USER_4_USERNAME, USER_2_PRINCIPAL, httpServletRequest);
         });
     }
 

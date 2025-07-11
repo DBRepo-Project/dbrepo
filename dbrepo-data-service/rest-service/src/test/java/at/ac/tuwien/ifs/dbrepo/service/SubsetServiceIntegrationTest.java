@@ -104,7 +104,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
         /* mock */
-        final UUID queryId = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        final UUID queryId = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_USERNAME);
 
         /* test */
         findById_generic(queryId);
@@ -125,8 +125,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             InterruptedException {
 
         /* mock */
-        final UUID queryId2 = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        final UUID queryId2 = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_USERNAME);
+        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
@@ -142,8 +142,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             InterruptedException {
 
         /* mock */
-        final UUID queryId1 = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        final UUID queryId1 = MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_USERNAME);
+        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
@@ -239,12 +239,12 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             QueryMalformedException {
 
         /* test */
-        final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_ID);
+        final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_USERNAME);
         assertNotNull(response);
         final List<Map<String, Object>> subsets = MariaDbUtil.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
         assertEquals(1, subsets.size());
         final Map<String, Object> subset0 = subsets.get(0);
-        assertEquals(USER_1_ID, UUID.fromString("" + subset0.get("created_by")));
+        assertEquals(USER_1_USERNAME, subset0.get("created_by"));
         assertEquals(QUERY_1_STATEMENT, subset0.get("query"));
         assertEquals(mariaDbMapper.normalizeQuery(QUERY_1_STATEMENT, QUERY_1_CREATED), subset0.get("query_normalized"));
     }
@@ -255,7 +255,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             ColumnNotFoundException {
 
         /* test */
-        final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_ID);
+        final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_USERNAME);
         assertNotNull(response);
     }
 
@@ -281,7 +281,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* test */
-        subsetService.create(DATABASE_1_PRIVILEGED_DTO, request, QUERY_1_CREATED, USER_1_ID);
+        subsetService.create(DATABASE_1_PRIVILEGED_DTO, request, QUERY_1_CREATED, USER_1_USERNAME);
         assertEquals(1, MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1 WHERE EXISTS (SELECT * FROM `weather_location`)", Set.of()).size());
     }
 
@@ -290,7 +290,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(QueryStoreInsertException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "DROP DATABASE `weather`", QUERY_1_CREATED, USER_1_ID);
+            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "DROP DATABASE `weather`", QUERY_1_CREATED, USER_1_USERNAME);
         });
     }
 
@@ -299,7 +299,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1", QUERY_1_CREATED, USER_1_ID);
+            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1", QUERY_1_CREATED, USER_1_USERNAME);
         });
     }
 
@@ -313,7 +313,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, queryId))
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO));
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
@@ -329,8 +329,8 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
+        MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_USERNAME);
+        MariaDbUtil.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_USERNAME);
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null))
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_5_BRIEF_DTO));
 

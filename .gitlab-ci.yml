@@ -377,8 +377,8 @@ test-auth-service-init:
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
   before_script:
-    - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev libsasl libldap openldap-dev"
-    - "pip install pipenv python-ldap"
+    - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev"
+    - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/auth"
   script:

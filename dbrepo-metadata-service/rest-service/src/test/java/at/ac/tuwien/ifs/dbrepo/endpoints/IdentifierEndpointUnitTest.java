@@ -1314,7 +1314,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             throws UserNotFoundException, IdentifierNotFoundException {
 
         /* mock */
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1);
@@ -1473,7 +1473,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(accessService.find(DATABASE_1, USER_1))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
@@ -1496,7 +1496,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_1_ID))
+        when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
@@ -1601,7 +1601,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findById(USER_2_ID))
+        when(userService.findByUsername(USER_2_USERNAME))
                 .thenReturn(USER_2);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
@@ -1660,7 +1660,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             when(dataServiceGateway.findQuery(databaseId, QUERY_2_ID))
                     .thenReturn(QUERY_2_DTO);
         }
-        when(userService.findById(user.getId()))
+        when(userService.findByUsername(user.getUsername()))
                 .thenReturn(user);
         when(databaseService.findById(databaseId))
                 .thenReturn(database);

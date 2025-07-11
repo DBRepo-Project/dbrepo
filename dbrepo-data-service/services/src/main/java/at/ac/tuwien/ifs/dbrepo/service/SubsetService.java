@@ -20,12 +20,12 @@ public interface SubsetService {
      * @param database  The database.
      * @param subset The subset information.
      * @param timestamp The timestamp as of which the data is queried. If smaller than <now>, historic data is queried.
-     * @param userId    The user id of the creating user.
+     * @param username    The username of the creating user.
      * @return The query id.
      * @throws QueryStoreInsertException The query store refused to insert the query.
      * @throws SQLException              The connection to the database could not be established.
      */
-    UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
+    UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, String username)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException, ViewNotFoundException, ColumnNotFoundException;
 
     /**
@@ -99,12 +99,12 @@ public interface SubsetService {
      *
      * @param database The database.
      * @param statement    The query statement.
-     * @param userId   The user id.
+     * @param username   The username.
      * @return The stored query id on success.
      * @throws SQLException              The connection to the database could not be established.
      * @throws QueryStoreInsertException The query store failed to insert the query.
      */
-    UUID storeQuery(DatabaseDto database, String statement, Instant timestamp, UUID userId) throws SQLException,
+    UUID storeQuery(DatabaseDto database, String statement, Instant timestamp, String username) throws SQLException,
             QueryStoreInsertException, ViewMalformedException, QueryMalformedException;
 
     /**

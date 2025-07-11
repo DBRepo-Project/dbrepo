@@ -107,7 +107,7 @@ public class UserServicePersistenceTest extends BaseTest {
     }
 
     @Test
-    public void find_succeeds() throws UserNotFoundException {
+    public void findById_succeeds() throws UserNotFoundException {
 
         /* test */
         final User user = userService.findById(USER_1_ID);
@@ -115,7 +115,7 @@ public class UserServicePersistenceTest extends BaseTest {
     }
 
     @Test
-    public void find_notFound_fails() {
+    public void findById_notFound_fails() {
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {

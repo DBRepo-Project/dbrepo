@@ -83,15 +83,15 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     log.debug("filter request to contain only databases that match internal name: {}", internalName);
                     databases = databaseService.findByInternalName(internalName);
                 } else {
-                    log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name: {}", getId(principal), internalName);
-                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getId(principal), internalName);
+                    log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name: {}", getUsername(principal), internalName);
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getUsername(principal), internalName);
                 }
             } else {
                 if (isSystem(principal)) {
                     databases = databaseService.findAll();
                 } else {
-                    log.debug("filter request to contain only databases where user with id {} has at least read access", getId(principal));
-                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getId(principal));
+                    log.debug("filter request to contain only databases where user with id {} has at least read access", getUsername(principal));
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getUsername(principal));
                 }
             }
         } else {
@@ -173,7 +173,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
-        final User caller = userService.findById(getId(principal));
+        final User caller = userService.findByUsername(getUsername(principal));
         final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
@@ -227,7 +227,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             SearchServiceConnectionException, NotAllowedException, MalformedException, TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
@@ -275,7 +275,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             SearchServiceConnectionException, NotAllowedException, ViewNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
@@ -329,7 +329,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
@@ -384,10 +384,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                                      Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint transfer database, databaseId={}, transferDto.id={}", databaseId, data.getId());
+        log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
         final Database database = databaseService.findById(databaseId);
-        final User newOwner = userService.findById(data.getId());
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        final User newOwner = userService.findByUsername(data.getUsername());
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
@@ -442,7 +442,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
         }

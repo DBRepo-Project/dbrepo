@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDetailsDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
@@ -13,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 public abstract class AbstractEndpoint {
@@ -38,16 +36,16 @@ public abstract class AbstractEndpoint {
                 .anyMatch(a -> a.getAuthority().equals("system"));
     }
 
-    public UUID getId(Principal principal) {
+    public String getUsername(Principal principal) {
         if (principal == null) {
             return null;
         }
         final Authentication authentication = (Authentication) principal;
         if (authentication.getPrincipal() instanceof UserDetailsDto user) {
             if (user.getId() == null) {
-                throw new IllegalArgumentException("Principal has no id");
+                throw new IllegalArgumentException("Principal has no username");
             }
-            return UUID.fromString(user.getId());
+            return user.getUsername();
         }
         throw new IllegalArgumentException("Unknown principal instance: " + authentication.getPrincipal().getClass());
     }
@@ -67,14 +65,14 @@ public abstract class AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUser().getId().equals(getId(principal)))
+                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (!database.getIsPublic() && !database.getIsSchemaPublic() && optional.isEmpty()) {
                 log.error("Failed to find database: not public and no access found");
                 throw new NotAllowedException("Failed to find database: not public and no access found");
             }
             /* reduce metadata */
-            if (!database.getOwner().getId().equals(getId(principal))) {
+            if (!database.getOwner().getUsername().equals(getUsername(principal))) {
                 log.trace("authenticated user is not owner: remove access list");
                 database.setAccesses(List.of());
             }
@@ -122,7 +120,7 @@ public abstract class AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getHdbid().equals(getId(principal)))
+                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (optional.isPresent()) {
                 access = optional.get();

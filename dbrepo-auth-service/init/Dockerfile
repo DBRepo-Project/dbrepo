@@ -4,10 +4,7 @@ LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 RUN apk add --no-cache alpine-sdk \
     gcc \
     python3-dev \
-    mariadb-connector-c-dev \
-    libsasl \
-    libldap \
-    openldap-dev
+    mariadb-connector-c-dev
 
 WORKDIR /home/alpine
 
@@ -15,7 +12,7 @@ COPY Pipfile Pipfile.lock ./
 
 COPY ./lib ./lib
 
-RUN pip install pipenv python-ldap && \
+RUN pip install pipenv && \
     pipenv install --system --deploy
 
 RUN mkdir -p /var/log/app/service/auth && \

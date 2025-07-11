@@ -11,11 +11,11 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "1.10.0"
+    "version": "1.10.1"
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.0/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.1/system-services-metadata/"
   },
   "servers": [
     {
@@ -28,7 +28,7 @@
     }
   ],
   "paths": {
-    "/api/user/{userId}": {
+    "/api/user/{username}": {
       "get": {
         "tags": [
           "user-endpoint"
@@ -38,12 +38,11 @@
         "operationId": "find",
         "parameters": [
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -93,16 +92,15 @@
           "user-endpoint"
         ],
         "summary": "Update user",
-        "description": "Updates user with id. Requires role `modify-user-information`.",
+        "description": "Updates user with given username. Requires role `modify-user-information`.",
         "operationId": "modify",
         "parameters": [
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -186,12 +184,11 @@
         "operationId": "find_1",
         "parameters": [
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -451,13 +448,13 @@
         }
       }
     },
-    "/api/database/{databaseId}/access/{userId}": {
+    "/api/database/{databaseId}/access/{username}": {
       "get": {
         "tags": [
           "access-endpoint"
         ],
         "summary": "Find/Check access",
-        "description": "Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
+        "description": "Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
         "operationId": "find_2",
         "parameters": [
           {
@@ -470,12 +467,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -525,7 +521,7 @@
           "access-endpoint"
         ],
         "summary": "Modify access",
-        "description": "Modifies access of a user with given id to database with given id. Requires role `update-database-access`.",
+        "description": "Modifies access of a user with given username to database with given id. Requires role `update-database-access`.",
         "operationId": "update",
         "parameters": [
           {
@@ -538,12 +534,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -626,7 +621,7 @@
           "access-endpoint"
         ],
         "summary": "Give access",
-        "description": "Give a user with given id access to some database with given id. Requires role `create-database-access`.",
+        "description": "Give a user with given username access to some database with given id. Requires role `create-database-access`.",
         "operationId": "create_1",
         "parameters": [
           {
@@ -639,12 +634,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -734,7 +728,7 @@
           "access-endpoint"
         ],
         "summary": "Delete access",
-        "description": "Delete access of a user with id to a database with id. Requires role `delete-database-access`.",
+        "description": "Delete access of a user with given username to a database with id. Requires role `delete-database-access`.",
         "operationId": "revoke",
         "parameters": [
           {
@@ -747,12 +741,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -825,7 +818,7 @@
           "access-endpoint"
         ],
         "summary": "Find/Check access",
-        "description": "Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
+        "description": "Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
         "operationId": "find_3",
         "parameters": [
           {
@@ -838,12 +831,11 @@
             }
           },
           {
-            "name": "userId",
+            "name": "username",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -4878,6 +4870,10 @@
             ],
             "example": "draft"
           },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
           "database_id": {
             "type": "string",
             "format": "uuid",
@@ -4886,17 +4882,17 @@
           "query_id": {
             "type": "string",
             "format": "uuid",
-            "example": 1
+            "example": "1413e257-f62a-4881-ac38-ae9a76e21b9c"
           },
           "table_id": {
             "type": "string",
             "format": "uuid",
-            "example": 1
+            "example": "67d23209-aec8-489a-8f86-71fd0fe09ce7"
           },
           "view_id": {
             "type": "string",
             "format": "uuid",
-            "example": 1
+            "example": "8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4"
           },
           "publication_year": {
             "type": "integer",
@@ -5661,6 +5657,11 @@
             "type": "boolean",
             "example": false
           },
+          "size_step": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
           "d_min": {
             "type": "integer",
             "format": "int32"
@@ -5675,6 +5676,11 @@
           },
           "d_required": {
             "type": "boolean"
+          },
+          "d_step": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
           },
           "data_hint": {
             "type": "string",
@@ -6022,7 +6028,7 @@
           "database_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "d002e8d5-8db4-4ff7-ab3a-bc3f52d9ec44"
           },
           "query_id": {
             "type": "string",
@@ -6064,9 +6070,13 @@
         "required": [
           "creators",
           "database_id",
+          "descriptions",
+          "funders",
           "id",
+          "licenses",
           "publication_year",
           "publisher",
+          "related_identifiers",
           "titles",
           "type"
         ]
@@ -6128,28 +6138,9 @@
             "type": "string",
             "example": "0000-0002-1825-0097"
           },
-          "name_identifier_scheme": {
-            "type": "string",
-            "enum": [
-              "ORCID",
-              "ROR",
-              "ISNI",
-              "GRID"
-            ],
-            "example": "ORCID"
-          },
           "affiliation_identifier": {
             "type": "string",
             "example": "https://ror.org/04d836q62"
-          },
-          "affiliation_identifier_scheme": {
-            "type": "string",
-            "enum": [
-              "ROR",
-              "GRID",
-              "ISNI"
-            ],
-            "example": "ROR"
           }
         },
         "required": [
@@ -7065,25 +7056,29 @@
             ],
             "example": "draft"
           },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
           "database_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "fc29f89c-86a8-4020-9e36-4d954736c6cc"
           },
           "query_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "1413e257-f62a-4881-ac38-ae9a76e21b9c"
           },
           "table_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "67d23209-aec8-489a-8f86-71fd0fe09ce7"
           },
           "view_id": {
             "type": "string",
             "format": "uuid",
-            "example": null
+            "example": "8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4"
           },
           "query_normalized": {
             "type": "string",
@@ -7745,13 +7740,12 @@
       "DatabaseTransferDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+          "username": {
+            "type": "string"
           }
         },
         "required": [
-          "id"
+          "username"
         ]
       },
       "DatabaseModifyImageDto": {
@@ -7884,6 +7878,260 @@
           "version"
         ]
       },
+      "CreateIdentifierCreatorDto": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "string",
+            "example": "Josiah"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Carberry"
+          },
+          "affiliation": {
+            "type": "string",
+            "example": "Wesleyan University"
+          },
+          "creator_name": {
+            "type": "string",
+            "example": "Carberry, Josiah"
+          },
+          "name_type": {
+            "type": "string",
+            "enum": [
+              "Personal",
+              "Organizational"
+            ],
+            "example": "Personal"
+          },
+          "name_identifier": {
+            "type": "string",
+            "example": "0000-0002-1825-0097"
+          },
+          "affiliation_identifier": {
+            "type": "string",
+            "example": "https://ror.org/04d836q62"
+          }
+        },
+        "required": [
+          "creator_name"
+        ]
+      },
+      "CreateIdentifierDescriptionDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Air quality reports at Stephansplatz, Vienna"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "ab",
+              "aa",
+              "af",
+              "ak",
+              "sq",
+              "am",
+              "ar",
+              "an",
+              "hy",
+              "as",
+              "av",
+              "ae",
+              "ay",
+              "az",
+              "bm",
+              "ba",
+              "eu",
+              "be",
+              "bn",
+              "bh",
+              "bi",
+              "bs",
+              "br",
+              "bg",
+              "my",
+              "ca",
+              "km",
+              "ch",
+              "ce",
+              "ny",
+              "zh",
+              "cu",
+              "cv",
+              "kw",
+              "co",
+              "cr",
+              "hr",
+              "cs",
+              "da",
+              "dv",
+              "nl",
+              "dz",
+              "en",
+              "eo",
+              "et",
+              "ee",
+              "fo",
+              "fj",
+              "fi",
+              "fr",
+              "ff",
+              "gd",
+              "gl",
+              "lg",
+              "ka",
+              "de",
+              "ki",
+              "el",
+              "kl",
+              "gn",
+              "gu",
+              "ht",
+              "ha",
+              "he",
+              "hz",
+              "hi",
+              "ho",
+              "hu",
+              "is",
+              "io",
+              "ig",
+              "id",
+              "ia",
+              "ie",
+              "iu",
+              "ik",
+              "ga",
+              "it",
+              "ja",
+              "jv",
+              "kn",
+              "kr",
+              "ks",
+              "kk",
+              "rw",
+              "kv",
+              "kg",
+              "ko",
+              "kj",
+              "ku",
+              "ky",
+              "lo",
+              "la",
+              "lv",
+              "lb",
+              "li",
+              "ln",
+              "lt",
+              "lu",
+              "mk",
+              "mg",
+              "ms",
+              "ml",
+              "mt",
+              "gv",
+              "mi",
+              "mr",
+              "mh",
+              "ro",
+              "mn",
+              "na",
+              "nv",
+              "nd",
+              "ng",
+              "ne",
+              "se",
+              "no",
+              "nb",
+              "nn",
+              "ii",
+              "oc",
+              "oj",
+              "or",
+              "om",
+              "os",
+              "pi",
+              "pa",
+              "ps",
+              "fa",
+              "pl",
+              "pt",
+              "qu",
+              "rm",
+              "rn",
+              "ru",
+              "sm",
+              "sg",
+              "sa",
+              "sc",
+              "sr",
+              "sn",
+              "sd",
+              "si",
+              "sk",
+              "sl",
+              "so",
+              "st",
+              "nr",
+              "es",
+              "su",
+              "sw",
+              "ss",
+              "sv",
+              "tl",
+              "ty",
+              "tg",
+              "ta",
+              "tt",
+              "te",
+              "th",
+              "bo",
+              "ti",
+              "to",
+              "ts",
+              "tn",
+              "tr",
+              "tk",
+              "tw",
+              "ug",
+              "uk",
+              "ur",
+              "uz",
+              "ve",
+              "vi",
+              "vo",
+              "wa",
+              "cy",
+              "fy",
+              "wo",
+              "xh",
+              "yi",
+              "yo",
+              "za",
+              "zu"
+            ],
+            "example": "en"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Abstract",
+              "Methods",
+              "SeriesInformation",
+              "TableOfContents",
+              "TechnicalInfo",
+              "Other"
+            ],
+            "example": "Abstract"
+          }
+        },
+        "required": [
+          "description"
+        ]
+      },
       "CreateIdentifierDto": {
         "type": "object",
         "properties": {
@@ -7904,19 +8152,19 @@
           "titles": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SaveIdentifierTitleDto"
+              "$ref": "#/components/schemas/CreateIdentifierTitleDto"
             }
           },
           "descriptions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SaveIdentifierDescriptionDto"
+              "$ref": "#/components/schemas/CreateIdentifierDescriptionDto"
             }
           },
           "funders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SaveIdentifierFunderDto"
+              "$ref": "#/components/schemas/CreateIdentifierFunderDto"
             }
           },
           "licenses": {
@@ -8121,7 +8369,7 @@
           "creators": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SaveIdentifierCreatorDto"
+              "$ref": "#/components/schemas/CreateIdentifierCreatorDto"
             }
           },
           "database_id": {
@@ -8162,17 +8410,350 @@
           "related_identifiers": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SaveRelatedIdentifierDto"
+              "$ref": "#/components/schemas/CreateRelatedIdentifierDto"
             }
           }
         },
         "required": [
           "creators",
           "database_id",
+          "descriptions",
+          "funders",
+          "licenses",
           "publication_year",
           "publisher",
+          "related_identifiers",
           "titles",
           "type"
+        ]
+      },
+      "CreateIdentifierFunderDto": {
+        "type": "object",
+        "properties": {
+          "funder_name": {
+            "type": "string",
+            "example": "European Commission"
+          },
+          "funder_identifier": {
+            "type": "string",
+            "example": "http://doi.org/10.13039/501100000780"
+          },
+          "funder_identifier_type": {
+            "type": "string",
+            "enum": [
+              "Crossref Funder ID",
+              "ROR",
+              "GND",
+              "ISNI",
+              "Other"
+            ],
+            "example": "Crossref Funder ID"
+          },
+          "scheme_uri": {
+            "type": "string",
+            "example": "http://doi.org/"
+          },
+          "award_number": {
+            "type": "string",
+            "example": 824087
+          },
+          "award_title": {
+            "type": "string",
+            "example": "EOSC-Life"
+          }
+        },
+        "required": [
+          "funder_name"
+        ]
+      },
+      "CreateIdentifierTitleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Airquality Demonstrator"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "ab",
+              "aa",
+              "af",
+              "ak",
+              "sq",
+              "am",
+              "ar",
+              "an",
+              "hy",
+              "as",
+              "av",
+              "ae",
+              "ay",
+              "az",
+              "bm",
+              "ba",
+              "eu",
+              "be",
+              "bn",
+              "bh",
+              "bi",
+              "bs",
+              "br",
+              "bg",
+              "my",
+              "ca",
+              "km",
+              "ch",
+              "ce",
+              "ny",
+              "zh",
+              "cu",
+              "cv",
+              "kw",
+              "co",
+              "cr",
+              "hr",
+              "cs",
+              "da",
+              "dv",
+              "nl",
+              "dz",
+              "en",
+              "eo",
+              "et",
+              "ee",
+              "fo",
+              "fj",
+              "fi",
+              "fr",
+              "ff",
+              "gd",
+              "gl",
+              "lg",
+              "ka",
+              "de",
+              "ki",
+              "el",
+              "kl",
+              "gn",
+              "gu",
+              "ht",
+              "ha",
+              "he",
+              "hz",
+              "hi",
+              "ho",
+              "hu",
+              "is",
+              "io",
+              "ig",
+              "id",
+              "ia",
+              "ie",
+              "iu",
+              "ik",
+              "ga",
+              "it",
+              "ja",
+              "jv",
+              "kn",
+              "kr",
+              "ks",
+              "kk",
+              "rw",
+              "kv",
+              "kg",
+              "ko",
+              "kj",
+              "ku",
+              "ky",
+              "lo",
+              "la",
+              "lv",
+              "lb",
+              "li",
+              "ln",
+              "lt",
+              "lu",
+              "mk",
+              "mg",
+              "ms",
+              "ml",
+              "mt",
+              "gv",
+              "mi",
+              "mr",
+              "mh",
+              "ro",
+              "mn",
+              "na",
+              "nv",
+              "nd",
+              "ng",
+              "ne",
+              "se",
+              "no",
+              "nb",
+              "nn",
+              "ii",
+              "oc",
+              "oj",
+              "or",
+              "om",
+              "os",
+              "pi",
+              "pa",
+              "ps",
+              "fa",
+              "pl",
+              "pt",
+              "qu",
+              "rm",
+              "rn",
+              "ru",
+              "sm",
+              "sg",
+              "sa",
+              "sc",
+              "sr",
+              "sn",
+              "sd",
+              "si",
+              "sk",
+              "sl",
+              "so",
+              "st",
+              "nr",
+              "es",
+              "su",
+              "sw",
+              "ss",
+              "sv",
+              "tl",
+              "ty",
+              "tg",
+              "ta",
+              "tt",
+              "te",
+              "th",
+              "bo",
+              "ti",
+              "to",
+              "ts",
+              "tn",
+              "tr",
+              "tk",
+              "tw",
+              "ug",
+              "uk",
+              "ur",
+              "uz",
+              "ve",
+              "vi",
+              "vo",
+              "wa",
+              "cy",
+              "fy",
+              "wo",
+              "xh",
+              "yi",
+              "yo",
+              "za",
+              "zu"
+            ],
+            "example": "en"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "AlternativeTitle",
+              "Subtitle",
+              "TranslatedTitle",
+              "Other"
+            ],
+            "example": "Subtitle"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "CreateRelatedIdentifierDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "10.70124/dc4zh-9ce78"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DOI",
+              "URL",
+              "URN",
+              "ARK",
+              "arXiv",
+              "bibcode",
+              "EAN13",
+              "EISSN",
+              "Handle",
+              "IGSN",
+              "ISBN",
+              "ISTC",
+              "LISSN",
+              "LSID",
+              "PMID",
+              "PURL",
+              "UPC",
+              "w3id"
+            ],
+            "example": "DOI"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "IsCitedBy",
+              "Cites",
+              "IsSupplementTo",
+              "IsSupplementedBy",
+              "IsContinuedBy",
+              "Continues",
+              "IsDescribedBy",
+              "Describes",
+              "HasMetadata",
+              "IsMetadataFor",
+              "HasVersion",
+              "IsVersionOf",
+              "IsNewVersionOf",
+              "IsPreviousVersionOf",
+              "IsPartOf",
+              "HasPart",
+              "IsPublishedIn",
+              "IsReferencedBy",
+              "References",
+              "IsDocumentedBy",
+              "Documents",
+              "IsCompiledBy",
+              "Compiles",
+              "IsVariantFormOf",
+              "IsOriginalFormOf",
+              "IsIdenticalTo",
+              "IsReviewedBy",
+              "Reviews",
+              "IsDerivedFrom",
+              "IsSourceOf",
+              "IsRequiredBy",
+              "Requires",
+              "IsObsoletedBy",
+              "Obsoletes"
+            ],
+            "example": "Cites"
+          }
+        },
+        "required": [
+          "relation",
+          "type",
+          "value"
         ]
       },
       "CreateDatabaseDto": {
@@ -8853,14 +9434,14 @@
           "resumptionToken": {
             "type": "string"
           },
+          "untilDate": {
+            "type": "string",
+            "format": "date-time"
+          },
           "parametersString": {
             "type": "string"
           },
           "fromDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "untilDate": {
             "type": "string",
             "format": "date-time"
           }

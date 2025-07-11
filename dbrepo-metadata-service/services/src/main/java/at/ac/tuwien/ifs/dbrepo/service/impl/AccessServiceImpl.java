@@ -66,7 +66,7 @@ public class AccessServiceImpl implements AccessService {
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* create in data database */
-        dataServiceGateway.createAccess(database.getId(), user.getId(), type);
+        dataServiceGateway.createAccess(database.getId(), user.getUsername(), type);
         /* create in metadata database */
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())
@@ -91,7 +91,7 @@ public class AccessServiceImpl implements AccessService {
             SearchServiceConnectionException {
         /* update in data database */
         try {
-            dataServiceGateway.updateAccess(database.getId(), user.getId(), access);
+            dataServiceGateway.updateAccess(database.getId(), user.getUsername(), access);
         } catch (AccessNotFoundException e) {
             /* ignore */
         }
@@ -119,7 +119,7 @@ public class AccessServiceImpl implements AccessService {
             SearchServiceConnectionException {
         /* delete in data database */
         try {
-            dataServiceGateway.deleteAccess(database.getId(), user.getId());
+            dataServiceGateway.deleteAccess(database.getId(), user.getUsername());
         } catch (AccessNotFoundException e) {
             /* ignore */
         }

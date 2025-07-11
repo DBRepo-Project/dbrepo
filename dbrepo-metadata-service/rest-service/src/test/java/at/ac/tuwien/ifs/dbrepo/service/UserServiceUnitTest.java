@@ -49,7 +49,7 @@ public class UserServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void find_succeeds() throws UserNotFoundException {
+    public void findById_succeeds() throws UserNotFoundException {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))

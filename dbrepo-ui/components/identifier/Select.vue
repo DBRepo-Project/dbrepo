@@ -84,7 +84,7 @@ export default {
       if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.username === this.cacheUser.preferred_username)
     },
     listVariant () {
       const runtimeConfig = useRuntimeConfig()

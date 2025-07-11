@@ -54,7 +54,7 @@ export default {
       if (!this.database || !this.cacheUser) {
         return false
       }
-      return this.database.owner.id === this.cacheUser.uid
+      return this.database.owner.username === this.cacheUser.preferred_username
     },
     canPersistIdentifier () {
       if (!this.database || !this.roles || !this.cacheUser || !this.access) {
@@ -67,7 +67,7 @@ export default {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.database.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access) && this.database.owner.username === this.cacheUser.preferred_username
     }
   }
 }

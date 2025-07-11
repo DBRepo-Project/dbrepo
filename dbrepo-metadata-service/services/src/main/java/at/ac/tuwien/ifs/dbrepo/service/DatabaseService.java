@@ -43,7 +43,7 @@ public interface DatabaseService {
      * @param internalName  The internal name.
      * @return List of databases.
      */
-    List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName);
+    List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(String username, String internalName);
 
     /**
      * Filters all databases where {@link Database#isPublic} or {@link Database#isSchemaPublic} or the user by given id
@@ -52,7 +52,7 @@ public interface DatabaseService {
      * @param userId The user id.
      * @return List of databases.
      */
-    List<Database> findAllPublicOrSchemaPublicOrReadAccess(UUID userId);
+    List<Database> findAllPublicOrSchemaPublicOrReadAccess(String username);
 
     /**
      * Filters all databases where {@link Database#isPublic} or {@link Database#isSchemaPublic} or the internal name

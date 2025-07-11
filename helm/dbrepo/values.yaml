@@ -804,6 +804,8 @@ identityservice:
   ##   limits:
   ##     cpu: 500m
   ##     memory: 1024Mi
+  ## @param identityservice.endpoint The identity service endpoint.
+  endpoint: ldap://identity-service:1389
   ## @param identityservice.users The admin username for internal authentication.
   users: admin
   ## @param identityservice.userPasswords The admin user password for internal authentication.

@@ -17,8 +17,8 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.sys.JenaSystem;
@@ -196,7 +196,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicDecimalColumnSizeTooSmall_fails() {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -217,7 +217,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicDecimalColumnDTooSmall_fails() {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -239,7 +239,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("canHaveSize_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicOptionalSizeNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
             SearchServiceException, NotAllowedException, SemanticEntityNotFoundException, TableNotFoundException,
             DataServiceConnectionException, MalformedException, DataServiceException, DatabaseNotFoundException,
@@ -273,7 +273,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("canHaveSize_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicOptionalSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
             SearchServiceException, NotAllowedException, SemanticEntityNotFoundException, TableNotFoundException,
             DataServiceConnectionException, MalformedException, DataServiceException, DatabaseNotFoundException,
@@ -301,7 +301,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("needNothing_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedNothing_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
             SearchServiceException, NotAllowedException, SemanticEntityNotFoundException, TableNotFoundException,
             DataServiceConnectionException, MalformedException, DataServiceException, DatabaseNotFoundException,
@@ -330,7 +330,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("needSize_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
             SearchServiceException, NotAllowedException, SemanticEntityNotFoundException, TableNotFoundException,
             DataServiceConnectionException, MalformedException, DataServiceException, DatabaseNotFoundException,
@@ -358,7 +358,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("needSize_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedSizeNone_fails(ColumnTypeDto columnType) {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -380,7 +380,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("canHaveSizeAndD_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicCanHaveSizeAndDSizeNone_fails(ColumnTypeDto columnType) {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -402,7 +402,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("canHaveSizeAndD_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicCanHaveSizeAndDDNone_fails(ColumnTypeDto columnType) {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -424,7 +424,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("canHaveSizeAndD_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicCanHaveSizeAndDBothNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
             SearchServiceException, NotAllowedException, SemanticEntityNotFoundException,
             DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException,
@@ -451,7 +451,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicHasMultipleSerial_fails() {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -479,7 +479,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicSerialNullAllowed_fails() {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
@@ -502,7 +502,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("canHaveSizeAndD_parameters")
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicCanHaveSizeAndDBothNotNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
             SearchServiceException, NotAllowedException, SemanticEntityNotFoundException,
             DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException,
@@ -623,7 +623,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), null);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0));
         });
     }
 
@@ -633,7 +633,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_4_PRINCIPAL);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0));
         });
     }
 
@@ -643,7 +643,7 @@ public class TableEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* test */
-        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_1_PRINCIPAL);
+        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0));
     }
 
     @Test
@@ -704,7 +704,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_publicHasRoleForeignHasOwnWriteAccess_fails() {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_1_URI)
@@ -732,7 +732,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_publicHasRoleForeignHasAllWriteAccess_succeeds() throws MalformedException, DataServiceException,
             NotAllowedException, DataServiceConnectionException, UserNotFoundException, TableNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
@@ -808,7 +808,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_privateHasRoleForeignHasOwnWriteAccess_fails() {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_1_URI)
@@ -836,7 +836,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_privateHasRoleForeignHasAllWriteAccess_succeeds() throws MalformedException, DataServiceException,
             NotAllowedException, DataServiceConnectionException, UserNotFoundException, TableNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
@@ -997,7 +997,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"delete-table"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table"})
     public void delete_foreign_fails() {
 
         /* test */
@@ -1018,7 +1018,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"delete-table"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-table"})
     public void delete_hasIdentifiers_fails() {
         final Table response = Table.builder()
                 .identifiers(List.of(IDENTIFIER_1))
@@ -1050,7 +1050,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"update-table"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"update-table"})
     public void update_notOwner_fails() {
         final TableUpdateDto request = TableUpdateDto.builder()
                 .isPublic(true)
@@ -1065,7 +1065,7 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_2_USERNAME, authorities = {"update-table-statistic"})
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"update-table-statistic"})
     public void updateStatistic_notOwner_fails() {
 
         /* test */
@@ -1118,9 +1118,8 @@ public class TableEndpointUnitTest extends BaseTest {
         assertNotNull(body);
     }
 
-    public void analyseTableColumn_generic(UUID databaseId, UUID tableId, UUID columnId, TableColumn tableColumn,
-                                           Principal principal) throws MalformedException, TableNotFoundException,
-            DatabaseNotFoundException {
+    public void analyseTableColumn_generic(UUID databaseId, UUID tableId, UUID columnId, TableColumn tableColumn)
+            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
 
         /* mock */
         when(entityService.suggestByColumn(tableColumn))
@@ -1128,7 +1127,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         final ResponseEntity<List<TableColumnEntityDto>> response = tableEndpoint.analyseTableColumn(databaseId,
-                tableId, columnId, principal);
+                tableId, columnId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final List<TableColumnEntityDto> body = response.getBody();
         assertNotNull(body);
@@ -1171,7 +1170,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* mock */
         if (principal != null) {
-            when(userService.findById(user.getId()))
+            when(userService.findByUsername(user.getUsername()))
                     .thenReturn(user);
         }
         if (database != null) {
@@ -1218,12 +1217,12 @@ public class TableEndpointUnitTest extends BaseTest {
                     .findById(any(Database.class), eq(tableId));
         }
         if (user != null) {
-            when(userService.findById(user.getId()))
+            when(userService.findByUsername(user.getUsername()))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .findById(any(UUID.class));
+                    .findByUsername(anyString());
         }
         if (access != null) {
             when(accessService.find(any(Database.class), any(User.class)))
@@ -1280,7 +1279,7 @@ public class TableEndpointUnitTest extends BaseTest {
         }
         if (principal != null) {
             log.trace("mock user {}", user);
-            when(userService.findById(user.getId()))
+            when(userService.findByUsername(user.getUsername()))
                     .thenReturn(user);
         }
         if (access != null) {

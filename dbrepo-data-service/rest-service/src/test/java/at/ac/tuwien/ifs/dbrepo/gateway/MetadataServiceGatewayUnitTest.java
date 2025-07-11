@@ -416,7 +416,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     }
 
     @Test
-    public void getUserById_unavailable_fails() {
+    public void getUserByUsername_unavailable_fails() {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
@@ -425,12 +425,12 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            metadataServiceGateway.getUserById(USER_1_ID);
+            metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
         });
     }
 
     @Test
-    public void getUserById_succeeds() throws RemoteUnavailableException, UserNotFoundException,
+    public void getUserByUsername_succeeds() throws RemoteUnavailableException, UserNotFoundException,
             MetadataServiceException {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
@@ -443,14 +443,14 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                         .body(USER_1_DTO));
 
         /* test */
-        final UserDto response = metadataServiceGateway.getUserById(USER_1_ID);
+        final UserDto response = metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getUsername());
         assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getPassword());
     }
 
     @Test
-    public void getUserById_notFound_fails() {
+    public void getUserByUsername_notFound_fails() {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
@@ -459,12 +459,12 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            metadataServiceGateway.getUserById(USER_1_ID);
+            metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
         });
     }
 
     @Test
-    public void getUserById_statusCode_fails() {
+    public void getUserByUsername_statusCode_fails() {
 
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
@@ -473,12 +473,12 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getUserById(USER_1_ID);
+            metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
         });
     }
 
     @Test
-    public void getUserById_headerMissing_fails() {
+    public void getUserByUsername_headerMissing_fails() {
         final List<String> customHeaders = List.of("X-Username", "X-Password");
 
         for (int i = 0; i < customHeaders.size(); i++) {
@@ -493,13 +493,13 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
             /* test */
             assertThrows(MetadataServiceException.class, () -> {
-                metadataServiceGateway.getUserById(USER_1_ID);
+                metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
             });
         }
     }
 
     @Test
-    public void getUserById_emptyBody_fails() {
+    public void getUserByUsername_emptyBody_fails() {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
@@ -512,7 +512,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getUserById(USER_1_ID);
+            metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
         });
     }
 
@@ -525,7 +525,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                         .body(DATABASE_1_USER_1_READ_ACCESS_DTO));
 
         /* test */
-        final DatabaseAccessDto response = metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID);
+        final DatabaseAccessDto response = metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
     }
 
     @Test
@@ -538,7 +538,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID);
+            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -552,7 +552,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID);
+            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -566,7 +566,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID);
+            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -580,7 +580,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID);
+            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -594,7 +594,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID);
+            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 

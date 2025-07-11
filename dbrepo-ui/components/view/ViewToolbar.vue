@@ -113,7 +113,7 @@ export default {
       if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
+      return this.hasReadAccess || this.view.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canViewSchema () {
       if (!this.view) {
@@ -125,13 +125,13 @@ export default {
       if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
+      return this.hasReadAccess || this.view.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canViewSettings () {
       if (!this.cacheUser || !this.view) {
         return false
       }
-      return this.view.owner.id === this.cacheUser.uid
+      return this.view.owner.username === this.cacheUser.preferred_username
     },
     canCreatePid () {
       if (!this.roles || !this.cacheUser || !this.view) {

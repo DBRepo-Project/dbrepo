@@ -1044,7 +1044,7 @@ export default {
       if (!this.identifier.owner) {
         return true
       }
-      return this.identifier.owner.id === this.cacheUser.uid
+      return this.identifier.owner.username === this.cacheUser.preferred_username
     },
     formValid () {
       /* somehow Vue3/Vuetify3 validation form is broken for arrays */
@@ -1109,7 +1109,7 @@ export default {
       if (!this.roles || !this.identifier || !this.identifier.owner || !this.cacheUser) {
         return false
       }
-      return this.roles.includes('delete-identifier') && this.identifier.owner.id === this.cacheUser.uid && !this.isPublished
+      return this.roles.includes('delete-identifier') && this.identifier.owner.username === this.cacheUser.preferred_username && !this.isPublished
     },
     canPublish () {
       if (!this.roles || !this.identifier || !this.roles.includes('publish-identifier') || this.isPublished || !this.identifier.id) {

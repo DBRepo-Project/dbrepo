@@ -92,7 +92,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             MetadataServiceException, UserNotFoundException {
 
         /* mock */
-        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
                 .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
@@ -306,7 +306,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(mock);
         when(subsetService.findById(any(DatabaseDto.class), any(UUID.class)))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), any(UUID.class)))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), anyString()))
                 .thenReturn(QUERY_5_ID);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -337,7 +337,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), eq(USER_1_ID)))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), eq(USER_1_USERNAME)))
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(DatabaseDto.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_DTO);
@@ -426,7 +426,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(any(DatabaseDto.class), any(UUID.class)))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), any(UUID.class)))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), anyString()))
                 .thenReturn(QUERY_1_ID);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
@@ -588,7 +588,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_1_ID);
+                .getAccess(DATABASE_1_ID, USER_1_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -633,7 +633,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
@@ -670,7 +670,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
         /* mock */
         doThrow(NotAllowedException.class)
                 .when(cacheService)
-                .getAccess(DATABASE_3_ID, USER_3_ID);
+                .getAccess(DATABASE_3_ID, USER_3_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -687,7 +687,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         doThrow(DatabaseNotFoundException.class)
                 .when(cacheService)
@@ -710,7 +710,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
         /* mock */
         when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(cacheService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(cacheService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)

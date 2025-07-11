@@ -17,13 +17,13 @@ export const useUserService = (): any => {
     });
   }
 
-  async function findOne(id: string): Promise<UserDto> {
+  async function findOne(username: string): Promise<UserDto> {
     const axios = useAxiosInstance()
-    console.debug('find user with id', id)
+    console.debug('find user', username)
     return new Promise<UserDto>((resolve, reject) => {
-      axios.get<UserDto>(`/api/user/${id}`)
+      axios.get<UserDto>(`/api/user/${username}`)
         .then((response) => {
-          console.info('Found user with id', id);
+          console.info('Found user', username);
           resolve(response.data);
         })
         .catch((error) => {
@@ -33,13 +33,13 @@ export const useUserService = (): any => {
     });
   }
 
-  async function update(id: string, data: UserUpdateDto): Promise<UserDto> {
+  async function update(username: string, data: UserUpdateDto): Promise<UserDto> {
     const axios = useAxiosInstance()
-    console.debug('update user with id', id)
+    console.debug('update user ', username)
     return new Promise<UserDto>((resolve, reject) => {
-      axios.put<UserDto>(`/api/user/${id}`, data)
+      axios.put<UserDto>(`/api/user/${username}`, data)
         .then((response) => {
-          console.info('Updated user with id', id)
+          console.info('Updated user ', username)
           resolve(response.data)
         }).catch((error) => {
         console.error('Failed to update user', error)
@@ -63,13 +63,13 @@ export const useUserService = (): any => {
     })
   }
 
-  async function updatePassword(id: string, data: UserPasswordDto): Promise<UserDto> {
+  async function updatePassword(username: string, data: UserPasswordDto): Promise<UserDto> {
     const axios = useAxiosInstance()
-    console.debug('update user password for user with id', id)
+    console.debug('update user password for user ', username)
     return new Promise<UserDto>((resolve, reject) => {
-      axios.put<UserDto>(`/api/user/${id}/password`, data)
+      axios.put<UserDto>(`/api/user/${username}/password`, data)
         .then((response) => {
-          console.info('Update user password for user with id', id)
+          console.info('Update user password for user ', username)
           resolve(response.data)
         }).catch((error) => {
         console.error('Failed to update user password', error)

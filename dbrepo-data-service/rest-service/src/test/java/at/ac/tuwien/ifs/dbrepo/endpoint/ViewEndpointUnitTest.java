@@ -282,7 +282,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(VIEW_1_DTO);
         when(cacheService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_DTO);
-        when(cacheService.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(cacheService.getAccess(DATABASE_1_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
@@ -307,7 +307,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(VIEW_1_DTO);
         when(cacheService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(cacheService.getAccess(DATABASE_1_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
@@ -331,7 +331,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(VIEW_3_DTO);
         when(cacheService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(cacheService.getAccess(DATABASE_1_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -362,7 +362,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn("GET");
         doThrow(NotAllowedException.class)
                 .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_4_ID);
+                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -396,7 +396,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(VIEW_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_4_ID);
+                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -414,7 +414,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(VIEW_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_4_ID);
+                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
