@@ -347,7 +347,7 @@ export default {
       if (!this.cacheUser) {
         return false
       }
-      return this.database.identifiers.filter(i => i.owner.id === this.cacheUser.uid).length > 0
+      return this.database.identifiers.filter(i => i.owner.username === this.cacheUser.preferred_username).length > 0
     },
     databaseSize () {
       if (!this.database) {

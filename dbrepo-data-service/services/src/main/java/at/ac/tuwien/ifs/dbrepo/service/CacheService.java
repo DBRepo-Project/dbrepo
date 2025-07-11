@@ -103,13 +103,13 @@ public interface CacheService {
      * Gets credentials for a container with given id either from the cache (if not expired) or retrieves them from the
      * Metadata Service.
      *
-     * @param id The id.
+     * @param username The username.
      * @return The credentials.
      * @throws UserNotFoundException      The user was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    UserDto getUser(UUID id) throws RemoteUnavailableException, MetadataServiceException,
+    UserDto getUser(String username) throws RemoteUnavailableException, MetadataServiceException,
             UserNotFoundException;
 
     /**
@@ -117,12 +117,12 @@ public interface CacheService {
      * retrieves them from the Metadata Service.
      *
      * @param databaseId The database id.
-     * @param userId     The user id.
+     * @param username     The username.
      * @return The credentials.
      * @throws NotAllowedException        The access was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
+    DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException,
             MetadataServiceException, NotAllowedException;
 }

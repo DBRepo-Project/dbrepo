@@ -233,7 +233,7 @@ export default {
         language: this.model.language
       }
       const userService = useUserService()
-      userService.update(this.cacheUser.uid, payload)
+      userService.update(this.cacheUser.preferred_username, payload)
         .then(() => {
           console.info('Updated user information')
           const toast = useToastInstance()
@@ -274,7 +274,7 @@ export default {
       }
       this.model = {
         id: this.cacheUser.uid,
-        username: this.cacheUser.username,
+        username: this.cacheUser.preferred_username,
         firstname: this.cacheUser.given_name,
         lastname: this.cacheUser.family_name,
         orcid: this.cacheUser.orcid,

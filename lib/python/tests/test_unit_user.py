@@ -51,19 +51,19 @@ class UserUnitTest(unittest.TestCase):
             exp = User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                        attributes=UserAttributes(theme='dark', language='en'))
             # mock
-            mock.get('/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16',
+            mock.get('/api/user/user1',
                      json=exp.model_dump())
             # test
-            response = RestClient().get_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16')
+            response = RestClient().get_user(username='user1')
             self.assertEqual(exp, response)
 
     def test_get_user_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16', status_code=404)
+            mock.get('/api/user/user1', status_code=404)
             # test
             try:
-                response = RestClient().get_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16')
+                response = RestClient().get_user(username='user1')
             except NotExistsError as e:
                 pass
 
@@ -71,11 +71,11 @@ class UserUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise', given_name='Martin')
             # mock
-            mock.put('/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16', status_code=202,
+            mock.put('/api/user/user1', status_code=202,
                      json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
-            response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
+            response = client.update_user(username='user1', firstname='Martin',
                                           language='en', theme='light')
             self.assertEqual(exp, response)
 
@@ -115,17 +115,17 @@ class UserUnitTest(unittest.TestCase):
             mock.put('/api/user/f27921d4-b05f-4e21-a122-4953a6a779a2', status_code=202)
             # test
             try:
-                RestClient().update_user(user_id='f27921d4-b05f-4e21-a122-4953a6a779a2', theme='dark', language='en')
+                RestClient().update_user(username='foo', theme='dark', language='en')
             except AuthenticationError:
                 pass
 
     def test_update_user_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/user/f27921d4-b05f-4e21-a122-4953a6a779a2', status_code=400)
+            mock.put('/api/user/foo', status_code=400)
             # test
             try:
-                RestClient(username='foo', password='bar').update_user(user_id='f27921d4-b05f-4e21-a122-4953a6a779a2',
+                RestClient(username='foo', password='bar').update_user(username='foo',
                                                                        theme='dark', language='en')
             except MalformedError:
                 pass
@@ -133,10 +133,10 @@ class UserUnitTest(unittest.TestCase):
     def test_update_user_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/user/f27921d4-b05f-4e21-a122-4953a6a779a2', status_code=403)
+            mock.put('/api/user/foo', status_code=403)
             # test
             try:
-                RestClient(username='foo', password='bar').update_user(user_id='f27921d4-b05f-4e21-a122-4953a6a779a2',
+                RestClient(username='foo', password='bar').update_user(username='foo',
                                                                        theme='dark', language='en')
             except ForbiddenError:
                 pass
@@ -144,10 +144,10 @@ class UserUnitTest(unittest.TestCase):
     def test_update_user_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/user/f27921d4-b05f-4e21-a122-4953a6a779a2', status_code=404)
+            mock.put('/api/user/foo', status_code=404)
             # test
             try:
-                RestClient(username='foo', password='bar').update_user(user_id='f27921d4-b05f-4e21-a122-4953a6a779a2',
+                RestClient(username='foo', password='bar').update_user(username='foo',
                                                                        theme='dark', language='en')
             except NotExistsError:
                 pass
@@ -155,10 +155,10 @@ class UserUnitTest(unittest.TestCase):
     def test_update_user_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/user/f27921d4-b05f-4e21-a122-4953a6a779a2', status_code=200)
+            mock.put('/api/user/foo', status_code=200)
             # test
             try:
-                RestClient(username='foo', password='bar').update_user(user_id='f27921d4-b05f-4e21-a122-4953a6a779a2',
+                RestClient(username='foo', password='bar').update_user(username='foo',
                                                                        theme='dark', language='en')
             except ResponseCodeError:
                 pass

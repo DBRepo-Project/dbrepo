@@ -53,12 +53,12 @@ public class AccessEndpoint extends AbstractEndpoint {
         this.dashboardService = dashboardService;
     }
 
-    @PostMapping("/{userId}")
+    @PostMapping("/{username}")
     @Transactional
     @Observed(name = "dbrepo_access_give")
     @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access",
-            description = "Give a user with given id access to some database with given id. Requires role `create-database-access`.",
+            description = "Give a user with given username access to some database with given id. Requires role `create-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -93,24 +93,24 @@ public class AccessEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                    @PathVariable("userId") UUID userId,
+                                                    @PathVariable("username") String username,
                                                     @Valid @RequestBody CreateAccessDto data,
                                                     Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException,
             DashboardServiceException, DashboardServiceConnectionException {
-        log.debug("endpoint give access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
+        log.debug("endpoint give access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
-        final User user = userService.findById(userId);
+        final User user = userService.findByUsername(username);
         try {
             accessService.find(database, user);
-            log.error("Failed to create access to user with id {}: already has access", userId);
-            throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
+            log.error("Failed to create access to user {}: already has access", username);
+            throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
         } catch (AccessNotFoundException e) {
             /* ignore */
         }
@@ -120,12 +120,12 @@ public class AccessEndpoint extends AbstractEndpoint {
                 .build();
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/{username}")
     @Transactional
     @Observed(name = "dbrepo_access_modify")
     @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access",
-            description = "Modifies access of a user with given id to database with given id. Requires role `update-database-access`.",
+            description = "Modifies access of a user with given username to database with given id. Requires role `update-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -157,24 +157,24 @@ public class AccessEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                       @PathVariable("userId") UUID userId,
+                                       @PathVariable("username") String username,
                                        @Valid @RequestBody CreateAccessDto data,
                                        Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException,
             DashboardServiceException, DashboardServiceConnectionException {
-        log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}", databaseId, userId,
+        log.debug("endpoint modify database access, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
-        if (database.getOwner().getId().equals(userId)) {
+        if (database.getOwner().getUsername().equals(username)) {
             log.error("Failed to update access: the owner must have write-all access");
             throw new NotAllowedException("Failed to update access: the owner must have write-all access");
         }
-        final User user = userService.findById(userId);
+        final User user = userService.findByUsername(username);
         if (user.getIsInternal()) {
             log.error("Failed to update access: cannot modify access of internal users");
             throw new NotAllowedException("Failed to update access: cannot modify access of internal users");
@@ -186,12 +186,12 @@ public class AccessEndpoint extends AbstractEndpoint {
                 .build();
     }
 
-    @RequestMapping(value = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_access_get")
     @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('check-foreign-database-access')")
     @Operation(summary = "Find/Check access",
-            description = "Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
+            description = "Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -211,11 +211,11 @@ public class AccessEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                  @PathVariable("userId") UUID userId,
+                                                  @PathVariable("username") String username,
                                                   Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
-        log.debug("endpoint get database access, databaseId={}, userId={}", databaseId, userId);
-        if (!userId.equals(getId(principal))) {
+        log.debug("endpoint get database access, databaseId={}, username={}", databaseId, username);
+        if (!username.equals(getUsername(principal))) {
             if (!hasRole(principal, "check-foreign-database-access")) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
@@ -223,17 +223,17 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.trace("principal is allowed to check foreign user access");
         }
         final Database database = databaseService.findById(databaseId);
-        final User user = userService.findById(userId);
+        final User user = userService.findByUsername(username);
         final DatabaseAccess access = accessService.find(database, user);
         return ResponseEntity.ok(metadataMapper.databaseAccessToDatabaseAccessDto(access));
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{username}")
     @Transactional
     @Observed(name = "dbrepo_access_delete")
     @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Delete access",
-            description = "Delete access of a user with id to a database with id. Requires role `delete-database-access`.",
+            description = "Delete access of a user with given username to a database with id. Requires role `delete-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -265,22 +265,22 @@ public class AccessEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                       @PathVariable("userId") UUID userId,
+                                       @PathVariable("username") String username,
                                        Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
-        log.debug("endpoint revoke database access, databaseId={}, userId={}", databaseId, userId);
+        log.debug("endpoint revoke database access, databaseId={}, username={}", databaseId, username);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getId().equals(getId(principal))) {
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
         }
-        if (database.getOwner().getId().equals(userId)) {
+        if (database.getOwner().getUsername().equals(username)) {
             log.error("Failed to revoke access: the owner must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the owner must have write-all access");
         }
-        final User user = userService.findById(userId);
+        final User user = userService.findByUsername(username);
         if (user.getIsInternal()) {
             log.error("Failed to revoke access: the internal user must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the internal user must have write-all access");

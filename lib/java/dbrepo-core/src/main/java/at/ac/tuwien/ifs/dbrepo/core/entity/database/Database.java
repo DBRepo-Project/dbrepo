@@ -32,10 +32,10 @@ import java.util.UUID;
 @NamedQueries({
         @NamedQuery(name = "Database.findAllDesc", query = "select distinct d from Database d order by d.created desc"),
         @NamedQuery(name = "Database.findAllByInternalNameDesc", query = "select distinct d from Database d where d.internalName = ?1 order by d.created desc"),
-        @NamedQuery(name = "Database.findAllAtLestReadAccessDesc", query = "select distinct d from Database d where exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.created desc"),
+        @NamedQuery(name = "Database.findAllAtLestReadAccessDesc", query = "select distinct d from Database d where exists(select a.hdbid from DatabaseAccess a join User u on u.id = a.huserid where u.username = ?1 and a.hdbid = d.id) order by d.created desc"),
         @NamedQuery(name = "Database.findAllPublicOrSchemaPublicDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true order by d.created desc"),
-        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true or exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.created desc"),
-        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc", query = "select distinct d from Database d where (d.isPublic = true or d.isSchemaPublic = true) and d.internalName = ?2 or exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.created desc"),
+        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true or exists(select a.hdbid from DatabaseAccess a join User u on u.id = a.huserid and u.username = ?1 and a.hdbid = d.id) order by d.created desc"),
+        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc", query = "select distinct d from Database d where (d.isPublic = true or d.isSchemaPublic = true) and d.internalName = ?2 or exists(select a.hdbid from DatabaseAccess a join User u on u.id = a.huserid and u.username = ?1 and a.hdbid = d.id) order by d.created desc"),
         @NamedQuery(name = "Database.findAllPublicOrSchemaPublicByInternalNameDesc", query = "select distinct d from Database d where (d.isPublic = true or d.isSchemaPublic = true) and d.internalName = ?1 order by d.created desc"),
 })
 public class Database implements Serializable {

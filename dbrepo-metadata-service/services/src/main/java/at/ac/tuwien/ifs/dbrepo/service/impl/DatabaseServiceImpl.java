@@ -65,13 +65,13 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName) {
-        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc(userId, internalName);
+    public List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(String username, String internalName) {
+        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc(username, internalName);
     }
 
     @Override
-    public List<Database> findAllPublicOrSchemaPublicOrReadAccess(UUID userId) {
-        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessDesc(userId);
+    public List<Database> findAllPublicOrSchemaPublicOrReadAccess(String username) {
+        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessDesc(username);
     }
 
     @Override
@@ -142,7 +142,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Transactional(readOnly = true)
     public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
-        final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getId())
+        final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getUsername())
                 .stream()
                 .distinct()
                 .toList();

@@ -65,7 +65,7 @@ public class EndpointValidator extends AbstractEndpoint {
         if (isSystem(principal)) {
             return;
         }
-        final DatabaseAccess access = accessService.find(database, userService.findById(getId(principal)));
+        final DatabaseAccess access = accessService.find(database, userService.findByUsername(getUsername(principal)));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.error("Access not allowed: no write access");

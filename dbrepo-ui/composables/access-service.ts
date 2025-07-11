@@ -1,11 +1,11 @@
 import {axiosErrorToApiError} from '@/utils'
 
 export const useAccessService = (): any => {
-  async function findOne(databaseId: string, userId: string): Promise<DatabaseAccessDto> {
+  async function findOne(databaseId: string, username: string): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
     console.debug('find access of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
-      axios.get<DatabaseAccessDto>(`/api/database/${databaseId}/access/${userId}`)
+      axios.get<DatabaseAccessDto>(`/api/database/${databaseId}/access/${username}`)
         .then((response) => {
           console.info('Found access of database with id', databaseId)
           resolve(response.data)
@@ -17,13 +17,13 @@ export const useAccessService = (): any => {
     })
   }
 
-  async function create(databaseId: string, userId: string, payload: DatabaseGiveAccessDto): Promise<DatabaseAccessDto> {
+  async function create(databaseId: string, username: string, payload: DatabaseGiveAccessDto): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
-    console.debug('create access for user with id', userId, 'of database with id', databaseId)
+    console.debug('create access for user with id', username, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
-      axios.post<DatabaseAccessDto>(`/api/database/${databaseId}/access/${userId}`, payload)
+      axios.post<DatabaseAccessDto>(`/api/database/${databaseId}/access/${username}`, payload)
         .then((response) => {
-          console.info('Created access for user with id', userId, 'of database with id', databaseId)
+          console.info('Created access for user', username, 'of database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
@@ -33,13 +33,13 @@ export const useAccessService = (): any => {
     })
   }
 
-  async function update(databaseId: string, userId: string, payload: DatabaseModifyAccessDto): Promise<DatabaseAccessDto> {
+  async function update(databaseId: string, username: string, payload: DatabaseModifyAccessDto): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
-    console.debug('update access for user with id', userId, 'of database with id', databaseId)
+    console.debug('update access for user', username, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
-      axios.put<DatabaseAccessDto>(`/api/database/${databaseId}/access/${userId}`, payload)
+      axios.put<DatabaseAccessDto>(`/api/database/${databaseId}/access/${username}`, payload)
         .then((response) => {
-          console.info('Updated access for user with id', userId, 'of database with id', databaseId)
+          console.info('Updated access for user', username, 'of database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
@@ -49,13 +49,13 @@ export const useAccessService = (): any => {
     })
   }
 
-  async function remove(databaseId: string, userId: string): Promise<DatabaseAccessDto> {
+  async function remove(databaseId: string, username: string): Promise<DatabaseAccessDto> {
     const axios = useAxiosInstance()
-    console.debug('remove access for user with id', userId, 'of database with id', databaseId)
+    console.debug('remove access for user', username, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
-      axios.delete<DatabaseAccessDto>(`/api/database/${databaseId}/access/${userId}`)
+      axios.delete<DatabaseAccessDto>(`/api/database/${databaseId}/access/${username}`)
         .then((response) => {
-          console.info('Removed access for user with id', userId, 'of database with id', databaseId)
+          console.info('Removed access for user', username, 'of database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {

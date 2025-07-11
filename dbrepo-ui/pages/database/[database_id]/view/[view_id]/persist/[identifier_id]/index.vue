@@ -83,7 +83,7 @@ export default {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.view.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access) && this.view.owner.username === this.cacheUser.preferred_username
     },
     canUpdateIdentifier () {
       if (!this.identifier || !this.roles) {
@@ -95,7 +95,7 @@ export default {
       if (!this.roles.includes('create-identifier')) {
         return false
       }
-      return this.identifier.owner.id === this.cacheUser.uid
+      return this.identifier.owner.username === this.cacheUser.preferred_username
     }
   }
 }

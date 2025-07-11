@@ -290,7 +290,7 @@ public class TableEndpoint extends RestEndpoint {
                 throw new NotAllowedException("Failed to find table data: authentication required");
             }
             if (!isSystem(principal)) {
-                cacheService.getAccess(databaseId, getId(principal));
+                cacheService.getAccess(databaseId, getUsername(principal));
             }
         }
         final DatabaseDto database = cacheService.getDatabase(databaseId);
@@ -377,8 +377,8 @@ public class TableEndpoint extends RestEndpoint {
             StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getId(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
+        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.createTuple(database, table, data);
@@ -432,8 +432,8 @@ public class TableEndpoint extends RestEndpoint {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
         final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getId(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
+        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.updateTuple(database, table, data);
@@ -487,8 +487,8 @@ public class TableEndpoint extends RestEndpoint {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
         final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getId(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
+        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.deleteTuple(database, table, data);
@@ -553,7 +553,7 @@ public class TableEndpoint extends RestEndpoint {
                 log.error("Failed to find table history: no authentication found");
                 throw new NotAllowedException("Failed to find table history: no authentication found");
             }
-            cacheService.getAccess(databaseId, getId(principal));
+            cacheService.getAccess(databaseId, getUsername(principal));
         }
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
@@ -661,8 +661,8 @@ public class TableEndpoint extends RestEndpoint {
                 .addKeyValue("data", data)
                 .log();
         final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getId(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
+        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());

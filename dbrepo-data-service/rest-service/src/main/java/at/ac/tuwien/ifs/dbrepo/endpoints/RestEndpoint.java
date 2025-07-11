@@ -9,7 +9,6 @@ import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public abstract class RestEndpoint {
 
@@ -33,7 +32,7 @@ public abstract class RestEndpoint {
                 .anyMatch(a -> a.getAuthority().equals("system"));
     }
 
-    public UUID getId(Principal principal) {
+    public String getUsername(Principal principal) {
         if (principal == null) {
             return null;
         }
@@ -42,7 +41,7 @@ public abstract class RestEndpoint {
         if (user.getId() == null) {
             return null;
         }
-        return UUID.fromString(user.getId());
+        return user.getUsername();
     }
 
     public List<Map<String, Object>> transform(Dataset<Row> dataset) {

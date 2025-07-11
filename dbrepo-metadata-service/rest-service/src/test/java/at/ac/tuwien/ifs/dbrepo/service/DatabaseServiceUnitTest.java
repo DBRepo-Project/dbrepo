@@ -88,7 +88,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
             DataServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findAllAtLestReadAccessDesc(USER_1_ID))
+        when(databaseRepository.findAllAtLestReadAccessDesc(USER_1_USERNAME))
                 .thenReturn(List.of(DATABASE_1));
         doNothing()
                 .when(dataServiceGateway)

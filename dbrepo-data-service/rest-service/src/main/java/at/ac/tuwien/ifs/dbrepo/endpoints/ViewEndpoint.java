@@ -297,7 +297,7 @@ public class ViewEndpoint extends RestEndpoint {
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
             if (!isSystem(principal)) {
-                cacheService.getAccess(databaseId, getId(principal));
+                cacheService.getAccess(databaseId, getUsername(principal));
             }
         }
         final DatabaseDto database = cacheService.getDatabase(databaseId, true);

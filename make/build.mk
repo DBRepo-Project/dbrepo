@@ -3,7 +3,6 @@
 .PHONY: build-images
 build-images: build-java-lib ## Build Docker images.
 	docker compose build
-	docker build -t dbrepo-compute-service:latest ./dbrepo-compute-service
 
 .PHONY: build-jupyter-image
 build-jupyter-image:

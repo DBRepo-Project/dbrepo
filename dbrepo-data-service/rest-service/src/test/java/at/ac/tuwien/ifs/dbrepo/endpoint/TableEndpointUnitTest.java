@@ -358,7 +358,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_2_ID);
+                .getAccess(DATABASE_1_ID, USER_2_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -415,7 +415,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         doThrow(RemoteUnavailableException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_2_ID);
+                .getAccess(DATABASE_1_ID, USER_2_USERNAME);
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
@@ -436,7 +436,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DatabaseAccessDto.builder()
                         .user(USER_2_BRIEF_DTO)
                         .huserid(USER_2_ID)
@@ -486,7 +486,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -561,7 +561,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -587,7 +587,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -616,7 +616,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -639,7 +639,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -666,7 +666,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
@@ -693,7 +693,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -777,7 +777,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -806,7 +806,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -838,7 +838,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -945,7 +945,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -974,7 +974,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1004,7 +1004,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1076,7 +1076,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -1100,7 +1100,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1128,7 +1128,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1157,7 +1157,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1182,7 +1182,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1254,7 +1254,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_4_ID);
+                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1271,7 +1271,7 @@ public class TableEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DATABASE_1_USER_2_READ_ACCESS_DTO);
         when(tableService.history(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, 10L))
                 .thenReturn(List.of());
@@ -1355,7 +1355,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DatabaseAccessDto.builder()
                         .user(USER_2_BRIEF_DTO)
                         .huserid(USER_2_ID)
@@ -1386,7 +1386,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_4_ID);
+                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1466,7 +1466,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1532,7 +1532,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1561,7 +1561,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1588,7 +1588,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -1614,7 +1614,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1636,7 +1636,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1662,7 +1662,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_8_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
@@ -1686,7 +1686,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO);
 
         /* test */
@@ -1710,7 +1710,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_2_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1732,7 +1732,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1756,7 +1756,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_2_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DATABASE_1_USER_2_READ_ACCESS_DTO);
 
         /* test */

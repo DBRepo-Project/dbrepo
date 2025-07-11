@@ -6,8 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
-import at.ac.tuwien.ifs.dbrepo.endpoints.RestEndpoint;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.endpoints.RestEndpoint;
 import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -68,7 +67,7 @@ public class EndpointValidator extends RestEndpoint {
         if (isSystem(principal)) {
             return;
         }
-        final DatabaseAccessDto access = credentialService.getAccess(database.getId(), getId(principal));
+        final DatabaseAccessDto access = credentialService.getAccess(database.getId(), getUsername(principal));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessTypeDto.WRITE_OWN) || access.getType().equals(AccessTypeDto.WRITE_ALL))) {
             log.error("Access not allowed: no write access");
@@ -76,16 +75,17 @@ public class EndpointValidator extends RestEndpoint {
         }
     }
 
-    public void validateOnlyWriteOwnOrWriteAllAccess(AccessTypeDto access, UUID owner, UUID user) throws NotAllowedException {
+    public void validateOnlyWriteOwnOrWriteAllAccess(AccessTypeDto access, String owner, String username)
+            throws NotAllowedException {
         if (access.equals(AccessTypeDto.READ)) {
             log.error("Failed to create table data: no write access");
             throw new NotAllowedException("Failed to create table data: no write access");
         }
-        if (access.equals(AccessTypeDto.WRITE_OWN) && !owner.equals(user)) {
+        if (access.equals(AccessTypeDto.WRITE_OWN) && !owner.equals(username)) {
             log.error("Failed to create table data: insufficient table write access");
             throw new NotAllowedException("Failed to create table data: insufficient table write access");
         }
-        log.trace("sufficient write access {} for user {} and owner {}", access, user, owner);
+        log.trace("sufficient write access {} for username {} and owner {}", access, username, owner);
     }
 
 

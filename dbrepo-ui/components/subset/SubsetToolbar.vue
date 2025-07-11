@@ -150,7 +150,7 @@ export default {
       if (!this.cacheUser || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.cacheUser.uid || (this.subset.owner.id === this.cacheUser.uid && this.hasReadAccess)
+      return this.database.owner.username === this.cacheUser.preferred_username || (this.subset.owner.username === this.cacheUser.preferred_username && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {

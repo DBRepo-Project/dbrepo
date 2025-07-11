@@ -40,9 +40,9 @@ public class AccessEndpoint extends RestEndpoint {
         this.accessService = accessService;
     }
 
-    @PostMapping("/{userId}")
+    @PostMapping("/{username}")
     @PreAuthorize("hasAuthority('system')")
-    @Operation(summary = "Give access",
+    @Operation(summary = "Give access to a user with given username.",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
@@ -75,17 +75,17 @@ public class AccessEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> create(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                       @PathVariable("userId") UUID userId,
+                                       @PathVariable("username") String username,
                                        @Valid @RequestBody CreateAccessDto data)
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException,
             AccessNotFoundException {
-        log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
+        log.debug("endpoint give access to database, databaseId={}, username={}", databaseId, username);
         final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final UserDto user = cacheService.getUser(userId);
-        if (database.getAccesses().stream().anyMatch(a -> a.getUser().getId().equals(userId))) {
-            log.error("Failed to create access to user with id {}: already has access", userId);
-            throw new AccessNotFoundException("Failed to create access to user with id " + userId + ": already has access");
+        final UserDto user = cacheService.getUser(username);
+        if (database.getAccesses().stream().anyMatch(a -> a.getUser().getUsername().equals(username))) {
+            log.error("Failed to create access to user {}: already has access", username);
+            throw new AccessNotFoundException("Failed to create access to user " + username + ": already has access");
         }
         try {
             accessService.create(database, user, data.getType());
@@ -97,7 +97,7 @@ public class AccessEndpoint extends RestEndpoint {
         }
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/{username}")
     @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Update access",
             security = {@SecurityRequirement(name = "basicAuth")},
@@ -132,17 +132,17 @@ public class AccessEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                       @PathVariable("userId") UUID userId,
+                                       @PathVariable("username") String username,
                                        @Valid @RequestBody CreateAccessDto access) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
             MetadataServiceException, AccessNotFoundException {
-        log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
+        log.debug("endpoint modify access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 access.getType());
         final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final UserDto user = cacheService.getUser(userId);
-        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
-            log.error("Failed to update access to user with id {}: no access", userId);
-            throw new AccessNotFoundException("Failed to update access to user with id " + userId + ": no access");
+        final UserDto user = cacheService.getUser(username);
+        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getUsername().equals(username))) {
+            log.error("Failed to update access to user {}: no access", username);
+            throw new AccessNotFoundException("Failed to update access to user " + username + ": no access");
         }
         try {
             accessService.update(database, user, access.getType());
@@ -154,9 +154,9 @@ public class AccessEndpoint extends RestEndpoint {
         }
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{username}")
     @PreAuthorize("hasAuthority('system')")
-    @Operation(summary = "Revoke access",
+    @Operation(summary = "Revoke access of user with given username",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
@@ -189,15 +189,15 @@ public class AccessEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                       @PathVariable("userId") UUID userId) throws DatabaseUnavailableException,
+                                       @PathVariable("username") String username) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
             MetadataServiceException, AccessNotFoundException {
-        log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
+        log.debug("endpoint revoke access to database, databaseId={}, username={}", databaseId, username);
         final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final UserDto user = cacheService.getUser(userId);
-        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
-            log.error("Failed to delete access to user with id {}: no access", userId);
-            throw new AccessNotFoundException("Failed to delete access to user with id " + userId + ": no access");
+        final UserDto user = cacheService.getUser(username);
+        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getUsername().equals(username))) {
+            log.error("Failed to delete access to user {}: no access", username);
+            throw new AccessNotFoundException("Failed to delete access to user " + username + ": no access");
         }
         try {
             accessService.delete(database, user);

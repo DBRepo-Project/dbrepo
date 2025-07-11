@@ -7,9 +7,9 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.impl.CacheServiceImpl;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,11 +146,11 @@ public class CredentialServiceUnitTest extends BaseTest {
             UserNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
-        final UserDto response = credentialService.getUser(USER_1_ID);
+        final UserDto response = credentialService.getUser(USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(USER_1_ID, response.getId());
     }
@@ -160,13 +160,13 @@ public class CredentialServiceUnitTest extends BaseTest {
             UserNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO)
                 .thenThrow(RuntimeException.class) /* should never be thrown */;
-        credentialService.getUser(USER_1_ID);
+        credentialService.getUser(USER_1_USERNAME);
 
         /* test */
-        final UserDto response = credentialService.getUser(USER_1_ID);
+        final UserDto response = credentialService.getUser(USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(USER_1_ID, response.getId());
     }
@@ -176,17 +176,17 @@ public class CredentialServiceUnitTest extends BaseTest {
             InterruptedException, UserNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_2_DTO) /* needs to be different id for test case */
                 .thenReturn(USER_1_DTO);
 
         /* pre-condition */
-        final UserDto tmp = credentialService.getUser(USER_1_ID);
+        final UserDto tmp = credentialService.getUser(USER_1_USERNAME);
         assertNotEquals(USER_1_ID, tmp.getId());
         Thread.sleep(5000);
 
         /* test */
-        final UserDto response = credentialService.getUser(USER_1_ID);
+        final UserDto response = credentialService.getUser(USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(USER_1_ID, response.getId());
     }
@@ -196,11 +196,11 @@ public class CredentialServiceUnitTest extends BaseTest {
             NotAllowedException {
 
         /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
 
         /* test */
-        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
+        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(DATABASE_1_ID, response.getHdbid());
         assertEquals(USER_1_ID, response.getHuserid());
@@ -210,13 +210,13 @@ public class CredentialServiceUnitTest extends BaseTest {
     public void getAccess_succeeds() throws RemoteUnavailableException, MetadataServiceException, NotAllowedException {
 
         /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO)
                 .thenThrow(RuntimeException.class) /* should never be thrown */;
-        credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
+        credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
 
         /* test */
-        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
+        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(DATABASE_1_ID, response.getHdbid());
         assertEquals(USER_1_ID, response.getHuserid());
@@ -227,18 +227,18 @@ public class CredentialServiceUnitTest extends BaseTest {
             InterruptedException, NotAllowedException {
 
         /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME))
                 .thenReturn(DATABASE_2_USER_2_READ_ACCESS_DTO) /* needs to be different id for test case */
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
 
         /* pre-condition */
-        final DatabaseAccessDto tmp = credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
+        final DatabaseAccessDto tmp = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotEquals(DATABASE_1_ID, tmp.getHdbid());
         assertNotEquals(USER_1_ID, tmp.getHuserid());
         Thread.sleep(5000);
 
         /* test */
-        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_ID);
+        final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(DATABASE_1_ID, response.getHdbid());
         assertEquals(USER_1_ID, response.getHuserid());

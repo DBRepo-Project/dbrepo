@@ -120,9 +120,9 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find units: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_user(self, user_id: str) -> User:
+    def get_user(self, username: str) -> User:
         """
-        Get a user with given user id.
+        Get a user with the given username.
 
         :returns: The user, if successful.
 
@@ -130,7 +130,7 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the user does not exist.
         """
-        url = f'/api/user/{user_id}'
+        url = f'/api/user/{username}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -142,12 +142,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find user: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def update_user(self, user_id: str, theme: str, language: str, firstname: str = None, lastname: str = None,
+    def update_user(self, username: str, theme: str, language: str, firstname: str = None, lastname: str = None,
                     affiliation: str = None, orcid: str = None) -> UserBrief:
         """
-        Updates a user with given user id.
+        Updates a user with the given username.
 
-        :param user_id: The user id of the user that should be updated.
+        :param username: The username of the user that should be updated.
         :param theme: The user theme. One of "light", "dark", "light-contrast", "dark-contrast".
         :param language: The user language localization. One of "en", "de".
         :param firstname: The updated given name. Optional.
@@ -162,7 +162,7 @@ class RestClient:
         :raises NotExistsError: If the user does not exist.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/user/{user_id}'
+        url = f'/api/user/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True,
                                  payload=UpdateUser(theme=theme, language=language, firstname=firstname,
                                                     lastname=lastname, affiliation=affiliation, orcid=orcid))
@@ -196,7 +196,7 @@ class RestClient:
 
     def get_container(self, container_id: str) -> Container:
         """
-        Get a container with given id.
+        Get a container with the given id.
 
         :returns: List of containers, if successful.
 
@@ -245,7 +245,7 @@ class RestClient:
 
     def get_database(self, database_id: str) -> Database:
         """
-        Get a databases with given id.
+        Get a databases with the given id.
 
         :param database_id: The database id.
 
@@ -269,7 +269,7 @@ class RestClient:
     def create_database(self, name: str, container_id: str, is_public: bool = True,
                         is_schema_public: bool = True) -> Database:
         """
-        Create a databases in a container with given container id.
+        Create a databases in a container with the given container id.
 
         :param name: The name of the database.
         :param container_id: The container id.
@@ -355,7 +355,7 @@ class RestClient:
     def update_database_visibility(self, database_id: str, is_public: bool, is_schema_public: bool,
                                    is_dashboard_enabled: bool) -> Database:
         """
-        Updates the database visibility of a database with given database id.
+        Updates the database visibility of a database with the given database id.
 
         :param database_id: The database id.
         :param is_public: The visibility of the data. If set to `True` the data will be publicly visible.
@@ -392,12 +392,12 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def update_database_owner(self, database_id: str, user_id: str) -> Database:
+    def update_database_owner(self, database_id: str, username: str) -> Database:
         """
-        Updates the database owner of a database with given database id.
+        Updates the database owner of a database with the given database id.
 
         :param database_id: The database id.
-        :param user_id: The user id of the new owner.
+        :param username: The username of the new owner.
 
         :returns: The database, if successful.
 
@@ -409,7 +409,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the update.
         """
         url = f'/api/database/{database_id}/owner'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(id=user_id))
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(id=username))
         if response.status_code == 202:
             body = response.json()
             return Database.model_validate(body)
@@ -430,7 +430,7 @@ class RestClient:
 
     def update_database_schema(self, database_id: str) -> DatabaseBrief:
         """
-        Updates the database table and view metadata of a database with given database id.
+        Updates the database table and view metadata of a database with the given database id.
 
         :param database_id: The database id.
 
@@ -469,7 +469,7 @@ class RestClient:
     def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool, dataframe: DataFrame,
                      description: str = None, with_data: bool = True) -> TableBrief:
         """
-        Updates the database owner of a database with given database id.
+        Updates the database owner of a database with the given database id.
 
         :param database_id: The database id.
         :param name: The name of the created table.
@@ -543,7 +543,7 @@ class RestClient:
 
     def get_table(self, database_id: str, table_id: str) -> Table:
         """
-        Get a table with given database id and table id.
+        Get a table with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -568,7 +568,7 @@ class RestClient:
 
     def delete_table(self, database_id: str, table_id: str) -> None:
         """
-        Delete a table with given database id and table id.
+        Delete a table with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -599,7 +599,7 @@ class RestClient:
 
     def delete_container(self, container_id: str) -> None:
         """
-        Deletes a container with given id. Note that this does not delete the container, but deletes the entry in the
+        Deletes a container with the given id. Note that this does not delete the container, but deletes the entry in the
         metadata database. The container still needs to be removed, e.g. `docker container stop hash` and then
         `docker container rm hash`.
 
@@ -655,7 +655,7 @@ class RestClient:
 
     def get_views(self, database_id: str) -> List[ViewBrief]:
         """
-        Gets views of a database with given database id.
+        Gets views of a database with the given database id.
 
         :param database_id: The database id.
 
@@ -676,7 +676,7 @@ class RestClient:
 
     def get_view(self, database_id: str, view_id: str) -> View:
         """
-        Get a view of a database with given database id and view id.
+        Get a view of a database with the given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
@@ -701,7 +701,7 @@ class RestClient:
 
     def update_view(self, database_id: str, view_id: str, is_public: bool, is_schema_public: bool) -> ViewBrief:
         """
-        Get a view of a database with given database id and view id.
+        Get a view of a database with the given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
@@ -730,7 +730,7 @@ class RestClient:
     def create_view(self, database_id: str, name: str, query: QueryDefinition, is_public: bool,
                     is_schema_public: bool) -> ViewBrief:
         """
-        Create a view in a database with given database id.
+        Create a view in a database with the given database id.
 
         :param database_id: The database id.
         :param name: The name of the created view.
@@ -774,7 +774,7 @@ class RestClient:
 
     def delete_view(self, database_id: str, view_id: str) -> None:
         """
-        Deletes a view in a database with given database id and view id.
+        Deletes a view in a database with the given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
@@ -808,7 +808,7 @@ class RestClient:
 
     def get_view_data(self, database_id: str, view_id: str, page: int = 0, size: int = 1000000) -> DataFrame:
         """
-        Get data of a view in a database with given database id and view id.
+        Get data of a view in a database with the given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
@@ -849,7 +849,7 @@ class RestClient:
     def get_table_data(self, database_id: str, table_id: str, page: int = 0, size: int = 1000000,
                        timestamp: datetime.datetime = None) -> DataFrame:
         """
-        Get data of a table in a database with given database id and table id.
+        Get data of a table in a database with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -889,7 +889,7 @@ class RestClient:
 
     def create_table_data(self, database_id: str, table_id: str, data: dict) -> None:
         """
-        Insert data into a table in a database with given database id and table id.
+        Insert data into a table in a database with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -940,7 +940,7 @@ class RestClient:
 
     def import_table_data(self, database_id: str, table_id: str, dataframe: DataFrame) -> None:
         """
-        Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
+        Import a csv dataset from a file into a table in a database with the given database id and table id. ATTENTION:
         the import is column-ordering sensitive! The csv dataset must have the same columns in the same order as the
         target table.
 
@@ -1035,7 +1035,7 @@ class RestClient:
 
     def analyse_table_statistics(self, database_id: str, table_id: str) -> TableStatistics:
         """
-        Analyses the numerical contents of a table in a database with given database id and table id.
+        Analyses the numerical contents of a table in a database with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -1067,7 +1067,7 @@ class RestClient:
 
     def update_table_data(self, database_id: str, table_id: str, data: dict, keys: dict) -> None:
         """
-        Update data in a table in a database with given database id and table id.
+        Update data in a table in a database with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -1098,7 +1098,7 @@ class RestClient:
 
     def delete_table_data(self, database_id: str, table_id: str, keys: dict) -> None:
         """
-        Delete data in a table in a database with given database id and table id.
+        Delete data in a table in a database with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -1128,7 +1128,7 @@ class RestClient:
 
     def get_table_data_count(self, database_id: str, table_id: str, timestamp: datetime.datetime = None) -> int:
         """
-        Get data count of a table in a database with given database id and table id.
+        Get data count of a table in a database with the given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
@@ -1166,7 +1166,7 @@ class RestClient:
 
     def get_view_data_count(self, database_id: str, view_id: str) -> int:
         """
-        Get data count of a view in a database with given database id and view id.
+        Get data count of a view in a database with the given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
@@ -1200,7 +1200,7 @@ class RestClient:
 
     def get_database_access(self, database_id: str) -> AccessType:
         """
-        Get access of a view in a database with given database id and view id.
+        Get access of a view in a database with the given database id and view id.
 
         :param database_id: The database id.
 
@@ -1222,12 +1222,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get database access: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_database_access(self, database_id: str, user_id: str, type: AccessType) -> AccessType:
+    def create_database_access(self, database_id: str, username: str, type: AccessType) -> AccessType:
         """
-        Create access to a database with given database id and user id.
+        Create access to a database with the given database id and username.
 
         :param database_id: The database id.
-        :param user_id: The user id.
+        :param username: The username.
         :param type: The access type.
 
         :returns: The access type, if successful.
@@ -1239,7 +1239,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access/{user_id}'
+        url = f'/api/database/{database_id}/access/{username}'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateAccess(type=type))
         if response.status_code == 202:
             body = response.json()
@@ -1258,12 +1258,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create database access: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def update_database_access(self, database_id: str, user_id: str, type: AccessType) -> AccessType:
+    def update_database_access(self, database_id: str, username: str, type: AccessType) -> AccessType:
         """
-        Updates the access for a user to a database with given database id and user id.
+        Updates the access for a user to a database with the given database id and username.
 
         :param database_id: The database id.
-        :param user_id: The user id.
+        :param username: The username.
         :param type: The access type.
 
         :returns: The access type, if successful.
@@ -1271,11 +1271,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access/{user_id}'
+        url = f'/api/database/{database_id}/access/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateAccess(type=type))
         if response.status_code == 202:
             body = response.json()
@@ -1294,12 +1294,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update database access: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def delete_database_access(self, database_id: str, user_id: str) -> None:
+    def delete_database_access(self, database_id: str, username: str) -> None:
         """
-        Deletes the access for a user to a database with given database id and user id.
+        Deletes the access for a user to a database with the given database id and username.
 
         :param database_id: The database id.
-        :param user_id: The user id.
+        :param username: The username.
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -1308,7 +1308,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access/{user_id}'
+        url = f'/api/database/{database_id}/access/{username}'
         response = self._wrapper(method="delete", url=url, force_auth=True)
         if response.status_code == 202:
             return
@@ -1329,8 +1329,8 @@ class RestClient:
     def create_subset(self, database_id: str, query: QueryDefinition, page: int = 0, size: int = 1000000,
                       timestamp: datetime.datetime = None) -> DataFrame:
         """
-        Executes a SQL query in a database where the current user has at least read access with given database id. The
-        result set can be paginated with setting page and size (both). Historic data can be queried by setting
+        Executes a SQL query in a database where the current user has at least read access with the given database id.
+        The result set can be paginated with setting page and size (both). Historic data can be queried by setting
         timestamp.
 
         :param database_id: The database id.
@@ -1380,7 +1380,7 @@ class RestClient:
 
     def get_subset_data(self, database_id: str, subset_id: str, page: int = 0, size: int = 1000000) -> DataFrame:
         """
-        Re-executes a query in a database with given database id and query id.
+        Re-executes a query in a database with the given database id and query id.
 
         :param database_id: The database id.
         :param subset_id: The subset id.
@@ -1414,7 +1414,7 @@ class RestClient:
 
     def get_subset_data_count(self, database_id: str, subset_id: str) -> int:
         """
-        Re-executes a query in a database with given database id and query id and only counts the results.
+        Re-executes a query in a database with the given database id and query id and only counts the results.
 
         :param database_id: The database id.
         :param subset_id: The subset id.
@@ -1444,7 +1444,7 @@ class RestClient:
 
     def get_subset(self, database_id: str, subset_id: str) -> Query:
         """
-        Get query from a database with given database id and query id.
+        Get query from a database with the given database id and query id.
 
         :param database_id: The database id.
         :param subset_id: The subset id.
@@ -1475,7 +1475,7 @@ class RestClient:
 
     def get_queries(self, database_id: str) -> List[Query]:
         """
-        Get queries from a database with given database id.
+        Get queries from a database with the given database id.
 
         :param database_id: The database id.
 
@@ -1502,7 +1502,7 @@ class RestClient:
 
     def update_subset(self, database_id: str, subset_id: str, persist: bool) -> Query:
         """
-        Save query or mark it for deletion (at a later time) in a database with given database id and query id.
+        Save query or mark it for deletion (at a later time) in a database with the given database id and query id.
 
         :param database_id: The database id.
         :param subset_id: The subset id.
@@ -1660,7 +1660,7 @@ class RestClient:
 
     def publish_identifier(self, identifier_id: str) -> Identifier:
         """
-        Publish an identifier with given id.
+        Publish an identifier with the given id.
 
         :param identifier_id: The identifier id.
 

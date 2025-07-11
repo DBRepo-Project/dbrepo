@@ -114,7 +114,7 @@ export default {
       if (!this.roles || !this.cacheUser || !this.table) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.cacheUser.uid
+      return this.roles.includes('update-table') && this.table.owner.username === this.cacheUser.preferred_username
     },
     isOwner () {
       if (!this.cacheUser || !this.database) {
@@ -139,7 +139,7 @@ export default {
       if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
+      return this.hasReadAccess || this.table.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canViewSchema () {
       if (!this.table) {
@@ -151,7 +151,7 @@ export default {
       if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
+      return this.hasReadAccess || this.table.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canImportCsv () {
       if (!this.roles || !this.table || !this.cacheUser) {
@@ -163,7 +163,7 @@ export default {
       if (!this.cacheUser || !this.table || !this.database) {
         return false
       }
-      return this.hasReadAccess && this.database.owner.id === this.cacheUser.uid || this.table.owner.id === this.cacheUser.uid
+      return this.hasReadAccess && this.database.owner.username === this.cacheUser.preferred_username || this.table.owner.username === this.cacheUser.preferred_username
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()

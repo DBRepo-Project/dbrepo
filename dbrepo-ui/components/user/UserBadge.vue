@@ -51,7 +51,7 @@ export default {
       if (!this.otherUser || !this.user) {
         return false
       }
-      return this.user.id === this.otherUser.id
+      return this.user.username === this.otherUser.username
     }
   }
 }

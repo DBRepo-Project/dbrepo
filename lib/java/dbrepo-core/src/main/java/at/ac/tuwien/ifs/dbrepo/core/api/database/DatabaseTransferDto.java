@@ -1,10 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,7 +14,7 @@ import java.util.UUID;
 @ToString
 public class DatabaseTransferDto {
 
-    @NotNull
-    private UUID id;
+    @NotBlank
+    private String username;
 
 }

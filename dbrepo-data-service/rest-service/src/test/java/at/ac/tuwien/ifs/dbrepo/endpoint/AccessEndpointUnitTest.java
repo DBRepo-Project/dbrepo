@@ -47,11 +47,11 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_4_ID))
+        when(credentialService.getUser(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = accessEndpoint.create(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+        final ResponseEntity<Void> response = accessEndpoint.create(DATABASE_1_ID, USER_4_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNull(response.getBody());
     }
@@ -64,12 +64,12 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_1_ID))
+        when(credentialService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
-            accessEndpoint.create(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.create(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -81,7 +81,7 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_4_ID))
+        when(credentialService.getUser(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
@@ -89,7 +89,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            accessEndpoint.create(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.create(DATABASE_1_ID, USER_4_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -105,7 +105,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessEndpoint.create(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.create(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -119,11 +119,11 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(credentialService)
-                .getUser(USER_4_ID);
+                .getUser(USER_4_USERNAME);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            accessEndpoint.create(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.create(DATABASE_1_ID, USER_4_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -133,7 +133,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            accessEndpoint.create(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.create(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -146,11 +146,11 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_1_ID))
+        when(credentialService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+        final ResponseEntity<Void> response = accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
@@ -163,7 +163,7 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_1_ID))
+        when(credentialService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
@@ -171,7 +171,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -183,12 +183,12 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_4_ID))
+        when(credentialService.getUser(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
-            accessEndpoint.update(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.update(DATABASE_1_ID, USER_4_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -198,7 +198,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -214,7 +214,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -228,11 +228,11 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(credentialService)
-                .getUser(USER_1_ID);
+                .getUser(USER_1_USERNAME);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -245,14 +245,14 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_1_ID))
+        when(credentialService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         doNothing()
                 .when(accessService)
                 .delete(any(DatabaseDto.class), any(UserDto.class));
 
         /* test */
-        final ResponseEntity<Void> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+        final ResponseEntity<Void> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
@@ -265,12 +265,12 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_4_ID))
+        when(credentialService.getUser(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_4_ID);
+            accessEndpoint.revoke(DATABASE_1_ID, USER_4_USERNAME);
         });
     }
 
@@ -280,7 +280,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+            accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -296,7 +296,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+            accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -310,11 +310,11 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(credentialService)
-                .getUser(USER_1_ID);
+                .getUser(USER_1_USERNAME);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+            accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 
@@ -326,7 +326,7 @@ public class AccessEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID, true))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getUser(USER_1_ID))
+        when(credentialService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
@@ -334,7 +334,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+            accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
         });
     }
 

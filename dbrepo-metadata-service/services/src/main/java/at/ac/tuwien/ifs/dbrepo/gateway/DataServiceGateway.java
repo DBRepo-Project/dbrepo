@@ -22,38 +22,38 @@ public interface DataServiceGateway {
      * Create r/w access for a given user to a given database.
      *
      * @param databaseId The database id.
-     * @param userId     The user id.
+     * @param username   The username.
      * @param access     The access.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void createAccess(UUID databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
+    void createAccess(UUID databaseId, String username, AccessTypeDto access) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
 
     /**
      * Update r/w access for a given user to a given database.
      *
      * @param databaseId The database id.
-     * @param userId     The user id.
+     * @param username   The username.
      * @param access     The access.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws AccessNotFoundException        Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void updateAccess(UUID databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
+    void updateAccess(UUID databaseId, String username, AccessTypeDto access) throws DataServiceConnectionException,
             DataServiceException, AccessNotFoundException;
 
     /**
      * Deletes access for a given user to a given database.
      *
      * @param databaseId The database id.
-     * @param userId     The user id.
+     * @param username   The username.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws AccessNotFoundException        Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    void deleteAccess(UUID databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
+    void deleteAccess(UUID databaseId, String username) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException;
 
     /**

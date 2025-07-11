@@ -83,11 +83,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     @Timed(value = "dbrepo_data_create_subset", description = "Time spent creating a subset", histogram = true)
-    public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
+    public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, String username)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewMalformedException, ViewNotFoundException, ColumnNotFoundException {
         final String query = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
-        return storeQuery(database, query, timestamp, userId);
+        return storeQuery(database, query, timestamp, username);
     }
 
     @Override
@@ -123,8 +123,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         .filter(i -> i.getType().equals(IdentifierTypeDto.SUBSET))
                         .filter(i -> i.getQueryId().equals(query.getId()))
                         .toList());
-                query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserById(query.getOwner()
-                        .getId())));
+                query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserByUsername(query.getOwner()
+                        .getUsername())));
                 query.setType(QueryTypeDto.QUERY);
                 query.setDatabaseId(database.getId());
 
@@ -186,8 +186,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 throw new QueryNotFoundException("Failed to find query");
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
-            query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserById(query.getOwner()
-                    .getId())));
+            query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserByUsername(query.getOwner()
+                    .getUsername())));
             query.setType(QueryTypeDto.QUERY);
             query.setDatabaseId(database.getId());
             return query;
@@ -201,7 +201,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     @Timed(value = "dbrepo_data_store_subset_query", description = "Time spent storing a subset query in the query store", histogram = true)
-    public UUID storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
+    public UUID storeQuery(DatabaseDto database, String query, Instant timestamp, String username) throws SQLException,
             QueryStoreInsertException, QueryMalformedException {
         /* save */
         final UUID queryId;
@@ -211,8 +211,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             /* insert query into query store */
             final long start = System.currentTimeMillis();
             final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
-            if (userId != null) {
-                callableStatement.setString(1, String.valueOf(userId));
+            if (username != null) {
+                callableStatement.setString(1, username);
             } else {
                 callableStatement.setNull(1, Types.VARCHAR);
             }

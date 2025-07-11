@@ -108,7 +108,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                 .filter(i -> !Objects.nonNull(qid) || qid.equals(i.getQueryId()))
                 .filter(i -> !Objects.nonNull(vid) || vid.equals(i.getViewId()))
                 .filter(i -> !Objects.nonNull(tid) || tid.equals(i.getTableId()))
-                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwnedBy().equals(getId(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
+                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwner().getUsername().equals(getUsername(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
                 .sorted((a, b) -> b.getCreated().compareTo(a.getCreated()))
                 .toList();
         if (identifiers.isEmpty()) {
@@ -201,7 +201,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             if (principal == null) {
                 throw new NotAllowedException("Draft identifier: authentication required");
             }
-            if (!identifier.getOwnedBy().equals(getId(principal))) {
+            if (!identifier.getOwner().getUsername().equals(getUsername(principal))) {
                 throw new NotAllowedException("Draft identifier: not authorized");
             }
         }
@@ -385,10 +385,10 @@ public class IdentifierEndpoint extends AbstractEndpoint {
         log.debug("endpoint save identifier, identifierId={}, data.id={}", identifierId,
                 data.getId());
         final Database database = databaseService.findById(data.getDatabaseId());
-        final User caller = userService.findById(getId(principal));
+        final User caller = userService.findByUsername(getUsername(principal));
         final Identifier identifier = identifierService.find(identifierId);
         /* check owner */
-        if (!identifier.getOwner().getId().equals(getId(principal)) && !hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
+        if (!identifier.getOwner().getUsername().equals(getUsername(principal)) && !hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
             log.error("Failed to save identifier: foreign user");
             throw new NotAllowedException("Failed to save identifier: foreign user");
         }
@@ -485,7 +485,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
         log.debug("endpoint create identifier, data.databaseId={}", data.getDatabaseId());
         final Database database = databaseService.findById(data.getDatabaseId());
-        final User caller = userService.findById(getId(principal));
+        final User caller = userService.findByUsername(getUsername(principal));
         /* check access */
         try {
             accessService.find(database, caller);

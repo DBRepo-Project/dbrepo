@@ -317,34 +317,35 @@ mqtt.prefetch = 10
 
 ### Identity Service
 
-| Name                                                                | Description                                                                                                       | Value                  |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `identityservice.enabled`                                           | Enable the Identity Service.                                                                                      | `true`                 |
-| `identityservice.global.ldapDomain`                                 | The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.                            | `dc=dbrepo,dc=at`      |
-| `identityservice.global.adminUser`                                  | The admin username that is used to bind.                                                                          | `admin`                |
-| `identityservice.global.adminPassword`                              | The admin user password that is used to bind.                                                                     | `admin`                |
-| `identityservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                   |
-| `identityservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                 |
-| `identityservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                | `Always`               |
-| `identityservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                    | `[]`                   |
-| `identityservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                       | `[]`                   |
-| `identityservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                       | `1001`                 |
-| `identityservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                              | `true`                 |
-| `identityservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                   |
-| `identityservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1001`                 |
-| `identityservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `0`                    |
-| `identityservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                 |
-| `identityservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                |
-| `identityservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                |
-| `identityservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`              |
-| `identityservice.containerSecurityContext.capabilities.add`         | Set container's Security Context runAsNonRoot                                                                     | `["NET_BIND_SERVICE"]` |
-| `identityservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`       |
-| `identityservice.resourcesPreset`                                   | The container resource preset                                                                                     | `nano`                 |
-| `identityservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                   |
-| `identityservice.users`                                             | The admin username for internal authentication.                                                                   | `admin`                |
-| `identityservice.userPasswords`                                     | The admin user password for internal authentication.                                                              | `admin`                |
-| `identityservice.group`                                             | The group that contains the administrators for the broker service.                                                | `system`               |
-| `identityservice.persistence.enabled`                               | If set to true, a PVC will be created.                                                                            | `true`                 |
+| Name                                                                | Description                                                                                                       | Value                          |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `identityservice.enabled`                                           | Enable the Identity Service.                                                                                      | `true`                         |
+| `identityservice.global.ldapDomain`                                 | The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.                            | `dc=dbrepo,dc=at`              |
+| `identityservice.global.adminUser`                                  | The admin username that is used to bind.                                                                          | `admin`                        |
+| `identityservice.global.adminPassword`                              | The admin user password that is used to bind.                                                                     | `admin`                        |
+| `identityservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                           |
+| `identityservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                         |
+| `identityservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                | `Always`                       |
+| `identityservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                    | `[]`                           |
+| `identityservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                       | `[]`                           |
+| `identityservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                       | `1001`                         |
+| `identityservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                              | `true`                         |
+| `identityservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                  | `{}`                           |
+| `identityservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                               | `1001`                         |
+| `identityservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                              | `0`                            |
+| `identityservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                            | `true`                         |
+| `identityservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                              | `false`                        |
+| `identityservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                           | `false`                        |
+| `identityservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                     | `["ALL"]`                      |
+| `identityservice.containerSecurityContext.capabilities.add`         | Set container's Security Context runAsNonRoot                                                                     | `["NET_BIND_SERVICE"]`         |
+| `identityservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                  | `RuntimeDefault`               |
+| `identityservice.resourcesPreset`                                   | The container resource preset                                                                                     | `nano`                         |
+| `identityservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                           |
+| `identityservice.endpoint`                                          | The identity service endpoint.                                                                                    | `ldap://identity-service:1389` |
+| `identityservice.users`                                             | The admin username for internal authentication.                                                                   | `admin`                        |
+| `identityservice.userPasswords`                                     | The admin user password for internal authentication.                                                              | `admin`                        |
+| `identityservice.group`                                             | The group that contains the administrators for the broker service.                                                | `system`                       |
+| `identityservice.persistence.enabled`                               | If set to true, a PVC will be created.                                                                            | `true`                         |
 
 ### User Interface
 
