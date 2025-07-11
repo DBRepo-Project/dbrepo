@@ -51,7 +51,7 @@ public class AccessServiceImpl implements AccessService {
     public DatabaseAccess find(Database database, User user) throws AccessNotFoundException {
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getHuserid().equals(user.getId()))
+                .filter(a -> a.getUser().getUsername().equals(user.getUsername()))
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find database access for database with id: {}", database.getId());
@@ -98,11 +98,11 @@ public class AccessServiceImpl implements AccessService {
         /* update in metadata database */
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getHuserid().equals(user.getId()))
+                .filter(a -> a.getUser().getUsername().equals(user.getUsername()))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to update access for user with id: {}", user.getId());
-            throw new AccessNotFoundException("Failed to find update access for user with id: " + user.getId());
+            log.error("Failed to update access for user: {}", user.getUsername());
+            throw new AccessNotFoundException("Failed to find update access for user: " + user.getUsername());
         }
         optional.get()
                 .setType(metadataMapper.accessTypeDtoToAccessType(access));
