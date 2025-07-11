@@ -141,7 +141,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.10.1
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.10.2
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -397,7 +397,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.2
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -497,7 +497,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.2
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -586,7 +586,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.2
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -636,9 +636,13 @@ searchservice:
   setupJob:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
     enabled: true
+    ## @param searchservice.setupJob.schedule The interval duration when the cronjob is executed.
+    schedule: "@hourly"
+    ## @skip searchservice.setupJob.limit
+    limit: { }
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.10.1
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.10.2
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -701,7 +705,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.1
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.2
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -838,7 +842,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.2
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -959,7 +963,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.10.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.10.2
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1014,7 +1018,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.10.1
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.10.2
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)

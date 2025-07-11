@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bde11e6be57384ee9fffabf3b8416802bd3bcee44340b88394f11c76404f1d00"
+            "sha256": "f60dc07446142a5eafa3932ef5873211833a032cab348477116769bbcd1813ac"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -132,10 +132,10 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:9b9355d22b9ae07f7867c8eb9f38ca10c22be7d65cb0bbec7b13c29aa6bf855c"
+                "sha256:fa94d756d915766be1ad718d27c86c8841dda039b8004daeba5d0b9bf4376f56"
             ],
-            "path": "./lib/dbrepo-1.10.1.tar.gz",
-            "version": "==1.10.1"
+            "path": "./lib/dbrepo-1.10.2.tar.gz",
+            "version": "==1.10.2"
         },
         "ecs-logging": {
             "hashes": [
@@ -155,20 +155,20 @@
         },
         "mariadb": {
             "hashes": [
-                "sha256:194045d2f59b2c9100dad210dbd8ba3008120f8a434e792dae15b711e5449022",
-                "sha256:50b02ff2c78b1b4f4628a054e3c8c7dd92972137727a5cc309a64c9ed20c878c",
-                "sha256:5ae99af48ba92e3e2edad1dcda293f352c1b65e335007943b9def4cdde622fab",
-                "sha256:69b284ed12e6ef8dda6314cb1ca9d20d53b8a32a07bed2924beb25488e7d9502",
-                "sha256:8b49fc1e8c38bf5a779d46f8cea61c99660adb08d5d15cb7dbc7911a6439ffc2",
-                "sha256:8cc4068bdd14f4907746ec3bb37005682e47f84438cf56bdc6d901c2587f792a",
-                "sha256:992064971e0ff4b4154b80b16589ec86237ce4bd33debe1be5212141c056858a",
-                "sha256:b69bc18418e72fcf359d17736cdc3f601a271203aff13ef7c57a415c8fd52ab0",
-                "sha256:ba43c42130d41352f32a5786c339cc931d05472ef7640fa3764d428dc294b88e",
-                "sha256:dd9d0ca112eb670dfa99a2fb7c4398bcc2a8c452dbf5507a8e4b5c4ae991bb2a",
-                "sha256:e3ce7c47be58897822d07f119461b2aa6aa41a53f3505bec517b14fc6c3611a6"
+                "sha256:0604c57e6f90ff7ef190a56894d2b32ca5f0182924b5159be9319ba243ffbf98",
+                "sha256:1c9aa9a31f943737c3a58bb4dc9deb9cf2b50b3ec807f90c5c99c7b35f8442bd",
+                "sha256:358ecdc8775f4a97357fc233bb84a1c8d8d52866ee5fe98f2d13e9e58a04b6fb",
+                "sha256:36c644c13ecf3e38cb89f37f9bd054703760b94c881476492fe789801a063ce3",
+                "sha256:376c0d120e5ac1f172e1498defb395e2420d5e80b3b26a16b58acf831cb4a53a",
+                "sha256:3a0fd24fae2b9990dc13a0a427a43d4a5434cc2a8c3b260a27f40b7824719037",
+                "sha256:6ec51ad2e33312c397cfcc5e2bca59861f572d5e8880e025d43db9a5d472a3a9",
+                "sha256:c15ab872f1e951dd1bd4006d2ee2b942156f66c1cd724a1b2992dc02c47dff6a",
+                "sha256:d6fa7f2cdfae762d2d69b71e51f61415d0251118a622a6d06c7f05261579100a",
+                "sha256:d941d5e99cfa86e1f184250fe831f6ee09a103b26675e275186119e455cd95dc",
+                "sha256:f49467e7076819ccf21a7e5ef030761af2160b23ce4484d88d260459809d90ff"
             ],
             "index": "pypi",
-            "version": "==1.1.12"
+            "version": "==1.1.13"
         },
         "numpy": {
             "hashes": [
