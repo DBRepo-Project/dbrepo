@@ -336,12 +336,9 @@ brokerservice:
     log.file.rotation.size = 10485760
     # keep up to 5 archived log files in addition to the current one
     log.file.rotation.count = 5
-    mqtt.listeners.tcp.default = 1883
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
-    # 24 hours by default
-    mqtt.max_session_expiry_interval_seconds = 86400
   ## @skip brokerservice.sidecars
   sidecars: [ ]
 #    - name: logging-agent
@@ -398,7 +395,7 @@ brokerservice:
 #    - name: logging-config
 #      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 3
+  replicaCount: 1
 
 ## @section Metadata Service
 
