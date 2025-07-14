@@ -309,6 +309,9 @@ brokerservice:
     existingSecret: broker-service-secret
   ## @param brokerservice.extraPlugins The list of plugins to be activated.
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
+  extraContainerPorts:
+    - name: mqtt
+      containerPort: 1883
   service:
     ## @skip brokerservice.service.extraPorts
     extraPorts:
@@ -320,18 +323,25 @@ brokerservice:
   logs: ""
   ## @param brokerservice.extraConfiguration The extra configuration for MQTT
   extraConfiguration: |
+    # user
+    default_vhost = dbrepo
+    default_user_tags.administrator = false
     # https://www.rabbitmq.com/docs/logging#log-message-categories
     log.connection.level = warning
     log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
     log.file.formatter = json
     log.file.level = info
+    auth_ldap.log = true
     # rotate when the file reaches 10 MiB
     log.file.rotation.size = 10485760
     # keep up to 5 archived log files in addition to the current one
     log.file.rotation.count = 5
+    mqtt.listeners.tcp.default = 1883
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
+    # 24 hours by default
+    mqtt.max_session_expiry_interval_seconds = 86400
   ## @skip brokerservice.sidecars
   sidecars: [ ]
 #    - name: logging-agent
