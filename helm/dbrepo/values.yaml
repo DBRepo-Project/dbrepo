@@ -398,7 +398,7 @@ brokerservice:
 #    - name: logging-config
 #      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 1
+  replicaCount: 3
 
 ## @section Metadata Service
 
