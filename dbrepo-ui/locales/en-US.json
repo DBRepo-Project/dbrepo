@@ -13,7 +13,7 @@
     "identifiers": "Identifiers",
     "tables": "Tables",
     "subsets": "Subsets",
-    "info": "Info",
+    "about": "About",
     "data": "Data",
     "continue": "Continue",
     "assign": "Assign",
@@ -1494,7 +1494,8 @@
     },
     "search": {
       "fuzzy": {
-        "placeholder": "Search .."
+        "search": "Search {total} public databases ...",
+        "placeholder": "Search public databases ..."
       },
       "result": "Result",
       "results": "Results"
