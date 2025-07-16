@@ -308,6 +308,8 @@ public interface DataMapper {
             return ColumnTypeDto.SMALLINT;
         } else if (data.equals("UTINYINT")) {
             return ColumnTypeDto.TINYINT;
+        } else if (data.equals("BOOLEAN")) {
+            return ColumnTypeDto.BOOL;
         }
         return ColumnTypeDto.valueOf(data);
     }
@@ -382,6 +384,7 @@ public interface DataMapper {
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
                 .owner(UserBriefDto.builder()
+                        .id(UUID.randomUUID())
                         .username(data.getString(2))
                         .build())
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
