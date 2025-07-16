@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
@@ -25,9 +24,9 @@ public interface DuckDbMapper {
         return statement.toString();
     }
 
-    default String queryDtoToRawDescribeQuery(QueryDto data) {
+    default String queryToRawDescribeQuery(String data) {
         final StringBuilder statement = new StringBuilder("USE mysqldb; DESCRIBE (")
-                .append(data.getQuery().replace("`", ""))
+                .append(data.replace("`", "\""))
                 .append(");");
         log.debug("mapped describe statement: {}", statement);
         return statement.toString();
