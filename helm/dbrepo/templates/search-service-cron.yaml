@@ -1,3 +1,4 @@
+{{- if .Values.searchservice.enabled }}
 {{- if .Values.searchservice.setupJob.enabled }}
 ---
 apiVersion: batch/v1
@@ -51,4 +52,5 @@ spec:
               {{- else if ne .Values.searchservice.setupJob.resourcesPreset "none" }}
               resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.setupJob.resourcesPreset) | nindent 14 }}
               {{- end }}
+{{- end }}
 {{- end }}

@@ -1495,7 +1495,8 @@
     },
     "search": {
       "fuzzy": {
-        "search": "Search {total} public databases ...",
+        "search": "Search {total} databases ...",
+        "public": "Search {total} public databases ...",
         "placeholder": "Search public databases ..."
       },
       "result": "Result",

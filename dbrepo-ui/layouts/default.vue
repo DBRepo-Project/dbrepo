@@ -87,7 +87,7 @@
           hide-details
           clearable
           append-inner-icon="mdi-magnify"
-          :placeholder="databases ? $t('toolbars.search.fuzzy.search', { total: databases }) : $t('toolbars.search.fuzzy.placeholder')"
+          :placeholder="fuzzySearchPlaceholder"
           @click:append-inner="retrieve" />
         <v-spacer />
         <v-btn
@@ -291,6 +291,15 @@ export default {
     searchVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
+    },
+    fuzzySearchPlaceholder () {
+      if (this.databases) {
+        if (this.cacheUser) {
+          return this.$t('toolbars.search.fuzzy.search', { total: this.databases })
+        }
+        return this.$t('toolbars.search.fuzzy.public', { total: this.databases })
+      }
+      return this.$t('toolbars.search.fuzzy.placeholder')
     }
   },
   watch: {

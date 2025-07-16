@@ -39,7 +39,7 @@
                 v-if="previewImage"
                 :title="$t('pages.database.image.title')"
                 density="compact">
-                <NuxtLink
+                <a
                   :href="previewImage">
                   <v-img
                     :src="previewImage"
@@ -47,7 +47,7 @@
                     :title="$t('pages.database.image.alt')"
                     :max-width="maxWidth"
                     :max-height="maxHeight" />
-                </NuxtLink>
+                </a>
               </v-list-item>
               <v-list-item
                 v-if="canViewDashboard"
