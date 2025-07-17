@@ -376,8 +376,12 @@ services:
     image: docker.io/bitnami/nginx:${NGINX_VERSION}
     ports:
       - "80:8080"
+      - "443:443"
     volumes:
+      - /home/azimuth/fullchain.pem:/app/fullchain.pem:ro
+      - /home/azimuth/privkey.pem:/app/privkey.pem:ro
       - ./dbrepo-gateway-service/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
+
     depends_on:
       dbrepo-broker-service:
         condition: service_healthy
