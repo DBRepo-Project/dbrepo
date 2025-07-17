@@ -55,7 +55,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Global parameters
 
 | Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value                                |
-|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto`                               |
 | `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`                                 |
 | `global.loggingSidecar.enabled`                       | Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.                                                                                                                                                                                                                                                            | `false`                              |
@@ -65,7 +65,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Common parameters
 
 | Name            | Description           | Value                 |
-|-----------------|-----------------------|-----------------------|
+| --------------- | --------------------- | --------------------- |
 | `hostname`      | The hostname.         | `example.com`         |
 | `gateway`       | The gateway endpoint. | `https://example.com` |
 | `strategyType`  | The image pull        | `RollingUpdate`       |
@@ -74,7 +74,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Metadata Database
 
 | Name                                     | Description                                                                                                                            | Value                                                                  |
-|------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `metadatadb.enabled`                     | Enable the Metadata Database.                                                                                                          | `true`                                                                 |
 | `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
 | `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
@@ -92,7 +92,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Dashboard Database Enable the Dashboard Database.
 
 | Name                        | Description                           | Value               |
-|-----------------------------|---------------------------------------|---------------------|
+| --------------------------- | ------------------------------------- | ------------------- |
 | `dashboarddb.enabled`       |                                       | `true`              |
 | `dashboarddb.host`          | The hostname for the microservices.   | `dashboard-db:5432` |
 | `dashboarddb.auth.database` | The dashboard database name.          | `grafana`           |
@@ -102,7 +102,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Auth Service
 
 | Name                                   | Description                                                                                                       | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
-|----------------------------------------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `authservice.enabled`                  | Enable the Auth Service.                                                                                          | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`.                                                       | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.endpoint`                 | The hostname for the microservices.                                                                               | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -116,7 +116,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Data Database
 
 | Name                                 | Description                                                                                                                            | Value                                                                  |
-|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `datadb.enabled`                     | Enable the Auth Service.                                                                                                               | `true`                                                                 |
 | `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
 | `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
@@ -137,7 +137,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Search Database
 
 | Name                   | Description                         | Value       |
-|------------------------|-------------------------------------|-------------|
+| ---------------------- | ----------------------------------- | ----------- |
 | `searchdb.enabled`     | Enable the Data datadb.             | `true`      |
 | `searchdb.host`        | The hostname for the microservices. | `search-db` |
 | `searchdb.port`        | The port for the microservices.     | `9200`      |
@@ -145,53 +145,49 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Broker Service
 
-| Name                                             | Description                                                                                                                      | Value                                                                                      |
-|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| `brokerservice.enabled`                          | Enable the Broker Service.                                                                                                       | `true`                                                                                     |
-| `brokerservice.image.debug`                      | Set the logging level to `trace`. Otherwise, set to `info`.                                                                      | `true`                                                                                     |
-| `brokerservice.endpoint`                         | The management api endpoint for the microservices.                                                                               | `http://broker-service:15672`                                                              |
-| `brokerservice.host`                             | The hostname for the microservices.                                                                                              | `broker-service`                                                                           |
-| `brokerservice.port`                             | The port for the microservices.                                                                                                  | `5672`                                                                                     |
-| `brokerservice.virtualHost`                      | The default virtual host name.                                                                                                   | `dbrepo`                                                                                   |
-| `brokerservice.queueName`                        | The default queue name.                                                                                                          | `dbrepo`                                                                                   |
-| `brokerservice.exchangeName`                     | The default exchange name.                                                                                                       | `dbrepo`                                                                                   |
-| `brokerservice.routingKey`                       | The default routing key binding from the default queue to the default exchange.                                                  | `dbrepo.#`                                                                                 |
-| `brokerservice.connectionTimeout`                | The connection timeout in ms.                                                                                                    | `60000`                                                                                    |
-| `brokerservice.ldap.binddn`                      | The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`. | `cn=admin,dc=dbrepo,dc=at`                                                                 |
-| `brokerservice.ldap.bindpw`                      | The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.       | `admin`                                                                                    |
-| `brokerservice.ldap.uidField`                    | The field containing the user id.                                                                                                | `uid`                                                                                      |
-| `brokerservice.ldap.basedn`                      | The base domain name containing the users.                                                                                       | `dc=dbrepo,dc=at`                                                                          |
-| `brokerservice.ldap.userDnPattern`               | The pattern to determine the user.                                                                                               | `${username}`                                                                              |
-| `brokerservice.auth.tls.enabled`                 | Enable TLS support                                                                                                               | `false`                                                                                    |
-| `brokerservice.auth.tls.existingSecretFullChain` | If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`       | `false`                                                                                    |
-| `brokerservice.auth.tls.existingSecret`          | Existing secret with certificate content                                                                                         | `ingress-cert`                                                                             |
-| `brokerservice.extraPlugins`                     | The list of plugins to be activated.                                                                                             | `rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt` |
-| `brokerservice.extraConfiguration`               | The extra configuration for MQTT                                                                                                 | `# https://www.rabbitmq.com/docs/logging#log-message-categories                            
-
+| Name                                             | Description                                                                                                                      | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `brokerservice.enabled`                          | Enable the Broker Service.                                                                                                       | `true`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `brokerservice.image.debug`                      | Set the logging level to `trace`. Otherwise, set to `info`.                                                                      | `true`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `brokerservice.endpoint`                         | The management api endpoint for the microservices.                                                                               | `http://broker-service:15672`                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `brokerservice.host`                             | The hostname for the microservices.                                                                                              | `broker-service`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `brokerservice.port`                             | The port for the microservices.                                                                                                  | `5672`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `brokerservice.virtualHost`                      | The default virtual host name.                                                                                                   | `dbrepo`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `brokerservice.queueName`                        | The default queue name.                                                                                                          | `dbrepo`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `brokerservice.exchangeName`                     | The default exchange name.                                                                                                       | `dbrepo`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `brokerservice.routingKey`                       | The default routing key binding from the default queue to the default exchange.                                                  | `dbrepo.#`                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `brokerservice.connectionTimeout`                | The connection timeout in ms.                                                                                                    | `60000`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `brokerservice.ldap.binddn`                      | The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`. | `cn=admin,dc=dbrepo,dc=at`                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `brokerservice.ldap.bindpw`                      | The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.       | `admin`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `brokerservice.ldap.uidField`                    | The field containing the user id.                                                                                                | `uid`                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `brokerservice.ldap.basedn`                      | The base domain name containing the users.                                                                                       | `dc=dbrepo,dc=at`                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `brokerservice.ldap.userDnPattern`               | The pattern to determine the user.                                                                                               | `${username}`                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `brokerservice.auth.tls.enabled`                 | Enable TLS support                                                                                                               | `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `brokerservice.auth.tls.existingSecretFullChain` | If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`       | `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `brokerservice.auth.tls.existingSecret`          | Existing secret with certificate content                                                                                         | `ingress-cert`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `brokerservice.extraPlugins`                     | The list of plugins to be activated.                                                                                             | `rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt`                                                                                                                                                                                                                                                                                                                                                                |
+| `brokerservice.extraConfiguration`               | The extra configuration for MQTT                                                                                                 | `# user
+default_vhost = dbrepo
+default_user_tags.administrator = false
 log.connection.level = warning
+# https://www.rabbitmq.com/docs/logging#log-message-categories
+log.console = true
+log.console.level = debug
 log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
 log.file.formatter = json
 log.file.level = info
-
-# rotate when the file reaches 10 MiB
-
 log.file.rotation.size = 10485760
-
-# keep up to 5 archived log files in addition to the current one
-
 log.file.rotation.count = 5
 mqtt.vhost = dbrepo
 mqtt.exchange = dbrepo
 mqtt.prefetch = 10
 ` |
-| `brokerservice.replicaCount
-`                     | The number of replicas.                                                                                                          | `
-1`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `3`                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Metadata Service
 
 | Name                                                                | Description                                                                                                       | Value                            |
-|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | `metadataservice.enabled`                                           | Enable the Broker Service.                                                                                        | `true`                           |
 | `metadataservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                             |
 | `metadataservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                     | `true`                           |
@@ -231,7 +227,7 @@ mqtt.prefetch = 10
 ### Data Service
 
 | Name                                                            | Description                                                                                                                                      | Value                                                                                                                                |
-|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `dataservice.enabled`                                           | Enable the Broker Service.                                                                                                                       | `true`                                                                                                                               |
 | `dataservice.endpoint`                                          | Absolute URL to the data service in the form of http://host:port                                                                                 | `http://data-service`                                                                                                                |
 | `dataservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                                                     | `{}`                                                                                                                                 |
@@ -268,7 +264,7 @@ mqtt.prefetch = 10
 ### Search Service
 
 | Name                                                              | Description                                                                                                       | Value                   |
-|-------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------|
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | `searchservice.enabled`                                           | Enable the Broker Service.                                                                                        | `true`                  |
 | `searchservice.endpoint`                                          | Absolute URL to the search service in the form of http://host:port                                                | `http://search-service` |
 | `searchservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                    |
@@ -289,6 +285,7 @@ mqtt.prefetch = 10
 | `searchservice.resourcesPreset`                                   | The container resource preset                                                                                     | `micro`                 |
 | `searchservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                    |
 | `searchservice.setupJob.enabled`                                  | Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.            | `true`                  |
+| `searchservice.setupJob.schedule`                                 | The interval duration when the cronjob is executed.                                                               | `@daily`                |
 | `searchservice.setupJob.resourcesPreset`                          | The container resource preset                                                                                     | `nano`                  |
 | `searchservice.setupJob.resources`                                | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                    |
 | `searchservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                     |
@@ -296,7 +293,7 @@ mqtt.prefetch = 10
 ### Storage Service
 
 | Name                                                                        | Description                                                                                                       | Value                            |
-|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | `storageservice.enabled`                                                    | Enable the Storage Service.                                                                                       | `true`                           |
 | `storageservice.mariadb.enabled`                                            | Enables the MariaDB database needed for the filer.                                                                | `true`                           |
 | `storageservice.mariadb.auth.rootPassword`                                  | The password for the root user.                                                                                   | `seaweedfsfiler`                 |
@@ -325,7 +322,7 @@ mqtt.prefetch = 10
 ### Identity Service
 
 | Name                                                                | Description                                                                                                       | Value                          |
-|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|--------------------------------|
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | `identityservice.enabled`                                           | Enable the Identity Service.                                                                                      | `true`                         |
 | `identityservice.global.ldapDomain`                                 | The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.                            | `dc=dbrepo,dc=at`              |
 | `identityservice.global.adminUser`                                  | The admin username that is used to bind.                                                                          | `admin`                        |
@@ -357,7 +354,7 @@ mqtt.prefetch = 10
 ### User Interface
 
 | Name                                                   | Description                                                                                                                                                                                                                                                                                                          | Value                                                       |
-|--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | `ui.enabled`                                           | Enable the Broker Service.                                                                                                                                                                                                                                                                                           | `true`                                                      |
 | `ui.oidc.authSessionSecret`                            | This should be a at least 48 characters random string. It is used to encrypt the user session.                                                                                                                                                                                                                       | `qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0`          |
 | `ui.oidc.sessionSecret`                                | This should be a at least 48 characters random string. It is used to encrypt the user session.                                                                                                                                                                                                                       | `TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh`          |
@@ -398,7 +395,7 @@ mqtt.prefetch = 10
 ### Dashboard Service
 
 | Name                                                                 | Description                                                                                                       | Value                      |
-|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------|
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | `dashboardservice.enabled`                                           | Enable the Dashboard Service.                                                                                     | `true`                     |
 | `dashboardservice.endpoint`                                          | The endpoint for the microservices.                                                                               | `http://dashboard-service` |
 | `dashboardservice.podAnnotations`                                    | the pod annotations. Evaluated as a template                                                                      | `{}`                       |
@@ -427,7 +424,7 @@ mqtt.prefetch = 10
 ### Dashboard UI
 
 | Name                               | Description                         | Value                      |
-|------------------------------------|-------------------------------------|----------------------------|
+| ---------------------------------- | ----------------------------------- | -------------------------- |
 | `dashboardui.enabled`              | Enable the Dashboard UI.            | `true`                     |
 | `dashboardui.metrics.enabled`      | Enable the metrics sidecar.         | `true`                     |
 | `dashboardui.endpoint`             | The endpoint for the microservices. | `http://dashboard-ui:3000` |
@@ -436,14 +433,14 @@ mqtt.prefetch = 10
 ### Metric Service
 
 | Name                | Description                     | Value                     |
-|---------------------|---------------------------------|---------------------------|
+| ------------------- | ------------------------------- | ------------------------- |
 | `metricdb.enabled`  | Enable the Metric Service.      | `true`                    |
 | `metricdb.endpoint` | The endpoint for microservices. | `http://metric-db-server` |
 
 ### Gateway Service
 
 | Name                                          | Description                                   | Value                   |
-|-----------------------------------------------|-----------------------------------------------|-------------------------|
+| --------------------------------------------- | --------------------------------------------- | ----------------------- |
 | `gatewayservice.enabled`                      | Enable the Gateway Service.                   | `true`                  |
 | `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`             |
 | `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                 |
@@ -453,13 +450,13 @@ mqtt.prefetch = 10
 ### Analytics Service
 
 | Name                      | Description                                            | Value      |
-|---------------------------|--------------------------------------------------------|------------|
+| ------------------------- | ------------------------------------------------------ | ---------- |
 | `computeservice.endpoint` | Configure the number of parallel workers with local[n] | `local[*]` |
 
 ### Ingress
 
 | Name                     | Description                                                                                                     | Value          |
-|--------------------------|-----------------------------------------------------------------------------------------------------------------|----------------|
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------- |
 | `ingress.enabled`        | Enable the ingress.                                                                                             | `false`        |
 | `ingress.className`      | The ingress class name.                                                                                         | `nginx`        |
 | `ingress.tls.enabled`    | Enable the ingress.                                                                                             | `true`         |

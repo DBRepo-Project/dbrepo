@@ -171,7 +171,7 @@ authservice:
       mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
       subPath: create-event-listener.jar
   ## @skip authservice.replicaCount The number of replicas.
-  replicaCount: 1
+  replicaCount: 2
 
 ## @section Data Database
 
@@ -309,6 +309,7 @@ brokerservice:
     existingSecret: broker-service-secret
   ## @param brokerservice.extraPlugins The list of plugins to be activated.
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
+  ## @skip brokerservice.extraContainerPorts The list of extra container ports to be exposed
   extraContainerPorts:
     - name: mqtt
       containerPort: 1883
@@ -326,15 +327,14 @@ brokerservice:
     # user
     default_vhost = dbrepo
     default_user_tags.administrator = false
-    # https://www.rabbitmq.com/docs/logging#log-message-categories
     log.connection.level = warning
+    # https://www.rabbitmq.com/docs/logging#log-message-categories
+    log.console = true
+    log.console.level = debug
     log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
     log.file.formatter = json
     log.file.level = info
-    auth_ldap.log = true
-    # rotate when the file reaches 10 MiB
     log.file.rotation.size = 10485760
-    # keep up to 5 archived log files in addition to the current one
     log.file.rotation.count = 5
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
@@ -395,7 +395,7 @@ brokerservice:
 #    - name: logging-config
 #      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 1
+  replicaCount: 3
 
 ## @section Metadata Service
 
