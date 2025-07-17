@@ -9434,12 +9434,12 @@
           "resumptionToken": {
             "type": "string"
           },
+          "parametersString": {
+            "type": "string"
+          },
           "untilDate": {
             "type": "string",
             "format": "date-time"
-          },
-          "parametersString": {
-            "type": "string"
           },
           "fromDate": {
             "type": "string",

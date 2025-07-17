@@ -85,3 +85,4 @@ for ENDPOINT in "${ARR[@]}"; do
   echo "Request OpenAPI definition for endpoint: $ENDPOINT"
   retrieve $ENDPOINT
 done
+openapi-merge-cli --config ./docs/.openapi/openapi-merge.json

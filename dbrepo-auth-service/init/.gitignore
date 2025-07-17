@@ -1,7 +1,0 @@
-# IDE
-.idea/
-
-# artifacts
-.coverage
-coverage.txt
-report.xml

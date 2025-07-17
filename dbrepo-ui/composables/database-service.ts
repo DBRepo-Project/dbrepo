@@ -236,6 +236,7 @@ export const useDatabaseService = (): any => {
   return {
     determineSchema,
     findAll,
+    findCount,
     refreshTablesMetadata,
     refreshViewsMetadata,
     findOne,

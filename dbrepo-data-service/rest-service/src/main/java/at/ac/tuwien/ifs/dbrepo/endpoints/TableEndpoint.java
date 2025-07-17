@@ -382,7 +382,6 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.createTuple(database, table, data);
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {
@@ -437,7 +436,6 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.updateTuple(database, table, data);
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -492,7 +490,6 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.deleteTuple(database, table, data);
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {

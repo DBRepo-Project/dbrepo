@@ -282,7 +282,7 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the container does not exist.
         :raises QueryStoreError: If something went wrong with the query store.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
@@ -367,7 +367,7 @@ class RestClient:
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
@@ -404,7 +404,7 @@ class RestClient:
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
@@ -439,7 +439,7 @@ class RestClient:
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
@@ -485,7 +485,7 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
         :raises NameExistsError: If a table with this name already exists.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the creation.
         """
@@ -576,7 +576,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the container does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
@@ -744,7 +744,7 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
         :raises ExternalSystemError: If the mapped view creation query is erroneous.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
@@ -783,7 +783,7 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the container does not exist.
         :raises ExternalSystemError: If the mapped view deletion query is erroneous.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
@@ -1044,7 +1044,7 @@ class RestClient:
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises NotExistsError: If the file was not found by the Analyse Service.
-        :raises ServiceConnectionError: If something went wrong with connection to the metadata service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the metadata service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
@@ -1063,6 +1063,35 @@ class RestClient:
         if response.status_code == 503:
             raise ServiceError(f'Failed to analyse table statistics: failed to save statistic in search service')
         raise ResponseCodeError(f'Failed to analyse table statistics: response code: {response.status_code} is not '
+                                f'202 (ACCEPTED): {response.text}')
+
+    def update_table_statistics(self, database_id: str, table_id: str) -> None:
+        """
+        Updates the numerical contents of a table in a database with the given database id and table id.
+
+        :param database_id: The database id.
+        :param table_id: The table id.
+
+        :raises MalformedError: If the payload is rejected by the service.
+        :raises NotExistsError: If the file was not found by the Analyse Service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the metadata service.
+        :raises ServiceError: If something went wrong with obtaining the information in the search service.
+        :raises ResponseCodeError: If something went wrong with the analysis.
+        """
+        url = f'/api/database/{database_id}/table/{table_id}/statistic'
+        response = self._wrapper(method="put", url=url)
+        if response.status_code == 202:
+            return None
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to update table statistics: {response.text}')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to update table statistics: not found')
+        if response.status_code == 502:
+            raise ServiceConnectionError(
+                f'Failed to update table statistics: data service failed to establish connection to metadata service')
+        if response.status_code == 503:
+            raise ServiceError(f'Failed to update table statistics: failed to save statistic in search service')
+        raise ResponseCodeError(f'Failed to update table statistics: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
     def update_table_data(self, database_id: str, table_id: str, data: dict, keys: dict) -> None:
@@ -1235,7 +1264,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
@@ -1304,7 +1333,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
@@ -1568,7 +1597,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database, table/view/subset or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
@@ -1629,7 +1658,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database, table/view/subset or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
@@ -1669,7 +1698,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database, table/view/subset or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
@@ -1906,7 +1935,7 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
         """

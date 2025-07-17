@@ -113,16 +113,22 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     @Override
     public Map<String, ColumnAnalysisResultDto> determineDataTypes(DatabaseDto database, QueryDto subset)
             throws ColumnNotFoundException, DatabaseUnavailableException {
+        return determineDataTypes(database, duckDbMapper.queryToRawDescribeQuery(subset.getQuery()));
+    }
+
+    public Map<String, ColumnAnalysisResultDto> determineDataTypes(DatabaseDto database, String statement)
+            throws ColumnNotFoundException, DatabaseUnavailableException {
         try (Connection connection = getDuckDbConnection()) {
             setupMySql(connection);
             /* attach to mariadb in duckdb */
             final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
             statement1.executeUpdate();
             statement1.close();
-            final PreparedStatement statement2 = connection.prepareStatement(duckDbMapper.queryDtoToRawDescribeQuery(subset));
+            final PreparedStatement statement2 = connection.prepareStatement(statement);
             final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
             final Map<String, ColumnAnalysisResultDto> schema = dataMapper.resultSetToConstraintResult(resultSet2);
             statement2.close();
+            log.info("Determined schema data types for {} column(s)", schema.size());
             return schema;
         } catch (SQLException e) {
             if (e.getMessage().contains("not find column")) {

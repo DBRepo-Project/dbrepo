@@ -1,4 +1,5 @@
 {{- if .Values.searchservice.enabled }}
+{{- if .Values.searchservice.setupJob.enabled }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -46,4 +47,5 @@ spec:
       volumes:
         - name: empty-dir
           emptyDir: { }
+{{- end }}
 {{- end }}
