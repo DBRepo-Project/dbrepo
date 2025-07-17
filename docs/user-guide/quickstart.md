@@ -11,15 +11,19 @@ The following instances have different login mechanisms:
 
 * Open for anyone, create an account with username and password:
 
-    !!! warning "Ephemeral Data"
+    !!! danger "Ephemeral Data"
     
         This instance is intended for testing-purposes only and data may be deleted at any time.
         
     * [test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
 
-* By affiliation (SSO):
+* By affiliation:
 
-    * [dbrepo.datalab.tuwien.ac.at](https://dbrepo.datalab.tuwien.ac.at) with MQTT/AMQP endpoint `s155.datalab.tuwien.ac.at`
+    * [dbrepo.datalab.tuwien.ac.at](https://dbrepo.datalab.tuwien.ac.at) for TU Wien staff
+
+* By membership:
+
+    * [dbrepo.dyn.cloud.e-infra.cz](https://dbrepo.dyn.cloud.e-infra.cz) for EGI federation members
 
 ## Create Database
 
