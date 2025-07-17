@@ -135,8 +135,13 @@ export default {
           this.$refs.queryResults.reExecuteCount(subset.id)
           this.loadingSubset = false
         })
-        .catch(() => {
+        .catch(({code}) => {
           this.loadingSubset = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingSubset = false

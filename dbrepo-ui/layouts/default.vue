@@ -24,8 +24,8 @@
       <v-list nav>
         <v-list-item
           to="/"
-          prepend-icon="mdi-information-outline"
-          :title="$t('navigation.information')" />
+          prepend-icon="mdi-database"
+          :title="$t('navigation.databases')" />
         <v-list-item
           to="/search"
           exact
@@ -36,11 +36,6 @@
           to="/semantic"
           prepend-icon="mdi-share-variant"
           :title="$t('navigation.semantics')" />
-        <v-list-item
-          v-if="canListContainers"
-          to="/container"
-          prepend-icon="mdi-database-settings"
-          :title="$t('navigation.container')" />
       </v-list>
       <template v-slot:append>
         <v-alert
@@ -92,7 +87,7 @@
           hide-details
           clearable
           append-inner-icon="mdi-magnify"
-          :placeholder="$t('toolbars.search.fuzzy.placeholder')"
+          :placeholder="fuzzySearchPlaceholder"
           @click:append-inner="retrieve" />
         <v-spacer />
         <v-btn
@@ -197,7 +192,7 @@ export default {
       databaseError: null,
       accessError: null,
       searchResults: [],
-      databases: [],
+      databases: null,
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false,
@@ -287,9 +282,6 @@ export default {
       }
       return this.roles.includes('list-ontologies')
     },
-    canListContainers () {
-      return this.cacheUser
-    },
     logo () {
       return this.$config.public.logo
     },
@@ -299,6 +291,15 @@ export default {
     searchVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
+    },
+    fuzzySearchPlaceholder () {
+      if (this.databases) {
+        if (this.cacheUser) {
+          return this.$t('toolbars.search.fuzzy.search', { total: this.databases })
+        }
+        return this.$t('toolbars.search.fuzzy.public', { total: this.databases })
+      }
+      return this.$t('toolbars.search.fuzzy.placeholder')
     }
   },
   watch: {
@@ -365,6 +366,7 @@ export default {
     }
     this.setTheme()
     this.setLocale()
+    this.getDatabaseCount()
   },
   methods: {
     retrieve () {
@@ -396,6 +398,26 @@ export default {
           this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
           break
       }
+    },
+    getDatabaseCount () {
+      this.loadingDatabases = true
+      const database = useDatabaseService()
+      database.findCount()
+        .then((count) => {
+          this.databases = count
+          this.loadingDatabases = false
+        })
+        .catch(({code}) => {
+          this.loadingDatabases = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loadingDatabases = false
+        })
     }
   }
 }

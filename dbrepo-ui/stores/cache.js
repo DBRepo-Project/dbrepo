@@ -141,13 +141,13 @@ export const useCacheStore = defineStore('cache', {
       tableService.findOne(databaseId, tableId)
         .then(table => this.table = table)
     },
-    setRouteAccess(databaseId, userId) {
-      if (!databaseId || !userId) {
+    setRouteAccess(databaseId, username) {
+      if (!databaseId || !username) {
         this.access = null
         return
       }
       const accessService = useAccessService()
-      accessService.findOne(databaseId, userId)
+      accessService.findOne(databaseId, username)
         .then(access => this.access = access)
     },
     setRouteView(databaseId, viewId) {

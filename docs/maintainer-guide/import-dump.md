@@ -5,7 +5,7 @@ author: Martin Weise
 <center>
 ```mermaid
 graph LR
-  A[MySQL Workbench] --> |:3307| C[(Data Database)];
+  A[MySQL Workbench] --> |:3306| C[(Data Database)];
 ```
 </center>
 

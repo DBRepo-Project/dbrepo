@@ -185,6 +185,20 @@
                 "extraConfiguration": {
                     "type": "string"
                 },
+                "extraContainerPorts": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "containerPort": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "extraPlugins": {
                     "type": "string"
                 },
@@ -1557,10 +1571,16 @@
                                 }
                             }
                         },
+                        "limit": {
+                            "type": "object"
+                        },
                         "resources": {
                             "type": "object"
                         },
                         "resourcesPreset": {
+                            "type": "string"
+                        },
+                        "schedule": {
                             "type": "string"
                         }
                     }

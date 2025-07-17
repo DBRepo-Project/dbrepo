@@ -10,6 +10,7 @@ data:
   {{ toYaml . | nindent 2 }}
   {{- end }}
   {{ (.Files.Glob "files/01-setup-schema.sql").AsConfig | nindent 2 }}
+  {{- if .Values.datadb.enabled }}
   02-setup-data.sql: |-
     BEGIN;
     INSERT INTO `mdb_containers` (id, name, internal_name, image_id, host, port, ui_host, ui_port, privileged_username,
@@ -20,4 +21,5 @@ data:
             '{{ .Values.datadb.rootUser.password }}', '{{ .Values.datadb.db.user }}',
             '{{ .Values.datadb.db.password }}');
     COMMIT;
+  {{- end }}
 {{- end }}

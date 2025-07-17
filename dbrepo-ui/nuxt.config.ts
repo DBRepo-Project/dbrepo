@@ -1,5 +1,4 @@
-import {transformAssetUrls} from 'vite-plugin-vuetify'
-import vuetify from 'vite-plugin-vuetify'
+import vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 
 const proxy: any = {}
 
@@ -193,5 +192,5 @@ export default defineNuxtConfig({
   devtools: {
     enabled: false
   },
-  compatibilityDate: '2025-01-25'
+  compatibilityDate: '2025-07-15'
 })
