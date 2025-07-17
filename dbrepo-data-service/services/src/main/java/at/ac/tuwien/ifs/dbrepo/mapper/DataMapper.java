@@ -294,13 +294,12 @@ public interface DataMapper {
     }
 
     default ColumnTypeDto duckDbDataTypeToMariaDbColumnTypeDto(String data) {
-        final List<String> inCompatibleTypes = List.of("INTERVAL", "SQLNULL", "TIME_TZ", "TIMESTAMP_MS", "TIMESTAMP_NS",
-                "TIMESTAMP_S", "TIMESTAMP_TZ", "UUID");
+        final List<String> inCompatibleTypes = List.of("INTERVAL", "SQLNULL", "HUGEINT", "UHUGEINT");
         if (inCompatibleTypes.contains(data)) {
             log.warn("Failed to map data type: {}", data);
             return null;
         }
-        if (List.of("HUGEINT", "UBIGINT", "UHUGEINT").contains(data)) {
+        if (List.of("UBIGINT").contains(data)) {
             return ColumnTypeDto.BIGINT;
         } else if (List.of("INTEGER", "UINTEGER").contains(data)) {
             return ColumnTypeDto.INT;
@@ -310,6 +309,13 @@ public interface DataMapper {
             return ColumnTypeDto.TINYINT;
         } else if (data.equals("BOOLEAN")) {
             return ColumnTypeDto.BOOL;
+        } else if (data.equals("UUID")) {
+            return ColumnTypeDto.VARCHAR;
+        } else if (List.of("TIMESTAMP WITH TIME ZONE", "TIMESTAMP_NS", "TIMESTAMP_MS", "TIMESTAMP_S",
+                "TIMESTAMP_TZ", "TIMESTAMP WITHOUT TIME ZONE").contains(data)) {
+            return ColumnTypeDto.TIMESTAMP;
+        } else if (List.of("TIME_TZ").contains(data)) {
+            return ColumnTypeDto.TIME;
         }
         return ColumnTypeDto.valueOf(data);
     }
@@ -366,6 +372,11 @@ public interface DataMapper {
         return columns;
     }
 
+    /**
+     * Maps the DuckDB Analysis data type given in data to the internally defined data types. Do not use for schema inspection.
+     * @param data The data type.
+     * @return The mapped internal data type.
+     */
     default ColumnTypeDto dataTypeToColumnTypeDto(String data) {
         if (data.equals("BOOLEAN")) {
             return ColumnTypeDto.BOOL;

@@ -28,20 +28,22 @@ public class DataMapperUnitTest extends BaseTest {
         return Stream.of(
                 Arguments.arguments("INTERVAL"),
                 Arguments.arguments("SQLNULL"),
-                Arguments.arguments("TIME_TZ"),
-                Arguments.arguments("TIMESTAMP_MS"),
-                Arguments.arguments("TIMESTAMP_NS"),
-                Arguments.arguments("TIMESTAMP_S"),
-                Arguments.arguments("TIMESTAMP_TZ"),
-                Arguments.arguments("UUID")
+                Arguments.arguments("HUGEINT"),
+                Arguments.arguments("UHUGEINT")
         );
     }
 
     public static Stream<Arguments> compatible_parameters() {
         return Stream.of(
-                Arguments.arguments("HUGEINT", ColumnTypeDto.BIGINT),
                 Arguments.arguments("UBIGINT", ColumnTypeDto.BIGINT),
-                Arguments.arguments("UHUGEINT", ColumnTypeDto.BIGINT),
+                Arguments.arguments("TIMESTAMP_MS", ColumnTypeDto.TIMESTAMP),
+                Arguments.arguments("TIMESTAMP_NS", ColumnTypeDto.TIMESTAMP),
+                Arguments.arguments("TIMESTAMP_S", ColumnTypeDto.TIMESTAMP),
+                Arguments.arguments("TIMESTAMP_TZ", ColumnTypeDto.TIMESTAMP),
+                Arguments.arguments("TIMESTAMP WITHOUT TIME ZONE", ColumnTypeDto.TIMESTAMP),
+                Arguments.arguments("TIMESTAMP WITH TIME ZONE", ColumnTypeDto.TIMESTAMP),
+                Arguments.arguments("UUID", ColumnTypeDto.VARCHAR),
+                Arguments.arguments("TIME_TZ", ColumnTypeDto.TIME),
                 Arguments.arguments("INTEGER", ColumnTypeDto.INT),
                 Arguments.arguments("UINTEGER", ColumnTypeDto.INT),
                 Arguments.arguments("SMALLINT", ColumnTypeDto.SMALLINT),
