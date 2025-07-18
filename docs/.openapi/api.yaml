@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: REST API
-  version: 1.10.2
+  version: null
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//'
 paths:
   /api/analyse/datatypes:
     get:
@@ -9275,10 +9275,10 @@ components:
           type: string
         parametersString:
           type: string
-        untilDate:
+        fromDate:
           type: string
           format: date-time
-        fromDate:
+        untilDate:
           type: string
           format: date-time
     BannerMessageDto:
