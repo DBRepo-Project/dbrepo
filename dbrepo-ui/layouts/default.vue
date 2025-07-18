@@ -36,6 +36,21 @@
           to="/semantic"
           prepend-icon="mdi-share-variant"
           :title="$t('navigation.semantics')" />
+        <v-list-item
+          v-if="policies"
+          to="/policies"
+          prepend-icon="mdi-sprout"
+          :title="$t('navigation.policies')" />
+        <v-list-item
+          v-if="terms"
+          to="/terms"
+          prepend-icon="mdi-book-open-variant-outline"
+          :title="$t('navigation.terms')" />
+        <v-list-item
+          v-if="about"
+          to="/about"
+          prepend-icon="mdi-information-outline"
+          :title="$t('navigation.about')" />
       </v-list>
       <template v-slot:append>
         <v-alert
@@ -176,7 +191,9 @@ useServerHead({
 import JumboBox from '@/components/JumboBox.vue'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
-import {useNuxtApp} from "#app";
+import about from '~/content/about.md?raw'
+import policies from '~/content/policies.md?raw'
+import terms from '~/content/terms.md?raw'
 
 export default {
   components: {

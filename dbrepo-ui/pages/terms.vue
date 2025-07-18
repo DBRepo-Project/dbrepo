@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="terms">
     <v-card
       rounded="0"
       variant="flat">
@@ -13,7 +14,7 @@
 
 <script>
 import Markdown from 'vue3-markdown-it'
-import source from '~/content/terms.md?raw'
+import terms from '~/content/terms.md?raw'
 
 export default {
   components: {
@@ -21,7 +22,7 @@ export default {
   },
   data() {
     return {
-      source: source
+      source: terms
     }
   }
 }
