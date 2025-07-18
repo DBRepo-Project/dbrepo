@@ -1,11 +1,11 @@
 <template>
   <div
-    v-if="policies">
+    v-if="source">
     <v-card
       rounded="0"
       variant="flat">
       <v-card-text>
-        <Markdown
+        <vue-markdown-it
           :source="source" />
       </v-card-text>
     </v-card>
@@ -13,16 +13,15 @@
 </template>
 
 <script>
-import Markdown from 'vue3-markdown-it'
-import policies from '~/content/policies.md?raw'
+import { VueMarkdownIt } from '@f3ve/vue-markdown-it'
 
 export default {
   components: {
-    Markdown
+    VueMarkdownIt
   },
   data() {
     return {
-      source: policies
+      source: this.$config.public.policies.content
     }
   }
 }
