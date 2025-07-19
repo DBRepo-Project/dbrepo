@@ -4,7 +4,8 @@
     <v-card
       rounded="0"
       variant="flat">
-      <v-card-text>
+      <v-card-text
+        class="markdown">
         <vue-markdown-it
           :source="source" />
       </v-card-text>
