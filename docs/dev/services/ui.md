@@ -93,6 +93,18 @@ User Interface on development.
 * Frontend: [Vuetify 3+](https://vuetifyjs.com/en/)
 * State: [Pinia](https://pinia.vuejs.org/)
 
+### Customization
+
+The UI supports adding pages in [Markdown]() format to describe the terms of use, policies and the repository itself.
+Inject your content through the environment variables:
+
+* `NUXT_PUBLIC_ABOUT_CONTENT` (`/about`)
+* `NUXT_PUBLIC_POLICIES_CONTENT` (`/policies`)
+* `NUXT_PUBLIC_TERMS_CONTENT` (`/terms`)
+
+If any of these environment variables are not empty, they will be displayed on the navigation and the content will be
+rendered.
+
 ## Limitations
 
 * When developing locally, the `axios` module does not parse custom headers (such as `X-Count`, `X-Headers`) and/or

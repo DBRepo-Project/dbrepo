@@ -67,14 +67,13 @@ def fetch_databases() -> List[Database]:
 
 
 def upsert_dashboard(database: Database) -> None:
-    db = dashboard_client().find(database.dashboard_uid)
-    if db is None:
-        db = dashboard_client().create(database.internal_name, database.dashboard_uid)
-        dashboard_client().update(database)
+    if dashboard_client().find(database.dashboard_uid) is None:
+        dashboard_client().create(database.internal_name, database.dashboard_uid)
     dashboard_client().update(database)
 
 
 if __name__ == "__main__":
     for database in fetch_databases():
+        database = rest_client().get_database(database_id=database.id)
         upsert_dashboard(database)
     logging.info("Finished. Exiting.")

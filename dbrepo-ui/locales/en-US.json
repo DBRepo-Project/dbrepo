@@ -1,6 +1,8 @@
 {
   "navigation": {
     "logo": "Logo",
+    "policies": "Policies",
+    "terms": "Terms of Use",
     "draft": "Draft",
     "information": "Information",
     "search": "Search",
