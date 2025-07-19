@@ -1874,6 +1874,14 @@
                 "public": {
                     "type": "object",
                     "properties": {
+                        "about": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "api": {
                             "type": "object",
                             "properties": {
@@ -1956,6 +1964,22 @@
                                             "type": "string"
                                         }
                                     }
+                                }
+                            }
+                        },
+                        "policies": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "terms": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string"
                                 }
                             }
                         },
