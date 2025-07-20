@@ -296,9 +296,6 @@
                         }
                     }
                 },
-                "sidecars": {
-                    "type": "array"
-                },
                 "virtualHost": {
                     "type": "string"
                 }
@@ -500,20 +497,6 @@
                 "grafana": {
                     "type": "object",
                     "properties": {
-                        "extraConfigmaps": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "mountPath": {
-                                        "type": "string"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        },
                         "extraEnvVarsSecret": {
                             "type": "string"
                         },
@@ -841,9 +824,6 @@
                             "type": "string"
                         }
                     }
-                },
-                "sidecars": {
-                    "type": "array"
                 }
             }
         },
@@ -860,25 +840,6 @@
                                     "type": "string"
                                 }
                             }
-                        }
-                    }
-                },
-                "loggingSidecar": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "resourcesPreset": {
-                            "type": "string"
                         }
                     }
                 },
