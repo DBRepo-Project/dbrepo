@@ -123,25 +123,6 @@
                 },
                 "resourcesPreset": {
                     "type": "string"
-                },
-                "setupJob": {
-                    "type": "object",
-                    "properties": {
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "resources": {
-                            "type": "object"
-                        },
-                        "resourcesPreset": {
-                            "type": "string"
-                        }
-                    }
                 }
             }
         },

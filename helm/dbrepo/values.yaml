@@ -138,20 +138,6 @@ authservice:
       #!/bin/bash
       kc.sh import --file /opt/keycloak/data/import/master-realm.json
       kc.sh import --file /opt/keycloak/data/import/dbrepo-realm.json
-  setupJob:
-    image:
-      ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.10.2
-    ## @param authservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset: "nano"
-    ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
   ## @skip authservice.extraEnvVarsSecret
   extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
