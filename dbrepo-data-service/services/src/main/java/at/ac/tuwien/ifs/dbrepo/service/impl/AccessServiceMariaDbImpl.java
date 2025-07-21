@@ -94,6 +94,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         } finally {
             dataSource.close();
         }
+        log.info("HALLO DAS IST EIN TEST!!!")
         log.info("Created access to database with internal name {} for user: {}", database.getInternalName(),
                 user.getUsername());
     }
