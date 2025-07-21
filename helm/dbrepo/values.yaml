@@ -567,7 +567,7 @@ searchservice:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
     enabled: true
     ## @param searchservice.setupJob.schedule The interval duration when the cronjob is executed.
-    schedule: "@daily"
+    schedule: "@midnight"
     ## @skip searchservice.setupJob.limit
     limit: { }
     image:

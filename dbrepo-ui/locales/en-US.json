@@ -21,10 +21,14 @@
     "continue": "Continue",
     "assign": "Assign",
     "back": "Back",
+    "more": "More",
     "schema": "Schema",
     "persist": "Persist",
     "cancel": "Cancel",
     "user": "User",
+    "account": "Account",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
     "import": "Import Data",
     "delete": "Delete",
     "recommend": "Recommend",
@@ -1405,6 +1409,9 @@
     }
   },
   "toolbars": {
+    "dashboard": {
+      "databases": "Databases"
+    },
     "user": {
       "info": "Info",
       "authentication": "Authentication",

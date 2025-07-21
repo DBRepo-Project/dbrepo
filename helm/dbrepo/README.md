@@ -280,7 +280,7 @@ mqtt.prefetch = 10
 | `searchservice.resourcesPreset`                                   | The container resource preset                                                                                     | `micro`                 |
 | `searchservice.resources`                                         | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                    |
 | `searchservice.setupJob.enabled`                                  | Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.            | `true`                  |
-| `searchservice.setupJob.schedule`                                 | The interval duration when the cronjob is executed.                                                               | `@daily`                |
+| `searchservice.setupJob.schedule`                                 | The interval duration when the cronjob is executed.                                                               | `@midnight`             |
 | `searchservice.setupJob.resourcesPreset`                          | The container resource preset                                                                                     | `nano`                  |
 | `searchservice.setupJob.resources`                                | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                    |
 | `searchservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                     |
