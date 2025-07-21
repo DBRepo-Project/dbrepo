@@ -2,11 +2,11 @@
 author: Martin Weise
 ---
 
-The REST API manages all of DBRepo. This documentation is also available as [Swagger UI](/infrastructures/dbrepo/1.10/rest/).
+The REST API manages all of DBRepo. This documentation is also available as [Swagger UI](../../rest/).
 
 # REST API
 
-> Version 1.10.0
+> Version 1.0.0
 
 The merged REST API of DBRepo for users, developers and data stewards to be accessed publicly. Have a look at
 the [source code](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services) for non-public endpoints
@@ -28,26 +28,27 @@ that are used between the services themselves.
 | HEAD | [/api/database/{databaseId}/table/{tableId}/data](#headapidatabasedatabaseidtabletableiddata) | Get table data |
 | GET | [/api/database/{databaseId}/subset/{subsetId}/data](#getapidatabasedatabaseidsubsetsubsetiddata) | Get subset data |
 | HEAD | [/api/database/{databaseId}/subset/{subsetId}/data](#headapidatabasedatabaseidsubsetsubsetiddata) | Get subset data |
-| GET | [/api/database/{databaseId}/grant/{userId}](#getapidatabasedatabaseidgrantuserid) | Get grants |
-| HEAD | [/api/database/{databaseId}/grant/{userId}](#headapidatabasedatabaseidgrantuserid) | Get grants |
+| GET | [/api/database/{databaseId}/grant/{username}](#getapidatabasedatabaseidgrantusername) | Get grants |
+| HEAD | [/api/database/{databaseId}/grant/{username}](#headapidatabasedatabaseidgrantusername) | Get grants |
 | PUT | [/api/database/{databaseId}/subset/{queryId}](#putapidatabasedatabaseidsubsetqueryid) | Persist subset |
 | POST | [/api/upload](#postapiupload) | Uploads a multipart file |
 | POST | [/api/database/{databaseId}/table/{tableId}/data/import](#postapidatabasedatabaseidtabletableiddataimport) | Import dataset |
 | GET | [/api/database/{databaseId}/subset](#getapidatabasedatabaseidsubset) | Find subsets |
 | POST | [/api/database/{databaseId}/subset](#postapidatabasedatabaseidsubset) | Create subset |
+| GET | [/api/image/{imageId}/analyse/schema/{key}](#getapiimageimageidanalyseschemakey) | Analyse schema |
 | GET | [/api/database/{databaseId}/table/{tableId}/history](#getapidatabasedatabaseidtabletableidhistory) | Get history |
 | GET | [/api/database/{databaseId}/subset/{subsetId}](#getapidatabasedatabaseidsubsetsubsetid) | Find subset |
-| GET | [/api/user/{userId}](#getapiuseruserid) | Get user |
-| PUT | [/api/user/{userId}](#putapiuseruserid) | Update user |
-| HEAD | [/api/user/{userId}](#headapiuseruserid) | Get user |
+| GET | [/api/user/{username}](#getapiuserusername) | Get user |
+| PUT | [/api/user/{username}](#putapiuserusername) | Update user |
+| HEAD | [/api/user/{username}](#headapiuserusername) | Get user |
 | GET | [/api/database](#getapidatabase) | List databases |
 | POST | [/api/database](#postapidatabase) | Create database |
 | HEAD | [/api/database](#headapidatabase) | List databases |
-| GET | [/api/database/{databaseId}/access/{userId}](#getapidatabasedatabaseidaccessuserid) | Find/Check access |
-| PUT | [/api/database/{databaseId}/access/{userId}](#putapidatabasedatabaseidaccessuserid) | Modify access |
-| POST | [/api/database/{databaseId}/access/{userId}](#postapidatabasedatabaseidaccessuserid) | Give access |
-| DELETE | [/api/database/{databaseId}/access/{userId}](#deleteapidatabasedatabaseidaccessuserid) | Delete access |
-| HEAD | [/api/database/{databaseId}/access/{userId}](#headapidatabasedatabaseidaccessuserid) | Find/Check access |
+| GET | [/api/database/{databaseId}/access/{username}](#getapidatabasedatabaseidaccessusername) | Find/Check access |
+| PUT | [/api/database/{databaseId}/access/{username}](#putapidatabasedatabaseidaccessusername) | Modify access |
+| POST | [/api/database/{databaseId}/access/{username}](#postapidatabasedatabaseidaccessusername) | Give access |
+| DELETE | [/api/database/{databaseId}/access/{username}](#deleteapidatabasedatabaseidaccessusername) | Delete access |
+| HEAD | [/api/database/{databaseId}/access/{username}](#headapidatabasedatabaseidaccessusername) | Find/Check access |
 | GET | [/api/ontology/{ontologyId}](#getapiontologyontologyid) | Find ontology |
 | PUT | [/api/ontology/{ontologyId}](#putapiontologyontologyid) | Update ontology |
 | DELETE | [/api/ontology/{ontologyId}](#deleteapiontologyontologyid) | Delete ontology |
@@ -141,6 +142,8 @@ that are used between the services themselves.
 | FilterDto | [#/components/schemas/FilterDto](#componentsschemasfilterdto) |  |
 | OrderDto | [#/components/schemas/OrderDto](#componentsschemasorderdto) |  |
 | SubsetDto | [#/components/schemas/SubsetDto](#componentsschemassubsetdto) |  |
+| ColumnAnalysisResultDto | [#/components/schemas/ColumnAnalysisResultDto](#componentsschemascolumnanalysisresultdto) |  |
+| SchemaAnalysisResultDto | [#/components/schemas/SchemaAnalysisResultDto](#componentsschemasschemaanalysisresultdto) |  |
 | TableHistoryDto | [#/components/schemas/TableHistoryDto](#componentsschemastablehistorydto) |  |
 | TupleDeleteDto | [#/components/schemas/TupleDeleteDto](#componentsschemastupledeletedto) |  |
 | UserAttributesDto | [#/components/schemas/UserAttributesDto](#componentsschemasuserattributesdto) |  |
@@ -176,7 +179,12 @@ that are used between the services themselves.
 | OntologyCreateDto | [#/components/schemas/OntologyCreateDto](#componentsschemasontologycreatedto) |  |
 | BannerMessageCreateDto | [#/components/schemas/BannerMessageCreateDto](#componentsschemasbannermessagecreatedto) |  |
 | ImageCreateDto | [#/components/schemas/ImageCreateDto](#componentsschemasimagecreatedto) |  |
+| CreateIdentifierCreatorDto | [#/components/schemas/CreateIdentifierCreatorDto](#componentsschemascreateidentifiercreatordto) |  |
+| CreateIdentifierDescriptionDto | [#/components/schemas/CreateIdentifierDescriptionDto](#componentsschemascreateidentifierdescriptiondto) |  |
 | CreateIdentifierDto | [#/components/schemas/CreateIdentifierDto](#componentsschemascreateidentifierdto) |  |
+| CreateIdentifierFunderDto | [#/components/schemas/CreateIdentifierFunderDto](#componentsschemascreateidentifierfunderdto) |  |
+| CreateIdentifierTitleDto | [#/components/schemas/CreateIdentifierTitleDto](#componentsschemascreateidentifiertitledto) |  |
+| CreateRelatedIdentifierDto | [#/components/schemas/CreateRelatedIdentifierDto](#componentsschemascreaterelatedidentifierdto) |  |
 | CreateDatabaseDto | [#/components/schemas/CreateDatabaseDto](#componentsschemascreatedatabasedto) |  |
 | CreateViewDto | [#/components/schemas/CreateViewDto](#componentsschemascreateviewdto) |  |
 | CreateForeignKeyDto | [#/components/schemas/CreateForeignKeyDto](#componentsschemascreateforeignkeydto) |  |
@@ -1242,7 +1250,7 @@ Accept: string
 
 ***
 
-### [GET]/api/database/{databaseId}/grant/{userId}
+### [GET]/api/database/{databaseId}/grant/{username}
 
 - Summary  
 Get grants
@@ -1326,7 +1334,7 @@ bearerAuth
 
 ***
 
-### [HEAD]/api/database/{databaseId}/grant/{userId}
+### [HEAD]/api/database/{databaseId}/grant/{username}
 
 - Summary  
 Get grants
@@ -1482,6 +1490,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -1657,6 +1666,7 @@ bearerAuth
       affiliation_identifier_scheme_uri?: string
     }[]
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -1881,6 +1891,7 @@ persisted?: boolean
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -2081,6 +2092,85 @@ size?: integer
 
 ***
 
+### [GET]/api/image/{imageId}/analyse/schema/{key}
+
+- Summary  
+Analyse schema
+
+- Description  
+Analyses a dataset stored at the Storage Service and attempts to map the datatypes, requires role `analyse-datatypes`.
+
+- Security  
+basicAuth  
+
+#### Responses
+
+- 200 Analysed schema successfully
+
+`application/json`
+
+```ts
+{
+  delimiter: string
+  quote: string
+  escape: string
+  comment: string
+  columns: {
+    name: string
+    datatype: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
+    size?: integer
+    d?: integer
+    enums?: string[]
+    sets?: string[]
+    null_allowed?: boolean
+    primary_key?: boolean
+  }[]
+  newline_delimiter: string
+  skip_rows: integer
+  has_header: boolean
+  date_format?: string
+  timestamp_format?: string
+}
+```
+
+- 400 Schema is malformed or does not fit the image
+
+`application/json`
+
+```ts
+{
+  status: enum[100 CONTINUE, 101 SWITCHING_PROTOCOLS, 102 PROCESSING, 103 EARLY_HINTS, 103 CHECKPOINT, 200 OK, 201 CREATED, 202 ACCEPTED, 203 NON_AUTHORITATIVE_INFORMATION, 204 NO_CONTENT, 205 RESET_CONTENT, 206 PARTIAL_CONTENT, 207 MULTI_STATUS, 208 ALREADY_REPORTED, 226 IM_USED, 300 MULTIPLE_CHOICES, 301 MOVED_PERMANENTLY, 302 FOUND, 302 MOVED_TEMPORARILY, 303 SEE_OTHER, 304 NOT_MODIFIED, 305 USE_PROXY, 307 TEMPORARY_REDIRECT, 308 PERMANENT_REDIRECT, 400 BAD_REQUEST, 401 UNAUTHORIZED, 402 PAYMENT_REQUIRED, 403 FORBIDDEN, 404 NOT_FOUND, 405 METHOD_NOT_ALLOWED, 406 NOT_ACCEPTABLE, 407 PROXY_AUTHENTICATION_REQUIRED, 408 REQUEST_TIMEOUT, 409 CONFLICT, 410 GONE, 411 LENGTH_REQUIRED, 412 PRECONDITION_FAILED, 413 PAYLOAD_TOO_LARGE, 413 REQUEST_ENTITY_TOO_LARGE, 414 URI_TOO_LONG, 414 REQUEST_URI_TOO_LONG, 415 UNSUPPORTED_MEDIA_TYPE, 416 REQUESTED_RANGE_NOT_SATISFIABLE, 417 EXPECTATION_FAILED, 418 I_AM_A_TEAPOT, 419 INSUFFICIENT_SPACE_ON_RESOURCE, 420 METHOD_FAILURE, 421 DESTINATION_LOCKED, 422 UNPROCESSABLE_ENTITY, 423 LOCKED, 424 FAILED_DEPENDENCY, 425 TOO_EARLY, 426 UPGRADE_REQUIRED, 428 PRECONDITION_REQUIRED, 429 TOO_MANY_REQUESTS, 431 REQUEST_HEADER_FIELDS_TOO_LARGE, 451 UNAVAILABLE_FOR_LEGAL_REASONS, 500 INTERNAL_SERVER_ERROR, 501 NOT_IMPLEMENTED, 502 BAD_GATEWAY, 503 SERVICE_UNAVAILABLE, 504 GATEWAY_TIMEOUT, 505 HTTP_VERSION_NOT_SUPPORTED, 506 VARIANT_ALSO_NEGOTIATES, 507 INSUFFICIENT_STORAGE, 508 LOOP_DETECTED, 509 BANDWIDTH_LIMIT_EXCEEDED, 510 NOT_EXTENDED, 511 NETWORK_AUTHENTICATION_REQUIRED]
+  message: string
+  code: string
+}
+```
+
+- 404 Failed to find image or dataset
+
+`application/json`
+
+```ts
+{
+  status: enum[100 CONTINUE, 101 SWITCHING_PROTOCOLS, 102 PROCESSING, 103 EARLY_HINTS, 103 CHECKPOINT, 200 OK, 201 CREATED, 202 ACCEPTED, 203 NON_AUTHORITATIVE_INFORMATION, 204 NO_CONTENT, 205 RESET_CONTENT, 206 PARTIAL_CONTENT, 207 MULTI_STATUS, 208 ALREADY_REPORTED, 226 IM_USED, 300 MULTIPLE_CHOICES, 301 MOVED_PERMANENTLY, 302 FOUND, 302 MOVED_TEMPORARILY, 303 SEE_OTHER, 304 NOT_MODIFIED, 305 USE_PROXY, 307 TEMPORARY_REDIRECT, 308 PERMANENT_REDIRECT, 400 BAD_REQUEST, 401 UNAUTHORIZED, 402 PAYMENT_REQUIRED, 403 FORBIDDEN, 404 NOT_FOUND, 405 METHOD_NOT_ALLOWED, 406 NOT_ACCEPTABLE, 407 PROXY_AUTHENTICATION_REQUIRED, 408 REQUEST_TIMEOUT, 409 CONFLICT, 410 GONE, 411 LENGTH_REQUIRED, 412 PRECONDITION_FAILED, 413 PAYLOAD_TOO_LARGE, 413 REQUEST_ENTITY_TOO_LARGE, 414 URI_TOO_LONG, 414 REQUEST_URI_TOO_LONG, 415 UNSUPPORTED_MEDIA_TYPE, 416 REQUESTED_RANGE_NOT_SATISFIABLE, 417 EXPECTATION_FAILED, 418 I_AM_A_TEAPOT, 419 INSUFFICIENT_SPACE_ON_RESOURCE, 420 METHOD_FAILURE, 421 DESTINATION_LOCKED, 422 UNPROCESSABLE_ENTITY, 423 LOCKED, 424 FAILED_DEPENDENCY, 425 TOO_EARLY, 426 UPGRADE_REQUIRED, 428 PRECONDITION_REQUIRED, 429 TOO_MANY_REQUESTS, 431 REQUEST_HEADER_FIELDS_TOO_LARGE, 451 UNAVAILABLE_FOR_LEGAL_REASONS, 500 INTERNAL_SERVER_ERROR, 501 NOT_IMPLEMENTED, 502 BAD_GATEWAY, 503 SERVICE_UNAVAILABLE, 504 GATEWAY_TIMEOUT, 505 HTTP_VERSION_NOT_SUPPORTED, 506 VARIANT_ALSO_NEGOTIATES, 507 INSUFFICIENT_STORAGE, 508 LOOP_DETECTED, 509 BANDWIDTH_LIMIT_EXCEEDED, 510 NOT_EXTENDED, 511 NETWORK_AUTHENTICATION_REQUIRED]
+  message: string
+  code: string
+}
+```
+
+- 503 Failed to establish connection to metadata service
+
+`application/json`
+
+```ts
+{
+  status: enum[100 CONTINUE, 101 SWITCHING_PROTOCOLS, 102 PROCESSING, 103 EARLY_HINTS, 103 CHECKPOINT, 200 OK, 201 CREATED, 202 ACCEPTED, 203 NON_AUTHORITATIVE_INFORMATION, 204 NO_CONTENT, 205 RESET_CONTENT, 206 PARTIAL_CONTENT, 207 MULTI_STATUS, 208 ALREADY_REPORTED, 226 IM_USED, 300 MULTIPLE_CHOICES, 301 MOVED_PERMANENTLY, 302 FOUND, 302 MOVED_TEMPORARILY, 303 SEE_OTHER, 304 NOT_MODIFIED, 305 USE_PROXY, 307 TEMPORARY_REDIRECT, 308 PERMANENT_REDIRECT, 400 BAD_REQUEST, 401 UNAUTHORIZED, 402 PAYMENT_REQUIRED, 403 FORBIDDEN, 404 NOT_FOUND, 405 METHOD_NOT_ALLOWED, 406 NOT_ACCEPTABLE, 407 PROXY_AUTHENTICATION_REQUIRED, 408 REQUEST_TIMEOUT, 409 CONFLICT, 410 GONE, 411 LENGTH_REQUIRED, 412 PRECONDITION_FAILED, 413 PAYLOAD_TOO_LARGE, 413 REQUEST_ENTITY_TOO_LARGE, 414 URI_TOO_LONG, 414 REQUEST_URI_TOO_LONG, 415 UNSUPPORTED_MEDIA_TYPE, 416 REQUESTED_RANGE_NOT_SATISFIABLE, 417 EXPECTATION_FAILED, 418 I_AM_A_TEAPOT, 419 INSUFFICIENT_SPACE_ON_RESOURCE, 420 METHOD_FAILURE, 421 DESTINATION_LOCKED, 422 UNPROCESSABLE_ENTITY, 423 LOCKED, 424 FAILED_DEPENDENCY, 425 TOO_EARLY, 426 UPGRADE_REQUIRED, 428 PRECONDITION_REQUIRED, 429 TOO_MANY_REQUESTS, 431 REQUEST_HEADER_FIELDS_TOO_LARGE, 451 UNAVAILABLE_FOR_LEGAL_REASONS, 500 INTERNAL_SERVER_ERROR, 501 NOT_IMPLEMENTED, 502 BAD_GATEWAY, 503 SERVICE_UNAVAILABLE, 504 GATEWAY_TIMEOUT, 505 HTTP_VERSION_NOT_SUPPORTED, 506 VARIANT_ALSO_NEGOTIATES, 507 INSUFFICIENT_STORAGE, 508 LOOP_DETECTED, 509 BANDWIDTH_LIMIT_EXCEEDED, 510 NOT_EXTENDED, 511 NETWORK_AUTHENTICATION_REQUIRED]
+  message: string
+  code: string
+}
+```
+
+***
+
 ### [GET]/api/database/{databaseId}/table/{tableId}/history
 
 - Summary  
@@ -2231,6 +2321,7 @@ timestamp?: string
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -2311,7 +2402,7 @@ timestamp?: string
 
 ***
 
-### [GET]/api/user/{userId}
+### [GET]/api/user/{username}
 
 - Summary  
 Get user
@@ -2374,13 +2465,13 @@ basicAuth
 
 ***
 
-### [PUT]/api/user/{userId}
+### [PUT]/api/user/{username}
 
 - Summary  
 Update user
 
 - Description  
-Updates user with id. Requires role `modify-user-information`.
+Updates user with given username. Requires role `modify-user-information`.
 
 - Security  
 bearerAuth  
@@ -2476,7 +2567,7 @@ basicAuth
 
 ***
 
-### [HEAD]/api/user/{userId}
+### [HEAD]/api/user/{username}
 
 - Summary  
 Get user
@@ -2592,6 +2683,7 @@ internal_name?: string
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -2683,6 +2775,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -2847,6 +2940,7 @@ internal_name?: string
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -2874,13 +2968,13 @@ internal_name?: string
 
 ***
 
-### [GET]/api/database/{databaseId}/access/{userId}
+### [GET]/api/database/{databaseId}/access/{username}
 
 - Summary  
 Find/Check access
 
 - Description  
-Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.
+Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.
 
 - Security  
 bearerAuth  
@@ -2934,13 +3028,13 @@ basicAuth
 
 ***
 
-### [PUT]/api/database/{databaseId}/access/{userId}
+### [PUT]/api/database/{databaseId}/access/{username}
 
 - Summary  
 Modify access
 
 - Description  
-Modifies access of a user with given id to database with given id. Requires role `update-database-access`.
+Modifies access of a user with given username to database with given id. Requires role `update-database-access`.
 
 - Security  
 bearerAuth  
@@ -3022,13 +3116,13 @@ basicAuth
 
 ***
 
-### [POST]/api/database/{databaseId}/access/{userId}
+### [POST]/api/database/{databaseId}/access/{username}
 
 - Summary  
 Give access
 
 - Description  
-Give a user with given id access to some database with given id. Requires role `create-database-access`.
+Give a user with given username access to some database with given id. Requires role `create-database-access`.
 
 - Security  
 bearerAuth  
@@ -3128,13 +3222,13 @@ basicAuth
 
 ***
 
-### [DELETE]/api/database/{databaseId}/access/{userId}
+### [DELETE]/api/database/{databaseId}/access/{username}
 
 - Summary  
 Delete access
 
 - Description  
-Delete access of a user with id to a database with id. Requires role `delete-database-access`.
+Delete access of a user with given username to a database with id. Requires role `delete-database-access`.
 
 - Security  
 bearerAuth  
@@ -3206,13 +3300,13 @@ basicAuth
 
 ***
 
-### [HEAD]/api/database/{databaseId}/access/{userId}
+### [HEAD]/api/database/{databaseId}/access/{username}
 
 - Summary  
 Find/Check access
 
 - Description  
-Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.
+Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.
 
 - Security  
 bearerAuth  
@@ -3520,10 +3614,12 @@ Finds a container image in the metadata database.
     size_max?: integer
     size_default?: integer
     size_required?: boolean
+    size_step?: integer
     d_min?: integer
     d_max?: integer
     d_default?: integer
     d_required?: boolean
+    d_step?: integer
     data_hint?: string
     type_hint?: string
     // frontend needs to quote this data type
@@ -3601,10 +3697,12 @@ basicAuth
     size_max?: integer
     size_default?: integer
     size_required?: boolean
+    size_step?: integer
     d_min?: integer
     d_max?: integer
     d_default?: integer
     d_required?: boolean
+    d_step?: integer
     data_hint?: string
     type_hint?: string
     // frontend needs to quote this data type
@@ -3745,6 +3843,7 @@ Accept: string
     affiliation_identifier_scheme_uri?: string
   }[]
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -3969,9 +4068,7 @@ basicAuth
     creator_name: string
     name_type?: enum[Personal, Organizational]
     name_identifier?: string
-    name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
     affiliation_identifier?: string
-    affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
   }[]
   database_id: string
   query_id?: string
@@ -4061,6 +4158,7 @@ basicAuth
     affiliation_identifier_scheme_uri?: string
   }[]
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -4294,6 +4392,7 @@ basicAuth
     affiliation_identifier_scheme_uri?: string
   }[]
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -4440,6 +4539,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -4614,6 +4714,7 @@ basicAuth
       affiliation_identifier_scheme_uri?: string
     }[]
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -4980,6 +5081,7 @@ basicAuth
       affiliation_identifier_scheme_uri?: string
     }[]
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -5557,7 +5659,7 @@ basicAuth
 
 ```ts
 {
-  id: string
+  username: string
 }
 ```
 
@@ -5600,6 +5702,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -5738,6 +5841,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -5864,6 +5968,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -6051,6 +6156,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -6369,10 +6475,12 @@ basicAuth
     size_max?: integer
     size_default?: integer
     size_required?: boolean
+    size_step?: integer
     d_min?: integer
     d_max?: integer
     d_default?: integer
     d_required?: boolean
+    d_step?: integer
     data_hint?: string
     type_hint?: string
     // frontend needs to quote this data type
@@ -6484,6 +6592,7 @@ Accept: string
   doi?: string
   publisher: string
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -6541,19 +6650,16 @@ basicAuth
   type: enum[database, subset, table, view]
   doi?: string
   titles: {
-    id: string
     title: string
     language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
     type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
   }[]
   descriptions: {
-    id: string
     description: string
     language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
     type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
   }[]
   funders: {
-    id: string
     funder_name: string
     funder_identifier?: string
     funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
@@ -6569,16 +6675,13 @@ basicAuth
   publisher: string
   language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
   creators: {
-    id: string
     firstname?: string
     lastname?: string
     affiliation?: string
     creator_name: string
     name_type?: enum[Personal, Organizational]
     name_identifier?: string
-    name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
     affiliation_identifier?: string
-    affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
   }[]
   database_id: string
   query_id?: string
@@ -6588,7 +6691,6 @@ basicAuth
   publication_month?: integer
   publication_year: integer
   related_identifiers: {
-    id: string
     value: string
     type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
     relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
@@ -6668,6 +6770,7 @@ basicAuth
     affiliation_identifier_scheme_uri?: string
   }[]
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -7252,10 +7355,12 @@ basicAuth
       size_max?: integer
       size_default?: integer
       size_required?: boolean
+      size_step?: integer
       d_min?: integer
       d_max?: integer
       d_default?: integer
       d_required?: boolean
+      d_step?: integer
       data_hint?: string
       type_hint?: string
       // frontend needs to quote this data type
@@ -7499,9 +7604,9 @@ parameters: {
   until?: string
   set?: string
   resumptionToken?: string
-  untilDate?: string
-  fromDate?: string
   parametersString?: string
+  fromDate?: string
+  untilDate?: string
 }
 ```
 
@@ -7669,6 +7774,7 @@ url: string
     affiliation_identifier_scheme_uri?: string
   }[]
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -7755,6 +7861,7 @@ basicAuth
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -7999,10 +8106,12 @@ Finds a container in the metadata database.
       size_max?: integer
       size_default?: integer
       size_required?: boolean
+      size_step?: integer
       d_min?: integer
       d_max?: integer
       d_default?: integer
       d_required?: boolean
+      d_step?: integer
       data_hint?: string
       type_hint?: string
       // frontend needs to quote this data type
@@ -8438,6 +8547,7 @@ body: {
   doi?: string
   publisher: string
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -8515,6 +8625,7 @@ body: {
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -8627,6 +8738,7 @@ body: {
     affiliation_identifier_scheme_uri?: string
   }[]
   status: enum[draft, published]
+  created?: string
   database_id: string
   query_id?: string
   table_id?: string
@@ -8801,6 +8913,7 @@ body: {
       affiliation_identifier_scheme_uri?: string
     }[]
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -8918,6 +9031,47 @@ body: {
 }
 ```
 
+### #/components/schemas/ColumnAnalysisResultDto
+
+```ts
+{
+  name: string
+  datatype: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
+  size?: integer
+  d?: integer
+  enums?: string[]
+  sets?: string[]
+  null_allowed?: boolean
+  primary_key?: boolean
+}
+```
+
+### #/components/schemas/SchemaAnalysisResultDto
+
+```ts
+{
+  delimiter: string
+  quote: string
+  escape: string
+  comment: string
+  columns: {
+    name: string
+    datatype: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
+    size?: integer
+    d?: integer
+    enums?: string[]
+    sets?: string[]
+    null_allowed?: boolean
+    primary_key?: boolean
+  }[]
+  newline_delimiter: string
+  skip_rows: integer
+  has_header: boolean
+  date_format?: string
+  timestamp_format?: string
+}
+```
+
 ### #/components/schemas/TableHistoryDto
 
 ```ts
@@ -9004,6 +9158,7 @@ body: {
     doi?: string
     publisher: string
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string
@@ -9116,10 +9271,12 @@ body: {
   size_max?: integer
   size_default?: integer
   size_required?: boolean
+  size_step?: integer
   d_min?: integer
   d_max?: integer
   d_default?: integer
   d_required?: boolean
+  d_step?: integer
   data_hint?: string
   type_hint?: string
   // frontend needs to quote this data type
@@ -9152,10 +9309,12 @@ body: {
     size_max?: integer
     size_default?: integer
     size_required?: boolean
+    size_step?: integer
     d_min?: integer
     d_max?: integer
     d_default?: integer
     d_required?: boolean
+    d_step?: integer
     data_hint?: string
     type_hint?: string
     // frontend needs to quote this data type
@@ -9220,9 +9379,7 @@ body: {
     creator_name: string
     name_type?: enum[Personal, Organizational]
     name_identifier?: string
-    name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
     affiliation_identifier?: string
-    affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
   }[]
   database_id: string
   query_id?: string
@@ -9251,9 +9408,7 @@ body: {
   creator_name: string
   name_type?: enum[Personal, Organizational]
   name_identifier?: string
-  name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
   affiliation_identifier?: string
-  affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
 }
 ```
 
@@ -9451,7 +9606,7 @@ body: {
 
 ```ts
 {
-  id: string
+  username: string
 }
 ```
 
@@ -9509,6 +9664,30 @@ body: {
 }
 ```
 
+### #/components/schemas/CreateIdentifierCreatorDto
+
+```ts
+{
+  firstname?: string
+  lastname?: string
+  affiliation?: string
+  creator_name: string
+  name_type?: enum[Personal, Organizational]
+  name_identifier?: string
+  affiliation_identifier?: string
+}
+```
+
+### #/components/schemas/CreateIdentifierDescriptionDto
+
+```ts
+{
+  description: string
+  language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+  type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
+}
+```
+
 ### #/components/schemas/CreateIdentifierDto
 
 ```ts
@@ -9516,19 +9695,16 @@ body: {
   type: enum[database, subset, table, view]
   doi?: string
   titles: {
-    id: string
     title: string
     language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
     type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
   }[]
   descriptions: {
-    id: string
     description: string
     language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
     type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
   }[]
   funders: {
-    id: string
     funder_name: string
     funder_identifier?: string
     funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
@@ -9544,16 +9720,13 @@ body: {
   publisher: string
   language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
   creators: {
-    id: string
     firstname?: string
     lastname?: string
     affiliation?: string
     creator_name: string
     name_type?: enum[Personal, Organizational]
     name_identifier?: string
-    name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
     affiliation_identifier?: string
-    affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
   }[]
   database_id: string
   query_id?: string
@@ -9563,11 +9736,43 @@ body: {
   publication_month?: integer
   publication_year: integer
   related_identifiers: {
-    id: string
     value: string
     type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
     relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
   }[]
+}
+```
+
+### #/components/schemas/CreateIdentifierFunderDto
+
+```ts
+{
+  funder_name: string
+  funder_identifier?: string
+  funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
+  scheme_uri?: string
+  award_number?: string
+  award_title?: string
+}
+```
+
+### #/components/schemas/CreateIdentifierTitleDto
+
+```ts
+{
+  title: string
+  language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+  type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
+}
+```
+
+### #/components/schemas/CreateRelatedIdentifierDto
+
+```ts
+{
+  value: string
+  type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
+  relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
 }
 ```
 
@@ -9737,10 +9942,12 @@ body: {
       size_max?: integer
       size_default?: integer
       size_required?: boolean
+      size_step?: integer
       d_min?: integer
       d_max?: integer
       d_default?: integer
       d_required?: boolean
+      d_step?: integer
       data_hint?: string
       type_hint?: string
       // frontend needs to quote this data type
@@ -9824,9 +10031,9 @@ body: {
   until?: string
   set?: string
   resumptionToken?: string
-  untilDate?: string
-  fromDate?: string
   parametersString?: string
+  fromDate?: string
+  untilDate?: string
 }
 ```
 
@@ -10126,6 +10333,7 @@ body: {
       affiliation_identifier_scheme_uri?: string
     }[]
     status: enum[draft, published]
+    created?: string
     database_id: string
     query_id?: string
     table_id?: string

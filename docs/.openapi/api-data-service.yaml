@@ -11,11 +11,11 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "1.10.1"
+    "version": "1.10.2"
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.1/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.2/system-services-metadata/"
   },
   "servers": [
     {

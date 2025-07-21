@@ -9,7 +9,7 @@ export default {
     if (!loggedIn) {
       return
     }
-    this.$router.push('/user/info')
+    this.$router.push('/me/databases')
   }
 }
 </script>

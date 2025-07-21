@@ -573,6 +573,8 @@ release-docs:
     - "python -m build --sdist ./lib/python && python -m build --wheel ./lib/python && pip install ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
     - "mkdir -p ./final/${APP_VERSION}"
+    - git config --global user.name "$CI_TECH_LEAD_NAME"
+    - git config --global user.email "$CI_TECH_LEAD_EMAIL"
   script:
     - "make gen-python-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx

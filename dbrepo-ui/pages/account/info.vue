@@ -175,12 +175,12 @@ export default {
       ],
       items: [
         {
-          title: this.$t('navigation.user'),
-          to: '/user'
+          title: this.$t('navigation.account'),
+          to: '/account'
         },
         {
           title: this.$t('toolbars.user.info'),
-          to: `/user/info`,
+          to: `/account/info`,
           disabled: true
         }
       ],
