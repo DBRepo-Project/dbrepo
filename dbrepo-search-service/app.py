@@ -303,7 +303,7 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.debug(f'endpoint get search type: {index}')
-    results = search_client().query_index_by_term_opensearch("*", "contains")
+    results = search_client().general_search()
     try:
         results = general_filter(index, results)
 
@@ -350,11 +350,11 @@ def get_fuzzy_search():
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
-    user_id, error, status = auth_client.get_user_id(request.headers.get('Authorization'))
+    username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status, headers
     results = search_client().fuzzy_search(search_term=search_term,
-                                           user_id=user_id,
+                                           username=username,
                                            user_token=request.headers.get('Authorization'))
     return Response(dumps(results, default=pydantic_encoder)), 200, headers
 
@@ -378,21 +378,20 @@ def post_general_search(field_type):
     t2 = request.args.get("t2")
     if not str(t2).isdigit():
         t2 = None
-    user_id, error, status = auth_client.get_user_id(request.headers.get('Authorization'))
+    username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status
     if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
-        response = search_client().unit_independent_search(t1, t2, value_pairs, user_id)
+        response = search_client().unit_independent_search(t1, t2, value_pairs, username)
     else:
-        response = search_client().general_search(field_type=field_type,
-                                                  field_value_pairs=value_pairs,
-                                                  user_id=user_id,
+        response = search_client().general_search(field_value_pairs=value_pairs,
+                                                  username=username,
                                                   user_token=request.headers.get('Authorization'))
     # filter by type
     tables = [table for table in flatten([database.tables for database in response]) if
-              table.is_public or table.is_schema_public or (user_id is not None and table.owner.id == user_id)]
+              table.is_public or table.is_schema_public or (username is not None and table.owner.username == username)]
     views = [view for view in flatten([database.views for database in response]) if
-             view.is_public or view.is_schema_public or (user_id is not None and view.owner.id == user_id)]
+             view.is_public or view.is_schema_public or (username is not None and view.owner.username == username)]
     if field_type == 'table':
         logging.debug(f'filtered to {len(tables)} tables')
         response = tables

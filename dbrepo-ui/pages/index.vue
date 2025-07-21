@@ -18,6 +18,16 @@
       v-cloak
       :loading="loading"
       :databases="databases" />
+    <div class="text-center">
+      <v-btn
+        v-if="databases && databases.length > 0"
+        class="mt-2"
+        variant="flat"
+        to="/search"
+        color="plain">
+        {{ $t('navigation.more')}}
+      </v-btn>
+    </div>
     <v-dialog
       v-model="dialog"
       persistent

@@ -66,37 +66,7 @@ spec:
           {{- else if ne .Values.dataservice.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.dataservice.resourcesPreset) | nindent 12 }}
           {{- end }}
-        {{- if .Values.global.loggingSidecar.enabled }}
-        - name: logging-agent
-          image: {{ .Values.global.loggingSidecar.image.name }}
-          imagePullPolicy: {{ .Values.metadataservice.image.pullPolicy | default "IfNotPresent" }}
-          {{- if .Values.metadataservice.containerSecurityContext.enabled }}
-          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.metadataservice.containerSecurityContext "context" $) | nindent 12 }}
-          {{- end }}
-          volumeMounts:
-            - name: logging-config
-              mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-              subPath: fluent-bit.conf
-            - name: empty-dir
-              mountPath: /var/log/app/service/data
-          livenessProbe:
-            httpGet:
-              port: 2021
-            initialDelaySeconds: 150
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              port: 2021
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          resources: {{- include "common.resources.preset" (dict "type" .Values.global.loggingSidecar.resourcesPreset) | nindent 12 }}
-        {{- end }}
       volumes:
-        {{- if .Values.global.loggingSidecar.enabled }}
-        - name: logging-config
-          configMap:
-            name: data-service-config
-        {{- end }}
         - name: empty-dir
           emptyDir: { }
 {{- end }}

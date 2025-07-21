@@ -17,7 +17,8 @@ gen-helm-doc: build-helm ## Generate Helm documentation and schema
 
 .PHONY: gen-dbrepo-doc
 gen-docs-doc: ## Generate DBRepo documentation.
-	mkdocs build
+	mike deploy $DOC_VERSION latest
+	mike set-default latest
 
 .PHONY: gen-python-doc
 gen-python-doc: ## Generate Python Library documentation.

@@ -2,7 +2,7 @@
   "tables.name": "Table Name",
   "owner.id": "Owner ID",
   "owner.username": "Owner Username",
-  "owner.attributes.orcid": "Owner ORCID",
+  "owner.orcid": "Owner ORCID",
   "creator.orcid": "Creator ORCID",
   "identifiers.doi": "DOI",
   "identifiers.licenses.uri": "License URI",
@@ -12,7 +12,8 @@
   "identifiers.view_id": "View ID",
   "identifiers.database_id": "Database ID",
   "identifiers.creator.username": "Creator Username",
-  "is_public": "Public",
+  "is_public": "Visibility",
+  "is_schema_public": "Transparency",
   "tables.columns.concept.uri": "URI",
   "tables.columns.unit.uri": "URI"
 }

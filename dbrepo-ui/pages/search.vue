@@ -100,6 +100,7 @@ export default {
   },
   mounted () {
     this.fuzzySearch()
+    this.$refs.adv.advancedSearch()
   },
   methods: {
     fuzzySearch () {

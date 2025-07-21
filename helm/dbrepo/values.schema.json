@@ -123,25 +123,6 @@
                 },
                 "resourcesPreset": {
                     "type": "string"
-                },
-                "setupJob": {
-                    "type": "object",
-                    "properties": {
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "resources": {
-                            "type": "object"
-                        },
-                        "resourcesPreset": {
-                            "type": "string"
-                        }
-                    }
                 }
             }
         },
@@ -314,9 +295,6 @@
                             }
                         }
                     }
-                },
-                "sidecars": {
-                    "type": "array"
                 },
                 "virtualHost": {
                     "type": "string"
@@ -519,20 +497,6 @@
                 "grafana": {
                     "type": "object",
                     "properties": {
-                        "extraConfigmaps": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "mountPath": {
-                                        "type": "string"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        },
                         "extraEnvVarsSecret": {
                             "type": "string"
                         },
@@ -860,9 +824,6 @@
                             "type": "string"
                         }
                     }
-                },
-                "sidecars": {
-                    "type": "array"
                 }
             }
         },
@@ -879,25 +840,6 @@
                                     "type": "string"
                                 }
                             }
-                        }
-                    }
-                },
-                "loggingSidecar": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "resourcesPreset": {
-                            "type": "string"
                         }
                     }
                 },
@@ -1874,6 +1816,14 @@
                 "public": {
                     "type": "object",
                     "properties": {
+                        "about": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "api": {
                             "type": "object",
                             "properties": {
@@ -1956,6 +1906,22 @@
                                             "type": "string"
                                         }
                                     }
+                                }
+                            }
+                        },
+                        "policies": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "terms": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string"
                                 }
                             }
                         },
