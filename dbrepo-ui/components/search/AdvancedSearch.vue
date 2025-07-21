@@ -256,10 +256,20 @@ export default {
       ],
       columnTypes: [],
       dynamicFields: {
-        database: ['is_public', 'owner.attributes.orcid', 'owner.username', 'identifier.publication_year'],
+        database: [
+          'is_public',
+          'is_schema_public',
+          'owner.orcid',
+          'owner.username',
+          'identifier.publication_year'],
         table: [],
         column: [],
-        user: ['creator.firstname', 'creator.lastname', 'creator.username', 'creator.orcid'],
+        user: [
+          'creator.firstname',
+          'creator.lastname',
+          'creator.username',
+          'creator.orcid'
+        ],
         identifier: ['identifiers.database_id', 'identifiers.query_id', 'identifiers.view_id', 'identifiers.table_id',
           'identifiers.publisher', 'identifiers.doi', 'identifiers.publication_year', 'identifiers.creator.username',
           'identifiers.licenses.uri', 'identifiers.funders.funder_identifier'],
