@@ -45,6 +45,20 @@ class AuthServiceClient:
                                       code='search.user.unauthorized').model_dump(), 401
             return None, ApiError(status='FORBIDDEN', message=str(e), code='search.user.forbidden').model_dump(), 403
 
+    def get_username(self, auth_header: str | None) -> (str | None, ApiError, int):
+        if auth_header is None:
+            return None, None, None
+        try:
+            user = self.verify_jwt(auth_header.split(" ")[1])
+            logging.debug(f'mapped JWT to user.username {user.username}')
+            return user.username, None, None
+        except JWTDecodeError as e:
+            logging.error(f'Failed to decode JWT: {e}')
+            if str(e) == 'JWT Expired':
+                return None, ApiError(status='UNAUTHORIZED', message=f'Token expired',
+                                      code='search.user.unauthorized').model_dump(), 401
+            return None, ApiError(status='FORBIDDEN', message=str(e), code='search.user.forbidden').model_dump(), 403
+
     def verify_jwt(self, access_token: str) -> User:
         public_key = jwk_from_pem(self.jwt_public_key.encode('utf-8'))
         payload = JWT().decode(message=access_token, key=public_key, do_time_check=True)

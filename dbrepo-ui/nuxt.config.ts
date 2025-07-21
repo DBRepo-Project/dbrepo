@@ -99,6 +99,15 @@ export default defineNuxtConfig({
           publisher: 'Example University'
         }
       },
+      about: {
+        content: ''
+      },
+      policies: {
+        content: ''
+      },
+      terms: {
+        content: ''
+      },
       doi: {
         endpoint: 'https://doi.org'
       },

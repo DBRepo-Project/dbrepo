@@ -1,6 +1,8 @@
 {
   "navigation": {
     "logo": "Logo",
+    "policies": "Policies",
+    "terms": "Terms of Use",
     "draft": "Draft",
     "information": "Information",
     "search": "Search",
@@ -19,10 +21,14 @@
     "continue": "Continue",
     "assign": "Assign",
     "back": "Back",
+    "more": "More",
     "schema": "Schema",
     "persist": "Persist",
     "cancel": "Cancel",
     "user": "User",
+    "account": "Account",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
     "import": "Import Data",
     "delete": "Delete",
     "recommend": "Recommend",
@@ -1403,6 +1409,9 @@
     }
   },
   "toolbars": {
+    "dashboard": {
+      "databases": "Databases"
+    },
     "user": {
       "info": "Info",
       "authentication": "Authentication",

@@ -36,6 +36,21 @@
           to="/semantic"
           prepend-icon="mdi-share-variant"
           :title="$t('navigation.semantics')" />
+        <v-list-item
+          v-if="$config.public.policies.content"
+          to="/policies"
+          prepend-icon="mdi-sprout"
+          :title="$t('navigation.policies')" />
+        <v-list-item
+          v-if="$config.public.terms.content"
+          to="/terms"
+          prepend-icon="mdi-book-open-variant-outline"
+          :title="$t('navigation.terms')" />
+        <v-list-item
+          v-if="$config.public.about.content"
+          to="/about"
+          prepend-icon="mdi-information-outline"
+          :title="$t('navigation.about')" />
       </v-list>
       <template v-slot:append>
         <v-alert
@@ -101,37 +116,34 @@
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
-          v-if="cacheUser"
-          to="/user"
-          variant="plain"
-          :text="cacheUser.preferred_username" />
-        <v-menu
           v-if="loggedIn"
-          location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              icon="mdi-dots-vertical"
-              v-bind="props" />
-          </template>
-          <v-list>
-            <v-list-item
-              v-if="cacheUser"
-              exact
-              :to="`/search?type=database&owner.username=${cacheUser.preferred_username}`">
-              {{ $t('navigation.databases') + ' ' + $t('navigation.mine')}}
-            </v-list-item>
-            <v-list-item
-              v-if="cacheUser"
-              exact
-              :to="`/search?type=identifier&identifiers.creator.username=${cacheUser.preferred_username}`">
-              {{ $t('navigation.identifiers') + ' ' + $t('navigation.mine') }}
-            </v-list-item>
-            <v-list-item
-              @click="logout()">
-              {{ $t('navigation.logout') }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
+          variant="plain"
+          to="/me/databases">
+          {{ $t('navigation.dashboard') }}
+        </v-btn>
+        <v-btn
+          v-if="loggedIn"
+          variant="plain"
+          append-icon="mdi-dots-vertical">
+          {{ $t('navigation.settings') }}
+          <v-menu
+            v-if="loggedIn"
+            activator="parent"
+            location="bottom">
+            <v-list>
+              <v-list-item
+                v-if="cacheUser"
+                exact
+                to="/account">
+                {{ $t('navigation.profile') }}
+              </v-list-item>
+              <v-list-item
+                @click="logout()">
+                {{ $t('navigation.logout') }}
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-btn>
       </v-app-bar>
     </v-form>
     <v-main>
@@ -176,7 +188,6 @@ useServerHead({
 import JumboBox from '@/components/JumboBox.vue'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
-import {useNuxtApp} from "#app";
 
 export default {
   components: {

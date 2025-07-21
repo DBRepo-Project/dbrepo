@@ -12,14 +12,6 @@ global:
       adaptSecurityContext: auto
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
-  loggingSidecar:
-    ## @param global.loggingSidecar.enabled Enable the logging sidecars for the analyse-, dashboard-, data-, gateway-, metadata- and search service.
-    enabled: false
-    image:
-      ## @param global.loggingSidecar.image.name The logging sidecar image.
-      name: docker.io/bitnami/fluent-bit:4.0.0
-    ## @param global.loggingSidecar.resourcesPreset The resource definitions for the logging sidecar.
-    resourcesPreset: nano
 
 ## @section Common parameters
 
@@ -138,20 +130,6 @@ authservice:
       #!/bin/bash
       kc.sh import --file /opt/keycloak/data/import/master-realm.json
       kc.sh import --file /opt/keycloak/data/import/dbrepo-realm.json
-  setupJob:
-    image:
-      ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.10.2
-    ## @param authservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset: "nano"
-    ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
   ## @skip authservice.extraEnvVarsSecret
   extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
@@ -339,61 +317,6 @@ brokerservice:
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
-  ## @skip brokerservice.sidecars
-  sidecars: [ ]
-#    - name: logging-agent
-#      image: docker.io/bitnami/fluent-bit:4.0.0
-#      imagePullPolicy: IfNotPresent
-#      securityContext:
-#        allowPrivilegeEscalation: false
-#        capabilities:
-#          drop:
-#            - ALL
-#        readOnlyRootFilesystem: false
-#        runAsGroup: 1001
-#        runAsNonRoot: true
-#        runAsUser: 1001
-#        seLinuxOptions: { }
-#        seccompProfile:
-#          type: RuntimeDefault
-#      volumeMounts:
-#        - name: logging-config
-#          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-#          subPath: fluent-bit.conf
-#        - name: logging-config
-#          mountPath: /opt/bitnami/fluent-bit/conf/parsers.conf
-#          subPath: parsers.conf
-#        - name: empty-dir
-#          mountPath: /opt/bitnami/rabbitmq/var/log/rabbitmq
-#          subPath: app-logs-dir
-#      livenessProbe:
-#        httpGet:
-#          port: 2021
-#        initialDelaySeconds: 150
-#        periodSeconds: 10
-#      readinessProbe:
-#        httpGet:
-#          port: 2021
-#        initialDelaySeconds: 30
-#        periodSeconds: 10
-#      resources:
-#        requests:
-#          cpu: 100m
-#          memory: 128Mi
-#          ephemeral-storage: 50Mi
-#        limits:
-#          cpu: 150m
-#          memory: 192Mi
-#          ephemeral-storage: 2Gi
-#  ## @skip brokerservice.extraVolumes
-#  extraVolumes:
-#    - name: logging-config
-#      configMap:
-#        name: broker-service-config
-#  ## @skip brokerservice.extraVolumeMounts
-#  extraVolumeMounts:
-#    - name: logging-config
-#      mountPath: /tmp/rabbitmq # irrelevant but needed from bitnami chart
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 3
 
@@ -644,7 +567,7 @@ searchservice:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
     enabled: true
     ## @param searchservice.setupJob.schedule The interval duration when the cronjob is executed.
-    schedule: "@daily"
+    schedule: "@midnight"
     ## @skip searchservice.setupJob.limit
     limit: { }
     image:
@@ -906,6 +829,15 @@ ui:
   ##     memory: 1024Mi
   ## @skip ui.resources
   public:
+    about:
+      ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and markdown content will be rendered.
+      content: ""
+    terms:
+      ## @param ui.public.terms.content The content of the /terms page. If not empty, the page will be displayed and markdown content will be rendered.
+      content: ""
+    policies:
+      ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and markdown content will be rendered.
+      content: ""
     api:
       ## @param ui.public.api.client The endpoint for the client api. Overrides to the value of `gateway`.
       client: ""
@@ -1070,10 +1002,6 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
-    ## @skip dashboardui.grafana.extraConfigmaps
-    extraConfigmaps:
-      - name: dashboard-ui-config
-        mountPath: /opt/bitnami/grafana/dashboards
     ## @param dashboardui.grafana.replicaCount The number of replicas.
     replicaCount: 2
   persistence:
@@ -1148,55 +1076,6 @@ gatewayservice:
     enabled: false
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
-  ## @skip gatewayservice.sidecars
-  sidecars: [ ]
-#    - name: logging-agent
-#      image: docker.io/bitnami/fluent-bit:4.0.0
-#      imagePullPolicy: IfNotPresent
-#      securityContext:
-#        allowPrivilegeEscalation: false
-#        capabilities:
-#          drop:
-#            - ALL
-#        readOnlyRootFilesystem: false
-#        runAsGroup: 1001
-#        runAsNonRoot: true
-#        runAsUser: 1001
-#        seLinuxOptions: { }
-#        seccompProfile:
-#          type: RuntimeDefault
-#      volumeMounts:
-#        - name: logging-config
-#          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
-#          subPath: fluent-bit.conf
-#        - name: empty-dir
-#          mountPath: /var/log/nginx/
-#      livenessProbe:
-#        httpGet:
-#          port: 2021
-#        initialDelaySeconds: 150
-#        periodSeconds: 10
-#      readinessProbe:
-#        httpGet:
-#          port: 2021
-#        initialDelaySeconds: 30
-#        periodSeconds: 10
-#      resources:
-#        requests:
-#          cpu: 100m
-#          memory: 128Mi
-#          ephemeral-storage: 50Mi
-#        limits:
-#          cpu: 150m
-#          memory: 192Mi
-#          ephemeral-storage: 2Gi
-#  extraVolumes:
-#    - name: logging-config
-#      configMap:
-#        name: gateway-service-config
-#  extraVolumeMounts:
-#    - name: empty-dir
-#      mountPath: /var/log/nginx
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 

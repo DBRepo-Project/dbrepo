@@ -17,11 +17,11 @@ export const useDatabaseService = (): any => {
     })
   }
 
-  async function findAll(): Promise<DatabaseDto[]> {
+  async function findAll(limit: number | null = null): Promise<DatabaseDto[]> {
     const axios = useAxiosInstance();
     console.debug('find databases');
     return new Promise<DatabaseDto[]>((resolve, reject) => {
-      axios.get<DatabaseDto[]>('/api/database')
+      axios.get<DatabaseDto[]>(`/api/database?limit=${limit ? limit : ''}`)
         .then((response) => {
           console.info(`Found ${response.data.length} database(s)`);
           resolve(response.data);
