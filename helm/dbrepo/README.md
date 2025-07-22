@@ -177,7 +177,7 @@ mqtt.vhost = dbrepo
 mqtt.exchange = dbrepo
 mqtt.prefetch = 10
 ` |
-| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `3`                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `brokerservice.replicaCount`                     | The number of replicas.                                                                                                          | `1`                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Metadata Service
 

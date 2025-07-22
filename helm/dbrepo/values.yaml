@@ -318,7 +318,7 @@ brokerservice:
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 3
+  replicaCount: 1
 
 ## @section Metadata Service
 
