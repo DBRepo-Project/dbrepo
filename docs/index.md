@@ -44,6 +44,9 @@ Installing DBRepo is very easy or
 - Universiti Sains Malaysia
 - Institut Teknologi Bandung
 
+Stay up to date and [subscribe to our mailing list](mailto:sympa@list.tuwien.ac.at?subject=subscribe dbrepo) for
+quarterly news on DBRepo. You can [unsubscribe](mailto:sympa@list.tuwien.ac.at?subject=unsubscribe dbrepo) too.
+
 ## How can I try DBRepo?
 
 There's a hosted [test environment](https://test.dbrepo.tuwien.ac.at) maintained 
