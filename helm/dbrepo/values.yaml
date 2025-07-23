@@ -137,6 +137,8 @@ authservice:
     - name: config
       configMap:
         name: auth-service-config
+    - name: logging
+      emptyDir: { }
   ## @skip authservice.extraVolumeMounts
   extraVolumeMounts:
     - name: config
@@ -148,6 +150,8 @@ authservice:
     - name: config
       mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
       subPath: create-event-listener.jar
+    - name: logging
+      mountPath: /var/log/app/service/auth
   ## @skip authservice.replicaCount The number of replicas.
   replicaCount: 2
 
