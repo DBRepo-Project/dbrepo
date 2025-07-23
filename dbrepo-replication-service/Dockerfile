@@ -7,8 +7,8 @@ COPY ./pom.xml ./
 RUN mvn -fn dependency:go-offline
 
 COPY ./lib ./lib
-COPY ./replication-service ./replication-service
 COPY ./rest-service ./rest-service
+COPY ./replication-service ./replication-service
 
 # Make sure it compiles
 RUN mvn -q clean package -DskipTests
@@ -17,6 +17,7 @@ RUN mvn -q clean package -DskipTests
 FROM --platform=$BUILDPLATFORM bitnami/java:17 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
+ARG DUCKDB_VERSION="v1.2.2"
 
 RUN apt-get update && \
     apt-get install -y \
@@ -24,6 +25,14 @@ RUN apt-get update && \
     jq && \
     apt-get clean
 
+WORKDIR /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+
+COPY ./lib/httpfs.duckdb_extension.gz /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/httpfs.duckdb_extension.gz
+COPY ./lib/mysql_scanner.duckdb_extension.gz /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/mysql_scanner.duckdb_extension.gz
+
+RUN gunzip -r /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64 && \
+    mkdir -p /var/log/app/service/data && \
+    chown -R 1001:1001 /var/log/app/service/data /home/dbrepo/.duckdb
 
 WORKDIR /app
 
