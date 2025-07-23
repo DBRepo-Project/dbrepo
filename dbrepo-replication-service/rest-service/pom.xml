@@ -6,15 +6,19 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>replication-service</artifactId>
-        <version>1.0.0</version>
+        <version>1.10.1</version>
     </parent>
 
-    <name>replication-service</name>
-    <artifactId>replication-service</artifactId>
-    <version>1.0.0</version>
+    <name>rest-service</name>
+    <artifactId>rest-service</artifactId>
+    <version>1.10.1</version>
 
     <dependencies>
-        <!-- Add your service-specific dependencies here -->
+        <dependency>
+            <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+            <artifactId>services</artifactId>
+            <version>1.10.1</version>
+        </dependency>
     </dependencies>
 
     <build>
