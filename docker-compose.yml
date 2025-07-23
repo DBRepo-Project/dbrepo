@@ -627,3 +627,21 @@ services:
         condition: service_healthy
     logging:
       driver: json-file
+
+  dbrepo-replication-service:
+    restart: "no"
+    container_name: dbrepo-replication-service
+    hostname: replication-service
+    image: dbrepo-replication-service:latest
+    build:
+      context: ./dbrepo-replication-service
+      network: host
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 15
+    logging:
+      driver: json-file

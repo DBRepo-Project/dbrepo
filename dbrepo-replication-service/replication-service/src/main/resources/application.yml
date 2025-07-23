@@ -1,0 +1,108 @@
+application:
+  title: DBRepo
+  version: '@project.version@'
+spark:
+  hadoop:
+    version: '@project.properties.hadoop.version@'
+  awsSdk:
+    version: '@project.properties.aws-sdk.version@'
+  mariadb:
+    version: '@project.properties.mariadb.version@'
+spring:
+  datasource:
+    url: "jdbc:h2:mem:dbrepo;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS dbrepo;NON_KEYWORDS=value"
+    driver-class-name: org.h2.Driver
+    username: "${H2_USERNAME:sa}"
+    password: "${H2_PASSWORD:sa}"
+  jpa:
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: "${METADATA_DB:dbrepo}"
+        jdbc:
+          time_zone: UTC
+  application:
+    name: data-service
+  servlet:
+    multipart:
+      max-file-size: "${MAX_UPLOAD_SIZE:2GB}"
+      max-request-size: "${MAX_UPLOAD_SIZE:2GB}"
+  rabbitmq:
+    host: "${BROKER_HOST:broker-service}"
+    virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
+    username: "${BROKER_USERNAME:admin}"
+    password: "${BROKER_PASSWORD:admin}"
+    port: ${BROKER_PORT:5672}
+  main:
+    banner-mode: off
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: -1
+duckdb:
+  spilling:
+    path: /tmp/duckdb.tmp/
+logging:
+  file:
+    name: /var/log/app/service/data/app.log
+  level:
+    root: warn
+    at.ac.tuwien.ifs.dbrepo.: "${LOG_LEVEL:info}"
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+  pattern:
+    console: "%d %highlight(%-5level) %msg%n"
+  structured:
+    format:
+      file: ecs
+dbrepo:
+  endpoints:
+    metadataService: "${METADATA_SERVICE_ENDPOINT:http://metadata-service:8080}"
+    analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
+    storageService: "${STORAGE_SERVICE_ENDPOINT:http://storage-service:9000}"
+    authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
+    computeService: "${COMPUTE_SERVICE_ENDPOINT:spark://compute-service:7077}"
+  s3:
+    accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
+    secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
+    bucket: "${S3_BUCKET:dbrepo}"
+    region: "${S3_REGION:eu-west-1}"
+    useSsl: "${S3_USE_SSL:false}"
+    urlStyle: "${S3_URL_STYLE:path}"
+  system:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
+  jwt:
+    public_key: "${JWT_PUBKEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+  keycloak:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
+    client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
+    clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+  grant:
+    default:
+      read: "${GRANT_DEFAULT_READ:SELECT, EXECUTE}"
+      write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+  credentialCacheTimeout: "${CREDENTIAL_CACHE_TIMEOUT:300}"
+  minConcurrent: "${MIN_CONCURRENT_CONSUMERS:2}"
+  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS:6}"
+  requeueRejected: ${REQUEUE_REJECTED:false}
+  queueName: "${BROKER_QUEUE_NAME:dbrepo}"
+  exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
+  routingKey: "${BROKER_ROUTING_KEY:#}"
+  connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
+  baseUrl: "${BASE_URL:http://localhost}"
