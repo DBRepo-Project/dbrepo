@@ -16,25 +16,6 @@ RUN mvn -q clean package -DskipTests
 FROM --platform=$BUILDPLATFORM bitnami/java:17 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-ARG DUCKDB_VERSION="v1.2.2"
-
-RUN apt-get update && \
-    apt-get install -y \
-    curl \
-    jq && \
-    apt-get clean
-
-COPY ./lib/httpfs.duckdb_extension.gz /tmp/httpfs.duckdb_extension.gz
-
-WORKDIR /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
-
-RUN gunzip /tmp/httpfs.duckdb_extension.gz && \
-    mv /tmp/httpfs.duckdb_extension /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/httpfs.duckdb_extension && \
-    rm -f /tmp/httpfs.duckdb_extension.gz
-
-RUN mkdir -p /var/log/app/service/data && \
-    chown -R 1001:1001 /var/log/app/service/data
-
 WORKDIR /app
 
 RUN adduser dbrepo --uid 1001 && \
