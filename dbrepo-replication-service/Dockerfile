@@ -2,15 +2,28 @@
 FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-# Copy the entire project for multi-module build
-COPY . .
+COPY ./pom.xml ./
 
-# Build only the replication-service submodule and its dependencies
-RUN mvn -pl replication-service -am -q clean package -DskipTests
+RUN mvn -fn dependency:go-offline
+
+COPY ./lib ./lib
+COPY ./replication-service ./replication-service
+COPY ./rest-service ./rest-service
+
+# Make sure it compiles
+RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
 FROM --platform=$BUILDPLATFORM bitnami/java:17 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
+
+
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    jq && \
+    apt-get clean
+
 
 WORKDIR /app
 
@@ -19,8 +32,9 @@ RUN adduser dbrepo --uid 1001 && \
 
 USER 1001
 
-COPY --from=build --chown=1001 ./replication-service/target/replication-service-1.0.0.jar ./replication-service.jar
+COPY --from=build --chown=1001 ./rest-service/target/*service-*.jar ./replication-service.jar
 
+# non-root port
 EXPOSE 8080
 
 ENV JAVA_OPTS="-XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false -Dio.netty.tryReflectionSetAccessible=true"
