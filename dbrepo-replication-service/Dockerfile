@@ -23,7 +23,7 @@ RUN adduser dbrepo --uid 1001 && \
 
 USER 1001
 
-COPY --from=build --chown=1001 ./replication-service/target/*service-*.jar ./replication-service.jar
+COPY --from=build --chown=1001 ./replication-service/target/replication-service-1.0.0.jar ./replication-service.jar
 
 # non-root port
 EXPOSE 8080
