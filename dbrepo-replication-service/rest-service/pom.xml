@@ -7,6 +7,7 @@
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>replication-service</artifactId>
         <version>1.10.1</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <name>rest-service</name>
