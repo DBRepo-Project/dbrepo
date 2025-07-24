@@ -13,6 +13,7 @@ build-java-lib: ## Build the Java Library.
 	APP_VERSION=$(APP_VERSION) mvn -f ./lib/java/dbrepo-core/pom.xml -q clean package install -DskipTests
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
+	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-replication-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
 
 .PHONY: build-auth-event-listener
 build-auth-event-listener: ## Build the Auth Service Event Listener.
