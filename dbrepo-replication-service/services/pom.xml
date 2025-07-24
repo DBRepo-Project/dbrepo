@@ -10,12 +10,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <name>replication-service</name>
-    <artifactId>replication-service</artifactId>
+    <name>services</name>
+    <artifactId>services</artifactId>
     <version>1.10.1</version>
-
     <dependencies>
-        <!-- Add your service-specific dependencies here -->
+        
     </dependencies>
 
     <build>
