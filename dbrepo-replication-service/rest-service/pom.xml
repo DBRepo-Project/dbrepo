@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-            <artifactId>services</artifactId>
+            <artifactId>replication-service</artifactId>
             <version>1.10.1</version>
         </dependency>
     </dependencies>

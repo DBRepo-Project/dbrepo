@@ -12,7 +12,7 @@
 
     <name>replication-service</name>
     <artifactId>replication-service</artifactId>
-    <version>1.0.0</version>
+    <version>1.10.1</version>
 
     <dependencies>
         <!-- Add your service-specific dependencies here -->
