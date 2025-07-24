@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,6 +42,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.client.RestTemplate;
+import at.ac.tuwien.ifs.dbrepo.core.api.TupleNotificationDto;
 
 @Slf4j
 @RestController
@@ -56,13 +59,15 @@ public class TableEndpoint extends RestEndpoint {
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final RestTemplate replicationRestTemplate;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
                          SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway,
+                         @Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -71,6 +76,7 @@ public class TableEndpoint extends RestEndpoint {
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.replicationRestTemplate = replicationRestTemplate;
     }
 
     @PostMapping
@@ -383,6 +389,17 @@ public class TableEndpoint extends RestEndpoint {
         try {
             tableService.createTuple(database, table, data);
             metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
+            // Notify replication-service
+            TupleNotificationDto notification = new TupleNotificationDto();
+            notification.setTableName(table.getName());
+            notification.setTupleData(data.getData()); // assuming TupleDto has getData()
+            notification.setTimestamp(Instant.now().toString()); // replace with actual timestamp if available
+            replicationRestTemplate.postForEntity(
+                "/notify", // Add notify suffix to base URL
+                notification,
+                Void.class
+            );
+            log.info("Replication service notified for table: {}", table.getName());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {
