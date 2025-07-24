@@ -23,7 +23,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>rest-service</module>
-        <module>replication-service</module>
+        <module>services</module>
     </modules>
 
     <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>

@@ -8,7 +8,7 @@ RUN mvn -fn dependency:go-offline
 
 COPY ./lib ./lib
 COPY ./rest-service ./rest-service
-COPY ./replication-service ./replication-service
+COPY ./services ./services
 
 # Make sure it compiles
 RUN mvn -q clean package -DskipTests
