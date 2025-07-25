@@ -3,6 +3,9 @@ package at.ac.tuwien.ifs.dbrepo.mapper;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.tools.jdbc.MockConnection;
+import org.jooq.tools.jdbc.MockFileDatabase;
+import org.jooq.tools.jdbc.MockStatement;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -11,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,6 +60,12 @@ public class DataMapperUnitTest extends BaseTest {
         );
     }
 
+    public static Stream<Arguments> decimal_parameters() {
+        return Stream.of(
+                Arguments.arguments("1.753426267664687E9")
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("incompatible_parameters")
     public void duckDbDataTypeToMariaDbColumnTypeDto_fails(String data) {
@@ -68,6 +80,17 @@ public class DataMapperUnitTest extends BaseTest {
 
         /* test */
         assertEquals(expected, dataMapper.duckDbDataTypeToMariaDbColumnTypeDto(data));
+    }
+
+    @ParameterizedTest
+    @MethodSource("decimal_parameters")
+    public void prepareStatementWithColumnTypeObject_succeeds(Object data) throws IOException,
+            SQLException {
+        final MockFileDatabase database = new MockFileDatabase("junit.db");
+        final PreparedStatement preparedStatement = new MockStatement(new MockConnection(database), database);
+
+        /* test */
+        dataMapper.prepareStatementWithColumnTypeObject(preparedStatement, ColumnTypeDto.DECIMAL, 1, data);
     }
 
 }
