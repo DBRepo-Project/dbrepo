@@ -63,7 +63,7 @@ dependencies:
     condition: metadatadb.enabled
   - name: rabbitmq
     alias: brokerservice
-    version: 14.0.0
+    version: 14.7.0
     repository: https://charts.bitnami.com/bitnami
     condition: brokerservice.enabled
   - name: seaweedfs

@@ -282,7 +282,7 @@ brokerservice:
       existingSecret: ingress-cert
   rbac:
     ## @skip brokerservice.rbac.create
-    create: false
+    create: true
   ## @skip brokerservice.advancedConfigurationExistingSecret
   advancedConfigurationExistingSecret: broker-service-secret
   ## @skip brokerservice.loadDefinition
@@ -1004,6 +1004,10 @@ dashboardui:
     updateStrategy:
       ## @skip dashboardui.grafana.updateStrategy.type
       type: Recreate
+      updateStrategy:
+        recreate:
+          maxSurge: 25%
+          maxUnavailable: 25%
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
     ## @param dashboardui.grafana.replicaCount The number of replicas.
