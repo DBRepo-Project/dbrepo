@@ -395,7 +395,7 @@ public class TableEndpoint extends RestEndpoint {
             notification.setTupleData(data.getData()); // assuming TupleDto has getData()
             notification.setTimestamp(Instant.now().toString()); // replace with actual timestamp if available
             replicationRestTemplate.postForEntity(
-                "/notify", // Add notify suffix to base URL
+                "/api/v1/replicate/insert",
                 notification,
                 Void.class
             );
