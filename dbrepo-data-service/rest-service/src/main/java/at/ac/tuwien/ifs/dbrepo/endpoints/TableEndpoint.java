@@ -43,7 +43,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.client.RestTemplate;
-import at.ac.tuwien.ifs.dbrepo.core.api.TupleNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
 
 @Slf4j
 @RestController
