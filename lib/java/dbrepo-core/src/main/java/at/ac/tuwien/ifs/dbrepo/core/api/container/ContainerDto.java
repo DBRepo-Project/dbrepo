@@ -24,42 +24,48 @@ import java.util.UUID;
 public class ContainerDto extends CacheableDto {
 
     @NotNull
-    @Schema(example = "7ddb7e87-b965-43a2-9a24-4fa406d998f4")
+    @Schema(description = "The container id", example = "7ddb7e87-b965-43a2-9a24-4fa406d998f4")
     private UUID id;
 
+    @NotNull
+    @JsonIgnore
+    @Schema(description = "The container hash", example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
+    private String hash;
+
     @NotBlank
-    @Schema(example = "Air Quality")
+    @Schema(description = "The user-friendly container name", example = "Air Quality")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Schema(example = "air_quality")
+    @Schema(description = "The machine-friendly container name", example = "air-quality")
     private String internalName;
 
     @JsonIgnore
-    @Schema(example = "data-db")
+    @Schema(description = "The container hostname", example = "data-db")
     private String host;
 
     @JsonIgnore
-    @Schema(example = "3306")
+    @Schema(description = "The container port", example = "3306")
     private Integer port;
 
     @NotNull
     private ImageDto image;
 
-    @Schema(example = "50")
-    private Long quota;
+    @NotNull
+    @Schema(description = "The number of databases the container is capable to hold simultaneously, if null the container has no limit", example = "50")
+    private Integer quota;
 
     @NotNull
-    @Schema(example = "10")
-    private Long count;
+    @Schema(description = "The number of databases currently in the container", example = "10")
+    private Integer count;
 
     @ToString.Exclude
-    @Schema(example = "username")
+    @Schema(description = "The username of the privileged user", example = "root")
     private String username;
 
     @ToString.Exclude
-    @Schema(example = "p4ssw0rd")
+    @Schema(description = "The password of the privileged user", example = "dbrepo")
     private String password;
 
     /* lombok limitations prevent from convenient builder functions */

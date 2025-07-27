@@ -19,16 +19,16 @@ import java.util.UUID;
 public class UnitBriefDto {
 
     @NotNull
-    @Schema(example = "ba1935e8-6817-488f-af0a-f54389af9000")
+    @Schema(description = "The unit id", example = "ba1935e8-6817-488f-af0a-f54389af9001")
     private UUID id;
 
     @NotBlank
-    @Schema(example = "http://www.wikidata.org/entity/Q1422583")
+    @Schema(description = "The unit URI", example = "http://www.ontology-of-units-of-measure.org/resource/om-2/CelsiusTemperature")
     private String uri;
 
-    @Schema(example = "importance")
+    @Schema(description = "The unit name, taken as label from the ontology", example = "Degree Celsius")
     private String name;
 
-    @Schema(example = "subjective magnitude of value, meaning, or purpose")
+    @Schema(description = "The unit description giving a user-friendly explanation")
     private String description;
 }

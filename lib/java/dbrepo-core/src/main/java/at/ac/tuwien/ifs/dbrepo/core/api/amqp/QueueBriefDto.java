@@ -16,11 +16,11 @@ import lombok.extern.jackson.Jacksonized;
 public class QueueBriefDto {
 
     @NotNull
-    @Schema(example = "dbrepo")
+    @Schema(description = "The virtual host name", example = "dbrepo")
     private String vhost;
 
     @NotNull
-    @Schema(example = "air")
+    @Schema(description = "The queue name", example = "dbrepo")
     private String name;
 
 }

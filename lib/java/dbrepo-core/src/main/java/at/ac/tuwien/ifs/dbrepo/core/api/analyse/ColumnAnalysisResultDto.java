@@ -20,29 +20,31 @@ import java.util.List;
 public class ColumnAnalysisResultDto {
 
     @NotNull
-    @Schema(example = "age")
+    @Schema(description = "The column name", example = "age")
     private String name;
 
     @NotNull
-    @Schema(example = "BIGINT")
+    @Schema(description = "The column data type", example = "BIGINT")
     private ColumnTypeDto datatype;
 
-    @Schema(example = "20")
+    @Schema(description = "The size determines the number of digits before the comma: x=size-d where size >= d", example = "20")
     private Integer size;
 
-    @Schema(example = "10")
+    @Schema(description = "The digits behind the comma", example = "10")
     private Integer d;
 
     @JsonProperty("null_allowed")
-    @Schema(example = "true")
+    @Schema(description = "If set to true, the column value can be null", example = "true")
     private Boolean nullAllowed;
 
     @JsonProperty("primary_key")
-    @Schema(example = "true")
+    @Schema(description = "The column is a candidate to be part of a composite primary key", example = "true")
     private Boolean primaryKey;
 
+    @Schema(description = "The list of enumerations detected", example = "\\[\\]")
     private List<String> enums;
 
+    @Schema(description = "The list of set values detected", example = "\\[\\]")
     private List<String> sets;
 
 }

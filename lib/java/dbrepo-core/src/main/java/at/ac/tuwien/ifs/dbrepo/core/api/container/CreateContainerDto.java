@@ -19,28 +19,21 @@ import java.util.UUID;
 public class CreateContainerDto {
 
     @NotBlank
-    @Schema(example = "Air Quality")
+    @Schema(description = "The user-friendly container name", example = "Air Quality")
     private String name;
 
     @NotNull
     @JsonProperty("image_id")
-    @Schema(example = "2360f3c4-85e0-4fac-a7c6-73b296b9dde2", description = "Image ID")
+    @Schema(description = "The image id used for the container database engine", example = "2360f3c4-85e0-4fac-a7c6-73b296b9dde2")
     private UUID imageId;
 
     @NotBlank
-    @Schema(example = "data-db2", description = "Hostname of container")
+    @Schema(description = "The container hostname", example = "mariadb")
     private String host;
 
-    @Schema(example = "3306", description = "Port of container")
+    @NotNull
+    @Schema(description = "The container port", example = "3306")
     private Integer port;
-
-    @JsonProperty("ui_host")
-    @Schema(example = "example.com")
-    private String uiHost;
-
-    @JsonProperty("ui_port")
-    @Schema(example = "3306")
-    private Integer uiPort;
 
     @NotNull
     @Schema(example = "50")
@@ -48,11 +41,11 @@ public class CreateContainerDto {
 
     @NotBlank
     @JsonProperty("privileged_username")
-    @Schema(example = "root", description = "Username of privileged user")
+    @Schema(description = "The username of the privileged user", example = "root")
     private String privilegedUsername;
 
     @NotBlank
     @JsonProperty("privileged_password")
-    @Schema(example = "dbrepo", description = "Password of privileged user")
+    @Schema(description = "The password of the privileged user", example = "dbrepo")
     private String privilegedPassword;
 }

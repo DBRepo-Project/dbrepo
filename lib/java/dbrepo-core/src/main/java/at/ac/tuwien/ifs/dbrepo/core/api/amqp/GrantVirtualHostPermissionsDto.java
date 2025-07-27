@@ -16,15 +16,15 @@ import lombok.extern.jackson.Jacksonized;
 public class GrantVirtualHostPermissionsDto {
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The configure permissions regex", example = ".*")
     private String configure;
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The write permissions regex", example = ".*")
     private String write;
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The read permissions regex", example = ".*")
     private String read;
 
 }
