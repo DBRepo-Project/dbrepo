@@ -19,15 +19,13 @@ public class ReplicateEndpoint {
     @Operation(summary = "Replicate insert", description = "Replicates an insert operation")
     public ResponseEntity<Map<String, Object>> replicateInsert(@RequestBody TupleNotificationDto insertTupleDto) {
         System.out.println("=== REPLICATE INSERT ===");
-        System.out.println("Database ID: " + insertTupleDto.getDatabaseId());
-        System.out.println("Tuple Information: " + insertTupleDto.getTupleInformation());
+
         System.out.println("========================");
         
         Map<String, Object> response = Map.of(
             "status", "success",
             "message", "Insert replicated successfully",
-            "databaseId", insertTupleDto.getDatabaseId(),
-            "tupleInformation", insertTupleDto.getTupleInformation()
+            "tupleInformation", insertTupleDto.getTupleData()
         );
         
         return ResponseEntity.ok(response);
