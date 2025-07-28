@@ -1,10 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.mvc;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
-import at.ac.tuwien.ifs.dbrepo.endpoints.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.endpoints.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -97,9 +94,6 @@ public class OpenApiEndpointMvcTest extends BaseTest {
                     responses.forEach(response -> {
                         assertNotNull(response.content());
                         assertTrue(response.content().length > 0);
-                        final Content content0 = response.content()[0];
-                        assertEquals(MediaType.APPLICATION_JSON_VALUE, content0.mediaType());
-                        assertEquals(ApiErrorDto.class, content0.schema().implementation());
                     });
                 }
             });

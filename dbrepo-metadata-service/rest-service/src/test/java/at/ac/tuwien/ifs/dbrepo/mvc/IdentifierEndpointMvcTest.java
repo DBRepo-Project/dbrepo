@@ -43,7 +43,7 @@ public class IdentifierEndpointMvcTest extends BaseTest {
                 .thenReturn(ORCID_1_DTO);
 
         /* test */
-        this.mockMvc.perform(get("/api/identifier/retrieve?url=" + USER_1_ORCID_URL)
+        this.mockMvc.perform(get("/api/v1/identifier/retrieve?url=" + USER_1_ORCID_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(FileUtils.getContentsAsString(new File("src/test/resources/json/ext_orcid_jdoe.json"))))
