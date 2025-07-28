@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.dto.InsertTupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class ReplicateEndpoint {
 
     @PostMapping("/insert")
     @Operation(summary = "Replicate insert", description = "Replicates an insert operation")
-    public ResponseEntity<Map<String, Object>> replicateInsert(@RequestBody InsertTupleDto insertTupleDto) {
+    public ResponseEntity<Map<String, Object>> replicateInsert(@RequestBody TupleNotificationDto insertTupleDto) {
         System.out.println("=== REPLICATE INSERT ===");
         System.out.println("Database ID: " + insertTupleDto.getDatabaseId());
         System.out.println("Tuple Information: " + insertTupleDto.getTupleInformation());
