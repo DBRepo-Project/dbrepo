@@ -255,7 +255,7 @@ export const useTableService = (): any => {
     if (!table || !user) {
       return false
     }
-    return table.owner.id === user.uid
+    return table.owner.username === user.preferred_username
   }
 
   function tableNameToInternalName(name: string) {

@@ -215,6 +215,9 @@ export default {
         return true
       }
       const tableService = useTableService()
+      console.debug('===> isOwner', tableService.isOwner(this.table, this.cacheUser))
+      console.debug('===> roles.includes', this.roles.includes('delete-table'))
+      console.debug('===> table.identifiers.length', this.table.identifiers.length)
       return tableService.isOwner(this.table, this.cacheUser) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
     },
     inputVariant () {
