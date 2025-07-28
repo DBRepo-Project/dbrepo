@@ -7,11 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.10.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.3) -- 2025-07-28
+
+#### Fixes
+
+* Fixed a wrong configuration of the Auth Service in the Helm Chart, where new pods reset the realm settings, leading
+  to a deletion of e.g. the SSO settings 
+  in [#550](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/550).
+
 ## [v1.10.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.2) - 2025-07-12
 
 #### Fixes
 
-tbd
+* Fixed a bug where saving a PID multiple times created duplicate titles, creators, descriptions, funders, etc.
+  in [#545](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/545).
 
 ## [v1.10.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.1) - 2025-07-10
 
