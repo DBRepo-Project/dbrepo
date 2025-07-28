@@ -32,7 +32,7 @@ import java.util.UUID;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/message")
+@RequestMapping(path = "/api/v1/message")
 public class MessageEndpoint {
 
     private final MetadataMapper metadataMapper;
@@ -80,9 +80,7 @@ public class MessageEndpoint {
                             schema = @Schema(implementation = BannerMessageDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find message",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("messageId") UUID messageId)
             throws MessageNotFoundException {
@@ -125,9 +123,7 @@ public class MessageEndpoint {
                             schema = @Schema(implementation = BannerMessageBriefDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find message",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("messageId") UUID messageId,
                                                    @Valid @RequestBody BannerMessageUpdateDto data)
@@ -151,9 +147,7 @@ public class MessageEndpoint {
                     content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find message",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("messageId") UUID messageId)
             throws MessageNotFoundException {

@@ -16,7 +16,7 @@ import lombok.extern.jackson.Jacksonized;
 public class CreateAccessDto {
 
     @NotNull
-    @Schema(example = "read")
+    @Schema(description = "The access type", example = "read")
     private AccessTypeDto type;
 
 

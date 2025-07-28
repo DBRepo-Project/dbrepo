@@ -37,7 +37,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @ControllerAdvice
-@RequestMapping(path = "/api/image")
+@RequestMapping(path = "/api/v1/image")
 public class ImageEndpoint extends AbstractEndpoint {
 
     private final ImageService imageService;
@@ -85,14 +85,10 @@ public class ImageEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ImageDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Image specification is invalid",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "Image already exists",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            Principal principal) throws ImageAlreadyExistsException,
@@ -116,9 +112,7 @@ public class ImageEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ImageDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Image could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ImageDto> findById(@NotNull @PathVariable("imageId") UUID imageId) throws ImageNotFoundException {
         log.debug("endpoint find image, imageId={}", imageId);
@@ -141,9 +135,7 @@ public class ImageEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ImageDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Image could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ImageDto> update(@NotNull @PathVariable("imageId") UUID imageId,
                                            @RequestBody @Valid ImageChangeDto changeDto)
@@ -167,9 +159,7 @@ public class ImageEndpoint extends AbstractEndpoint {
                     content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Image could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("imageId") UUID imageId) throws ImageNotFoundException {
         log.debug("endpoint delete image, imageId={}", imageId);

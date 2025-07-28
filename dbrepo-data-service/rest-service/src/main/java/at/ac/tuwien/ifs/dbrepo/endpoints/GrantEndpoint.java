@@ -30,7 +30,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database/{databaseId}/grant")
+@RequestMapping(path = "/api/v1/database/{databaseId}/grant")
 public class GrantEndpoint extends RestEndpoint {
 
     private final CacheService cacheService;
@@ -55,24 +55,16 @@ public class GrantEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = DatabaseAccessDto[].class))}),
             @ApiResponse(responseCode = "401",
                     description = "Not authenticated",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not database owner or foreign user",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find access",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "Grants malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<DatabaseGrantsDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                   @PathVariable("username") String username,

@@ -2389,14 +2389,6 @@ public class BaseTest {
             .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto TABLE_4_CREATE_INTERNAL_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto.builder()
-                    .name(TABLE_4_NAME)
-                    .description(TABLE_4_DESCRIPTION)
-                    .columns(TABLE_4_COLUMNS_CREATE_DTO)
-                    .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
-                    .build();
-
     public final List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_4_1_ID)
                     .databaseId(DATABASE_1_ID)
@@ -3359,22 +3351,6 @@ public class BaseTest {
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CREATE_CONSTRAINTS_DTO)
             .build();
-
-    public final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto.builder()
-                    .name(TABLE_1_NAME)
-                    .description(TABLE_1_DESCRIPTION)
-                    .columns(TABLE_1_COLUMNS_CREATE_DTO)
-                    .constraints(TABLE_1_CREATE_CONSTRAINTS_DTO)
-                    .build();
-
-    public final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_INVALID_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto.builder()
-                    .name(TABLE_1_NAME)
-                    .description(TABLE_1_DESCRIPTION)
-                    .columns(TABLE_1_COLUMNS_CREATE_DTO)
-                    .constraints(TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO)
-                    .build();
 
     public final List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)

@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*")
 @ControllerAdvice
-@RequestMapping(path = "/api/container")
+@RequestMapping(path = "/api/v1/container")
 public class ContainerEndpoint extends AbstractEndpoint {
 
     private final MetadataMapper metadataMapper;
@@ -87,24 +87,16 @@ public class ContainerEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ContainerDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Container payload malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Create container not permitted, need authority `create-container`",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Container image or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "Container name already exists",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ContainerDto> create(@Valid @RequestBody CreateContainerDto data)
             throws ImageNotFoundException, ContainerAlreadyExistsException {
@@ -126,9 +118,7 @@ public class ContainerEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ContainerDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Container image could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("containerId") UUID containerId,
                                                  Principal principal)
@@ -162,14 +152,10 @@ public class ContainerEndpoint extends AbstractEndpoint {
                     description = "Deleted container"),
             @ApiResponse(responseCode = "403",
                     description = "Create container not permitted, need authority `delete-container`",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Container not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("containerId") UUID containerId)
             throws ContainerNotFoundException {

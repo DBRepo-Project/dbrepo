@@ -41,10 +41,10 @@ public class ColumnAnalysisResultDto {
     @Schema(description = "The column is a candidate to be part of a composite primary key", example = "true")
     private Boolean primaryKey;
 
-    @Schema(description = "The list of enumerations detected", example = "\\[\\]")
+    @Schema(description = "The list of enumerations detected", example = "[]")
     private List<String> enums;
 
-    @Schema(description = "The list of set values detected", example = "\\[\\]")
+    @Schema(description = "The list of set values detected", example = "[]")
     private List<String> sets;
 
 }

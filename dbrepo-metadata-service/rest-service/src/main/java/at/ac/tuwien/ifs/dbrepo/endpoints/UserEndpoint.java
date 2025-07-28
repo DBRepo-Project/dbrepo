@@ -37,7 +37,7 @@ import java.util.UUID;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/user")
+@RequestMapping(path = "/api/v1/user")
 public class UserEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
@@ -122,14 +122,10 @@ public class UserEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = UserDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Find user is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "User was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("username") String username,
                                         Principal principal) throws NotAllowedException,
@@ -171,24 +167,16 @@ public class UserEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = UserDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Modify user query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to modify user metadata",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database/user in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to modify user at auth service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("username") String username,
                                                @NotNull @Valid @RequestBody UserUpdateDto data,

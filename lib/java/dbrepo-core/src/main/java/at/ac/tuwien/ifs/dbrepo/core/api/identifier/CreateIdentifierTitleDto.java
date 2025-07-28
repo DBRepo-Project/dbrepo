@@ -17,14 +17,14 @@ import lombok.extern.jackson.Jacksonized;
 public class CreateIdentifierTitleDto {
 
     @NotBlank
-    @Schema(example = "Airquality Demonstrator")
+    @Schema(description = "The title", example = "Airquality Demonstrator")
     private String title;
 
-    @Schema(example = "en")
+    @Schema(description = "The language", example = "en")
     private LanguageTypeDto language;
 
     @JsonProperty("type")
-    @Schema(example = "Subtitle")
+    @Schema(description = "The type", example = "Subtitle")
     private TitleTypeDto titleType;
 
 }

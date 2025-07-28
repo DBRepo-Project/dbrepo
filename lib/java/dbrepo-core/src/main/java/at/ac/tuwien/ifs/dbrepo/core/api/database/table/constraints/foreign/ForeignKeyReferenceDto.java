@@ -18,7 +18,7 @@ import java.util.UUID;
 @ToString
 public class ForeignKeyReferenceDto {
 
-    @Schema(example = "f2b740ec-0b13-4d07-88a9-529d354bba6a")
+    @Schema(description = "The foreign key reference id", example = "f2b740ec-0b13-4d07-88a9-529d354bba6a")
     private UUID id;
 
     @NotNull

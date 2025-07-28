@@ -18,7 +18,7 @@ import java.util.Map;
 public class TupleDto {
 
     @NotNull
-    @Schema(example = "{\"key\": \"value\"}")
+    @Schema(description = "The key-value data map", example = "{\"key\": \"value\"}")
     private Map<String, Object> data;
 
 }

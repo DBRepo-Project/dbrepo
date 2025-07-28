@@ -25,7 +25,7 @@ import java.util.UUID;
 public class ColumnDto {
 
     @NotNull
-    @Schema(description = "The column id", example = "a453e444-e00d-41ca-902c-11e9c54b39f1")
+    @Schema(description = "The id", example = "a453e444-e00d-41ca-902c-11e9c54b39f1")
     private UUID id;
 
     @NotNull
@@ -45,13 +45,13 @@ public class ColumnDto {
 
     @NotBlank
     @Size(max = 64)
-    @Schema(description = "The column name", example = "Given Name")
+    @Schema(description = "The user-friendly column name", example = "Given Name")
     private String name;
 
     @NotBlank
     @Size(max = 64)
     @JsonProperty("internal_name")
-    @Schema(description = "The machine-friendly internal name", example = "given_name")
+    @Schema(description = "The machine-friendly column name", example = "given_name")
     private String internalName;
 
     @Schema(description = "The data source alias name", example = "firstname")

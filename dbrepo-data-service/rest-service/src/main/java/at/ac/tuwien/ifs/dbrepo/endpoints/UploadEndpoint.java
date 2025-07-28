@@ -25,7 +25,7 @@ import java.io.IOException;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/upload")
+@RequestMapping(path = "/api/v1/upload")
 public class UploadEndpoint extends RestEndpoint {
 
     private final StorageService storageService;
@@ -48,9 +48,7 @@ public class UploadEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ViewDto.class))}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the storage service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<UploadResponseDto> create(@NotNull @RequestParam("file") MultipartFile file)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,

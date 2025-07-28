@@ -29,78 +29,79 @@ import java.util.UUID;
 public class TableDto extends CacheableDto {
 
     @NotNull
-    @Schema(example = "d346f844-b84c-490f-9aec-725a2dc8f820")
+    @Schema(description = "The id", example = "41ed10e0-687b-4e18-8521-810f5cffbce1")
     private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    @Schema(description = "The database id", example = "a8fec026-dfaf-4b1d-8f6c-f01720d91705")
     private UUID databaseId;
 
     @NotBlank
-    @Schema(example = "Air Quality")
+    @Schema(description = "The user-friendly name", example = "Air Quality")
     private String name;
+
+    @Size(max = 180)
+    @Schema(description = "The comment", example = "Air Quality in Austria")
+    private String description;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Schema(example = "air_quality")
+    @Schema(description = "The machine-friendly name", example = "air_quality")
     private String internalName;
 
-    @Schema(example = "a")
+    @Schema(description = "The alias", example = "a")
     private String alias;
 
+    @Schema(description = "The list of identifiers", example = "[]")
     private List<IdentifierDto> identifiers;
 
     @NotNull
     @JsonProperty("is_versioned")
-    @Schema(example = "true")
+    @Schema(description = "If true, The is using data versioning", example = "true")
     private Boolean isVersioned;
-
-    @NotNull
-    @JsonProperty("is_schema_public")
-    @Schema(example = "true")
-    private Boolean isSchemaPublic;
 
     @NotNull
     private UserBriefDto owner;
 
     @NotBlank
     @JsonProperty("queue_name")
-    @Schema(example = "air_quality")
+    @Schema(description = "The queue name", example = "dbrepo")
     private String queueName;
 
     @JsonProperty("queue_type")
-    @Schema(example = "quorum")
+    @Schema(description = "The queue type", example = "quorum")
     private String queueType;
 
     @NotBlank
     @JsonProperty("routing_key")
-    @Schema(example = "dbrepo.1.2")
+    @Schema(description = "The routing key", example = "dbrepo.a8fec026-dfaf-4b1d-8f6c-f01720d91705.41ed10e0-687b-4e18-8521-810f5cffbce1")
     private String routingKey;
-
-    @Size(max = 2048)
-    @Schema(example = "Air Quality in Austria")
-    private String description;
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
+    @NotNull
+    @JsonProperty("is_schema_public")
+    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
+    private Boolean isSchemaPublic;
+
     @JsonProperty("num_rows")
-    @Schema(example = "5")
+    @Schema(description = "The statistical number of rows", example = "5")
     private Long numRows;
 
     @JsonProperty("data_length")
-    @Schema(example = "16384", description = "in bytes")
+    @Schema(description = "The data length in bytes", example = "16384")
     private Long dataLength;
 
     @JsonProperty("max_data_length")
-    @Schema(example = "0", description = "in bytes")
+    @Schema(description = "The maximum data length in bytes", example = "0")
     private Long maxDataLength;
 
     @JsonProperty("avg_row_length")
-    @Schema(example = "3276", description = "in bytes")
+    @Schema(description = "The average row length in bytes", example = "3276")
     private Long avgRowLength;
 
     @NotNull
@@ -110,14 +111,14 @@ public class TableDto extends CacheableDto {
     private ConstraintsDto constraints;
 
     @NotNull
-    @Schema(example = "2022-01-01 08:00:00.000")
+    @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
     /* lombok limitations prevent from convenient builder functions */
 
     @JsonProperty("last_retrieved")
-    @Schema(example = "2025-01-23T12:09:01")
+    @Schema(description = "The timestamp The was last retrieved from the cache", example = "2025-01-23T12:09:01")
     private Instant lastRetrieved;
 
 }

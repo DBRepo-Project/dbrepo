@@ -50,7 +50,7 @@ public class ColumnBriefDto {
 
     @NotNull
     @JsonProperty("type")
-    @Schema(example = "varchar")
+    @Schema(description = "The column type name", example = "varchar")
     private ColumnTypeDto columnType;
 
 }
