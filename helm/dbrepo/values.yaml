@@ -996,6 +996,7 @@ dashboardui:
     updateStrategy:
       ## @skip dashboardui.grafana.updateStrategy.type
       type: Recreate
+      ## @skip dashboardui.grafana.updateStrategy.updateStrategy
       updateStrategy:
         recreate:
           maxSurge: 25%
