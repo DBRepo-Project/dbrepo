@@ -15,7 +15,7 @@ class UserUnitTest(unittest.TestCase):
                              uri='http://www.ontology-of-units-of-measure.org/resource/om-2/CelsiusTemperature',
                              name='Celsius Temperature')]
             # mock
-            mock.get('/api/unit', json=[exp[0].model_dump()])
+            mock.get('/api/v1/unit', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_units()
             self.assertEqual(exp, response)
@@ -23,7 +23,7 @@ class UserUnitTest(unittest.TestCase):
     def test_get_units_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/unit', status_code=202)
+            mock.get('/api/v1/unit', status_code=202)
             # test
             try:
                 RestClient().get_units()

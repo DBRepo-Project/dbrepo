@@ -39,7 +39,7 @@ class ContainerUnitTest(unittest.TestCase):
                                                      is_quoted=False,
                                                      is_buildable=True)]))
             # mock
-            mock.post('/api/container', json=exp.model_dump(), status_code=201)
+            mock.post('/api/v1/container', json=exp.model_dump(), status_code=201)
             # test
             response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
                                                                                    host='data-db2',
@@ -62,7 +62,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_create_container_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/container', status_code=400)
+            mock.post('/api/v1/container', status_code=400)
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
@@ -77,7 +77,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_create_container_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/container', status_code=403)
+            mock.post('/api/v1/container', status_code=403)
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
@@ -92,7 +92,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_create_container_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/container', status_code=404)
+            mock.post('/api/v1/container', status_code=404)
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
@@ -107,7 +107,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_create_container_409_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/container', status_code=409)
+            mock.post('/api/v1/container', status_code=409)
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
@@ -122,7 +122,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_create_container_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/container', status_code=200)
+            mock.post('/api/v1/container', status_code=200)
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
@@ -137,7 +137,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_get_containers_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container', json=[])
+            mock.get('/api/v1/container', json=[])
             # test
             response = RestClient().get_containers()
             self.assertEqual([], response)
@@ -156,7 +156,7 @@ class ContainerUnitTest(unittest.TestCase):
                                hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             ]
             # mock
-            mock.get('/api/container', json=[exp[0].model_dump()])
+            mock.get('/api/v1/container', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_containers()
             self.assertEqual(exp, response)
@@ -164,7 +164,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_get_containers_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container', status_code=204)
+            mock.get('/api/v1/container', status_code=204)
             # test
             try:
                 response = RestClient().get_containers()
@@ -200,7 +200,7 @@ class ContainerUnitTest(unittest.TestCase):
                                                      is_quoted=False,
                                                      is_buildable=True)]))
             # mock
-            mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', json=exp.model_dump())
+            mock.get('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', json=exp.model_dump())
             # test
             response = RestClient().get_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             self.assertEqual(exp, response)
@@ -208,7 +208,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_get_container_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=404)
+            mock.get('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=404)
             # test
             try:
                 response = RestClient().get_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
@@ -218,7 +218,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_get_container_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=401)
+            mock.get('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=401)
             # test
             try:
                 response = RestClient().get_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
@@ -228,7 +228,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_delete_container_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=202)
+            mock.delete('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=202)
             # test
             RestClient(username='foo', password='bar').delete_container(
                 container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
@@ -236,7 +236,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_delete_container_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=400)
+            mock.delete('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=400)
             # test
             try:
                 RestClient(username='foo', password='bar').delete_container(
@@ -247,7 +247,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_delete_container_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=403)
+            mock.delete('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=403)
             # test
             try:
                 RestClient(username='foo', password='bar').delete_container(
@@ -258,7 +258,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_delete_container_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=404)
+            mock.delete('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=404)
             # test
             try:
                 RestClient(username='foo', password='bar').delete_container(
@@ -269,7 +269,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_delete_container_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=200)
+            mock.delete('/api/v1/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=200)
             # test
             try:
                 RestClient(username='foo', password='bar').delete_container(
