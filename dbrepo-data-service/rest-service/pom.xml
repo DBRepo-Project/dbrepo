@@ -22,7 +22,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>${env.APP_VERSION}</version>
+            <version>1.10.1</version>
         </dependency>
     </dependencies>
 
