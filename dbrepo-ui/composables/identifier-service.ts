@@ -11,7 +11,7 @@ export const useIdentifierService = (): any => {
       }
     }
     return new Promise<IdentifierDto>((resolve, reject) => {
-      axios.get<IdentifierDto>(`/api/identifier/${id}`, config)
+      axios.get<IdentifierDto>(`/api/v1/identifier/${id}`, config)
         .then((response) => {
           console.info('Found identifier with id', id)
           resolve(response.data)
@@ -27,7 +27,7 @@ export const useIdentifierService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create identifier')
     return new Promise<IdentifierDto>((resolve, reject) => {
-      axios.post<IdentifierDto>('/api/identifier', data)
+      axios.post<IdentifierDto>('/api/v1/identifier', data)
         .then((response) => {
           console.info('Created identifier with id', response.data.id)
           resolve(response.data)
@@ -43,7 +43,7 @@ export const useIdentifierService = (): any => {
     const axios = useAxiosInstance()
     console.debug('save identifier', data.id)
     return new Promise<IdentifierDto>((resolve, reject) => {
-      axios.put<IdentifierDto>(`/api/identifier/${data.id}`, data)
+      axios.put<IdentifierDto>(`/api/v1/identifier/${data.id}`, data)
         .then((response) => {
           console.info('Saved identifier with id', response.data.id)
           resolve(response.data)
@@ -59,7 +59,7 @@ export const useIdentifierService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete identifier', id)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/identifier/${id}`)
+      axios.delete<void>(`/api/v1/identifier/${id}`)
         .then((response) => {
           console.info('Deleted identifier with id', id)
           resolve()
@@ -75,7 +75,7 @@ export const useIdentifierService = (): any => {
     const axios = useAxiosInstance()
     console.debug('publish identifier', id)
     return new Promise<IdentifierDto>((resolve, reject) => {
-      axios.put<IdentifierDto>(`/api/identifier/${id}/publish`)
+      axios.put<IdentifierDto>(`/api/v1/identifier/${id}/publish`)
         .then((response) => {
           console.info('Published identifier with id', response.data.id)
           resolve(response.data)
@@ -91,7 +91,7 @@ export const useIdentifierService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest metadata for identifier with uri', uri)
     return new Promise<IdentifierDto>((resolve, reject) => {
-      axios.get<IdentifierDto>(`/api/identifier/retrieve?url=${uri}`)
+      axios.get<IdentifierDto>(`/api/v1/identifier/retrieve?url=${uri}`)
         .then((response) => {
           console.info('Suggested metadata for identifier with uri', uri);
           resolve(response.data)
@@ -251,11 +251,11 @@ export const useIdentifierService = (): any => {
     const config = useRuntimeConfig()
     switch (identifier.type) {
       case 1:
-        return `${config.public.api.client}/api/database/${identifier.database_id}/subset/${identifier.subset_id}/data`
+        return `${config.public.api.client}/api/v1/database/${identifier.database_id}/subset/${identifier.subset_id}/data`
       case 2:
-        return `${config.public.api.client}/api/database/${identifier.database_id}/table/${identifier.table_id}/data`
+        return `${config.public.api.client}/api/v1/database/${identifier.database_id}/table/${identifier.table_id}/data`
       case 3:
-        return `${config.public.api.client}/api/database/${identifier.database_id}/view/${identifier.view_id}/data`
+        return `${config.public.api.client}/api/v1/database/${identifier.database_id}/view/${identifier.view_id}/data`
       default:
         return null
     }

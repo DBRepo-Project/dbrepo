@@ -5,7 +5,7 @@ export const useContainerService = (): any => {
     const axios = useAxiosInstance();
     console.debug('find containers');
     return new Promise<ContainerBriefDto[]>((resolve, reject) => {
-      axios.get<ContainerBriefDto[]>('/api/container')
+      axios.get<ContainerBriefDto[]>('/api/v1/container')
         .then((response) => {
           console.info(`Found ${response.data.length} container(s)`)
           resolve(response.data)
@@ -21,7 +21,7 @@ export const useContainerService = (): any => {
     const axios = useAxiosInstance();
     console.debug('find containers');
     return new Promise<ContainerDto>((resolve, reject) => {
-      axios.get<ContainerDto>(`/api/container/${containerId}`)
+      axios.get<ContainerDto>(`/api/v1/container/${containerId}`)
         .then((response) => {
           console.info(`Find container with id ${containerId}`)
           resolve(response.data)

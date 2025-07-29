@@ -5,7 +5,7 @@ export const useGrantService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find grant of database with id', databaseId)
     return new Promise<DatabaseGrantsDto>((resolve, reject) => {
-      axios.get<DatabaseGrantsDto>(`/api/database/${databaseId}/grant/${username}`)
+      axios.get<DatabaseGrantsDto>(`/api/v1/database/${databaseId}/grant/${username}`)
         .then((response) => {
           console.info('Found grant of database with id', databaseId)
           resolve(response.data)

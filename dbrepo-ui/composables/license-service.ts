@@ -5,7 +5,7 @@ export const useLicenseService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find licenses')
     return new Promise<LicenseDto[]>((resolve, reject) => {
-      axios.get<LicenseDto[]>('/api/license')
+      axios.get<LicenseDto[]>('/api/v1/license')
         .then((response) => {
           console.info('Found license(s)')
           resolve(response.data)
