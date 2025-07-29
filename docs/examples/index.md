@@ -34,3 +34,6 @@ author: Martin Weise
     [:octicons-arrow-right-24: Survey Data](/infrastructures/dbrepo/1.10/examples/survey/),
 
 </div>
+
+Start by re-using some of the use-cases from our public 
+[pilots repository](https://gitlab.tuwien.ac.at/martin.weise/dbrepo-pilots).

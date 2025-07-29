@@ -314,7 +314,7 @@ brokerservice:
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 1
+  replicaCount: 3
 
 ## @section Metadata Service
 
@@ -996,11 +996,8 @@ dashboardui:
     updateStrategy:
       ## @skip dashboardui.grafana.updateStrategy.type
       type: Recreate
-      ## @skip dashboardui.grafana.updateStrategy.updateStrategy
-      updateStrategy:
-        recreate:
-          maxSurge: 25%
-          maxUnavailable: 25%
+      ## @skip dashboardui.grafana.updateStrategy.Recreate
+      Recreate: { }
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
     ## @param dashboardui.grafana.replicaCount The number of replicas.
@@ -1069,6 +1066,11 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
+  updateStrategy:
+    ## @skip gatewayservice.updateStrategy.type
+    type: Recreate
+    ## @skip gatewayservice.updateStrategy.Recreate
+    Recreate: { }
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP

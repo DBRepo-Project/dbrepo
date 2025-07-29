@@ -30,19 +30,20 @@ precisely identifying arbitrary subsets of data.
   that has an underlying PV storage provider.
 
 Installing DBRepo is very easy or
-[give it a try online](https://test.dbrepo.tuwien.ac.at){ target="_blank" }.
+[give it a try online](/infrastructures/dbrepo/1.10/user-guide/quickstart/).
 
 ## Who is using DBRepo?
 
-- [TU Wien](https://dbrepo.datalab.tuwien.ac.at)
-- [EGI](https://dbrepo.dyn.cloud.e-infra.cz)
-- TU Graz
-- TU Darmstadt
-- Universit&auml;t Hamburg
-- Universiti Teknikal Malaysia Melaka
-- University of the Philippines
-- Universiti Sains Malaysia
-- Institut Teknologi Bandung
+- [TU Wien](https://dbrepo.datalab.tuwien.ac.at) (Austria)
+- EGI (pan-European)
+- Institut Teknologi Bandung (Indonesia)
+- TU Darmstadt (Germany)
+- TU Graz (Austria)
+- Universit&auml;t Hamburg (Germany)
+- Universitas Gadjah Mada (Indonesia)
+- Universiti Sains Malaysia (Malaysia)
+- Universiti Teknikal Malaysia Melaka (Malaysia)
+- University of the Philippines Diliman (Phillipines)
 
 Stay up to date and [subscribe to our mailing list](mailto:sympa@list.tuwien.ac.at?subject=subscribe dbrepo) for
 quarterly news on DBRepo. You can [unsubscribe](mailto:sympa@list.tuwien.ac.at?subject=unsubscribe dbrepo) too.
@@ -50,6 +51,6 @@ quarterly news on DBRepo. You can [unsubscribe](mailto:sympa@list.tuwien.ac.at?s
 ## How can I try DBRepo?
 
 There's a hosted [test environment](https://test.dbrepo.tuwien.ac.at) maintained 
-by [DS-IFS](https://informatics.tuwien.ac.at/orgs/e194-04) where you can explore DBRepo without installing it locally.
+by [DS-IFS](https://informatics.tuwien.ac.at/orgs/e194-04) where you can explore DBRepo using your existing account.
 
 [:fontawesome-solid-flask: &nbsp;Demo Environment](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }

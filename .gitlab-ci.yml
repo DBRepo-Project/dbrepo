@@ -96,16 +96,19 @@ lint-helm-schema:
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
     - diff <(yq '.appVersion' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
     - diff <(yq '.version' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
-    - cp ./helm/dbrepo/values.schema.json ./CI_values.schema.json
+    - cp ./helm/dbrepo/values.schema.json ./dbrepo_values.schema.json
+    - cp ./helm/seaweedfs/values.schema.json ./seaweedfs_values.schema.json
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm package ./helm/seaweedfs --destination ./build
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
   script:
     - bash .scripts/check-helm.sh
-    - helm lint ./helm/dbrepo
+    - helm lint ./helm/dbrepo ./helm/seaweedfs
     - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
-    - diff ./CI_values.schema.json ./helm/dbrepo/values.schema.json
+    - helm schema -input ./helm/seaweedfs/values.yaml -output ./helm/seaweedfs/values.schema.json
+    - diff ./dbrepo_values.schema.json ./helm/dbrepo/values.schema.json
+    - diff ./seaweedfs_values.schema.json ./helm/seaweedfs/values.schema.json
   artifacts:
     when: always
     paths:
