@@ -60,10 +60,6 @@ public class ImageServiceImpl implements ImageService {
             log.error("Failed to create image {}:{}: exists in the metadata database", createDto.getName(), createDto.getVersion());
             throw new ImageAlreadyExistsException("Failed to create image " + createDto.getName() + ":" + createDto.getVersion() + ": exists in the metadata database");
         }
-        if (createDto.getIsDefault() && imageRepository.findByIsDefault(true).isPresent()) {
-            log.error("Failed to create image {}:{}: default image exists", createDto.getName(), createDto.getVersion());
-            throw new ImageInvalidException("Failed to create image: default image exists");
-        }
         final ContainerImage dto;
         try {
             dto = imageRepository.save(image);

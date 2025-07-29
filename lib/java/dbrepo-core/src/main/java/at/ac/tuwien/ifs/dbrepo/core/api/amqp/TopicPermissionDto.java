@@ -16,23 +16,23 @@ import lombok.extern.jackson.Jacksonized;
 public class TopicPermissionDto {
 
     @NotNull
-    @Schema(example = "username")
+    @Schema(description = "The user name", example = "username")
     private String user;
 
     @NotNull
-    @Schema(example = "dbrepo")
+    @Schema(description = "The exchange name", example = "dbrepo")
     private String exchange;
 
     @NotNull
-    @Schema(example = "dbrepo")
+    @Schema(description = "The virtual host name", example = "dbrepo")
     private String vhost;
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The write permissions", example = ".*")
     private String write;
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The read permissions", example = ".*")
     private String read;
 
 }

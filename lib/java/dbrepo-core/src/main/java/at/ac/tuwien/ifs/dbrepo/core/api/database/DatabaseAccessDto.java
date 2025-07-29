@@ -22,10 +22,12 @@ public class DatabaseAccessDto {
 
     @NotNull
     @JsonIgnore
+    @Schema(description = "The user id", example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID huserid;
 
     @NotNull
     @JsonIgnore
+    @Schema(description = "The database id", example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
     private UUID hdbid;
 
     @NotNull

@@ -93,7 +93,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_views_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/database/{self.database.id}/view', json=[])
+            mock.get(f'/api/v1/database/{self.database.id}/view', json=[])
             # test
             response = RestClient().get_views(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual([], response)
@@ -111,7 +111,7 @@ class ViewUnitTest(unittest.TestCase):
                              is_public=True,
                              is_schema_public=True)]
             # mock
-            mock.get(f'/api/database/{self.database.id}/view', json=[exp[0].model_dump()])
+            mock.get(f'/api/v1/database/{self.database.id}/view', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_views(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(exp, response)
@@ -119,7 +119,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_views_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/database/{self.database.id}/view', status_code=404)
+            mock.get(f'/api/v1/database/{self.database.id}/view', status_code=404)
             # test
             try:
                 response = RestClient().get_views(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -129,7 +129,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_views_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/database/{self.database.id}/view', status_code=202)
+            mock.get(f'/api/v1/database/{self.database.id}/view', status_code=202)
             # test
             try:
                 response = RestClient().get_views(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -157,7 +157,7 @@ class ViewUnitTest(unittest.TestCase):
                                            is_null_allowed=False)],
                        identifiers=[])
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                      json=exp.model_dump())
             # test
             response = RestClient().get_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -167,7 +167,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                      status_code=403)
             # test
             try:
@@ -179,7 +179,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                      status_code=404)
             # test
             try:
@@ -191,7 +191,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_view_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                      status_code=202)
             # test
             try:
@@ -213,7 +213,7 @@ class ViewUnitTest(unittest.TestCase):
                             is_public=False,
                             is_schema_public=False)
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', json=exp.model_dump(),
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', json=exp.model_dump(),
                      status_code=202)
             # test
             response = RestClient(username='foo', password='bar').update_view(
@@ -224,7 +224,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_update_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=403)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=403)
             # test
             try:
                 RestClient(username='foo', password='bar').update_view(
@@ -236,7 +236,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_update_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=404)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=404)
             # test
             try:
                 RestClient(username='foo', password='bar').update_view(
@@ -248,7 +248,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_update_view_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=200)
             # test
             try:
                 RestClient(username='foo', password='bar').update_view(
@@ -260,7 +260,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_update_view_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=403)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1', status_code=403)
             # test
             try:
                 RestClient().update_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", view_id=1, is_public=False,
@@ -281,11 +281,11 @@ class ViewUnitTest(unittest.TestCase):
                             is_public=True,
                             is_schema_public=True)
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', json=exp.model_dump(), status_code=201)
+            mock.post(f'/api/v1/database/{self.database.id}/view', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
@@ -301,11 +301,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=400)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=400)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -323,11 +323,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=403)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=403)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -345,11 +345,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=404)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -367,11 +367,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_423_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=423)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=423)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -389,11 +389,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=502)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=502)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -411,11 +411,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=503)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=503)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -433,11 +433,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=200)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=200)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -455,11 +455,11 @@ class ViewUnitTest(unittest.TestCase):
     def test_create_view_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
                      status_code=200)
-            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
                      status_code=200)
-            mock.post(f'/api/database/{self.database.id}/view', status_code=404)
+            mock.post(f'/api/v1/database/{self.database.id}/view', status_code=404)
             # test
             try:
                 RestClient().create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
@@ -477,7 +477,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=202)
             # test
             client = RestClient(username="a", password="b")
@@ -487,7 +487,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=400)
             # test
             try:
@@ -500,7 +500,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=403)
             # test
             try:
@@ -513,7 +513,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=404)
             # test
             try:
@@ -526,7 +526,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_423_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=423)
             # test
             try:
@@ -539,7 +539,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=502)
             # test
             try:
@@ -552,7 +552,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=503)
             # test
             try:
@@ -565,7 +565,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=200)
             # test
             try:
@@ -578,7 +578,7 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
                         status_code=403)
             # test
             try:
@@ -593,7 +593,7 @@ class ViewUnitTest(unittest.TestCase):
             df = DataFrame.from_records(json.dumps(exp))
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 headers={'X-Headers': 'id,username'}, json=json.dumps(exp))
             # test
             response = RestClient().get_view_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -606,7 +606,7 @@ class ViewUnitTest(unittest.TestCase):
             df = DataFrame.from_records(json.dumps(exp))
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 headers={'X-Headers': 'id,username'}, json=json.dumps(exp))
             # test
             response: DataFrame = RestClient().get_view_data(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -618,7 +618,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=400)
             # test
             try:
@@ -631,7 +631,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=403)
             # test
             try:
@@ -644,7 +644,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=404)
             # test
             try:
@@ -657,7 +657,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=409)
             # test
             try:
@@ -670,7 +670,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=503)
             # test
             try:
@@ -683,7 +683,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=202)
             # test
             try:
@@ -697,7 +697,7 @@ class ViewUnitTest(unittest.TestCase):
             exp = 844737
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 headers={'X-Count': str(exp)})
             # test
             response = RestClient().get_view_data_count(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -708,7 +708,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=400)
             # test
             try:
@@ -721,7 +721,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=403)
             # test
             try:
@@ -734,7 +734,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=404)
             # test
             try:
@@ -747,7 +747,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=409)
             # test
             try:
@@ -760,7 +760,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=503)
             # test
             try:
@@ -773,7 +773,7 @@ class ViewUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa/data',
                 status_code=202)
             # test
             try:

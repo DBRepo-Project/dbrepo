@@ -78,7 +78,7 @@ class AppIntegrationTest(unittest.TestCase):
     def test_create_dashboard_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/dashboard',
+            response = test_client.post('/api/v1/dashboard',
                                         headers={'Authorization': f'Bearer {self.token(["system"])}'})
             self.assertEqual(415, response.status_code)
 
@@ -91,13 +91,13 @@ class AppIntegrationTest(unittest.TestCase):
     def test_create_dashboard_no_auth_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/dashboard')
+            response = test_client.post('/api/v1/dashboard')
             self.assertEqual(401, response.status_code)
 
     def test_create_dashboard_no_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/dashboard',
+            response = test_client.post('/api/v1/dashboard',
                                         headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                  'Content-Type': 'application/json'})
             self.assertEqual(400, response.status_code)
@@ -105,7 +105,7 @@ class AppIntegrationTest(unittest.TestCase):
     def test_create_dashboard_empty_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/dashboard',
+            response = test_client.post('/api/v1/dashboard',
                                         headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                  'Content-Type': 'application/json'},
                                         json={})
@@ -114,7 +114,7 @@ class AppIntegrationTest(unittest.TestCase):
     def test_create_dashboard_malformed_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/dashboard',
+            response = test_client.post('/api/v1/dashboard',
                                         headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                  'Content-Type': 'application/json'},
                                         json=dict({'is_public': True}))
@@ -123,7 +123,7 @@ class AppIntegrationTest(unittest.TestCase):
     def test_create_dashboard_succeeds(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/dashboard',
+            response = test_client.post('/api/v1/dashboard',
                                         headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                  'Content-Type': 'application/json'},
                                         json=dict({'is_public': True,
@@ -140,9 +140,9 @@ class AppIntegrationTest(unittest.TestCase):
                                  'database_name': 'some_database',
                                  'owner_username': 'foobar'})
             # mock
-            response = test_client.post('/api/dashboard', headers=headers, json=json_payload)
+            response = test_client.post('/api/v1/dashboard', headers=headers, json=json_payload)
             # test
-            response = test_client.put(f"/api/dashboard/{response.json['uid']}")
+            response = test_client.put(f"/api/v1/dashboard/{response.json['uid']}")
             self.assertEqual(401, response.status_code)
 
     def test_update_dashboard_no_body_fails(self):
@@ -153,9 +153,9 @@ class AppIntegrationTest(unittest.TestCase):
                                  'database_name': 'some_database',
                                  'owner_username': 'foobar'})
             # mock
-            response = test_client.post('/api/dashboard', headers=headers, json=json_payload)
+            response = test_client.post('/api/v1/dashboard', headers=headers, json=json_payload)
             # test
-            response = test_client.put(f"/api/dashboard/{response.json['uid']}",
+            response = test_client.put(f"/api/v1/dashboard/{response.json['uid']}",
                                        headers=headers)
             self.assertEqual(400, response.status_code)
 
@@ -167,9 +167,9 @@ class AppIntegrationTest(unittest.TestCase):
                                  'database_name': 'some_database',
                                  'owner_username': 'foobar'})
             # mock
-            response = test_client.post('/api/dashboard', headers=headers, json=json_payload)
+            response = test_client.post('/api/v1/dashboard', headers=headers, json=json_payload)
             # test
-            response = test_client.put(f"/api/dashboard/{response.json['uid']}", headers=headers, json={})
+            response = test_client.put(f"/api/v1/dashboard/{response.json['uid']}", headers=headers, json={})
             self.assertEqual(400, response.status_code)
 
     def test_update_dashboard_malformed_body_fails(self):
@@ -180,9 +180,9 @@ class AppIntegrationTest(unittest.TestCase):
                                  'database_name': 'some_database',
                                  'owner_username': 'foobar'})
             # mock
-            response = test_client.post('/api/dashboard', headers=headers, json=json_payload)
+            response = test_client.post('/api/v1/dashboard', headers=headers, json=json_payload)
             # test
-            response = test_client.put(f"/api/dashboard/{response.json['uid']}", headers=headers,
+            response = test_client.put(f"/api/v1/dashboard/{response.json['uid']}", headers=headers,
                                        json=dict({'is_public': True}))
             self.assertEqual(400, response.status_code)
 
@@ -195,10 +195,10 @@ class AppIntegrationTest(unittest.TestCase):
                                  'database_name': 'some_database',
                                  'owner_username': 'foobar'})
             # mock
-            response = test_client.post('/api/dashboard', headers=headers, json=json_payload)
+            response = test_client.post('/api/v1/dashboard', headers=headers, json=json_payload)
             req.dashboard_uid = response.json['uid']
             # test
-            response = test_client.put(f"/api/dashboard/{req.dashboard_uid}", headers=headers,
+            response = test_client.put(f"/api/v1/dashboard/{req.dashboard_uid}", headers=headers,
                                        json=req.model_dump())
             self.assertEqual(202, response.status_code)
             dashboard = self.dashboard_client().find(req.dashboard_uid)['dashboard']
@@ -272,10 +272,10 @@ class AppIntegrationTest(unittest.TestCase):
                                  'database_name': 'some_database',
                                  'owner_username': 'foobar'})
             # mock
-            response = test_client.post('/api/dashboard', headers=headers, json=json_payload)
+            response = test_client.post('/api/v1/dashboard', headers=headers, json=json_payload)
             req.dashboard_uid = response.json['uid']
             # test
-            response = test_client.put(f"/api/dashboard/{req.dashboard_uid}", headers=headers,
+            response = test_client.put(f"/api/v1/dashboard/{req.dashboard_uid}", headers=headers,
                                        json=req.model_dump())
             self.assertEqual(202, response.status_code)
             dashboard = self.dashboard_client().find(req.dashboard_uid)['dashboard']
@@ -285,5 +285,5 @@ class AppIntegrationTest(unittest.TestCase):
         with app.test_client() as test_client:
             headers = {'Authorization': f'Bearer {self.token(["system"])}', 'Content-Type': 'application/json'}
             # test
-            response = test_client.put(f"/api/dashboard/{req.dashboard_uid}", headers=headers, json=req.model_dump())
+            response = test_client.put(f"/api/v1/dashboard/{req.dashboard_uid}", headers=headers, json=req.model_dump())
             self.assertEqual(202, response.status_code)

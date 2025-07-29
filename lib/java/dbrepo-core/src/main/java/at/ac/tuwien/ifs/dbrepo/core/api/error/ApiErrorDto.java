@@ -21,11 +21,11 @@ public class ApiErrorDto {
     private HttpStatus status;
 
     @NotNull
-    @Schema(example = "Error message")
+    @Schema(description = "The error message in English", example = "Error message")
     private String message;
 
     @NotNull
-    @Schema(example = "error.service.code")
+    @Schema(description = "The error code used for internationalization of the error messages", example = "error.service.code")
     private String code;
 
 }

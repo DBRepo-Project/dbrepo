@@ -34,7 +34,7 @@ import java.util.UUID;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/ontology")
+@RequestMapping(path = "/api/v1/ontology")
 public class OntologyEndpoint extends AbstractEndpoint {
 
     private final EntityService entityService;
@@ -80,9 +80,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = OntologyDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find ontology",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("ontologyId") UUID ontologyId)
             throws OntologyNotFoundException {
@@ -124,9 +122,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = OntologyDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find ontology",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("ontologyId") UUID ontologyId,
                                               @NotNull @Valid @RequestBody OntologyModifyDto data)
@@ -150,9 +146,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             mediaType = "application/json")}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find ontology",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("ontologyId") UUID ontologyId)
             throws OntologyNotFoundException {
@@ -176,24 +170,16 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = EntityDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Filter params are invalid",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Could not find ontology",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Generated query or uri is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "422",
                     description = "Ontology does not have rdf or sparql endpoint",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<EntityDto>> find(@NotNull @PathVariable("ontologyId") UUID id,
                                                 @RequestParam(name = "label", required = false) String label,

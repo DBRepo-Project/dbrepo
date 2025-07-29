@@ -15,30 +15,30 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class CreateIdentifierCreatorDto {
 
-    @Schema(example = "Josiah")
+    @Schema(description = "The given name", example = "Josiah")
     private String firstname;
 
-    @Schema(example = "Carberry")
+    @Schema(description = "The family name", example = "Carberry")
     private String lastname;
 
     @NotBlank
     @JsonProperty("creator_name")
-    @Schema(example = "Carberry, Josiah")
+    @Schema(description = "The full name", example = "Carberry, Josiah")
     private String creatorName;
 
     @JsonProperty("name_type")
-    @Schema(example = "Personal")
+    @Schema(description = "The name type", example = "Personal")
     private NameTypeDto nameType;
 
     @JsonProperty("name_identifier")
-    @Schema(example = "0000-0002-1825-0097")
+    @Schema(description = "The persistent identifier that identifies the creator unambiguously", example = "https://orcid.org/0000-0002-1825-0097")
     private String nameIdentifier;
 
-    @Schema(example = "Wesleyan University")
+    @Schema(description = "The affiliation", example = "Wesleyan University")
     private String affiliation;
 
     @JsonProperty("affiliation_identifier")
-    @Schema(example = "https://ror.org/04d836q62")
+    @Schema(description = "The persistent identifier that identifies the affiliation unambiguously", example = "https://ror.org/04d836q62")
     private String affiliationIdentifier;
 
 }

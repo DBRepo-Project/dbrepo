@@ -46,7 +46,7 @@ public class SubsetEndpointMvcTest extends BaseTest {
                 .thenReturn(QUERY_5_DTO);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_3_ID + "/subset/" + QUERY_5_ID)
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_3_ID + "/subset/" + QUERY_5_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -62,7 +62,7 @@ public class SubsetEndpointMvcTest extends BaseTest {
                 .thenReturn(QUERY_5_DTO);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_4_ID + "/subset/" + QUERY_7_ID)
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_4_ID + "/subset/" + QUERY_7_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());

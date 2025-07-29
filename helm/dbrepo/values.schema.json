@@ -55,6 +55,9 @@
                                     }
                                 }
                             },
+                            "emptyDir": {
+                                "type": "object"
+                            },
                             "name": {
                                 "type": "string"
                             }
@@ -72,18 +75,18 @@
                         }
                     }
                 },
-                "initdbScripts": {
-                    "type": "object",
-                    "properties": {
-                        "import-realms.sh": {
-                            "type": "string"
-                        }
-                    }
-                },
                 "jwt": {
                     "type": "object",
                     "properties": {
                         "pubkey": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "keycloakConfigCli": {
+                    "type": "object",
+                    "properties": {
+                        "existingConfigmap": {
                             "type": "string"
                         }
                     }
@@ -508,6 +511,22 @@
                             "properties": {
                                 "type": {
                                     "type": "string"
+                                },
+                                "updateStrategy": {
+                                    "type": "object",
+                                    "properties": {
+                                        "recreate": {
+                                            "type": "object",
+                                            "properties": {
+                                                "maxSurge": {
+                                                    "type": "string"
+                                                },
+                                                "maxUnavailable": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

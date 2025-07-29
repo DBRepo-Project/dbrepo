@@ -18,63 +18,63 @@ import lombok.extern.jackson.Jacksonized;
 public class DatasourceDto {
 
     @NotNull
-    @Schema(example = "1")
+    @Schema(description = "The id", example = "1")
     private Long id;
 
     @NotNull
-    @Schema(example = "kLtEtcRGk")
+    @Schema(description = "The unique id", example = "kLtEtcRGk")
     private String uid;
 
     @NotNull
-    @Schema(example = "1")
+    @Schema(description = "The organization id", example = "1")
     private Long orgId;
 
     @NotNull
-    @Schema(example = "some_datasource")
+    @Schema(description = "The machine-friendly name", example = "some_datasource")
     private String name;
 
     @NotNull
-    @Schema(example = "plugins/logo.svg")
+    @Schema(description = "The datasource type logo url", example = "plugins/logo.svg")
     private String typeLogoUrl;
 
     @NotNull
-    @Schema(example = "PROXY")
+    @Schema(description = "The access", example = "PROXY")
     private AccessTypeDto access;
 
-    @Schema(example = "http://example.com")
+    @Schema(description = "The url", example = "http://example.com")
     private String url;
 
-    @Schema(example = "s3cr3t")
+    @Schema(description = "The password", example = "s3cr3t")
     private String password;
 
-    @Schema(example = "user")
+    @Schema(description = "The user", example = "user")
     private String user;
 
-    @Schema(example = "true")
+    @Schema(description = "If true, configure the data source with basic authentication", example = "true")
     private Boolean basicAuth;
 
-    @Schema(example = "user")
+    @Schema(description = "The basic auth username", example = "user")
     private String basicAuthUser;
 
-    @Schema(example = "s3cr3t")
+    @Schema(description = "The basic auth password", example = "s3cr3t")
     private String basicAuthPassword;
 
     @Schema(example = "false")
     private Boolean withCredentials;
 
-    @Schema(example = "false")
+    @Schema(description = "If true, this is the default data source for grafana", example = "false")
     private Boolean isDefault;
 
     @NotNull
-    @Schema(example = "true")
+    @Schema(description = "If true, configure the datasource to read only", example = "true")
     private Boolean readOnly;
 
     @NotNull
-    @Schema(example = "INFINITY")
+    @Schema(description = "The type", example = "INFINITY")
     private DatasourceTypeDto type;
 
     @NotNull
-    @Schema(example = "0")
+    @Schema(description = "The configuration version", example = "0")
     private Integer version;
 
 }

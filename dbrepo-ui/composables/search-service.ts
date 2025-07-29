@@ -5,7 +5,7 @@ export const useSearchService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find fields for type', type)
     return new Promise<FieldsResultDto[]>((resolve, reject) => {
-      axios.get<FieldsResultDto[]>(`/api/search/${type}/fields`)
+      axios.get<FieldsResultDto[]>(`/api/v1/search/${type}/fields`)
         .then((response) => {
           const json = response.data
           console.debug('Found fields for type', type)
@@ -22,7 +22,7 @@ export const useSearchService = (): any => {
     const axios = useAxiosInstance()
     console.debug('fuzzy search for term', term)
     return new Promise<DatabaseDto[]>((resolve, reject) => {
-      axios.get<DatabaseDto[]>(`/api/search?q=${term}`)
+      axios.get<DatabaseDto[]>(`/api/v1/search?q=${term}`)
         .then((response) => {
           console.info('Searched for term', term)
           resolve(response.data)
@@ -38,7 +38,7 @@ export const useSearchService = (): any => {
     const axios = useAxiosInstance()
     console.debug('general search for type', type)
     return new Promise<SearchResultDto>((resolve, reject) => {
-      axios.post<SearchResultDto>(`/api/search/${type}`, data)
+      axios.post<SearchResultDto>(`/api/v1/search/${type}`, data)
         .then((response) => {
           console.info('Searched for type', type)
           resolve(response.data)

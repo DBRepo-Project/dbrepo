@@ -18,24 +18,24 @@ import java.util.List;
 public class CreateForeignKeyDto {
 
     @NotNull
-    @Schema(example = "[\"id\"]")
+    @Schema(description = "The list of local columns that reference a foreign set of columns", example = "[\"id\"]")
     private List<String> columns;
 
     @NotNull
-    @Schema(example = "sensor")
+    @Schema(description = "The name of the foreign table", example = "sensor")
     @JsonProperty("referenced_table")
     private String referencedTable;
 
     @NotNull
-    @Schema(example = "[\"other_id\"]")
+    @Schema(description = "The list of foreign columns", example = "[\"other_id\"]")
     @JsonProperty("referenced_columns")
     private List<String> referencedColumns;
 
-    @Schema(example = "cascade")
     @JsonProperty("on_update")
+    @Schema(description = "The integrity action when updating tuples", example = "cascade")
     private ReferenceTypeDto onUpdate;
 
-    @Schema(example = "cascade")
     @JsonProperty("on_delete")
+    @Schema(description = "The integrity action when deleting tuples", example = "cascade")
     private ReferenceTypeDto onDelete;
 }

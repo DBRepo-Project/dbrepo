@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-
 @Getter
 @Setter
 @Builder
@@ -26,51 +25,53 @@ import java.util.UUID;
 public class QueryBriefDto {
 
     @NotNull
-    @Schema(example = "83ea2326-f8f6-4263-baf8-cdf88a54efc7")
+    @Schema(description = "The query id", example = "83ea2326-f8f6-4263-baf8-cdf88a54efc7")
     private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1a6fb0c0-49c3-4a22-a515-35f7a3dd8e62")
+    @Schema(description = "The database id", example = "1a6fb0c0-49c3-4a22-a515-35f7a3dd8e62")
     private UUID databaseId;
 
     @NotNull
     private UserBriefDto owner;
 
     @NotNull
-    @Schema(example = "2022-01-01 08:00:00.000")
+    @Schema(description = "The timestamp when the query was executed", example = "2022-01-01 08:00:00.000000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant execution;
 
     @NotBlank
-    @Schema(example = "SELECT `id` FROM `air_quality`")
+    @Schema(description = "The mapped SQL query", example = "SELECT `id` FROM `air_quality`")
     private String query;
 
+    @NotBlank
     @JsonProperty("query_normalized")
-    @Schema(example = "SELECT `id` FROM `air_quality`")
+    @Schema(description = "The normalized SQL query as executed", example = "SELECT `id` FROM `air_quality` FOR SYSTEM_TIME AS OF TIMESTAMP '2022-01-01 08:00:00.000000'")
     private String queryNormalized;
 
     @NotBlank
     @JsonProperty("query_hash")
-    @Schema(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
+    @Schema(description = "The sha256-hash of the mapped query", example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
     private String queryHash;
 
     @JsonProperty("result_hash")
-    @Schema(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
+    @Schema(description = "The sha256-hash of the result", example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
     private String resultHash;
 
     @JsonProperty("result_number")
-    @Schema(example = "1")
+    @Schema(description = "The row count of the result", example = "1")
     private Long resultNumber;
 
     @NotNull
     @JsonProperty("is_persisted")
-    @Schema(example = "true")
+    @Schema(description = "If false, the query is marked for deletion at a later point in time", example = "true")
     private Boolean isPersisted;
 
-    @Schema(example = "query")
+    @Schema(description = "The query type", example = "query")
     private QueryTypeDto type;
 
+    @NotNull
     private List<IdentifierBriefDto> identifiers;
 
 }

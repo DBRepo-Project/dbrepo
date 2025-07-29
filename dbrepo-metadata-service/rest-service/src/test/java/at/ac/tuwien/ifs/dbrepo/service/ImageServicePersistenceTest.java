@@ -48,7 +48,6 @@ public class ImageServicePersistenceTest extends BaseTest {
                 .dialect(IMAGE_1_DIALECT)
                 .driverClass(IMAGE_1.getDriverClass())
                 .defaultPort(IMAGE_1_DEFAULT_PORT)
-                .isDefault(false)
                 .build();
 
         /* test */
@@ -64,30 +63,10 @@ public class ImageServicePersistenceTest extends BaseTest {
                 .driverClass(IMAGE_1.getDriverClass())
                 .jdbcMethod(IMAGE_1_JDBC_METHOD)
                 .dialect(IMAGE_1_DIALECT)
-                .isDefault(IMAGE_1_IS_DEFAULT)
                 .build();
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
-            imageService.create(request, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void create_multipleDefaultImages_fails() {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .name("mariadb")
-                .version("10.5")
-                .registry(IMAGE_1.getRegistry())
-                .defaultPort(IMAGE_1_DEFAULT_PORT)
-                .driverClass(IMAGE_1.getDriverClass())
-                .jdbcMethod(IMAGE_1_JDBC_METHOD)
-                .dialect(IMAGE_1_DIALECT)
-                .isDefault(true) // <<<<
-                .build();
-
-        /* test */
-        assertThrows(ImageInvalidException.class, () -> {
             imageService.create(request, USER_1_PRINCIPAL);
         });
     }

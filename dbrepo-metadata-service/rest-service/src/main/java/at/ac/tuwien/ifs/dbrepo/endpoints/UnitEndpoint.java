@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/unit")
+@RequestMapping(path = "/api/v1/unit")
 public class UnitEndpoint extends AbstractEndpoint {
 
     private final UnitService unitService;

@@ -18,8 +18,8 @@ visibility, this can be [changed later](/infrastructures/dbrepo/1.10/update-visi
 
 !!! info "Python Compatibility"
 
-    Ensure that you use the same Python library version as the target instance. For example: if you see `1.10.2` in the
-    bottom left, you need to use the `1.10.2` Python library.
+    Ensure that you use the same Python library version as the target instance. For example: if you see `1.10.3` in the
+    bottom left, you need to use the `1.10.3` Python library.
 
 List all available containers with their database engine descriptions and obtain a container id.
 

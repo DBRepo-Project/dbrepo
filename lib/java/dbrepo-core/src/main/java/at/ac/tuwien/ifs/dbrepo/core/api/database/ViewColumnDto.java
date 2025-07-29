@@ -25,47 +25,47 @@ import java.util.UUID;
 public class ViewColumnDto {
 
     @NotNull
-    @Schema(example = "6aec3a91-2e0b-4e92-a16a-9c3c5e892da1")
+    @Schema(description = "The id", example = "6aec3a91-2e0b-4e92-a16a-9c3c5e892da1")
     private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4")
+    @Schema(description = "The database id", example = "2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4")
     private UUID databaseId;
 
     @NotNull
     @JsonProperty("ord")
-    @Schema(example = "0")
+    @Schema(description = "The ordinal position of the colum to order it", example = "0")
     private Integer ordinalPosition;
 
     @NotBlank
     @Size(max = 64)
-    @Schema(example = "Given Name")
+    @Schema(description = "The user-friendly column name", example = "Given Name")
     private String name;
 
     @NotBlank
     @Size(max = 64)
     @JsonProperty("internal_name")
-    @Schema(example = "given_name")
+    @Schema(description = "The machine-friendly column name", example = "given_name")
     private String internalName;
 
     @JsonProperty("index_length")
-    @Schema(example = "255")
+    @Schema(description = "The length of the index", example = "255")
     private Long indexLength;
 
     @JsonProperty("length")
-    @Schema(example = "255")
+    @Schema(description = "The length of the total data in the table (index + data)", example = "255")
     private Long length;
 
     @NotNull
     @JsonProperty("type")
-    @Schema(example = "varchar")
+    @Schema(description = "The column type name", example = "varchar")
     private ColumnTypeDto columnType;
 
-    @Schema(example = "255")
+    @Schema(description = "The column size, determines the number of digits before the comma as x=size-d where size >= d", example = "255")
     private Long size;
 
-    @Schema(example = "0")
+    @Schema(description = "The column d", example = "0")
     private Long d;
 
     @Size(max = 2048)

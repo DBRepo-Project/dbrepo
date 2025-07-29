@@ -4,7 +4,7 @@ export const useConceptService = (): any => {
   async function findAll () {
     const axios = useAxiosInstance()
     return new Promise((resolve, reject) => {
-      axios.get('/api/concept')
+      axios.get('/api/v1/concept')
         .then((response) => {
           console.info('Found concept(s)')
           resolve(response.data)

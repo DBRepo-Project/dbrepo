@@ -18,11 +18,11 @@ import java.util.UUID;
 public class SetDto {
 
     @NotNull
-    @Schema(example = "7eb4eded-bacc-4a91-84db-a9ae6ddafda7")
+    @Schema(description = "The set id", example = "7eb4eded-bacc-4a91-84db-a9ae6ddafda7")
     private UUID id;
 
     @NotNull
-    @Schema(example = "3")
+    @Schema(description = "The set value", example = "3")
     private String value;
 
 }

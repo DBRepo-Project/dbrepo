@@ -20,20 +20,20 @@ import java.util.UUID;
 public class ImageBriefDto {
 
     @NotNull
-    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dcce")
+    @Schema(description = "The image id", example = "816f55d5-1098-4f60-a4af-c8121c04dcce")
     private UUID id;
 
     @NotBlank
-    @Schema(example = "mariadb")
+    @Schema(description = "The image name", example = "mariadb")
     private String name;
 
     @NotBlank
-    @Schema(example = "10.5")
+    @Schema(description = "The image tag", example = "10.5")
     private String version;
 
     @NotNull
     @JsonProperty("default")
-    @Schema(example = "false")
+    @Schema(description = "Marks the image as default", example = "false")
     private Boolean isDefault;
 
 }

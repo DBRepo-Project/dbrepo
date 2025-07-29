@@ -17,20 +17,21 @@ import lombok.extern.jackson.Jacksonized;
 public class UserDetailsDto {
 
     @NotNull
-    @Schema(example = "jdoe")
+    @Schema(description = "The user name", example = "jdoe")
     private String name;
 
     @NotNull
     @JsonProperty("password_hash")
-    @Schema(example = "LP5aXqGKWjygzwHnTjmrv1U8M+LW5kI243X/sFTE6I3XyNi3")
+    @Schema(description = "The user password hash", example = "LP5aXqGKWjygzwHnTjmrv1U8M+LW5kI243X/sFTE6I3XyNi3")
     private String passwordHash;
 
     @NotNull
     @JsonProperty("hashing_algorithm")
-    @Schema(example = "rabbit_password_hashing_sha256")
+    @Schema(description = "The hashing algorithm used to generate the value in password_hash", example = "rabbit_password_hashing_sha256")
     private String hashingAlgorithm;
 
     @NotNull
+    @Schema(description = "The user tags")
     private String[] tags;
 
 }

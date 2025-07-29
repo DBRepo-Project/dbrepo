@@ -15,7 +15,7 @@ class ContainerUnitTest(unittest.TestCase):
                                 uri="http://dbpedia.org/page/Category:Precipitation",
                                 name="Precipitation")]
             # mock
-            mock.get('/api/concept', json=[exp[0].model_dump()])
+            mock.get('/api/v1/concept', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_concepts()
             self.assertEqual(exp, response)
@@ -23,7 +23,7 @@ class ContainerUnitTest(unittest.TestCase):
     def test_get_concepts_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/concept', status_code=202)
+            mock.get('/api/v1/concept', status_code=202)
             # test
             try:
                 RestClient().get_concepts()

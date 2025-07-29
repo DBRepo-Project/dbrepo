@@ -21,41 +21,44 @@ import java.util.List;
 public class CreateTableColumnDto {
 
     @NotBlank
-    @Schema(example = "Date")
+    @Schema(description = "The column name", example = "id")
     private String name;
 
     @JsonProperty("index_length")
+    @Schema(description = "The index length", example = "null")
     private Long indexLength;
 
     @NotNull
-    @Schema(example = "varchar")
+    @Schema(description = "The data type", example = "serial")
     private ColumnTypeDto type;
 
-    @Schema(example = "255")
+    @Schema(description = "The size determines the number of digits before the comma: x=size-d where size >= d", example = "null")
     private Long size;
 
-    @Schema(example = "0")
+    @Schema(description = "The digits behind the comma", example = "null")
     private Long d;
-
-    @Size(max = 2048)
-    @Schema(example = "Formatted as YYYY-MM-dd")
-    private String description;
 
     @NotNull
     @JsonProperty("null_allowed")
-    @Schema(example = "true")
+    @Schema(description = "If set to true, the column value can be null", example = "true")
     private Boolean nullAllowed;
 
+    @Size(max = 2048)
+    @Schema(description = "The column comment", example = "null")
+    private String description;
+
     @JsonProperty("concept_uri")
+    @Schema(description = "The column concept", example = "null")
     private String conceptUri;
 
     @JsonProperty("unit_uri")
+    @Schema(description = "The column unit", example = "null")
     private String unitUri;
 
-    @Schema(description = "enum values, only considered when type = ENUM")
+    @Schema(description = "enum values, only considered when type = ENUM", example = "null")
     private List<String> enums;
 
-    @Schema(description = "set values, only considered when type = SET")
+    @Schema(description = "set values, only considered when type = SET", example = "nul")
     private List<String> sets;
 
 }

@@ -17,7 +17,7 @@ class RestClientUnitTest(unittest.TestCase):
     def test_constructor_token_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/user', json=[])
+            mock.get('/api/v1/user', json=[])
             # test
             client = RestClient(password='bar')
             client.get_users()
