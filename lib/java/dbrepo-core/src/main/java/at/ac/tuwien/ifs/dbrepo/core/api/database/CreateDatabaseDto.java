@@ -43,4 +43,6 @@ public class CreateDatabaseDto {
     @Schema(example = "[\"https://replica1.example.com\", \"https://replica2.example.com\"]", nullable = true)
     private List<String> replicaUrls;
 
+    private String creationLocation;
+
 }

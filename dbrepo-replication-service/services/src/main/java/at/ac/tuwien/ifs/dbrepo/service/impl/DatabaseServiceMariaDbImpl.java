@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
@@ -386,5 +387,22 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             dataSource.close();
         }
         log.info("Updated user password in database with id {}", database.getId());
+    }
+
+    @Override
+    public void handleDatabaseReplication(DatabaseNotificationDto databaseNotificationDto) {
+        log.info("=== DATABASE REPLICATION HANDLER ===");
+        
+        // Print replica URLs
+        System.out.println("Replica URLs:");
+        System.out.println("Database Name: " + databaseNotificationDto.getCreateDatabaseDto().getName());
+        System.out.println("Creation Location: " + databaseNotificationDto.getCreateDatabaseDto().getCreationLocation());
+        System.out.println("Database ID: " + databaseNotificationDto.getCreationId());
+        
+        // TODO: replicate to other instances
+        log.info("TODO: Implement replication to other instances");
+        log.info("Database notification received: {}", databaseNotificationDto);
+        
+        System.out.println("========================");
     }
 }

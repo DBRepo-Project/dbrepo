@@ -120,6 +120,9 @@ public class Database implements Serializable {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isDashboardEnabled;
 
+    @Column(name = "creation_location")
+    private String creationLocation;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "LONGBLOB")

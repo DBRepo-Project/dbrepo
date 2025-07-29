@@ -178,6 +178,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));
     }

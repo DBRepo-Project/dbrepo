@@ -20,6 +20,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,14 +40,16 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
+    private final ReplicationService replicationService;
 
     @Autowired
     public DatabaseServiceImpl(MetadataMapper metadataMapper, DatabaseRepository databaseRepository,
-                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway) {
+                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway, ReplicationService replicationService) {
         this.metadataMapper = metadataMapper;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
         this.searchServiceGateway = searchServiceGateway;
+        this.replicationService = replicationService;
     }
 
     @Override
@@ -113,6 +116,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .accesses(new LinkedList<>())
                 .identifiers(new LinkedList<>())
                 .replicaUrls(data.getReplicaUrls())
+                .creationLocation(data.getCreationLocation())
                 .build();
         /* create in data database */
         final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
@@ -135,6 +139,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);
+        if (data.getCreationLocation() == null && data.getReplicaUrls().size() > 0) {
+            replicationService.replicateDatabase(data, entity1.getId());
+        }
         log.info("Created database with id {}", database.getId());
         return database;
     }

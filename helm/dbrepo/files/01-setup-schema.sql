@@ -91,6 +91,16 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     FOREIGN KEY (`contact_person`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `mdb_databases_replica_urls` (
+    `database_id` CHAR(36) NOT NULL,
+    `replica_url` TEXT NOT NULL,
+    PRIMARY KEY (`database_id`, `replica_url`(255)),
+    CONSTRAINT `fk_mdb_replica_urls_database`
+    FOREIGN KEY (`database_id`)
+    REFERENCES `mdb_databases` (`id`)
+    ON DELETE CASCADE
+    );
+
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
     id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
