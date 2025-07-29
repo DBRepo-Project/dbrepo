@@ -112,6 +112,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
                 .identifiers(new LinkedList<>())
+                .replicaUrls(data.getReplicaUrls())
                 .build();
         /* create in data database */
         final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()

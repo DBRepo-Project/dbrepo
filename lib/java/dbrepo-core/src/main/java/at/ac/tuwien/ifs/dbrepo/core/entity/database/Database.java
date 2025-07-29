@@ -125,6 +125,13 @@ public class Database implements Serializable {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] image;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "mdb_databases_replica_urls", joinColumns = {
+            @JoinColumn(name = "database_id")
+    })
+    @Column(name = "replica_url", columnDefinition = "TEXT")
+    private List<String> replicaUrls = new LinkedList<>();
+
     @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")

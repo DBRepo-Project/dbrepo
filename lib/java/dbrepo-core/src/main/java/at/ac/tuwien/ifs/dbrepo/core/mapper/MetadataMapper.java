@@ -188,7 +188,8 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)"),
-            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().filter(a -> !a.getUser().getIsInternal()).map(a -> databaseAccessToDatabaseAccessDto(a)).toList())")
+            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().filter(a -> !a.getUser().getIsInternal()).map(a -> databaseAccessToDatabaseAccessDto(a)).toList())"),
+            @Mapping(target = "replicaUrls", source = "replicaUrls")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 

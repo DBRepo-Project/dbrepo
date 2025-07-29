@@ -97,6 +97,10 @@ public class DatabaseDto extends CacheableDto {
     @JsonProperty("preview_image")
     private String previewImage;
 
+    @JsonProperty("replica_urls")
+    @Schema(example = "[\"https://replica1.example.com\", \"https://replica2.example.com\"]", nullable = true)
+    private List<String> replicaUrls;
+
     @NotNull
     @Schema(example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")

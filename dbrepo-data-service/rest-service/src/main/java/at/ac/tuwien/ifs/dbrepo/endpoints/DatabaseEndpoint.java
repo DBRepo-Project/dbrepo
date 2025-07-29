@@ -100,7 +100,6 @@ public class DatabaseEndpoint extends RestEndpoint {
                 log.error("Failed to give readonly user read-access: password is hashed");
                 throw new MalformedException("Failed to give readonly user read-access: password is hashed");
             }
-            log.info("HALLO, das ist das neue image yooooo!!!!!!", database.getId());
             accessService.create(database, dataMapper.createDatabaseDtoToReadonlyUserDto(data), AccessTypeDto.READ);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(database);

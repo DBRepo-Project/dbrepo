@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -37,5 +38,9 @@ public class CreateDatabaseDto {
     @JsonProperty("is_schema_public")
     @Schema(example = "true")
     private Boolean isSchemaPublic;
+
+    @JsonProperty("replica_urls")
+    @Schema(example = "[\"https://replica1.example.com\", \"https://replica2.example.com\"]", nullable = true)
+    private List<String> replicaUrls;
 
 }
