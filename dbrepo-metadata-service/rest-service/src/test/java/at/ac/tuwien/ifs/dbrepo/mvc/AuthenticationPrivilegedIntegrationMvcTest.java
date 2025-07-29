@@ -96,7 +96,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -108,7 +108,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
                 .andDo(print())
                 .andExpect(header().string("X-Host", CONTAINER_1_HOST))
                 .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
@@ -127,7 +127,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         final TokenDto jwt = keycloakGateway.obtainUserToken(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
                 .andDo(print())
                 .andExpect(header().string("X-Host", CONTAINER_1_HOST))
                 .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
@@ -147,7 +147,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
 
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -159,7 +159,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -171,7 +171,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -184,7 +184,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/view/" + VIEW_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/view/" + VIEW_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -196,7 +196,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/container/" + CONTAINER_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/container/" + CONTAINER_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }

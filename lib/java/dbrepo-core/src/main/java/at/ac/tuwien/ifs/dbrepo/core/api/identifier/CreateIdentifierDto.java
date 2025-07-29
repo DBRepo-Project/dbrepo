@@ -25,26 +25,26 @@ public class CreateIdentifierDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "d002e8d5-8db4-4ff7-ab3a-bc3f52d9ec44")
+    @Schema(description = "The id", example = "d002e8d5-8db4-4ff7-ab3a-bc3f52d9ec44")
     private UUID databaseId;
 
     @JsonProperty("query_id")
-    @Schema(example = "null")
+    @Schema(description = "The subset id, is only set when type=`subset`", example = "null")
     private UUID queryId;
 
     @JsonProperty("view_id")
-    @Schema(example = "null")
+    @Schema(description = "The view id, is only set when type=`view`", example = "null")
     private UUID viewId;
 
     @JsonProperty("table_id")
-    @Schema(example = "null")
+    @Schema(description = "The table id, is only set when type=`table`", example = "null")
     private UUID tableId;
 
     @NotNull
-    @Schema(example = "database")
+    @Schema(description = "The identifier type", example = "database")
     private IdentifierTypeDto type;
 
-    @Schema(example = "10.1111/11111111")
+    @Schema(description = "The doi persistent identifier with optional https://doi.org/ prefix", example = "10.1111/11111111")
     private String doi;
 
     @NotNull
@@ -62,22 +62,23 @@ public class CreateIdentifierDto {
     private List<LicenseDto> licenses = new LinkedList<>();
 
     @JsonProperty("publication_day")
-    @Schema(example = "15")
+    @Schema(description = "The day of publication", example = "15")
     private Integer publicationDay;
 
     @JsonProperty("publication_month")
-    @Schema(example = "12")
+    @Schema(description = "The month of publication", example = "12")
     private Integer publicationMonth;
 
     @NotBlank
-    @Schema(example = "TU Wien")
+    @Schema(description = "The publisher", example = "TU Wien")
     private String publisher;
 
+    @Schema(description = "The language", example = "en")
     private LanguageTypeDto language;
 
     @NotNull
     @JsonProperty("publication_year")
-    @Schema(example = "2022")
+    @Schema(description = "The year of publication", example = "2022")
     private Integer publicationYear;
 
     @NotNull

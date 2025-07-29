@@ -4,9 +4,6 @@
       "inputFile": "./api.base.yaml"
     },
     {
-      "inputFile": "./api-analyse-service.yaml"
-    },
-    {
       "inputFile": "./api-data-service.yaml"
     },
     {

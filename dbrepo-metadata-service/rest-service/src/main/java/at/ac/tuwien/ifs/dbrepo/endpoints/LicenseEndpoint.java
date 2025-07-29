@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/license")
+@RequestMapping(path = "/api/v1/license")
 public class LicenseEndpoint {
 
     private final LicenseService licenseService;

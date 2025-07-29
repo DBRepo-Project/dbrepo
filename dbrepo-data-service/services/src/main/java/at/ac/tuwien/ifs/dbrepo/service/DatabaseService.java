@@ -2,8 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
@@ -14,10 +14,11 @@ public interface DatabaseService {
 
     /**
      * Inspects the schema (columns with names, data types) of a view with given name in the given database.
+     *
      * @param database The database.
      * @param viewName The view name.
      * @return The inspected view if successful.
-     * @throws SQLException The connection to the database could not be established.
+     * @throws SQLException          The connection to the database could not be established.
      * @throws ViewNotFoundException The view was not found in the given database.
      */
     ViewDto inspectView(DatabaseDto database, String viewName) throws SQLException, ViewNotFoundException;
@@ -33,14 +34,15 @@ public interface DatabaseService {
      * @throws TableExistsException    The table name already exists in the information_schema.
      * @throws TableNotFoundException  The table could not be inspected in the metadata database.
      */
-    TableDto createTable(DatabaseDto database, TableCreateDto data) throws SQLException,
+    TableDto createTable(DatabaseDto database, CreateTableDto data) throws SQLException,
             TableMalformedException, TableExistsException, TableNotFoundException;
 
     /**
      * Creates a view in given data database with view definition.
+     *
      * @param database The data database object.
      * @param viewName The view name.
-     * @param query The view query.
+     * @param query    The view query.
      * @return The generated view.
      * @throws SQLException
      * @throws ViewMalformedException
@@ -76,19 +78,20 @@ public interface DatabaseService {
      * Inspects the schema (columns with names, data types, unique-, check-, primary- and foreign key constraints) of
      * a table with given name in the given database.
      *
-     * @param database The database.
+     * @param database  The database.
      * @param tableName The table name.
      * @return The inspected table if successful.
-     * @throws SQLException The connection to the database could not be established.
+     * @throws SQLException           The connection to the database could not be established.
      * @throws TableNotFoundException The table was not found in the given database.
      */
     TableDto inspectTable(DatabaseDto database, String tableName) throws SQLException, TableNotFoundException;
 
     /**
      * Updates a user's password in a given database.
+     *
      * @param database The database.
-     * @param data The user-password tuple.
-     * @throws SQLException The connection to the database could not be established.
+     * @param data     The user-password tuple.
+     * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
     void update(DatabaseDto database, UpdateUserPasswordDto data) throws SQLException,

@@ -16,7 +16,7 @@ import lombok.extern.jackson.Jacksonized;
 public class QueryPersistDto {
 
     @NotNull
-    @Schema(example = "true")
+    @Schema(description = "If false, the query is marked for deletion at a later point in time", example = "true")
     private Boolean persist;
 
 }

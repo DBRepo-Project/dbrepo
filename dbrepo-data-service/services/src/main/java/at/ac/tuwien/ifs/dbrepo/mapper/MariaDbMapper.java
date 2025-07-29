@@ -5,10 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
@@ -266,8 +263,9 @@ public interface MariaDbMapper {
 
     /**
      * Creates a view with given name from a provided query statement. Currently, preparing statements for database name and table name are not supported by the driver.
+     *
      * @param viewName The view name.
-     * @param query The query statement.
+     * @param query    The query statement.
      * @return The raw query statement to create the view.
      */
     default String viewCreateRawQuery(String viewName, String query) {
@@ -375,8 +373,9 @@ public interface MariaDbMapper {
 
     /**
      * Updates a table comment as raw query statement. Currently, preparing statements for database name and table name are not supported by the driver.
+     *
      * @param databaseName The database name.
-     * @param tableName The table name.
+     * @param tableName    The table name.
      * @return The raw query statement.
      */
     default String tableNameToUpdateTableRawQuery(String databaseName, String tableName) {
@@ -389,8 +388,7 @@ public interface MariaDbMapper {
         return stringBuilder.toString();
     }
 
-    default String tableCreateDtoToCreateTableRawQuery(String databaseName,
-                                                       at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto data) {
+    default String tableCreateDtoToCreateTableRawQuery(String databaseName, CreateTableDto data) {
         final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
                 .append(databaseName)
                 .append("`.`")
@@ -571,9 +569,10 @@ public interface MariaDbMapper {
 
     /**
      * Map the table delete query as raw query. Currently, preparing statements for database name and table name are not supported by the driver.
+     *
      * @param databaseName The database name.
-     * @param tableName The table name.
-     * @param force If true, force the deletion and throw an error if the table does not exists, otherwise ignore errors.
+     * @param tableName    The table name.
+     * @param force        If true, force the deletion and throw an error if the table does not exists, otherwise ignore errors.
      * @return The raw query statement.
      */
     default String dropTableRawQuery(String databaseName, String tableName, Boolean force) {

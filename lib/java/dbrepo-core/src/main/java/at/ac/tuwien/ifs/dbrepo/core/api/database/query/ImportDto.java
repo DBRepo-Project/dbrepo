@@ -18,21 +18,21 @@ import lombok.extern.jackson.Jacksonized;
 public class ImportDto {
 
     @NotBlank
-    @Schema(example = "file.csv")
+    @Schema(description = "The key of the S3 binary object in the storage service", example = "file.csv")
     private String location;
 
     @NotNull
-    @Schema(example = "true", description = "If true, the first line contains the column names, otherwise it contains only data")
+    @Schema(description = "If true, the first line contains the column names, otherwise it contains only data", example = "true")
     private Boolean header;
 
     @NotNull
-    @Schema(example = ",")
+    @Schema(description = "The column delimiter of the dataset", example = ",")
     private Character separator;
 
-    @Schema(example = "\"")
+    @Schema(description = "The quote symbol around values in the dataset",example = "\"")
     private Character quote;
 
     @JsonProperty("line_termination")
-    @Schema(example = "\\r\\n")
+    @Schema(description = "The newline symbol", example = "\\n")
     private String lineTermination;
 }

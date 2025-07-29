@@ -18,7 +18,7 @@ import java.util.Map;
 public class TupleDeleteDto {
 
     @NotNull
-    @Schema(example = "{\"id\": 1}")
+    @Schema(description = "The map of conditions", example = "{\"id\": 1}")
     private Map<String, Object> keys;
 
 }

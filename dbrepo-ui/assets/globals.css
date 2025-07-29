@@ -14,15 +14,15 @@ select.native {
   white-space: pre-wrap; }
 
 .markdown h1 {
-  padding: .25rem 0 .5rem 0; }
+  padding: 0 0 .5rem; }
 .markdown h2,
 .markdown h3,
 .markdown h4,
 .markdown h5,
 .markdown h6 {
-  padding: .125rem 0 .25rem 0; }
+  padding: .5rem 0; }
 .markdown ul {
   list-style-type: square;
-  padding-left: 2rem; }
+  padding: .5rem 0 0 2rem; }
 
 /*# sourceMappingURL=globals.css.map */

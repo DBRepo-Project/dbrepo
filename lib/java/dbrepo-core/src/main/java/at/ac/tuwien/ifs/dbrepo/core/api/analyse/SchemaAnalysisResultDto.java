@@ -20,46 +20,46 @@ import java.util.List;
 public class SchemaAnalysisResultDto {
 
     @NotNull
-    @Schema(example = ",")
+    @Schema(description = "The column delimiter of the dataset", example = ",")
     private String delimiter;
 
     @NotNull
-    @Schema(example = "\"")
+    @Schema(description = "The quote symbol around values in the dataset",example = "\"")
     private String quote;
 
     @NotNull
-    @Schema(example = "\\")
+    @Schema(description = "The escape symbol", example = "\\")
     private String escape;
 
     @NotNull
     @JsonProperty("newline_delimiter")
-    @Schema(example = "\\n")
+    @Schema(description = "The newline symbol", example = "\\n")
     private String newlineDelimiter;
 
     @NotNull
-    @Schema(example = "#")
+    @Schema(description = "The comment symbol", example = "#")
     private String comment;
 
     @NotNull
     @JsonProperty("skip_rows")
-    @Schema(example = "#")
+    @Schema(description = "The number of rows to skip", example = "#")
     private Integer skipRows;
 
     @NotNull
     @JsonProperty("has_header")
-    @Schema(example = "true")
+    @Schema(description = "Detected the first line as header", example = "true")
     private Boolean hasHeader;
 
     @NotNull
-    @Schema(example = "[\"name\":\"VARCHAR\",\"age\":\"BIGINT\"]")
+    @Schema(description = "The list of columns analyzed", example = "[\"name\":\"VARCHAR\",\"age\":\"BIGINT\"]")
     private List<ColumnAnalysisResultDto> columns;
 
     @JsonProperty("date_format")
-    @Schema(example = "%d/%m/%Y")
+    @Schema(description = "The format of the date", example = "%d/%m/%Y")
     private String dateFormat;
 
     @JsonProperty("timestamp_format")
-    @Schema(example = "%Y-%m-%dT%H:%M:%S.%f")
+    @Schema(description = "The format of the timestamp", example = "%Y-%m-%dT%H:%M:%S.%f")
     private String timestampFormat;
 
     @JsonIgnore

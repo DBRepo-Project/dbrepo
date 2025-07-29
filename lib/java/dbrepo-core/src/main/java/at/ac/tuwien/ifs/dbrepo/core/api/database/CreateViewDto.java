@@ -21,7 +21,7 @@ public class CreateViewDto {
 
     @NotBlank
     @Size(min = 1, max = 63)
-    @Schema(example = "Air Quality")
+    @Schema(description = "The name", example = "Air Quality")
     private String name;
 
     @NotNull
@@ -29,12 +29,12 @@ public class CreateViewDto {
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
     @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(example = "true")
+    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 
 }

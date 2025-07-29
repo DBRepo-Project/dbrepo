@@ -31,7 +31,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database")
+@RequestMapping(path = "/api/v1/database")
 public class DatabaseEndpoint extends RestEndpoint {
 
     private final DataMapper dataMapper;
@@ -66,24 +66,16 @@ public class DatabaseEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Database create query is malformed or readonly password is hashed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find container in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Failed to create query store in database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data)
             throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
@@ -119,19 +111,13 @@ public class DatabaseEndpoint extends RestEndpoint {
                     description = "Updated user password in database"),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Failed to update user password in database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @Valid @RequestBody UpdateUserPasswordDto data)
@@ -160,19 +146,13 @@ public class DatabaseEndpoint extends RestEndpoint {
                     description = "Analysed dataset"),
             @ApiResponse(responseCode = "400",
                     description = "Image datatypes malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Dataset not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<SchemaAnalysisResultDto> analyseDatatypes(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                     @PathVariable("key") String key)

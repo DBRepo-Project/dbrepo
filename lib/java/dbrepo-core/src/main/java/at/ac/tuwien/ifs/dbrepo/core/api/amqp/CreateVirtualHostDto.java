@@ -16,11 +16,13 @@ import lombok.extern.jackson.Jacksonized;
 public class CreateVirtualHostDto {
 
     @NotNull
-    @Schema(example = "air")
+    @Schema(description = "The name of the virtual host", example = "dbrepo")
     private String name;
 
+    @Schema(description = "The description of the virtual host", example = "QA environment for issue 1662")
     private String description;
 
+    @Schema(description = "The tags of the virtual host", example = "qa,project-a,qa-1662")
     private String tags;
 
 }

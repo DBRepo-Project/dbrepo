@@ -6,8 +6,13 @@
       variant="flat">
       <v-card-text
         class="markdown">
-        <vue-markdown-it
-          :source="source" />
+        <v-row>
+          <v-col
+            cols="8">
+            <vue-markdown-it
+              :source="source" />
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </div>

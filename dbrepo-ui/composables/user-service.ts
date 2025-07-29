@@ -5,7 +5,7 @@ export const useUserService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find users')
     return new Promise<UserDto[]>((resolve, reject) => {
-      axios.get<UserDto[]>('/api/user')
+      axios.get<UserDto[]>('/api/v1/user')
         .then((response) => {
           console.info('Found user(s)');
           resolve(response.data);
@@ -21,7 +21,7 @@ export const useUserService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find user', username)
     return new Promise<UserDto>((resolve, reject) => {
-      axios.get<UserDto>(`/api/user/${username}`)
+      axios.get<UserDto>(`/api/v1/user/${username}`)
         .then((response) => {
           console.info('Found user', username);
           resolve(response.data);
@@ -37,7 +37,7 @@ export const useUserService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update user ', username)
     return new Promise<UserDto>((resolve, reject) => {
-      axios.put<UserDto>(`/api/user/${username}`, data)
+      axios.put<UserDto>(`/api/v1/user/${username}`, data)
         .then((response) => {
           console.info('Updated user ', username)
           resolve(response.data)
@@ -52,7 +52,7 @@ export const useUserService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create user')
     return new Promise<UserDto>((resolve, reject) => {
-      axios.post<UserDto>('/api/user', data)
+      axios.post<UserDto>('/api/v1/user', data)
         .then((response) => {
           console.info('Create user')
           resolve(response.data)
@@ -67,7 +67,7 @@ export const useUserService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update user password for user ', username)
     return new Promise<UserDto>((resolve, reject) => {
-      axios.put<UserDto>(`/api/user/${username}/password`, data)
+      axios.put<UserDto>(`/api/v1/user/${username}/password`, data)
         .then((response) => {
           console.info('Update user password for user ', username)
           resolve(response.data)

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/database/{databaseId}/view")
+@RequestMapping(path = "/api/v1/database/{databaseId}/view")
 public class ViewEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
@@ -74,9 +74,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = ViewBriefDto.class)))}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                       Principal principal) throws UserNotFoundException,
@@ -104,39 +102,25 @@ public class ViewEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ViewBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Create view query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Credentials missing",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database/user in metadata database.",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "View exists with name",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "423",
                     description = "Create view resulted in an invalid query statement",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @Valid @RequestBody CreateViewDto data,
@@ -174,14 +158,10 @@ public class ViewEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ViewDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Find view is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database, view or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
                                         @NotNull @PathVariable("viewId") UUID viewId,
@@ -221,34 +201,22 @@ public class ViewEndpoint extends AbstractEndpoint {
                     description = "Delete view successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Delete view query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Deletion not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database, view or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "423",
                     description = "Delete view resulted in an invalid query statement",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @NotNull @PathVariable("viewId") UUID viewId,
@@ -281,29 +249,19 @@ public class ViewEndpoint extends AbstractEndpoint {
                     description = "Update view successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Update view query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Update not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database or View could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("viewId") UUID viewId,
