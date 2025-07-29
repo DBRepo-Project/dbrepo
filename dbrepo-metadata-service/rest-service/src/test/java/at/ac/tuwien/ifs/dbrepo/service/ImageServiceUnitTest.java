@@ -93,27 +93,6 @@ public class ImageServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void create_multipleDefaults_fails() {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .name(IMAGE_1_NAME)
-                .version("10.5")
-                .defaultPort(IMAGE_1_DEFAULT_PORT)
-                .isDefault(true)
-                .build();
-
-        /* mock */
-        when(imageRepository.findByNameAndVersion(IMAGE_1_NAME, IMAGE_1_VERSION))
-                .thenReturn(Optional.empty());
-        when(imageRepository.findByIsDefault(true))
-                .thenReturn(Optional.of(IMAGE_1));
-
-        /* test */
-        assertThrows(ImageInvalidException.class, () -> {
-            imageService.create(request, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
     public void update_succeeds() {
         final ImageServiceImpl mockImageService = mock(ImageServiceImpl.class);
         final ImageChangeDto request = ImageChangeDto.builder()

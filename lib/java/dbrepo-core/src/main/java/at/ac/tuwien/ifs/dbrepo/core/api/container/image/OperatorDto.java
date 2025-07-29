@@ -20,20 +20,20 @@ import java.util.UUID;
 public class OperatorDto {
 
     @NotNull
-    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dccf")
+    @Schema(description = "The operator id", example = "816f55d5-1098-4f60-a4af-c8121c04dccf")
     private UUID id;
 
     @NotBlank
     @JsonProperty("display_name")
-    @Schema(example = "XOR")
+    @Schema(description = "The user-friendly name of the operator", example = "XOR")
     private String displayName;
 
     @NotBlank
-    @Schema(example = "XOR")
+    @Schema(description = "The machine-friendly name of the operator", example = "XOR")
     private String value;
 
     @NotNull
-    @Schema(example = "https://mariadb.com/kb/en/xor/")
+    @Schema(description = "The documentation link", example = "https://mariadb.com/kb/en/xor/")
     private String documentation;
 
 }

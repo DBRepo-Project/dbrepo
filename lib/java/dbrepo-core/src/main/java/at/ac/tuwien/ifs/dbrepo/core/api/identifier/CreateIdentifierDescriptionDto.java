@@ -20,14 +20,14 @@ import java.util.UUID;
 public class CreateIdentifierDescriptionDto {
 
     @NotBlank
-    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
+    @Schema(description = "The description value", example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
-    @Schema(example = "en")
+    @Schema(description = "The language", example = "en")
     private LanguageTypeDto language;
 
-    @Schema(example = "Abstract")
     @JsonProperty("type")
+    @Schema(description = "The type", example = "Abstract")
     private DescriptionTypeDto descriptionType;
 
 }

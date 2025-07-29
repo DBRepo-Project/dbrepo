@@ -16,7 +16,7 @@ dependencies:
   version: 13.2.7
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
-  version: 14.0.0
+  version: 14.7.0
 - name: seaweedfs
   repository: file://../seaweedfs
   version: 4.8.7
@@ -29,5 +29,5 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 16.1.0
-digest: sha256:bbe97a5c50a63d3449e457cc6973b7c58e841a82552a8c137d07cd4d6b60fe78
-generated: "2025-06-25T19:19:37.621197023+02:00"
+digest: sha256:1b7d0684d35d9193d5b234c2e62805580d2a2e09fe17d5a8a9a563f4a669d134
+generated: "2025-07-25T15:57:41.31506372+02:00"

@@ -71,7 +71,7 @@ class JwtTest(unittest.TestCase):
     def test_update_database_media_type_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.put(f'/api/search/database/{req.id}',
+            response = test_client.put(f'/api/v1/search/database/{req.id}',
                                        headers={'Authorization': f'Bearer {self.token(["update-search-index"])}'})
             self.assertEqual(415, response.status_code)
 
@@ -84,13 +84,13 @@ class JwtTest(unittest.TestCase):
     def test_update_database_no_auth_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.put(f'/api/search/database/{req.id}')
+            response = test_client.put(f'/api/v1/search/database/{req.id}')
             self.assertEqual(401, response.status_code)
 
     def test_update_database_no_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.put(f'/api/search/database/{req.id}',
+            response = test_client.put(f'/api/v1/search/database/{req.id}',
                                        headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                                 'Content-Type': 'application/json'})
             self.assertEqual(400, response.status_code)
@@ -98,7 +98,7 @@ class JwtTest(unittest.TestCase):
     def test_update_database_empty_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.put(f'/api/search/database/{req.id}',
+            response = test_client.put(f'/api/v1/search/database/{req.id}',
                                        headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                                 'Content-Type': 'application/json'},
                                        data={})
@@ -107,7 +107,7 @@ class JwtTest(unittest.TestCase):
     def test_update_database_malformed_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.put(f'/api/search/database/{req.id}',
+            response = test_client.put(f'/api/v1/search/database/{req.id}',
                                        headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                                 'Content-Type': 'application/json'},
                                        data=dict({"id": 1}))
@@ -116,7 +116,7 @@ class JwtTest(unittest.TestCase):
     def test_update_database_succeeds(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.put(f'/api/search/database/{req.id}',
+            response = test_client.put(f'/api/v1/search/database/{req.id}',
                                        headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                                 'Content-Type': 'application/json'},
                                        data=req.model_dump_json())
@@ -125,163 +125,163 @@ class JwtTest(unittest.TestCase):
     def test_get_fields_succeeds(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.get('/api/search/database/fields', headers={'Content-Type': 'application/json'})
+            response = test_client.get('/api/v1/search/database/fields', headers={'Content-Type': 'application/json'})
             self.assertEqual(200, response.status_code)
 
     def test_get_fields_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.get('/api/search/unknown/fields', headers={'Content-Type': 'application/json'})
+            response = test_client.get('/api/v1/search/unknown/fields', headers={'Content-Type': 'application/json'})
             self.assertEqual(404, response.status_code)
 
     def test_delete_database_no_auth_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.delete('/api/search/database/1')
+            response = test_client.delete('/api/v1/search/database/1')
             self.assertEqual(401, response.status_code)
 
     def test_delete_database_no_role_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.delete(f'/api/search/database/{req.id}',
+            response = test_client.delete(f'/api/v1/search/database/{req.id}',
                                           headers={'Authorization': f'Bearer {self.token([])}'})
             self.assertEqual(403, response.status_code)
 
     def test_delete_database_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.delete(f'/api/search/database/{req.id}',
+            response = test_client.delete(f'/api/v1/search/database/{req.id}',
                                           headers={'Authorization': f'Bearer {self.token(["system"])}'})
             self.assertEqual(202, response.status_code)
 
     def test_delete_database_not_found_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.delete(f'/api/search/database/{req.id}',
+            response = test_client.delete(f'/api/v1/search/database/{req.id}',
                                           headers={'Authorization': f'Bearer {self.token(["system"])}'})
             self.assertEqual(404, response.status_code)
 
     def test_get_fuzzy_search_succeeds(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.get('/api/search?q=test')
+            response = test_client.get('/api/v1/search?q=test')
             self.assertEqual(200, response.status_code)
 
     def test_get_fuzzy_search_no_query_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.get('/api/search')
+            response = test_client.get('/api/v1/search')
             self.assertEqual(400, response.status_code)
 
     def test_get_index_succeeds(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.get('/api/search/table')
+            response = test_client.get('/api/v1/search/table')
             self.assertEqual(200, response.status_code)
 
     def test_get_index_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.get('/api/search/unknown')
+            response = test_client.get('/api/v1/search/unknown')
             self.assertEqual(404, response.status_code)
 
     def test_post_general_search_media_type_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/search/database')
+            response = test_client.post('/api/v1/search/database')
             self.assertEqual(415, response.status_code)
 
     def test_post_general_search_no_body_fails(self):
         with app.test_client() as test_client:
             # test
-            response = test_client.post('/api/search/database', headers={'Content-Type': 'application/json'})
+            response = test_client.post('/api/v1/search/database', headers={'Content-Type': 'application/json'})
             self.assertEqual(400, response.status_code)
 
     def test_post_general_search_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/database', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/database', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)
 
     def test_post_general_search_table_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/table', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/table', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)
 
     def test_post_general_search_column_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/column', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/column', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)
 
     def test_post_general_search_identifier_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/identifier', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/identifier', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)
 
     def test_post_general_search_concept_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/concept', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/concept', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)
 
     def test_post_general_search_unit_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/unit', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/unit', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)
 
     def test_post_general_search_view_succeeds(self):
         with app.test_client() as test_client:
             # mock
-            test_client.put(f'/api/search/database/{req.id}',
+            test_client.put(f'/api/v1/search/database/{req.id}',
                             headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
-            response = test_client.post('/api/search/view', headers={'Content-Type': 'application/json'},
+            response = test_client.post('/api/v1/search/view', headers={'Content-Type': 'application/json'},
                                         data=json.dumps({'id': '7b4942c3-6312-4f1d-bff9-cd24ea53ea05'}))
             self.assertEqual(200, response.status_code)

@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
@@ -15,7 +16,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.Forei
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -602,7 +602,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
             TableExistsException {
 
         /* test */
-        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO);
+        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_DTO);
         assertEquals(TABLE_4_INTERNAL_NAME, response.getName());
         assertEquals(TABLE_4_INTERNAL_NAME, response.getInternalName());
         final List<ColumnDto> columns = response.getColumns();
@@ -619,7 +619,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
 
     @Test
     public void createTable_malformed_fails() {
-        final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("missing_foreign_key")
                 .columns(List.of())
                 .constraints(CreateTableConstraintsDto.builder()
@@ -640,7 +640,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
     @Test
     public void createTable_compositePrimaryKey_fails() throws TableNotFoundException, TableMalformedException, SQLException,
             TableExistsException {
-        final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("composite_primary_key")
                 .columns(List.of(CreateTableColumnDto.builder()
                                 .name("name")
@@ -705,7 +705,7 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
         MariaDbUtil.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME);
 
         /* test */
-        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_CREATE_INTERNAL_DTO);
+        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_CREATE_DTO);
         assertEquals(TABLE_1_INTERNAL_NAME, response.getName());
         assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());

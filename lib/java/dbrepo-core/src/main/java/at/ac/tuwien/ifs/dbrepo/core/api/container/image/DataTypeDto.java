@@ -20,74 +20,78 @@ import java.util.UUID;
 public class DataTypeDto {
 
     @NotNull
-    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dcca")
+    @Schema(description = "The id of the data type", example = "816f55d5-1098-4f60-a4af-c8121c04dcca")
     private UUID id;
 
     @NotBlank
     @JsonProperty("display_name")
-    @Schema(example = "TIME(fsp)")
+    @Schema(description = "The human-friendly name of the data type", example = "TIME(fsp)")
     private String displayName;
 
     @NotBlank
-    @Schema(example = "time")
+    @Schema(description = "The machine-friendly value of the data type", example = "time")
     private String value;
 
     @JsonProperty("size_min")
-    @Schema(example = "0")
+    @Schema(description = "The minimum size", example = "0")
     private Integer sizeMin;
 
     @JsonProperty("size_max")
-    @Schema(example = "6")
+    @Schema(description = "The maximum size", example = "6")
     private Integer sizeMax;
 
     @JsonProperty("size_default")
-    @Schema(example = "0")
+    @Schema(description = "The default size", example = "0")
     private Integer sizeDefault;
 
     @JsonProperty("size_required")
-    @Schema(example = "false")
+    @Schema(description = "If true, the size parameter cannot be empty", example = "true")
     private Boolean sizeRequired;
 
     @JsonProperty("size_step")
-    @Schema(example = "1")
+    @Schema(description = "The step increment", example = "1")
     private Integer sizeStep;
 
     @JsonProperty("d_min")
+    @Schema(description = "The minimum d")
     private Integer dMin;
 
     @JsonProperty("d_max")
+    @Schema(description = "The maximum d")
     private Integer dMax;
 
     @JsonProperty("d_default")
+    @Schema(description = "The default d")
     private Integer dDefault;
 
     @JsonProperty("d_required")
+    @Schema(description = "If true, the d parameter cannot be empty")
     private Boolean dRequired;
 
     @JsonProperty("d_step")
-    @Schema(example = "1")
+    @Schema(description = "The d increment", example = "1")
     private Integer dStep;
 
     @NotNull
-    @Schema(example = "https://mariadb.com/kb/en/time/")
+    @Schema(description = "The documentation link", example = "https://mariadb.com/kb/en/time/")
     private String documentation;
 
     @JsonProperty("data_hint")
-    @Schema(example = "e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S")
+    @Schema(description = "The user-friendly description of the data format", example = "e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S")
     private String dataHint;
 
     @JsonProperty("type_hint")
-    @Schema(example = "fsp=microsecond precision, min. 0, max. 6")
+    @Schema(description = "The user-friendly description of the data type", example = "fsp=microsecond precision, min. 0, max. 6")
     private String typeHint;
 
     @NotNull
     @JsonProperty("is_quoted")
-    @Schema(example = "false", description = "frontend needs to quote this data type")
+    @Schema(description = "frontend needs to quote this data type", example = "false")
     private Boolean quoted;
 
     @NotNull
     @JsonProperty("is_buildable")
-    @Schema(example = "true", description = "frontend can build this data type")
+    @Schema(description = "frontend can build this data type", example = "true")
     private Boolean buildable;
 
 }

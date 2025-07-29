@@ -18,7 +18,7 @@ import java.util.UUID;
 @ToString
 public class PrimaryKeyDto {
 
-    @Schema(example = "d984f9d7-e8a7-4b81-b59a-862db1871f18")
+    @Schema(description = "The primary key id", example = "d984f9d7-e8a7-4b81-b59a-862db1871f18")
     private UUID id;
 
     @NotNull

@@ -26,45 +26,47 @@ import java.util.UUID;
 public class ViewDto extends CacheableDto {
 
     @NotNull
-    @Schema(example = "787439d0-e85e-400c-a7e6-996a023bfad9")
+    @Schema(description = "The id", example = "787439d0-e85e-400c-a7e6-996a023bfad9")
     private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    @Schema(description = "The database id", example = "2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4")
     private UUID databaseId;
 
     @NotBlank
-    @Schema(example = "Air Quality")
+    @Schema(description = "The user-friendly name", example = "Air Quality")
     private String name;
 
     @NotNull
     private List<IdentifierDto> identifiers;
 
     @NotBlank
-    @Schema(example = "air_quality")
     @JsonProperty("internal_name")
+    @Schema(description = "The machine-friendly name", example = "air_quality")
     private String internalName;
 
+    @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
+    @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(example = "true")
+    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 
     @JsonProperty("initial_view")
-    @Schema(example = "true", description = "True if it is the default view for the database")
+    @Schema(description = "If true, the view is default for the database", example = "true")
     private Boolean isInitialView;
 
     @NotNull
-    @Schema(example = "SELECT `id` FROM `air_quality` ORDER BY `value` DESC")
+    @Schema(description = "The SQL statement used to create the view", example = "SELECT `id` FROM `air_quality` ORDER BY `value` DESC")
     private String query;
 
     @NotNull
     @JsonProperty("query_hash")
-    @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
+    @Schema(description = "The sha256-hash of the query", example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
 
     @NotNull
@@ -74,14 +76,14 @@ public class ViewDto extends CacheableDto {
     private List<ViewColumnDto> columns;
 
     @NotNull
-    @Schema(example = "2022-01-01 08:00:00.000")
+    @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
     /* lombok limitations prevent from convenient builder functions */
 
     @JsonProperty("last_retrieved")
-    @Schema(example = "2025-01-23T12:09:01")
+    @Schema(description = "The timestamp The was last retrieved from the cache", example = "2025-01-23T12:09:01")
     private Instant lastRetrieved;
 
 }

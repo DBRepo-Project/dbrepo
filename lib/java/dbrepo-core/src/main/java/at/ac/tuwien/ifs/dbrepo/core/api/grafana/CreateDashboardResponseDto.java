@@ -16,10 +16,10 @@ import lombok.extern.jackson.Jacksonized;
 public class CreateDashboardResponseDto {
 
     @NotNull
-    @Schema(example = "3")
+    @Schema(description = "The generated dashboard id", example = "3")
     private Long id;
 
     @NotNull
-    @Schema(example = "eeckcuwfsfbi8b")
+    @Schema(description = "The generated dashboard unique id", example = "eeckcuwfsfbi8b")
     private String uid;
 }

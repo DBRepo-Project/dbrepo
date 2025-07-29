@@ -24,21 +24,21 @@ public class CreateTableDto {
 
     @NotBlank
     @Size(min = 1, max = 64)
-    @Schema(example = "Air Quality")
+    @Schema(description = "The table name", example = "Air Quality")
     private String name;
 
     @Size(max = 180)
-    @Schema(example = "Air Quality in Austria")
+    @Schema(description = "The table comment", example = "Air Quality in Austria")
     private String description;
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The table visibility; if true, the table will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
     @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(example = "true")
+    @Schema(description = "The table insights; if true, the table schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 
     @NotNull

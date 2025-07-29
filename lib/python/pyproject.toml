@@ -1,6 +1,6 @@
 [project]
 name = "dbrepo"
-version = "1.10.2"
+version = "1.10.3"
 description = "DBRepo Python Library"
 keywords = [
     "DBRepo",
@@ -33,7 +33,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project.urls]
-Homepage = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/"
-Documentation = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/python/"
+Homepage = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/"
+Documentation = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/python/"
 Issues = "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues"
 Source = "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/"

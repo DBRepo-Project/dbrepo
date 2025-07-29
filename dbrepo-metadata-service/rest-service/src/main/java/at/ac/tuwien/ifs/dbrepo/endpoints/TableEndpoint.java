@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/database/{databaseId}/table")
+@RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
@@ -81,14 +81,10 @@ public class TableEndpoint extends AbstractEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = TableBriefDto.class)))}),
             @ApiResponse(responseCode = "403",
                     description = "List tables not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                     Principal principal) throws NotAllowedException,
@@ -139,29 +135,19 @@ public class TableEndpoint extends AbstractEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = EntityDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Failed to parse statistic in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not the table owner.",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database/table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Generated query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "422",
                     description = "Ontology does not have rdf or sparql endpoint",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                         @NotNull @PathVariable("tableId") UUID tableId,
@@ -190,29 +176,19 @@ public class TableEndpoint extends AbstractEndpoint {
                     description = "Updated table statistics successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Failed to map column statistic to known columns",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not the owner",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database/table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @PathVariable("tableId") UUID tableId,
@@ -246,29 +222,19 @@ public class TableEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ColumnDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Update semantic concept query is malformed or update unit of measurement query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Access to the database is forbidden",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find user/table/database/ontology in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ColumnDto> updateColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                   @NotNull @PathVariable("tableId") UUID tableId,
@@ -306,19 +272,13 @@ public class TableEndpoint extends AbstractEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Generated query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database/table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "422",
                     description = "Ontology does not have rdf or sparql endpoint",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                          @NotNull @PathVariable("tableId") UUID tableId,
@@ -347,34 +307,22 @@ public class TableEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = TableBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Create table query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Create table not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database, container or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "Create table conflicts with existing table name",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @Valid @RequestBody CreateTableDto data,
@@ -408,29 +356,19 @@ public class TableEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = TableBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Update table visibility payload is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Update table visibility not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Table could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 @NotNull @PathVariable("tableId") UUID tableId,
@@ -467,14 +405,10 @@ public class TableEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = TableDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Access to the database is forbidden",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Table, database or container could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
                                              @NotNull @PathVariable("tableId") UUID tableId,
@@ -514,29 +448,19 @@ public class TableEndpoint extends AbstractEndpoint {
                     description = "Delete table successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Delete table query resulted in an invalid query statement",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Access to the database is forbidden",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Table, database or container could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @NotNull @PathVariable("tableId") UUID tableId,

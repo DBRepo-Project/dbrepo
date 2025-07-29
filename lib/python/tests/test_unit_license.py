@@ -12,7 +12,7 @@ class LicenseUnitTest(unittest.TestCase):
     def test_get_licenses_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/license', json=[])
+            mock.get('/api/v1/license', json=[])
             # test
             response = RestClient().get_licenses()
             self.assertEqual([], response)
@@ -22,7 +22,7 @@ class LicenseUnitTest(unittest.TestCase):
             exp = [License(identifier='CC-BY-4.0', uri='https://creativecommons.org/licenses/by/4.0/',
                            description='The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.')]
             # mock
-            mock.get('/api/license', json=[exp[0].model_dump()])
+            mock.get('/api/v1/license', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_licenses()
             self.assertEqual(exp, response)
@@ -30,7 +30,7 @@ class LicenseUnitTest(unittest.TestCase):
     def test_get_licenses_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/license', status_code=202)
+            mock.get('/api/v1/license', status_code=202)
             # test
             try:
                 RestClient().get_licenses()

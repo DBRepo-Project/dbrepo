@@ -6,7 +6,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete view with id', viewId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/database/${databaseId}/view/${viewId}`)
+      axios.delete<void>(`/api/v1/database/${databaseId}/view/${viewId}`)
         .then((response) => {
           console.info('Deleted view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)
@@ -22,7 +22,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get view with id', viewId, 'in database with id', databaseId)
     return new Promise<ViewDto>((resolve, reject) => {
-      axios.get<ViewDto>(`/api/database/${databaseId}/view/${viewId}`)
+      axios.get<ViewDto>(`/api/v1/database/${databaseId}/view/${viewId}`)
         .then((response) => {
           console.info('Found view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)
@@ -38,7 +38,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create view in database with id', databaseId)
     return new Promise<ViewDto>((resolve, reject) => {
-      axios.post<ViewDto>(`/api/database/${databaseId}/view`, payload)
+      axios.post<ViewDto>(`/api/v1/database/${databaseId}/view`, payload)
         .then((response) => {
           console.info('Created view in database with id', databaseId)
           resolve(response.data)
@@ -54,7 +54,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update view with id', viewId)
     return new Promise<ViewDto>((resolve, reject) => {
-      axios.put<ViewDto>(`/api/database/${databaseId}/view/${viewId}`, payload)
+      axios.put<ViewDto>(`/api/v1/database/${databaseId}/view/${viewId}`, payload)
         .then((response) => {
           console.info('Update view with id', viewId)
           resolve(response.data)
@@ -70,7 +70,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, {params: {page, size}})
+      axios.get<QueryResultDto>(`/api/v1/database/${databaseId}/view/${viewId}/data`, {params: {page, size}})
         .then((response) => {
           console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
           const result: QueryResultDto = {
@@ -91,7 +91,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {
-      axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`)
+      axios.head<number>(`/api/v1/database/${databaseId}/view/${viewId}/data`)
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found', count, 'tuples for view with id', viewId, 'in database with id', databaseId)
@@ -114,7 +114,7 @@ export const useViewService = (): any => {
     }
     console.debug('export data for view with id', viewId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, config)
+      axios.get<QueryResultDto>(`/api/v1/database/${databaseId}/view/${viewId}/data`, config)
         .then((response) => {
           console.info('Exported data for view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)

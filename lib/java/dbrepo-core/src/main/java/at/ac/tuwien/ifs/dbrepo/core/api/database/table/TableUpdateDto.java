@@ -17,16 +17,16 @@ import lombok.extern.jackson.Jacksonized;
 public class TableUpdateDto {
 
     @Size(max = 180)
-    @Schema(example = "Air Quality in Austria")
+    @Schema(description = "The comment", example = "Air Quality in Austria")
     private String description;
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
     @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(example = "true")
+    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 }

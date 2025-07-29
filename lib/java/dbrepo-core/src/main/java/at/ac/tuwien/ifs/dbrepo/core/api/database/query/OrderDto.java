@@ -20,10 +20,10 @@ public class OrderDto {
 
     @NotNull
     @JsonProperty("column_id")
-    @Schema(example = "e891ba86-0258-41a6-a8d9-ff58bc10b618")
+    @Schema(description = "The column id", example = "e891ba86-0258-41a6-a8d9-ff58bc10b618")
     private UUID columnId;
 
-    @Schema(example = "asc")
+    @Schema(description = "The sort direction", example = "asc")
     private OrderTypeDto direction;
 
 }

@@ -153,7 +153,7 @@ class SearchServiceClient:
                 filtered.append(database)
             elif username is not None and user_token is not None:
                 try:
-                    url = f'{self.metadata_endpoint}/api/database/{database.id}/access/{username}'
+                    url = f'{self.metadata_endpoint}/api/v1/database/{database.id}/access/{username}'
                     logging.debug(f'requesting access from url: {url}')
                     response = head(url=url, auth=(self.system_username, self.system_password))
                     if response.status_code == 200:

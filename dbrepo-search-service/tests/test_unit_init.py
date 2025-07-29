@@ -42,8 +42,8 @@ class AppIntegrationTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=[exp.model_dump()])
-            mock.get(f'/api/database/{exp.id}', json=db.model_dump())
+            mock.get('/api/v1/database', json=[exp.model_dump()])
+            mock.get(f'/api/v1/database/{exp.id}', json=db.model_dump())
             # test
             response = fetch_databases()
             self.assertEqual(1, len(response))

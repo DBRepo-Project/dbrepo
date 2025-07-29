@@ -18,11 +18,11 @@ import java.util.Map;
 public class TupleUpdateDto {
 
     @NotNull
-    @Schema(example = "{\"key\": \"value\"}")
+    @Schema(description = "The key-value data map", example = "{\"key\": \"value\"}")
     private Map<String, Object> data;
 
     @NotNull
-    @Schema(example = "{\"id\": 1}")
+    @Schema(description = "The map of conditions", example = "{\"id\": 1}")
     private Map<String, Object> keys;
 
 }

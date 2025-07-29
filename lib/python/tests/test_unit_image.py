@@ -11,7 +11,7 @@ class ImageUnitTest(unittest.TestCase):
     def test_get_images_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/image', json=[])
+            mock.get('/api/v1/image', json=[])
             # test
             response = RestClient().get_images()
             self.assertEqual([], response)
@@ -23,7 +23,7 @@ class ImageUnitTest(unittest.TestCase):
                               version="11.1.3",
                               default=False)]
             # mock
-            mock.get('/api/image', json=[exp[0].model_dump()])
+            mock.get('/api/v1/image', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_images()
             self.assertEqual(exp, response)

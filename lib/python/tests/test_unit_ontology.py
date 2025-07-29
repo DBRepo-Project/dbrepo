@@ -11,7 +11,7 @@ class OntologyUnitTest(unittest.TestCase):
     def test_get_ontologies_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/ontology', json=[])
+            mock.get('/api/v1/ontology', json=[])
             # test
             response = RestClient().get_ontologies()
             self.assertEqual([], response)
@@ -25,7 +25,7 @@ class OntologyUnitTest(unittest.TestCase):
                                  rdf=True,
                                  uri_pattern="http://www.ontology-of-units-of-measure.org/resource/om-2/.*")]
             # mock
-            mock.get('/api/ontology', json=[exp[0].model_dump()])
+            mock.get('/api/v1/ontology', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_ontologies()
             self.assertEqual(exp, response)

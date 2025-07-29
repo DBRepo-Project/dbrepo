@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 @CrossOrigin(origins = "*")
 @RestController
 @Validated
-@RequestMapping(path = "/api/identifier")
+@RequestMapping(path = "/api/v1/identifier")
 public class IdentifierEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
@@ -148,44 +148,28 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                     }),
             @ApiResponse(responseCode = "400",
                     description = "Identifier could not be exported, the requested style is not known",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to view identifier",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Identifier could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "406",
                     description = "Failed to find acceptable representation",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "Exported resource was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "410",
                     description = "Failed to retrieve from S3 endpoint",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to data service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to find in data service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<?> find(@Valid @PathVariable("identifierId") UUID identifierId,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept,
@@ -254,24 +238,16 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                     description = "Deleted identifier"),
             @ApiResponse(responseCode = "403",
                     description = "Deleting identifier not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Identifier or database could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to delete in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("identifierId") UUID identifierId)
             throws IdentifierNotFoundException, NotAllowedException, DataServiceException,
@@ -303,29 +279,19 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = IdentifierDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Identifier form contains invalid request data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Insufficient access rights or authorities",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database, table or view",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<IdentifierDto> publish(@Valid @PathVariable("identifierId") UUID identifierId)
             throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException,
@@ -351,29 +317,19 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = IdentifierDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Identifier form contains invalid request data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Insufficient access rights or authorities",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database, table or view",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<IdentifierDto> save(@NotNull @PathVariable("identifierId") UUID identifierId,
                                               @NotNull @Valid @RequestBody IdentifierSaveDto data,
@@ -454,29 +410,19 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = IdentifierDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Identifier form contains invalid request data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Insufficient access rights or authorities",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database, table or view",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to save in search service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody CreateIdentifierDto data,
                                                 Principal principal) throws DatabaseNotFoundException,
@@ -511,9 +457,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = IdentifierDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find metadata for identifier",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<ExternalMetadataDto> retrieve(@NotNull @Valid @RequestParam("url") String url)
             throws OrcidNotFoundException, RorNotFoundException, DoiNotFoundException, IdentifierNotSupportedException {

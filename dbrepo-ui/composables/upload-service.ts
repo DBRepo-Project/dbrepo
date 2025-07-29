@@ -7,7 +7,7 @@ export const useUploadService = (): any => {
     return new Promise<UploadResponseDto>((resolve, reject) => {
       const form = new FormData();
       form.append('file', data);
-      axios.post<UploadResponseDto>('/api/upload', form, {
+      axios.post<UploadResponseDto>('/api/v1/upload', form, {
         headers: {
           'content-type': 'multipart/form-data'
         }

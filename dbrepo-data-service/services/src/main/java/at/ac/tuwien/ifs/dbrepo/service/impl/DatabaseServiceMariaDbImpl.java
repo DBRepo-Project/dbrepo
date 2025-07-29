@@ -2,9 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
@@ -93,7 +93,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
     }
 
     @Override
-    public TableDto createTable(DatabaseDto database, TableCreateDto data) throws SQLException,
+    public TableDto createTable(DatabaseDto database, CreateTableDto data) throws SQLException,
             TableMalformedException, TableExistsException, TableNotFoundException {
         final String tableName = mariaDbMapper.nameToInternalName(data.getName());
         final ComboPooledDataSource dataSource = getDataSource(database);

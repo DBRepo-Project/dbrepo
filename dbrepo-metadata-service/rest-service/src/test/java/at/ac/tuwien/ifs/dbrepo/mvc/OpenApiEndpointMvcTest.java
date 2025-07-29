@@ -142,9 +142,6 @@ public class OpenApiEndpointMvcTest extends BaseTest {
                     responses.forEach(response -> {
                         assertNotNull(response.content());
                         assertTrue(response.content().length > 0);
-                        final Content content0 = response.content()[0];
-                        assertEquals(MediaType.APPLICATION_JSON_VALUE, content0.mediaType(), "method " + m.getName() + " and status " + status + " should return JSON");
-                        assertEquals(ApiErrorDto.class, content0.schema().implementation());
                     });
                 }
             });

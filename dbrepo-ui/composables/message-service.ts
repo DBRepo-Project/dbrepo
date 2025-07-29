@@ -5,7 +5,7 @@ export const useMessageService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find messages')
     return new Promise<BannerMessageDto[]>((resolve, reject) => {
-      axios.get<BannerMessageDto[]>(`/api/message`, {params: (filter && { filter })})
+      axios.get<BannerMessageDto[]>(`/api/v1/message`, {params: (filter && { filter })})
         .then((response) => {
           console.info('Found message(s)')
           resolve(response.data)
@@ -21,7 +21,7 @@ export const useMessageService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find message with id', id)
     return new Promise<BannerMessageDto>((resolve, reject) => {
-      axios.get<BannerMessageDto>(`/api/message/${id}`)
+      axios.get<BannerMessageDto>(`/api/v1/message/${id}`)
         .then((response) => {
           console.info('Found message with id', id)
           resolve(response.data)
@@ -37,7 +37,7 @@ export const useMessageService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create message')
     return new Promise<BannerMessageDto>((resolve, reject) => {
-      axios.post<BannerMessageDto>('/api/message', data)
+      axios.post<BannerMessageDto>('/api/v1/message', data)
         .then((response) => {
           console.info('Create message')
           resolve(response.data)
@@ -53,7 +53,7 @@ export const useMessageService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update message with id', id)
     return new Promise<BannerMessageDto>((resolve, reject) => {
-      axios.post<BannerMessageDto>(`/api/message/${id}`, data)
+      axios.post<BannerMessageDto>(`/api/v1/message/${id}`, data)
         .then((response) => {
           console.info('Update message with id', id)
           resolve(response.data)
@@ -69,7 +69,7 @@ export const useMessageService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete message with id', id)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/message/${id}`)
+      axios.delete<void>(`/api/v1/message/${id}`)
         .then((response) => {
           console.info('Deleted message with id', id)
           resolve(response.data)

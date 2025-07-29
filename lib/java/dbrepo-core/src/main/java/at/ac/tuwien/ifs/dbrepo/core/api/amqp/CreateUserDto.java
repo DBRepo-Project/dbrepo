@@ -17,7 +17,7 @@ public class CreateUserDto {
     @Schema(example = "s3cr3t1nf0rm4t10n")
     private String password;
 
-    @Schema(example = "administrator")
+    @Schema(example = "")
     private String tags;
 
 }
