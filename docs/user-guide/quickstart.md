@@ -7,23 +7,20 @@ these topics in the corresponding documentation pages on the left.
 
 ## How to Login
 
-The following instances have different login mechanisms:
+The following instances have different authorization mechanisms:
 
-* Open for anyone, create an account with username and password:
+* Open for anyone:
 
-    !!! danger "Ephemeral Data"
-    
-        This instance is intended for testing-purposes only and data may be deleted at any time.
-        
-    * [test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
+    * [https://test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
 
 * By affiliation:
 
-    * [dbrepo.datalab.tuwien.ac.at](https://dbrepo.datalab.tuwien.ac.at) for TU Wien staff
+    * [https://dbrepo.datalab.tuwien.ac.at](https://dbrepo.datalab.tuwien.ac.at) for TU Wien staff
 
-* By membership:
-
-    * [dbrepo.dyn.cloud.e-infra.cz](https://dbrepo.dyn.cloud.e-infra.cz) for EGI federation members
+<video autoplay loop>
+  <source src="/infrastructures/dbrepo/1.10/videos/login-sso.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.10/videos/login-sso.mp4" type="video/mp4" />
+</video>
 
 ## Create Database
 
