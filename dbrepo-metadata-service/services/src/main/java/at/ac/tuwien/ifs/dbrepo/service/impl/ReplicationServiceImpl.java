@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -25,7 +26,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     private String baseUrl;
 
     @Autowired
-    public ReplicationServiceImpl(RestTemplate replicationRestTemplate) {
+    public ReplicationServiceImpl(@Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate) {
         this.replicationRestTemplate = replicationRestTemplate;
     }
 

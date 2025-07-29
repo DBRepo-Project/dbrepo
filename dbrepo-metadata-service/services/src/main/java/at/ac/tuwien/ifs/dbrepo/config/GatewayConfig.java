@@ -118,4 +118,11 @@ public class GatewayConfig {
         return restTemplate;
     }
 
+    @Bean("replicationRestTemplate")
+    public RestTemplate replicationRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        // For replication, we don't need a specific base URL as it will be configured dynamically
+        return restTemplate;
+    }
+
 }
