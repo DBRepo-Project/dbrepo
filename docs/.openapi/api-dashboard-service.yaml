@@ -35,7 +35,7 @@
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/"
   },
   "info": {
     "contact": {
@@ -52,7 +52,7 @@
   },
   "openapi": "3.0.0",
   "paths": {
-    "/api/dashboard": {
+    "/api/v1/dashboard": {
       "post": {
         "consumes": [
           "application/json"
@@ -142,7 +142,7 @@
         ]
       }
     },
-    "/api/dashboard/{uid}": {
+    "/api/v1/dashboard/{uid}": {
       "put": {
         "consumes": [
           "application/json"
@@ -217,7 +217,7 @@
         ]
       }
     },
-    "/api/dashboard/{uid}/access/{username}": {
+    "/api/v1/dashboard/{uid}/access/{username}": {
       "put": {
         "consumes": [
           "application/json"

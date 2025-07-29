@@ -13,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
@@ -20,41 +21,36 @@ import lombok.extern.jackson.Jacksonized;
 public class ImageCreateDto {
 
     @NotBlank
-    @Schema(example = "docker.io/library")
+    @Schema(description = "The URL of the registry without protocol", example = "docker.io/library")
     private String registry;
-
-    @NotBlank
-    @Schema(example = "mariadb")
-    private String name;
-
-    @NotNull
-    @JsonProperty("is_default")
-    @Schema(example = "false")
-    private Boolean isDefault;
-
-    @NotBlank
-    @Parameter(example = "10.5")
-    private String version;
-
-    @NotBlank
-    @JsonProperty("driver_class")
-    @Parameter(example = "'org.mariadb.jdbc.Driver")
-    private String driverClass;
-
-    @NotBlank
-    @Parameter(required = true, example = "org.hibernate.dialect.MariaDBDialect")
-    private String dialect;
-
-    @NotBlank
-    @JsonProperty("jdbc_method")
-    @Parameter(required = true, example = "mariadb")
-    private String jdbcMethod;
 
     @NotNull
     @JsonProperty("default_port")
     @Min(value = 1024, message = "only user ports are allowed 1024-65535")
     @Max(value = 65535, message = "only user ports are allowed 1024-65535")
-    @Parameter(required = true, example = "3006")
+    @Schema(description = "The default image port to access the database", example = "3306")
     private Integer defaultPort;
+
+    @NotBlank
+    @Schema(description = "The image name", example = "mariadb")
+    private String name;
+
+    @NotBlank
+    @Parameter(description = "The image version", example = "10.5")
+    private String version;
+
+    @NotBlank
+    @JsonProperty("driver_class")
+    @Schema(description = "The driver class name", example = "org.mariadb.jdbc.Driver")
+    private String driverClass;
+
+    @NotBlank
+    @Schema(description = "The SQL dialect class name", example = "org.hibernate.dialect.MariaDBDialect")
+    private String dialect;
+
+    @NotBlank
+    @JsonProperty("jdbc_method")
+    @Schema(description = "The method used by JDBC", example = "mariadb")
+    private String jdbcMethod;
 
 }

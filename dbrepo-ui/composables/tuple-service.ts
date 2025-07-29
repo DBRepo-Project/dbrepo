@@ -5,7 +5,7 @@ export const useTupleService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
-      axios.post<void>(`/api/database/${databaseId}/table/${tableId}/data`, data)
+      axios.post<void>(`/api/v1/database/${databaseId}/table/${tableId}/data`, data)
         .then((response) => {
           console.info('Created tuple(s) in table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)
@@ -21,7 +21,7 @@ export const useTupleService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
-      axios.put<void>(`/api/database/${databaseId}/table/${tableId}/data`, data)
+      axios.put<void>(`/api/v1/database/${databaseId}/table/${tableId}/data`, data)
         .then((response) => {
           console.info('Updated tuple(s) in table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)
@@ -37,7 +37,7 @@ export const useTupleService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/database/${databaseId}/table/${tableId}/data`, { data })
+      axios.delete<void>(`/api/v1/database/${databaseId}/table/${tableId}/data`, { data })
         .then((response) => {
           console.info('Deleted tuple(s) in table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)

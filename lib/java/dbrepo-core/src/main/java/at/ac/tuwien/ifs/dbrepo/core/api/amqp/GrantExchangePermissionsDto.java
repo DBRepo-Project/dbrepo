@@ -16,15 +16,15 @@ import lombok.extern.jackson.Jacksonized;
 public class GrantExchangePermissionsDto {
 
     @NotNull
-    @Schema(example = "dbrepo")
+    @Schema(description = "The exchange name", example = "dbrepo")
     private String exchange;
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The write permissions", example = ".*")
     private String write;
 
     @NotNull
-    @Schema(example = ".*")
+    @Schema(description = "The read permissions", example = ".*")
     private String read;
 
 }

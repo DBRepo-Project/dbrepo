@@ -17,27 +17,27 @@ public class CreateIdentifierFunderDto {
 
     @NotBlank
     @JsonProperty("funder_name")
-    @Schema(example = "European Commission")
+    @Schema(description = "The funder name", example = "European Commission")
     private String funderName;
 
     @JsonProperty("funder_identifier")
-    @Schema(example = "http://doi.org/10.13039/501100000780")
+    @Schema(description = "The identifier that identifies the funder unambiguously", example = "http://doi.org/10.13039/501100000780")
     private String funderIdentifier;
 
     @JsonProperty("funder_identifier_type")
-    @Schema(example = "Crossref Funder ID")
+    @Schema(description = "The funder type, when the `funder_identifier` is a DOI, the `funder_identifier_type` field must be `Crossref Funder ID`", example = "Crossref Funder ID")
     private IdentifierFunderTypeDto funderIdentifierType;
 
     @JsonProperty("scheme_uri")
-    @Schema(example = "http://doi.org/")
+    @Schema(description = "The scheme URI of the `funder_identifier`", example = "http://doi.org/")
     private String schemeUri;
 
     @JsonProperty("award_number")
-    @Schema(example = "824087")
+    @Schema(description = "The award number", example = "824087")
     private String awardNumber;
 
     @JsonProperty("award_title")
-    @Schema(example = "EOSC-Life")
+    @Schema(description = "The award title", example = "EOSC-Life")
     private String awardTitle;
 
 }

@@ -5,7 +5,7 @@ export const useImageService = (): any => {
     const axios = useAxiosInstance();
     console.debug('find image by id', id);
     return new Promise<ImageDto>((resolve, reject) => {
-      axios.get<ImageDto>(`/api/image/${id}`)
+      axios.get<ImageDto>(`/api/v1/image/${id}`)
         .then((response) => {
           console.info('Found image')
           resolve(response.data)

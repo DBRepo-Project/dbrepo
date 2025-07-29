@@ -20,24 +20,24 @@ import java.util.List;
 public class TableStatisticDto {
 
     @JsonProperty("total_rows")
-    @Schema(example = "5")
+    @Schema(description = "The total number of rows", example = "5")
     private Long totalRows;
 
     @NotNull
     @JsonProperty("total_columns")
-    @Schema(example = "2")
+    @Schema(description = "The total number of columns", example = "2")
     private Long totalColumns;
 
     @JsonProperty("data_length")
-    @Schema(example = "16384", description = "in bytes")
+    @Schema(description = "The data length in bytes", example = "16384")
     private Long dataLength;
 
     @JsonProperty("max_data_length")
-    @Schema(example = "0", description = "in bytes")
+    @Schema(description = "The maximum data length in bytes", example = "0")
     private Long maxDataLength;
 
     @JsonProperty("avg_row_length")
-    @Schema(example = "3276", description = "in bytes")
+    @Schema(description = "The average data length in bytes", example = "3276")
     private Long avgRowLength;
 
     @NotNull

@@ -19,21 +19,21 @@ public class CreateDashboardDto {
 
     @NotNull
     @JsonProperty("database_name")
-    @Schema(example = "Some Database")
+    @Schema(description = "The user-friendly database name", example = "Some Database")
     private String databaseName;
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
     @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(example = "true")
+    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 
     @NotBlank
     @JsonProperty("owner_username")
-    @Schema(example = "foobar")
+    @Schema(description = "The owner username", example = "foo")
     private String ownerUsername;
 }

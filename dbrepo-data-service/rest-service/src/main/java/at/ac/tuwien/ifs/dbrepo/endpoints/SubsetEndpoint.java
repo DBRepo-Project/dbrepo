@@ -43,7 +43,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database/{databaseId}/subset")
+@RequestMapping(path = "/api/v1/database/{databaseId}/subset")
 public class SubsetEndpoint extends RestEndpoint {
 
     private final CacheService cacheService;
@@ -80,19 +80,13 @@ public class SubsetEndpoint extends RestEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = QueryDto.class)))}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to find subsets",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database or user in metadata database or query in query store of the data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<QueryDto>> list(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
@@ -135,29 +129,19 @@ public class SubsetEndpoint extends RestEndpoint {
                             @Content(mediaType = "text/csv")}),
             @ApiResponse(responseCode = "400",
                     description = "Malformed select query",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to find subset",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database in metadata database or query in query store of the data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "406",
                     description = "Failed to find acceptable representation",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<?> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
                                       @NotNull @PathVariable("subsetId") UUID subsetId,
@@ -203,42 +187,28 @@ public class SubsetEndpoint extends RestEndpoint {
                     description = "Created subset",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = List.class))}),
+                            schema = @Schema(implementation = Map[].class))}),
             @ApiResponse(responseCode = "400",
                     description = "Malformed select query",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to find subset",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database in metadata database or query in query store of the data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "406",
                     description = "Failed to format data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Failed to insert query into query store of data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "501",
                     description = "Failed to execute query as it contains non-supported keywords",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<?> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                     @Valid @RequestBody SubsetDto data,
@@ -311,33 +281,23 @@ public class SubsetEndpoint extends RestEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Reverse proxy exposing of custom headers", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = List.class)),
+                            schema = @Schema(implementation = Map[].class)),
                             @Content(mediaType = "text/csv")}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid pagination",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to retrieve subset data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database in metadata database or query in query store of the data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "406",
                     description = "Failed to format data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
                                      @NotNull @PathVariable("subsetId") UUID subsetId,
@@ -439,29 +399,19 @@ public class SubsetEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = QueryDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Malformed select query",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to persist subset",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database in metadata database or query in query store of the data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Failed to persist subset",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") UUID databaseId,
                                             @NotNull @PathVariable("queryId") UUID queryId,

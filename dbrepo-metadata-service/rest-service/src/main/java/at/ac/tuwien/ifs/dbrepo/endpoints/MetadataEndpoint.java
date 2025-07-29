@@ -28,7 +28,7 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/oai")
+@RequestMapping(path = "/api/v1/oai")
 public class MetadataEndpoint extends AbstractEndpoint {
 
     private final MetadataService metadataService;

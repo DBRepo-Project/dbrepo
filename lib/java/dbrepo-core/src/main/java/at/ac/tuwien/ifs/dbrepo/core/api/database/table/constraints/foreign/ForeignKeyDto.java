@@ -19,11 +19,11 @@ import java.util.UUID;
 @ToString
 public class ForeignKeyDto {
 
-    @Schema(example = "f2b740ec-0b13-4d07-88a9-529d354bba6a")
+    @Schema(description = "The foreign key id", example = "f2b740ec-0b13-4d07-88a9-529d354bba6a")
     private UUID id;
 
     @NotNull
-    @Schema(example = "fk_name")
+    @Schema(description = "The foreign key name", example = "fk_name")
     private String name;
 
     @NotNull
@@ -37,10 +37,10 @@ public class ForeignKeyDto {
     private TableBriefDto referencedTable;
 
     @JsonProperty("on_update")
-    @Schema(example = "restrict")
+    @Schema(description = "The integrity action when updating tuples", example = "cascade")
     private ReferenceTypeDto onUpdate;
 
     @JsonProperty("on_delete")
-    @Schema(example = "restrict")
+    @Schema(description = "The integrity action when deleting tuples", example = "cascade")
     private ReferenceTypeDto onDelete;
 }

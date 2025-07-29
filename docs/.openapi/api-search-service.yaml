@@ -132,7 +132,7 @@
   },
   "openapi": "3.0.0",
   "paths": {
-    "/api/search": {
+    "/api/v1/search": {
       "get": {
         "consumes": [
           "application/json"
@@ -178,7 +178,7 @@
         ]
       }
     },
-    "/api/search/{field_type}": {
+    "/api/v1/search/{field_type}": {
       "post": {
         "consumes": [
           "application/json"
@@ -271,7 +271,7 @@
         ]
       }
     },
-    "/api/search/{field_type}/fields": {
+    "/api/v1/search/{field_type}/fields": {
       "get": {
         "operationId": "get_fields",
         "parameters": [
@@ -316,7 +316,7 @@
         ]
       }
     },
-    "/api/search/{index}": {
+    "/api/v1/search/{index}": {
       "get": {
         "consumes": [
           "application/json"

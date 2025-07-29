@@ -25,7 +25,7 @@ public class ConstraintsDto {
     @JsonProperty("foreign_keys")
     private List<ForeignKeyDto> foreignKeys;
 
-    @Schema(example = "[\"value > 1\"]")
+    @Schema(description = "The list of check constraints", example = "[]")
     private Set<String> checks;
 
     @JsonProperty("primary_key")

@@ -25,85 +25,85 @@ import java.util.UUID;
 public class ColumnDto {
 
     @NotNull
-    @Schema(example = "a453e444-e00d-41ca-902c-11e9c54b39f1")
+    @Schema(description = "The id", example = "a453e444-e00d-41ca-902c-11e9c54b39f1")
     private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "911f9052-c58c-4e1c-b3f2-66af2107be16")
+    @Schema(description = "The database id", example = "911f9052-c58c-4e1c-b3f2-66af2107be16")
     private UUID databaseId;
 
     @NotNull
     @JsonProperty("table_id")
-    @Schema(example = "bfffa915-a547-4466-9c65-ddc0d38fdb08")
+    @Schema(description = "The table id", example = "bfffa915-a547-4466-9c65-ddc0d38fdb08")
     private UUID tableId;
 
     @NotNull
     @JsonProperty("ord")
-    @Schema(example = "0")
+    @Schema(description = "The ordinal position of the colum to order it", example = "0")
     private Integer ordinalPosition;
 
     @NotBlank
     @Size(max = 64)
-    @Schema(example = "Given Name")
+    @Schema(description = "The user-friendly column name", example = "Given Name")
     private String name;
 
     @NotBlank
     @Size(max = 64)
     @JsonProperty("internal_name")
-    @Schema(example = "given_name")
+    @Schema(description = "The machine-friendly column name", example = "given_name")
     private String internalName;
 
-    @Schema(example = "firstname")
+    @Schema(description = "The data source alias name", example = "firstname")
     private String alias;
 
     @JsonProperty("index_length")
-    @Schema(example = "255")
+    @Schema(description = "The length of the index", example = "255")
     private Long indexLength;
 
     @JsonProperty("length")
-    @Schema(example = "255")
+    @Schema(description = "The length of the total data in the table (index + data)", example = "255")
     private Long length;
 
     @NotNull
     @JsonProperty("type")
-    @Schema(example = "varchar")
+    @Schema(description = "The column type name", example = "varchar")
     private ColumnTypeDto columnType;
 
-    @Schema(example = "255")
+    @Schema(description = "The column size, determines the number of digits before the comma as x=size-d where size >= d", example = "255")
     private Long size;
 
-    @Schema(example = "0")
+    @Schema(description = "The column d", example = "0")
     private Long d;
 
-    @Schema(example = "34300")
+    @Schema(description = "The data length", example = "34300")
     @JsonProperty("data_length")
     private Long dataLength;
 
-    @Schema(example = "34300")
+    @Schema(description = "The maximum data length", example = "34300")
     @JsonProperty("max_data_length")
     private Long maxDataLength;
 
-    @Schema(example = "32")
+    @Schema(description = "The number of rows", example = "32")
     @JsonProperty("num_rows")
     private Long numRows;
 
-    @Schema(example = "0")
+    @Schema(description = "The statistically highest numerical value", example = "0")
     @JsonProperty("val_min")
     private BigDecimal valMin;
 
-    @Schema(example = "100")
+    @Schema(description = "The statistically lowest numerical value",example = "100")
     @JsonProperty("val_max")
     private BigDecimal valMax;
 
-    @Schema(example = "45.4")
+    @Schema(description = "The statistically average numerical value",example = "45.4")
     private BigDecimal mean;
 
-    @Schema(example = "51")
+    @Schema(description = "The statistically most middle numerical value", example = "51")
     private BigDecimal median;
 
-    @Schema(example = "5.32")
     @JsonProperty("std_dev")
+    @Schema(description = "The statistically determined standard deviation", example = "5.32")
     private BigDecimal stdDev;
 
     private ConceptBriefDto concept;

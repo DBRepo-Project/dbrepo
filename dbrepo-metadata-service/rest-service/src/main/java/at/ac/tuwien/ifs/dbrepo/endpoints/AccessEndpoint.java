@@ -2,7 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
@@ -34,7 +33,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database/{databaseId}/access")
+@RequestMapping(path = "/api/v1/database/{databaseId}/access")
 public class AccessEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
@@ -68,29 +67,19 @@ public class AccessEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = DatabaseAccessDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Granting access query or database connection is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Failed giving access",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Access could not be created due to connection error",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Access could not be created in the data service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                     @PathVariable("username") String username,
@@ -132,29 +121,19 @@ public class AccessEndpoint extends AbstractEndpoint {
                     description = "Modified access"),
             @ApiResponse(responseCode = "400",
                     description = "Modify access query or database connection is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Modify access not permitted when no access is granted in the first place",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Access could not be updated due to connection error in the data service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Access could not be updated in the data service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("username") String username,
@@ -201,14 +180,10 @@ public class AccessEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = DatabaseAccessDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "No access to this database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                   @PathVariable("username") String username,
@@ -240,29 +215,19 @@ public class AccessEndpoint extends AbstractEndpoint {
                     description = "Deleted access"),
             @ApiResponse(responseCode = "400",
                     description = "Modify access query or database connection is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Revoke of access not permitted as no access was found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "User, database with access was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "502",
                     description = "Access could not be created due to connection error",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Access could not be revoked in the data service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("username") String username,

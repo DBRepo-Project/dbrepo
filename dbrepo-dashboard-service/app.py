@@ -102,7 +102,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/"
     },
     "servers": [
         {
@@ -203,7 +203,7 @@ def health():
     return dict({"status": "UP"}), 200
 
 
-@app.route("/api/dashboard", methods=["POST"], endpoint="create_dashboard")
+@app.route("/api/v1/dashboard", methods=["POST"], endpoint="create_dashboard")
 @metrics.gauge(name='dbrepo_create_dashboard', description='Time needed to create dashboard')
 @swag_from("/app/ds-yml/create_dashboard.yml")
 @auth.login_required(role=['system'])
@@ -232,7 +232,7 @@ def create_dashboard():
         return Response(dto.model_dump_json(), e.status_code, headers)
 
 
-@app.route("/api/dashboard/<string:uid>", methods=["PUT"], endpoint="update_dashboard")
+@app.route("/api/v1/dashboard/<string:uid>", methods=["PUT"], endpoint="update_dashboard")
 @metrics.gauge(name='dbrepo_update_dashboard', description='Time needed to update dashboard')
 @swag_from("/app/ds-yml/update_dashboard.yml")
 @auth.login_required(role=['system'])
@@ -253,7 +253,7 @@ def update_dashboard(uid: str):
     return Response(), 202, headers
 
 
-@app.route("/api/dashboard/<string:uid>/access/<string:username>", methods=["PUT"], endpoint="update_dashboard_access")
+@app.route("/api/v1/dashboard/<string:uid>/access/<string:username>", methods=["PUT"], endpoint="update_dashboard_access")
 @metrics.gauge(name='dbrepo_update_dashboard_access', description='Time needed to update dashboard access')
 @swag_from("/app/ds-yml/update_dashboard_access.yml")
 @auth.login_required(role=['system'])

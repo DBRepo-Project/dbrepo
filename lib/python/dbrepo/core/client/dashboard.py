@@ -93,7 +93,7 @@ def map_preview_image_panel(database_id: str, w: int = 4, h: int = 4, x: int = 2
                              code=dict(language="plaintext",
                                        showLineNumbers=False,
                                        showMiniMap=False),
-                             content=f'<img src="/api/database/{database_id}/image" alt="" width="90" />'))
+                             content=f'<img src="/api/v1/database/{database_id}/image" alt="" width="90" />'))
 
 
 class DashboardServiceClient:
@@ -221,7 +221,7 @@ class DashboardServiceClient:
                                   root_selector='',
                                   source='url',
                                   type='json',
-                                  url=f'/api/database/{database_id}/view/{view.id}/data',
+                                  url=f'/api/v1/database/{database_id}/view/{view.id}/data',
                                   parser='backend',
                                   url_options=dict(data='',
                                                    method='GET'))],
@@ -281,7 +281,7 @@ class DashboardServiceClient:
                                   root_selector='',
                                   source='url',
                                   type='json',
-                                  url=f'/api/database/{database_id}/view/{view_id}/statistic',
+                                  url=f'/api/v1/database/{database_id}/view/{view_id}/statistic',
                                   parser='backend',
                                   url_options=dict(data='',
                                                    method='GET'))],
@@ -367,7 +367,7 @@ class DashboardServiceClient:
                                   root_selector='',
                                   source='url',
                                   type='json',
-                                  url=f'/api/database/{database_id}/view/{view_id}/data',
+                                  url=f'/api/v1/database/{database_id}/view/{view_id}/data',
                                   parser='backend',
                                   url_options=dict(data='',
                                                    method='GET'))],
@@ -397,7 +397,7 @@ class DashboardServiceClient:
                                   root_selector='columns',
                                   source='url',
                                   type='json',
-                                  url=f'/api/database/{database_id}/view/{view_id}/statistic',
+                                  url=f'/api/v1/database/{database_id}/view/{view_id}/statistic',
                                   parser='backend',
                                   url_options=dict(data='',
                                                    method='GET'))],
@@ -463,7 +463,7 @@ class DashboardServiceClient:
                                   root_selector='$count(id)',
                                   source='url',
                                   type='json',
-                                  url=f'/api/database/{database_id}/view',
+                                  url=f'/api/v1/database/{database_id}/view',
                                   parser='backend',
                                   url_options=dict(data='',
                                                    method='GET'))],

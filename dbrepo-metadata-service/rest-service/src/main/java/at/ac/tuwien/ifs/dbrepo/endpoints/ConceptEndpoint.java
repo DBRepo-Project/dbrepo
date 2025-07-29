@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/concept")
+@RequestMapping(path = "/api/v1/concept")
 public class ConceptEndpoint extends AbstractEndpoint {
 
     private final ConceptService conceptService;

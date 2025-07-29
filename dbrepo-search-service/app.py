@@ -293,7 +293,7 @@ def health():
     return dict({"status": "UP"}), 200, headers
 
 
-@app.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
+@app.route("/api/v1/search/<string:index>", methods=["GET"], endpoint="search_get_index")
 @metrics.gauge(name='dbrepo_search_index_list', description='Time needed to list search index')
 @swag_from("/app/os-yml/get_index.yml")
 def get_index(index: str):
@@ -317,7 +317,7 @@ def get_index(index: str):
                         code='search.index.missing').model_dump(), 404, headers
 
 
-@app.route("/api/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+@app.route("/api/v1/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
 @metrics.gauge(name='dbrepo_search_type_list', description='Time needed to list search types')
 @swag_from("/app/os-yml/get_fields.yml")
 def get_fields(field_type: str):
@@ -336,7 +336,7 @@ def get_fields(field_type: str):
                         code='search.type.missing').model_dump(), 404, headers
 
 
-@app.route("/api/search", methods=["GET"], endpoint="search_fuzzy_search")
+@app.route("/api/v1/search", methods=["GET"], endpoint="search_fuzzy_search")
 @metrics.gauge(name='dbrepo_search_fuzzy', description='Time needed to search fuzzy')
 @swag_from("/app/os-yml/get_fuzzy_search.yml")
 def get_fuzzy_search():
@@ -359,7 +359,7 @@ def get_fuzzy_search():
     return Response(dumps(results, default=pydantic_encoder)), 200, headers
 
 
-@app.route("/api/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
+@app.route("/api/v1/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
 @metrics.gauge(name='dbrepo_search_type', description='Time needed to search by type')
 @swag_from("/app/os-yml/post_general_search.yml")
 def post_general_search(field_type):
@@ -434,7 +434,7 @@ def post_general_search(field_type):
     return Response(dumps(response, default=pydantic_encoder)), 200, headers
 
 
-@app.route("/api/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
+@app.route("/api/v1/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
 @metrics.gauge(name='dbrepo_search_save_database',
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['update-search-index'])
@@ -450,7 +450,7 @@ def save_database(database_id: str):
     return Response(), 202, headers
 
 
-@app.route("/api/search/database/<string:database_id>", methods=["DELETE"], endpoint="database_delete_database")
+@app.route("/api/v1/search/database/<string:database_id>", methods=["DELETE"], endpoint="database_delete_database")
 @metrics.gauge(name='dbrepo_search_delete_database',
                description='Time needed to delete a database in the search database')
 @auth.login_required(role=['system'])
