@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/database")
+@RequestMapping("/database")
 @RequiredArgsConstructor
 @Tag(name = "Database", description = "Database replication endpoints")
 public class DatabaseEndpoint {
