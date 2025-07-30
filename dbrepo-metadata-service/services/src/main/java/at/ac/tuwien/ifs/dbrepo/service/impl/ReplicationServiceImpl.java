@@ -48,7 +48,7 @@ public class ReplicationServiceImpl implements ReplicationService {
 
             // Send POST request to replication service
             ResponseEntity<Void> response = replicationRestTemplate.exchange(
-                    "/database",
+                    "api/replication/database",
                     HttpMethod.POST,
                     new HttpEntity<>(notificationDto),
                     Void.class
