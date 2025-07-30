@@ -35,9 +35,6 @@ public class InternalRequestInterceptor implements ClientHttpRequestInterceptor 
         final TokenDto token = credentialService.getAccessToken(gatewayConfig.getSystemUsername(),
                 gatewayConfig.getSystemPassword());
         headers.setBearerAuth(token.getAccessToken());
-        log.info("set bearer token for internal user: {}", gatewayConfig.getSystemUsername());
-        log.info("token: {}", token.getAccessToken());
-        log.trace("set bearer token for internal user: {}", gatewayConfig.getSystemUsername());
         return execution.execute(request, body);
     }
 }
