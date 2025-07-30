@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/replicate")
+@RequestMapping("/replicate")
 @RequiredArgsConstructor
 @Tag(name = "Replicate", description = "Replication endpoints")
 public class ReplicateEndpoint {
