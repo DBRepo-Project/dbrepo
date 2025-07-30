@@ -41,6 +41,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             // Create the notification DTO
             DatabaseNotificationDto notificationDto = DatabaseNotificationDto.builder()
                     .createDatabaseDto(createDatabaseDto)
+                    .creationId(creationId)
                     .build();
 
             log.info("Sending database replication notification to replication service: {}", notificationDto);

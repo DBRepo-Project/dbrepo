@@ -12,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -32,11 +33,13 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
 
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
+    private final ReplicationService replicationService;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper) {
+    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, ReplicationService replicationService) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
+        this.replicationService = replicationService;
     }
 
     @Override
@@ -399,9 +402,19 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         System.out.println("Creation Location: " + databaseNotificationDto.getCreateDatabaseDto().getCreationLocation());
         System.out.println("Database ID: " + databaseNotificationDto.getCreationId());
         
-        // TODO: replicate to other instances
-        log.info("TODO: Implement replication to other instances");
-        log.info("Database notification received: {}", databaseNotificationDto);
+        // Get replica URLs from the database notification
+        var replicaUrls = databaseNotificationDto.getCreateDatabaseDto().getReplicaUrls();
+        
+        if (replicaUrls != null && !replicaUrls.isEmpty()) {
+            log.info("Sending replication to {} instances", replicaUrls.size());
+            System.out.println("Replica URLs to contact: " + replicaUrls);
+            
+            // Send replication to other instances
+            replicationService.sendDatabaseReplicationToInstances(databaseNotificationDto, replicaUrls);
+        } else {
+            log.info("No replica URLs provided, skipping replication to other instances");
+            System.out.println("No replica URLs to contact");
+        }
         
         System.out.println("========================");
     }

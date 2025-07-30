@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +27,25 @@ public class ReplicateEndpoint {
             "status", "success",
             "message", "Insert replicated successfully",
             "tupleInformation", insertTupleDto.getTupleData()
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/database")
+    @Operation(summary = "Receive database replication", description = "Receives database replication notification from other instances")
+    public ResponseEntity<Map<String, Object>> receiveDatabaseReplication(@RequestBody DatabaseNotificationDto databaseNotificationDto) {
+        System.out.println("=== RECEIVE DATABASE REPLICATION ===");
+        System.out.println("Database Name: " + databaseNotificationDto.getCreateDatabaseDto().getName());
+        System.out.println("Creation ID: " + databaseNotificationDto.getCreationId());
+        System.out.println("Creation Location: " + databaseNotificationDto.getCreateDatabaseDto().getCreationLocation());
+        System.out.println("Replica URLs: " + databaseNotificationDto.getCreateDatabaseDto().getReplicaUrls());
+        System.out.println("========================");
+        
+        Map<String, Object> response = Map.of(
+            "status", "success",
+            "message", "Database replication notification received successfully",
+            "databaseInformation", databaseNotificationDto.getCreateDatabaseDto()
         );
         
         return ResponseEntity.ok(response);
