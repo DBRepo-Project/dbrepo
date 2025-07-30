@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     image                 LONGBLOB,
     owned_by              VARCHAR(36)  NOT NULL,
     contact_person        VARCHAR(36)  NOT NULL,
+    creation_location     VARCHAR(255),
     created               TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified         TIMESTAMP,
     PRIMARY KEY (`id`),
