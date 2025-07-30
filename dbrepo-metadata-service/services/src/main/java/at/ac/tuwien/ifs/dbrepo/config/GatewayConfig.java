@@ -31,6 +31,9 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.dashboardService}")
     private String dashboardEndpoint;
 
+    @Value("${dbrepo.endpoints.replicationService:http://replication-service:8080}")
+    private String replicationEndpoint;
+
     @Value("${dbrepo.endpoints.rorService}")
     private String rorEndpoint;
 
@@ -48,6 +51,8 @@ public class GatewayConfig {
 
     @Value("${dbrepo.system.username}")
     private String systemUsername;
+
+
 
     @Value("${dbrepo.system.password}")
     private String systemPassword;
@@ -118,10 +123,12 @@ public class GatewayConfig {
         return restTemplate;
     }
 
-    @Bean("replicationRestTemplate")
+    @Bean
     public RestTemplate replicationRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        // For replication, we don't need a specific base URL as it will be configured dynamically
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(replicationEndpoint));
+        restTemplate.getInterceptors()
+                .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 
