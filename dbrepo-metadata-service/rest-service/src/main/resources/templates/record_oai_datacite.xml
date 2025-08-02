@@ -3,6 +3,7 @@
         <header>
             <identifier>[[${pid}]]</identifier>
             <datestamp>[[${datestamp}]]</datestamp>
+            <setSpec>[[${setspec}]]</setSpec>
         </header>
         <metadata>
             <oai_datacite xmlns="http://schema.datacite.org/oai/oai-1.1/"
