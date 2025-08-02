@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: REST API
-  version: 1.10.3
+  version: 1.10.4
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
