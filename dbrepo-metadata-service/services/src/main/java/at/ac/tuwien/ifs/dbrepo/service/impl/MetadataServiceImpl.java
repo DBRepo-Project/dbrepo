@@ -13,6 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
+import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListRecordsParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
 import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
@@ -84,9 +85,28 @@ public class MetadataServiceImpl implements MetadataService {
             context.setVariable("identifier", identifier);
             context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
             context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
+            context.setVariable("setspec", "openaire_data");
             builder.append(templateEngine.process("identifier.xml", context));
         });
         builder.append("</ListIdentifiers>");
+        return parseResponse(parameters.getParametersString(), builder.toString());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public String listRecords(OaiListRecordsParameters parameters) {
+        final StringBuilder builder = new StringBuilder("<ListRecords>");
+        final List<Identifier> identifiers = identifierService.findAll();
+        log.debug("found {} identifiers", identifiers.size());
+        identifiers.forEach(identifier -> {
+            final Context context = new Context();
+            context.setVariable("identifier", identifier);
+            context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
+            context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
+            context.setVariable("setspec", "openaire_data");
+            builder.append(templateEngine.process("record.xml", context));
+        });
+        builder.append("</ListRecords>");
         return parseResponse(parameters.getParametersString(), builder.toString());
     }
 
@@ -108,6 +128,7 @@ public class MetadataServiceImpl implements MetadataService {
         final Context context = new Context();
         context.setVariable("identifier", identifier);
         context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
+        context.setVariable("setspec", "oai_datacite");
         context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
         final String body = parseResponse(parameters.getParametersString(), templateEngine.process(templateFileName, context));
@@ -120,6 +141,13 @@ public class MetadataServiceImpl implements MetadataService {
         String builder = "<ListMetadataFormats>" + templateEngine.process("metadata-format.xml", new Context()) +
                 "</ListMetadataFormats>";
         return parseResponse("verb=\"ListMetadataFormats\"", builder);
+    }
+
+    @Override
+    public String listSets() {
+        String builder = "<ListSets>" + templateEngine.process("sets.xml", new Context()) +
+                "</ListSets>";
+        return parseResponse("verb=\"ListSets\"", builder);
     }
 
     @Override

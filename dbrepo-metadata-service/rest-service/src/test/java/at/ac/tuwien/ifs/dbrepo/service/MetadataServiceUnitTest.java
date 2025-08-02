@@ -11,6 +11,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
+import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListRecordsParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,6 +87,21 @@ public class MetadataServiceUnitTest extends BaseTest {
     }
 
     @Test
+    public void listRecords_succeeds() {
+        final OaiListRecordsParameters parameters = OaiListRecordsParameters.builder()
+                .build();
+
+        when(identifierService.findAll())
+                .thenReturn(List.of(IDENTIFIER_1));
+
+        /* test */
+        final String response = metadataService.listRecords(parameters);
+        assertTrue(response.contains("identifier"));
+        assertTrue(response.contains("datestamp"));
+        assertTrue(response.contains("record"));
+    }
+
+    @Test
     public void listMetadataFormats_succeeds() {
 
         /* test */
@@ -93,6 +109,15 @@ public class MetadataServiceUnitTest extends BaseTest {
         assertTrue(response.contains("metadataPrefix"));
         assertTrue(response.contains("schema"));
         assertTrue(response.contains("metadataNamespace"));
+    }
+
+    @Test
+    public void listSets_succeeds() {
+
+        /* test */
+        final String response = metadataService.listSets();
+        assertTrue(response.contains("setSpec"));
+        assertTrue(response.contains("setName"));
     }
 
     @Test

@@ -3,6 +3,7 @@
         <header>
             <identifier>[[${pid}]]</identifier>
             <datestamp>[[${datestamp}]]</datestamp>
+            <setSpec>[[${setspec}]]</setSpec>
         </header>
         <metadata>
             <oai_dc:dc

@@ -4,6 +4,11 @@
     <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
 </metadataFormat>
 <metadataFormat>
+    <metadataPrefix>datacite</metadataPrefix>
+    <schema>http://schema.datacite.org/meta/nonexistant/nonexistant.xsd</schema>
+    <metadataNamespace>http://datacite.org/schema/nonexistant</metadataNamespace>
+</metadataFormat>
+<metadataFormat>
     <metadataPrefix>oai_datacite</metadataPrefix>
     <schema>http://schema.datacite.org/oai/oai-1.1/oai.xsd</schema>
     <metadataNamespace>http://schema.datacite.org/oai/oai-1.1/</metadataNamespace>
