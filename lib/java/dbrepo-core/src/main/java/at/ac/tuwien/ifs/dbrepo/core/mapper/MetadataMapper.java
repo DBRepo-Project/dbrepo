@@ -187,7 +187,7 @@ public interface MetadataMapper {
     ContainerBriefDto containerToContainerBriefDto(Container data);
 
     @Mappings({
-            @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)"),
+            @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/v1/api/database/\" + database.getId() + \"/image\" : null)"),
             @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().filter(a -> !a.getUser().getIsInternal()).map(a -> databaseAccessToDatabaseAccessDto(a)).toList())")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
@@ -397,16 +397,16 @@ public interface MetadataMapper {
 
     default LinksDto identifierToLinksDto(Identifier data) {
         final LinksDto links = LinksDto.builder()
-                .self("/api/identifier/" + data.getId())
+                .self("/api/v1/identifier/" + data.getId())
                 .selfHtml("/pid/" + data.getId())
                 .build();
         switch (data.getType()) {
             case VIEW ->
-                    links.setData("/api/database/" + data.getDatabase().getId() + "/view/" + data.getViewId() + "/data");
+                    links.setData("/api/v1/database/" + data.getDatabase().getId() + "/view/" + data.getViewId() + "/data");
             case TABLE ->
-                    links.setData("/api/database/" + data.getDatabase().getId() + "/table/" + data.getTableId() + "/data");
+                    links.setData("/api/v1/database/" + data.getDatabase().getId() + "/table/" + data.getTableId() + "/data");
             case SUBSET ->
-                    links.setData("/api/database/" + data.getDatabase().getId() + "/subset/" + data.getQueryId() + "/data");
+                    links.setData("/api/v1/database/" + data.getDatabase().getId() + "/subset/" + data.getQueryId() + "/data");
         }
         if (data.getDatabase().getIsDashboardEnabled()) {
             links.setDashboardHtml("/d/" + data.getDatabase().getDashboardUid());
