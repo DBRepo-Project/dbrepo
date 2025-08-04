@@ -179,9 +179,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final User caller = userService.findByUsername(getUsername(principal));
         final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
         /* find in dashboard service */
-        //TODO: fix in dashboard service
-        //final CreateDashboardResponseDto dashboard = dashboardService.create(database);
-        //database.setDashboardUid(dashboard.getUid());
+        final CreateDashboardResponseDto dashboard = dashboardService.create(database);
+        database.setDashboardUid(dashboard.getUid());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));
@@ -258,8 +257,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
 
         /* find in dashboard service */
-        final CreateDashboardResponseDto dashboard = dashboardService.create(database);
-        database.setDashboardUid(dashboard.getUid());
+        //TODO: fix in dashboard service
+        //final CreateDashboardResponseDto dashboard = dashboardService.create(database);
+        //database.setDashboardUid(dashboard.getUid());
 
         Map<String, Object> response = Map.of(
             "status", "success",
