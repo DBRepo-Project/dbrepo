@@ -43,7 +43,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
-        final String path = "/api/search/database/" + database.getId();
+        final String path = "/api/v1/search/database/" + database.getId();
         log.trace("update database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(
@@ -69,7 +69,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     @Override
     public void delete(UUID databaseId) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/search/database/" + databaseId;
+        final String path = "/api/v1/search/database/" + databaseId;
         log.trace("delete database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
