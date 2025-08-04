@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.service.impl.DatabaseServiceMariaDbImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,11 +18,6 @@ import java.util.Map;
 public class ReplicateEndpoint {
 
     private final DatabaseServiceMariaDbImpl databaseService;
-
-    @Autowired
-    public ReplicateEndpoint(DatabaseServiceMariaDbImpl databaseService) {
-        this.databaseService = databaseService;
-    }
 
     @PostMapping("/insert")
     @Operation(summary = "Replicate insert", description = "Replicates an insert operation")
@@ -42,6 +36,12 @@ public class ReplicateEndpoint {
     public ResponseEntity<Map<String, Object>> receiveDatabaseReplication(@RequestBody DatabaseNotificationDto databaseNotificationDto) {
         // Call the service to create the database locally
         Map<String, Object> response = databaseService.insertReplicatedDatabase(databaseNotificationDto);
+        
+        System.out.println("=== Database Replication Response ===");
+        response.forEach((key, value) -> {
+            System.out.println(key + ": " + value);
+        });
+        System.out.println("==================================");
         
         return ResponseEntity.ok(response);
     }
