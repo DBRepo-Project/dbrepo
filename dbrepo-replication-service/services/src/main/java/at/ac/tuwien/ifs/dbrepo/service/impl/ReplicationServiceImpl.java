@@ -59,7 +59,10 @@ public class ReplicationServiceImpl implements ReplicationService {
             ResponseEntity<String> response = externalReplicationRestTemplate.postForEntity(replicationUrl, requestEntity, String.class);
             
             log.info("Replication sent successfully to {} with status: {}", replicaUrl, response.getStatusCode());
-            
+            log.info("Response details - Status code: {}, Headers: {}, Body: {}", 
+                response.getStatusCode(),
+                response.getHeaders(),
+                response.getBody());
         } catch (Exception e) {
             log.error("Failed to send replication to {}: {}", replicaUrl, e.getMessage());
             throw new RuntimeException("Failed to send replication to " + replicaUrl, e);
