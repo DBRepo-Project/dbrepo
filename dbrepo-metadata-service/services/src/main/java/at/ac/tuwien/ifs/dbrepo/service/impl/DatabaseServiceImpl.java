@@ -99,6 +99,10 @@ public class DatabaseServiceImpl implements DatabaseService {
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
+        
+        log.info("Starting database creation - name: {}, container: {}, user: {}, creationLocation: {}, replicaUrls: {}", 
+                data.getName(), data.getCid(), user.getUsername(), data.getCreationLocation(), data.getReplicaUrls());
+        
         final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -118,7 +122,12 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .replicaUrls(data.getReplicaUrls())
                 .creationLocation(data.getCreationLocation())
                 .build();
+        
+        log.debug("Created database entity - id: {}, internalName: {}, name: {}", 
+                entity.getId(), entity.getInternalName(), entity.getName());
+        
         /* create in data database */
+        log.debug("Creating database in data service...");
         final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
                 .userId(user.getId())
@@ -132,17 +141,40 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .build();
         final DatabaseDto dto = dataServiceGateway.createDatabase(payload);
         entity.setExchangeName(dto.getExchangeName());
+        log.debug("Database created in data service - exchangeName: {}", dto.getExchangeName());
+        
         /* create in metadata database */
+        log.debug("Saving database in metadata database...");
         final Database entity1 = databaseRepository.save(entity);
+        log.debug("Database saved in metadata database - id: {}", entity1.getId());
+        
         entity1.getAccesses()
                 .add(metadataMapper.userToWriteAllAccess(entity1, user));
         final Database database = databaseRepository.save(entity1);
+        log.debug("Database access saved - final database id: {}", database.getId());
+        
         /* create in search service */
-        searchServiceGateway.update(database);
-        if (data.getCreationLocation() == null && data.getReplicaUrls().size() > 0) {
-            replicationService.replicateDatabase(data, entity1.getId());
+        log.info("Calling search service to update database - id: {}, name: {}", database.getId(), database.getName());
+        try {
+            searchServiceGateway.update(database);
+            log.info("Successfully updated database in search service - id: {}", database.getId());
+        } catch (Exception e) {
+            log.error("Failed to update database in search service - id: {}, name: {}, error: {}", 
+                    database.getId(), database.getName(), e.getMessage(), e);
+            throw e;
         }
-        log.info("Created database with id {}", database.getId());
+        
+        if (data.getCreationLocation() == null && data.getReplicaUrls().size() > 0) {
+            log.debug("Triggering replication for database - id: {}, creationLocation: null, replicaUrls: {}", 
+                    entity1.getId(), data.getReplicaUrls());
+            replicationService.replicateDatabase(data, entity1.getId());
+        } else {
+            log.debug("Skipping replication - creationLocation: {}, replicaUrls size: {}", 
+                    data.getCreationLocation(), data.getReplicaUrls().size());
+        }
+        
+        log.info("Successfully created database with id: {}, name: {}, internalName: {}", 
+                database.getId(), database.getName(), database.getInternalName());
         return database;
     }
 
