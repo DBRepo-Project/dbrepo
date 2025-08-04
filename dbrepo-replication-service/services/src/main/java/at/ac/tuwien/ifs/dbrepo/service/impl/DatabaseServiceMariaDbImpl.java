@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
@@ -26,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -34,12 +36,15 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
     private final ReplicationService replicationService;
+    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, ReplicationService replicationService) {
+    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, 
+                                     ReplicationService replicationService, MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.replicationService = replicationService;
+        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @Override
@@ -417,5 +422,31 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         }
         
         System.out.println("========================");
+    }
+
+    /**
+     * Creates a database locally by calling the metadata service
+     * 
+     * @param databaseNotificationDto The database notification containing replication information
+     * @return The response from the metadata service with database ID
+     */
+    public Map<String, Object> insertReplicatedDatabase(DatabaseNotificationDto databaseNotificationDto) {
+        log.info("Creating database locally from replication notification");
+        
+        try {
+            // Call the metadata service to create the database
+            final String path = "/api/database/replicate";
+            final Map<String, Object> response = metadataServiceGateway.createReplicatedDatabase(path, databaseNotificationDto);
+            
+            log.info("Database created successfully with ID: {}", response.get("databaseId"));
+            return response;
+            
+        } catch (Exception e) {
+            log.error("Failed to create database from replication: {}", e.getMessage());
+            return Map.of(
+                "status", "error",
+                "message", "Database creation failed: " + e.getMessage()
+            );
+        }
     }
 }

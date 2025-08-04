@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
@@ -26,6 +27,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -322,4 +324,30 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
     }
 
+    @Override
+    public Map<String, Object> createReplicatedDatabase(String path, DatabaseNotificationDto databaseNotificationDto) 
+            throws RemoteUnavailableException, MetadataServiceException {
+        final ResponseEntity<Map> response;
+        log.debug("create replicated database in metadata service: {}", path);
+        final HttpEntity<DatabaseNotificationDto> requestEntity = new HttpEntity<>(databaseNotificationDto);
+        try {
+            response = internalRestTemplate.exchange(path, HttpMethod.POST, requestEntity, Map.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to create replicated database: {}", e.getMessage());
+            throw new RemoteUnavailableException("Failed to create replicated database: " + e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            log.error("Failed to create replicated database: {}", e.getMessage());
+            throw new MetadataServiceException("Failed to create replicated database: " + e.getMessage(), e);
+        }
+        if (response.getStatusCode() != HttpStatus.CREATED && response.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to create replicated database: service responded unsuccessful: {}", response.getStatusCode());
+            throw new MetadataServiceException("Failed to create replicated database: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to create replicated database: body is empty");
+            throw new MetadataServiceException("Failed to create replicated database: body is empty");
+        }
+        log.info("Created replicated database successfully");
+        return response.getBody();
+    }
 }

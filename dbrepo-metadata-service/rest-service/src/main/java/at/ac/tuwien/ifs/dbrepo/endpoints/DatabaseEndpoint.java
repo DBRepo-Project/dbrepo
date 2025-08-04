@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -181,6 +184,90 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));
+    }
+
+    @PostMapping("/replicate")
+    @Transactional(rollbackFor = Exception.class)
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_database_replicate")
+    @Operation(summary = "Replicate database creation",
+            description = "Creates a database from replication notification. Requires system authority.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Database created successfully from replication",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Database create query is malformed or image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Database create permission is missing",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find container/user/database in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Query store could not be created",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "423",
+                    description = "Database quota exceeded",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<Map<String, Object>> replicateDatabase(@Valid @RequestBody DatabaseNotificationDto databaseNotificationDto) 
+            throws DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException {
+        
+        log.debug("endpoint replicate database, data.name={}", databaseNotificationDto.getCreateDatabaseDto().getName());
+        
+        final CreateDatabaseDto data = databaseNotificationDto.getCreateDatabaseDto();
+        final Container container = containerService.find(data.getCid());
+        
+        if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
+            log.error("Failed to create database: quota of {} exceeded", container.getQuota());
+            throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
+        }
+        
+        // Use system user for replication
+        final User systemUser = userService.findByUsername("system");
+        final Database database = databaseService.create(container, data, systemUser, userService.findAllInternalUsers());
+        
+        /* find in dashboard service */
+        final CreateDashboardResponseDto dashboard = dashboardService.create(database);
+        database.setDashboardUid(dashboard.getUid());
+
+        Map<String, Object> response = Map.of(
+            "status", "success",
+            "message", "Database created successfully from replication",
+            "databaseId", database.getId().toString(),
+            "databaseName", database.getName(),
+            "creationId", databaseNotificationDto.getCreationId().toString()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{databaseId}/metadata/table")

@@ -7,11 +7,13 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface MetadataServiceGateway {
@@ -127,4 +129,19 @@ public interface MetadataServiceGateway {
      */
     void updateTableStatistics(UUID databaseId, UUID tableId, String authorization) throws TableNotFoundException,
             MetadataServiceException, RemoteUnavailableException;
+
+    /**
+     * Creates a database from replication notification by calling the metadata service.
+     *
+     * @param path The API path to call
+     * @param databaseNotificationDto The database notification containing replication information
+     * @return The response from the metadata service with database ID
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     */
+    Map<String, Object> createReplicatedDatabase(String path, DatabaseNotificationDto databaseNotificationDto) 
+            throws RemoteUnavailableException, MetadataServiceException;
+
+    Map<String, Object> createReplicatedDatabase(String path, DatabaseNotificationDto databaseNotificationDto)
+            throws RemoteUnavailableException, MetadataServiceException;
 }

@@ -2,9 +2,11 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.service.impl.DatabaseServiceMariaDbImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,13 +18,16 @@ import java.util.Map;
 @Tag(name = "Replicate", description = "Replication endpoints")
 public class ReplicateEndpoint {
 
+    private final DatabaseServiceMariaDbImpl databaseService;
+
+    @Autowired
+    public ReplicateEndpoint(DatabaseServiceMariaDbImpl databaseService) {
+        this.databaseService = databaseService;
+    }
+
     @PostMapping("/insert")
     @Operation(summary = "Replicate insert", description = "Replicates an insert operation")
     public ResponseEntity<Map<String, Object>> replicateInsert(@RequestBody TupleNotificationDto insertTupleDto) {
-        System.out.println("=== REPLICATE INSERT ===");
-
-        System.out.println("========================");
-        
         Map<String, Object> response = Map.of(
             "status", "success",
             "message", "Insert replicated successfully",
@@ -35,18 +40,8 @@ public class ReplicateEndpoint {
     @PostMapping("/database")
     @Operation(summary = "Receive database replication", description = "Receives database replication notification from other instances")
     public ResponseEntity<Map<String, Object>> receiveDatabaseReplication(@RequestBody DatabaseNotificationDto databaseNotificationDto) {
-        System.out.println("=== RECEIVE DATABASE REPLICATION ===");
-        System.out.println("Database Name: " + databaseNotificationDto.getCreateDatabaseDto().getName());
-        System.out.println("Creation ID: " + databaseNotificationDto.getCreationId());
-        System.out.println("Creation Location: " + databaseNotificationDto.getCreateDatabaseDto().getCreationLocation());
-        System.out.println("Replica URLs: " + databaseNotificationDto.getCreateDatabaseDto().getReplicaUrls());
-        System.out.println("========================");
-        
-        Map<String, Object> response = Map.of(
-            "status", "success",
-            "message", "Database replication notification received successfully",
-            "databaseInformation", databaseNotificationDto.getCreateDatabaseDto()
-        );
+        // Call the service to create the database locally
+        Map<String, Object> response = databaseService.insertReplicatedDatabase(databaseNotificationDto);
         
         return ResponseEntity.ok(response);
     }
