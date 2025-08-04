@@ -142,6 +142,4 @@ public interface MetadataServiceGateway {
     Map<String, Object> createReplicatedDatabase(String path, DatabaseNotificationDto databaseNotificationDto) 
             throws RemoteUnavailableException, MetadataServiceException;
 
-    Map<String, Object> createReplicatedDatabase(String path, DatabaseNotificationDto databaseNotificationDto)
-            throws RemoteUnavailableException, MetadataServiceException;
 }
