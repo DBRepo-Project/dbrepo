@@ -236,7 +236,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Map<String, Object>> replicateDatabase(@Valid @RequestBody DatabaseNotificationDto databaseNotificationDto) 
+    public ResponseEntity<Map<String, Object>> replicateDatabase(@Valid @RequestBody DatabaseNotificationDto databaseNotificationDto,
+                                                                 Principal principal)
             throws DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException {
@@ -250,11 +251,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
-        
-        // Use system user for replication
-        final User systemUser = userService.findByUsername("system");
-        final Database database = databaseService.create(container, data, systemUser, userService.findAllInternalUsers());
-        
+
+
+        final User caller = userService.findByUsername(getUsername(principal));
+        final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
+
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
