@@ -123,11 +123,11 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .creationLocation(data.getCreationLocation())
                 .build();
         
-        log.debug("Created database entity - id: {}, internalName: {}, name: {}", 
+        log.info("Created database entity - id: {}, internalName: {}, name: {}",
                 entity.getId(), entity.getInternalName(), entity.getName());
         
         /* create in data database */
-        log.debug("Creating database in data service...");
+        log.info("Creating database in data service...");
         final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
                 .userId(user.getId())
@@ -141,17 +141,17 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .build();
         final DatabaseDto dto = dataServiceGateway.createDatabase(payload);
         entity.setExchangeName(dto.getExchangeName());
-        log.debug("Database created in data service - exchangeName: {}", dto.getExchangeName());
+        log.info("Database created in data service - exchangeName: {}", dto.getExchangeName());
         
         /* create in metadata database */
-        log.debug("Saving database in metadata database...");
+        log.info("Saving database in metadata database...");
         final Database entity1 = databaseRepository.save(entity);
-        log.debug("Database saved in metadata database - id: {}", entity1.getId());
+        log.info("Database saved in metadata database - id: {}", entity1.getId());
         
         entity1.getAccesses()
                 .add(metadataMapper.userToWriteAllAccess(entity1, user));
         final Database database = databaseRepository.save(entity1);
-        log.debug("Database access saved - final database id: {}", database.getId());
+        log.info("Database access saved - final database id: {}", database.getId());
         
         /* create in search service */
         log.info("Calling search service to update database - id: {}, name: {}", database.getId(), database.getName());
