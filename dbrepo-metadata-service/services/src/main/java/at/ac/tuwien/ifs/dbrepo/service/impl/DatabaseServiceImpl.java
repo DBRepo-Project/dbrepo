@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -119,7 +120,13 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
                 .identifiers(new LinkedList<>())
-                .replicaUrls(data.getReplicaUrls())
+                .replicaUrls(data.getReplicaUrls() != null ? 
+                    data.getReplicaUrls().stream()
+                        .map(url -> ReplicaLocation.builder()
+                            .url(url)
+                            .build())
+                        .collect(java.util.stream.Collectors.toList()) : 
+                    new LinkedList<>())
                 .creationLocation(data.getCreationLocation())
                 .build();
         
@@ -156,8 +163,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* create in search service */
         log.info("Calling search service to update database - id: {}, name: {}", database.getId(), database.getName());
         try {
-            //TODO: fix search service
-            //searchServiceGateway.update(database);
+            searchServiceGateway.update(database);
             log.info("Successfully updated database in search service - id: {}", database.getId());
         } catch (Exception e) {
             log.error("Failed to update database in search service - id: {}, name: {}, error: {}", 

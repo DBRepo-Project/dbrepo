@@ -129,11 +129,11 @@ public class Database implements Serializable {
     private byte[] image;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "mdb_databases_replica_urls", joinColumns = {
-            @JoinColumn(name = "database_id")
-    })
-    @Column(name = "replica_url", columnDefinition = "TEXT")
-    private List<String> replicaUrls = new LinkedList<>();
+    @CollectionTable(
+            name = "mdb_databases_replica_urls",
+            joinColumns = @JoinColumn(name = "database_id")
+    )
+    private List<ReplicaLocation> replicaUrls = new LinkedList<>();
 
     @EqualsAndHashCode.Exclude
     @CreatedDate

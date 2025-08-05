@@ -189,9 +189,19 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)"),
             @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().filter(a -> !a.getUser().getIsInternal()).map(a -> databaseAccessToDatabaseAccessDto(a)).toList())"),
-            @Mapping(target = "replicaUrls", source = "replicaUrls")
+            @Mapping(target = "replicaUrls", source = "replicaUrls", qualifiedByName = "replicaLocationListToStringList")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
+
+    @Named("replicaLocationListToStringList")
+    default List<String> replicaLocationListToStringList(List<ReplicaLocation> replicaLocations) {
+        if (replicaLocations == null) {
+            return new LinkedList<>();
+        }
+        return replicaLocations.stream()
+                .map(ReplicaLocation::getUrl)
+                .toList();
+    }
 
     @Mappings({
             @Mapping(target = "types", expression = "java(DataCiteDoiTypes.DATASET)")

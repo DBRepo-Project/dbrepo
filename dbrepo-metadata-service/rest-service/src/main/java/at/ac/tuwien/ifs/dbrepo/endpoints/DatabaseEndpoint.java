@@ -257,9 +257,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
 
         /* find in dashboard service */
-        //TODO: fix in dashboard service
-        //final CreateDashboardResponseDto dashboard = dashboardService.create(database);
-        //database.setDashboardUid(dashboard.getUid());
+        final CreateDashboardResponseDto dashboard = dashboardService.create(database);
+        database.setDashboardUid(dashboard.getUid());
 
         Map<String, Object> response = Map.of(
             "status", "success",
