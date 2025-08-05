@@ -616,4 +616,61 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                 .body(dto);
     }
 
+    @PutMapping("/{databaseId}/replication-url")
+    @Transactional
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_database_replication_url_update")
+    @Operation(summary = "Update database replication URL",
+            description = "Updates the replication URL with the remote database ID for a given database. Only the database owner can perform this operation. Requires role `modify-database-replication`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Replication URL updated successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "The replication URL update payload is malformed or replication URL not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Replication URL update is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<DatabaseBriefDto> updateReplicationUrl(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                 @Valid @RequestBody DatabaseUpdateReplicationUrlDto data,
+                                                                 Principal principal) throws DatabaseNotFoundException,
+            NotAllowedException, SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint update replication URL, databaseId={}, replicaUrl={}, replicaDatabaseId={}", 
+                databaseId, data.getReplicaUrl(), data.getReplicaDatabaseId());
+        
+        final Database database = databaseService.findById(databaseId);
+        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+            log.error("Failed to update replication URL: not owner");
+            throw new NotAllowedException("Failed to update replication URL: not owner");
+        }
+        
+        final Database updatedDatabase = databaseService.updateReplicationUrl(databaseId, data);
+        return ResponseEntity.accepted()
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(updatedDatabase)));
+    }
+
 }

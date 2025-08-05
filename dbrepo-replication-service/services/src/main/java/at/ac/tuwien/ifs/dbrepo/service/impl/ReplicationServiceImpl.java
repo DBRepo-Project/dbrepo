@@ -1,7 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,16 +17,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
 public class ReplicationServiceImpl implements ReplicationService {
 
     private final RestTemplate externalReplicationRestTemplate;
+    private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public ReplicationServiceImpl(@Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate) {
+    public ReplicationServiceImpl(@Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
+                                GatewayConfig gatewayConfig) {
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
+        this.gatewayConfig = gatewayConfig;
     }
 
     @Override
@@ -63,9 +71,67 @@ public class ReplicationServiceImpl implements ReplicationService {
                 response.getStatusCode(),
                 response.getHeaders(),
                 response.getBody());
+            
+            // Parse the response to extract the remote database ID
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode responseJson = objectMapper.readTree(response.getBody());
+                    
+                    if (responseJson.has("databaseId")) {
+                        String remoteDatabaseId = responseJson.get("databaseId").asText();
+                        log.info("Extracted remote database ID: {} from response", remoteDatabaseId);
+                        
+                        // Call the new endpoint to update the replication URL with the remote database ID
+                        updateReplicationUrlWithRemoteId(databaseNotificationDto.getCreationId(), 
+                                                       replicaUrl, UUID.fromString(remoteDatabaseId));
+                    } else {
+                        log.warn("Response does not contain databaseId field: {}", response.getBody());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to parse replication response: {}", e.getMessage());
+                }
+            }
         } catch (Exception e) {
             log.error("Failed to send replication to {}: {}", replicaUrl, e.getMessage());
             throw new RuntimeException("Failed to send replication to " + replicaUrl, e);
+        }
+    }
+    
+    private void updateReplicationUrlWithRemoteId(UUID databaseId, String replicaUrl, UUID remoteDatabaseId) {
+        try {
+            log.info("Updating replication URL {} with remote database ID {} for database {}", 
+                    replicaUrl, remoteDatabaseId, databaseId);
+            
+            // Create the DTO for updating replication URL
+            DatabaseUpdateReplicationUrlDto updateDto = DatabaseUpdateReplicationUrlDto.builder()
+                    .replicaUrl(replicaUrl)
+                    .replicaDatabaseId(remoteDatabaseId)
+                    .build();
+            
+            // Create headers for the update request
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Create request entity
+            HttpEntity<DatabaseUpdateReplicationUrlDto> requestEntity = new HttpEntity<>(updateDto, headers);
+            
+            // Build the URL for the replication URL update endpoint
+            String updateUrl = gatewayConfig.getMetadataEndpoint() + "/api/database/" + databaseId + "/replication-url";
+            
+            log.info("Sending PUT request to update replication URL: {}", updateUrl);
+            
+            // Send the request
+            ResponseEntity<String> response = externalReplicationRestTemplate.exchange(
+                updateUrl, 
+                org.springframework.http.HttpMethod.PUT, 
+                requestEntity, 
+                String.class
+            );
+            
+            log.info("Replication URL updated successfully with status: {}", response.getStatusCode());
+        } catch (Exception e) {
+            log.error("Failed to update replication URL for database {}: {}", databaseId, e.getMessage());
         }
     }
 } 

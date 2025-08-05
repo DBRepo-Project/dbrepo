@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
@@ -190,4 +191,17 @@ public interface DatabaseService {
     Database updateViewMetadata(Database database) throws DatabaseNotFoundException, DataServiceException,
             SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException,
             ViewNotFoundException;
+
+    /**
+     * Updates the replication URL with the remote database ID for a given database.
+     *
+     * @param databaseId The database ID.
+     * @param data The replication URL update data.
+     * @return The updated database, if successful.
+     * @throws DatabaseNotFoundException         The database was not found in the metadata database.
+     * @throws SearchServiceException            The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException  The connection with the search service could not be established.
+     */
+    Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data) throws DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException;
 }

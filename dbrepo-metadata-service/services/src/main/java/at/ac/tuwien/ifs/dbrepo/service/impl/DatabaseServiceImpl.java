@@ -408,4 +408,38 @@ public class DatabaseServiceImpl implements DatabaseService {
         return database;
     }
 
+    @Override
+    @Transactional
+    public Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data) 
+            throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint update replication URL, databaseId={}, replicaUrl={}, replicaDatabaseId={}", 
+                databaseId, data.getReplicaUrl(), data.getReplicaDatabaseId());
+        
+        final Database database = findById(databaseId);
+        
+        // Find the existing ReplicaLocation with the matching URL and update its replicaDatabaseId
+        boolean found = false;
+        for (ReplicaLocation replicaLocation : database.getReplicaUrls()) {
+            if (replicaLocation.getUrl().equals(data.getReplicaUrl())) {
+                replicaLocation.setReplicaDatabaseId(data.getReplicaDatabaseId());
+                found = true;
+                log.debug("Updated replica database ID for URL: {}", data.getReplicaUrl());
+                break;
+            }
+        }
+        
+        if (!found) {
+            log.error("Failed to find replication URL: {} for database: {}", data.getReplicaUrl(), databaseId);
+            throw new IllegalArgumentException("Replication URL not found: " + data.getReplicaUrl());
+        }
+        
+        /* update in metadata database */
+        final Database updatedDatabase = databaseRepository.save(database);
+        
+        /* save in search service */
+        searchServiceGateway.update(updatedDatabase);
+        log.info("Updated replication URL for database with id {} & search database", updatedDatabase.getId());
+        return updatedDatabase;
+    }
+
 }

@@ -44,7 +44,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     .creationId(creationId)
                     .build();
 
-            log.info("Sending database replication notification to replication service: {}", notificationDto);
+            log.info("Sending database replication notification to replication service: {} for database: {}", notificationDto, creationId);
 
             // Send POST request to replication service
             ResponseEntity<Void> response = replicationRestTemplate.exchange(
