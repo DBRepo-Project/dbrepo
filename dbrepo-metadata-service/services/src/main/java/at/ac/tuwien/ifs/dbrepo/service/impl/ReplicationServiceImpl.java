@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,8 +32,12 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
+    @Async
     public void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId) {
         try {
+            // Add a small delay to ensure the transaction is fully committed
+            Thread.sleep(1000);
+            
             // Use the BASE_URL environment variable for the current instance URL
             String currentInstanceUrl = baseUrl;
 
@@ -61,4 +66,6 @@ public class ReplicationServiceImpl implements ReplicationService {
             // You might want to throw a custom exception here depending on your error handling strategy
         }
     }
+    
+
 }

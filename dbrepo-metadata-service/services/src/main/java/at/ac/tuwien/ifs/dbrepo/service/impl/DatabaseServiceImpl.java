@@ -95,6 +95,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
+    @Transactional
     public Database create(Container container, CreateDatabaseDto data, User user, List<User> internalUsers)
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
