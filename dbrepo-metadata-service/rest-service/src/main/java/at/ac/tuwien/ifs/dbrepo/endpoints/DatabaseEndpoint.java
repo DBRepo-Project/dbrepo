@@ -49,17 +49,19 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     private final DatabaseService databaseService;
     private final ContainerService containerService;
     private final DashboardService dashboardService;
+    private final ReplicationService replicationService;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService,
-                            DashboardService dashboardService) {
+                            DashboardService dashboardService, ReplicationService replicationService) {
         this.userService = userService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.containerService = containerService;
         this.dashboardService = dashboardService;
+        this.replicationService = replicationService;
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -181,6 +183,21 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
+
+        // Handle replication after the transaction is committed
+        if (data.getCreationLocation() == null && data.getReplicaUrls() != null && data.getReplicaUrls().size() > 0) {
+            log.debug("Triggering replication for database - id: {}, creationLocation: null, replicaUrls: {}", 
+                    database.getId(), data.getReplicaUrls());
+            try {
+                replicationService.replicateDatabase(data, database.getId());
+            } catch (Exception e) {
+                log.error("Failed to trigger replication for database {}: {}", database.getId(), e.getMessage());
+                // Don't fail the database creation if replication fails
+            }
+        } else {
+            log.debug("Skipping replication - creationLocation: {}, replicaUrls size: {}", 
+                    data.getCreationLocation(), data.getReplicaUrls() != null ? data.getReplicaUrls().size() : 0);
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));

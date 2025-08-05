@@ -171,15 +171,6 @@ public class DatabaseServiceImpl implements DatabaseService {
             throw e;
         }
         
-        if (data.getCreationLocation() == null && data.getReplicaUrls().size() > 0) {
-            log.debug("Triggering replication for database - id: {}, creationLocation: null, replicaUrls: {}", 
-                    entity1.getId(), data.getReplicaUrls());
-            replicationService.replicateDatabase(data, entity1.getId());
-        } else {
-            log.debug("Skipping replication - creationLocation: {}, replicaUrls size: {}", 
-                    data.getCreationLocation(), data.getReplicaUrls().size());
-        }
-        
         log.info("Successfully created database with id: {}, name: {}, internalName: {}", 
                 database.getId(), database.getName(), database.getInternalName());
         return database;
