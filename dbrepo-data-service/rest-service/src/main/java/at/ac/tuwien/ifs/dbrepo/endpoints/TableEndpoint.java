@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
@@ -29,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,14 +39,13 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import org.springframework.web.client.RestTemplate;
-import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
 
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database/{databaseId}/table")
+@RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint extends RestEndpoint {
 
     private final CacheService cacheService;
@@ -59,15 +56,13 @@ public class TableEndpoint extends RestEndpoint {
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
-    private final RestTemplate replicationRestTemplate;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
                          SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway,
-                         @Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -76,7 +71,6 @@ public class TableEndpoint extends RestEndpoint {
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
-        this.replicationRestTemplate = replicationRestTemplate;
     }
 
     @PostMapping
@@ -92,27 +86,19 @@ public class TableEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = TableDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Table schema or query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database or table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "409",
                     description = "Table name already exists in database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                           @Valid @RequestBody TableCreateDto data) throws DatabaseNotFoundException,
+                                           @Valid @RequestBody CreateTableDto data) throws DatabaseNotFoundException,
             RemoteUnavailableException, TableMalformedException, DatabaseUnavailableException, TableExistsException,
             TableNotFoundException, QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
@@ -145,19 +131,13 @@ public class TableEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = TableDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Table schema or query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database or table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<TableDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                            @NotNull @PathVariable("tableId") UUID tableId,
@@ -191,19 +171,13 @@ public class TableEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Deletion query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @NotNull @PathVariable("tableId") UUID tableId)
@@ -234,33 +208,23 @@ public class TableEndpoint extends RestEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = List.class)),
+                            schema = @Schema(implementation = Map[].class)),
                             @Content(mediaType = "text/csv")}),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to get table data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "406",
                     description = "Failed to format data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
                                      @NotNull @PathVariable("tableId") UUID tableId,
@@ -354,24 +318,16 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Created table data"),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Create table data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table in metadata database or blob in storage service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service or storage service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
@@ -389,17 +345,6 @@ public class TableEndpoint extends RestEndpoint {
         try {
             tableService.createTuple(database, table, data);
             metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
-            // Notify replication-service
-            TupleNotificationDto notification = new TupleNotificationDto();
-            notification.setTableName(table.getName());
-            notification.setTupleData(data.getData()); // assuming TupleDto has getData()
-            notification.setTimestamp(Instant.now().toString()); // replace with actual timestamp if available
-            replicationRestTemplate.postForEntity(
-                "/api/v1/replicate/insert",
-                notification,
-                Void.class
-            );
-            log.info("Replication service notified for table: {}", table.getName());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {
@@ -419,24 +364,16 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Updated table data"),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Update table data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> updateRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
@@ -454,7 +391,6 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.updateTuple(database, table, data);
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -474,24 +410,16 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Deleted table data"),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Delete table data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> deleteRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
@@ -509,7 +437,6 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.deleteTuple(database, table, data);
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -531,24 +458,16 @@ public class TableEndpoint extends RestEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = TableHistoryDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid pagination size request, must be > 0",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Find table history not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table history in data database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<TableHistoryDto>> getHistory(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                             @NotNull @PathVariable("tableId") UUID tableId,
@@ -596,29 +515,19 @@ public class TableEndpoint extends RestEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = TableDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Schema data malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Find table schema not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "417",
                     description = "Failed to parse table schema",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<List<TableDto>> getSchema(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
@@ -644,24 +553,16 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Imported dataset successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Dataset and/or query are malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Import table dataset not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<Void> importDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
                                               @NotNull @PathVariable("tableId") UUID tableId,
@@ -709,19 +610,13 @@ public class TableEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = TableStatisticDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Failed to obtain column statistic",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table or database in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                        @NotNull @PathVariable("tableId") UUID tableId)

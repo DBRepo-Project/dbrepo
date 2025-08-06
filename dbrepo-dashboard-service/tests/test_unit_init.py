@@ -58,7 +58,7 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_databases_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database',
+            mock.get('/api/v1/database',
                      json=[DatabaseBrief(id='209acf92-5c9b-4633-ad99-113c86f6e948',
                                          name="Test",
                                          internal_name="test_tuw1",
@@ -67,7 +67,7 @@ class AppUnitTest(unittest.TestCase):
                                          is_schema_public=True,
                                          contact=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
                                                            username="foo")).model_dump()])
-            mock.get(f'/api/database/{req.id}', json=req.model_dump())
+            mock.get(f'/api/v1/database/{req.id}', json=req.model_dump())
             # test
             response = fetch_databases()
             self.assertEqual(1, len(response))
@@ -75,7 +75,7 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_databases_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=[])
+            mock.get('/api/v1/database', json=[])
             # test
             response = fetch_databases()
             self.assertEqual(0, len(response))
@@ -83,7 +83,7 @@ class AppUnitTest(unittest.TestCase):
     def test_fetch_databases_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database',
+            mock.get('/api/v1/database',
                      json=[DatabaseBrief(id='209acf92-5c9b-4633-ad99-113c86f6e948',
                                          name="Test",
                                          internal_name="test_tuw1",
@@ -92,7 +92,7 @@ class AppUnitTest(unittest.TestCase):
                                          is_schema_public=True,
                                          contact=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
                                                            username="foo")).model_dump()])
-            mock.get(f'/api/database/{req.id}', status_code=404)
+            mock.get(f'/api/v1/database/{req.id}', status_code=404)
             # test
             try:
                 fetch_databases()

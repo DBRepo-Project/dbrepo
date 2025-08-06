@@ -5,7 +5,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.TableEndpoint;
@@ -26,12 +25,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
@@ -97,13 +96,13 @@ public class TableEndpointUnitTest extends BaseTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(databaseService.createTable(any(DatabaseDto.class), any(TableCreateDto.class)))
+        when(databaseService.createTable(any(DatabaseDto.class), any(CreateTableDto.class)))
                 .thenReturn(TABLE_4_DTO);
         when(databaseService.inspectTable(any(DatabaseDto.class), anyString()))
                 .thenReturn(TABLE_4_DTO);
 
         /* test */
-        final ResponseEntity<TableDto> response = tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_INTERNAL_DTO);
+        final ResponseEntity<TableDto> response = tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_DTO);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
@@ -113,7 +112,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_INTERNAL_DTO);
+            tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_DTO);
         });
     }
 
@@ -129,7 +128,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_INTERNAL_DTO);
+            tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_DTO);
         });
     }
 
@@ -143,21 +142,27 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
-                .createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO);
+                .createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_INTERNAL_DTO);
+            tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_DTO);
         });
     }
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_missingPrimaryKey_fails() {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name(TABLE_1_NAME)
+                .description(TABLE_1_DESCRIPTION)
+                .columns(TABLE_1_COLUMNS_CREATE_DTO)
+                .constraints(TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO) // <<<
+                .build();
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableEndpoint.create(DATABASE_1_ID, TABLE_1_CREATE_INTERNAL_INVALID_DTO);
+            tableEndpoint.create(DATABASE_1_ID, request);
         });
     }
 

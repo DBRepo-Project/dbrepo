@@ -11,12 +11,12 @@ variables:
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.10"
-  APP_VERSION: "1.10.1"
+  APP_VERSION: "1.10.3"
   DUCKDB_VERSION: "1.2.2"
-  CHART_VERSION: "1.10.1"
-  SUPPORTED_VERSIONS: "1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.10.0, 10.10.1"
+  CHART_VERSION: "1.10.3"
+  SUPPORTED_VERSIONS: "1.9.0, 1.9.1, 1.9.2, 1.9.3, 1.10.0, 1.10.1, 1.10.2, 1.10.3"
   SUPPORTED_ARCH: "linux/amd64"
-  MAINTAINED_SERVICES: "auth-service-init, dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
+  MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -65,7 +65,6 @@ lint-docker-compose:
     - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
-    - "IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-auth-service-init'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
@@ -97,16 +96,19 @@ lint-helm-schema:
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
     - diff <(yq '.appVersion' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
     - diff <(yq '.version' ./helm/dbrepo/Chart.yaml) <(echo "${APP_VERSION}")
-    - cp ./helm/dbrepo/values.schema.json ./CI_values.schema.json
+    - cp ./helm/dbrepo/values.schema.json ./dbrepo_values.schema.json
+    - cp ./helm/seaweedfs/values.schema.json ./seaweedfs_values.schema.json
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm package ./helm/seaweedfs --destination ./build
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
   script:
     - bash .scripts/check-helm.sh
-    - helm lint ./helm/dbrepo
+    - helm lint ./helm/dbrepo ./helm/seaweedfs
     - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
-    - diff ./CI_values.schema.json ./helm/dbrepo/values.schema.json
+    - helm schema -input ./helm/seaweedfs/values.yaml -output ./helm/seaweedfs/values.schema.json
+    - diff ./dbrepo_values.schema.json ./helm/dbrepo/values.schema.json
+    - diff ./seaweedfs_values.schema.json ./helm/seaweedfs/values.schema.json
   artifacts:
     when: always
     paths:
@@ -368,32 +370,6 @@ test-data-service:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
-test-auth-service-init:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  only:
-    - merge_requests
-    - master
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
-  before_script:
-    - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev"
-    - "pip install pipenv"
-    - "pipenv install --dev --system --deploy"
-    - "mkdir -p /var/log/app/service/auth"
-  script:
-    - cd ./dbrepo-auth-service/init/ && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_app.py && coverage html && coverage xml && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-auth-service/init/coverage.xml
-      - ./dbrepo-auth-service/init/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-auth-service/init/coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
 test-search-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
@@ -542,7 +518,6 @@ release-images:
     REPOSITORY_URL: "$CI_REGISTRY2_URL"
   dependencies:
     - clean-images
-    - test-auth-service-init
     - test-data-service
     - test-python-lib
     - test-metadata-service
@@ -601,6 +576,8 @@ release-docs:
     - "python -m build --sdist ./lib/python && python -m build --wheel ./lib/python && pip install ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
     - "mkdir -p ./final/${APP_VERSION}"
+    - git config --global user.name "$CI_TECH_LEAD_NAME"
+    - git config --global user.email "$CI_TECH_LEAD_EMAIL"
   script:
     - "make gen-python-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx

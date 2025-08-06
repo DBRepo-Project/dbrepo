@@ -175,12 +175,12 @@ export default {
       ],
       items: [
         {
-          title: this.$t('navigation.user'),
-          to: '/user'
+          title: this.$t('navigation.account'),
+          to: '/account'
         },
         {
           title: this.$t('toolbars.user.info'),
-          to: `/user/info`,
+          to: `/account/info`,
           disabled: true
         }
       ],
@@ -239,10 +239,17 @@ export default {
           const toast = useToastInstance()
           toast.success(this.$t('success.user.info'))
           /* language */
-          this.cacheStore.setLocale(this.model.language)
+          this.cacheStore.setLocale(payload.language)
+          this.cacheUser.theme = payload.theme
+          this.cacheUser.given_name = payload.firstname
+          this.cacheUser.family_name = payload.lastname
+          this.cacheUser.orcid = payload.orcid
+          this.cacheUser.affiliation = payload.affiliation
+          this.cacheUser.language = payload.language
+          this.cacheStore.setUser(this.cacheUser)
           this.$i18n.locale = this.locale
           /* theme */
-          switch (this.model.theme) {
+          switch (payload.theme) {
             case 'dark':
               this.$vuetify.theme.global.name = 'tuwThemeDark'
               break

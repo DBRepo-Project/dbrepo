@@ -40,7 +40,7 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
     @Override
     public void update(DatabaseDto database) throws DashboardServiceConnectionException, DashboardServiceException {
         final ResponseEntity<Void> response;
-        final String path = "/api/dashboard/" + database.getDashboardUid();
+        final String path = "/api/v1/dashboard/" + database.getDashboardUid();
         log.trace("update dashboard at endpoint {} with path {}", gatewayConfig.getDashboardEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(database), Void.class);
@@ -63,7 +63,7 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
     public CreateDashboardResponseDto create(CreateDashboardDto data) throws DashboardServiceConnectionException,
             DashboardServiceException {
         final ResponseEntity<CreateDashboardResponseDto> response;
-        final String path = "/api/dashboard";
+        final String path = "/api/v1/dashboard";
         log.trace("create dashboard at endpoint {} with path {}", gatewayConfig.getDashboardEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), CreateDashboardResponseDto.class);
@@ -95,7 +95,7 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
     public void updateAccess(String dashboardUid, String username, PermissionTypeDto permission)
             throws DashboardServiceConnectionException, DashboardServiceException {
         final ResponseEntity<Void> response;
-        final String path = "/api/dashboard/" + dashboardUid + "/access/" + username;
+        final String path = "/api/v1/dashboard/" + dashboardUid + "/access/" + username;
         log.trace("update dashboard access at endpoint {} with path {}", gatewayConfig.getDashboardEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(UpdateDashboardAccessDto.builder()
@@ -120,7 +120,7 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
     public void updateAnonymousAccess(String dashboardUid, DatabaseBriefDto database)
             throws DashboardServiceConnectionException, DashboardServiceException {
         final ResponseEntity<Void> response;
-        final String path = "/api/dashboard/" + dashboardUid + "/access";
+        final String path = "/api/v1/dashboard/" + dashboardUid + "/access";
         log.trace("update dashboard anonymous access at endpoint {} with path {}", gatewayConfig.getDashboardEndpoint(),
                 path);
         try {

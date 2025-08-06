@@ -58,12 +58,12 @@ public class DefaultListener implements MessageListener {
         }
         final UUID databaseId = UUID.fromString(parts[1]);
         final UUID tableId = UUID.fromString(parts[2]);
-        log.trace("received message for table with id {} of database id {}: {} bytes", tableId, databaseId, message.getMessageProperties().getContentLength());
         final Map<String, Object> body;
         try {
             final DatabaseDto database = cacheService.getDatabase(databaseId);
             final TableDto table = cacheService.getTable(databaseId, tableId);
             body = objectMapper.readValue(message.getBody(), typeRef);
+            log.trace("received message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), body.keySet());
             queueService.insert(database, table, body);
         } catch (IOException e) {
             log.error("Failed to read object: {}", e.getMessage());

@@ -24,8 +24,8 @@
       <v-list nav>
         <v-list-item
           to="/"
-          prepend-icon="mdi-information-outline"
-          :title="$t('navigation.information')" />
+          prepend-icon="mdi-database"
+          :title="$t('navigation.databases')" />
         <v-list-item
           to="/search"
           exact
@@ -37,10 +37,20 @@
           prepend-icon="mdi-share-variant"
           :title="$t('navigation.semantics')" />
         <v-list-item
-          v-if="canListContainers"
-          to="/container"
-          prepend-icon="mdi-database-settings"
-          :title="$t('navigation.container')" />
+          v-if="$config.public.policies.content"
+          to="/policies"
+          prepend-icon="mdi-sprout"
+          :title="$t('navigation.policies')" />
+        <v-list-item
+          v-if="$config.public.terms.content"
+          to="/terms"
+          prepend-icon="mdi-book-open-variant-outline"
+          :title="$t('navigation.terms')" />
+        <v-list-item
+          v-if="$config.public.about.content"
+          to="/about"
+          prepend-icon="mdi-information-outline"
+          :title="$t('navigation.about')" />
       </v-list>
       <template v-slot:append>
         <v-alert
@@ -92,7 +102,7 @@
           hide-details
           clearable
           append-inner-icon="mdi-magnify"
-          :placeholder="$t('toolbars.search.fuzzy.placeholder')"
+          :placeholder="fuzzySearchPlaceholder"
           @click:append-inner="retrieve" />
         <v-spacer />
         <v-btn
@@ -106,37 +116,34 @@
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
-          v-if="cacheUser"
-          to="/user"
-          variant="plain"
-          :text="cacheUser.preferred_username" />
-        <v-menu
           v-if="loggedIn"
-          location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              icon="mdi-dots-vertical"
-              v-bind="props" />
-          </template>
-          <v-list>
-            <v-list-item
-              v-if="cacheUser"
-              exact
-              :to="`/search?type=database&owner.username=${cacheUser.preferred_username}`">
-              {{ $t('navigation.databases') + ' ' + $t('navigation.mine')}}
-            </v-list-item>
-            <v-list-item
-              v-if="cacheUser"
-              exact
-              :to="`/search?type=identifier&identifiers.creator.username=${cacheUser.preferred_username}`">
-              {{ $t('navigation.identifiers') + ' ' + $t('navigation.mine') }}
-            </v-list-item>
-            <v-list-item
-              @click="logout()">
-              {{ $t('navigation.logout') }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
+          variant="plain"
+          to="/me/databases">
+          {{ $t('navigation.dashboard') }}
+        </v-btn>
+        <v-btn
+          v-if="loggedIn"
+          variant="plain"
+          append-icon="mdi-dots-vertical">
+          {{ $t('navigation.settings') }}
+          <v-menu
+            v-if="loggedIn"
+            activator="parent"
+            location="bottom">
+            <v-list>
+              <v-list-item
+                v-if="cacheUser"
+                exact
+                to="/account">
+                {{ $t('navigation.profile') }}
+              </v-list-item>
+              <v-list-item
+                @click="logout()">
+                {{ $t('navigation.logout') }}
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-btn>
       </v-app-bar>
     </v-form>
     <v-main>
@@ -181,7 +188,6 @@ useServerHead({
 import JumboBox from '@/components/JumboBox.vue'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
-import {useNuxtApp} from "#app";
 
 export default {
   components: {
@@ -197,7 +203,7 @@ export default {
       databaseError: null,
       accessError: null,
       searchResults: [],
-      databases: [],
+      databases: null,
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false,
@@ -287,9 +293,6 @@ export default {
       }
       return this.roles.includes('list-ontologies')
     },
-    canListContainers () {
-      return this.cacheUser
-    },
     logo () {
       return this.$config.public.logo
     },
@@ -299,6 +302,15 @@ export default {
     searchVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
+    },
+    fuzzySearchPlaceholder () {
+      if (this.databases) {
+        if (this.cacheUser) {
+          return this.$t('toolbars.search.fuzzy.search', { total: this.databases })
+        }
+        return this.$t('toolbars.search.fuzzy.public', { total: this.databases })
+      }
+      return this.$t('toolbars.search.fuzzy.placeholder')
     }
   },
   watch: {
@@ -365,6 +377,7 @@ export default {
     }
     this.setTheme()
     this.setLocale()
+    this.getDatabaseCount()
   },
   methods: {
     retrieve () {
@@ -396,6 +409,26 @@ export default {
           this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
           break
       }
+    },
+    getDatabaseCount () {
+      this.loadingDatabases = true
+      const database = useDatabaseService()
+      database.findCount()
+        .then((count) => {
+          this.databases = count
+          this.loadingDatabases = false
+        })
+        .catch(({code}) => {
+          this.loadingDatabases = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loadingDatabases = false
+        })
     }
   }
 }

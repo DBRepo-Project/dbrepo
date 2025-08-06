@@ -1,5 +1,4 @@
-import {transformAssetUrls} from 'vite-plugin-vuetify'
-import vuetify from 'vite-plugin-vuetify'
+import vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 
 const proxy: any = {}
 
@@ -100,6 +99,15 @@ export default defineNuxtConfig({
           publisher: 'Example University'
         }
       },
+      about: {
+        content: ''
+      },
+      policies: {
+        content: ''
+      },
+      terms: {
+        content: ''
+      },
       doi: {
         endpoint: 'https://doi.org'
       },
@@ -193,5 +201,5 @@ export default defineNuxtConfig({
   devtools: {
     enabled: false
   },
-  compatibilityDate: '2025-01-25'
+  compatibilityDate: '2025-07-15'
 })

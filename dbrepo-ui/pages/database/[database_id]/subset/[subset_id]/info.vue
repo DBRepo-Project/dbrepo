@@ -98,7 +98,7 @@ import { ref } from 'vue'
 const config = useRuntimeConfig()
 const { pid } = useRoute().query
 const { database_id, subset_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&qid=${subset_id}&type=subset&status=published`)
+const { data } = await useFetch(`${config.public.api.client}/api/v1/identifier?dbid=${database_id}&qid=${subset_id}&type=subset&status=published`)
 
 if (data.value && data.value.length > 0) {
   const identifierService = useIdentifierService()

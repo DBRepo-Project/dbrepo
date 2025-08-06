@@ -5,7 +5,7 @@ export const useOntologyService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find ontologies')
     return new Promise<OntologyDto[]>((resolve, reject) => {
-      axios.get<OntologyDto[]>('/api/ontology')
+      axios.get<OntologyDto[]>('/api/v1/ontology')
         .then((response) => {
           console.info(`Found ${response.data.length} ontology(s)`)
           resolve(response.data)
@@ -21,7 +21,7 @@ export const useOntologyService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find ontology for id', id)
     return new Promise<OntologyDto>((resolve, reject) => {
-      axios.get<OntologyDto>(`/api/ontology/${id}`)
+      axios.get<OntologyDto>(`/api/v1/ontology/${id}`)
         .then((response) => {
           console.info('Found ontology for id', id)
           resolve(response.data)
@@ -37,7 +37,7 @@ export const useOntologyService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create ontology')
     return new Promise<OntologyDto>((resolve, reject) => {
-      axios.post<OntologyDto>('/api/ontology', data)
+      axios.post<OntologyDto>('/api/v1/ontology', data)
         .then((response) => {
           console.info('Created ontology with id', response.data.id)
           resolve(response.data)
@@ -53,7 +53,7 @@ export const useOntologyService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update ontology with id', id)
     return new Promise<OntologyDto>((resolve, reject) => {
-      axios.put<OntologyDto>(`/api/ontology/${id}`, data)
+      axios.put<OntologyDto>(`/api/v1/ontology/${id}`, data)
         .then((response) => {
           console.info('Updated ontology with id', id)
           resolve(response.data)
@@ -69,7 +69,7 @@ export const useOntologyService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete ontology with id', id)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/ontology/${id}`)
+      axios.delete<void>(`/api/v1/ontology/${id}`)
         .then(() => {
           console.info('Deleted ontology with id', id)
           resolve()

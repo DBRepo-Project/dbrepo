@@ -70,7 +70,14 @@ def fetch_databases() -> List[Database]:
 def save_databases(databases: List[Database]):
     logging.debug(f"save {len(databases)} database(s)")
     for doc in databases:
-        search_client.save_database(database_id=doc.id, data=doc)
+        search_client.save_database(database_id=doc.id, data=doc, fetch=False)
+        logging.debug(f'updated database index for database: {doc.id}')
+        for table in doc.tables:
+            logging.debug(f'update statistic for table: {doc.internal_name}.{table.internal_name}')
+            try:
+                rest_client.update_table_statistics(database_id=doc.id, table_id=table.id)
+            except Exception as e:
+                logging.warning(f'failed to update statistic for table {doc.internal_name}.{table.internal_name}: {e}')
         logging.info(f"Saved database with id {doc.id}")
 
 

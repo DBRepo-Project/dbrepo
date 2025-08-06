@@ -46,7 +46,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        this.mockMvc.perform(get("/api/oai"))
+        this.mockMvc.perform(get("/api/v1/oai"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//repositoryName").string(metadataConfig.getRepositoryName()))
@@ -66,7 +66,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=Identify"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=Identify"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='Identify']").exists())
@@ -86,7 +86,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .thenReturn(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=ListIdentifiers"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=ListIdentifiers"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListIdentifiers']").exists())
@@ -102,7 +102,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
     public void getRecord_fails() throws Exception {
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(status().is4xxClientError());
@@ -116,7 +116,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=oai:" + IDENTIFIER_1_ID))
+        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=oai:" + IDENTIFIER_1_ID))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='GetRecord']").exists())
@@ -133,7 +133,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .thenReturn(Optional.of(IDENTIFIER_5));
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=doi:" + IDENTIFIER_5_DOI))
+        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=doi:" + IDENTIFIER_5_DOI))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='GetRecord']").exists())
@@ -146,7 +146,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
     public void getRecord_noDoi_fails() throws Exception {
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=doi:11.1111/abcd-efgh"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=doi:11.1111/abcd-efgh"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(status().is4xxClientError());
@@ -156,7 +156,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
     public void getRecord_malformed_fails() throws Exception {
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=doi:11.1111:abcd-efgh"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=doi:11.1111:abcd-efgh"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(status().is4xxClientError());
@@ -166,7 +166,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
     public void listMetadataFormats_succeeds() throws Exception {
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=ListMetadataFormats"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=ListMetadataFormats"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListMetadataFormats']").exists())

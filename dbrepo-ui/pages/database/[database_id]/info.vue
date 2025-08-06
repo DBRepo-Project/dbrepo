@@ -39,7 +39,7 @@
                 v-if="previewImage"
                 :title="$t('pages.database.image.title')"
                 density="compact">
-                <NuxtLink
+                <a
                   :href="previewImage">
                   <v-img
                     :src="previewImage"
@@ -47,7 +47,7 @@
                     :title="$t('pages.database.image.alt')"
                     :max-width="maxWidth"
                     :max-height="maxHeight" />
-                </NuxtLink>
+                </a>
               </v-list-item>
               <v-list-item
                 v-if="canViewDashboard"
@@ -195,7 +195,7 @@ import { ref } from 'vue'
 const config = useRuntimeConfig()
 const { pid } = useRoute().query
 const { database_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&type=database&status=published`)
+const { data } = await useFetch(`${config.public.api.client}/api/v1/identifier?dbid=${database_id}&type=database&status=published`)
 
 if (data.value && data.value.length > 0) {
   const identifierService = useIdentifierService()

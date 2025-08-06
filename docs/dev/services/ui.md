@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.1`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.3`](https://hub.docker.com/r/dbrepo/ui)
 
     * Ports: 3000/tcp
 
@@ -92,6 +92,18 @@ User Interface on development.
 * Components: [Vue.js 3+](https://vuejs.org/)
 * Frontend: [Vuetify 3+](https://vuetifyjs.com/en/)
 * State: [Pinia](https://pinia.vuejs.org/)
+
+### Customization
+
+The UI supports adding pages in [Markdown]() format to describe the terms of use, policies and the repository itself.
+Inject your content through the environment variables:
+
+* `NUXT_PUBLIC_ABOUT_CONTENT` (`/about`)
+* `NUXT_PUBLIC_POLICIES_CONTENT` (`/policies`)
+* `NUXT_PUBLIC_TERMS_CONTENT` (`/terms`)
+
+If any of these environment variables are not empty, they will be displayed on the navigation and the content will be
+rendered.
 
 ## Limitations
 

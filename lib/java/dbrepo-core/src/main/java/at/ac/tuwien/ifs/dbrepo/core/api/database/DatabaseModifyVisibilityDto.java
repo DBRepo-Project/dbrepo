@@ -18,17 +18,17 @@ public class DatabaseModifyVisibilityDto {
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(example = "true")
+    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
     private Boolean isPublic;
 
     @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(example = "true")
+    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 
     @NotNull
     @JsonProperty("is_dashboard_enabled")
-    @Schema(example = "true")
+    @Schema(description = "If true, the dashboard will be managed", example = "true")
     private Boolean isDashboardEnabled;
 
 }

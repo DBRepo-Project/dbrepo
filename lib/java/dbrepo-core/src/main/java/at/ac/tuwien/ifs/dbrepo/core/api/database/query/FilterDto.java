@@ -19,20 +19,20 @@ import java.util.UUID;
 public class FilterDto {
 
     @NotNull
-    @Schema(example = "where")
+    @Schema(description = "The filter type", example = "where")
     private FilterTypeDto type;
 
     @NotNull
     @JsonProperty("column_id")
-    @Schema(example = "14128033-54b5-4818-a489-21b0dded86e2")
+    @Schema(description = "The column id", example = "14128033-54b5-4818-a489-21b0dded86e2")
     private UUID columnId;
 
     @NotNull
     @JsonProperty("operator_id")
-    @Schema(example = "67c5b54d-2eb0-4f42-8dc1-a504562e9f32")
+    @Schema(description = "The operator id", example = "67c5b54d-2eb0-4f42-8dc1-a504562e9f32")
     private UUID operatorId;
 
-    @Schema(example = "1")
+    @Schema(description = "The filter value", example = "1")
     private String value;
 
 }

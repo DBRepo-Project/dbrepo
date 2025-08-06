@@ -73,6 +73,7 @@
 
 <script>
 import { formatLanguage } from '@/utils'
+import { useCacheStore } from '@/stores/cache.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
 
 export default {
@@ -81,7 +82,8 @@ export default {
   },
   data() {
     return {
-      loading: false
+      loading: false,
+      cacheStore: useCacheStore()
     }
   },
   props: {
@@ -92,6 +94,9 @@ export default {
     }
   },
   computed: {
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     colorVariant () {
       return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     },

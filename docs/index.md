@@ -12,7 +12,7 @@ author: Martin Weise
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 
-Documentation for version: [v1.10.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
+Documentation for version: [v1.10.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 
 DBRepo is an open-source database repository that cover the data life cycle supporting data evolution, 
 -citation and -versioning. It implements the query store of the [RDA WGDC](https://doi.org/10.1162/99608f92.be565013) on
@@ -30,22 +30,27 @@ precisely identifying arbitrary subsets of data.
   that has an underlying PV storage provider.
 
 Installing DBRepo is very easy or
-[give it a try online](https://test.dbrepo.tuwien.ac.at){ target="_blank" }.
+[give it a try online](/infrastructures/dbrepo/1.10/user-guide/quickstart/).
 
 ## Who is using DBRepo?
 
-- [TU Wien](https://dbrepo1.ec.tuwien.ac.at)
-- TU Graz
-- TU Darmstadt
-- [Universit&auml;t Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
-- [Universiti Teknikal Malaysia Melaka](https://dbrepo.utem.edu.my/)
-- University of the Philippines
-- Universiti Sains Malaysia
-- Institut Teknologi Bandung
+- [TU Wien](https://dbrepo.datalab.tuwien.ac.at) (Austria)
+- EGI (pan-European)
+- Institut Teknologi Bandung (Indonesia)
+- TU Darmstadt (Germany)
+- TU Graz (Austria)
+- Universit&auml;t Hamburg (Germany)
+- Universitas Gadjah Mada (Indonesia)
+- Universiti Sains Malaysia (Malaysia)
+- Universiti Teknikal Malaysia Melaka (Malaysia)
+- University of the Philippines Diliman (Phillipines)
+
+Stay up to date and [subscribe to our mailing list](mailto:sympa@list.tuwien.ac.at?subject=subscribe dbrepo) for
+quarterly news on DBRepo. You can [unsubscribe](mailto:sympa@list.tuwien.ac.at?subject=unsubscribe dbrepo) too.
 
 ## How can I try DBRepo?
 
 There's a hosted [test environment](https://test.dbrepo.tuwien.ac.at) maintained 
-by [DS-IFS](https://informatics.tuwien.ac.at/orgs/e194-04) where you can explore DBRepo without installing it locally.
+by [DS-IFS](https://informatics.tuwien.ac.at/orgs/e194-04) where you can explore DBRepo using your existing account.
 
 [:fontawesome-solid-flask: &nbsp;Demo Environment](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }

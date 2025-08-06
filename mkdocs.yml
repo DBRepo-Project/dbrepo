@@ -2,8 +2,8 @@ site_name: Database Repository
 site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/
 repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 repo_name: fda-services
-site_author: Research Unit Data Science, Technische Universit&auml;t Wien
-copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
+site_author: TU Wien &amp; the DBRepo developers
+copyright: CC-BY 4.0 TU Wien &amp; the DBRepo developers
 nav:
   - Get Started:
     - Welcome to DBRepo: index.md
@@ -144,6 +144,11 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+plugins:
+  - mike:
+      alias_type: redirect
+      deploy_prefix: infrastructures/dbrepo
+      canonical_version: latest
 extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/
   version:

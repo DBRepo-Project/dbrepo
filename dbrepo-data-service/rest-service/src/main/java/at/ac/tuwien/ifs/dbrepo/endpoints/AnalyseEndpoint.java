@@ -24,7 +24,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/image")
+@RequestMapping(path = "/api/v1/image")
 public class AnalyseEndpoint extends RestEndpoint {
 
     private final CacheService cacheService;
@@ -49,19 +49,13 @@ public class AnalyseEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = SchemaAnalysisResultDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Schema is malformed or does not fit the image",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find image or dataset",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection to metadata service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                    content = {@Content}),
     })
     public ResponseEntity<SchemaAnalysisResultDto> analyseDatatypes(@PathVariable("imageId") UUID imageId,
                                                                     @PathVariable("key") String key)

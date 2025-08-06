@@ -44,6 +44,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
+
     @Autowired
     private MariaDbMapper mariaDbMapper;
 

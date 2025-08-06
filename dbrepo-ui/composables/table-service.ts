@@ -7,7 +7,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find tables')
     return new Promise<TableBriefDto>((resolve, reject) => {
-      axios.get<TableBriefDto>(`/api/database/${databaseId}/table`)
+      axios.get<TableBriefDto>(`/api/v1/database/${databaseId}/table`)
         .then((response) => {
           console.info(`Found ${response.data.length} tables(s)`)
           resolve(response.data)
@@ -23,7 +23,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find table with id', tableId, 'in database with id', databaseId);
     return new Promise<TableDto>((resolve, reject) => {
-      axios.get<TableDto>(`/api/database/${databaseId}/table/${tableId}`)
+      axios.get<TableDto>(`/api/v1/database/${databaseId}/table/${tableId}`)
         .then((response) => {
           console.info('Found table');
           resolve(response.data)
@@ -39,7 +39,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update column with id', columnId, 'table with id', tableId, 'in database with id', databaseId);
     return new Promise<ColumnDto>((resolve, reject) => {
-      axios.put<ColumnDto>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}`, data)
+      axios.put<ColumnDto>(`/api/v1/database/${databaseId}/table/${tableId}/column/${columnId}`, data)
         .then((response) => {
           console.info('Updated column');
           resolve(response.data)
@@ -55,7 +55,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update table with id', tableId, 'in database with id', databaseId);
     return new Promise<TableDto>((resolve, reject) => {
-      axios.put<TableDto>(`/api/database/${databaseId}/table/${tableId}`, data)
+      axios.put<TableDto>(`/api/v1/database/${databaseId}/table/${tableId}`, data)
         .then((response) => {
           console.info('Updated table');
           resolve(response.data)
@@ -71,7 +71,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('import csv to table with id', tableId, 'in database with id', databaseId);
     return new Promise<ImportDto>((resolve, reject) => {
-      axios.post<ImportDto>(`/api/database/${databaseId}/table/${tableId}/data/import`, data)
+      axios.post<ImportDto>(`/api/v1/database/${databaseId}/table/${tableId}/data/import`, data)
         .then((response) => {
           console.info('Imported csv to table')
           resolve(response.data)
@@ -87,7 +87,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size) })
+      axios.get<QueryResultDto>(`/api/v1/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size) })
         .then((response) => {
           console.info('Got data for table')
           const result: QueryResultDto = {
@@ -108,7 +108,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
-      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, null, null) })
+      axios.head<void>(`/api/v1/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, null, null) })
         .then((response: AxiosResponse<void>) => {
           const count: number = Number(response.headers['x-count'])
           console.info(`Found ${count} tuple(s)`)
@@ -132,7 +132,7 @@ export const useTableService = (): any => {
     }
     console.debug('export data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, config)
+      axios.get<QueryResultDto>(`/api/v1/database/${databaseId}/table/${tableId}/data`, config)
         .then((response) => {
           console.info('Exported data for table')
           resolve(response.data)
@@ -148,7 +148,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create table in database with id', databaseId, data)
     return new Promise<TableDto>((resolve, reject) => {
-      axios.post<TableDto>(`/api/database/${databaseId}/table`, data)
+      axios.post<TableDto>(`/api/v1/database/${databaseId}/table`, data)
         .then((response) => {
           console.info('Created table')
           resolve(response.data)
@@ -164,7 +164,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/database/${databaseId}/table/${tableId}`)
+      axios.delete<void>(`/api/v1/database/${databaseId}/table/${tableId}`)
         .then((response) => {
           console.info('Deleted table')
           resolve(response.data)
@@ -180,7 +180,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('delete tuple(s) in table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
-      axios.delete<void>(`/api/database/${databaseId}/table/${tableId}`, {data})
+      axios.delete<void>(`/api/v1/database/${databaseId}/table/${tableId}`, {data})
         .then((response) => {
           console.info(`Deleted tuple(s)`)
           resolve(response.data)
@@ -196,7 +196,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('Load history of table with id', tableId, 'in database with id', databaseId)
     return new Promise<TableHistoryDto[]>((resolve, reject) => {
-      axios.get<TableHistoryDto[]>(`/api/database/${databaseId}/table/${tableId}/history`)
+      axios.get<TableHistoryDto[]>(`/api/v1/database/${databaseId}/table/${tableId}/history`)
         .then((response) => {
           console.info('Loaded history of table')
           resolve(response.data)
@@ -212,7 +212,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {
-      axios.get<TableColumnEntityDto[]>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}/suggest`)
+      axios.get<TableColumnEntityDto[]>(`/api/v1/database/${databaseId}/table/${tableId}/column/${columnId}/suggest`)
         .then((response) => {
           console.info('Suggested semantic entities')
           resolve(response.data)
@@ -255,7 +255,7 @@ export const useTableService = (): any => {
     if (!table || !user) {
       return false
     }
-    return table.owner.id === user.uid
+    return table.owner.username === user.preferred_username
   }
 
   function tableNameToInternalName(name: string) {

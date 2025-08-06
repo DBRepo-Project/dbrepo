@@ -116,7 +116,7 @@ public class DataCiteGatewayImpl implements DataCiteGateway {
         final HttpHeaders headers = defaultHeaders();
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
         final DataCiteCreateDoi attributes = metadataMapper.identifierToDataCiteCreateDoi(identifier);
-        attributes.setEvent(null);
+        attributes.setEvent(event);
         attributes.setUrl(endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
         attributes.setPrefix(dataCiteConfig.getPrefix());
         final HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(

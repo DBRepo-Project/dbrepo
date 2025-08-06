@@ -6,14 +6,15 @@ import os
 from collections.abc import MutableMapping
 from json import dumps, load
 
+from opensearchpy import OpenSearch, NotFoundError
+from requests import head
+
 from dbrepo.api.dto import Database
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError
 from dbrepo.core.omlib.constants import OM_IDS
 from dbrepo.core.omlib.measure import om
 from dbrepo.core.omlib.omconstants import OM
 from dbrepo.core.omlib.unit import Unit
-from opensearchpy import OpenSearch, NotFoundError
-from requests import head
 
 
 class SearchServiceClient:
@@ -89,33 +90,6 @@ class SearchServiceClient:
         self._instance().delete(index="database", id=database_id)
         logging.info(f"Deleted database with id {database_id} in index 'database'")
 
-    def query_index_by_term_opensearch(self, term, mode):
-        """
-        old code, is effectively replaced by general_search() now
-
-        sends an opensearch query
-        :return list of dicts
-        """
-        query_str = ""
-        if mode == "exact":
-            query_str = f"{term}"
-        elif mode == "contains":
-            query_str = f"*{term}*"
-
-        response = self._instance().search(
-            index="database",
-            body={
-                "query": {
-                    "query_string": {
-                        "query": query_str,
-                        "allow_leading_wildcard": "true",  # default true
-                    }
-                },
-            },
-        )
-        results = [hit["_source"] for hit in response["hits"]["hits"]]
-        return results
-
     def get_fields_for_index(self, field_type: str):
         """
         returns a list of attributes of the data for a specific index.
@@ -149,9 +123,11 @@ class SearchServiceClient:
                 fields_list.append(entry)
         return fields_list
 
-    def fuzzy_search(self, search_term: str, user_id: str | None = None, user_token: str | None = None) -> [Database]:
+    def fuzzy_search(self, search_term: str, username: str | None = None, user_token: str | None = None) -> list[
+        Database]:
         response = self._instance().search(
             index="database",
+            size=1000,
             body={
                 "query": {
                     "multi_match": {
@@ -162,22 +138,22 @@ class SearchServiceClient:
                 }
             }
         )
-        results: [Database] = []
+        results: list[Database] = []
         if "hits" in response and "hits" in response["hits"]:
             results = [Database.model_validate(hit["_source"]) for hit in response["hits"]["hits"]]
         logging.debug(f'found {len(results)} results')
-        return self.filter_results(results, user_id, user_token)
+        return self.filter_results(results, username, user_token)
 
-    def filter_results(self, results: [Database], user_id: str | None = None, user_token: str | None = None) -> [
-        Database]:
-        filtered: [Database] = []
+    def filter_results(self, results: list[Database], username: str | None = None, user_token: str | None = None) -> \
+            list[Database]:
+        filtered: list[Database] = []
         for database in results:
             if database.is_public or database.is_schema_public:
                 logging.debug(f'database with id {database.id} is public or has public schema')
                 filtered.append(database)
-            elif user_id is not None and user_token is not None:
+            elif username is not None and user_token is not None:
                 try:
-                    url = f'{self.metadata_endpoint}/api/database/{database.id}/access/{user_id}'
+                    url = f'{self.metadata_endpoint}/api/v1/database/{database.id}/access/{username}'
                     logging.debug(f'requesting access from url: {url}')
                     response = head(url=url, auth=(self.system_username, self.system_password))
                     if response.status_code == 200:
@@ -191,8 +167,8 @@ class SearchServiceClient:
         logging.debug(f'filtered {len(filtered)} results')
         return filtered
 
-    def general_search(self, field_type: str = None, field_value_pairs: dict = None, user_id: str | None = None,
-                       user_token: str | None = None) -> [Database]:
+    def general_search(self, field_value_pairs: dict = None, username: str | None = None,
+                       user_token: str | None = None) -> list[Database]:
         """
         Main method for searching stuff in the opensearch db
 
@@ -227,25 +203,27 @@ class SearchServiceClient:
         body = {
             "query": {"bool": {"must": musts}}
         }
-        logging.debug(f'search in index database for type: {field_type}')
+        logging.debug(f'search: {body}')
         response = self._instance().search(
             index="database",
+            size=1000,
             body=dumps(body)
         )
-        results: [Database] = []
+        results: list[Database] = []
         if "hits" in response and "hits" in response["hits"]:
             results = [Database.model_validate(hit["_source"]) for hit in response["hits"]["hits"]]
         logging.debug(f'found {len(results)} results')
-        return self.filter_results(results, user_id, user_token)
+        return self.filter_results(results, username, user_token)
 
-    def unit_independent_search(self, t1: float, t2: float, field_value_pairs: dict, userId: str | None = None) -> [
-        Database]:
+    def unit_independent_search(self, t1: float, t2: float, field_value_pairs: dict, username: str | None = None) -> \
+            list[Database]:
         """
         Main method for searching stuff in the opensearch db
 
         :param t1: start value
         :param t2: end value
-        :param field_value_pairs: the key-value pairs
+        :param field_value_pairs: the key-value pairs, optional.
+        :param username: the username, optional.
         :return:
         """
         logging.info(f"Performing unit-independent search")
@@ -260,6 +238,7 @@ class SearchServiceClient:
         }
         response = self._instance().search(
             index="database",
+            size=1000,
             body=dumps(body)
         )
         unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]
@@ -325,7 +304,8 @@ class SearchServiceClient:
         )
         results = flatten([hits["hits"]["hits"] for hits in response["responses"]])
         return [database for database in results if
-                database.is_public or database.is_schema_public or (userId is not None and database.owner.id == userId)]
+                database.is_public or database.is_schema_public or (
+                        username is not None and database.owner.username == username)]
 
 
 def key_to_attr_name(key: str) -> str:

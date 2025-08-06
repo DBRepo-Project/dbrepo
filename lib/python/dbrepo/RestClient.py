@@ -96,7 +96,7 @@ class RestClient:
 
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/user'
+        url = f'/api/v1/user'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -112,7 +112,7 @@ class RestClient:
 
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/unit'
+        url = f'/api/v1/unit'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -130,7 +130,7 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the user does not exist.
         """
-        url = f'/api/user/{username}'
+        url = f'/api/v1/user/{username}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -162,7 +162,7 @@ class RestClient:
         :raises NotExistsError: If the user does not exist.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/user/{username}'
+        url = f'/api/v1/user/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True,
                                  payload=UpdateUser(theme=theme, language=language, firstname=firstname,
                                                     lastname=lastname, affiliation=affiliation, orcid=orcid))
@@ -186,7 +186,7 @@ class RestClient:
 
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/container'
+        url = f'/api/v1/container'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -203,7 +203,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/container/{container_id}'
+        url = f'/api/v1/container/{container_id}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -221,7 +221,7 @@ class RestClient:
 
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database'
+        url = f'/api/v1/database'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -236,7 +236,7 @@ class RestClient:
         :returns: Count of databases if successful.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database'
+        url = f'/api/v1/database'
         response = self._wrapper(method="head", url=url)
         if response.status_code == 200:
             return int(response.headers.get("x-count"))
@@ -254,7 +254,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}'
+        url = f'/api/v1/database/{database_id}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -282,11 +282,11 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the container does not exist.
         :raises QueryStoreError: If something went wrong with the query store.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database'
+        url = f'/api/v1/database'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateDatabase(name=name, container_id=container_id, is_public=is_public,
                                                         is_schema_public=is_schema_public))
@@ -332,7 +332,7 @@ class RestClient:
         :raises NameExistsError: If a container with this name already exists.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/container'
+        url = f'/api/v1/container'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateContainer(name=name, host=host, image_id=image_id,
                                                          privileged_username=privileged_username,
@@ -367,11 +367,11 @@ class RestClient:
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/database/{database_id}/visibility'
+        url = f'/api/v1/database/{database_id}/visibility'
         response = self._wrapper(method="put", url=url, force_auth=True,
                                  payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public,
                                                           is_dashboard_enabled=is_dashboard_enabled))
@@ -404,11 +404,11 @@ class RestClient:
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/database/{database_id}/owner'
+        url = f'/api/v1/database/{database_id}/owner'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(id=username))
         if response.status_code == 202:
             body = response.json()
@@ -439,15 +439,15 @@ class RestClient:
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/database/{database_id}/metadata/table'
+        url = f'/api/v1/database/{database_id}/metadata/table'
         response = self._wrapper(method="put", url=url, force_auth=True)
         if response.status_code == 200:
             response.json()
-            url = f'/api/database/{database_id}/metadata/view'
+            url = f'/api/v1/database/{database_id}/metadata/view'
             response = self._wrapper(method="put", url=url, force_auth=True)
             if response.status_code == 200:
                 body = response.json()
@@ -485,11 +485,11 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
         :raises NameExistsError: If a table with this name already exists.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the creation.
         """
-        url = f'/api/database/{database_id}/table'
+        url = f'/api/v1/database/{database_id}/table'
         columns, constraints = dataframe_to_table_definition(dataframe)
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateTable(name=name, is_public=is_public, is_schema_public=is_schema_public,
@@ -529,7 +529,7 @@ class RestClient:
         :raises NotExistsError: If the database does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/table'
+        url = f'/api/v1/database/{database_id}/table'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -554,7 +554,7 @@ class RestClient:
         :raises NotExistsError: If the table does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/table/{table_id}'
+        url = f'/api/v1/database/{database_id}/table/{table_id}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -576,11 +576,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the container does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
-        url = f'/api/database/{database_id}/table/{table_id}'
+        url = f'/api/v1/database/{database_id}/table/{table_id}'
         response = self._wrapper(method="delete", url=url, force_auth=True)
         if response.status_code == 202:
             return
@@ -610,7 +610,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
-        url = f'/api/container/{container_id}'
+        url = f'/api/v1/container/{container_id}'
         response = self._wrapper(method="delete", url=url, force_auth=True)
         if response.status_code == 202:
             return
@@ -637,7 +637,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/history?size={size}'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/history?size={size}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -664,7 +664,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/view'
+        url = f'/api/v1/database/{database_id}/view'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -687,7 +687,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/view/{view_id}'
+        url = f'/api/v1/database/{database_id}/view/{view_id}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -714,7 +714,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/view/{view_id}'
+        url = f'/api/v1/database/{database_id}/view/{view_id}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateView(is_public=is_public,
                                                                                             is_schema_public=is_schema_public))
         if response.status_code == 202:
@@ -744,13 +744,13 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database does not exist.
         :raises ExternalSystemError: If the mapped view creation query is erroneous.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         database = self.get_database(database_id=database_id)
         subset = query_to_subset(database, self.get_image(database.container.image.id), query)
-        url = f'/api/database/{database_id}/view'
+        url = f'/api/v1/database/{database_id}/view'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateView(name=name, query=subset, is_public=is_public,
                                                     is_schema_public=is_schema_public))
@@ -783,11 +783,11 @@ class RestClient:
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the container does not exist.
         :raises ExternalSystemError: If the mapped view deletion query is erroneous.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
-        url = f'/api/database/{database_id}/view/{view_id}'
+        url = f'/api/v1/database/{database_id}/view/{view_id}'
         response = self._wrapper(method="delete", url=url, force_auth=True)
         if response.status_code == 202:
             return
@@ -824,7 +824,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/view/{view_id}/data'
+        url = f'/api/v1/database/{database_id}/view/{view_id}/data'
         params = []
         if page is not None and size is not None:
             params.append(('page', page))
@@ -865,7 +865,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/data'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/data'
         params = []
         if page is not None and size is not None:
             params.append(('page', page))
@@ -901,7 +901,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the insert.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/data'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/data'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=Tuple(data=data))
         if response.status_code == 201:
             return
@@ -929,7 +929,7 @@ class RestClient:
         """
         buffer = BytesIO()
         dataframe.to_csv(path_or_buf=buffer, header=True, index=False)
-        url = f'/api/upload'
+        url = f'/api/v1/upload'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  files={'file': ('dataframe.csv', buffer.getvalue())})
         if response.status_code == 201:
@@ -955,7 +955,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the insert.
         """
 
-        url = f'/api/database/{database_id}/table/{table_id}/data/import'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=Import(location=self._upload(dataframe), separator=',', quote='"', header=True,
                                                 line_termination='\n'))
@@ -993,7 +993,7 @@ class RestClient:
             ('enum', enum),
             ('enum_tol', enum_tol)
         ]
-        url = f'/api/analyse/datatypes'
+        url = f'/api/v1/analyse/datatypes'
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 202:
             body = response.json()
@@ -1021,7 +1021,7 @@ class RestClient:
             ('filename', self._upload(dataframe)),
             ('separator', ','),
         ]
-        url = f'/api/analyse/keys'
+        url = f'/api/v1/analyse/keys'
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 202:
             body = response.json()
@@ -1044,11 +1044,11 @@ class RestClient:
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises NotExistsError: If the file was not found by the Analyse Service.
-        :raises ServiceConnectionError: If something went wrong with connection to the metadata service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the metadata service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        url = f'/api/analyse/database/{database_id}/table/{table_id}/statistics'
+        url = f'/api/v1/analyse/database/{database_id}/table/{table_id}/statistics'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 202:
             body = response.json()
@@ -1063,6 +1063,35 @@ class RestClient:
         if response.status_code == 503:
             raise ServiceError(f'Failed to analyse table statistics: failed to save statistic in search service')
         raise ResponseCodeError(f'Failed to analyse table statistics: response code: {response.status_code} is not '
+                                f'202 (ACCEPTED): {response.text}')
+
+    def update_table_statistics(self, database_id: str, table_id: str) -> None:
+        """
+        Updates the numerical contents of a table in a database with the given database id and table id.
+
+        :param database_id: The database id.
+        :param table_id: The table id.
+
+        :raises MalformedError: If the payload is rejected by the service.
+        :raises NotExistsError: If the file was not found by the Analyse Service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the metadata service.
+        :raises ServiceError: If something went wrong with obtaining the information in the search service.
+        :raises ResponseCodeError: If something went wrong with the analysis.
+        """
+        url = f'/api/v1/database/{database_id}/table/{table_id}/statistic'
+        response = self._wrapper(method="put", url=url)
+        if response.status_code == 202:
+            return None
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to update table statistics: {response.text}')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to update table statistics: not found')
+        if response.status_code == 502:
+            raise ServiceConnectionError(
+                f'Failed to update table statistics: data service failed to establish connection to metadata service')
+        if response.status_code == 503:
+            raise ServiceError(f'Failed to update table statistics: failed to save statistic in search service')
+        raise ResponseCodeError(f'Failed to update table statistics: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
     def update_table_data(self, database_id: str, table_id: str, data: dict, keys: dict) -> None:
@@ -1080,7 +1109,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/data'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/data'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=TupleUpdate(data=data, keys=keys))
         if response.status_code == 202:
             return
@@ -1110,7 +1139,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/data'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/data'
         response = self._wrapper(method="delete", url=url, force_auth=True, payload=TupleDelete(keys=keys))
         if response.status_code == 202:
             return
@@ -1143,7 +1172,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/data'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/data'
         params = []
         if timestamp is not None:
             params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
@@ -1180,7 +1209,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/view/{view_id}/data'
+        url = f'/api/v1/database/{database_id}/view/{view_id}/data'
         response = self._wrapper(method="head", url=url)
         if response.status_code == 200:
             return int(response.headers.get('X-Count'))
@@ -1210,7 +1239,7 @@ class RestClient:
         :raises NotExistsError: If the container does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access'
+        url = f'/api/v1/database/{database_id}/access'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1235,11 +1264,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access/{username}'
+        url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateAccess(type=type))
         if response.status_code == 202:
             body = response.json()
@@ -1275,7 +1304,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access/{username}'
+        url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateAccess(type=type))
         if response.status_code == 202:
             body = response.json()
@@ -1304,11 +1333,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the data service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the data service.
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/access/{username}'
+        url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="delete", url=url, force_auth=True)
         if response.status_code == 202:
             return
@@ -1357,7 +1386,7 @@ class RestClient:
             params.append(('size', size))
         if timestamp is not None:
             params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
-        url = f'/api/database/{database_id}/subset'
+        url = f'/api/v1/database/{database_id}/subset'
         response = self._wrapper(method="post", url=url, headers={"Accept": "application/json"}, params=params,
                                  payload=subset)
         if response.status_code == 201:
@@ -1395,7 +1424,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/subset/{subset_id}/data'
+        url = f'/api/v1/database/{database_id}/subset/{subset_id}/data'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
@@ -1427,7 +1456,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/subset/{subset_id}/data'
+        url = f'/api/v1/database/{database_id}/subset/{subset_id}/data'
         response = self._wrapper(method="head", url=url)
         if response.status_code == 200:
             return int(response.headers.get('X-Count'))
@@ -1457,7 +1486,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/subset/{subset_id}'
+        url = f'/api/v1/database/{database_id}/subset/{subset_id}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1486,7 +1515,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/subset'
+        url = f'/api/v1/database/{database_id}/subset'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1518,7 +1547,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/subset/{subset_id}'
+        url = f'/api/v1/database/{database_id}/subset/{subset_id}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateQuery(persist=persist))
         if response.status_code == 202:
             body = response.json()
@@ -1568,11 +1597,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database, table/view/subset or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
-        url = f'/api/identifier'
+        url = f'/api/v1/identifier'
         payload = CreateIdentifier(database_id=database_id, type=type, titles=titles, publisher=publisher,
                                    creators=creators, publication_year=publication_year, descriptions=descriptions,
                                    funders=funders, licenses=licenses, language=language, query_id=subset_id,
@@ -1629,11 +1658,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database, table/view/subset or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
-        url = f'/api/identifier/{identifier_id}'
+        url = f'/api/v1/identifier/{identifier_id}'
         payload = IdentifierSave(id=identifier_id, database_id=database_id, type=type, titles=titles,
                                  publisher=publisher, creators=creators, publication_year=publication_year,
                                  descriptions=descriptions, funders=funders, licenses=licenses, language=language,
@@ -1669,11 +1698,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the database, table/view/subset or user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
-        url = f'/api/identifier/{identifier_id}/publish'
+        url = f'/api/v1/identifier/{identifier_id}/publish'
         response = self._wrapper(method="put", url=url, force_auth=True)
         if response.status_code == 202:
             body = response.json()
@@ -1698,7 +1727,7 @@ class RestClient:
 
         :returns: List of licenses, if successful.
         """
-        url = f'/api/license'
+        url = f'/api/v1/license'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1712,7 +1741,7 @@ class RestClient:
 
         :returns: List of ontologies, if successful.
         """
-        url = f'/api/ontology'
+        url = f'/api/v1/ontology'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1726,7 +1755,7 @@ class RestClient:
 
         :returns: List of concepts, if successful.
         """
-        url = f'/api/concept'
+        url = f'/api/v1/concept'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1753,7 +1782,7 @@ class RestClient:
         :raises FormatNotAvailable: If the service could not represent the output.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
         """
-        url = f'/api/identifier'
+        url = f'/api/v1/identifier'
         params = []
         if database_id is not None:
             params.append(('dbid', database_id))
@@ -1796,7 +1825,7 @@ class RestClient:
         :raises NotExistsError: If the identifier does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifier.
         """
-        url = f'/api/identifier/{identifier_id}'
+        url = f'/api/v1/identifier/{identifier_id}'
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
@@ -1819,7 +1848,7 @@ class RestClient:
         :raises NotExistsError: If the identifier does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifier.
         """
-        url = f'/api/identifier/{identifier_id}'
+        url = f'/api/v1/identifier/{identifier_id}'
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
@@ -1852,7 +1881,7 @@ class RestClient:
         :raises NotExistsError: If the image does not exist.
         :raises ResponseCodeError: If something went wrong with the retrieval of the image.
         """
-        url = f'/api/image/{image_id}'
+        url = f'/api/v1/image/{image_id}'
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
@@ -1868,7 +1897,7 @@ class RestClient:
 
         :returns: List of images, if successful.
         """
-        url = f'/api/image'
+        url = f'/api/v1/image'
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
@@ -1882,7 +1911,7 @@ class RestClient:
 
         :returns: List of messages, if successful.
         """
-        url = f'/api/message'
+        url = f'/api/v1/message'
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
@@ -1906,11 +1935,11 @@ class RestClient:
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
-        :raises ServiceConnectionError: If something went wrong with connection to the search service.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
         """
-        url = f'/api/database/{database_id}/table/{table_id}/column/{column_id}'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/column/{column_id}'
         response = self._wrapper(method="put", url=url, force_auth=True,
                                  payload=UpdateColumn(concept_uri=concept_uri, unit_uri=unit_uri))
         if response.status_code == 202:

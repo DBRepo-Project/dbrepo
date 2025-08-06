@@ -20,11 +20,11 @@ import java.util.UUID;
 public class UniqueDto {
 
     @NotNull
-    @Schema(example = "d984f9d7-e8a7-4b81-b59a-862db1871f13")
+    @Schema(description = "The unique key id", example = "d984f9d7-e8a7-4b81-b59a-862db1871f13")
     private UUID id;
 
     @NotNull
-    @Schema(example = "uk_name")
+    @Schema(description = "The unique key name", example = "uk_name")
     private String name;
 
     @NotNull

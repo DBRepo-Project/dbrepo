@@ -16,6 +16,6 @@ import lombok.extern.jackson.Jacksonized;
 public class UpdateDashboardAccessDto {
 
     @NotNull
-    @Schema(example = "View")
+    @Schema(description = "The permission", example = "View")
     private PermissionTypeDto permission;
 }

@@ -1,0 +1,56 @@
+{{- if .Values.searchservice.enabled }}
+{{- if .Values.searchservice.setupJob.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: search-service-cron
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: search-service-cron
+    service: search-service-cron
+spec:
+  schedule: "{{ .Values.searchservice.setupJob.schedule }}"
+  successfulJobsHistoryLimit: {{ .Values.searchservice.setupJob.limit.successful | default 1 }}
+  failedJobsHistoryLimit: {{ .Values.searchservice.setupJob.limit.failed | default 1 }}
+  jobTemplate:
+    metadata:
+      annotations:
+        {{- if .Values.searchservice.setupJob.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.searchservice.setupJob.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+      labels:
+        app: search-service-cron
+        service: search-service-cron
+    spec:
+      backoffLimit: {{ .Values.searchservice.setupJob.backOffLimit | default 2 }}
+      template:
+        spec:
+          restartPolicy: {{ .Values.searchservice.setupJob.restartPolicy | default "Never" }}
+          containers:
+            - name: statistic
+              image: {{ .Values.searchservice.setupJob.image.name }}
+              imagePullPolicy: {{ .Values.searchservice.setupJob.image.pullPolicy | default "IfNotPresent" }}
+              env:
+                - name: POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+              envFrom:
+                - secretRef:
+                    name: search-service-secret
+              {{- if .Values.searchservice.setupJob.resources }}
+              resources: {{- toYaml .Values.searchservice.setupJob.resources | nindent 14 }}
+              {{- else if ne .Values.searchservice.setupJob.resourcesPreset "none" }}
+              resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.setupJob.resourcesPreset) | nindent 14 }}
+              {{- end }}
+{{- end }}
+{{- end }}

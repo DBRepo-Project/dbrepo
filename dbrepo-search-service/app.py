@@ -293,7 +293,7 @@ def health():
     return dict({"status": "UP"}), 200, headers
 
 
-@app.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
+@app.route("/api/v1/search/<string:index>", methods=["GET"], endpoint="search_get_index")
 @metrics.gauge(name='dbrepo_search_index_list', description='Time needed to list search index')
 @swag_from("/app/os-yml/get_index.yml")
 def get_index(index: str):
@@ -303,7 +303,7 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.debug(f'endpoint get search type: {index}')
-    results = search_client().query_index_by_term_opensearch("*", "contains")
+    results = search_client().general_search()
     try:
         results = general_filter(index, results)
 
@@ -317,7 +317,7 @@ def get_index(index: str):
                         code='search.index.missing').model_dump(), 404, headers
 
 
-@app.route("/api/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+@app.route("/api/v1/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
 @metrics.gauge(name='dbrepo_search_type_list', description='Time needed to list search types')
 @swag_from("/app/os-yml/get_fields.yml")
 def get_fields(field_type: str):
@@ -336,7 +336,7 @@ def get_fields(field_type: str):
                         code='search.type.missing').model_dump(), 404, headers
 
 
-@app.route("/api/search", methods=["GET"], endpoint="search_fuzzy_search")
+@app.route("/api/v1/search", methods=["GET"], endpoint="search_fuzzy_search")
 @metrics.gauge(name='dbrepo_search_fuzzy', description='Time needed to search fuzzy')
 @swag_from("/app/os-yml/get_fuzzy_search.yml")
 def get_fuzzy_search():
@@ -350,16 +350,16 @@ def get_fuzzy_search():
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
-    user_id, error, status = auth_client.get_user_id(request.headers.get('Authorization'))
+    username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status, headers
     results = search_client().fuzzy_search(search_term=search_term,
-                                           user_id=user_id,
+                                           username=username,
                                            user_token=request.headers.get('Authorization'))
     return Response(dumps(results, default=pydantic_encoder)), 200, headers
 
 
-@app.route("/api/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
+@app.route("/api/v1/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
 @metrics.gauge(name='dbrepo_search_type', description='Time needed to search by type')
 @swag_from("/app/os-yml/post_general_search.yml")
 def post_general_search(field_type):
@@ -378,21 +378,20 @@ def post_general_search(field_type):
     t2 = request.args.get("t2")
     if not str(t2).isdigit():
         t2 = None
-    user_id, error, status = auth_client.get_user_id(request.headers.get('Authorization'))
+    username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status
     if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
-        response = search_client().unit_independent_search(t1, t2, value_pairs, user_id)
+        response = search_client().unit_independent_search(t1, t2, value_pairs, username)
     else:
-        response = search_client().general_search(field_type=field_type,
-                                                  field_value_pairs=value_pairs,
-                                                  user_id=user_id,
+        response = search_client().general_search(field_value_pairs=value_pairs,
+                                                  username=username,
                                                   user_token=request.headers.get('Authorization'))
     # filter by type
     tables = [table for table in flatten([database.tables for database in response]) if
-              table.is_public or table.is_schema_public or (user_id is not None and table.owner.id == user_id)]
+              table.is_public or table.is_schema_public or (username is not None and table.owner.username == username)]
     views = [view for view in flatten([database.views for database in response]) if
-             view.is_public or view.is_schema_public or (user_id is not None and view.owner.id == user_id)]
+             view.is_public or view.is_schema_public or (username is not None and view.owner.username == username)]
     if field_type == 'table':
         logging.debug(f'filtered to {len(tables)} tables')
         response = tables
@@ -435,7 +434,7 @@ def post_general_search(field_type):
     return Response(dumps(response, default=pydantic_encoder)), 200, headers
 
 
-@app.route("/api/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
+@app.route("/api/v1/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
 @metrics.gauge(name='dbrepo_search_save_database',
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['update-search-index'])
@@ -451,7 +450,7 @@ def save_database(database_id: str):
     return Response(), 202, headers
 
 
-@app.route("/api/search/database/<string:database_id>", methods=["DELETE"], endpoint="database_delete_database")
+@app.route("/api/v1/search/database/<string:database_id>", methods=["DELETE"], endpoint="database_delete_database")
 @metrics.gauge(name='dbrepo_search_delete_database',
                description='Time needed to delete a database in the search database')
 @auth.login_required(role=['system'])

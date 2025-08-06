@@ -10,7 +10,7 @@
           color="primary">
           <v-tab
             :text="$t('toolbars.user.info')"
-            to="/user/info" />
+            to="/account/info" />
         </v-tabs>
       </template>
     </v-toolbar>

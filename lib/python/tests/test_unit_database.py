@@ -14,7 +14,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_databases_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=[])
+            mock.get('/api/v1/database', json=[])
             # test
             response = RestClient().get_databases()
             self.assertEqual([], response)
@@ -33,7 +33,7 @@ class DatabaseUnitTest(unittest.TestCase):
         ]
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=[exp[0].model_dump()])
+            mock.get('/api/v1/database', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_databases()
             self.assertEqual(exp, response)
@@ -41,7 +41,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_databases_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', status_code=401)
+            mock.get('/api/v1/database', status_code=401)
             # test
             try:
                 RestClient().get_databases()
@@ -51,7 +51,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_databases_count_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.head('/api/database', headers={'X-Count': '100'})
+            mock.head('/api/v1/database', headers={'X-Count': '100'})
             # test
             response = RestClient().get_databases_count()
             self.assertEqual(100, response)
@@ -59,7 +59,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_databases_count_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.head('/api/database', status_code=401)
+            mock.head('/api/v1/database', status_code=401)
             # test
             try:
                 RestClient().get_databases_count()
@@ -90,7 +90,7 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732', json=exp.model_dump())
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732', json=exp.model_dump())
             # test
             response = RestClient().get_database(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(exp, response)
@@ -98,7 +98,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_database_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732', status_code=403)
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732', status_code=403)
             # test
             try:
                 RestClient().get_database(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -108,7 +108,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_database_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732', status_code=404)
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732', status_code=404)
             # test
             try:
                 RestClient().get_database(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -118,7 +118,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_database_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732', status_code=202)
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732', status_code=202)
             # test
             try:
                 RestClient().get_database(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -149,7 +149,7 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', json=exp.model_dump(), status_code=201)
+            mock.post('/api/v1/database', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = RestClient(username="a", password="b").create_database(name='test',
@@ -160,7 +160,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=400)
+            mock.post('/api/v1/database', status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -172,7 +172,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=403)
+            mock.post('/api/v1/database', status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -184,7 +184,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=404)
+            mock.post('/api/v1/database', status_code=404)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -196,7 +196,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_409_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=409)
+            mock.post('/api/v1/database', status_code=409)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -208,7 +208,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=502)
+            mock.post('/api/v1/database', status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -220,7 +220,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=503)
+            mock.post('/api/v1/database', status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -232,7 +232,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=202)
+            mock.post('/api/v1/database', status_code=202)
             # test
             try:
                 RestClient(username="a", password="b").create_database(name='test',
@@ -244,7 +244,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', status_code=404)
+            mock.post('/api/v1/database', status_code=404)
             # test
             try:
                 RestClient().create_database(name='test',
@@ -277,7 +277,7 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', json=exp.model_dump(),
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', json=exp.model_dump(),
                      status_code=202)
             # test
             response = RestClient(username="a", password="b").update_database_visibility(
@@ -290,7 +290,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=400)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").update_database_visibility(
@@ -304,7 +304,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=403)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=403)
             # test
             try:
                 response = RestClient(username="a", password="b").update_database_visibility(
@@ -318,7 +318,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=404)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=404)
             # test
             try:
                 response = RestClient(username="a", password="b").update_database_visibility(
@@ -332,7 +332,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=502)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").update_database_visibility(
@@ -346,7 +346,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=503)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").update_database_visibility(
@@ -360,7 +360,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', status_code=200)
             # test
             try:
                 RestClient(username="a", password="b").update_database_visibility(
@@ -405,7 +405,7 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', json=exp.model_dump(), status_code=202)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = RestClient(username="a", password="b").update_database_owner(
@@ -416,7 +416,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=400)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=400)
             # test
             try:
                 RestClient(username="a", password="b").update_database_owner(
@@ -428,7 +428,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=403)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=403)
             # test
             try:
                 RestClient(username="a", password="b").update_database_owner(
@@ -440,7 +440,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=404)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=404)
             # test
             try:
                 RestClient(username="a", password="b").update_database_owner(
@@ -452,7 +452,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=502)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=502)
             # test
             try:
                 RestClient(username="a", password="b").update_database_owner(
@@ -464,7 +464,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=503)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=503)
             # test
             try:
                 RestClient(username="a", password="b").update_database_owner(
@@ -476,7 +476,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=200)
             # test
             try:
                 RestClient(username="a", password="b").update_database_owner(
@@ -488,7 +488,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_owner_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=404)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', status_code=404)
             # test
             try:
                 RestClient().update_database_owner(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -508,8 +508,8 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json=exp.model_dump())
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', json=exp.model_dump())
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json=exp.model_dump())
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', json=exp.model_dump())
             # test
             response = RestClient(username='foo', password='bar').update_database_schema(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -518,7 +518,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=400)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=400)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -529,8 +529,8 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_view_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=400)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=400)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -541,7 +541,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=403)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=403)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -552,8 +552,8 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=403)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=403)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -564,7 +564,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=404)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=404)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -575,8 +575,8 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=404)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=404)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -587,7 +587,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=502)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=502)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -598,8 +598,8 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_view_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=502)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=502)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -610,7 +610,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=503)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=503)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -621,8 +621,8 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_view_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=503)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=503)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -633,7 +633,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=202)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', status_code=202)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -644,8 +644,8 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_schema_view_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=202)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/table', json={}, status_code=200)
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/metadata/view', status_code=202)
             # test
             try:
                 RestClient(username='foo', password='bar').update_database_schema(
@@ -665,7 +665,7 @@ class DatabaseUnitTest(unittest.TestCase):
                              user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access', json=exp.model_dump())
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access', json=exp.model_dump())
             # test
             response = RestClient().get_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(response, AccessType.READ)
@@ -673,7 +673,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access', status_code=403)
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access', status_code=403)
             # test
             try:
                 RestClient().get_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -683,7 +683,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access', status_code=404)
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access', status_code=404)
             # test
             try:
                 RestClient().get_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -693,7 +693,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_database_access_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access', status_code=202)
+            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access', status_code=202)
             # test
             try:
                 RestClient().get_database_access(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -705,7 +705,7 @@ class DatabaseUnitTest(unittest.TestCase):
                              user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       json=exp.model_dump(),
                       status_code=202)
             # test
@@ -718,7 +718,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=400)
             # test
             try:
@@ -732,7 +732,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=400)
             # test
             try:
@@ -745,7 +745,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=403)
             # test
             try:
@@ -759,7 +759,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=404)
             # test
             try:
@@ -773,7 +773,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=502)
             # test
             try:
@@ -787,7 +787,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=503)
             # test
             try:
@@ -801,7 +801,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_create_database_access_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                       status_code=200)
             # test
             try:
@@ -817,7 +817,7 @@ class DatabaseUnitTest(unittest.TestCase):
                              user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      json=exp.model_dump(),
                      status_code=202)
             # test
@@ -830,7 +830,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=400)
             # test
             try:
@@ -844,7 +844,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=403)
             # test
             try:
@@ -858,7 +858,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=404)
             # test
             try:
@@ -872,7 +872,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=502)
             # test
             try:
@@ -886,7 +886,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=503)
             # test
             try:
@@ -900,7 +900,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=200)
             # test
             try:
@@ -914,7 +914,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                      status_code=404)
             # test
             try:
@@ -928,7 +928,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=202)
             # test
             client = RestClient(username="a", password="b")
@@ -940,7 +940,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=400)
             # test
             try:
@@ -954,7 +954,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=403)
             # test
             try:
@@ -968,7 +968,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=404)
             # test
             try:
@@ -982,7 +982,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=502)
             # test
             try:
@@ -996,7 +996,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=503)
             # test
             try:
@@ -1010,7 +1010,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=200)
             # test
             try:
@@ -1024,7 +1024,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete(
-                '/api/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
                 status_code=404)
             # test
             try:

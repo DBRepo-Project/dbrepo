@@ -37,6 +37,8 @@ import org.keycloak.representations.AccessTokenResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,10 +56,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.sql.Types.*;
+
 @Mapper(componentModel = "spring")
 public interface DataMapper {
 
-    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DataMapper.class);
+    Logger log = LoggerFactory.getLogger(DataMapper.class);
 
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
             .withZone(ZoneId.of("UTC"));
@@ -294,13 +298,12 @@ public interface DataMapper {
     }
 
     default ColumnTypeDto duckDbDataTypeToMariaDbColumnTypeDto(String data) {
-        final List<String> inCompatibleTypes = List.of("INTERVAL", "SQLNULL", "TIME_TZ", "TIMESTAMP_MS", "TIMESTAMP_NS",
-                "TIMESTAMP_S", "TIMESTAMP_TZ", "UUID");
+        final List<String> inCompatibleTypes = List.of("INTERVAL", "SQLNULL", "HUGEINT", "UHUGEINT");
         if (inCompatibleTypes.contains(data)) {
             log.warn("Failed to map data type: {}", data);
             return null;
         }
-        if (List.of("HUGEINT", "UBIGINT", "UHUGEINT").contains(data)) {
+        if (List.of("UBIGINT").contains(data)) {
             return ColumnTypeDto.BIGINT;
         } else if (List.of("INTEGER", "UINTEGER").contains(data)) {
             return ColumnTypeDto.INT;
@@ -308,6 +311,15 @@ public interface DataMapper {
             return ColumnTypeDto.SMALLINT;
         } else if (data.equals("UTINYINT")) {
             return ColumnTypeDto.TINYINT;
+        } else if (data.equals("BOOLEAN")) {
+            return ColumnTypeDto.BOOL;
+        } else if (data.equals("UUID")) {
+            return ColumnTypeDto.VARCHAR;
+        } else if (List.of("TIMESTAMP WITH TIME ZONE", "TIMESTAMP_NS", "TIMESTAMP_MS", "TIMESTAMP_S",
+                "TIMESTAMP_TZ", "TIMESTAMP WITHOUT TIME ZONE").contains(data)) {
+            return ColumnTypeDto.TIMESTAMP;
+        } else if (List.of("TIME_TZ").contains(data)) {
+            return ColumnTypeDto.TIME;
         }
         return ColumnTypeDto.valueOf(data);
     }
@@ -364,6 +376,12 @@ public interface DataMapper {
         return columns;
     }
 
+    /**
+     * Maps the DuckDB Analysis data type given in data to the internally defined data types. Do not use for schema inspection.
+     *
+     * @param data The data type.
+     * @return The mapped internal data type.
+     */
     default ColumnTypeDto dataTypeToColumnTypeDto(String data) {
         if (data.equals("BOOLEAN")) {
             return ColumnTypeDto.BOOL;
@@ -382,6 +400,7 @@ public interface DataMapper {
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
                 .owner(UserBriefDto.builder()
+                        .id(UUID.randomUUID())
                         .username(data.getString(2))
                         .build())
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
@@ -517,7 +536,46 @@ public interface DataMapper {
                 .build();
     }
 
+    default int columnTypeDtoToTypes(ColumnTypeDto data) {
+        return switch (data) {
+            case CHAR -> VARCHAR;
+            case VARCHAR -> VARCHAR;
+            case BINARY -> BINARY;
+            case VARBINARY -> BINARY;
+            case TINYBLOB -> BLOB;
+            case TINYTEXT -> VARCHAR;
+            case TEXT -> VARCHAR;
+            case BLOB -> BLOB;
+            case MEDIUMTEXT -> VARCHAR;
+            case MEDIUMBLOB -> BLOB;
+            case LONGTEXT -> VARCHAR;
+            case LONGBLOB -> BLOB;
+            case ENUM -> VARCHAR;
+            case SET -> VARCHAR;
+            case SERIAL -> BIGINT;
+            case BIT -> BIT;
+            case TINYINT -> BOOLEAN;
+            case BOOL -> BOOLEAN;
+            case SMALLINT -> INTEGER;
+            case MEDIUMINT -> INTEGER;
+            case INT -> INTEGER;
+            case BIGINT -> BIGINT;
+            case FLOAT -> FLOAT;
+            case DOUBLE -> DOUBLE;
+            case DECIMAL -> DECIMAL;
+            case DATE -> DATE;
+            case DATETIME -> TIMESTAMP;
+            case TIMESTAMP -> TIMESTAMP;
+            case TIME -> TIME;
+            case YEAR -> TIMESTAMP;
+        };
+    }
+
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnTypeDto columnType, int idx, Object value) throws SQLException {
+        if (value == null) {
+            ps.setNull(idx, columnTypeDtoToTypes(columnType));
+        }
+        log.trace("mapping value {} at position {} to type: {}", value, idx, columnType);
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 if (value == null) {
@@ -532,87 +590,33 @@ public interface DataMapper {
                 }
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
-                if (value == null) {
-                    ps.setNull(idx, Types.VARCHAR);
-                    break;
-                }
                 ps.setString(idx, String.valueOf(value));
                 break;
             case DATE:
-                if (value == null) {
-                    ps.setNull(idx, Types.DATE);
-                    break;
-                }
                 ps.setString(idx, String.valueOf(value));
                 break;
             case BIGINT, SERIAL:
-                if (value == null) {
-                    ps.setNull(idx, Types.BIGINT);
-                    break;
-                }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case INT, MEDIUMINT:
-                if (value == null) {
-                    ps.setNull(idx, Types.INTEGER);
-                    break;
-                }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case TINYINT:
-                if (value == null) {
-                    ps.setNull(idx, Types.TINYINT);
-                    break;
-                }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case FLOAT, DOUBLE, DECIMAL:
+                ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case SMALLINT:
-                if (value == null) {
-                    ps.setNull(idx, Types.SMALLINT);
-                    break;
-                }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
-            case DECIMAL:
-                if (value == null) {
-                    ps.setNull(idx, Types.DECIMAL);
-                    break;
-                }
-                ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
-                break;
-            case FLOAT:
-                if (value == null) {
-                    ps.setNull(idx, Types.FLOAT);
-                    break;
-                }
-                ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
-                break;
-            case DOUBLE:
-                if (value == null) {
-                    ps.setNull(idx, Types.DOUBLE);
-                    break;
-                }
-                ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
-                break;
             case BINARY, VARBINARY, BIT:
-                if (value == null) {
-                    ps.setNull(idx, Types.DECIMAL);
-                    break;
-                }
                 ps.setBinaryStream(idx, (InputStream) value);
                 break;
             case BOOL:
-                if (value == null) {
-                    ps.setNull(idx, Types.BOOLEAN);
-                    break;
-                }
                 ps.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
                 break;
             case TIME, DATETIME, TIMESTAMP, YEAR:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIME);
-                    break;
-                }
                 ps.setString(idx, String.valueOf(value));
                 break;
             default:

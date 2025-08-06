@@ -123,8 +123,12 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         .filter(i -> i.getType().equals(IdentifierTypeDto.SUBSET))
                         .filter(i -> i.getQueryId().equals(query.getId()))
                         .toList());
-                query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserByUsername(query.getOwner()
-                        .getUsername())));
+                if (query.getOwner().getUsername() != null) {
+                    query.setOwner(dataMapper.userDtoToUserBriefDto(metadataServiceGateway.getUserByUsername(query.getOwner()
+                            .getUsername())));
+                } else {
+                    query.getOwner().setUsername("anonymous");
+                }
                 query.setType(QueryTypeDto.QUERY);
                 query.setDatabaseId(database.getId());
 

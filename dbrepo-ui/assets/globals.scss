@@ -16,3 +16,20 @@ select.native {
 .line-break {
   white-space: pre-wrap;
 }
+
+.markdown {
+  h1 {
+    padding: 0 0 .5rem;
+  }
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    padding: .5rem 0;
+  }
+  ul {
+    list-style-type: square;
+    padding: .5rem 0 0 2rem;
+  }
+}

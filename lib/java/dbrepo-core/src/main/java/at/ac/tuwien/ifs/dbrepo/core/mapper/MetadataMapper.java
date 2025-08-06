@@ -708,7 +708,7 @@ public interface MetadataMapper {
     }
 
     @Mappings({
-            @Mapping(target = "isDefault", source = "isDefault")
+            @Mapping(target = "isDefault", expression = "java(false)")
     })
     ContainerImage createImageDtoToContainerImage(ImageCreateDto data);
 

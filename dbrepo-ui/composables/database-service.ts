@@ -5,7 +5,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance()
     console.debug(`suggest data types for dataset: ${s3key}`)
     return new Promise<SchemaAnalysisResultDto>((resolve, reject) => {
-      axios.get<SchemaAnalysisResultDto>(`/api/database/${databaseId}/analyse/schema/${s3key}`)
+      axios.get<SchemaAnalysisResultDto>(`/api/v1/database/${databaseId}/analyse/schema/${s3key}`)
         .then((response) => {
           console.info('Determined schema for dataset')
           resolve(response.data)
@@ -17,11 +17,11 @@ export const useDatabaseService = (): any => {
     })
   }
 
-  async function findAll(): Promise<DatabaseDto[]> {
+  async function findAll(limit: number | null = null): Promise<DatabaseDto[]> {
     const axios = useAxiosInstance();
     console.debug('find databases');
     return new Promise<DatabaseDto[]>((resolve, reject) => {
-      axios.get<DatabaseDto[]>('/api/database')
+      axios.get<DatabaseDto[]>(`/api/v1/database?limit=${limit ? limit : ''}`)
         .then((response) => {
           console.info(`Found ${response.data.length} database(s)`);
           resolve(response.data);
@@ -37,7 +37,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance();
     console.debug('refresh database tables metadata');
     return new Promise<DatabaseDto>((resolve, reject) => {
-      axios.put<DatabaseDto>('/api/database/' + databaseId + '/metadata/table', {})
+      axios.put<DatabaseDto>('/api/v1/database/' + databaseId + '/metadata/table', {})
         .then((response) => {
           console.info('Refreshed database tables metadata');
           resolve(response.data);
@@ -53,7 +53,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance();
     console.debug('refresh database views metadata');
     return new Promise<DatabaseDto>((resolve, reject) => {
-      axios.put<DatabaseDto>('/api/database/' + databaseId + '/metadata/view', {})
+      axios.put<DatabaseDto>('/api/v1/database/' + databaseId + '/metadata/view', {})
         .then((response) => {
           console.info('Refreshed database views metadata');
           resolve(response.data);
@@ -69,7 +69,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance();
     console.debug('find databases count');
     return new Promise<number>((resolve, reject) => {
-      axios.head<number>('/api/database')
+      axios.head<number>('/api/v1/database')
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
           console.info(`Found ${count} database(s)`);
@@ -86,7 +86,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance();
     console.debug('find database with id', id);
     return new Promise((resolve, reject) => {
-      axios.get<DatabaseDto>(`/api/database/${id}`)
+      axios.get<DatabaseDto>(`/api/v1/database/${id}`)
         .then((response) => {
           console.info('Found database with id', id);
           resolve(response.data);
@@ -105,7 +105,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance();
     console.debug('find database preview image with id', id);
     return new Promise((resolve, reject) => {
-      axios.get<string>(`/api/database/${id}/image`)
+      axios.get<string>(`/api/v1/database/${id}/image`)
         .then((response) => {
           console.info('Found database preview image with id', id);
           resolve(response.data);
@@ -121,7 +121,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update database visibility for database with id', id);
     return new Promise((resolve, reject) => {
-      axios.put<DatabaseDto>(`/api/database/${id}/visibility`, payload)
+      axios.put<DatabaseDto>(`/api/v1/database/${id}/visibility`, payload)
         .then((response) => {
           console.info('Updated database visibility for database with id', id);
           resolve(response.data);
@@ -137,7 +137,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update database image for database with id', id);
     return new Promise((resolve, reject) => {
-      axios.put<DatabaseDto>(`/api/database/${id}/image`, payload)
+      axios.put<DatabaseDto>(`/api/v1/database/${id}/image`, payload)
         .then((response) => {
           console.info('Updated database image for database with id', id);
           resolve(response.data);
@@ -153,7 +153,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update database owner for database with id', id);
     return new Promise((resolve, reject) => {
-      axios.put<DatabaseDto>(`/api/database/${id}/owner`, payload)
+      axios.put<DatabaseDto>(`/api/v1/database/${id}/owner`, payload)
         .then((response) => {
           console.info('Updated database owner for database with id', id);
           resolve(response.data);
@@ -169,7 +169,7 @@ export const useDatabaseService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create databases')
     return new Promise((resolve, reject) => {
-      axios.post<DatabaseDto>('/api/database', payload)
+      axios.post<DatabaseDto>('/api/v1/database', payload)
         .then((response) => {
           console.info('Created database with id', response.data.id)
           resolve(response.data)
@@ -236,6 +236,7 @@ export const useDatabaseService = (): any => {
   return {
     determineSchema,
     findAll,
+    findCount,
     refreshTablesMetadata,
     refreshViewsMetadata,
     findOne,

@@ -19,10 +19,10 @@ import java.util.Set;
 public class DatabaseGrantsDto {
 
     @NotNull
-    @Schema(example = "[\"SELECT\"]")
+    @Schema(description = "The list of grants", example = "[\"SELECT\"]")
     private Set<String> grants;
 
-    @Schema(example = "read")
+    @Schema(description = "The grant type", example = "read")
     private GrantTypeDto type;
 
 }

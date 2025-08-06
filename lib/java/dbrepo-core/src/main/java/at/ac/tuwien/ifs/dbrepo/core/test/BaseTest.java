@@ -961,9 +961,13 @@ public class BaseTest {
     public final ImageDto IMAGE_1_DTO = ImageDto.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
+            .registry(IMAGE_1_REGISTRY)
             .version(IMAGE_1_VERSION)
-            .isDefault(IMAGE_1_IS_DEFAULT)
+            .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC_METHOD)
+            .driverClass(IMAGE_1_DRIVER)
+            .defaultPort(IMAGE_1_DEFAULT_PORT)
+            .isDefault(IMAGE_1_IS_DEFAULT)
             .operators(null /* IMAGE_1_OPERATORS_DTO */)
             .dataTypes(null /* IMAGE_1_DATA_TYPES_DTO */)
             .build();
@@ -2389,14 +2393,6 @@ public class BaseTest {
             .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto TABLE_4_CREATE_INTERNAL_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto.builder()
-                    .name(TABLE_4_NAME)
-                    .description(TABLE_4_DESCRIPTION)
-                    .columns(TABLE_4_COLUMNS_CREATE_DTO)
-                    .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
-                    .build();
-
     public final List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_4_1_ID)
                     .databaseId(DATABASE_1_ID)
@@ -2997,7 +2993,7 @@ public class BaseTest {
 
     public final static UUID QUERY_1_ID = UUID.fromString("60494137-f000-459e-acd3-4fcadbdf14ca");
     public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` ORDER BY id ASC";
-    public final static String QUERY_1_STATEMENT_NORMALIZED = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP'2025-03-07 11:58:07' ORDER BY id ASC";
+    public final static String QUERY_1_STATEMENT_NORMALIZED = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-03-07 11:58:07' ORDER BY id ASC";
     public final static Long QUERY_1_RESULT_NUMBER = 3L;
     public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
     public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
@@ -3056,6 +3052,7 @@ public class BaseTest {
 
     public final static UUID QUERY_2_ID = UUID.fromString("4e0ac92a-7cb3-4222-9b85-0498c73e0afd");
     public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
+    public final static String QUERY_2_STATEMENT_NORMALIZED = "SELECT `location` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12'";
     public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
     public final static Long QUERY_2_RESULT_NUMBER = 3L;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
@@ -3064,17 +3061,19 @@ public class BaseTest {
 
     public final static UUID QUERY_3_ID = UUID.fromString("a9849020-45a7-40a8-9a19-d4ae2b28dd46");
     public final static String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
+    public final static String QUERY_3_STATEMENT_NORMALIZED = "SELECT `location`, `mintemp` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12' WHERE `mintemp` > 10";
     public final static String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
     public final static String QUERY_3_RESULT_HASH = "ff3f7cbe1b96d396957f6e39e55b8b1b577fa3d305d4795af99594cfd30cb80d";
-    public final static Instant QUERY_3_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_3_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Long QUERY_3_RESULT_NUMBER = 2L;
     public final static Boolean QUERY_3_PERSISTED = true;
 
     public final static UUID QUERY_4_ID = UUID.fromString("18a98197-51ff-4011-9f40-914a11675a6d");
     public final static String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
+    public final static String QUERY_4_STATEMENT_NORMALIZED = "SELECT `id`, `value` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12'";
     public final static String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
     public final static String QUERY_4_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
-    public final static Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_4_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Long QUERY_4_RESULT_NUMBER = 6L;
     public final static Long QUERY_4_RESULT_ID = 4L;
     public final static Boolean QUERY_4_PERSISTED = false;
@@ -3104,7 +3103,7 @@ public class BaseTest {
             .id(QUERY_4_ID)
             .databaseId(DATABASE_3_ID)
             .query(QUERY_4_STATEMENT)
-            .queryNormalized(QUERY_4_STATEMENT)
+            .queryNormalized(QUERY_4_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_4_RESULT_NUMBER)
             .resultHash(QUERY_4_RESULT_HASH)
             .queryHash(QUERY_4_QUERY_HASH)
@@ -3115,9 +3114,10 @@ public class BaseTest {
 
     public final static UUID QUERY_5_ID = UUID.fromString("1a39f775-e3d5-4865-b4f5-dbbb5693b637");
     public final static String QUERY_5_STATEMENT = "SELECT `id`, `value` FROM `mfcc` WHERE `value` > 0";
+    public final static String QUERY_5_STATEMENT_NORMALIZED = "SELECT `id`, `value` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12' WHERE `value` > 0";
     public final static String QUERY_5_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
     public final static String QUERY_5_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
-    public final static Instant QUERY_5_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_5_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Long QUERY_5_RESULT_NUMBER = 6L;
     public final static Boolean QUERY_5_PERSISTED = true;
 
@@ -3125,7 +3125,7 @@ public class BaseTest {
             .id(QUERY_5_ID)
             .databaseId(DATABASE_3_ID)
             .query(QUERY_5_STATEMENT)
-            .queryNormalized(QUERY_5_STATEMENT)
+            .queryNormalized(QUERY_5_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_5_RESULT_NUMBER)
             .resultHash(QUERY_5_RESULT_HASH)
             .queryHash(QUERY_5_QUERY_HASH)
@@ -3184,7 +3184,7 @@ public class BaseTest {
     public final static String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
     public final static String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
     public final static String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
-    public final static Instant QUERY_6_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_6_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Long QUERY_6_RESULT_NUMBER = 1L;
     public final static Boolean QUERY_6_PERSISTED = true;
 
@@ -3299,9 +3299,10 @@ public class BaseTest {
 
     public final static UUID QUERY_7_ID = UUID.fromString("fe73a325-30a0-444c-b74f-23ce1533e55f");
     public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
+    public final static String QUERY_7_STATEMENT_NORMALIZED = "SELECT id, date, weather_aus.location, lat, lng FROM weather_aus FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12' JOIN weather_location on weather_aus.location = weather_location.location WHERE date = '2008-12-01'";
     public final static String QUERY_7_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
     public final static String QUERY_7_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
-    public final static Instant QUERY_7_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_7_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
     public final static Long QUERY_7_RESULT_NUMBER = 6L;
     public final static Long QUERY_7_RESULT_ID = 4L;
     public final static Boolean QUERY_7_PERSISTED = false;
@@ -3354,22 +3355,6 @@ public class BaseTest {
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CREATE_CONSTRAINTS_DTO)
             .build();
-
-    public final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto.builder()
-                    .name(TABLE_1_NAME)
-                    .description(TABLE_1_DESCRIPTION)
-                    .columns(TABLE_1_COLUMNS_CREATE_DTO)
-                    .constraints(TABLE_1_CREATE_CONSTRAINTS_DTO)
-                    .build();
-
-    public final at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_INVALID_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto.builder()
-                    .name(TABLE_1_NAME)
-                    .description(TABLE_1_DESCRIPTION)
-                    .columns(TABLE_1_COLUMNS_CREATE_DTO)
-                    .constraints(TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO)
-                    .build();
 
     public final List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
@@ -6557,7 +6542,7 @@ public class BaseTest {
     public final static String IDENTIFIER_5_QUERY_HASH = QUERY_2_QUERY_HASH;
     public final static String IDENTIFIER_5_RESULT_HASH = QUERY_2_RESULT_HASH;
     public final static String IDENTIFIER_5_QUERY = QUERY_2_STATEMENT;
-    public final static String IDENTIFIER_5_NORMALIZED = QUERY_2_STATEMENT;
+    public final static String IDENTIFIER_5_NORMALIZED = QUERY_2_STATEMENT_NORMALIZED;
     public final static Long IDENTIFIER_5_RESULT_NUMBER = QUERY_2_RESULT_NUMBER;
     public final static String IDENTIFIER_5_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_5_TYPE = IdentifierType.SUBSET;
@@ -9020,7 +9005,7 @@ public class BaseTest {
             .id(QUERY_2_ID)
             .databaseId(DATABASE_1_ID)
             .query(QUERY_2_STATEMENT)
-            .queryNormalized(QUERY_2_STATEMENT)
+            .queryNormalized(QUERY_2_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_2_RESULT_NUMBER)
             .resultHash(QUERY_2_RESULT_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -9034,7 +9019,7 @@ public class BaseTest {
             .id(QUERY_3_ID)
             .databaseId(DATABASE_1_ID)
             .query(QUERY_3_STATEMENT)
-            .queryNormalized(QUERY_3_STATEMENT)
+            .queryNormalized(QUERY_3_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_3_RESULT_NUMBER)
             .resultHash(QUERY_3_RESULT_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -9048,7 +9033,7 @@ public class BaseTest {
             .id(QUERY_7_ID)
             .databaseId(DATABASE_4_ID)
             .query(QUERY_7_STATEMENT)
-            .queryNormalized(QUERY_7_STATEMENT)
+            .queryNormalized(QUERY_7_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_7_RESULT_NUMBER)
             .resultHash(QUERY_7_RESULT_HASH)
             .owner(USER_1_BRIEF_DTO)

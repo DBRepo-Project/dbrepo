@@ -1,7 +1,7 @@
 ##@ Build
 
 .PHONY: build-images
-build-images: build-java-lib ## Build Docker images.
+build-images: ## Build Docker images.
 	docker compose build
 
 .PHONY: build-jupyter-image
@@ -27,15 +27,13 @@ build-ui: ## Build the UI.
 
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
-	rm -rf ./dbrepo-analyse-service/lib/* ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock ./dbrepo-auth-service/init/lib/* ./dbrepo-auth-service/init/Pipfile.lock
+	rm -rf ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib
 	PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv lock
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib
 	PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv lock
-	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-auth-service/init/lib
-	PIPENV_PIPFILE=./dbrepo-auth-service/init/Pipfile pipenv lock
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.
