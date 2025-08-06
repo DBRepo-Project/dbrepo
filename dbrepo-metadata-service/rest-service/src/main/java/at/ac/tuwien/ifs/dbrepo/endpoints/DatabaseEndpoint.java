@@ -24,6 +24,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,6 +37,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -50,6 +52,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     private final ContainerService containerService;
     private final DashboardService dashboardService;
     private final ReplicationService replicationService;
+
+    @Value("${BASE_URL:http://localhost:8080}")
+    private String baseUrl;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
@@ -248,6 +253,23 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         log.debug("endpoint replicate database, data.name={}", databaseNotificationDto.getCreateDatabaseDto().getName());
         
         final CreateDatabaseDto data = databaseNotificationDto.getCreateDatabaseDto();
+        
+        // Exchange replica URLs from current location (base_url) with creationLocation
+        if (data.getReplicaUrls() != null && data.getCreationLocation() != null) {
+            String currentBaseUrl = baseUrl; // This will be injected via @Value
+            List<String> updatedReplicaUrls = data.getReplicaUrls().stream()
+                    .map(replicaUrl -> {
+                        if (replicaUrl.equals(currentBaseUrl)) {
+                            log.debug("Replacing replica URL {} with creationLocation {}", currentBaseUrl, data.getCreationLocation());
+                            return data.getCreationLocation();
+                        }
+                        return replicaUrl;
+                    })
+                    .collect(Collectors.toList());
+            data.setReplicaUrls(updatedReplicaUrls);
+            log.debug("Updated replica URLs: {}", updatedReplicaUrls);
+        }
+        
         final Container container = containerService.find(data.getCid());
         
         if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
