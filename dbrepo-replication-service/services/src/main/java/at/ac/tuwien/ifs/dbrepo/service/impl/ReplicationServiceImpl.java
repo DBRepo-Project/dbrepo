@@ -117,7 +117,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             HttpEntity<DatabaseUpdateReplicationUrlDto> requestEntity = new HttpEntity<>(updateDto, headers);
             
             // Build the URL for the replication URL update endpoint
-            String updateUrl = gatewayConfig.getMetadataEndpoint() + "/api/database/" + databaseId + "/replication-url";
+            String updateUrl = gatewayConfig.getMetadataEndpoint() + "/api/v1/database/" + databaseId + "/replication-url";
             
             log.info("Sending PUT request to update replication URL: {}", updateUrl);
             
