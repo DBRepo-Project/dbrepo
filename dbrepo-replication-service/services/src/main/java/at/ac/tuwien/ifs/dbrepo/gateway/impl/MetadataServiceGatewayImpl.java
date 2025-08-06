@@ -119,7 +119,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public DatabaseDto getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final ResponseEntity<DatabaseDto> response;
-        final String url = "/api/database/" + id;
+        final String url = "/api/v1/database/" + id;
         log.debug("get database info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseDto.class);
@@ -159,7 +159,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public TableDto getTableById(UUID databaseId, UUID id) throws TableNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<TableDto> response;
-        final String url = "/api/database/" + databaseId + "/table/" + id;
+        final String url = "/api/v1/database/" + databaseId + "/table/" + id;
         log.debug("get table info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
@@ -187,7 +187,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public ViewDto getViewById(UUID databaseId, UUID id) throws RemoteUnavailableException,
             ViewNotFoundException, MetadataServiceException {
         final ResponseEntity<ViewDto> response;
-        final String url = "/api/database/" + databaseId + "/view/" + id;
+        final String url = "/api/v1/database/" + databaseId + "/view/" + id;
         log.debug("get view info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
@@ -252,7 +252,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ResponseEntity<DatabaseAccessDto> response;
-        final String url = "/api/database/" + databaseId + "/access/" + username;
+        final String url = "/api/v1/database/" + databaseId + "/access/" + username;
         log.debug("get database access from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseAccessDto.class);
@@ -304,7 +304,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public void updateTableStatistics(UUID databaseId, UUID tableId, String authorization) throws TableNotFoundException,
             MetadataServiceException, RemoteUnavailableException {
         final ResponseEntity<Void> response;
-        final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
+        final String url = "/api/v1/database/" + databaseId + "/table/" + tableId + "/statistic";
         log.debug("update table statistics in metadata service: {}", url);
         internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
         final HttpHeaders headers = new HttpHeaders();

@@ -68,7 +68,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         
         try {
             // Call the metadata service to create the database
-            final String path = "/api/database/replicate";
+            final String path = "/api/v1/database/replicate";
             final Map<String, Object> response = metadataServiceGateway.createReplicatedDatabase(path, databaseNotificationDto);
             
             log.info("Database created successfully with ID: {}", response.get("databaseId"));
