@@ -1,32 +1,15 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.internal.TableCreateDto;
+
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
-import com.google.common.hash.Hashing;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
