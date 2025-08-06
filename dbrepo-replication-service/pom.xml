@@ -16,7 +16,7 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>replication-service</artifactId>
     <name>replication-service</name>
-    <version>1.10.1</version>
+    <version>1.10.3</version>
 
     <description>Service that manages the replication of the data</description>
 
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.10.1</version>
+            <version>1.10.3</version>
         </dependency>
         <!-- Spark -->
         <dependency>
