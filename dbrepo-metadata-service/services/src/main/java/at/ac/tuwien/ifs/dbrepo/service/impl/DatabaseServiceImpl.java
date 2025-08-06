@@ -100,10 +100,19 @@ public class DatabaseServiceImpl implements DatabaseService {
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
-        
-        log.info("Starting database creation - name: {}, container: {}, user: {}, creationLocation: {}, replicaUrls: {}", 
-                data.getName(), data.getCid(), user.getUsername(), data.getCreationLocation(), data.getReplicaUrls());
-        
+        return create(container, data, user, internalUsers, null);
+    }
+
+    @Override
+    @Transactional
+    public Database create(Container container, CreateDatabaseDto data, User user, List<User> internalUsers, UUID creationId)
+            throws DataServiceException, SearchServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
+            DashboardServiceConnectionException {
+
+        log.info("Starting database creation - name: {}, container: {}, user: {}, creationLocation: {}, replicaUrls: {}, creationId: {}",
+                data.getName(), data.getCid(), user.getUsername(), data.getCreationLocation(), data.getReplicaUrls(), creationId);
+
         final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -120,19 +129,20 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
                 .identifiers(new LinkedList<>())
-                .replicaUrls(data.getReplicaUrls() != null ? 
-                    data.getReplicaUrls().stream()
-                        .map(url -> ReplicaLocation.builder()
-                            .url(url)
-                            .build())
-                        .collect(java.util.stream.Collectors.toList()) : 
-                    new LinkedList<>())
+                .replicaUrls(data.getReplicaUrls() != null ?
+                        data.getReplicaUrls().stream()
+                                .map(url -> ReplicaLocation.builder()
+                                        .url(url)
+                                        .replicaDatabaseId(url.equals(data.getCreationLocation()) ? creationId : null)
+                                        .build())
+                                .collect(java.util.stream.Collectors.toList()) :
+                        new LinkedList<>())
                 .creationLocation(data.getCreationLocation())
                 .build();
-        
+
         log.info("Created database entity - id: {}, internalName: {}, name: {}",
                 entity.getId(), entity.getInternalName(), entity.getName());
-        
+
         /* create in data database */
         log.info("Creating database in data service...");
         final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
@@ -149,30 +159,30 @@ public class DatabaseServiceImpl implements DatabaseService {
         final DatabaseDto dto = dataServiceGateway.createDatabase(payload);
         entity.setExchangeName(dto.getExchangeName());
         log.info("Database created in data service - exchangeName: {}", dto.getExchangeName());
-        
+
         /* create in metadata database */
         log.info("Saving database in metadata database...");
         final Database entity1 = databaseRepository.save(entity);
         log.info("Database saved in metadata database - id: {}", entity1.getId());
-        
+
         entity1.getAccesses()
                 .add(metadataMapper.userToWriteAllAccess(entity1, user));
         final Database database = databaseRepository.save(entity1);
         log.info("Database access saved - final database id: {}", database.getId());
-        
+
         /* create in search service */
         log.info("Calling search service to update database - id: {}, name: {}", database.getId(), database.getName());
         try {
             searchServiceGateway.update(database);
             log.info("Successfully updated database in search service - id: {}", database.getId());
         } catch (Exception e) {
-            log.error("Failed to update database in search service - id: {}, name: {}, error: {}", 
+            log.error("Failed to update database in search service - id: {}, name: {}, error: {}",
                     database.getId(), database.getName(), e.getMessage(), e);
             throw e;
         }
-        
-        log.info("Successfully created database with id: {}, name: {}, internalName: {}", 
-                database.getId(), database.getName(), database.getInternalName());
+
+        log.info("Successfully created database with id: {}, name: {}, internalName: {}, creationId: {}",
+                database.getId(), database.getName(), database.getInternalName(), creationId);
         return database;
     }
 
@@ -401,13 +411,13 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data) 
+    public Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data)
             throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint update replication URL, databaseId={}, replicaUrl={}, replicaDatabaseId={}", 
+        log.debug("endpoint update replication URL, databaseId={}, replicaUrl={}, replicaDatabaseId={}",
                 databaseId, data.getReplicaUrl(), data.getReplicaDatabaseId());
-        
+
         final Database database = findById(databaseId);
-        
+
         // Find the existing ReplicaLocation with the matching URL and update its replicaDatabaseId
         boolean found = false;
         for (ReplicaLocation replicaLocation : database.getReplicaUrls()) {
@@ -418,15 +428,15 @@ public class DatabaseServiceImpl implements DatabaseService {
                 break;
             }
         }
-        
+
         if (!found) {
             log.error("Failed to find replication URL: {} for database: {}", data.getReplicaUrl(), databaseId);
             throw new IllegalArgumentException("Replication URL not found: " + data.getReplicaUrl());
         }
-        
+
         /* update in metadata database */
         final Database updatedDatabase = databaseRepository.save(database);
-        
+
         /* save in search service */
         searchServiceGateway.update(updatedDatabase);
         log.info("Updated replication URL for database with id {} & search database", updatedDatabase.getId());

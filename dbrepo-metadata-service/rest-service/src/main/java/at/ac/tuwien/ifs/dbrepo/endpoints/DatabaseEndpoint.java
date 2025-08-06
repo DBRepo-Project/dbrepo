@@ -271,7 +271,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
 
         final User caller = userService.findByUsername(getUsername(principal));
-        final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
+        final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers(), databaseNotificationDto.getCreationId());
 
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);

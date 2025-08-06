@@ -96,6 +96,29 @@ public interface DatabaseService {
             DashboardServiceConnectionException;
 
     /**
+     * Creates a new database with minimal metadata in the metadata database and creates a new database on the
+     * container.
+     *
+     * @param container The container.
+     * @param createDto The metadata.
+     * @param user      The user.
+     * @param internalUsers      The list of internal users.
+     * @param creationId The creation ID for replication tracking (optional).
+     * @return The database, if successful.
+     * @throws DataServiceException                 The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException       The connection with the data service could not be established.
+     * @throws DatabaseNotFoundException            The created database was not found in the metadata database.
+     * @throws SearchServiceException               The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException     The connection with the search service could not be established.
+     * @throws DashboardServiceException            The dashboard service responded with an unexpected error code.
+     * @throws DashboardServiceConnectionException  The connection to the dashboard service could not be established.
+     */
+    Database create(Container container, CreateDatabaseDto createDto, User user, List<User> internalUsers, UUID creationId)
+            throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
+            DashboardServiceConnectionException;
+
+    /**
      * Updates the user's password.
      *
      * @param database The database.
