@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
