@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,31 @@ public class ReplicationServiceImpl implements ReplicationService {
 
         } catch (Exception e) {
             log.error("Failed to send database replication notification: {}", e.getMessage(), e);
+            // You might want to throw a custom exception here depending on your error handling strategy
+        }
+    }
+
+    @Override
+    @Async
+    public void replicateTable(CreateTableDto createTableDto, UUID databaseId) {
+        try {
+            // Add a small delay to ensure the transaction is fully committed
+            Thread.sleep(1000);
+            
+            log.info("Sending table replication notification to replication service for database: {} and table: {}", databaseId, createTableDto.getName());
+
+            // Send POST request to replication service
+            ResponseEntity<Void> response = replicationRestTemplate.exchange(
+                    "api/replication/table",
+                    HttpMethod.POST,
+                    new HttpEntity<>(createTableDto),
+                    Void.class
+            );
+
+            log.info("Table replication notification sent successfully. Response status: {}", response.getStatusCode());
+
+        } catch (Exception e) {
+            log.error("Failed to send table replication notification: {}", e.getMessage(), e);
             // You might want to throw a custom exception here depending on your error handling strategy
         }
     }

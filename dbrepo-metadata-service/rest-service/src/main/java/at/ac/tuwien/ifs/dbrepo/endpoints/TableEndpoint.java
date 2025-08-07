@@ -53,11 +53,13 @@ public class TableEndpoint extends AbstractEndpoint {
     private final DatabaseService databaseService;
     private final DashboardService dashboardService;
     private final EndpointValidator endpointValidator;
+    private final ReplicationService replicationService;
 
     @Autowired
     public TableEndpoint(UserService userService, TableService tableService, EntityService entityService,
                          MetadataMapper metadataMapper, DatabaseService databaseService,
-                         DashboardService dashboardService, EndpointValidator endpointValidator) {
+                         DashboardService dashboardService, EndpointValidator endpointValidator,
+                         ReplicationService replicationService) {
         this.userService = userService;
         this.tableService = tableService;
         this.entityService = entityService;
@@ -65,6 +67,7 @@ public class TableEndpoint extends AbstractEndpoint {
         this.databaseService = databaseService;
         this.dashboardService = dashboardService;
         this.endpointValidator = endpointValidator;
+        this.replicationService = replicationService;
     }
 
     @GetMapping
@@ -337,6 +340,22 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateColumnCreateConstraints(data);
         final Table table = tableService.createTable(database, data, principal);
         dashboardService.update(table.getDatabase());
+
+        // Handle replication after the transaction is committed
+        if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
+            log.debug("Triggering replication for table - databaseId: {}, tableName: {}, replicaUrls: {}", 
+                    databaseId, data.getName(), database.getReplicaUrls());
+            try {
+                replicationService.replicateTable(data, databaseId);
+            } catch (Exception e) {
+                log.error("Failed to trigger replication for table {} in database {}: {}", data.getName(), databaseId, e.getMessage());
+                // Don't fail the table creation if replication fails
+            }
+        } else {
+            log.debug("Skipping table replication - databaseId: {}, replicaUrls size: {}", 
+                    databaseId, database.getReplicaUrls() != null ? database.getReplicaUrls().size() : 0);
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.tableToTableBriefDto(table));
     }
