@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 
 @Slf4j
 @CrossOrigin(origins = "*")
@@ -346,7 +348,9 @@ public class TableEndpoint extends AbstractEndpoint {
             log.debug("Triggering replication for table - databaseId: {}, tableName: {}, replicaUrls: {}", 
                     databaseId, data.getName(), database.getReplicaUrls());
             try {
-                replicationService.replicateTable(data, databaseId);
+                // Create a new list to avoid lazy loading issues
+                List<ReplicaLocation> replicas = new ArrayList<>(database.getReplicaUrls());
+                replicationService.replicateTable(data, databaseId, replicas);
             } catch (Exception e) {
                 log.error("Failed to trigger replication for table {} in database {}: {}", data.getName(), databaseId, e.getMessage());
                 // Don't fail the table creation if replication fails

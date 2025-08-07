@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -78,22 +79,12 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     @Override
     @Async
-    public void replicateTable(CreateTableDto createTableDto, UUID databaseId) {
+    public void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas) {
         try {
             // Add a small delay to ensure the transaction is fully committed
             Thread.sleep(1000);
             
             log.info("Sending table replication notification to replication service for database: {} and table: {}", databaseId, createTableDto.getName());
-
-            // Get the database to access replicas
-            List<ReplicaLocation> replicas = List.of();
-            try {
-                var database = databaseService.findById(databaseId);
-                replicas = database.getReplicaUrls();
-                log.debug("Found {} replicas for database {}", replicas.size(), databaseId);
-            } catch (Exception e) {
-                log.warn("Failed to get replicas for database {}: {}", databaseId, e.getMessage());
-            }
 
             // Create the notification DTO
             TableNotificationDto notificationDto = TableNotificationDto.builder()
