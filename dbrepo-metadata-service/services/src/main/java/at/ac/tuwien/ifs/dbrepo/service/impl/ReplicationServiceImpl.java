@@ -4,6 +4,8 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,20 +18,25 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.UUID;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 
 @Slf4j
 @Service
 public class ReplicationServiceImpl implements ReplicationService {
 
     private final RestTemplate replicationRestTemplate;
+    private final DatabaseService databaseService;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String baseUrl;
 
     @Autowired
-    public ReplicationServiceImpl(@Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate) {
+    public ReplicationServiceImpl(@Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate,
+                                DatabaseService databaseService) {
         this.replicationRestTemplate = replicationRestTemplate;
+        this.databaseService = databaseService;
     }
 
     @Override
@@ -77,11 +84,28 @@ public class ReplicationServiceImpl implements ReplicationService {
             
             log.info("Sending table replication notification to replication service for database: {} and table: {}", databaseId, createTableDto.getName());
 
+            // Get the database to access replicas
+            List<ReplicaLocation> replicas = List.of();
+            try {
+                var database = databaseService.findById(databaseId);
+                replicas = database.getReplicaUrls();
+                log.debug("Found {} replicas for database {}", replicas.size(), databaseId);
+            } catch (Exception e) {
+                log.warn("Failed to get replicas for database {}: {}", databaseId, e.getMessage());
+            }
+
+            // Create the notification DTO
+            TableNotificationDto notificationDto = TableNotificationDto.builder()
+                    .databaseId(databaseId)
+                    .createTableDto(createTableDto)
+                    .replicas(replicas)
+                    .build();
+
             // Send POST request to replication service
             ResponseEntity<Void> response = replicationRestTemplate.exchange(
                     "api/replication/table",
                     HttpMethod.POST,
-                    new HttpEntity<>(createTableDto),
+                    new HttpEntity<>(notificationDto),
                     Void.class
             );
 
