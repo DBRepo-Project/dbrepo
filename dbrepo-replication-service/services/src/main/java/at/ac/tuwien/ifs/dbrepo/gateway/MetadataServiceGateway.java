@@ -15,6 +15,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 
 public interface MetadataServiceGateway {
 
@@ -140,6 +141,19 @@ public interface MetadataServiceGateway {
      * @throws MetadataServiceException The remote service returned invalid data
      */
     Map<String, Object> createReplicatedDatabase(String path, DatabaseNotificationDto databaseNotificationDto) 
+            throws RemoteUnavailableException, MetadataServiceException;
+
+    /**
+     * Creates a table from replication notification by calling the metadata service.
+     *
+     * @param path The API path to call
+     * @param databaseId The database ID where the table should be created
+     * @param createTableDto The table creation data
+     * @return The response from the metadata service with table ID
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     */
+    Map<String, Object> createReplicatedTable(String path, UUID databaseId, CreateTableDto createTableDto) 
             throws RemoteUnavailableException, MetadataServiceException;
 
 }

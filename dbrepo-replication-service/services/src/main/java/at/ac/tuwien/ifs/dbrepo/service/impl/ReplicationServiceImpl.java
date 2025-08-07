@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -95,6 +96,67 @@ public class ReplicationServiceImpl implements ReplicationService {
         } catch (Exception e) {
             log.error("Failed to send replication to {}: {}", replicaUrl, e.getMessage());
             throw new RuntimeException("Failed to send replication to " + replicaUrl, e);
+        }
+    }
+
+    @Override
+    public void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<String> replicaUrls) {
+        log.info("Sending table replication to {} instances", replicaUrls.size());
+        
+        for (String replicaUrl : replicaUrls) {
+            try {
+                sendTableReplicationToInstance(databaseId, createTableDto, replicaUrl);
+            } catch (Exception e) {
+                log.error("Failed to send table replication to instance {}: {}", replicaUrl, e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void sendTableReplicationToInstance(UUID databaseId, CreateTableDto createTableDto, String replicaUrl) {
+        log.info("Sending table replication to instance: {}", replicaUrl);
+        
+        try {
+            // Create headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Create request entity
+            HttpEntity<CreateTableDto> requestEntity = new HttpEntity<>(createTableDto, headers);
+            
+            // Build the full URL for the table replication endpoint
+            String replicationUrl = replicaUrl + "/api/replication/replicate/table?databaseId=" + databaseId;
+            
+            log.info("Sending POST request to: {}", replicationUrl);
+            
+            // Send the request
+            ResponseEntity<String> response = externalReplicationRestTemplate.postForEntity(replicationUrl, requestEntity, String.class);
+            
+            log.info("Table replication sent successfully to {} with status: {}", replicaUrl, response.getStatusCode());
+            log.info("Response details - Status code: {}, Headers: {}, Body: {}", 
+                response.getStatusCode(),
+                response.getHeaders(),
+                response.getBody());
+            
+            // Parse the response to extract the remote table ID if available
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode responseJson = objectMapper.readTree(response.getBody());
+                    
+                    if (responseJson.has("tableId")) {
+                        String remoteTableId = responseJson.get("tableId").asText();
+                        log.info("Extracted remote table ID: {} from response", remoteTableId);
+                    } else {
+                        log.info("Table replication successful, no tableId in response: {}", response.getBody());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to parse table replication response: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to send table replication to {}: {}", replicaUrl, e.getMessage());
+            throw new RuntimeException("Failed to send table replication to " + replicaUrl, e);
         }
     }
     

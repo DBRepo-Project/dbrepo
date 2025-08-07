@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 
 @Slf4j
 @Service
@@ -348,6 +349,33 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new MetadataServiceException("Failed to create replicated database: body is empty");
         }
         log.info("Created replicated database successfully");
+        return response.getBody();
+    }
+
+    @Override
+    public Map<String, Object> createReplicatedTable(String path, UUID databaseId, CreateTableDto createTableDto) 
+            throws RemoteUnavailableException, MetadataServiceException {
+        final ResponseEntity<Map> response;
+        log.debug("create replicated table in metadata service: {}", path);
+        final HttpEntity<CreateTableDto> requestEntity = new HttpEntity<>(createTableDto);
+        try {
+            response = internalRestTemplate.exchange(path, HttpMethod.POST, requestEntity, Map.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to create replicated table: {}", e.getMessage());
+            throw new RemoteUnavailableException("Failed to create replicated table: " + e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            log.error("Failed to create replicated table: {}", e.getMessage());
+            throw new MetadataServiceException("Failed to create replicated table: " + e.getMessage(), e);
+        }
+        if (response.getStatusCode() != HttpStatus.CREATED && response.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to create replicated table: service responded unsuccessful: {}", response.getStatusCode());
+            throw new MetadataServiceException("Failed to create replicated table: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to create replicated table: body is empty");
+            throw new MetadataServiceException("Failed to create replicated table: body is empty");
+        }
+        log.info("Created replicated table successfully");
         return response.getBody();
     }
 }
