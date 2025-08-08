@@ -25,6 +25,7 @@ import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,9 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
+    @Value("${BASE_URL:http://localhost:8080}")
+    private String baseUrl;
+
 
     private final MetadataMapper metadataMapper;
     private final DatabaseRepository databaseRepository;
@@ -137,7 +141,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                                         .build())
                                 .collect(java.util.stream.Collectors.toList()) :
                         new LinkedList<>())
-                .creationLocation(data.getCreationLocation())
+                .creationLocation(data.getCreationLocation() == null ? baseUrl : data.getCreationLocation())
                 .build();
 
         log.info("Created database entity - id: {}, internalName: {}, name: {}",

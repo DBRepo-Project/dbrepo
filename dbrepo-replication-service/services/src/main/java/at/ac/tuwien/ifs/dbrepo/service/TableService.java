@@ -9,7 +9,15 @@ import java.util.UUID;
 
 public interface TableService {
 
-    void handleTableReplication(List<ReplicaLocation> replicas, CreateTableDto createTableDto);
+    /**
+     * Handles table replication by creating the table locally and sending notifications to other instances.
+     * @param databaseId The database ID where the table should be created
+     * @param replicas List of replica locations to send notifications to
+     * @param createTableDto The table creation data to replicate
+     * @param creationId The local table ID (creation ID) for updating replication URLs
+     * @return The created table ID
+     */
+    String handleTableReplication(UUID databaseId, List<ReplicaLocation> replicas, CreateTableDto createTableDto, UUID creationId);
 
     Map<String, Object> insertReplicatedTable(UUID databaseId, CreateTableDto createTableDto);
 }

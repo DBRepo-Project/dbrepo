@@ -28,32 +28,32 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    public void handleTableReplication(List<ReplicaLocation> replicas, CreateTableDto createTableDto) {
+    public String handleTableReplication(UUID databaseId, List<ReplicaLocation> replicas, CreateTableDto createTableDto, UUID creationId) {
         log.info("=== TABLE REPLICATION HANDLER ===");
         
-        if (replicas != null && !replicas.isEmpty()) {
-            log.info("Sending table replication to {} instances", replicas.size());
+        // Print replica URLs
+        System.out.println("Replica URLs:");
+        System.out.println("Database ID: " + databaseId);
+        System.out.println("Table Name: " + createTableDto.getName());
+        System.out.println("Creation ID: " + creationId);
+        
+        // Get replica URLs from the replicas
+        var replicaUrls = replicas != null ? replicas.stream().map(ReplicaLocation::getUrl).collect(Collectors.toList()) : List.<String>of();
+        
+        if (replicaUrls != null && !replicaUrls.isEmpty()) {
+            log.info("Sending table replication to {} instances", replicaUrls.size());
+            System.out.println("Replica URLs to contact: " + replicaUrls);
             
-            // Send replication to each replica individually
-            for (ReplicaLocation replica : replicas) {
-                try {
-                    String replicaUrl = replica.getUrl();
-                    UUID databaseId = replica.getReplicaDatabaseId();
-                    
-                    log.info("Sending table replication to replica: {} with database ID: {}", replicaUrl, databaseId);
-                    
-                    // Send replication to this specific instance
-                    replicationService.sendTableReplicationToInstance(databaseId, createTableDto, replicaUrl);
-                    
-                } catch (Exception e) {
-                    log.error("Failed to send table replication to replica {}: {}", replica.getUrl(), e.getMessage());
-                }
-            }
+            // Send replication to other instances
+            replicationService.sendTableReplicationToInstances(databaseId, createTableDto, replicaUrls, creationId);
         } else {
             log.info("No replica URLs provided, skipping table replication to other instances");
+            System.out.println("No replica URLs to contact");
         }
         
         System.out.println("========================");
+        
+        return creationId.toString();
     }
 
     @Override

@@ -79,16 +79,18 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     @Override
     @Async
-    public void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas) {
+    public void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas, UUID creationId) {
         try {
             // Add a small delay to ensure the transaction is fully committed
             Thread.sleep(1000);
             
             log.info("Sending table replication notification to replication service for database: {} and table: {}", databaseId, createTableDto.getName());
 
+            createTableDto.setCreationLocation(baseUrl);
             // Create the notification DTO
             TableNotificationDto notificationDto = TableNotificationDto.builder()
                     .databaseId(databaseId)
+                    .creationId(creationId)
                     .createTableDto(createTableDto)
                     .replicas(replicas)
                     .build();

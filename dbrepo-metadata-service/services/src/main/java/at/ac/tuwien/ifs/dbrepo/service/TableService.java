@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 
 import java.security.Principal;
 import java.util.UUID;
@@ -57,6 +58,32 @@ public interface TableService {
      * @throws SemanticEntityNotFoundException  The semantic entity was not found in the metadata database.
      */
     Table createTable(Database database, CreateTableDto createDto, Principal principal) throws TableNotFoundException,
+            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException;
+
+    /**
+     *
+     * Creates a table for a database id with given schema as data and creationId for replication
+     *
+     * @param database  The database.
+     * @param createDto The schema (as data).
+     * @param principal The principal.
+     * @param creationId The creation ID for replication.
+     * @return The created table.
+     * @throws TableNotFoundException           The table was not found in the metadata service.
+     * @throws DataServiceException             The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException   The connection with the data service could not be established.
+     * @throws UserNotFoundException            The user with this username was not found in the metadata database.
+     * @throws DatabaseNotFoundException        The database was not found in the metadata service.
+     * @throws TableExistsException             The table with this name exists in the target database.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
+     * @throws MalformedException               The table is malformed, e.g. a column of a primary key constraint could not be found.
+     * @throws OntologyNotFoundException        The ontology was not found in the metadata database.
+     * @throws SemanticEntityNotFoundException  The semantic entity was not found in the metadata database.
+     */
+    Table createTable(Database database, CreateTableDto createDto, Principal principal, UUID creationId) throws TableNotFoundException,
             DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException;
@@ -136,4 +163,17 @@ public interface TableService {
     void updateStatistics(Table table) throws SearchServiceException, DatabaseNotFoundException,
             SearchServiceConnectionException, MalformedException, TableNotFoundException, DataServiceException,
             DataServiceConnectionException;
+
+    /**
+     * Updates the replication URL with the remote table ID for a given table.
+     *
+     * @param tableId The table ID.
+     * @param data The update data containing replica URL and replica table ID.
+     * @return The updated table, if successful.
+     * @throws TableNotFoundException           The table was not found in the metadata service.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
+     */
+    Table updateReplicationUrl(UUID tableId, TableUpdateReplicationUrlDto data) throws TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DatabaseNotFoundException;
 }

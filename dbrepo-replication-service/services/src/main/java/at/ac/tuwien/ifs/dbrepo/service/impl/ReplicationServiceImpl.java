@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.UUID;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 
 @Slf4j
 @Service
@@ -100,12 +101,12 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<String> replicaUrls) {
+    public void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<String> replicaUrls, UUID creationId) {
         log.info("Sending table replication to {} instances", replicaUrls.size());
         
         for (String replicaUrl : replicaUrls) {
             try {
-                sendTableReplicationToInstance(databaseId, createTableDto, replicaUrl);
+                sendTableReplicationToInstance(databaseId, createTableDto, replicaUrl, creationId);
             } catch (Exception e) {
                 log.error("Failed to send table replication to instance {}: {}", replicaUrl, e.getMessage());
             }
@@ -113,8 +114,8 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void sendTableReplicationToInstance(UUID databaseId, CreateTableDto createTableDto, String replicaUrl) {
-        log.info("Sending table replication to instance: {}", replicaUrl);
+    public void sendTableReplicationToInstance(UUID databaseId, CreateTableDto createTableDto, String replicaUrl, UUID creationId) {
+        log.info("Sending table replication to instance: {} with creationId: {}", replicaUrl, creationId);
         
         try {
             // Create headers
@@ -147,6 +148,10 @@ public class ReplicationServiceImpl implements ReplicationService {
                     if (responseJson.has("tableId")) {
                         String remoteTableId = responseJson.get("tableId").asText();
                         log.info("Extracted remote table ID: {} from response", remoteTableId);
+                        
+                        // Call the new endpoint to update the replication URL with the remote table ID
+                        // Use creationId as the local table ID and remoteTableId as the remote table ID
+                        updateTableReplicationUrlWithRemoteId(databaseId, creationId, replicaUrl, UUID.fromString(remoteTableId));
                     } else {
                         log.info("Table replication successful, no tableId in response: {}", response.getBody());
                     }
@@ -194,6 +199,43 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.info("Replication URL updated successfully with status: {}", response.getStatusCode());
         } catch (Exception e) {
             log.error("Failed to update replication URL for database {}: {}", databaseId, e.getMessage());
+        }
+    }
+
+    private void updateTableReplicationUrlWithRemoteId(UUID databaseId, UUID localTableId, String replicaUrl, UUID remoteTableId) {
+        try {
+            log.info("Updating table replication URL {} with remote table ID {} for database {} and local table ID {}", 
+                    replicaUrl, remoteTableId, databaseId, localTableId);
+            
+            // Create the DTO for updating replication URL
+            TableUpdateReplicationUrlDto updateDto = TableUpdateReplicationUrlDto.builder()
+                    .replicaUrl(replicaUrl)
+                    .replicaTableId(remoteTableId)
+                    .build(); 
+            
+            // Create headers for the update request
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Create request entity
+            HttpEntity<TableUpdateReplicationUrlDto> requestEntity = new HttpEntity<>(updateDto, headers);
+            
+            // Build the URL for the replication URL update endpoint
+            String updateUrl = gatewayConfig.getMetadataEndpoint() + "/api/v1/database/" + databaseId + "/table/" + localTableId + "/replication-url";
+            
+            log.info("Sending PUT request to update table replication URL: {}", updateUrl);
+            
+            // Send the request
+            ResponseEntity<String> response = externalReplicationRestTemplate.exchange(
+                updateUrl, 
+                org.springframework.http.HttpMethod.PUT, 
+                requestEntity, 
+                String.class
+            );
+            
+            log.info("Table replication URL updated successfully with status: {}", response.getStatusCode());
+        } catch (Exception e) {
+            log.error("Failed to update table replication URL for database {} and table {}: {}", databaseId, localTableId, e.getMessage());
         }
     }
 } 

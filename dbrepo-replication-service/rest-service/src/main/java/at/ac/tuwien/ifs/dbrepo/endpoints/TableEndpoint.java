@@ -28,15 +28,17 @@ public class TableEndpoint {
         System.out.println("Database ID: " + tableNotificationDto.getDatabaseId());
         System.out.println("Table DTO: " + tableNotificationDto.getCreateTableDto());
         System.out.println("Replicas: " + tableNotificationDto.getReplicas());
+        System.out.println("Creation ID: " + tableNotificationDto.getCreationId());
         
-        // Call the service to handle the replication
-        tableService.handleTableReplication(tableNotificationDto.getReplicas(), tableNotificationDto.getCreateTableDto());
+        // Call the service to handle the replication (this will create the table locally and handle replication to other instances)
+        String tableId = tableService.handleTableReplication(tableNotificationDto.getDatabaseId(), tableNotificationDto.getReplicas(), tableNotificationDto.getCreateTableDto(), tableNotificationDto.getCreationId());
         
         System.out.println("========================");
         
         Map<String, Object> response = Map.of(
             "status", "success",
             "message", "Table replication notification received successfully",
+            "tableId", tableId != null ? tableId : "unknown",
             "tableInformation", tableNotificationDto.getCreateTableDto()
         );
         

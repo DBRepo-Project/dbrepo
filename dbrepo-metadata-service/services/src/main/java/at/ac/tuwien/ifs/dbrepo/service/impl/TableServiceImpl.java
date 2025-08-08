@@ -8,6 +8,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDt
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
@@ -19,6 +21,7 @@ import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +30,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 
 @Slf4j
 @Service
 public class TableServiceImpl implements TableService {
+
+    @Value("${BASE_URL:http://localhost:8080}")
+    private String baseUrl;
 
     private final UserService userService;
     private final UnitService unitService;
@@ -92,6 +100,15 @@ public class TableServiceImpl implements TableService {
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException {
+        return createTable(database, data, principal, null);
+    }
+
+    @Override
+    @Transactional
+    public Table createTable(Database database, CreateTableDto data, Principal principal, UUID creationId) throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException {
         final User owner = userService.findByUsername(principal.getName());
         /* map table */
         final Table table = Table.builder()
@@ -110,6 +127,13 @@ public class TableServiceImpl implements TableService {
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
+                .replicaUrls(database.getReplicaUrls().stream()
+                        .map(replicaLocation -> ReplicaTableLocation.builder()
+                                .url(replicaLocation.getUrl())
+                                .replicaTableId(replicaLocation.getUrl().equals(data.getCreationLocation()) ? creationId : null)
+                                .build())
+                        .collect(Collectors.toList()))
+                .creationLocation(data.getCreationLocation() == null ? baseUrl : data.getCreationLocation())
                 .build();
         try {
             /* set the ordinal position for the columns */
@@ -190,7 +214,7 @@ public class TableServiceImpl implements TableService {
         }
         /* update in search service */
         searchServiceGateway.update(entity);
-        log.info("Created table with id {}", optional.get().getId());
+        log.info("Created table with id {} and creationId {}", optional.get().getId(), creationId);
         return optional.get();
     }
 
@@ -331,6 +355,55 @@ public class TableServiceImpl implements TableService {
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated statistics for the table and {} column(s)", table.getColumns().size());
+    }
+
+    @Override
+    @Transactional
+    public Table updateReplicationUrl(UUID tableId, TableUpdateReplicationUrlDto data)
+            throws TableNotFoundException, SearchServiceException, SearchServiceConnectionException, DatabaseNotFoundException {
+        log.debug("endpoint update replication URL, tableId={}, replicaUrl={}, replicaTableId={}",
+                tableId, data.getReplicaUrl(), data.getReplicaTableId());
+
+        // Find the table by ID across all databases
+        Table table = null;
+        for (Database database : databaseRepository.findAll()) {
+            Optional<Table> optionalTable = database.getTables().stream()
+                    .filter(t -> t.getId().equals(tableId))
+                    .findFirst();
+            if (optionalTable.isPresent()) {
+                table = optionalTable.get();
+                break;
+            }
+        }
+
+        if (table == null) {
+            log.error("Failed to find table with id {}", tableId);
+            throw new TableNotFoundException("Failed to find table with id " + tableId);
+        }
+
+        // Find the existing ReplicaTableLocation with the matching URL and update its replicaTableId
+        boolean found = false;
+        for (ReplicaTableLocation replicaLocation : table.getReplicaUrls()) {
+            if (replicaLocation.getUrl().equals(data.getReplicaUrl())) {
+                replicaLocation.setReplicaTableId(data.getReplicaTableId());
+                found = true;
+                log.debug("Updated replica table ID for URL: {}", data.getReplicaUrl());
+                break;
+            }
+        }
+
+        if (!found) {
+            log.error("Failed to find replication URL: {} for table: {}", data.getReplicaUrl(), tableId);
+            throw new IllegalArgumentException("Replication URL not found: " + data.getReplicaUrl());
+        }
+
+        /* update in metadata database */
+        final Database updatedDatabase = databaseRepository.save(table.getDatabase());
+
+        /* save in search service */
+        searchServiceGateway.update(updatedDatabase);
+        log.info("Updated replication URL for table with id {} & search database", table.getId());
+        return table;
     }
 
 }

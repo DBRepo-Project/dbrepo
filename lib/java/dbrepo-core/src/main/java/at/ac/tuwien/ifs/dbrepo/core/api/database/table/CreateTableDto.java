@@ -46,4 +46,7 @@ public class CreateTableDto {
 
     @NotNull
     private CreateTableConstraintsDto constraints;
+
+    @Schema(description = "The creation location URL", example = "http://localhost:8080")
+    private String creationLocation;
 }

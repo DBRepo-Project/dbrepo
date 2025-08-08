@@ -11,5 +11,5 @@ public interface ReplicationService {
 
     void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId);
     
-    void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas);
+    void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas, UUID creationId);
 }

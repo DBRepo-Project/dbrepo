@@ -17,6 +17,7 @@ import java.util.UUID;
 @ToString
 public class TableNotificationDto {
     UUID databaseId;
+    UUID creationId;
     CreateTableDto createTableDto;
     List<ReplicaLocation> replicas;
 } 
