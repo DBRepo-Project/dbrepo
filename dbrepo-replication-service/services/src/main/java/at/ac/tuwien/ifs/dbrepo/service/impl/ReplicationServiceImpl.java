@@ -108,7 +108,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         
         for (ReplicaLocation replica : replicas) {
             try {
-                sendTableReplicationToInstance(replica.getReplicaDatabaseId(), createTableDto, replica.getUrl(), creationId);
+                sendTableReplicationToInstance(replica.getReplicaDatabaseId(), databaseId, createTableDto, replica.getUrl(), creationId);
             } catch (Exception e) {
                 log.error("Failed to send table replication to instance {}: {}", replica.getUrl(), e.getMessage());
             }
@@ -116,7 +116,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void sendTableReplicationToInstance(UUID databaseId, CreateTableDto createTableDto, String replicaUrl, UUID creationId) {
+    public void sendTableReplicationToInstance(UUID remoteDatabaseId, UUID localDatabaseId, CreateTableDto createTableDto, String replicaUrl, UUID creationId) {
         log.info("Sending table replication to instance: {} with creationId: {}", replicaUrl, creationId);
         
         try {
@@ -128,7 +128,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             HttpEntity<CreateTableDto> requestEntity = new HttpEntity<>(createTableDto, headers);
             
             // Build the full URL for the table replication endpoint
-            String replicationUrl = replicaUrl + "/api/replication/replicate/table?databaseId=" + databaseId;
+            String replicationUrl = replicaUrl + "/api/replication/replicate/table?databaseId=" + remoteDatabaseId;
             
             log.info("Sending POST request to: {}", replicationUrl);
             
@@ -153,7 +153,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                         
                         // Call the new endpoint to update the replication URL with the remote table ID
                         // Use creationId as the local table ID and remoteTableId as the remote table ID
-                        updateTableReplicationUrlWithRemoteId(databaseId, creationId, replicaUrl, UUID.fromString(remoteTableId));
+                        updateTableReplicationUrlWithRemoteId(localDatabaseId, creationId, replicaUrl, UUID.fromString(remoteTableId));
                     } else {
                         log.info("Table replication successful, no id in response: {}", response.getBody());
                     }

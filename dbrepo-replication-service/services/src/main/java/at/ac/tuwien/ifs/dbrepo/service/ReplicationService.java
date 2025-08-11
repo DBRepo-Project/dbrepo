@@ -26,19 +26,19 @@ public interface ReplicationService {
 
     /**
      * Sends table replication notification to other instances.
-     * @param databaseId The database ID where the table should be created
+     * @param localDatabaseId
      * @param createTableDto The table creation data to replicate
      * @param replicas List of replicas to send the replication notification to
      * @param creationId The local table ID (creation ID) for updating replication URLs
      */
-    void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<ReplicaLocation> replicas, UUID creationId);
+    void sendTableReplicationToInstances(UUID localDatabaseId, CreateTableDto createTableDto, List<ReplicaLocation> replicas, UUID creationId);
 
     /**
      * Sends table replication notification to a specific instance.
-     * @param databaseId The database ID where the table should be created
+     * @param remoteDatabaseId The database ID where the table should be created
      * @param createTableDto The table creation data to replicate
      * @param replicaUrl The URL of the instance to send the notification to
      * @param creationId The local table ID (creation ID) for updating replication URLs
      */
-    void sendTableReplicationToInstance(UUID databaseId, CreateTableDto createTableDto, String replicaUrl, UUID creationId);
+    void sendTableReplicationToInstance(UUID remoteDatabaseId, UUID localDatabaseId, CreateTableDto createTableDto, String replicaUrl, UUID creationId);
 } 
