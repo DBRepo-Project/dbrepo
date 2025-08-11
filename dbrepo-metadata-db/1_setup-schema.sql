@@ -104,6 +104,14 @@ CREATE TABLE IF NOT EXISTS `mdb_databases_replica_urls`
         ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE `mdb_tables_replica_urls` (
+    `table_id` VARCHAR(36) NOT NULL,
+    `replica_table_id` CHAR(36) NULL,
+    `replica_url` TEXT NOT NULL,
+    PRIMARY KEY (`table_id`, `replica_table_id`),
+    FOREIGN KEY (`table_id`) REFERENCES `mdb_tables` (`id`) ON DELETE CASCADE
+);
+
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (

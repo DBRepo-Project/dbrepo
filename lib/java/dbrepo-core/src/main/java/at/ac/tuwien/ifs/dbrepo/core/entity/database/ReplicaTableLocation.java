@@ -19,7 +19,7 @@ import java.util.UUID;
 public class ReplicaTableLocation implements Serializable {
 
     @JdbcTypeCode(Types.VARCHAR)
-    @Column(name = "replica_table_id", columnDefinition = "CHAR(36)")
+    @Column(name = "replica_table_id", columnDefinition = "CHAR(36)", nullable = true)
     private UUID replicaTableId;
 
     @Column(name = "replica_url", columnDefinition = "TEXT", nullable = false)
