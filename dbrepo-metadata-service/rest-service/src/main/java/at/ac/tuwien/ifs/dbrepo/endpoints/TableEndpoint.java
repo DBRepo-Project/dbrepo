@@ -424,9 +424,6 @@ public class TableEndpoint extends AbstractEndpoint {
         // Create the table using the CreateTableDto from the notification
         CreateTableDto createTableDto = tableNotificationDto.getCreateTableDto();
 
-        // Set creationLocation to null to avoid infinite replication loops
-        createTableDto.setCreationLocation(null);
-        
         final Table table = tableService.createTable(database, createTableDto, principal, tableNotificationDto.getCreationId());
         dashboardService.update(table.getDatabase());
 
