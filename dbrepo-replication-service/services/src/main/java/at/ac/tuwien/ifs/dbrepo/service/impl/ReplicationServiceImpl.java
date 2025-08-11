@@ -4,6 +4,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -101,14 +103,14 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<String> replicaUrls, UUID creationId) {
-        log.info("Sending table replication to {} instances", replicaUrls.size());
+    public void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<ReplicaLocation> replicas, UUID creationId) {
+        log.info("Sending table replication to {} instances", replicas.size());
         
-        for (String replicaUrl : replicaUrls) {
+        for (ReplicaLocation replica : replicas) {
             try {
-                sendTableReplicationToInstance(databaseId, createTableDto, replicaUrl, creationId);
+                sendTableReplicationToInstance(replica.getReplicaDatabaseId(), createTableDto, replica.getUrl(), creationId);
             } catch (Exception e) {
-                log.error("Failed to send table replication to instance {}: {}", replicaUrl, e.getMessage());
+                log.error("Failed to send table replication to instance {}: {}", replica.getUrl(), e.getMessage());
             }
         }
     }

@@ -37,15 +37,12 @@ public class TableServiceImpl implements TableService {
         System.out.println("Table Name: " + createTableDto.getName());
         System.out.println("Creation ID: " + creationId);
         
-        // Get replica URLs from the replicas
-        var replicaUrls = replicas != null ? replicas.stream().map(ReplicaLocation::getUrl).collect(Collectors.toList()) : List.<String>of();
-        
-        if (replicaUrls != null && !replicaUrls.isEmpty()) {
-            log.info("Sending table replication to {} instances", replicaUrls.size());
-            System.out.println("Replica URLs to contact: " + replicaUrls);
-            
+
+        if (replicas != null && !replicas.isEmpty()) {
+            log.info("Sending table replication to {} instances", replicas.size());
+
             // Send replication to other instances
-            replicationService.sendTableReplicationToInstances(databaseId, createTableDto, replicaUrls, creationId);
+            replicationService.sendTableReplicationToInstances(databaseId, createTableDto, replicas, creationId);
         } else {
             log.info("No replica URLs provided, skipping table replication to other instances");
             System.out.println("No replica URLs to contact");
