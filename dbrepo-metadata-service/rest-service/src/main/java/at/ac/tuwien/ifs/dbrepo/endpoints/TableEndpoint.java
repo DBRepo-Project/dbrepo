@@ -377,9 +377,10 @@ public class TableEndpoint extends AbstractEndpoint {
     @Transactional(rollbackFor = {Exception.class})
     @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_table_replicate")
-    @Operation(summary = "Replicate table",
-            description = "Replicates a table creation notification from another instance. Requires role 'system'.",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Replicate table creation",
+            description = "Creates a table from replication notification. Requires system authority.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Replicated table successfully",
