@@ -111,6 +111,16 @@ public class TableServiceImpl implements TableService {
             OntologyNotFoundException, SemanticEntityNotFoundException {
         final User owner = userService.findByUsername(principal.getName());
         /* map table */
+
+        for (ReplicaLocation replica: database.getReplicaUrls()) {
+            System.out.println("========");
+            System.out.println(replica.getUrl());
+            System.out.println(data.getCreationLocation());
+            System.out.println(replica.getUrl().equals(data.getCreationLocation()));
+
+            System.out.println("========");
+        }
+
         final Table table = Table.builder()
                 .isVersioned(true)
                 .name(data.getName())
