@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
@@ -353,11 +354,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public Map<String, Object> createReplicatedTable(String path, UUID databaseId, CreateTableDto createTableDto) 
+    public Map<String, Object> createReplicatedTable(String path, UUID databaseId, TableNotificationDto tableNotificationDto)
             throws RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<Map> response;
         log.debug("create replicated table in metadata service: {}", path);
-        final HttpEntity<CreateTableDto> requestEntity = new HttpEntity<>(createTableDto);
+        final HttpEntity<TableNotificationDto> requestEntity = new HttpEntity<>(tableNotificationDto);
         try {
             response = internalRestTemplate.exchange(path, HttpMethod.POST, requestEntity, Map.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {

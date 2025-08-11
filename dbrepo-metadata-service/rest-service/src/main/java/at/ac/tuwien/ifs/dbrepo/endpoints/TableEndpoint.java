@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 
 @Slf4j
 @CrossOrigin(origins = "*")
@@ -367,6 +368,63 @@ public class TableEndpoint extends AbstractEndpoint {
             log.debug("Skipping table replication - databaseId: {}, replicaUrls size: {}", 
                     databaseId, database.getReplicaUrls() != null ? database.getReplicaUrls().size() : 0);
         }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(metadataMapper.tableToTableBriefDto(table));
+    }
+
+    @PostMapping("/replicate")
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replicate")
+    @Operation(summary = "Replicate table",
+            description = "Replicates a table creation notification from another instance. Requires role 'system'.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Replicated table successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Create table query is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Replicate table not permitted",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or container could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "409",
+                    description = "Create table conflicts with existing table name",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableBriefDto> replicateTable(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                        @NotNull @Valid @RequestBody TableNotificationDto tableNotificationDto) 
+            throws NotAllowedException, MalformedException, DataServiceException, DataServiceConnectionException, 
+            DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, TableNotFoundException, 
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, 
+            SemanticEntityNotFoundException, DashboardServiceException, DashboardServiceConnectionException {
+
+        log.debug("endpoint replicate table, databaseId={}, tableName={}", databaseId, 
+                tableNotificationDto.getCreateTableDto().getName());
+        
+        final Database database = databaseService.findById(databaseId);
+        
+        // Create the table using the CreateTableDto from the notification
+        CreateTableDto createTableDto = tableNotificationDto.getCreateTableDto();
+        
+        // Set creationLocation to null to avoid infinite replication loops
+        createTableDto.setCreationLocation(null);
+        
+        final Table table = tableService.createTable(database, createTableDto, null, tableNotificationDto.getCreationId());
+        dashboardService.update(table.getDatabase());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.tableToTableBriefDto(table));

@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -103,12 +104,12 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void sendTableReplicationToInstances(UUID databaseId, CreateTableDto createTableDto, List<ReplicaLocation> replicas, UUID creationId) {
-        log.info("Sending table replication to {} instances", replicas.size());
+    public void sendTableReplicationToInstances(TableNotificationDto tableNotificationDto) {
+        log.info("Sending table replication to {} instances", tableNotificationDto.getReplicas().size());
         
-        for (ReplicaLocation replica : replicas) {
+        for (ReplicaLocation replica : tableNotificationDto.getReplicas()) {
             try {
-                sendTableReplicationToInstance(replica.getReplicaDatabaseId(), databaseId, createTableDto, replica.getUrl(), creationId);
+                sendTableReplicationToInstance(replica.getReplicaDatabaseId(), tableNotificationDto, replica.getUrl());
             } catch (Exception e) {
                 log.error("Failed to send table replication to instance {}: {}", replica.getUrl(), e.getMessage());
             }
@@ -116,8 +117,8 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void sendTableReplicationToInstance(UUID remoteDatabaseId, UUID localDatabaseId, CreateTableDto createTableDto, String replicaUrl, UUID creationId) {
-        log.info("Sending table replication to instance: {} with creationId: {}", replicaUrl, creationId);
+    public void sendTableReplicationToInstance(UUID remoteDatabaseId, TableNotificationDto tableNotificationDto, String replicaUrl) {
+        log.info("Sending table replication to instance: {} with creationId: {}", replicaUrl, tableNotificationDto.getCreationId());
         
         try {
             // Create headers
@@ -125,10 +126,10 @@ public class ReplicationServiceImpl implements ReplicationService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             
             // Create request entity
-            HttpEntity<CreateTableDto> requestEntity = new HttpEntity<>(createTableDto, headers);
+            HttpEntity<TableNotificationDto> requestEntity = new HttpEntity<>(tableNotificationDto, headers);
             
             // Build the full URL for the table replication endpoint
-            String replicationUrl = replicaUrl + "/api/replication/replicate/table?databaseId=" + remoteDatabaseId;
+            String replicationUrl = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/replicate";
             
             log.info("Sending POST request to: {}", replicationUrl);
             
@@ -153,7 +154,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                         
                         // Call the new endpoint to update the replication URL with the remote table ID
                         // Use creationId as the local table ID and remoteTableId as the remote table ID
-                        updateTableReplicationUrlWithRemoteId(localDatabaseId, creationId, replicaUrl, UUID.fromString(remoteTableId));
+                        updateTableReplicationUrlWithRemoteId(tableNotificationDto.getDatabaseId(), tableNotificationDto.getCreationId(),
+                                replicaUrl, UUID.fromString(remoteTableId));
                     } else {
                         log.info("Table replication successful, no id in response: {}", response.getBody());
                     }

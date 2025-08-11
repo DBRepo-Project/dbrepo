@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -54,9 +55,9 @@ public class ReplicateEndpoint {
 
     @PostMapping("/table")
     @Operation(summary = "Receive table", description = "Receives table replication notification from other instances")
-    public ResponseEntity<Map<String, Object>> receiveTableReplication(@RequestParam UUID databaseId, @RequestBody CreateTableDto createTableDto) {
+    public ResponseEntity<Map<String, Object>> receiveTableReplication(@RequestParam UUID databaseId, @RequestBody TableNotificationDto tableNotificationDto) {
         // Call the service to create the database locally
-        Map<String, Object> response = tableService.insertReplicatedTable(databaseId, createTableDto);
+        Map<String, Object> response = tableService.insertReplicatedTable(databaseId, tableNotificationDto);
 
         System.out.println("=== Table Response ===");
         response.forEach((key, value) -> {

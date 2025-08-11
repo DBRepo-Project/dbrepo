@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import jakarta.validation.constraints.NotNull;
@@ -153,7 +154,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available
      * @throws MetadataServiceException The remote service returned invalid data
      */
-    Map<String, Object> createReplicatedTable(String path, UUID databaseId, CreateTableDto createTableDto) 
+    Map<String, Object> createReplicatedTable(String path, UUID databaseId, TableNotificationDto tableNotificationDto)
             throws RemoteUnavailableException, MetadataServiceException;
 
 }

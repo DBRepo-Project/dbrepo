@@ -49,4 +49,5 @@ public class CreateTableDto {
 
     @Schema(description = "The creation location URL", example = "http://localhost:8080")
     private String creationLocation;
+
 }

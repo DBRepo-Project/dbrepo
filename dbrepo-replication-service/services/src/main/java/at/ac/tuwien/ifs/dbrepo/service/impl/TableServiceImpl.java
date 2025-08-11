@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -28,39 +29,30 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    public String handleTableReplication(UUID databaseId, List<ReplicaLocation> replicas, CreateTableDto createTableDto, UUID creationId) {
-        log.info("=== TABLE REPLICATION HANDLER ===");
-        
-        // Print replica URLs
-        System.out.println("Replica URLs:");
-        System.out.println("Database ID: " + databaseId);
-        System.out.println("Table Name: " + createTableDto.getName());
-        System.out.println("Creation ID: " + creationId);
-        
+    public String handleTableReplication(TableNotificationDto tableNotificationDto) {
 
-        if (replicas != null && !replicas.isEmpty()) {
-            log.info("Sending table replication to {} instances", replicas.size());
+        if (tableNotificationDto.getReplicas() != null && !tableNotificationDto.getReplicas().isEmpty()) {
+            log.info("Sending table replication to {} instances", tableNotificationDto.getReplicas().size());
 
             // Send replication to other instances
-            replicationService.sendTableReplicationToInstances(databaseId, createTableDto, replicas, creationId);
+            replicationService.sendTableReplicationToInstances(tableNotificationDto);
         } else {
             log.info("No replica URLs provided, skipping table replication to other instances");
             System.out.println("No replica URLs to contact");
         }
         
-        System.out.println("========================");
-        
-        return creationId.toString();
+
+        return tableNotificationDto.getCreationId().toString();
     }
 
     @Override
-    public Map<String, Object> insertReplicatedTable(UUID databaseId, CreateTableDto createTableDto) {
+    public Map<String, Object> insertReplicatedTable(UUID databaseId, TableNotificationDto tableNotificationDto) {
         log.info("Creating table locally from replication notification");
         
         try {
             // Call the metadata service to create the table
-            final String path = "/api/v1/database/" + databaseId + "/table";
-            final Map<String, Object> response = metadataServiceGateway.createReplicatedTable(path, databaseId, createTableDto);
+            final String path = "/api/v1/database/" + databaseId + "/table/replicate";
+            final Map<String, Object> response = metadataServiceGateway.createReplicatedTable(path, databaseId, tableNotificationDto);
             
             log.info("Table created successfully with ID: {}", response.get("tableId"));
             return response;

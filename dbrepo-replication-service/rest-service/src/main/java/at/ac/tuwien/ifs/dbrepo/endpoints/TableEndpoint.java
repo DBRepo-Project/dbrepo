@@ -24,14 +24,10 @@ public class TableEndpoint {
     @PostMapping
     @Operation(summary = "Replicate table", description = "Replicates a table creation notification")
     public ResponseEntity<Map<String, Object>> replicateTable(@RequestBody TableNotificationDto tableNotificationDto) {
-        System.out.println("=== REPLICATE TABLE ===");
-        System.out.println("Database ID: " + tableNotificationDto.getDatabaseId());
-        System.out.println("Table DTO: " + tableNotificationDto.getCreateTableDto());
-        System.out.println("Replicas: " + tableNotificationDto.getReplicas());
-        System.out.println("Creation ID: " + tableNotificationDto.getCreationId());
+
         
         // Call the service to handle the replication (this will create the table locally and handle replication to other instances)
-        String tableId = tableService.handleTableReplication(tableNotificationDto.getDatabaseId(), tableNotificationDto.getReplicas(), tableNotificationDto.getCreateTableDto(), tableNotificationDto.getCreationId());
+        String tableId = tableService.handleTableReplication(tableNotificationDto);
         
         System.out.println("========================");
         
