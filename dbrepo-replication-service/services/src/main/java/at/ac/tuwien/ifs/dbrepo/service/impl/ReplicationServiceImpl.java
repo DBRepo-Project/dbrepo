@@ -147,7 +147,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     ObjectMapper objectMapper = new ObjectMapper();
                     JsonNode responseJson = objectMapper.readTree(response.getBody());
                     
-                    if (responseJson.has("tableId")) {
+                    if (responseJson.has("id")) {
                         String remoteTableId = responseJson.get("id").asText();
                         log.info("Extracted remote table ID: {} from response", remoteTableId);
                         
