@@ -53,6 +53,7 @@ public class ReplicateEndpoint {
         return ResponseEntity.ok(response);
     }
 
+    //TODO: check if necessary
     @PostMapping("/table")
     @Operation(summary = "Receive table", description = "Receives table replication notification from other instances")
     public ResponseEntity<Map<String, Object>> receiveTableReplication(@RequestParam UUID databaseId, @RequestBody TableNotificationDto tableNotificationDto) {

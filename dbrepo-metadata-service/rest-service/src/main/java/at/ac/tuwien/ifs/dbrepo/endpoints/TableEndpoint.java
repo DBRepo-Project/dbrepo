@@ -415,8 +415,9 @@ public class TableEndpoint extends AbstractEndpoint {
             TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, 
             SemanticEntityNotFoundException, DashboardServiceException, DashboardServiceConnectionException {
 
-        log.debug("endpoint replicate table, databaseId={}, tableName={}", databaseId, 
-                tableNotificationDto.getCreateTableDto().getName());
+        log.info("endpoint replicate table, databaseId={}, tableName={}, creationId={}, creationLocation={}", databaseId,
+                tableNotificationDto.getCreateTableDto().getName(), tableNotificationDto.getCreationId(),
+                tableNotificationDto.getCreateTableDto().getCreationLocation());
         
         final Database database = databaseService.findById(databaseId);
         

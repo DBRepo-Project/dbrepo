@@ -129,6 +129,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             HttpEntity<TableNotificationDto> requestEntity = new HttpEntity<>(tableNotificationDto, headers);
             
             // Build the full URL for the table replication endpoint
+            //TODO: maybe call other replication service first
             String replicationUrl = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/replicate";
             
             log.info("Sending POST request to: {}", replicationUrl);
