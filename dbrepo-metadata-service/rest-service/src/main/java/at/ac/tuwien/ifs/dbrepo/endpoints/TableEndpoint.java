@@ -425,7 +425,7 @@ public class TableEndpoint extends AbstractEndpoint {
         // Set creationLocation to null to avoid infinite replication loops
         createTableDto.setCreationLocation(null);
         
-        final Table table = tableService.createTable(database, createTableDto, null, tableNotificationDto.getCreationId());
+        final Table table = tableService.createTable(database, createTableDto, principal, tableNotificationDto.getCreationId());
         dashboardService.update(table.getDatabase());
 
         return ResponseEntity.status(HttpStatus.CREATED)
