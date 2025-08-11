@@ -407,7 +407,8 @@ public class TableEndpoint extends AbstractEndpoint {
                     content = {@Content}),
     })
     public ResponseEntity<TableBriefDto> replicateTable(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                        @NotNull @Valid @RequestBody TableNotificationDto tableNotificationDto) 
+                                                        @NotNull @Valid @RequestBody TableNotificationDto tableNotificationDto,
+                                                        Principal principal)
             throws NotAllowedException, MalformedException, DataServiceException, DataServiceConnectionException, 
             DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, TableNotFoundException, 
             TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, 
