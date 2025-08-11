@@ -359,6 +359,7 @@ public class TableEndpoint extends AbstractEndpoint {
             try {
                 // Create a new list to avoid lazy loading issues
                 List<ReplicaLocation> replicas = new ArrayList<>(database.getReplicaUrls());
+                data.setCreationLocation(baseUrl);
                 replicationService.replicateTable(data, databaseId, replicas, table.getId());
             } catch (Exception e) {
                 log.error("Failed to trigger replication for table {} in database {}: {}", data.getName(), databaseId, e.getMessage());
@@ -421,7 +422,7 @@ public class TableEndpoint extends AbstractEndpoint {
         
         // Create the table using the CreateTableDto from the notification
         CreateTableDto createTableDto = tableNotificationDto.getCreateTableDto();
-        
+
         // Set creationLocation to null to avoid infinite replication loops
         createTableDto.setCreationLocation(null);
         
