@@ -148,14 +148,14 @@ public class ReplicationServiceImpl implements ReplicationService {
                     JsonNode responseJson = objectMapper.readTree(response.getBody());
                     
                     if (responseJson.has("tableId")) {
-                        String remoteTableId = responseJson.get("tableId").asText();
+                        String remoteTableId = responseJson.get("id").asText();
                         log.info("Extracted remote table ID: {} from response", remoteTableId);
                         
                         // Call the new endpoint to update the replication URL with the remote table ID
                         // Use creationId as the local table ID and remoteTableId as the remote table ID
                         updateTableReplicationUrlWithRemoteId(databaseId, creationId, replicaUrl, UUID.fromString(remoteTableId));
                     } else {
-                        log.info("Table replication successful, no tableId in response: {}", response.getBody());
+                        log.info("Table replication successful, no id in response: {}", response.getBody());
                     }
                 } catch (Exception e) {
                     log.error("Failed to parse table replication response: {}", e.getMessage());
