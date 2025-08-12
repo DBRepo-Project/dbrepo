@@ -125,6 +125,68 @@ public class ReplicateEndpoint {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/update-replication-table-ids")
+    @Operation(summary = "Update replication table IDs", description = "Receives map of replica URLs to table IDs along with database and table context")
+    public ResponseEntity<Map<String, Object>> updateReplicationTableIds(
+            @RequestParam UUID databaseId,
+            @RequestParam UUID tableId,
+            @RequestBody Map<String, String> replicaUrlToTableIdMap) {
+        System.out.println("=== Received Replication Table IDs Update ===");
+        replicaUrlToTableIdMap.forEach((url, id) -> {
+            System.out.println("URL: " + url + " -> Table ID: " + id);
+        });
+        System.out.println("===========================================");
+        
+        try {
+
+            String localTableId = null;
+
+            System.out.println("Database ID: " + databaseId);
+            System.out.println("Table ID: " + tableId);
+            System.out.println("BASE URL:");
+            System.out.println(baseUrl);
+
+            
+            // Find the local table ID by looking for the base URL in the map
+            for (Map.Entry<String, String> entry : replicaUrlToTableIdMap.entrySet()) {
+                if (entry.getKey().contains(baseUrl)) {
+                    localTableId = entry.getValue();
+                    break;
+                }
+            }
+            
+            if (localTableId != null) {
+                System.out.println("Local Table ID: " + localTableId);
+                
+                // For each other URL in the map, call updateReplicationUrl
+                for (Map.Entry<String, String> entry : replicaUrlToTableIdMap.entrySet()) {
+                    String replicaUrl = entry.getKey();
+                    String remoteTableId = entry.getValue();
+                    
+                    // Skip if this is the local URL
+                    if (!entry.getKey().contains(baseUrl)) {
+                        System.out.println("Updating replica URL: " + replicaUrl + " with remote ID: " + remoteTableId);
+                        // Call updateTableReplicationUrlWithRemoteId for each replica
+                        replicationService.updateTableReplicationUrlWithRemoteId(databaseId, tableId, replicaUrl, UUID.fromString(remoteTableId));
+                    }
+                }
+            } else {
+                System.out.println("Could not find local table ID in the map");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error processing replication table IDs: " + e.getMessage());
+        }
+        
+        Map<String, Object> response = Map.of(
+            "status", "success",
+            "message", "Received " + replicaUrlToTableIdMap.size() + " replication table IDs",
+            "receivedCount", replicaUrlToTableIdMap.size()
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+
     
 
     //TODO: check if necessary

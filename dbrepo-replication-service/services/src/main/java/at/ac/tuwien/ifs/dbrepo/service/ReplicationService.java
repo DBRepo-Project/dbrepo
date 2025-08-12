@@ -27,9 +27,20 @@ public interface ReplicationService {
      */
     String sendDatabaseReplicationToInstance(DatabaseNotificationDto databaseNotificationDto, String replicaUrl);
 
+    /**
+     * Sends table replication notification to other instances.
+     * @param tableNotificationDto The table notification to replicate
+     */
     void sendTableReplicationToInstances(TableNotificationDto tableNotificationDto);
 
-    void sendTableReplicationToInstance(UUID remoteDatabaseId, TableNotificationDto tableNotificationDto, String replicaUrl);
+    /**
+     * Sends table replication notification to a specific instance.
+     * @param remoteDatabaseId The remote database ID
+     * @param tableNotificationDto The table notification to replicate
+     * @param replicaUrl The URL of the instance to send the notification to
+     * @return The table ID returned from the replication, or null if not available
+     */
+    String sendTableReplicationToInstance(UUID remoteDatabaseId, TableNotificationDto tableNotificationDto, String replicaUrl);
     
     /**
      * Updates the replication URL with the remote database ID.
