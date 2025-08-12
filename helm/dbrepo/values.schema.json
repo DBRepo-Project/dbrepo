@@ -514,22 +514,6 @@
                                 },
                                 "type": {
                                     "type": "string"
-                                },
-                                "updateStrategy": {
-                                    "type": "object",
-                                    "properties": {
-                                        "recreate": {
-                                            "type": "object",
-                                            "properties": {
-                                                "maxSurge": {
-                                                    "type": "string"
-                                                },
-                                                "maxUnavailable": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }

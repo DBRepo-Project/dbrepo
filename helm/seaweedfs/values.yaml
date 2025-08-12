@@ -71,7 +71,7 @@ diagnosticMode:
   command:
     - sleep
   args:
-    - infinity
+    - "infinity"
 ## Bitnami SeaweedFS image
 ## ref: https://hub.docker.com/r/bitnami/seaweedfs/tags/
 ## @param image.registry [default: REGISTRY_NAME] SeaweedFS image registry
