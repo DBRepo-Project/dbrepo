@@ -105,8 +105,8 @@ lint-helm-schema:
   script:
     - bash .scripts/check-helm.sh
     - helm lint ./helm/dbrepo ./helm/seaweedfs
-    - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
-    - helm schema -input ./helm/seaweedfs/values.yaml -output ./helm/seaweedfs/values.schema.json
+    - "$(cd ./helm/dbrepo && helm schema)"
+    - "$(cd ./helm/seaweedfs && helm schema)"
     - diff ./dbrepo_values.schema.json ./helm/dbrepo/values.schema.json
     - diff ./seaweedfs_values.schema.json ./helm/seaweedfs/values.schema.json
   artifacts:
