@@ -161,14 +161,13 @@ public class ReplicationServiceImpl implements ReplicationService {
                 // Send the complete map to each replica
                 // Each replica will receive information about all other replicas
                 callExternalUpdateReplicationTableIds(replica.getUrl(), replicaUrlToTableIdMap, 
-                    tableNotificationDto.getDatabaseId(), tableNotificationDto.getCreationId());
+                    replica.getReplicaDatabaseId());
             } catch (Exception e) {
                 log.error("Failed to call external update replication table IDs for {}: {}", replica.getUrl(), e.getMessage());
             }
         }
         
-        // Example: You could call another method to process the results
-        // processTableReplicationResults(replicaUrlToTableIdMap);
+
     }
 
     @Override
@@ -207,7 +206,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     if (responseJson.has("id")) {
                         String remoteTableId = responseJson.get("id").asText();
                         log.info("Extracted remote table ID: {} from response", remoteTableId);
-                        
+
                         // Call the new endpoint to update the replication URL with the remote table ID
                         // Use creationId as the local table ID and remoteTableId as the remote table ID
                         updateTableReplicationUrlWithRemoteId(tableNotificationDto.getDatabaseId(), tableNotificationDto.getCreationId(),
@@ -333,9 +332,9 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
 
-    private void callExternalUpdateReplicationTableIds(String replicaUrl, Map<String, String> replicaUrlToTableIdMap, UUID databaseId, UUID tableId) {
+    private void callExternalUpdateReplicationTableIds(String replicaUrl, Map<String, String> replicaUrlToTableIdMap, UUID databaseId) {
         try {
-            log.info("Calling external endpoint to update replication table IDs for replica: {} with database {} and table {}", replicaUrl, databaseId, tableId);
+            log.info("Calling external endpoint to update replication table IDs for replica: {} with database {} ", replicaUrl, databaseId);
             
             // Create headers
             HttpHeaders headers = new HttpHeaders();
@@ -345,7 +344,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(replicaUrlToTableIdMap, headers);
             
             // Build the full URL for the update replication table IDs endpoint with query parameters
-            String updateUrl = replicaUrl + "/api/replication/replicate/update-replication-table-ids?databaseId=" + databaseId + "&tableId=" + tableId;
+            String updateUrl = replicaUrl + "/api/replication/replicate/update-replication-table-ids?databaseId=" + databaseId;
             
             log.info("Sending POST request to: {}", updateUrl);
             

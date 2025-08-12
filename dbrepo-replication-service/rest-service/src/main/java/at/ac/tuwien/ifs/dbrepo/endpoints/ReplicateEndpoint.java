@@ -129,7 +129,6 @@ public class ReplicateEndpoint {
     @Operation(summary = "Update replication table IDs", description = "Receives map of replica URLs to table IDs along with database and table context")
     public ResponseEntity<Map<String, Object>> updateReplicationTableIds(
             @RequestParam UUID databaseId,
-            @RequestParam UUID tableId,
             @RequestBody Map<String, String> replicaUrlToTableIdMap) {
         System.out.println("=== Received Replication Table IDs Update ===");
         replicaUrlToTableIdMap.forEach((url, id) -> {
@@ -142,7 +141,6 @@ public class ReplicateEndpoint {
             String localTableId = null;
 
             System.out.println("Database ID: " + databaseId);
-            System.out.println("Table ID: " + tableId);
             System.out.println("BASE URL:");
             System.out.println(baseUrl);
 
@@ -167,7 +165,7 @@ public class ReplicateEndpoint {
                     if (!entry.getKey().contains(baseUrl)) {
                         System.out.println("Updating replica URL: " + replicaUrl + " with remote ID: " + remoteTableId);
                         // Call updateTableReplicationUrlWithRemoteId for each replica
-                        replicationService.updateTableReplicationUrlWithRemoteId(databaseId, tableId, replicaUrl, UUID.fromString(remoteTableId));
+                        replicationService.updateTableReplicationUrlWithRemoteId(databaseId, UUID.fromString(localTableId), replicaUrl, UUID.fromString(remoteTableId));
                     }
                 }
             } else {
