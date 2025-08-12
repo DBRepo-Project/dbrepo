@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.exception.IdentifierNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
+import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListRecordsParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.micrometer.observation.annotation.Observed;
@@ -82,6 +83,16 @@ public class MetadataEndpoint extends AbstractEndpoint {
         return ResponseEntity.ok(xml);
     }
 
+    @GetMapping(params = "verb=ListRecords", produces = MediaType.TEXT_XML_VALUE)
+    @Observed(name = "dbrepo_oai_records_list")
+    @Operation(summary = "List records")
+    public ResponseEntity<String> listRecords(OaiListRecordsParameters parameters) {
+        log.debug("endpoint list records, verb=ListRecords, parameters={}", parameters);
+        final String xml = metadataService.listRecords(parameters);
+        log.trace("list records resulted in xml {}", xml);
+        return ResponseEntity.ok(xml);
+    }
+
     @GetMapping(params = "verb=GetRecord", produces = MediaType.TEXT_XML_VALUE)
     @Observed(name = "dbrepo_oai_record_get")
     @Operation(summary = "Get record")
@@ -123,6 +134,16 @@ public class MetadataEndpoint extends AbstractEndpoint {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");
         final String xml = metadataService.listMetadataFormats();
         log.trace("list metadata formats resulted in xml {}", xml);
+        return ResponseEntity.ok(xml);
+    }
+
+    @GetMapping(params = "verb=ListSets", produces = MediaType.TEXT_XML_VALUE)
+    @Observed(name = "dbrepo_oai_sets_list")
+    @Operation(summary = "List sets")
+    public ResponseEntity<String> listSets() {
+        log.debug("endpoint list sets, verb=ListSets");
+        final String xml = metadataService.listSets();
+        log.trace("list sets resulted in xml {}", xml);
         return ResponseEntity.ok(xml);
     }
 

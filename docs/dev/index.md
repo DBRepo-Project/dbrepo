@@ -4,6 +4,48 @@ author: Martin Weise
 
 Development of DBRepo.
 
+## Build from Source
+
+Requirements:
+
+* [Docker CE](https://docs.docker.com/engine/install/)
+
+=== "Debian 12"
+
+    ```shell
+    apt install make \
+      git \
+      maven \
+      openjdk-17-jdk \
+      python3 \
+      python3-venv
+    ```
+
+Clone the repository and `cd` into it:
+
+```shell
+git clone https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services.git && cd ./fda-services
+```
+
+Build only the images from source:
+
+```shell
+make build-images
+```
+
+!!! example "Build everything from source"
+
+    You can of course build all auxiliary files and the images from source:
+
+    ```bash
+    #!/bin/bash
+    python3 -m venv venv && \
+      source ./venv/bin/activate && \
+      pip install pipenv && \
+      pipenv install --dev
+    make build-java-lib build-python-lib build-auth-event-listener build-images
+    ```
+
 ## Support
 
 | Branch                                                        | Initial Release | End of Life |

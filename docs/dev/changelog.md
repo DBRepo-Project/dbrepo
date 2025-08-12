@@ -7,7 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.10.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.3) -- 2025-07-28
+## [v1.10.4](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.4) - 2025-08-04
+
+#### Changes
+
+* Added the language next to descriptions and titles 
+  in [#559](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/559).
+* Added the verbs [`ListRecords`](https://www.openarchives.org/OAI/openarchivesprotocol.html#ListRecords) and 
+  [`ListSets`](https://www.openarchives.org/OAI/openarchivesprotocol.html#ListSets) to comply with OpenAIRE Provide and
+  make the records findable using the OAI-PMH harvesting protocol.
+
+## [v1.10.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.3) - 2025-07-28
 
 #### Fixes
 

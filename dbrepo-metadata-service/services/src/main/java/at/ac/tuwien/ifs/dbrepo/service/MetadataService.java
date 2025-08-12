@@ -4,7 +4,9 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
+import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListRecordsParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface MetadataService {
 
@@ -24,6 +26,14 @@ public interface MetadataService {
     String listIdentifiers(OaiListIdentifiersParameters parameters);
 
     /**
+     * Harvest records from a repository.
+     *
+     * @param parameters The list parameters.
+     * @return The xml records listing.
+     */
+    String listRecords(OaiListRecordsParameters parameters);
+
+    /**
      * Get a record.
      *
      * @param parameters The parameters.
@@ -40,6 +50,13 @@ public interface MetadataService {
     String listMetadataFormats();
 
     /**
+     * Retrieve the set structure of a repository, useful for selective harvesting.
+     *
+     * @return The xml list of sets.
+     */
+    String listSets();
+
+    /**
      * Produce an error, this method is used as a wrapper function.
      *
      * @param type The error type.
@@ -52,10 +69,10 @@ public interface MetadataService {
      *
      * @param url The user identifier.
      * @return The user metadata.
-     * @throws OrcidNotFoundException           The provided identifier is of ORCID type and does not exist.
-     * @throws RorNotFoundException             The provided identifier is of ROR type and does not exist.
-     * @throws DoiNotFoundException             The doi was not found.
-     * @throws IdentifierNotSupportedException  The identifier is not supported.
+     * @throws OrcidNotFoundException          The provided identifier is of ORCID type and does not exist.
+     * @throws RorNotFoundException            The provided identifier is of ROR type and does not exist.
+     * @throws DoiNotFoundException            The doi was not found.
+     * @throws IdentifierNotSupportedException The identifier is not supported.
      */
     ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
             DoiNotFoundException, IdentifierNotSupportedException;

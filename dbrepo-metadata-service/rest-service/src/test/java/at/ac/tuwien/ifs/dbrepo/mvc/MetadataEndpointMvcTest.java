@@ -171,7 +171,8 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListMetadataFormats']").exists())
                 .andExpect(xpath("//ListMetadataFormats/metadataFormat[1]/metadataPrefix").string("oai_dc"))
-                .andExpect(xpath("//ListMetadataFormats/metadataFormat[2]/metadataPrefix").string("oai_datacite"))
+                .andExpect(xpath("//ListMetadataFormats/metadataFormat[2]/metadataPrefix").string("datacite"))
+                .andExpect(xpath("//ListMetadataFormats/metadataFormat[3]/metadataPrefix").string("oai_datacite"))
                 .andExpect(status().isOk());
     }
 

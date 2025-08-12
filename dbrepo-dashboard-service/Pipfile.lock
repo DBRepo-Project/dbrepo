@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ef4ebbba922c7be87109c23b40940bf86860755bfd6886c11f34838ab58f9189"
+            "sha256": "d5410d1f41eeacecb62abcf45a1862167d52f09fb86c7551a3bf4f50d771f04f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -221,11 +221,11 @@
         },
         "click": {
             "hashes": [
-                "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202",
-                "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b"
+                "sha256:068616e6ef9705a07b6db727cb9c248f4eb9dae437a30239f56fa94b18b852ef",
+                "sha256:52e1e9f5d3db8c85aa76968c7c67ed41ddbacb167f43201511c8fd61eb5ba2ca"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==8.2.1"
+            "version": "==8.2.2"
         },
         "cryptography": {
             "hashes": [
@@ -272,9 +272,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:67985342eff8c672a9f526964b0ba1e7a2042a809b9ec70fbc7fc999d2d17eca"
+                "sha256:3163ab023e5f7112a235fb83160be1b1b0d7ee573e16318ee0bc3a48664ca9fc"
             ],
-            "path": "./lib/dbrepo-1.10.3.tar.gz"
+            "path": "./lib/dbrepo-1.10.4.tar.gz"
         },
         "ecs-logging": {
             "hashes": [
@@ -1302,11 +1302,11 @@
         },
         "urllib3-future": {
             "hashes": [
-                "sha256:1d897573a7aeec55654abb7d8f1ffc3d7017d6d49ab5d74fbc3548ed1078e0ed",
-                "sha256:71e27a10449848afba45d15fb7ebc1286c4086ed79a0229725413408d2e220c0"
+                "sha256:3a47e12c548457adc601c24fd44ef99cb757592f0082bb0163457429cf35725f",
+                "sha256:b7e82e3b3c53ce87989464fa2a0818229657dd2057bd1b831fecaa8e3abc6587"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.13.900"
+            "version": "==2.13.901"
         },
         "verlib2": {
             "hashes": [
