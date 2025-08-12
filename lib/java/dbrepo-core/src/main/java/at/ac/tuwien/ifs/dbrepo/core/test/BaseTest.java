@@ -7276,7 +7276,7 @@ public class BaseTest {
             .id(IDENTIFIER_7_ID)
             .databaseId(DATABASE_4_ID)
             .links(LinksDto.builder()
-                    .self("/api/identifier/" + IDENTIFIER_7_ID)
+                    .self("/api/v1/identifier/" + IDENTIFIER_7_ID)
                     .selfHtml("/pid/" + IDENTIFIER_7_ID)
                     .dashboardHtml("/d/" + DATABASE_4_DASHBOARD_UID)
                     .build())
@@ -7294,6 +7294,7 @@ public class BaseTest {
             .funders(new LinkedList<>())
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1_DTO)))
             .status(IDENTIFIER_7_STATUS_TYPE_DTO)
+            .created(IDENTIFIER_7_CREATED)
             .build();
 
     public final SaveIdentifierCreatorDto IDENTIFIER_7_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()

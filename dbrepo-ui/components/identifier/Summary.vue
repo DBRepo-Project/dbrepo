@@ -24,9 +24,14 @@
           <p
             v-for="(title, i) in identifier.titles"
             :key="`t-${i}`">
-            <span>
-              {{ title.title }}
-            </span>
+            <v-badge
+              inline
+              color="secondary"
+              :content="language(title?.title)">
+                <span>
+                  {{ title?.title }}
+                </span>
+            </v-badge>
           </p>
         </v-list-item>
         <v-list-item
@@ -36,12 +41,19 @@
             v-for="(description, i) in identifier.descriptions"
             :key="`d-${i}`">
             <div
-              class="text-subtitle-2">
-              {{ description?.type }}
+              v-if="description?.type && description?.language">
+              <v-badge
+                inline
+                color="secondary"
+                :content="language(description?.language)">
+                <span
+                  class="text-subtitle-2">
+                  {{ description?.type }}
+                </span>
+              </v-badge>
             </div>
-            <span>
-              {{ description.description }}
-            </span>
+            <vue-markdown-it
+              :source="description.description" />
           </div>
         </v-list-item>
         <v-list-item
@@ -147,8 +159,9 @@ import RorIcon from '@/components/icons/RorIcon.vue'
 import Banner from '@/components/identifier/Banner.vue'
 import Persist from '@/components/identifier/Persist.vue'
 import Creators from '@/components/identifier/Creators.vue'
-import { formatLanguage } from '@/utils'
+import {formatLanguage, languages} from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
+import { VueMarkdownIt } from '@f3ve/vue-markdown-it'
 
 export default {
   components: {
@@ -158,7 +171,8 @@ export default {
     OrcidIcon,
     RorIcon,
     Banner,
-    Creators
+    Creators,
+    VueMarkdownIt
   },
   props: {
     identifier: {
@@ -215,6 +229,16 @@ export default {
         return null
       }
       return this.identifier.status === 'published'
+    }
+  },
+  methods: {
+    languages,
+    language(code) {
+      const filter = languages().filter(lang => lang.code === code)
+      if (filter.length === 0) {
+        return null
+      }
+      return filter[0].name
     }
   }
 }

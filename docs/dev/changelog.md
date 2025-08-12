@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changes
 
+* Added the language next to descriptions and titles 
+  in [#559](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/559).
 * Added the verbs [`ListRecords`](https://www.openarchives.org/OAI/openarchivesprotocol.html#ListRecords) and 
   [`ListSets`](https://www.openarchives.org/OAI/openarchivesprotocol.html#ListSets) to comply with OpenAIRE Provide and
   make the records findable using the OAI-PMH harvesting protocol.
