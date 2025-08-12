@@ -80,6 +80,10 @@ public class ReplicateEndpoint {
         try {
 
             String localDatabaseId = null;
+
+            System.out.println("BASE URL:");
+            System.out.println(baseUrl);
+
             
             // Find the local database ID by looking for the base URL in the map
             for (Map.Entry<String, String> entry : replicaUrlToDatabaseIdMap.entrySet()) {
