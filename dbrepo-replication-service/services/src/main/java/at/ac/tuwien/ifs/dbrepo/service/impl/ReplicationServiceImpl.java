@@ -268,7 +268,8 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
 
-    private void updateTableReplicationUrlWithRemoteId(UUID databaseId, UUID localTableId, String replicaUrl, UUID remoteTableId) {
+    @Override
+    public void updateTableReplicationUrlWithRemoteId(UUID databaseId, UUID localTableId, String replicaUrl, UUID remoteTableId) {
         try {
             log.info("Updating table replication URL {} with remote table ID {} for database {} and local table ID {}", 
                     replicaUrl, remoteTableId, databaseId, localTableId);

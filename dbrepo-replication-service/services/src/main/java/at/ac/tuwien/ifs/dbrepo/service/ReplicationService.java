@@ -49,4 +49,6 @@ public interface ReplicationService {
      * @param remoteDatabaseId The remote database ID
      */
     void updateReplicationUrlWithRemoteId(UUID databaseId, String replicaUrl, UUID remoteDatabaseId);
+
+    void updateTableReplicationUrlWithRemoteId(UUID databaseId, UUID localTableId, String replicaUrl, UUID remoteTableId);
 } 

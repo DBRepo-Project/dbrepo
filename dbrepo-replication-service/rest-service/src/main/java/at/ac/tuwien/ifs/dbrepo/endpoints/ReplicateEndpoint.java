@@ -167,7 +167,7 @@ public class ReplicateEndpoint {
                     if (!entry.getKey().contains(baseUrl)) {
                         System.out.println("Updating replica URL: " + replicaUrl + " with remote ID: " + remoteTableId);
                         // Call updateTableReplicationUrlWithRemoteId for each replica
-                        replicationService.updateTableReplicationUrlWithRemoteId(databaseId, tableId, replicaUrl, UUID.fromString(remoteTableId));
+                        replicationService.updateTable(databaseId, tableId, replicaUrl, UUID.fromString(remoteTableId));
                     }
                 }
             } else {
