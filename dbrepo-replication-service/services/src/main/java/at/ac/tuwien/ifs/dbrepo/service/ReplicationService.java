@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ReplicationService {
@@ -22,12 +23,19 @@ public interface ReplicationService {
      * Sends database replication notification to a specific instance.
      * @param databaseNotificationDto The database notification to replicate
      * @param replicaUrl The URL of the instance to send the notification to
+     * @return The database ID returned from the replication, or null if not available
      */
-    void sendDatabaseReplicationToInstance(DatabaseNotificationDto databaseNotificationDto, String replicaUrl);
-
+    String sendDatabaseReplicationToInstance(DatabaseNotificationDto databaseNotificationDto, String replicaUrl);
 
     void sendTableReplicationToInstances(TableNotificationDto tableNotificationDto);
 
-
-    void sendTableReplicationToInstance(UUID remmoteDatabaseId, TableNotificationDto tableNotificationDto, String replicaUrl);
+    void sendTableReplicationToInstance(UUID remoteDatabaseId, TableNotificationDto tableNotificationDto, String replicaUrl);
+    
+    /**
+     * Updates the replication URL with the remote database ID.
+     * @param databaseId The local database ID
+     * @param replicaUrl The replica URL to update
+     * @param remoteDatabaseId The remote database ID
+     */
+    void updateReplicationUrlWithRemoteId(UUID databaseId, String replicaUrl, UUID remoteDatabaseId);
 } 

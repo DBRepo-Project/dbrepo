@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -23,6 +24,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.UUID;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -42,17 +45,40 @@ public class ReplicationServiceImpl implements ReplicationService {
     public void sendDatabaseReplicationToInstances(DatabaseNotificationDto databaseNotificationDto, List<String> replicaUrls) {
         log.info("Sending database replication to {} instances", replicaUrls.size());
         
+        Map<String, String> replicaUrlToDatabaseIdMap = new HashMap<>();
+        
         for (String replicaUrl : replicaUrls) {
             try {
-                sendDatabaseReplicationToInstance(databaseNotificationDto, replicaUrl);
+                String databaseId = sendDatabaseReplicationToInstance(databaseNotificationDto, replicaUrl);
+                if (databaseId != null) {
+                    replicaUrlToDatabaseIdMap.put(replicaUrl, databaseId);
+                }
             } catch (Exception e) {
                 log.error("Failed to send replication to instance {}: {}", replicaUrl, e.getMessage());
             }
         }
+        
+        // Now you have the map with replica URLs and their corresponding database IDs
+        // You can work with this map here or pass it to another method
+        log.info("Collected {} successful database replications", replicaUrlToDatabaseIdMap.size());
+        
+        // Now call the external endpoint for each replica to update their replication database IDs
+        for (String replicaUrl : replicaUrls) {
+            try {
+                // Send the complete map to each replica
+                // Each replica will receive information about all other replicas
+                callExternalUpdateReplicationDatabaseIds(replicaUrl, replicaUrlToDatabaseIdMap);
+            } catch (Exception e) {
+                log.error("Failed to call external update replication database IDs for {}: {}", replicaUrl, e.getMessage());
+            }
+        }
+        
+        // Example: You could call another method to process the results
+        // processReplicationResults(replicaUrlToDatabaseIdMap);
     }
 
     @Override
-    public void sendDatabaseReplicationToInstance(DatabaseNotificationDto databaseNotificationDto, String replicaUrl) {
+    public String sendDatabaseReplicationToInstance(DatabaseNotificationDto databaseNotificationDto, String replicaUrl) {
         log.info("Sending database replication to instance: {}", replicaUrl);
         
         try {
@@ -90,13 +116,18 @@ public class ReplicationServiceImpl implements ReplicationService {
                         // Call the new endpoint to update the replication URL with the remote database ID
                         updateReplicationUrlWithRemoteId(databaseNotificationDto.getCreationId(), 
                                                        replicaUrl, UUID.fromString(remoteDatabaseId));
+                        
+                        return remoteDatabaseId;
                     } else {
                         log.warn("Response does not contain databaseId field: {}", response.getBody());
+                        return null;
                     }
                 } catch (Exception e) {
                     log.error("Failed to parse replication response: {}", e.getMessage());
+                    return null;
                 }
             }
+            return null;
         } catch (Exception e) {
             log.error("Failed to send replication to {}: {}", replicaUrl, e.getMessage());
             throw new RuntimeException("Failed to send replication to " + replicaUrl, e);
@@ -170,7 +201,8 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
     
-    private void updateReplicationUrlWithRemoteId(UUID databaseId, String replicaUrl, UUID remoteDatabaseId) {
+    @Override
+    public void updateReplicationUrlWithRemoteId(UUID databaseId, String replicaUrl, UUID remoteDatabaseId) {
         try {
             log.info("Updating replication URL {} with remote database ID {} for database {}", 
                     replicaUrl, remoteDatabaseId, databaseId);
@@ -241,6 +273,33 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.info("Table replication URL updated successfully with status: {}", response.getStatusCode());
         } catch (Exception e) {
             log.error("Failed to update table replication URL for database {} and table {}: {}", databaseId, localTableId, e.getMessage());
+        }
+    }
+    
+    private void callExternalUpdateReplicationDatabaseIds(String replicaUrl, Map<String, String> replicaUrlToDatabaseIdMap) {
+        try {
+            log.info("Calling external endpoint to update replication database IDs for replica: {}", replicaUrl);
+            
+            // Create headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Create request entity
+            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(replicaUrlToDatabaseIdMap, headers);
+            
+            // Build the full URL for the update replication database IDs endpoint
+            String updateUrl = replicaUrl + "/api/replication/replicate/update-replication-database-ids";
+            
+            log.info("Sending POST request to: {}", updateUrl);
+            
+            // Send the request
+            ResponseEntity<String> response = externalReplicationRestTemplate.postForEntity(updateUrl, requestEntity, String.class);
+            
+            log.info("External update replication database IDs call successful to {} with status: {}", replicaUrl, response.getStatusCode());
+            
+        } catch (Exception e) {
+            log.error("Failed to call external update replication database IDs for {}: {}", replicaUrl, e.getMessage());
+            throw new RuntimeException("Failed to call external update replication database IDs for " + replicaUrl, e);
         }
     }
 } 
