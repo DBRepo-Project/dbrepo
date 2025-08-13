@@ -445,7 +445,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             }
             final long start = System.currentTimeMillis();
             insert.executeUpdate();
-            log.atDebug()
+            log.atInfo()
                     .setMessage("create tuple in table (with ts): " + table.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_create_tuple_with_ts")

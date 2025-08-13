@@ -2,6 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,4 +57,28 @@ public class ReplicationServiceImpl implements ReplicationService {
             // You might want to throw a custom exception here depending on your error handling strategy
         }
     }
+
+    @Override
+    public void replicateTuple(java.util.Map<String, Object> tupleWithTimestamps, DatabaseDto database, TableDto table) {
+        try {
+            log.info("Sending tuple replication to replication service for {}.{}, keys={}", database.getInternalName(), table.getInternalName(), tupleWithTimestamps != null ? tupleWithTimestamps.keySet() : null);
+
+            final var request = DataReplicationDto.builder()
+                    .tuple(tupleWithTimestamps)
+                    .database(database)
+                    .table(table)
+                    .build();
+
+            ResponseEntity<Void> response = replicationRestTemplate.exchange(
+                    "/api/replication/data",
+                    HttpMethod.POST,
+                    new HttpEntity<>(request),
+                    Void.class
+            );
+            log.info("Tuple replication sent. Status: {}", response.getStatusCode());
+        } catch (Exception e) {
+            log.error("Failed to send tuple replication: {}", e.getMessage(), e);
+        }
+    }
+
 }

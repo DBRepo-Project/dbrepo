@@ -351,6 +351,8 @@ public class TableEndpoint extends RestEndpoint {
                         .log();
 
                 log.info("created tuple with timestamps {}", created);
+                // replicate tuple to replication service
+                replicationService.replicateTuple(created, database, table);
             } else {
                 tableService.createTuple(database, table, data);
                 log.debug("created tuple without timestamps (no replicas configured)");
