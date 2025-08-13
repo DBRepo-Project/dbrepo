@@ -343,7 +343,16 @@ public class TableEndpoint extends RestEndpoint {
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
-            tableService.createTuple(database, table, data);
+            if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
+                final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, data);
+                log.atDebug()
+                        .setMessage("created tuple with timestamps")
+                        .addKeyValue("created", created)
+                        .log();
+            } else {
+                tableService.createTuple(database, table, data);
+                log.debug("created tuple without timestamps (no replicas configured)");
+            }
             metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();

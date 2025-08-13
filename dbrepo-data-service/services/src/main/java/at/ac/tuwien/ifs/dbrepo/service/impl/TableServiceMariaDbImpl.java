@@ -363,6 +363,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     public void createTuple(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple: {}", data);
+
         /* for each LOB-like data-column, retrieve the bytes and replace the value */
         for (String key : data.getData().keySet()) {
             final boolean found = table.getColumns()
@@ -406,6 +407,120 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             dataSource.close();
         }
         log.info("Created tuple(s) in table: {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
+    @Override
+    @Timed(value = "dbrepo_data_create_tuple_with_ts", description = "Time spent creating a table tuple incl. timestamps", histogram = true)
+    public Map<String, Object> createTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        log.trace("create tuple with timestamps: {}", data);
+
+        /* for each LOB-like data-column, retrieve the bytes and replace the value */
+        for (String key : data.getData().keySet()) {
+            final boolean found = table.getColumns()
+                    .stream()
+                    .filter(c -> List.of(ColumnTypeDto.BLOB, ColumnTypeDto.LONGBLOB, ColumnTypeDto.TINYBLOB, ColumnTypeDto.MEDIUMBLOB).contains(c.getColumnType()))
+                    .anyMatch(c -> c.getInternalName().equals(key));
+            if (!found || data.getData().get(key) == null) {
+                continue;
+            }
+            final byte[] blob = storageService.getBytes(String.valueOf(data.getData().get(key)));
+            log.debug("replaced S3 storage key {} with blob", key);
+            data.getData()
+                    .replace(key, blob);
+        }
+
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        Map<String, Object> createdTupleWithTimestamps = null;
+        try {
+            /* create tuple */
+            final int[] idx = new int[]{1};
+            final PreparedStatement insert = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
+                    database.getInternalName(), table, data));
+            for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
+                mariaDbMapper.prepareStatementWithColumnTypeObject(insert,
+                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                idx[0]++;
+            }
+            final long start = System.currentTimeMillis();
+            insert.executeUpdate();
+            log.atDebug()
+                    .setMessage("create tuple in table (with ts): " + table.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_create_tuple_with_ts")
+                    .log();
+
+            /* read tuple including versioning timestamps: select by primary key FOR SYSTEM_TIME AS OF NOW() */
+            // Build WHERE clause from primary key and select list with explicit columns + system versioning columns
+            final List<String> primaryKeyColumns = table.getConstraints().getPrimaryKey().stream()
+                    .map(pk -> pk.getColumn().getInternalName())
+                    .toList();
+            final StringBuilder select = new StringBuilder("SELECT ");
+            final int[] colIdx = new int[]{0};
+            for (ColumnDto c : table.getColumns()) {
+                select.append(colIdx[0]++ == 0 ? "" : ", ")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`");
+            }
+            select.append(", ROW_START AS inserted_at, ROW_END AS deleted_at FROM `")
+                    .append(database.getInternalName())
+                    .append("`.`")
+                    .append(table.getInternalName())
+                    .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(DataMapper.mariaDbFormatter.format(java.time.Instant.now()))
+                    .append("' WHERE ");
+            final int[] sIdx = new int[]{0};
+            primaryKeyColumns.forEach(col -> select.append(sIdx[0]++ == 0 ? "" : " AND ")
+                    .append("`").append(col).append("` = ?"));
+            select.append(" LIMIT 1;");
+
+            final PreparedStatement selectStmt = connection.prepareStatement(select.toString());
+            int bind = 1;
+            for (String col : primaryKeyColumns) {
+                final Object value = data.getData().get(col);
+                mariaDbMapper.prepareStatementWithColumnTypeObject(selectStmt, getColumnType(table.getColumns(), col), bind++, col, value);
+            }
+            final ResultSet rs = selectStmt.executeQuery();
+            if (rs.next()) {
+                createdTupleWithTimestamps = new java.util.HashMap<>();
+                // include all known columns
+                for (ColumnDto c : table.getColumns()) {
+                    createdTupleWithTimestamps.put(c.getInternalName(), rs.getObject(c.getInternalName()));
+                }
+                // add versioning timestamps exposed by MariaDB system-versioned tables
+                // They are accessible via ROW_START/ROW_END aliases when selecting all columns
+                try {
+                    Object rowStart = rs.getObject("ROW_START");
+                    Object rowEnd = rs.getObject("ROW_END");
+                    createdTupleWithTimestamps.put("inserted_at", rowStart);
+                    createdTupleWithTimestamps.put("deleted_at", rowEnd);
+                } catch (Exception ignore) {
+                    // fallback: try common alias names if present in schema
+                    putIfColumnExists(rs, createdTupleWithTimestamps, "inserted_at");
+                    putIfColumnExists(rs, createdTupleWithTimestamps, "deleted_at");
+                }
+            }
+
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to create tuple with timestamps: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to create tuple with timestamps: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Created tuple(s) in table (with ts): {}.{}", database.getInternalName(), table.getInternalName());
+        return createdTupleWithTimestamps;
+    }
+
+    private void putIfColumnExists(ResultSet rs, Map<String, Object> map, String column) {
+        try {
+            Object v = rs.getObject(column);
+            map.put(column, v);
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
