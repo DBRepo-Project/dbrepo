@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -56,13 +55,14 @@ public class TableEndpoint extends RestEndpoint {
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final ReplicationService replicationService;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
                          SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, ReplicationService replicationService) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -71,6 +71,7 @@ public class TableEndpoint extends RestEndpoint {
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.replicationService = replicationService;
     }
 
     @PostMapping
