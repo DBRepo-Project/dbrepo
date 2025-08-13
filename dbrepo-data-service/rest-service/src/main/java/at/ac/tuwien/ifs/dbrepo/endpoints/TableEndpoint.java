@@ -345,10 +345,12 @@ public class TableEndpoint extends RestEndpoint {
         try {
             if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
                 final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, data);
-                log.atDebug()
+                log.atInfo()
                         .setMessage("created tuple with timestamps")
                         .addKeyValue("created", created)
                         .log();
+
+                log.info("created tuple with timestamps {}", created);
             } else {
                 tableService.createTuple(database, table, data);
                 log.debug("created tuple without timestamps (no replicas configured)");
