@@ -15,6 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -101,8 +102,12 @@ public class DatabaseDto extends CacheableDto {
     private String previewImage;
 
     @JsonProperty("replica_urls")
-    @Schema(example = "[\"https://replica1.example.com\", \"https://replica2.example.com\"]", nullable = true)
-    private List<String> replicaUrls;
+    @Schema(description = "Map of replica URL to replica database ID", example = "{\"https://replica1.example.com\": \"5b2d5d6c-2a2a-43b2-9b88-8f4bbef5b5a1\"}", nullable = true)
+    private Map<String, UUID> replicaUrls;
+
+    @JsonProperty("creation_location")
+    @Schema(description = "The creation location URL", example = "http://localhost:8080", nullable = true)
+    private String creationLocation;
 
     @NotNull
     @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
