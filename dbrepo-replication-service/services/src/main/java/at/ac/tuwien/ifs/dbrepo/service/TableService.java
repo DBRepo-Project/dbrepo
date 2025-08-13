@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 
@@ -14,4 +15,6 @@ public interface TableService {
     String handleTableReplication(TableNotificationDto tableNotificationDto);
 
     Map<String, Object> insertReplicatedTable(UUID databaseId, TableNotificationDto tableNotificationDto);
+
+    void handleDataReplication(DataReplicationDto dataReplicationDto);
 }

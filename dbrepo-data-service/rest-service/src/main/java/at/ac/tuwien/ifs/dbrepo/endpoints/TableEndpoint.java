@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -361,6 +362,64 @@ public class TableEndpoint extends RestEndpoint {
             metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_data_create_replicate")
+    @Operation(summary = "Insert tuple and return timestamps",
+            description = "Inserts a data tuple into a table and returns the created tuple including versioning timestamps. Requires role `system`.",
+            security = {@SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created table data with timestamps",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Request pagination or table data select query is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database or blob in storage service",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or storage service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Map<String, Object>> insertTupleForReplication(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                         @NotNull @PathVariable("tableId") UUID tableId,
+                                                                         @Valid @RequestBody DataReplicationDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, StorageUnavailableException,
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint replicate insert, databaseId={}, tableId={}", databaseId, tableId);
+        final TableDto table = cacheService.getTable(databaseId, tableId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        try {
+            // Log remote timestamps for debugging/traceability
+            final Object remoteInsertedAt = data.getTuple() != null ? data.getTuple().get("inserted_at") : null;
+            final Object remoteDeletedAt = data.getTuple() != null ? data.getTuple().get("deleted_at") : null;
+            log.info("remote timestamps inserted_at={}, deleted_at={}", remoteInsertedAt, remoteDeletedAt);
+
+            // Build a clean TupleDto containing only actual table columns (exclude versioning/meta keys)
+            final java.util.Map<String, Object> clean = new java.util.LinkedHashMap<>();
+            for (ColumnDto c : table.getColumns()) {
+                clean.put(c.getInternalName(), data.getTuple() != null ? data.getTuple().get(c.getInternalName()) : null);
+            }
+            final TupleDto tuple = TupleDto.builder().data(clean).build();
+
+            final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, tuple);
+            log.atInfo()
+                    .setMessage("replicate insert created tuple with timestamps")
+                    .addKeyValue("created", created)
+                    .log();
+            metadataServiceGateway.updateTableStatistics(databaseId, tableId, null);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(created);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

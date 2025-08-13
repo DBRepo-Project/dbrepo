@@ -16,6 +16,12 @@ import java.util.Map;
 @Tag(name = "Data", description = "Data replication endpoints")
 public class DataEndpoint {
 
+    private final at.ac.tuwien.ifs.dbrepo.service.TableService tableService;
+
+    public DataEndpoint(at.ac.tuwien.ifs.dbrepo.service.TableService tableService) {
+        this.tableService = tableService;
+    }
+
     @PostMapping
     @Operation(summary = "Receive tuple with timestamps", description = "Receives a tuple including versioning timestamps along with database and table context for replication")
     public ResponseEntity<Map<String, Object>> receiveTupleWithTimestamps(@RequestBody DataReplicationDto request) {
@@ -24,7 +30,8 @@ public class DataEndpoint {
                 request.getTable() != null ? request.getTable().getInternalName() : null);
         log.debug("Tuple payload: {}", request.getTuple());
 
-        // TODO: call service to fan-out to other replicas using request.getDatabase() / request.getTable()
+        // fan-out to other replicas
+        tableService.handleDataReplication(request);
 
         final Map<String, Object> response = Map.of(
                 "status", "accepted",

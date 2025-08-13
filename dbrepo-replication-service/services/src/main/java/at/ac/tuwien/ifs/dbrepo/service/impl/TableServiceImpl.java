@@ -2,6 +2,14 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -20,12 +28,15 @@ import java.util.stream.Collectors;
 public class TableServiceImpl implements TableService {
 
     private final ReplicationService replicationService;
+    private final RestTemplate externalReplicationRestTemplate;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableServiceImpl(ReplicationService replicationService, MetadataServiceGateway metadataServiceGateway) {
+    public TableServiceImpl(ReplicationService replicationService, MetadataServiceGateway metadataServiceGateway,
+                            @Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate) {
         this.replicationService = replicationService;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.externalReplicationRestTemplate = externalReplicationRestTemplate;
     }
 
     @Override
@@ -63,6 +74,41 @@ public class TableServiceImpl implements TableService {
                 "status", "error",
                 "message", "Table creation failed: " + e.getMessage()
             );
+        }
+    }
+
+    @Override
+    public void handleDataReplication(DataReplicationDto dataReplicationDto) {
+        final DatabaseDto database = dataReplicationDto.getDatabase();
+        final TableDto table = dataReplicationDto.getTable();
+        if (database == null || table == null || database.getReplicaUrls() == null || table.getReplicaUrls() == null) {
+            log.info("No replica URLs provided for data replication; skipping fan-out");
+            return;
+        }
+        // For each replica URL in the database, send the tuple to its replication endpoint with the proper remote table id
+        for (var entry : database.getReplicaUrls().entrySet()) {
+            final String replicaUrl = entry.getKey();
+            final java.util.UUID remoteDatabaseId = entry.getValue();
+            final java.util.UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
+            if (remoteTableId == null) {
+                log.warn("Missing remote table id for replicaUrl={} in table replica map; skipping", replicaUrl);
+                continue;
+            }
+            try {
+                final String path = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/" + remoteTableId + "/data/replicate";
+                log.info("Fan-out data replication to {}", path);
+                final HttpEntity<DataReplicationDto> request = new HttpEntity<>(dataReplicationDto);
+                ResponseEntity<java.util.Map> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST, request, java.util.Map.class);
+                log.info("Fan-out replication response: {}", response.getStatusCode());
+                if (response.getBody() != null) {
+                    final Object tsInserted = response.getBody().get("inserted_at");
+                    final Object tsDeleted = response.getBody().get("deleted_at");
+                    log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
+                    log.debug("Full remote response body: {}", response.getBody());
+                }
+            } catch (Exception e) {
+                log.error("Failed to replicate data to {}: {}", replicaUrl, e.getMessage());
+            }
         }
     }
 }
