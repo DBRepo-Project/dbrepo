@@ -209,7 +209,12 @@ public interface MetadataMapper {
             return new LinkedHashMap<>();
         }
         return replicaLocations.stream()
-                .collect(Collectors.toMap(ReplicaLocation::getUrl, ReplicaLocation::getReplicaDatabaseId, (a, b) -> a, LinkedHashMap::new));
+                .filter(rl -> rl.getUrl() != null)
+                .collect(
+                        java.util.HashMap::new,
+                        (m, rl) -> m.put(rl.getUrl(), rl.getReplicaDatabaseId()),
+                        Map::putAll
+                );
     }
 
     @Mappings({
@@ -903,7 +908,12 @@ public interface MetadataMapper {
             return new LinkedHashMap<>();
         }
         return replicaLocations.stream()
-                .collect(Collectors.toMap(ReplicaTableLocation::getUrl, ReplicaTableLocation::getReplicaTableId, (a, b) -> a, LinkedHashMap::new));
+                .filter(rl -> rl.getUrl() != null)
+                .collect(
+                        java.util.HashMap::new,
+                        (m, rl) -> m.put(rl.getUrl(), rl.getReplicaTableId()),
+                        Map::putAll
+                );
     }
 
     @Named("mapToReplicaTableLocationList")

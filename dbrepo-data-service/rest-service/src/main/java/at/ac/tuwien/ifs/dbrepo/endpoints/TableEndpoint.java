@@ -398,7 +398,7 @@ public class TableEndpoint extends RestEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, StorageUnavailableException,
             StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException, NotAllowedException {
-        log.debug("endpoint replicate insert, databaseId={}, tableId={}", databaseId, tableId);
+        log.info("endpoint replicate insert, databaseId={}, tableId={}", databaseId, tableId);
         final TableDto table = cacheService.getTable(databaseId, tableId);
         final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
