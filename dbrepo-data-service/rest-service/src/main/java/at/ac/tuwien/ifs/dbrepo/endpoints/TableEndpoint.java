@@ -392,12 +392,16 @@ public class TableEndpoint extends RestEndpoint {
     })
     public ResponseEntity<Map<String, Object>> insertTupleForReplication(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                          @NotNull @PathVariable("tableId") UUID tableId,
-                                                                         @Valid @RequestBody DataReplicationDto data)
+                                                                         @Valid @RequestBody DataReplicationDto data,
+                                                                         Principal principal,
+                                                                         @RequestHeader("Authorization") String authorization)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, StorageUnavailableException,
-            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint replicate insert, databaseId={}, tableId={}", databaseId, tableId);
         final TableDto table = cacheService.getTable(databaseId, tableId);
+        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             // Log remote timestamps for debugging/traceability
@@ -417,7 +421,7 @@ public class TableEndpoint extends RestEndpoint {
                     .setMessage("replicate insert created tuple with timestamps")
                     .addKeyValue("created", created)
                     .log();
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId, null);
+            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(created);
         } catch (SQLException e) {
