@@ -369,11 +369,11 @@ public class TableEndpoint extends RestEndpoint {
     }
 
     @PostMapping("/{tableId}/data/replicate")
-    @PreAuthorize("hasAuthority('system')")
-    @Observed(name = "dbrepo_table_data_create_replicate")
-    @Operation(summary = "Insert tuple and return timestamps",
-            description = "Inserts a data tuple into a table and returns the created tuple including versioning timestamps. Requires role `system`.",
-            security = {@SecurityRequirement(name = "basicAuth")})
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbrepo_table_data_create")
+    @Operation(summary = "Insert tuple",
+            description = "Inserts a data tuple into a table, then the table statistics are updated. The user needs to have at least *WRITE_OWN* access to the associated database. Requires role `insert-table-data`.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created table data with timestamps",
