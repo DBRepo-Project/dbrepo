@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.EntityDto;
@@ -357,6 +359,16 @@ public class TableEndpoint extends AbstractEndpoint {
             log.debug("Triggering replication for table - databaseId: {}, tableName: {}, replicaUrls: {}", 
                     databaseId, data.getName(), database.getReplicaUrls());
             try {
+
+                final java.util.List<CreateTableColumnDto> mutableColumns = new java.util.ArrayList<>(data.getColumns());
+                mutableColumns.add(CreateTableColumnDto.builder()
+                        .name("replication_key")
+                        .type(ColumnTypeDto.VARCHAR)
+                        .size(36L)
+                        .nullAllowed(false)
+                        .description("Replication key")
+                        .build());
+                data.setColumns(mutableColumns);
                 // Create a new list to avoid lazy loading issues
                 List<ReplicaLocation> replicas = new ArrayList<>(database.getReplicaUrls());
                 data.setCreationLocation(baseUrl);
