@@ -278,7 +278,10 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             )
             """;
 
-        System.out.println("lets ensure");
+        System.out.println("Container details: ");
+        System.out.println(database.getContainer().getName());
+        System.out.println(database.getContainer().getUsername());
+        System.out.println(database.getContainer().getPassword());
         final ComboPooledDataSource dataSource = getDataSource(database);
         System.out.println(dataSource.toString());
         try (Connection connection = dataSource.getConnection();
