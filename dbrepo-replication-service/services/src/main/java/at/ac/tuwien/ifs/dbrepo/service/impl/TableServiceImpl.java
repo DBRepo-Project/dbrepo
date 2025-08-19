@@ -21,7 +21,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.time.Instant;
+import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
+import at.ac.tuwien.ifs.dbrepo.core.repository.TupleReplicationTimestampRepository;
 
 @Slf4j
 @Service
@@ -30,13 +34,16 @@ public class TableServiceImpl implements TableService {
     private final ReplicationService replicationService;
     private final RestTemplate externalReplicationRestTemplate;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final TupleReplicationTimestampRepository tupleReplicationTimestampRepository;
 
     @Autowired
     public TableServiceImpl(ReplicationService replicationService, MetadataServiceGateway metadataServiceGateway,
-                            @Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate) {
+                            @Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
+                            TupleReplicationTimestampRepository tupleReplicationTimestampRepository) {
         this.replicationService = replicationService;
         this.metadataServiceGateway = metadataServiceGateway;
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
+        this.tupleReplicationTimestampRepository = tupleReplicationTimestampRepository;
     }
 
     @Override
@@ -85,6 +92,11 @@ public class TableServiceImpl implements TableService {
             log.info("No replica URLs provided for data replication; skipping fan-out");
             return;
         }
+        
+        // List to collect timestamps for each replica
+        List<TupleReplicationTimestamp> timestampsToSave = new ArrayList<>();
+        final Instant replicationStartTime = Instant.now();
+        
         // For each replica URL in the database, send the tuple to its replication endpoint with the proper remote table id
         for (var entry : database.getReplicaUrls().entrySet()) {
             final String replicaUrl = entry.getKey();
@@ -94,20 +106,47 @@ public class TableServiceImpl implements TableService {
                 log.warn("Missing remote table id for replicaUrl={} in table replica map; skipping", replicaUrl);
                 continue;
             }
+            
             try {
                 final String path = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/" + remoteTableId + "/data/replicate";
                 log.info("Fan-out data replication to {}", path);
                 final HttpEntity<DataReplicationDto> request = new HttpEntity<>(dataReplicationDto);
                 ResponseEntity<java.util.Map> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST, request, java.util.Map.class);
                 log.info("Fan-out replication response: {}", response.getStatusCode());
-                if (response.getBody() != null) {
-                    final Object tsInserted = response.getBody().get("inserted_at");
-                    final Object tsDeleted = response.getBody().get("deleted_at");
-                    log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
-                    log.debug("Full remote response body: {}", response.getBody());
-                }
+                
+                final Object tsInserted = response.getBody().get("inserted_at");
+                final Object tsDeleted = response.getBody().get("deleted_at");
+                final Object replicationId = response.getBody().get("replication_id");
+                log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
+                log.debug("Full remote response body: {}", response.getBody());
+
+                
+                // Create timestamp record for successful replication
+                TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
+                    .siteUrl(replicaUrl)
+                    .replicationId((String) replicationId)
+                    .databaseId(remoteDatabaseId)
+                    .tableId(remoteTableId)
+                    .rowStart((Instant) tsInserted)
+                    .rowEnd((Instant) tsDeleted) // Replication completed
+                    .build();
+                
+                timestampsToSave.add(timestamp);
+                log.debug("Added timestamp for successful replication to {}: {}", replicaUrl, timestamp.getReplicationId());
+                
             } catch (Exception e) {
                 log.error("Failed to replicate data to {}: {}", replicaUrl, e.getMessage());
+
+            }
+        }
+        
+        // After the loop, save all timestamps to the database
+        if (!timestampsToSave.isEmpty()) {
+            try {
+                tupleReplicationTimestampRepository.saveAll(timestampsToSave);
+                log.info("Saved {} replication timestamps to database", timestampsToSave.size());
+            } catch (Exception e) {
+                log.error("Failed to save replication timestamps: {}", e.getMessage(), e);
             }
         }
     }

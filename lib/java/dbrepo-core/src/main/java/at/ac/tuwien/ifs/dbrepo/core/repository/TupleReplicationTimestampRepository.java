@@ -1,6 +1,6 @@
-package at.ac.tuwien.ifs.dbrepo.repository;
+package at.ac.tuwien.ifs.dbrepo.core.repository;
 
-import at.ac.tuwien.ifs.dbrepo.entity.TupleReplicationTimestamp;
+import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

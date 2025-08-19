@@ -1,4 +1,4 @@
-package at.ac.tuwien.ifs.dbrepo.entity;
+package at.ac.tuwien.ifs.dbrepo.core.entity.replication;
 
 import jakarta.persistence.*;
 import lombok.*;
