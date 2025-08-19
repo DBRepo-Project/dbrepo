@@ -144,7 +144,7 @@ public class TableServiceImpl implements TableService {
 
             }
         }
-        
+        log.info("Start replicating timestamps");
         // After the loop, save all timestamps to the database
         if (!timestampsToSave.isEmpty()) {
             try {
