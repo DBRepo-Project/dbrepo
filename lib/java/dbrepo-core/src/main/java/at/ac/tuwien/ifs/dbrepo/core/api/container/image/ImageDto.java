@@ -65,7 +65,6 @@ public class ImageDto {
     private String dialect;
 
     @NotBlank
-    @JsonIgnore
     @Schema(description = "The method used by JDBC", example = "mariadb")
     private String jdbcMethod;
 

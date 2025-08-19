@@ -41,11 +41,9 @@ public class ContainerDto extends CacheableDto {
     @Schema(description = "The machine-friendly container name", example = "air-quality")
     private String internalName;
 
-    @JsonIgnore
     @Schema(description = "The container hostname", example = "data-db")
     private String host;
 
-    @JsonIgnore
     @Schema(description = "The container port", example = "3306")
     private Integer port;
 
