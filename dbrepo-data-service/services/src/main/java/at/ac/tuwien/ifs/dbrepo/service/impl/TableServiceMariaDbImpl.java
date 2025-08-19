@@ -472,6 +472,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         .append(c.getInternalName())
                         .append("`");
             }
+            // Always include replication_key column to avoid cache issues
+            select.append(", `replication_key`");
             select.append(", ROW_START AS inserted_at, ROW_END AS deleted_at FROM `")
                     .append(database.getInternalName())
                     .append("`.`")
@@ -496,6 +498,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 // include all known columns
                 for (ColumnDto c : table.getColumns()) {
                     createdTupleWithTimestamps.put(c.getInternalName(), rs.getObject(c.getInternalName()));
+                }
+                // Always try to include replication_key to avoid cache issues
+                try {
+                    Object replicationKey = rs.getObject("replication_key");
+                    createdTupleWithTimestamps.put("replication_key", replicationKey);
+                    log.debug("Retrieved replication_key: {}", replicationKey);
+                } catch (Exception e) {
+                    log.debug("replication_key column not present in result set: {}", e.getMessage());
                 }
                 // add versioning timestamps exposed by MariaDB system-versioned tables
                 // They are accessible via ROW_START/ROW_END aliases when selecting all columns
