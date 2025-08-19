@@ -10,20 +10,23 @@ spark:
     version: '@project.properties.mariadb.version@'
 spring:
   datasource:
-    url: "jdbc:h2:mem:dbrepo;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS dbrepo;NON_KEYWORDS=value"
-    driver-class-name: org.h2.Driver
-    username: "${H2_USERNAME:sa}"
-    password: "${H2_PASSWORD:sa}"
+    url: "jdbc:mariadb://${DATA_DB_HOST:127.0.0.1}:${DATA_DB_PORT:3307}/${DATA_DB:dbrepo}${DATA_JDBC_EXTRA_ARGS:}"
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: "${DATA_USERNAME:root}"
+    password: "${DATA_DB_PASSWORD:dbrepo}"
   jpa:
     show-sql: false
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         default_schema: "${METADATA_DB:dbrepo}"
         jdbc:
           time_zone: UTC
+        dialect: org.hibernate.dialect.MariaDBDialect
   application:
-    name: data-service
+    name: replication-service
   servlet:
     multipart:
       max-file-size: "${MAX_UPLOAD_SIZE:2GB}"

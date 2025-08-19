@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.repository.TupleReplicationTimestampRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -29,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
-import at.ac.tuwien.ifs.dbrepo.core.repository.TupleReplicationTimestampRepository;
 
 @Slf4j
 @Service
@@ -120,7 +120,6 @@ public class TableServiceImpl implements TableService {
                 
                 final Object tsInserted = response.getBody().get("inserted_at");
                 final Object tsDeleted = response.getBody().get("deleted_at");
-                final Object replicationId = response.getBody().get("replication_id");
                 log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
                 log.debug("Full remote response body: {}", response.getBody());
 
@@ -128,7 +127,7 @@ public class TableServiceImpl implements TableService {
                 // Create timestamp record for successful replication
                 TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
                     .siteUrl(replicaUrl)
-                    .replicationId((String) replicationId)
+                    .replicationId((String) dataReplicationDto.getTuple().get("replication_id"))
                     .databaseId(remoteDatabaseId)
                     .tableId(remoteTableId)
                     .rowStart(parseTimestamp((String) tsInserted))
