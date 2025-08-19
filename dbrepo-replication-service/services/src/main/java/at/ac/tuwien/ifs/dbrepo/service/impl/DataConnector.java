@@ -44,4 +44,19 @@ public abstract class DataConnector {
         }
         return stringBuilder.toString();
     }
+
+    public String getSparkUrl(ContainerDto container, String databaseName) {
+        final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
+                .append("?sessionVariables=sql_mode='ANSI_QUOTES'");
+        log.trace("mapped container to spark url: {}", sb.toString());
+        return sb.toString();
+    }
+
+    public String getSparkUrl(DatabaseDto databaseDto) {
+        return getSparkUrl(databaseDto.getContainer(), databaseDto.getInternalName());
+    }
+
+    public final org.duckdb.DuckDBConnection getDuckDbConnection() throws java.sql.SQLException {
+        return (org.duckdb.DuckDBConnection) java.sql.DriverManager.getConnection("jdbc:duckdb:");
+    }
 }
