@@ -4,6 +4,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
@@ -111,6 +113,23 @@ public class TableEndpoint extends RestEndpoint {
         }
         /* create */
         final DatabaseDto database = cacheService.getDatabase(databaseId);
+        // If replicas are configured for this database, ensure a replication_key column exists
+        if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
+            final boolean hasReplicationKey = data.getColumns()
+                    .stream()
+                    .anyMatch(c -> "replication_key".equalsIgnoreCase(c.getName()));
+            if (!hasReplicationKey) {
+                final java.util.List<CreateTableColumnDto> mutableColumns = new java.util.ArrayList<>(data.getColumns());
+                mutableColumns.add(CreateTableColumnDto.builder()
+                        .name("replication_key")
+                        .type(ColumnTypeDto.VARCHAR)
+                        .size(36L)
+                        .nullAllowed(false)
+                        .description("Replication key")
+                        .build());
+                data.setColumns(mutableColumns);
+            }
+        }
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(databaseService.createTable(database, data));
