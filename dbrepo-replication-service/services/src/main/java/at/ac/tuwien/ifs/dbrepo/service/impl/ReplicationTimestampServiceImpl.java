@@ -278,6 +278,8 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             )
             """;
 
+        System.out.println("JDBC URL:");
+        System.out.println(getJdbcUrl(database.getContainer(), database.getInternalName()));
         System.out.println("Container details: ");
         System.out.println(database.getContainer().getName());
         System.out.println(database.getContainer().getUsername());
