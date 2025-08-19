@@ -25,6 +25,9 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
 import at.ac.tuwien.ifs.dbrepo.core.repository.TupleReplicationTimestampRepository;
 
@@ -128,8 +131,8 @@ public class TableServiceImpl implements TableService {
                     .replicationId((String) replicationId)
                     .databaseId(remoteDatabaseId)
                     .tableId(remoteTableId)
-                    .rowStart(Timestamp.valueOf((String) tsInserted))
-                    .rowEnd(Timestamp.valueOf((String) tsDeleted)) // Replication completed
+                    .rowStart(parseTimestamp((String) tsInserted))
+                    .rowEnd(parseTimestamp((String) tsDeleted)) // Replication completed
                     .build();
                 
                 timestampsToSave.add(timestamp);
@@ -148,6 +151,36 @@ public class TableServiceImpl implements TableService {
                 log.info("Saved {} replication timestamps to database", timestampsToSave.size());
             } catch (Exception e) {
                 log.error("Failed to save replication timestamps: {}", e.getMessage(), e);
+            }
+        }
+    }
+    
+    /**
+     * Parse ISO timestamp string to SQL Timestamp
+     */
+    private Timestamp parseTimestamp(String timestampStr) {
+        if (timestampStr == null) {
+            return null;
+        }
+        
+        try {
+            // Try to parse ISO format with timezone (e.g., "2025-08-19T11:19:30.794+00:00")
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(timestampStr);
+            return Timestamp.from(zonedDateTime.toInstant());
+        } catch (Exception e1) {
+            try {
+                // Try to parse ISO format without timezone (e.g., "2025-08-19T11:19:30.794")
+                LocalDateTime localDateTime = LocalDateTime.parse(timestampStr);
+                return Timestamp.valueOf(localDateTime);
+            } catch (Exception e2) {
+                try {
+                    // Try to parse standard format (e.g., "2025-08-19 11:19:30.794")
+                    return Timestamp.valueOf(timestampStr);
+                } catch (Exception e3) {
+                    log.error("Failed to parse timestamp: {}. Error: {}", timestampStr, e3.getMessage());
+                    // Return current timestamp as fallback
+                    return Timestamp.from(Instant.now());
+                }
             }
         }
     }
