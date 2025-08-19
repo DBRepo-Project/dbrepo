@@ -123,6 +123,8 @@ public class TableServiceImpl implements TableService {
                 log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
                 log.debug("Full remote response body: {}", response.getBody());
 
+                log.info("Replication ID: " + (String) dataReplicationDto.getTuple().get("replication_id"));
+
                 
                 // Create timestamp record for successful replication
                 TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
