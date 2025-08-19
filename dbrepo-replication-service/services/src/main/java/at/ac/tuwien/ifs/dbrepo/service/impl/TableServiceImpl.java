@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.repository.TupleReplicationTimestampRepository;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -38,16 +38,16 @@ public class TableServiceImpl implements TableService {
     private final ReplicationService replicationService;
     private final RestTemplate externalReplicationRestTemplate;
     private final MetadataServiceGateway metadataServiceGateway;
-    private final TupleReplicationTimestampRepository tupleReplicationTimestampRepository;
+    private final ReplicationTimestampService replicationTimestampService;
 
     @Autowired
     public TableServiceImpl(ReplicationService replicationService, MetadataServiceGateway metadataServiceGateway,
                             @Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
-                            TupleReplicationTimestampRepository tupleReplicationTimestampRepository) {
+                            ReplicationTimestampService replicationTimestampService) {
         this.replicationService = replicationService;
         this.metadataServiceGateway = metadataServiceGateway;
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
-        this.tupleReplicationTimestampRepository = tupleReplicationTimestampRepository;
+        this.replicationTimestampService = replicationTimestampService;
     }
 
     @Override
@@ -148,7 +148,9 @@ public class TableServiceImpl implements TableService {
         // After the loop, save all timestamps to the database
         if (!timestampsToSave.isEmpty()) {
             try {
-                tupleReplicationTimestampRepository.saveAll(timestampsToSave);
+                // Ensure the table exists before saving
+                replicationTimestampService.ensureTableExists(database);
+                replicationTimestampService.saveReplicationTimestamps(database, timestampsToSave);
                 log.info("Saved {} replication timestamps to database", timestampsToSave.size());
             } catch (Exception e) {
                 log.error("Failed to save replication timestamps: {}", e.getMessage(), e);

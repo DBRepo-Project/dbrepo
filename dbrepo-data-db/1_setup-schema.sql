@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS `tuple_replication_timestamps`
+CREATE TABLE IF NOT EXISTS tuple_replication_timestamps
 (
     site_url        TEXT         NOT NULL,
     replication_id  VARCHAR(255) NOT NULL,

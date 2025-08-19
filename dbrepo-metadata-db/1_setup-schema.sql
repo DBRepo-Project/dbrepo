@@ -531,6 +531,8 @@ CREATE TABLE IF NOT EXISTS `mdb_image_operators`
     UNIQUE (image_id, value)
 ) WITH SYSTEM VERSIONING;
 
+
+
 COMMIT;
 
 BEGIN;

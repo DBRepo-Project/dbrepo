@@ -14,17 +14,6 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     username: "${DATA_USERNAME:root}"
     password: "${DATA_DB_PASSWORD:dbrepo}"
-  jpa:
-    show-sql: false
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        default_schema: "${METADATA_DB:dbrepo}"
-        jdbc:
-          time_zone: UTC
-        dialect: org.hibernate.dialect.MariaDBDialect
   application:
     name: replication-service
   servlet:

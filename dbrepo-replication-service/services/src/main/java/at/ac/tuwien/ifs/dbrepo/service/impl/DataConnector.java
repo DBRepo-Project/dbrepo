@@ -4,11 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.duckdb.DuckDBConnection;
 import org.springframework.stereotype.Service;
-
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 @Slf4j
 @Service
@@ -35,17 +31,6 @@ public abstract class DataConnector {
         return getDataSource(database.getContainer(), database.getInternalName());
     }
 
-    public String getSparkUrl(ContainerDto container, String databaseName) {
-        final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
-                .append("?sessionVariables=sql_mode='ANSI_QUOTES'");
-        log.trace("mapped container to spark url: {}", sb.toString());
-        return sb.toString();
-    }
-
-    public String getSparkUrl(DatabaseDto databaseDto) {
-        return getSparkUrl(databaseDto.getContainer(), databaseDto.getInternalName());
-    }
-
     public String getJdbcUrl(ContainerDto container, String databaseName) {
         final StringBuilder stringBuilder = new StringBuilder("jdbc:")
                 .append(container.getImage().getJdbcMethod())
@@ -59,9 +44,4 @@ public abstract class DataConnector {
         }
         return stringBuilder.toString();
     }
-
-    public final DuckDBConnection getDuckDbConnection() throws SQLException {
-        return (DuckDBConnection) DriverManager.getConnection("jdbc:duckdb:");
-    }
-
 }
