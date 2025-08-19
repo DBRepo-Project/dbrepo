@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.service.impl.DataConnector;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
@@ -21,8 +22,9 @@ public class ReplicationTimestampServiceImpl implements ReplicationTimestampServ
 
     private final DataConnector dataConnector;
 
-    @Autowired
-    public ReplicationTimestampServiceImpl(DataConnector dataConnector) {
+    public ReplicationTimestampServiceImpl(
+            @Qualifier("databaseServiceMariaDbImpl") DataConnector dataConnector // pick the right one
+    ) {
         this.dataConnector = dataConnector;
     }
 
