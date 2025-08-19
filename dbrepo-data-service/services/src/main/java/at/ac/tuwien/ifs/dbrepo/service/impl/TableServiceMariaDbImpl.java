@@ -238,6 +238,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 .stream()
                 .map(ColumnDto::getInternalName)
                 .toList();
+        
+        // Check if table has replication_key column and log info
+        final boolean hasReplicationKey = columns.stream()
+                .anyMatch(c -> "replication_key".equalsIgnoreCase(c));
+        if (hasReplicationKey) {
+            log.info("Importing data into table with replication_key column - UUIDs will be auto-generated");
+        }
+        
         final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(),
                 String.valueOf(data.getSeparator()), data.getHeader());
         final Properties properties = new Properties();

@@ -363,6 +363,21 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
+        
+        // Check if table has replication_key column and auto-generate UUID if needed
+        final boolean hasReplicationKey = table.getColumns().stream()
+                .anyMatch(c -> "replication_key".equalsIgnoreCase(c.getInternalName()));
+        if (hasReplicationKey && (data.getData() == null || !data.getData().containsKey("replication_key"))) {
+            // Create a new map with the replication_key added
+            final java.util.Map<String, Object> dataWithReplicationKey = new java.util.LinkedHashMap<>();
+            if (data.getData() != null) {
+                dataWithReplicationKey.putAll(data.getData());
+            }
+            dataWithReplicationKey.put("replication_key", java.util.UUID.randomUUID().toString());
+            data = TupleDto.builder().data(dataWithReplicationKey).build();
+            log.debug("Auto-generated replication_key UUID: {}", dataWithReplicationKey.get("replication_key"));
+        }
+        
         try {
             if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
                 final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, data);
