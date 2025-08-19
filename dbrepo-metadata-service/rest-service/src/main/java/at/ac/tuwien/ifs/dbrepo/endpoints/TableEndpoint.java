@@ -350,16 +350,11 @@ public class TableEndpoint extends AbstractEndpoint {
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
-        final Table table = tableService.createTable(database, data, principal);
-        dashboardService.update(table.getDatabase());
-
-
-        // Handle replication after the transaction is committed
-        if (data.getCreationLocation() == null && database.getReplicaUrls() != null && database.getReplicaUrls().size() > 0) {
-            log.debug("Triggering replication for table - databaseId: {}, tableName: {}, replicaUrls: {}", 
-                    databaseId, data.getName(), database.getReplicaUrls());
-            try {
-
+        
+        // If replicas are configured for this database, ensure a replication_key column exists in the table schema
+        if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
+            log.debug("Database has replicas configured - ensuring replication_key column exists in table schema");
+            if (data.getColumns().stream().noneMatch(c -> "replication_key".equalsIgnoreCase(c.getName()))) {
                 final java.util.List<CreateTableColumnDto> mutableColumns = new java.util.ArrayList<>(data.getColumns());
                 mutableColumns.add(CreateTableColumnDto.builder()
                         .name("replication_key")
@@ -369,6 +364,19 @@ public class TableEndpoint extends AbstractEndpoint {
                         .description("Replication key")
                         .build());
                 data.setColumns(mutableColumns);
+                log.debug("Added replication_key column to table schema for table: {}", data.getName());
+            }
+        }
+        
+        final Table table = tableService.createTable(database, data, principal);
+        dashboardService.update(table.getDatabase());
+
+
+        // Handle replication after the transaction is committed
+        if (data.getCreationLocation() == null && database.getReplicaUrls() != null && database.getReplicaUrls().size() > 0) {
+            log.debug("Triggering replication for table - databaseId: {}, tableName: {}, replicaUrls: {}", 
+                    databaseId, data.getName(), database.getReplicaUrls());
+            try {
                 // Create a new list to avoid lazy loading issues
                 List<ReplicaLocation> replicas = new ArrayList<>(database.getReplicaUrls());
                 data.setCreationLocation(baseUrl);
