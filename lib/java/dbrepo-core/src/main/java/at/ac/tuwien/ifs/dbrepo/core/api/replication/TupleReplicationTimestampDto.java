@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.core.api.replication;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -27,8 +28,8 @@ public class TupleReplicationTimestampDto {
     private UUID tableId;
 
     @Schema(description = "Timestamp when the row/tuple replication started")
-    private Instant rowStart;
+    private Timestamp rowStart;
 
     @Schema(description = "Timestamp when the row/tuple replication ended (null if still active)")
-    private Instant rowEnd;
+    private Timestamp rowEnd;
 }

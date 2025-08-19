@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -127,8 +128,8 @@ public class TableServiceImpl implements TableService {
                     .replicationId((String) replicationId)
                     .databaseId(remoteDatabaseId)
                     .tableId(remoteTableId)
-                    .rowStart((Instant) tsInserted)
-                    .rowEnd((Instant) tsDeleted) // Replication completed
+                    .rowStart(Timestamp.valueOf((String) tsInserted))
+                    .rowEnd(Timestamp.valueOf((String) tsDeleted)) // Replication completed
                     .build();
                 
                 timestampsToSave.add(timestamp);

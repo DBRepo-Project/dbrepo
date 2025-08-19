@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -33,10 +34,10 @@ public class TupleReplicationTimestamp implements Serializable {
     private UUID tableId;
 
     @Column(name = "row_start", nullable = false, columnDefinition = "TIMESTAMP")
-    private Instant rowStart;
+    private Timestamp rowStart;
 
     @Column(name = "row_end", columnDefinition = "TIMESTAMP")
-    private Instant rowEnd;
+    private Timestamp rowEnd;
 
     // Composite primary key class
     @Data
