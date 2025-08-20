@@ -158,33 +158,12 @@ public class TableServiceImpl implements TableService {
         }
     }
     
-    /**
-     * Parse ISO timestamp string to SQL Timestamp
-     */
     private Timestamp parseTimestamp(String timestampStr) {
-        if (timestampStr == null) {
-            return null;
-        }
+        if (timestampStr == null) return null;
         
-        try {
-            // Try to parse ISO format with timezone (e.g., "2025-08-19T11:19:30.794+00:00")
-            ZonedDateTime zonedDateTime = ZonedDateTime.parse(timestampStr);
-            return Timestamp.from(zonedDateTime.toInstant());
-        } catch (Exception e1) {
-            try {
-                // Try to parse ISO format without timezone (e.g., "2025-08-19T11:19:30.794")
-                LocalDateTime localDateTime = LocalDateTime.parse(timestampStr);
-                return Timestamp.valueOf(localDateTime);
-            } catch (Exception e2) {
-                try {
-                    // Try to parse standard format (e.g., "2025-08-19 11:19:30.794")
-                    return Timestamp.valueOf(timestampStr);
-                } catch (Exception e3) {
-                    log.error("Failed to parse timestamp: {}. Error: {}", timestampStr, e3.getMessage());
-                    // Return current timestamp as fallback
-                    return Timestamp.from(Instant.now());
-                }
-            }
-        }
+        String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
+        LocalDateTime ldt = LocalDateTime.parse(withoutTz, 
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+        return Timestamp.valueOf(ldt);
     }
 }
