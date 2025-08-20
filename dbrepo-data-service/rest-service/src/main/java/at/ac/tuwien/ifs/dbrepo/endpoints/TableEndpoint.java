@@ -739,11 +739,15 @@ public class TableEndpoint extends RestEndpoint {
         log.info("endpoint receive replication timestamps, databaseId={}, tableId={}", databaseId, tableId);
         
         try {
-            String currentSiteUrl = (String) request.get("currentSiteUrl");
-            @SuppressWarnings("unchecked")
             List<Map<String, Object>> timestamps = (List<Map<String, Object>>) request.get("timestamps");
+
             
-            log.info("Received {} replication timestamps from {}", timestamps.size(), currentSiteUrl);
+            if (timestamps == null) {
+                log.error("timestamps is null in request: {}", request);
+                throw new IllegalArgumentException("timestamps is required");
+            }
+            
+            log.info("Received {} replication timestamps", timestamps.size());
             
             // Get database and table from cache service
             final DatabaseDto database = cacheService.getDatabase(databaseId);
