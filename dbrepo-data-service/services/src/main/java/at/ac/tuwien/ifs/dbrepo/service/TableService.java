@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 public interface TableService {
 
@@ -140,4 +141,16 @@ public interface TableService {
      */
     void updateTuple(DatabaseDto database, TableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException;
+
+    /**
+     * Processes and persists replication timestamps received from other sites.
+     *
+     * @param database The database.
+     * @param table The table.
+     * @param timestamps The list of timestamps to process.
+     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException The query is malformed, likely due to a bug in the application.
+     */
+    void processReplicationTimestamps(DatabaseDto database, TableDto table,
+                                    List<Map<String, Object>> timestamps) throws SQLException, QueryMalformedException;
 }

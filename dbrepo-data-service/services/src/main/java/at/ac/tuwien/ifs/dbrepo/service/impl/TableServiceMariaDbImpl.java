@@ -1,16 +1,24 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
@@ -32,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ArrayList;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,14 +51,16 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private final MariaDbMapper mariaDbMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
+    private final ReplicationTimestampService replicationTimestampService;
 
     @Autowired
     public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, StorageService storageService,
-                                   DatabaseService databaseService) {
+                                   DatabaseService databaseService, ReplicationTimestampService replicationTimestampService) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
+        this.replicationTimestampService = replicationTimestampService;
     }
 
     @Override
@@ -623,8 +635,63 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             log.error("Failed to find column with name {}", name);
             throw new QueryMalformedException("Failed to find column");
         }
-        return optional.get()
-                .getColumnType();
+        return ColumnTypeDto.builder()
+                .name(optional.get().getName())
+                .build();
+    }
+
+    @Override
+    public void processReplicationTimestamps(DatabaseDto database, TableDto table,
+                                          List<Map<String, Object>> timestamps) throws SQLException, QueryMalformedException {
+        if (timestamps == null || timestamps.isEmpty()) {
+            log.info("No timestamps to process");
+            return;
+        }
+        
+        log.info("Processing {} replication timestamps", timestamps.size());
+        
+        // Convert the received timestamps to TupleReplicationTimestamp objects
+        List<TupleReplicationTimestamp> timestampsToSave = new ArrayList<>();
+        for (Map<String, Object> ts : timestamps) {
+            try {
+                // Replace the replica URL with the current site URL to avoid duplicates
+                TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
+                    .siteUrl((String) ts.get("siteUrl"))
+                    .replicationId((String) ts.get("replicationId"))
+                    .databaseId(UUID.fromString((String) ts.get("databaseId")))
+                    .tableId(UUID.fromString((String) ts.get("tableId")))
+                    .rowStart(parseTimestamp((String) ts.get("rowStart")))
+                    .rowEnd(parseTimestamp((String) ts.get("rowEnd")))
+                    .build();
+                timestampsToSave.add(timestamp);
+            } catch (Exception e) {
+                log.error("Failed to process timestamp {}: {}", ts, e.getMessage());
+            }
+        }
+        
+        if (!timestampsToSave.isEmpty()) {
+            try {
+                // Ensure the table exists before saving
+                replicationTimestampService.ensureTableExists(database);
+                replicationTimestampService.saveReplicationTimestamps(database, timestampsToSave);
+                log.info("Successfully saved {} replication timestamps to database", timestampsToSave.size());
+            } catch (Exception e) {
+                log.error("Failed to save replication timestamps: {}", e.getMessage(), e);
+                throw new QueryMalformedException("Failed to save replication timestamps: " + e.getMessage(), e);
+            }
+        }
+    }
+    
+    /**
+     * Parse microsecond timestamp string to SQL Timestamp
+     */
+    private java.sql.Timestamp parseTimestamp(String timestampStr) {
+        if (timestampStr == null) return null;
+        
+        String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
+        java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(withoutTz, 
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+        return java.sql.Timestamp.valueOf(ldt);
     }
 
 }

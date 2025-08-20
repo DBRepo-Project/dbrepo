@@ -43,6 +43,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Slf4j
 @RestController
@@ -720,6 +721,58 @@ public class TableEndpoint extends RestEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
+        }
+    }
+
+    @PostMapping("/{tableId}/timestamps")
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbrepo_table_timestamps_receive")
+    @Operation(summary = "Receive replication timestamps", description = "Receives replication timestamps from other instances")
+    public ResponseEntity<Map<String, Object>> receiveReplicationTimestamps(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                           @NotNull @PathVariable("tableId") UUID tableId,
+                                                                           @RequestBody Map<String, Object> request,
+                                                                           Principal principal,
+                                                                           @RequestHeader("Authorization") String authorization)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+        log.info("endpoint receive replication timestamps, databaseId={}, tableId={}", databaseId, tableId);
+        
+        try {
+            String currentSiteUrl = (String) request.get("currentSiteUrl");
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> timestamps = (List<Map<String, Object>>) request.get("timestamps");
+            
+            log.info("Received {} replication timestamps from {}", timestamps.size(), currentSiteUrl);
+            
+            // Get database and table from cache service
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            final TableDto table = cacheService.getTable(databaseId, tableId);
+            
+            // Validate access
+            final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
+            
+            // Process and persist timestamps using the service
+            tableService.processReplicationTimestamps(database, table, currentSiteUrl, timestamps);
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Received and processed " + timestamps.size() + " replication timestamps",
+                "receivedCount", timestamps.size()
+            );
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error processing replication timestamps: {}", e.getMessage(), e);
+            
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to process replication timestamps: " + e.getMessage()
+            );
+            
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
