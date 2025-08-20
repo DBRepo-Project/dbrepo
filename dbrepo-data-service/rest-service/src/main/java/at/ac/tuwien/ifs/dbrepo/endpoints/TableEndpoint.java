@@ -421,6 +421,15 @@ public class TableEndpoint extends RestEndpoint {
             final TupleDto tuple = TupleDto.builder().data(clean).build();
 
             final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, tuple);
+            
+            // Log created timestamps with full precision for debugging
+            final Object createdInsertedAt = created.get("inserted_at");
+            final Object createdDeletedAt = created.get("deleted_at");
+            log.info("created timestamps inserted_at={}, deleted_at={}", createdInsertedAt, createdDeletedAt);
+            
+            // Log the full created object for debugging
+            log.info("full created object: {}", created);
+            
             log.atInfo()
                     .setMessage("replicate insert created tuple with timestamps")
                     .addKeyValue("created", created)
