@@ -727,7 +727,9 @@ public class TableEndpoint extends RestEndpoint {
     @PostMapping("/{tableId}/timestamps")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_timestamps_receive")
-    @Operation(summary = "Receive replication timestamps", description = "Receives replication timestamps from other instances")
+    @Operation(summary = "Insert timestamps",
+            description = "Insert timestamps from other sites into local site",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<Map<String, Object>> receiveReplicationTimestamps(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                            @NotNull @PathVariable("tableId") UUID tableId,
                                                                            @RequestBody Map<String, Object> request,
