@@ -635,9 +635,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             log.error("Failed to find column with name {}", name);
             throw new QueryMalformedException("Failed to find column");
         }
-        return ColumnTypeDto.builder()
-                .name(optional.get().getName())
-                .build();
+        return optional.get()
+                .getColumnType();
     }
 
     @Override
