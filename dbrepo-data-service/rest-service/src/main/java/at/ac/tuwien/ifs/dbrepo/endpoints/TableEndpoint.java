@@ -754,7 +754,7 @@ public class TableEndpoint extends RestEndpoint {
             endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
             
             // Process and persist timestamps using the service
-            tableService.processReplicationTimestamps(database, table, currentSiteUrl, timestamps);
+            tableService.processReplicationTimestamps(database, table, timestamps);
             
             Map<String, Object> response = Map.of(
                 "status", "success",
