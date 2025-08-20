@@ -529,8 +529,41 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } finally {
             dataSource.close();
         }
+        
+        // Format timestamps with microsecond precision for consistent output
+        formatTimestampsWithMicrosecondPrecision(createdTupleWithTimestamps);
+        
         log.info("Created tuple(s) in table (with ts): {}.{}", database.getInternalName(), table.getInternalName());
         return createdTupleWithTimestamps;
+    }
+
+    /**
+     * Formats timestamp fields with microsecond precision for consistent output
+     */
+    private void formatTimestampsWithMicrosecondPrecision(Map<String, Object> tuple) {
+        // Format inserted_at timestamp
+        if (tuple.get("inserted_at") != null) {
+            Object insertedAt = tuple.get("inserted_at");
+            if (insertedAt instanceof java.sql.Timestamp) {
+                java.sql.Timestamp ts = (java.sql.Timestamp) insertedAt;
+                // Convert to LocalDateTime and format with microsecond precision
+                java.time.LocalDateTime ldt = ts.toLocalDateTime();
+                String formatted = at.ac.tuwien.ifs.dbrepo.mapper.DataMapper.mariaDbFormatter.format(ldt) + "+00:00";
+                tuple.put("inserted_at", formatted);
+            }
+        }
+        
+        // Format deleted_at timestamp
+        if (tuple.get("deleted_at") != null) {
+            Object deletedAt = tuple.get("deleted_at");
+            if (deletedAt instanceof java.sql.Timestamp) {
+                java.sql.Timestamp ts = (java.sql.Timestamp) deletedAt;
+                // Convert to LocalDateTime and format with microsecond precision
+                java.time.LocalDateTime ldt = ts.toLocalDateTime();
+                String formatted = at.ac.tuwien.ifs.dbrepo.mapper.DataMapper.mariaDbFormatter.format(ldt) + "+00:00";
+                tuple.put("deleted_at", formatted);
+            }
+        }
     }
 
     private void putIfColumnExists(ResultSet rs, Map<String, Object> map, String column) {
