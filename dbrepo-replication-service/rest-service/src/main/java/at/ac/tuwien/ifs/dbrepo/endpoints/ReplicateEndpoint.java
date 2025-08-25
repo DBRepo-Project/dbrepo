@@ -13,9 +13,13 @@ import at.ac.tuwien.ifs.dbrepo.service.impl.TableServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +34,7 @@ public class ReplicateEndpoint {
     private final DatabaseServiceMariaDbImpl databaseService;
     private final TableService tableService;
     private final ReplicationService replicationService;
+    private final RestTemplate restTemplate;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String baseUrl;
@@ -207,26 +212,44 @@ public class ReplicateEndpoint {
 
     @PostMapping("/subset")
     @Operation(summary = "Receive subset replication", description = "Receives subset replication notification from other instances")
-    public ResponseEntity<Map<String, Object>> receiveSubsetReplication(@RequestParam UUID databaseId, @RequestBody QueryDto queryDto) {
+    public ResponseEntity<Map> receiveSubsetReplication(@RequestParam UUID databaseId, @RequestBody QueryDto queryDto) {
         System.out.println("=== Received Subset Replication ===");
         System.out.println("Database ID: " + databaseId);
         System.out.println("Query ID: " + queryDto.getId());
         System.out.println("===================================");
         
-        // TODO: Implement actual subset replication logic
-        // This could involve:
-        // 1. Creating the subset locally using the query information
-        // 2. Storing it in the local query store
-        // 3. Updating any necessary metadata
-        
-        Map<String, Object> response = Map.of(
-            "status", "success",
-            "message", "Subset replication received successfully",
-            "databaseId", databaseId.toString(),
-            "queryId", queryDto.getId().toString()
-        );
-        
-        return ResponseEntity.ok(response);
+        try {
+            // Call the data service's /replicate endpoint to persist the subset locally
+            String dataServiceUrl = baseUrl + "/api/v1/database/" + databaseId + "/subset/replicate";
+            
+            System.out.println("Calling data service at: " + dataServiceUrl);
+            
+            // Make the call to the data service
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    dataServiceUrl,
+                    HttpMethod.POST,
+                    new HttpEntity<>(queryDto),
+                    Map.class
+            );
+            
+            System.out.println("Data service response status: " + response.getStatusCode());
+            System.out.println("Data service response body: " + response.getBody());
+            
+            return response;
+            
+        } catch (Exception e) {
+            System.out.println("Error calling data service: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = Map.of(
+                "status", "error",
+                "message", "Failed to call data service: " + e.getMessage(),
+                "databaseId", databaseId.toString(),
+                "queryId", queryDto.getId().toString()
+            );
+            
+            return ResponseEntity.status(500).body(errorResponse);
+        }
     }
 
 } 
