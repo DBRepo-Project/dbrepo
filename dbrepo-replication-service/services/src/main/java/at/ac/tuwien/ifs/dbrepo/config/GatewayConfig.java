@@ -19,7 +19,7 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.metadataService}")
     private String metadataEndpoint;
 
-    @Value("${dbrepo.endpoints.dataServiceEndpoint}")
+    @Value("${dbrepo.endpoints.dataService}")
     private String dataServiceEndpoint;
 
     @Value("${dbrepo.endpoints.analyseService}")
@@ -66,18 +66,19 @@ public class GatewayConfig {
         return restTemplate;
     }
 
+
     @Bean
-    public RestTemplate dataRestTemplate() {
+    public RestTemplate externalReplicationRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataServiceEndpoint));
         restTemplate.getInterceptors()
                 .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
     }
 
     @Bean
-    public RestTemplate externalReplicationRestTemplate() {
+    public RestTemplate dataRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataServiceEndpoint));
         restTemplate.getInterceptors()
                 .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
