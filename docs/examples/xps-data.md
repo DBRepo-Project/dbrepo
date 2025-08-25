@@ -4,7 +4,7 @@ author: Martin Weise
 
 ## tl;dr
 
-[:fontawesome-solid-database: &nbsp;Dataset](https://dbrepo1.ec.tuwien.ac.at/database/c0166b0b-cb1b-4a67-a2f0-0cd695ad65fc){ .md-button .md-button--primary target="_blank" }
+[:fontawesome-solid-database: &nbsp;Dataset](https://dbrepo.datalab.tuwien.ac.at/database/c0166b0b-cb1b-4a67-a2f0-0cd695ad65fc){ .md-button .md-button--primary target="_blank" }
 [:simple-jupyter: &nbsp;Notebook](https://gitlab.tuwien.ac.at/crdm/xps/-/blob/master/analysis.ipynb){ .md-button .md-button--secondary target="_blank" }
 
 ## Description
