@@ -8,7 +8,7 @@ author: Martin Weise
 
     ---
 
-    High-throughput
+    Data that is of high volume or -variety.
 
     [:octicons-arrow-right-24: Air Quality](/infrastructures/dbrepo/1.10/examples/air/),
     [:octicons-arrow-right-24: Industry 4.0 Power Data](/infrastructures/dbrepo/1.10/examples/power/),
@@ -19,7 +19,7 @@ author: Martin Weise
 
     ---
 
-    TBD
+    Quality data sources for algorithmic systems.
 
     [:octicons-arrow-right-24: Music-ML Data](/infrastructures/dbrepo/1.10/examples/music/)
 
@@ -27,7 +27,7 @@ author: Martin Weise
 
     ---
 
-    Low-throughput
+    Desk research data sets.
 
     [:octicons-arrow-right-24: XPS Data](/infrastructures/dbrepo/1.10/examples/xps/),
     [:octicons-arrow-right-24: PLS Data](/infrastructures/dbrepo/1.10/examples/pls/),

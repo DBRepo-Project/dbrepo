@@ -6,7 +6,7 @@ author: Martin Weise
 
 ## tl;dr
 
-tbd
+Mirroring of internal database for users not authorized in the partner university.
 
 ## Description
 
@@ -21,7 +21,8 @@ edition.
 
 ## Solution
 
-tbd
+We set up a mirror script that copies the internal database for users not authorized in the partner university to a
+local, downstream database where they can access the database for analysis.
 
 ## DBRepo Features
 
