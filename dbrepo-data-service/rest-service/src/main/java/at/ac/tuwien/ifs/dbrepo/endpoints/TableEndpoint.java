@@ -733,11 +733,7 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Map<String, Object>> receiveReplicationTimestamps(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                            @NotNull @PathVariable("tableId") UUID tableId,
                                                                            @RequestBody Map<String, Object> request,
-                                                                           Principal principal,
-                                                                           @RequestHeader("Authorization") String authorization)
-            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
-            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+                                                                           Principal principal) {
         log.info("endpoint receive replication timestamps, databaseId={}, tableId={}", databaseId, tableId);
         
         try {

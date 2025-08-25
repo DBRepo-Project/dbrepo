@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
@@ -201,6 +202,30 @@ public class ReplicateEndpoint {
         });
         System.out.println("==================================");
 
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/subset")
+    @Operation(summary = "Receive subset replication", description = "Receives subset replication notification from other instances")
+    public ResponseEntity<Map<String, Object>> receiveSubsetReplication(@RequestParam UUID databaseId, @RequestBody QueryDto queryDto) {
+        System.out.println("=== Received Subset Replication ===");
+        System.out.println("Database ID: " + databaseId);
+        System.out.println("Query ID: " + queryDto.getId());
+        System.out.println("===================================");
+        
+        // TODO: Implement actual subset replication logic
+        // This could involve:
+        // 1. Creating the subset locally using the query information
+        // 2. Storing it in the local query store
+        // 3. Updating any necessary metadata
+        
+        Map<String, Object> response = Map.of(
+            "status", "success",
+            "message", "Subset replication received successfully",
+            "databaseId", databaseId.toString(),
+            "queryId", queryDto.getId().toString()
+        );
+        
         return ResponseEntity.ok(response);
     }
 

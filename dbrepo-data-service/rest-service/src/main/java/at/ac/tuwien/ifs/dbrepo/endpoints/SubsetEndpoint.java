@@ -53,11 +53,13 @@ public class SubsetEndpoint extends RestEndpoint {
     private final StorageService storageService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final ReplicationService replicationService;
 
     @Autowired
     public SubsetEndpoint(CacheService cacheService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
                           StorageService storageService, EndpointValidator endpointValidator,
-                          MetadataServiceGateway metadataServiceGateway, AnalyseService analyseService) {
+                          MetadataServiceGateway metadataServiceGateway, AnalyseService analyseService,
+                          ReplicationService replicationService) {
         this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
@@ -65,6 +67,7 @@ public class SubsetEndpoint extends RestEndpoint {
         this.storageService = storageService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.replicationService = replicationService;
     }
 
     @GetMapping
@@ -260,6 +263,32 @@ public class SubsetEndpoint extends RestEndpoint {
         }
         try {
             final UUID subsetId = subsetService.create(database, data, timestamp, username);
+
+            if(database.getReplicaUrls() != null && database.getReplicaUrls().size() > 0) {
+                final QueryDto subset;
+                try {
+                    subset = subsetService.findById(database, subsetId);
+                    subset.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
+                } catch (SQLException e) {
+                    log.error("Failed to establish connection to database: {}", e.getMessage());
+                    throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+                }
+                /* parameters */
+                if (timestamp == null) {
+                    timestamp = Instant.now();
+                    log.debug("timestamp not set: default to {}", timestamp);
+                }
+
+                // Replicate the subset query to other instances
+                try {
+                    replicationService.replicateQuery(database, subset);
+                    log.debug("Successfully initiated replication for subset: {}", subsetId);
+                } catch (Exception e) {
+                    log.warn("Failed to replicate subset query: {}", e.getMessage(), e);
+                    // Don't fail the main operation if replication fails
+                }
+            }
+
             return getData(databaseId, subsetId, principal, "application/json", request, timestamp, page, size);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());

@@ -63,4 +63,12 @@ public class GatewayConfig {
         return restTemplate;
     }
 
+    @Bean
+    public RestTemplate externalReplicationRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getInterceptors()
+                .add(new InternalRequestInterceptor(credentialService, this));
+        return restTemplate;
+    }
+
 }
