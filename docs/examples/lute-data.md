@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-[:fontawesome-solid-database: &nbsp;Internal Dataset](https://handle.test.datacite.org/10.82556/6ejq-jv72){ .md-button .md-button--primary target="_blank" }
-
 ## tl;dr
 
 Mirroring of internal database for users not authorized in the partner university.

@@ -29,8 +29,8 @@ author: Martin Weise
 
     Desk research data sets.
 
-    [:octicons-arrow-right-24: XPS Data](/infrastructures/dbrepo/1.10/examples/xps/),
-    [:octicons-arrow-right-24: PLS Data](/infrastructures/dbrepo/1.10/examples/pls/),
+    [:octicons-arrow-right-24: XPS Data](/infrastructures/dbrepo/1.10/examples/xps-data/),
+    [:octicons-arrow-right-24: PLS Data](/infrastructures/dbrepo/1.10/examples/pl-datas/),
     [:octicons-arrow-right-24: Survey Data](/infrastructures/dbrepo/1.10/examples/survey/),
 
 </div>
