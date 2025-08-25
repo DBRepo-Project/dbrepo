@@ -127,4 +127,16 @@ public interface SubsetService {
      * @throws QueryStoreGCException The query store failed to delete stale queries.
      */
     void deleteStaleQueries(DatabaseDto database) throws SQLException, QueryStoreGCException;
+
+    /**
+     * Replicates a subset query from another instance by calling the local data service.
+     *
+     * @param databaseId The database ID.
+     * @param queryDto The query to replicate.
+     * @return A dummy UUID on success.
+     * @throws SQLException              The connection to the database could not be established.
+     * @throws QueryStoreInsertException The query store failed to insert the query.
+     */
+    UUID replicateQuery(UUID databaseId, QueryDto queryDto) throws SQLException,
+            QueryStoreInsertException, ViewMalformedException, QueryMalformedException;
 }

@@ -19,6 +19,9 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.metadataService}")
     private String metadataEndpoint;
 
+    @Value("${dbrepo.endpoints.dataServiceEndpoint}")
+    private String dataServiceEndpoint;
+
     @Value("${dbrepo.endpoints.analyseService}")
     private String analyseEndpoint;
 
@@ -58,6 +61,15 @@ public class GatewayConfig {
     public RestTemplate replicationRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(replicationEndpoint));
+        restTemplate.getInterceptors()
+                .add(new InternalRequestInterceptor(credentialService, this));
+        return restTemplate;
+    }
+
+    @Bean
+    public RestTemplate dataRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataServiceEndpoint));
         restTemplate.getInterceptors()
                 .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;

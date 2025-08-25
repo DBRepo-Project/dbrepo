@@ -21,12 +21,18 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 import java.sql.*;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -38,15 +44,18 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final RestTemplate restTemplate;
 
     @Autowired
     public SubsetServiceMariaDbImpl(DSLContext context, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
-                                    SparkSession sparkSession, MetadataServiceGateway metadataServiceGateway) {
+                                    SparkSession sparkSession, MetadataServiceGateway metadataServiceGateway,
+                                    @Qualifier("dataRestTemplate") RestTemplate restTemplate) {
         this.context = context;
         this.dataMapper = dataMapper;
         this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -287,6 +296,36 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             throw new QueryStoreGCException("Failed to delete stale queries: " + e.getMessage(), e);
         } finally {
             dataSource.close();
+        }
+    }
+
+    @Override
+    @Timed(value = "dbrepo_replication_replicate_subset_query", description = "Time spent replicating a subset query", histogram = true)
+    public UUID replicateQuery(UUID databaseId, QueryDto queryDto) throws SQLException,
+            QueryStoreInsertException, ViewMalformedException, QueryMalformedException {
+        
+        log.info("Replicating subset query: {} for database ID: {}", queryDto.getId(), databaseId);
+        
+        try {
+            // Call the local data service's /replicate endpoint
+            String path = databaseId + "/subset/replicate";
+            
+
+            // Make the HTTP call to the local data service's /replicate endpoint
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    path,
+                    HttpMethod.POST,
+                    new HttpEntity<>(queryDto),
+                    Map.class
+            );
+            
+            log.info("Successfully replicated subset to local data service. Response status: {}", response.getStatusCode());
+            
+            return UUID.randomUUID(); // Return a dummy UUID since we're not storing locally
+            
+        } catch (Exception e) {
+            log.error("Failed to replicate subset to local data service: {}", e.getMessage(), e);
+            throw new QueryStoreInsertException("Failed to replicate subset: " + e.getMessage(), e);
         }
     }
 

@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
+import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DatabaseServiceMariaDbImpl;
 import at.ac.tuwien.ifs.dbrepo.service.impl.TableServiceImpl;
@@ -34,7 +35,7 @@ public class ReplicateEndpoint {
     private final DatabaseServiceMariaDbImpl databaseService;
     private final TableService tableService;
     private final ReplicationService replicationService;
-    private final RestTemplate restTemplate;
+    private final SubsetService subsetService;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String baseUrl;
@@ -223,19 +224,12 @@ public class ReplicateEndpoint {
             String dataServiceUrl = baseUrl + "/api/v1/database/" + databaseId + "/subset/replicate";
             
             System.out.println("Calling data service at: " + dataServiceUrl);
+
+            this.subsetService.replicateQuery(databaseId, queryDto);
+
+
             
-            // Make the call to the data service
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    dataServiceUrl,
-                    HttpMethod.POST,
-                    new HttpEntity<>(queryDto),
-                    Map.class
-            );
-            
-            System.out.println("Data service response status: " + response.getStatusCode());
-            System.out.println("Data service response body: " + response.getBody());
-            
-            return response;
+            return null;
             
         } catch (Exception e) {
             System.out.println("Error calling data service: " + e.getMessage());
