@@ -308,7 +308,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         
         try {
             // Call the local data service's /replicate endpoint
-            String path = databaseId + "/subset/replicate";
+            String path = "/api/v1/database/" + databaseId + "/subset/replicate";
             
 
             // Make the HTTP call to the local data service's /replicate endpoint

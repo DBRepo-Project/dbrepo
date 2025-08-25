@@ -220,10 +220,6 @@ public class ReplicateEndpoint {
         System.out.println("===================================");
         
         try {
-            // Call the data service's /replicate endpoint to persist the subset locally
-            String dataServiceUrl = baseUrl + "/api/v1/database/" + databaseId + "/subset/replicate";
-            
-            System.out.println("Calling data service at: " + dataServiceUrl);
 
             this.subsetService.replicateQuery(databaseId, queryDto);
 
