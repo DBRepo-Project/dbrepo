@@ -687,10 +687,23 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private java.sql.Timestamp parseTimestamp(String timestampStr) {
         if (timestampStr == null) return null;
         
-        String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
-        java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(withoutTz, 
-            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-        return java.sql.Timestamp.valueOf(ldt);
+        try {
+            // Handle timestamps with timezone (e.g., "2025-08-25 06:14:19.776954+00:00")
+            if (timestampStr.contains("+") || timestampStr.contains("-") && timestampStr.lastIndexOf("-") > 10) {
+                String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
+                java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(withoutTz, 
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+                return java.sql.Timestamp.valueOf(ldt);
+            } else {
+                // Handle timestamps without timezone (e.g., "2025-08-25 06:14:19.776954")
+                java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(timestampStr, 
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+                return java.sql.Timestamp.valueOf(ldt);
+            }
+        } catch (Exception e) {
+            log.error("Failed to parse timestamp: {} - Error: {}", timestampStr, e.getMessage());
+            throw new IllegalArgumentException("Failed to parse timestamp: " + timestampStr, e);
+        }
     }
 
 }
