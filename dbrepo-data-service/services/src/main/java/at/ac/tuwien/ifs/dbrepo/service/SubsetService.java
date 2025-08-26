@@ -138,11 +138,12 @@ public interface SubsetService {
      * A query needs modification if it was created on a different site (replica).
      * Returns the modified query if modification is needed, otherwise returns the original query.
      *
+     * @param database The database context for timestamp lookups
      * @param queryDto The QueryDto to check
      * @param currentBaseUrl The current base URL of this service instance
      * @return The modified query if modification is needed, otherwise the original query
      */
-    String checkIfQueryNeedsModification(QueryDto queryDto, String currentBaseUrl);
+    String checkIfQueryNeedsModification(DatabaseDto database, QueryDto queryDto, String currentBaseUrl);
 
     /**
      * Deletes the stale queries that have not been persisted within 24 hours.

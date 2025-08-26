@@ -381,7 +381,7 @@ public class SubsetEndpoint extends RestEndpoint {
             final QueryDto subset = subsetService.findById(database, subsetId);
             
             // Check if query needs to be modified based on creation location
-            String queryToExecute = subsetService.checkIfQueryNeedsModification(subset, baseUrl);
+            String queryToExecute = subsetService.checkIfQueryNeedsModification(database, subset, baseUrl);
             
             if (request.getMethod().equals("HEAD")) {
                 headers.set("Access-Control-Expose-Headers", "X-Count X-Id");
