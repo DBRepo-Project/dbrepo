@@ -116,11 +116,22 @@ public interface SubsetService {
      * @param database The database.
      * @param queryId  The query id.
      * @param persist  If true, the query is retained in the query store, ephemeral otherwise.
+     * @throws QueryStorePersistException The query store failed to persist/unpersist the query.
      * @throws SQLException               The connection to the database could not be established.
      * @throws QueryStorePersistException The query store failed to persist/unpersist the query.
      */
-    void persist(DatabaseDto database, UUID queryId, Boolean persist) throws SQLException,
-            QueryStorePersistException;
+    void persist(DatabaseDto database, UUID queryId, Boolean persist) throws SQLException, QueryStorePersistException;
+
+    /**
+     * Replicates a query from another instance by directly inserting it into the query store.
+     * This method does not re-execute the query but preserves all original data and metadata.
+     *
+     * @param database The database where the query should be replicated.
+     * @param queryDto The query DTO containing all the data to be replicated.
+     * @return The ID of the replicated query (same as the original).
+     * @throws SQLException The connection to the database could not be established or the insert failed.
+     */
+    UUID replicateQuery(DatabaseDto database, QueryDto queryDto) throws SQLException;
 
     /**
      * Deletes the stale queries that have not been persisted within 24 hours.

@@ -295,4 +295,60 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         }
     }
 
+    @Override
+    @Timed(value = "dbrepo_data_replicate_query", description = "Time spent replicating a query from another instance", histogram = true)
+    public UUID replicateQuery(DatabaseDto database, QueryDto queryDto) throws SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            /* directly insert the replicated query into qs_queries */
+            final long start = System.currentTimeMillis();
+            
+
+            
+            // Insert the replicated query directly
+            final PreparedStatement insertStatement = connection.prepareStatement(
+                "INSERT INTO qs_queries (id, created_by, query, query_normalized, is_persisted, " +
+                "query_hash, result_hash, result_number, created, executed, creation_location) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            
+            // Set all the values from the replicated QueryDto
+            insertStatement.setString(1, queryDto.getId().toString());  // Use original ID
+            insertStatement.setString(2, queryDto.getOwner().getUsername());
+            insertStatement.setString(3, queryDto.getQuery());
+            insertStatement.setString(4, queryDto.getQueryNormalized());
+            insertStatement.setBoolean(5, queryDto.getIsPersisted());
+            insertStatement.setString(6, queryDto.getQueryHash());
+            insertStatement.setString(7, queryDto.getResultHash());
+            insertStatement.setLong(8, queryDto.getResultNumber());
+            insertStatement.setTimestamp(9, Timestamp.from(queryDto.getCreated()));
+            insertStatement.setTimestamp(10, Timestamp.from(queryDto.getExecution()));
+            insertStatement.setString(11, queryDto.getCreationLocation());  // Include creation location
+            
+            log.trace("Executing replication insert for query: {}", queryDto.getId());
+            insertStatement.executeUpdate();
+            
+            log.atDebug()
+                    .setMessage("replicate query in query store of database: " + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "replicate_query")
+                    .addKeyValue("query_id", queryDto.getId())
+                    .addKeyValue("query_hash", queryDto.getQueryHash())
+                    .log();
+            
+            connection.commit();
+            log.info("Successfully replicated query with ID: {} in database: {}", 
+                    queryDto.getId(), database.getInternalName());
+            
+            return queryDto.getId();  // Return the original ID since we preserved it
+            
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to replicate query: {}", e.getMessage());
+            throw new SQLException("Failed to replicate query: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
 }

@@ -500,23 +500,21 @@ public class SubsetEndpoint extends RestEndpoint {
         log.info("===================================");
         
         try {
-            // TODO: Implement actual subset replication logic
-            // This could involve:
-            // 1. Validating the incoming query data
-            // 2. Creating the subset locally using the query information
-            // 3. Storing it in the local query store with the original creation location
-            // 4. Updating any necessary metadata
-            // 5. Persisting the query if needed
+            // Get the database
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
             
-            // For now, just log the replication attempt and return success
-            log.info("Subset replication received successfully for database: {}, query: {}, creation location: {}", 
-                    databaseId, queryDto.getId(), queryDto.getCreationLocation() != null ? queryDto.getCreationLocation() : "null");
+            // Use the service to replicate the query
+            final UUID replicatedQueryId = subsetService.replicateQuery(database, queryDto);
+            
+            log.info("Successfully replicated subset query with ID: {} (original: {})", 
+                    replicatedQueryId, queryDto.getId());
             
             Map<String, Object> response = Map.of(
                 "status", "success",
-                "message", "Subset replication received successfully",
+                "message", "Subset replication completed successfully",
                 "databaseId", databaseId.toString(),
-                "queryId", queryDto.getId().toString(),
+                "originalQueryId", queryDto.getId().toString(),
+                "replicatedQueryId", replicatedQueryId.toString(),
                 "creationLocation", queryDto.getCreationLocation() != null ? queryDto.getCreationLocation() : "null"
             );
             

@@ -403,10 +403,13 @@ public interface DataMapper {
                         .id(UUID.randomUUID())
                         .username(data.getString(2))
                         .build())
-                .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
+                .created(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
-                .creationLocation(data.getString(10))
+                .execution(LocalDateTime.parse(data.getString(10), mariaDbFormatter)
+                        .atZone(ZoneId.of("UTC"))
+                        .toInstant())
+                .creationLocation(data.getString(11))
                 .build();
     }
 

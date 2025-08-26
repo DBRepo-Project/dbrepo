@@ -41,6 +41,12 @@ public class QueryDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant execution;
 
+    @NotNull
+    @JsonProperty("created")
+    @Schema(description = "The timestamp when the query was created", example = "2022-01-01 08:00:00.000000")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private Instant created;
+
     @NotBlank
     @Schema(description = "The mapped SQL query", example = "SELECT `id` FROM `air_quality`")
     private String query;

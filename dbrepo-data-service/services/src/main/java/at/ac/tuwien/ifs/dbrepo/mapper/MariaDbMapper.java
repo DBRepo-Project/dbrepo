@@ -209,7 +209,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreFindQueryRawQuery() {
-        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location` FROM `qs_queries` q WHERE q.`id` = ?";
+        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `created`, `executed`, `creation_location` FROM `qs_queries` q WHERE q.`id` = ?";
         log.trace("mapped find query statement: {}", statement);
         return statement;
     }
@@ -281,7 +281,7 @@ public interface MariaDbMapper {
     }
 
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
-        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location` FROM `qs_queries`");
+        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `created`, `executed`, `creation_location` FROM `qs_queries`");
         if (filterPersisted != null) {
             statement.append(" WHERE `is_persisted` = ?");
         }
@@ -1066,7 +1066,6 @@ public interface MariaDbMapper {
                         .toList();
             }
         };
-        log.debug("datasource is of type {} and has name: {}", data.getDatasourceType(), datasourceName);
         final SelectJoinStep<Record> query = context.select(columns)
                 .from(name(datasourceName));
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
