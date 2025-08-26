@@ -400,24 +400,49 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         Set<String> tableNames = extractTableNames(originalQuery);
         log.debug("Extracted table names from query: {}", tableNames);
         
+        // First, let's see what timestamps are available in this database
+        List<TupleReplicationTimestamp> allTimestamps = replicationTimestampService
+            .findBySiteUrl(database, creationLocation);
+        log.info("Found {} total timestamps for site '{}' in database '{}'", 
+                allTimestamps.size(), creationLocation, database.getInternalName());
+        
+        if (allTimestamps.isEmpty()) {
+            log.warn("No timestamps found at all for site '{}' in database '{}'", creationLocation, database.getInternalName());
+            log.warn("Query will NOT be modified - returning original query");
+            return originalQuery;
+        }
+        
+        // Log all available timestamps for debugging
+        for (TupleReplicationTimestamp ts : allTimestamps) {
+            log.debug("Available timestamp: site_url={}, replication_id={}, database_id={}, table_id={}, row_start={}, row_end={}", 
+                    ts.getSiteUrl(), ts.getReplicationId(), ts.getDatabaseId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
+        }
+        
         String modifiedQuery = originalQuery;
         
         for (String tableName : tableNames) {
             try {
-                // Look up ALL replication timestamps for this table and creation location
-                List<TupleReplicationTimestamp> timestamps = replicationTimestampService
-                    .findBySiteUrl(database, creationLocation);
+                // Use the already fetched timestamps instead of calling the service again
+                log.debug("Processing table: {}", tableName);
                 
                 // Filter timestamps for this specific table (by name pattern matching)
-                List<TupleReplicationTimestamp> tableTimestamps = timestamps.stream()
+                List<TupleReplicationTimestamp> tableTimestamps = allTimestamps.stream()
                     .filter(t -> t.getTableId() != null) // Ensure table ID is not null
-                    .collect(java.util.stream.Collectors.toList());
+                    .toList();
+                
+                log.debug("Found {} timestamps with table_id for table: {}", tableTimestamps.size(), tableName);
                 
                 if (!tableTimestamps.isEmpty()) {
+                    // Log the timestamps we found
+                    for (TupleReplicationTimestamp ts : tableTimestamps) {
+                        log.info("Timestamp for table {}: site_url={}, replication_id={}, table_id={}, row_start={}, row_end={}",
+                                tableName, ts.getSiteUrl(), ts.getReplicationId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
+                    }
+                    
                     // Add table alias and JOIN with tuple_replication_timestamps
                     String tableAlias = tableName.substring(0, 1).toLowerCase(); // Use first letter as alias
                     
-                    // Replace table reference with aliased version
+                    // Replace table reference with aliased version - add proper spacing
                     String tablePattern = "\\b" + Pattern.quote(tableName) + "\\b";
                     String tableWithAlias = tableName + " " + tableAlias;
                     modifiedQuery = modifiedQuery.replaceAll(tablePattern, tableWithAlias);
@@ -434,8 +459,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         "JOIN tuple_replication_timestamps trt_%s ON trt_%s.site_url = '%s' " +
                         "AND trt_%s.replication_id = %s.replication_id " +
                         "AND trt_%s.row_start <= '%s' " +
-                        "AND (trt_%s.row_end IS NULL OR trt_%s.row_end > '%s')",
-                        tableAlias, tableAlias, creationLocation, tableAlias, tableAlias, tableAlias, executionTimestampStr, tableAlias, tableAlias, executionTimestampStr
+                        "AND trt_%s.row_end > '%s'",
+                        tableAlias, tableAlias, creationLocation, tableAlias, tableAlias, tableAlias, executionTimestampStr, tableAlias, executionTimestampStr
                     );
                     
                     // Insert the JOIN clause after the table reference
@@ -445,6 +470,12 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 } else {
                     log.warn("No replication timestamps found for table '{}' and creation location '{}'", 
                             tableName, creationLocation);
+                    log.warn("This means the query will NOT be modified and will use original MariaDB timestamps");
+                    log.warn("Available timestamps for site '{}':", creationLocation);
+                    for (TupleReplicationTimestamp ts : allTimestamps) {
+                        log.warn("  - site_url={}, replication_id={}, table_id={}, row_start={}, row_end={}", 
+                                ts.getSiteUrl(), ts.getReplicationId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
+                    }
                 }
             } catch (Exception e) {
                 log.error("Failed to look up replication timestamp for table '{}': {}", tableName, e.getMessage());
@@ -501,14 +532,17 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         
         // Simple regex to find table names after FROM and JOIN
         // This handles basic cases but might need enhancement for complex queries
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+        Pattern pattern = Pattern.compile(
             "(?i)(?:FROM|JOIN)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?");
-        java.util.regex.Matcher matcher = pattern.matcher(sqlQuery);
+        Matcher matcher = pattern.matcher(sqlQuery);
         
         while (matcher.find()) {
-            tableNames.add(matcher.group(1));
+            String tableName = matcher.group(1);
+            tableNames.add(tableName);
+            log.debug("Extracted table name: '{}' from query", tableName);
         }
         
+        log.info("Extracted {} table names: {}", tableNames.size(), tableNames);
         return tableNames;
     }
 
