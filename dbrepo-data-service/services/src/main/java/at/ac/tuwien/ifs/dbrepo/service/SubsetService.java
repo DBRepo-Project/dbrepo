@@ -134,6 +134,17 @@ public interface SubsetService {
     UUID replicateQuery(DatabaseDto database, QueryDto queryDto) throws SQLException;
 
     /**
+     * Checks if a query needs to be modified based on its creation location.
+     * A query needs modification if it was created on a different site (replica).
+     * Returns the modified query if modification is needed, otherwise returns the original query.
+     *
+     * @param queryDto The QueryDto to check
+     * @param currentBaseUrl The current base URL of this service instance
+     * @return The modified query if modification is needed, otherwise the original query
+     */
+    String checkIfQueryNeedsModification(QueryDto queryDto, String currentBaseUrl);
+
+    /**
      * Deletes the stale queries that have not been persisted within 24 hours.
      *
      * @param database The database.

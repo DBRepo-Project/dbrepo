@@ -351,4 +351,27 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         }
     }
 
+    @Override
+    public String checkIfQueryNeedsModification(QueryDto queryDto, String currentBaseUrl) {
+        String creationLocation = queryDto.getCreationLocation();
+        
+        // Query needs modification if:
+        // 1. creationLocation is not null AND
+        // 2. creationLocation is different from current baseUrl
+        if (creationLocation != null && !creationLocation.equals(currentBaseUrl)) {
+            log.info("Query needs to be modified: creationLocation={}, current baseUrl={}", 
+                    creationLocation, currentBaseUrl);
+            
+            // TODO: Implement actual query modification logic here
+            // For now, just return the original query
+            // In the next step, we'll implement the actual modification
+            log.info("Query modification needed but not yet implemented - returning original query");
+            return queryDto.getQueryNormalized();
+        } else {
+            log.debug("Query does not need modification: creationLocation={}, current baseUrl={}", 
+                    creationLocation, currentBaseUrl);
+            return queryDto.getQueryNormalized();
+        }
+    }
+
 }

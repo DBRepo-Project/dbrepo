@@ -379,16 +379,18 @@ public class SubsetEndpoint extends RestEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             headers.set("X-Id", "" + subsetId);
             final QueryDto subset = subsetService.findById(database, subsetId);
+            
+            // Check if query needs to be modified based on creation location
+            String queryToExecute = subsetService.checkIfQueryNeedsModification(subset, baseUrl);
+            
             if (request.getMethod().equals("HEAD")) {
                 headers.set("Access-Control-Expose-Headers", "X-Count X-Id");
                 final Long count = subsetService.reExecuteCount(database, subset);
                 headers.set("X-Count", "" + count);
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .build();
+                return ResponseEntity.ok().headers(headers).build();
             }
             subset.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
-            final String query = mariaDbMapper.paginateSubset(subset.getQueryNormalized(),
+            final String query = mariaDbMapper.paginateSubset(queryToExecute,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
