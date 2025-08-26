@@ -463,6 +463,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         tableAlias, tableAlias, creationLocation, tableAlias, tableAlias, tableAlias, executionTimestampStr, tableAlias, executionTimestampStr
                     );
                     
+                    log.debug("Generated JOIN clause: {}", joinClause);
+                    
                     // Insert the JOIN clause after the table reference
                     modifiedQuery = insertJoinClause(modifiedQuery, tableName, tableAlias, joinClause);
                     
@@ -493,12 +495,17 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
      * Inserts a JOIN clause after the table reference
      */
     private String insertJoinClause(String query, String tableName, String tableAlias, String joinClause) {
+        log.debug("Attempting to insert JOIN clause for table '{}' with alias '{}'", tableName, tableAlias);
+        log.debug("Query before insertion: {}", query);
+        
         // Find the position after the table reference
-        Pattern tablePattern = Pattern.compile("(?i)\\b(FROM|JOIN)\\s+" + Pattern.quote(tableName) + "\\s+" + Pattern.quote(tableAlias));
+        // Handle both cases: `tableName alias` and tableName alias
+        Pattern tablePattern = Pattern.compile("(?i)(?:FROM|JOIN)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?");
         Matcher tableMatcher = tablePattern.matcher(query);
         
         if (tableMatcher.find()) {
             int tableEnd = tableMatcher.end();
+            log.debug("Found table reference at position: {}", tableEnd);
             
             // Find the next clause (WHERE, GROUP BY, etc.)
             Pattern nextClausePattern = Pattern.compile("(?i)\\b(WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|UNION|INTERSECT|EXCEPT)\\b");
@@ -507,17 +514,26 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             int nextClausePos = -1;
             if (nextClauseMatcher.find(tableEnd)) {
                 nextClausePos = nextClauseMatcher.start();
+                log.debug("Found next clause '{}' at position: {}", nextClauseMatcher.group(1), nextClausePos);
             }
             
             if (nextClausePos != -1) {
                 // Insert JOIN before the next clause
                 String beforeNextClause = query.substring(0, nextClausePos);
                 String afterNextClause = query.substring(nextClausePos);
-                return beforeNextClause + " " + joinClause + " " + afterNextClause;
+                String result = beforeNextClause + " " + joinClause + " " + afterNextClause;
+                log.debug("Inserted JOIN before next clause. Result: {}", result);
+                return result;
             } else {
                 // No next clause, add JOIN at the end
-                return query + " " + joinClause;
+                String result = query + " " + joinClause;
+                log.debug("No next clause found, added JOIN at end. Result: {}", result);
+                return result;
             }
+        } else {
+            log.warn("Could not find table reference pattern for table '{}' with alias '{}'", tableName, tableAlias);
+            log.warn("Query: {}", query);
+            log.warn("Table pattern: {}", tablePattern.pattern());
         }
         
         return query;
