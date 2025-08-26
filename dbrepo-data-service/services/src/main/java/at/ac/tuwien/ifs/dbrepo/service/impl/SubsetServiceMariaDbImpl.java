@@ -439,13 +439,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                                 tableName, ts.getSiteUrl(), ts.getReplicationId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
                     }
                     
-                    // Add table alias and JOIN with tuple_replication_timestamps
-                    String tableAlias = tableName.substring(0, 1).toLowerCase(); // Use first letter as alias
+                    // Use full table name as alias for JOIN references only
+                    String tableAlias = tableName;
                     
-                    // Replace table reference with aliased version - add proper spacing
-                    String tablePattern = "\\b" + Pattern.quote(tableName) + "\\b";
-                    String tableWithAlias = tableName + " " + tableAlias;
-                    modifiedQuery = modifiedQuery.replaceAll(tablePattern, tableWithAlias);
+                    // DON'T modify the FROM clause - keep original table name as-is
+                    // The alias will only be used for the tuple_replication_timestamps table
                     
                     // Create the JOIN clause with tuple_replication_timestamps
                     // JOIN condition: replication_id from data table = replication_id from tuple_replication_timestamps
@@ -460,7 +458,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         "AND trt_%s.replication_id = %s.replication_id " +
                         "AND trt_%s.row_start <= '%s' " +
                         "AND trt_%s.row_end > '%s'",
-                        tableAlias, tableAlias, creationLocation, tableAlias, tableAlias, tableAlias, executionTimestampStr, tableAlias, executionTimestampStr
+                        tableAlias, tableAlias, creationLocation, tableAlias, tableName, tableAlias, executionTimestampStr, tableAlias, executionTimestampStr
                     );
                     
                     log.debug("Generated JOIN clause: {}", joinClause);
