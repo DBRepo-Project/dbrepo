@@ -497,8 +497,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         log.debug("Query before insertion: {}", query);
         
         // Find the position after the table reference
-        // Handle both cases: `tableName alias` and tableName alias
-        Pattern tablePattern = Pattern.compile("(?i)(?:FROM|JOIN)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?");
+        // Handle both cases: FROM `tableName` and FROM `tableName` alias
+        Pattern tablePattern = Pattern.compile("(?i)(?:FROM|JOIN)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\\s*`?([a-zA-Z_][a-zA-Z0-9_]*)?`?");
         Matcher tableMatcher = tablePattern.matcher(query);
         
         if (tableMatcher.find()) {
