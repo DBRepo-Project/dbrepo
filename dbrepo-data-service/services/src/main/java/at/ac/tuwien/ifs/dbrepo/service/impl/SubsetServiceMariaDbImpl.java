@@ -455,7 +455,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     
                     String joinClause = String.format(
                         "JOIN tuple_replication_timestamps trt_%s ON trt_%s.site_url = '%s' " +
-                        "AND trt_%s.replication_id = %s.replication_id " +
+                        "AND trt_%s.replication_id = %s.replication_key " +
                         "AND trt_%s.row_start <= '%s' " +
                         "AND trt_%s.row_end > '%s'",
                         tableAlias, tableAlias, creationLocation, tableAlias, tableName, tableAlias, executionTimestampStr, tableAlias, executionTimestampStr
@@ -496,42 +496,28 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         log.debug("Attempting to insert JOIN clause for table '{}' with alias '{}'", tableName, tableAlias);
         log.debug("Query before insertion: {}", query);
         
-        // Find the position after the table reference
-        // Handle both cases: FROM `tableName` and FROM `tableName` alias
-        Pattern tablePattern = Pattern.compile("(?i)(?:FROM|JOIN)\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\\s*`?([a-zA-Z_][a-zA-Z0-9_]*)?`?");
-        Matcher tableMatcher = tablePattern.matcher(query);
+        // Find the position after the table name in FROM clause
+        // Look for: FROM `tableName` or FROM tableName
+        Pattern fromPattern = Pattern.compile("(?i)FROM\\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?");
+        Matcher fromMatcher = fromPattern.matcher(query);
         
-        if (tableMatcher.find()) {
-            int tableEnd = tableMatcher.end();
-            log.debug("Found table reference at position: {}", tableEnd);
+        if (fromMatcher.find()) {
+            int tableEnd = fromMatcher.end();
+            log.debug("Found FROM clause ending at position: {}", tableEnd);
             
-            // Find the next clause (WHERE, GROUP BY, etc.)
-            Pattern nextClausePattern = Pattern.compile("(?i)\\b(WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|UNION|INTERSECT|EXCEPT)\\b");
-            Matcher nextClauseMatcher = nextClausePattern.matcher(query);
+            // Insert JOIN right after the table name
+            String beforeJoin = query.substring(0, tableEnd);
+            String afterJoin = query.substring(tableEnd);
             
-            int nextClausePos = -1;
-            if (nextClauseMatcher.find(tableEnd)) {
-                nextClausePos = nextClauseMatcher.start();
-                log.debug("Found next clause '{}' at position: {}", nextClauseMatcher.group(1), nextClausePos);
-            }
+            // Add a space before JOIN if needed
+            String joinWithSpace = afterJoin.trim().startsWith("JOIN") ? joinClause : " " + joinClause;
             
-            if (nextClausePos != -1) {
-                // Insert JOIN before the next clause
-                String beforeNextClause = query.substring(0, nextClausePos);
-                String afterNextClause = query.substring(nextClausePos);
-                String result = beforeNextClause + " " + joinClause + " " + afterNextClause;
-                log.debug("Inserted JOIN before next clause. Result: {}", result);
-                return result;
-            } else {
-                // No next clause, add JOIN at the end
-                String result = query + " " + joinClause;
-                log.debug("No next clause found, added JOIN at end. Result: {}", result);
-                return result;
-            }
+            String result = beforeJoin + joinWithSpace + afterJoin;
+            log.debug("Inserted JOIN after table name. Result: {}", result);
+            return result;
         } else {
-            log.warn("Could not find table reference pattern for table '{}' with alias '{}'", tableName, tableAlias);
+            log.warn("Could not find FROM clause for table '{}'", tableName);
             log.warn("Query: {}", query);
-            log.warn("Table pattern: {}", tablePattern.pattern());
         }
         
         return query;
