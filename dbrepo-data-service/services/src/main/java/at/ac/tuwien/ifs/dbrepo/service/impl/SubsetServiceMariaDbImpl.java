@@ -375,7 +375,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             
             try {
                 // Modify the query to use replication timestamps
-                String modifiedQuery = modifyQueryWithReplicationTimestamps(database, queryDto.getQueryNormalized(), creationLocation);
+                String modifiedQuery = modifyQueryWithReplicationTimestamps(database, queryDto.getQueryNormalized(), creationLocation, queryDto.getExecution());
                 log.info("Query successfully modified with replication timestamps");
                 log.info(modifiedQuery);
                 return modifiedQuery;
@@ -392,22 +392,19 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
     
     /**
-     * Modifies a SQL query to filter on replication timestamps from tuple_replication_timestamps table.
-     * This replaces the MariaDB internal row_start/row_end filtering with custom replication timestamp filtering.
+     * Modifies a SQL query to JOIN with tuple_replication_timestamps table and filter on the joined timestamps.
+     * This replaces filtering on MariaDB's internal row_start/row_end with filtering on replication timestamps.
      */
-    private String modifyQueryWithReplicationTimestamps(DatabaseDto database, String originalQuery, String creationLocation) throws Exception {
+    private String modifyQueryWithReplicationTimestamps(DatabaseDto database, String originalQuery, String creationLocation, Instant queryExecutionTimestamp) throws Exception {
         // Extract table names from the SQL query
         Set<String> tableNames = extractTableNames(originalQuery);
         log.debug("Extracted table names from query: {}", tableNames);
         
         String modifiedQuery = originalQuery;
         
-        // Build a WHERE clause that filters on replication timestamps
-        StringBuilder replicationFilter = new StringBuilder();
-        
         for (String tableName : tableNames) {
             try {
-                // Look up the replication timestamp for this table and creation location
+                // Look up ALL replication timestamps for this table and creation location
                 List<TupleReplicationTimestamp> timestamps = replicationTimestampService
                     .findBySiteUrl(database, creationLocation);
                 
@@ -417,27 +414,34 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .collect(java.util.stream.Collectors.toList());
                 
                 if (!tableTimestamps.isEmpty()) {
-                    // Find the most recent active timestamp (where row_end is null)
-                    TupleReplicationTimestamp activeTimestamp = tableTimestamps.stream()
-                        .filter(t -> t.getRowEnd() == null)
-                        .findFirst()
-                        .orElse(tableTimestamps.get(0)); // Fallback to first timestamp if no active one
+                    // Add table alias and JOIN with tuple_replication_timestamps
+                    String tableAlias = tableName.substring(0, 1).toLowerCase(); // Use first letter as alias
                     
-                    // Format the timestamp for the filter
-                    String timestampStr = activeTimestamp.getRowStart().toInstant()
+                    // Replace table reference with aliased version
+                    String tablePattern = "\\b" + Pattern.quote(tableName) + "\\b";
+                    String tableWithAlias = tableName + " " + tableAlias;
+                    modifiedQuery = modifiedQuery.replaceAll(tablePattern, tableWithAlias);
+                    
+                    // Create the JOIN clause with tuple_replication_timestamps
+                    // JOIN condition: replication_id from data table = replication_id from tuple_replication_timestamps
+                    
+                    // Format the query execution timestamp for the filter
+                    String executionTimestampStr = queryExecutionTimestamp
                         .atZone(ZoneId.of("UTC"))
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                     
-                    // Add filter condition for this table
-                    if (replicationFilter.length() > 0) {
-                        replicationFilter.append(" AND ");
-                    }
-                    replicationFilter.append(String.format(
-                        "(%s.row_start <= '%s' AND (%s.row_end IS NULL OR %s.row_end > '%s'))",
-                        tableName, timestampStr, tableName, tableName, timestampStr
-                    ));
+                    String joinClause = String.format(
+                        "JOIN tuple_replication_timestamps trt_%s ON trt_%s.site_url = '%s' " +
+                        "AND trt_%s.replication_id = %s.replication_id " +
+                        "AND trt_%s.row_start <= '%s' " +
+                        "AND (trt_%s.row_end IS NULL OR trt_%s.row_end > '%s')",
+                        tableAlias, tableAlias, creationLocation, tableAlias, tableAlias, tableAlias, executionTimestampStr, tableAlias, tableAlias, executionTimestampStr
+                    );
                     
-                    log.debug("Added replication filter for table '{}' with timestamp: {}", tableName, timestampStr);
+                    // Insert the JOIN clause after the table reference
+                    modifiedQuery = insertJoinClause(modifiedQuery, tableName, tableAlias, joinClause);
+                    
+                    log.debug("Added JOIN clause for table '{}' with alias '{}'", tableName, tableAlias);
                 } else {
                     log.warn("No replication timestamps found for table '{}' and creation location '{}'", 
                             tableName, creationLocation);
@@ -448,68 +452,44 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             }
         }
         
-        // Add the replication filter to the WHERE clause
-        if (replicationFilter.length() > 0) {
-            modifiedQuery = addReplicationFilterToWhereClause(modifiedQuery, replicationFilter.toString());
-        }
-        
-        log.debug("Original query: {}", originalQuery);
-        log.debug("Modified query: {}", modifiedQuery);
+        log.info("Original query: {}", originalQuery);
+        log.info("Modified query: {}", modifiedQuery);
         
         return modifiedQuery;
     }
     
     /**
-     * Adds the replication filter to the WHERE clause of the SQL query
+     * Inserts a JOIN clause after the table reference
      */
-    private String addReplicationFilterToWhereClause(String query, String replicationFilter) {
-        // Check if there's already a WHERE clause
-        Pattern wherePattern = Pattern.compile("(?i)\\bWHERE\\b");
-        Matcher whereMatcher = wherePattern.matcher(query);
+    private String insertJoinClause(String query, String tableName, String tableAlias, String joinClause) {
+        // Find the position after the table reference
+        Pattern tablePattern = Pattern.compile("(?i)\\b(FROM|JOIN)\\s+" + Pattern.quote(tableName) + "\\s+" + Pattern.quote(tableAlias));
+        Matcher tableMatcher = tablePattern.matcher(query);
         
-        if (whereMatcher.find()) {
-            // WHERE clause exists, add AND condition
-            int wherePos = whereMatcher.start();
-            String beforeWhere = query.substring(0, wherePos + 5); // Include "WHERE"
-            String afterWhere = query.substring(wherePos + 5);
+        if (tableMatcher.find()) {
+            int tableEnd = tableMatcher.end();
             
-            // Add the replication filter with AND
-            return beforeWhere + " " + replicationFilter + " AND " + afterWhere.trim();
-        } else {
-            // No WHERE clause, add one
-            // Find the end of the FROM/JOIN clauses
-            Pattern fromJoinPattern = Pattern.compile("(?i)\\b(FROM|JOIN)\\b");
-            Matcher fromJoinMatcher = fromJoinPattern.matcher(query);
+            // Find the next clause (WHERE, GROUP BY, etc.)
+            Pattern nextClausePattern = Pattern.compile("(?i)\\b(WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|UNION|INTERSECT|EXCEPT)\\b");
+            Matcher nextClauseMatcher = nextClausePattern.matcher(query);
             
-            int lastFromJoinPos = -1;
-            while (fromJoinMatcher.find()) {
-                lastFromJoinPos = fromJoinMatcher.end();
+            int nextClausePos = -1;
+            if (nextClauseMatcher.find(tableEnd)) {
+                nextClausePos = nextClauseMatcher.start();
             }
             
-            if (lastFromJoinPos != -1) {
-                // Find the next clause (GROUP BY, ORDER BY, etc.)
-                Pattern nextClausePattern = Pattern.compile("(?i)\\b(GROUP BY|HAVING|ORDER BY|LIMIT|UNION|INTERSECT|EXCEPT)\\b");
-                Matcher nextClauseMatcher = nextClausePattern.matcher(query);
-                
-                int nextClausePos = -1;
-                if (nextClauseMatcher.find(lastFromJoinPos)) {
-                    nextClausePos = nextClauseMatcher.start();
-                }
-                
-                if (nextClausePos != -1) {
-                    // Insert WHERE clause before the next clause
-                    String beforeNextClause = query.substring(0, nextClausePos);
-                    String afterNextClause = query.substring(nextClausePos);
-                    return beforeNextClause + " WHERE " + replicationFilter + " " + afterNextClause;
-                } else {
-                    // No next clause, add WHERE at the end
-                    return query + " WHERE " + replicationFilter;
-                }
+            if (nextClausePos != -1) {
+                // Insert JOIN before the next clause
+                String beforeNextClause = query.substring(0, nextClausePos);
+                String afterNextClause = query.substring(nextClausePos);
+                return beforeNextClause + " " + joinClause + " " + afterNextClause;
+            } else {
+                // No next clause, add JOIN at the end
+                return query + " " + joinClause;
             }
         }
         
-        // Fallback: add WHERE at the end
-        return query + " WHERE " + replicationFilter;
+        return query;
     }
     
     /**
