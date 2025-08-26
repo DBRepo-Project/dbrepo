@@ -240,7 +240,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             QueryMalformedException {
 
         /* test */
-        final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_USERNAME);
+        final UUID response = subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, QUERY_1_CREATED, USER_1_USERNAME, "http://test:8080");
         assertNotNull(response);
         final List<Map<String, Object>> subsets = MariaDbUtil.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
         assertEquals(1, subsets.size());
@@ -256,7 +256,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             ColumnNotFoundException {
 
         /* test */
-        final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_USERNAME);
+        final UUID response = subsetService.create(DATABASE_1_PRIVILEGED_DTO, QUERY_1_SUBSET_DTO, QUERY_1_CREATED, USER_1_USERNAME, "http://test:8080");
         assertNotNull(response);
     }
 
@@ -282,7 +282,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* test */
-        subsetService.create(DATABASE_1_PRIVILEGED_DTO, request, QUERY_1_CREATED, USER_1_USERNAME);
+        subsetService.create(DATABASE_1_PRIVILEGED_DTO, request, QUERY_1_CREATED, USER_1_USERNAME, "http://test:8080");
         assertEquals(1, MariaDbUtil.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1 WHERE EXISTS (SELECT * FROM `weather_location`)", Set.of()).size());
     }
 
@@ -291,7 +291,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(QueryStoreInsertException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "DROP DATABASE `weather`", QUERY_1_CREATED, USER_1_USERNAME);
+            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "DROP DATABASE `weather`", QUERY_1_CREATED, USER_1_USERNAME, "http://test:8080");
         });
     }
 
@@ -300,7 +300,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1", QUERY_1_CREATED, USER_1_USERNAME);
+            subsetService.storeQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT 1", QUERY_1_CREATED, USER_1_USERNAME, "http://test:8080");
         });
     }
 

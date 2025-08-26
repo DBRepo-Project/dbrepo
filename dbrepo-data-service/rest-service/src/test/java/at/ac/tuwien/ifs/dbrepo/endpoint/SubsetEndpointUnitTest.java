@@ -306,7 +306,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(mock);
         when(subsetService.findById(any(DatabaseDto.class), any(UUID.class)))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), anyString()))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), anyString(), anyString()))
                 .thenReturn(QUERY_5_ID);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -337,7 +337,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(cacheService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), eq(USER_1_USERNAME)))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), eq(USER_1_USERNAME), anyString()))
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(DatabaseDto.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_DTO);
@@ -394,7 +394,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_4_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_9_DTO);
-        when(subsetService.create(eq(DATABASE_4_PRIVILEGED_DTO), any(SubsetDto.class), any(Instant.class), eq(null)))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), eq(null), anyString()))
                 .thenReturn(QUERY_9_ID);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
@@ -426,7 +426,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(any(DatabaseDto.class), any(UUID.class)))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), anyString()))
+        when(subsetService.create(any(DatabaseDto.class), any(SubsetDto.class), any(Instant.class), anyString(), anyString()))
                 .thenReturn(QUERY_1_ID);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
