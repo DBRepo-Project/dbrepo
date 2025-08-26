@@ -83,11 +83,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     @Timed(value = "dbrepo_data_create_subset", description = "Time spent creating a subset", histogram = true)
-    public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, String username)
+    public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, String username, String creationLocation)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewMalformedException, ViewNotFoundException, ColumnNotFoundException {
         final String query = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
-        return storeQuery(database, query, timestamp, username);
+        return storeQuery(database, query, timestamp, username, creationLocation);
     }
 
     @Override
@@ -205,7 +205,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     @Timed(value = "dbrepo_data_store_subset_query", description = "Time spent storing a subset query in the query store", histogram = true)
-    public UUID storeQuery(DatabaseDto database, String query, Instant timestamp, String username) throws SQLException,
+    public UUID storeQuery(DatabaseDto database, String query, Instant timestamp, String username, String creationLocation) throws SQLException,
             QueryStoreInsertException, QueryMalformedException {
         /* save */
         final UUID queryId;
@@ -223,7 +223,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             callableStatement.setString(2, query);
             callableStatement.setString(3, mariaDbMapper.normalizeQuery(query, timestamp));
             callableStatement.setTimestamp(4, Timestamp.from(timestamp));
-            callableStatement.registerOutParameter(5, Types.VARCHAR);
+            callableStatement.setString(5, creationLocation);
+            callableStatement.registerOutParameter(6, Types.VARCHAR);
             callableStatement.executeUpdate();
             log.atDebug()
                     .setMessage("store query in query store of database: " + database.getInternalName())
@@ -231,7 +232,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .addKeyValue(Constants.ACTION, "store_query")
                     .addKeyValue("query", query)
                     .log();
-            queryId = UUID.fromString(callableStatement.getString(5));
+            queryId = UUID.fromString(callableStatement.getString(6));
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
             connection.commit();

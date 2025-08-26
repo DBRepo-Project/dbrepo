@@ -64,4 +64,8 @@ public class Query implements Serializable {
     @jakarta.persistence.Column(nullable = false)
     private UUID createdBy;
 
+    @jakarta.persistence.Column(name = "creation_location", columnDefinition = "VARCHAR(500) NULL")
+    @Schema(example = "http://localhost:8080")
+    private String creationLocation;
+
 }

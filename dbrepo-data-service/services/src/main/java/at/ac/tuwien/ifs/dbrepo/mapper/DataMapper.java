@@ -406,6 +406,7 @@ public interface DataMapper {
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
+                .creationLocation(data.getString(10))
                 .build();
     }
 

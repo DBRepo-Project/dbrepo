@@ -39,6 +39,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
 @RestController
@@ -54,6 +55,9 @@ public class SubsetEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
     private final ReplicationService replicationService;
+
+    @Value("${dbrepo.baseUrl}")
+    private String baseUrl;
 
     @Autowired
     public SubsetEndpoint(CacheService cacheService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
@@ -262,7 +266,7 @@ public class SubsetEndpoint extends RestEndpoint {
             }
         }
         try {
-            final UUID subsetId = subsetService.create(database, data, timestamp, username);
+            final UUID subsetId = subsetService.create(database, data, timestamp, username, baseUrl != null ? baseUrl : null);
 
             if(database.getReplicaUrls() != null && database.getReplicaUrls().size() > 0) {
                 final QueryDto subset;
@@ -492,6 +496,7 @@ public class SubsetEndpoint extends RestEndpoint {
         log.info("=== Received Subset Replication ===");
         log.info("Database ID: {}", databaseId);
         log.info("Query ID: {}", queryDto.getId());
+        log.info("Creation Location: {}", queryDto.getCreationLocation() != null ? queryDto.getCreationLocation() : "null");
         log.info("===================================");
         
         try {
@@ -499,19 +504,20 @@ public class SubsetEndpoint extends RestEndpoint {
             // This could involve:
             // 1. Validating the incoming query data
             // 2. Creating the subset locally using the query information
-            // 3. Storing it in the local query store
+            // 3. Storing it in the local query store with the original creation location
             // 4. Updating any necessary metadata
             // 5. Persisting the query if needed
             
             // For now, just log the replication attempt and return success
-            log.info("Subset replication received successfully for database: {}, query: {}", 
-                    databaseId, queryDto.getId());
+            log.info("Subset replication received successfully for database: {}, query: {}, creation location: {}", 
+                    databaseId, queryDto.getId(), queryDto.getCreationLocation() != null ? queryDto.getCreationLocation() : "null");
             
             Map<String, Object> response = Map.of(
                 "status", "success",
                 "message", "Subset replication received successfully",
                 "databaseId", databaseId.toString(),
-                "queryId", queryDto.getId().toString()
+                "queryId", queryDto.getId().toString(),
+                "creationLocation", queryDto.getCreationLocation() != null ? queryDto.getCreationLocation() : "null"
             );
             
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -523,7 +529,8 @@ public class SubsetEndpoint extends RestEndpoint {
                 "status", "error",
                 "message", "Failed to replicate subset: " + e.getMessage(),
                 "databaseId", databaseId.toString(),
-                "queryId", queryDto.getId().toString()
+                "queryId", queryDto.getId().toString(),
+                "creationLocation", queryDto.getCreationLocation() != null ? queryDto.getCreationLocation() : "null"
             );
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

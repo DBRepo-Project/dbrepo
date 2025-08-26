@@ -185,13 +185,13 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateInternalStoreQueryProcedureRawQuery() {
-        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
+        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, IN _creation_location VARCHAR(500), OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`, `creation_location`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed, _creation_location WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`, `creation_location`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed, _creation_location WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
         log.trace("mapped create query store _store_query procedure statement: {}", statement);
         return statement;
     }
 
     default String queryStoreStoreQueryRawQuery() {
-        final String statement = "{call _store_query(?, ?, ?, ?, ?)}";
+        final String statement = "{call _store_query(?, ?, ?, ?, ?, ?)}";
         log.trace("mapped store query statement: {}", statement);
         return statement;
     }
@@ -209,7 +209,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreFindQueryRawQuery() {
-        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries` q WHERE q.`id` = ?";
+        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location` FROM `qs_queries` q WHERE q.`id` = ?";
         log.trace("mapped find query statement: {}", statement);
         return statement;
     }
@@ -281,7 +281,7 @@ public interface MariaDbMapper {
     }
 
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
-        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries`");
+        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location` FROM `qs_queries`");
         if (filterPersisted != null) {
             statement.append(" WHERE `is_persisted` = ?");
         }

@@ -74,4 +74,8 @@ public class QueryDto {
     @NotNull
     private List<IdentifierBriefDto> identifiers;
 
+    @JsonProperty("creation_location")
+    @Schema(description = "The site where the query was initially created (optional)", example = "http://localhost:8080")
+    private String creationLocation;
+
 }
