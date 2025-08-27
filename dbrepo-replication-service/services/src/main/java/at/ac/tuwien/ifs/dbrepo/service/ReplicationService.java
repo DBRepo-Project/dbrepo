@@ -51,4 +51,10 @@ public interface ReplicationService {
     void updateReplicationUrlWithRemoteId(UUID databaseId, String replicaUrl, UUID remoteDatabaseId);
 
     void updateTableReplicationUrlWithRemoteId(UUID databaseId, UUID localTableId, String replicaUrl, UUID remoteTableId);
+
+    /**
+     * Method that gets called every time the replication service is started.
+     * This method is automatically invoked by Spring Boot when the application context is ready.
+     */
+    void onApplicationStartup();
 } 

@@ -20,6 +20,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 import java.util.List;
 import java.util.UUID;
@@ -357,5 +359,60 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.error("Failed to call external update replication table IDs for {}: {}", replicaUrl, e.getMessage());
             throw new RuntimeException("Failed to call external update replication table IDs for " + replicaUrl, e);
         }
+    }
+
+    /**
+     * Method that gets called every time the replication service is started.
+     * This method is automatically invoked by Spring Boot when the application context is ready.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    @Override
+    public void onApplicationStartup() {
+        log.info("Replication service is starting up - performing startup tasks...");
+        
+        try {
+            // Add your startup logic here
+            performStartupTasks();
+            
+            log.info("Replication service startup tasks completed successfully");
+        } catch (Exception e) {
+            log.error("Error during replication service startup: {}", e.getMessage(), e);
+            // You can choose to throw the exception to prevent the application from starting
+            // or handle it gracefully depending on your requirements
+        }
+    }
+
+    /**
+     * Performs the actual startup tasks for the replication service.
+     * Override this method or add your specific startup logic here.
+     */
+    private void performStartupTasks() {
+        log.info("Performing replication service startup tasks...");
+        
+        // Example startup tasks - customize these based on your requirements:
+        
+        // 1. Initialize replication state
+        log.info("Initializing replication state...");
+        
+        // 2. Check connectivity to replica instances
+        log.info("Checking replica instance connectivity...");
+        
+        // 3. Validate configuration
+        log.info("Validating replication configuration...");
+        
+        // 4. Initialize any required resources
+        log.info("Initializing replication resources...");
+        
+        // 5. Start any background processes if needed
+        log.info("Starting background replication processes...");
+        
+        // Add your specific startup logic here
+        // For example:
+        // - Initialize connection pools
+        // - Load configuration from external sources
+        // - Establish connections to replica databases
+        // - Start monitoring services
+        // - Initialize caches
+        // - etc.
     }
 } 
