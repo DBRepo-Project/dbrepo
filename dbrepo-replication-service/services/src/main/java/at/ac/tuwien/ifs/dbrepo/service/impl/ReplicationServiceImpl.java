@@ -28,6 +28,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
+import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 
 import java.util.List;
 import java.util.UUID;
@@ -492,6 +493,12 @@ public class ReplicationServiceImpl implements ReplicationService {
                     
                     log.info("=== End Database Processing ===\n");
                     
+                    // Step 2: Check for tuples inserted after the last timestamp
+                    if (latestTimestamp != null) {
+                        log.info("🔍 Checking for new tuples after timestamp: {}", latestTimestamp);
+                        checkForNewTuplesAfterTimestamp(fullDatabase, latestTimestamp, databaseBrief);
+                    }
+                    
                 } catch (Exception e) {
                     log.error("❌ Could not check replication timestamps for database {}: {}", 
                             databaseBrief.getInternalName(), e.getMessage());
@@ -507,6 +514,109 @@ public class ReplicationServiceImpl implements ReplicationService {
         } catch (Exception e) {
             log.warn("Could not retrieve latest replication timestamp: {}", e.getMessage());
             log.debug("Timestamp retrieval failed", e);
+        }
+    }
+
+    /**
+     * Checks for new tuples inserted after a given timestamp by calling the data service
+     * at the creation location of the database.
+     */
+    private void checkForNewTuplesAfterTimestamp(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief) {
+        log.info("=== CHECKING FOR NEW TUPLES AFTER TIMESTAMP ===");
+        log.info("Database: {} ({})", database.getName(), database.getInternalName());
+        log.info("Timestamp: {}", timestamp);
+        log.info("Creation Location: {}", database.getCreationLocation());
+        
+        try {
+            // Check if creation location is available
+            if (database.getCreationLocation() == null || database.getCreationLocation().trim().isEmpty()) {
+                log.warn("⚠️ No creation location available for database: {}", database.getInternalName());
+                return;
+            }
+            
+            log.info("📊 Checking database-level replication timestamps");
+            
+            // Call the data service endpoint to check for new tuples at database level
+            callDataServiceForNewTuples(database, timestamp, databaseBrief);
+            
+            log.info("=== END CHECKING FOR NEW TUPLES ===");
+            
+        } catch (Exception e) {
+            log.error("❌ Error in checkForNewTuplesAfterTimestamp: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Makes an external call to the data service to check for new tuples after a timestamp.
+     */
+    private void callDataServiceForNewTuples(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief) {
+        log.info("=== CALLING DATA SERVICE FOR NEW TUPLES ===");
+        log.info("Database: {} ({})", database.getName(), database.getInternalName());
+        log.info("Database ID: {}", database.getId());
+        log.info("Timestamp: {}", timestamp);
+        log.info("Creation Location: {}", database.getCreationLocation());
+        
+        try {
+            // Build the request payload
+            Map<String, Object> requestPayload = Map.of(
+                "timestamp", timestamp.toString(),
+                "replicaDatabaseId", database.getId().toString()
+            );
+            
+            log.info("Request payload: {}", requestPayload);
+            
+            // Build the full URL using creation location as base
+            String baseUrl = database.getCreationLocation();
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            
+            // Since we're checking at database level, we need a different endpoint
+            // We'll use a database-level endpoint instead of table-level
+            String endpoint = String.format("/api/v1/database/%s/check-tuples-after-timestamp", database.getId());
+            
+            String fullUrl = baseUrl + endpoint;
+            log.info("Full URL: {}", fullUrl);
+            
+            // Make the external HTTP call
+            log.info("🌐 Making external HTTP call to data service...");
+            
+            // Use the existing externalReplicationRestTemplate that's already configured
+            log.info("📡 Sending POST request to: {}", fullUrl);
+            
+            try {
+                ResponseEntity<Map> response = externalReplicationRestTemplate.postForEntity(
+                    fullUrl, 
+                    requestPayload, 
+                    Map.class
+                );
+                
+                log.info("✅ HTTP call successful! Status: {}", response.getStatusCode());
+                log.info("Response body: {}", response.getBody());
+                
+                // Process the response
+                if (response.getBody() != null) {
+                    Map<String, Object> responseBody = response.getBody();
+                    log.info("=== RESPONSE ANALYSIS ===");
+                    log.info("Status: {}", responseBody.get("status"));
+                    log.info("Message: {}", responseBody.get("message"));
+                    log.info("Database Name: {}", responseBody.get("databaseName"));
+                    log.info("Database Internal Name: {}", responseBody.get("databaseInternalName"));
+                    log.info("Creation Location: {}", responseBody.get("creationLocation"));
+                    log.info("Container Host: {}", responseBody.get("containerHost"));
+                    log.info("Container Port: {}", responseBody.get("containerPort"));
+                    log.info("Note: {}", responseBody.get("note"));
+                    log.info("=== END RESPONSE ANALYSIS ===");
+                }
+                
+            } catch (Exception httpException) {
+                log.error("❌ HTTP call failed: {}", httpException.getMessage(), httpException);
+            }
+            
+            log.info("=== END CALLING DATA SERVICE ===");
+            
+        } catch (Exception e) {
+            log.error("❌ Error calling data service: {}", e.getMessage(), e);
         }
     }
 } 

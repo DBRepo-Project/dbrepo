@@ -165,4 +165,93 @@ public class DatabaseEndpoint extends RestEndpoint {
                 .body(analyseService.determineDataTypes(database.getContainer().getImage(), key));
     }
 
+    @PostMapping("/{databaseId}/check-tuples-after-timestamp")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Check for tuples inserted after timestamp",
+            description = "Check if there are tuples inserted after a given timestamp in the specified database",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Check completed successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = java.util.Map.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid request parameters",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection to database",
+                    content = {@Content}),
+    })
+    public ResponseEntity<java.util.Map<String, Object>> checkTuplesAfterTimestamp(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                                  @RequestBody java.util.Map<String, Object> request) {
+        log.info("=== CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
+        log.info("Database ID: {}", databaseId);
+        log.info("Request body: {}", request);
+        
+        try {
+            // Extract parameters from request
+            String timestampStr = (String) request.get("timestamp");
+            String replicaDatabaseId = (String) request.get("replicaDatabaseId");
+            
+            if (timestampStr == null || replicaDatabaseId == null) {
+                log.error("Missing required parameters. timestamp: {}, replicaDatabaseId: {}", timestampStr, replicaDatabaseId);
+                throw new IllegalArgumentException("timestamp and replicaDatabaseId are required");
+            }
+            
+            log.info("Timestamp to check: {}", timestampStr);
+            log.info("Replica Database ID: {}", replicaDatabaseId);
+            
+            // Parse timestamp
+            java.time.Instant timestamp = java.time.Instant.parse(timestampStr);
+            log.info("Parsed timestamp: {}", timestamp);
+            
+            // Get database from cache service
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            
+            log.info("Database: {} ({})", database.getName(), database.getInternalName());
+            log.info("Database creation location: {}", database.getCreationLocation());
+            log.info("Database container: {}:{}", database.getContainer().getHost(), database.getContainer().getPort());
+            
+            // TODO: Implement actual logic to check for tuples after timestamp
+            // For now, just log the information and return a placeholder response
+            log.info("=== PLACEHOLDER IMPLEMENTATION ===");
+            log.info("Would check for tuples in database '{}' after timestamp: {}", database.getInternalName(), timestamp);
+            log.info("This is a placeholder - actual tuple checking logic will be implemented in the next step");
+            log.info("Would query tuple_replication_timestamps table for entries after: {}", timestamp);
+            
+            java.util.Map<String, Object> response = java.util.Map.of(
+                "status", "success",
+                "message", "Check completed (placeholder implementation)",
+                "databaseId", databaseId.toString(),
+                "timestamp", timestampStr,
+                "replicaDatabaseId", replicaDatabaseId,
+                "databaseName", database.getName(),
+                "databaseInternalName", database.getInternalName(),
+                "creationLocation", database.getCreationLocation(),
+                "containerHost", database.getContainer().getHost(),
+                "containerPort", database.getContainer().getPort(),
+                "note", "This is a placeholder implementation - will check tuple_replication_timestamps table"
+            );
+            
+            log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("❌ Error checking tuples after timestamp: {}", e.getMessage(), e);
+            
+            java.util.Map<String, Object> response = java.util.Map.of(
+                "status", "error",
+                "message", "Failed to check tuples after timestamp: " + e.getMessage()
+            );
+            
+            log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (with errors) ===");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
 }
