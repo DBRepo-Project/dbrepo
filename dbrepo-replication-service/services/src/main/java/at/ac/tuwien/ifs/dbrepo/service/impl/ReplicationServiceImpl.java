@@ -447,41 +447,57 @@ public class ReplicationServiceImpl implements ReplicationService {
             // Check each database for replication timestamps
             for (DatabaseBriefDto databaseBrief : allDatabaseBriefs) {
                 try {
-                    log.debug("Checking replication timestamps for database: {} ({})", 
-                            databaseBrief.getInternalName(), databaseBrief.getId());
-                    
-                    // Get the full database details to access container information
+                    log.info("Fetching full database details...");
                     DatabaseDto fullDatabase = metadataServiceGateway.getDatabaseById(databaseBrief.getId());
                     
+                    // Log additional details from full database
+
+                    log.info("Is Dashboard Enabled: {}", fullDatabase.getIsDashboardEnabled());
+                    log.info("Creation Location: {}", fullDatabase.getCreationLocation());
+                    log.info("Created: {}", fullDatabase.getCreated());
+                    log.info("Last Retrieved: {}", fullDatabase.getLastRetrieved());
+                    log.info("Tables Count: {}", fullDatabase.getTables() != null ? fullDatabase.getTables().size() : 0);
+                    log.info("Views Count: {}", fullDatabase.getViews() != null ? fullDatabase.getViews().size() : 0);
+                    log.info("Accesses Count: {}", fullDatabase.getAccesses() != null ? fullDatabase.getAccesses().size() : 0);
+                    log.info("Subsets Count: {}", fullDatabase.getSubsets() != null ? fullDatabase.getSubsets().size() : 0);
+                    
+                    // Log container information if available
+
+                    // Log replica URLs if available
+                    if (fullDatabase.getReplicaUrls() != null && !fullDatabase.getReplicaUrls().isEmpty()) {
+                        log.info("=== Replica URLs ===");
+                        fullDatabase.getReplicaUrls().forEach((url, id) -> 
+                            log.info("Replica URL: {} -> Database ID: {}", url, id));
+                    } else {
+                        log.info("Replica URLs: None configured");
+                    }
+                    
+                    log.info("=== Checking Replication Timestamps ===");
                     java.time.Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(fullDatabase);
                     
                     if (latestTimestamp != null) {
-                        log.debug("Database {} has latest replication timestamp: {}", 
+                        log.info("✅ Database {} has latest replication timestamp: {}", 
                                 databaseBrief.getInternalName(), latestTimestamp);
                         
                         // Track the overall latest timestamp across all databases
                         if (overallLatestTimestamp == null || latestTimestamp.isAfter(overallLatestTimestamp)) {
                             overallLatestTimestamp = latestTimestamp;
                             databaseNameWithLatestTimestamp = databaseBrief.getInternalName();
+                            log.info("🏆 NEW OVERALL LATEST TIMESTAMP: {} from database: {}", 
+                                    latestTimestamp, databaseBrief.getInternalName());
                         }
                     } else {
-                        log.debug("Database {} has no replication timestamps", databaseBrief.getInternalName());
+                        log.info("ℹ️ Database {} has no replication timestamps", databaseBrief.getInternalName());
                     }
                     
+                    log.info("=== End Database Processing ===\n");
+                    
                 } catch (Exception e) {
-                    log.warn("Could not check replication timestamps for database {}: {}", 
+                    log.error("❌ Could not check replication timestamps for database {}: {}", 
                             databaseBrief.getInternalName(), e.getMessage());
                     log.debug("Database timestamp check failed for {}", databaseBrief.getInternalName(), e);
+                    log.info("=== End Database Processing (with errors) ===\n");
                 }
-            }
-            
-            // Log the overall result
-            if (overallLatestTimestamp != null) {
-                log.info("Overall latest replication timestamp: {} (from database: {})", 
-                        overallLatestTimestamp, databaseNameWithLatestTimestamp);
-                log.info("Service last received updates at: {}", overallLatestTimestamp);
-            } else {
-                log.info("No replication timestamps found in any database - this appears to be the first startup");
             }
             
         } catch (RemoteUnavailableException e) {
