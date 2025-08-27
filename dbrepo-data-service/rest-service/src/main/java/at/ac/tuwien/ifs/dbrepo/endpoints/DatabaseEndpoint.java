@@ -234,8 +234,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                 "databaseInternalName", database.getInternalName(),
                 "creationLocation", database.getCreationLocation(),
                 "containerHost", database.getContainer().getHost(),
-                "containerPort", database.getContainer().getPort(),
-                "note", "This is a placeholder implementation - will check tuple_replication_timestamps table"
+                "containerPort", database.getContainer().getPort()
             );
             
             log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
