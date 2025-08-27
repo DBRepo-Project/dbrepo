@@ -534,10 +534,36 @@ public class ReplicationServiceImpl implements ReplicationService {
                 return;
             }
             
-            log.info("📊 Checking database-level replication timestamps");
+            // Check if replica URLs are available
+            if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+                log.info("ℹ️ No replica URLs configured for database: {}", database.getInternalName());
+                return;
+            }
             
-            // Call the data service endpoint to check for new tuples at database level
-            callDataServiceForNewTuples(database, timestamp, databaseBrief);
+            log.info("📊 Found {} replica URLs to check", database.getReplicaUrls().size());
+            
+            // Find the replica URL that matches the creation location
+            String matchingReplicaUrl = null;
+            UUID matchingReplicaDatabaseId = null;
+            
+            for (Map.Entry<String, UUID> replicaEntry : database.getReplicaUrls().entrySet()) {
+                String replicaUrl = replicaEntry.getKey();
+                UUID replicaDatabaseId = replicaEntry.getValue();
+                
+                if (replicaUrl.equals(database.getCreationLocation())) {
+                    matchingReplicaUrl = replicaUrl;
+                    matchingReplicaDatabaseId = replicaDatabaseId;
+                    log.info("✅ Found matching replica URL: {} -> Database ID: {}", replicaUrl, replicaDatabaseId);
+                    break;
+                }
+            }
+            
+            if (matchingReplicaUrl != null) {
+                log.info("🔍 Calling data service at creation location: {}", matchingReplicaUrl);
+                callDataServiceForNewTuples(database, timestamp, databaseBrief, matchingReplicaUrl, matchingReplicaDatabaseId);
+            } else {
+                log.info("ℹ️ No replica URL matches creation location: {}", database.getCreationLocation());
+            }
             
             log.info("=== END CHECKING FOR NEW TUPLES ===");
             
@@ -549,24 +575,25 @@ public class ReplicationServiceImpl implements ReplicationService {
     /**
      * Makes an external call to the data service to check for new tuples after a timestamp.
      */
-    private void callDataServiceForNewTuples(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief) {
+    private void callDataServiceForNewTuples(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief, String replicaUrl, UUID replicaDatabaseId) {
         log.info("=== CALLING DATA SERVICE FOR NEW TUPLES ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Database ID: {}", database.getId());
         log.info("Timestamp: {}", timestamp);
-        log.info("Creation Location: {}", database.getCreationLocation());
+        log.info("Replica URL: {}", replicaUrl);
+        log.info("Replica Database ID: {}", replicaDatabaseId);
         
         try {
             // Build the request payload
             Map<String, Object> requestPayload = Map.of(
                 "timestamp", timestamp.toString(),
-                "replicaDatabaseId", database.getId().toString()
+                "replicaDatabaseId", replicaDatabaseId.toString()
             );
             
             log.info("Request payload: {}", requestPayload);
             
-            // Build the full URL using creation location as base
-            String baseUrl = database.getCreationLocation();
+            // Build the full URL using replica URL as base
+            String baseUrl = replicaUrl;
             if (baseUrl.endsWith("/")) {
                 baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
             }
