@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
@@ -30,7 +31,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 
 @Slf4j
 @Service
@@ -381,13 +381,13 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public List<DatabaseDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException {
-        final ResponseEntity<DatabaseDto[]> response;
+    public List<DatabaseBriefDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException {
+        final ResponseEntity<DatabaseBriefDto[]> response;
         final String url = "/api/v1/database";
         log.debug("get all databases from metadata service: {}", url);
         internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
         try {
-            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseDto[].class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseBriefDto[].class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to get all databases: {}", e.getMessage());
             throw new RemoteUnavailableException("Failed to get all databases: " + e.getMessage(), e);

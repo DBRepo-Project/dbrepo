@@ -24,6 +24,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
@@ -436,45 +437,48 @@ public class ReplicationServiceImpl implements ReplicationService {
         try {
             log.info("Retrieving all databases from metadata service to check replication timestamps...");
             
-            // Get all databases from the metadata service
-            List<DatabaseDto> allDatabases = metadataServiceGateway.getAllDatabases();
-            log.info("Found {} databases in metadata service", allDatabases.size());
+            // Get all databases from the metadata service (brief information)
+            List<DatabaseBriefDto> allDatabaseBriefs = metadataServiceGateway.getAllDatabases();
+            log.info("Found {} databases in metadata service", allDatabaseBriefs.size());
             
             java.time.Instant overallLatestTimestamp = null;
-            DatabaseDto databaseWithLatestTimestamp = null;
+            String databaseNameWithLatestTimestamp = null;
             
             // Check each database for replication timestamps
-            for (DatabaseDto database : allDatabases) {
+            for (DatabaseBriefDto databaseBrief : allDatabaseBriefs) {
                 try {
                     log.debug("Checking replication timestamps for database: {} ({})", 
-                            database.getInternalName(), database.getId());
+                            databaseBrief.getInternalName(), databaseBrief.getId());
                     
-                    java.time.Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(database);
+                    // Get the full database details to access container information
+                    DatabaseDto fullDatabase = metadataServiceGateway.getDatabaseById(databaseBrief.getId());
+                    
+                    java.time.Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(fullDatabase);
                     
                     if (latestTimestamp != null) {
                         log.debug("Database {} has latest replication timestamp: {}", 
-                                database.getInternalName(), latestTimestamp);
+                                databaseBrief.getInternalName(), latestTimestamp);
                         
                         // Track the overall latest timestamp across all databases
                         if (overallLatestTimestamp == null || latestTimestamp.isAfter(overallLatestTimestamp)) {
                             overallLatestTimestamp = latestTimestamp;
-                            databaseWithLatestTimestamp = database;
+                            databaseNameWithLatestTimestamp = databaseBrief.getInternalName();
                         }
                     } else {
-                        log.debug("Database {} has no replication timestamps", database.getInternalName());
+                        log.debug("Database {} has no replication timestamps", databaseBrief.getInternalName());
                     }
                     
                 } catch (Exception e) {
                     log.warn("Could not check replication timestamps for database {}: {}", 
-                            database.getInternalName(), e.getMessage());
-                    log.debug("Database timestamp check failed for {}", database.getInternalName(), e);
+                            databaseBrief.getInternalName(), e.getMessage());
+                    log.debug("Database timestamp check failed for {}", databaseBrief.getInternalName(), e);
                 }
             }
             
             // Log the overall result
             if (overallLatestTimestamp != null) {
                 log.info("Overall latest replication timestamp: {} (from database: {})", 
-                        overallLatestTimestamp, databaseWithLatestTimestamp.getInternalName());
+                        overallLatestTimestamp, databaseNameWithLatestTimestamp);
                 log.info("Service last received updates at: {}", overallLatestTimestamp);
             } else {
                 log.info("No replication timestamps found in any database - this appears to be the first startup");

@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
@@ -159,10 +160,10 @@ public interface MetadataServiceGateway {
     /**
      * Get all databases from the metadata service.
      *
-     * @return List of all databases
+     * @return List of all databases (brief information)
      * @throws RemoteUnavailableException The remote service is not available
      * @throws MetadataServiceException The remote service returned invalid data
      */
-    List<DatabaseDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException;
+    List<DatabaseBriefDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException;
 
 }
