@@ -300,4 +300,33 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             dataSource.close();
         }
     }
+
+    @Override
+    public java.time.Instant getLatestReplicationTimestamp(DatabaseDto database) {
+        final String sql = """
+            SELECT MAX(row_start) as latest_timestamp 
+            FROM tuple_replication_timestamps
+            """;
+
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Timestamp latestTimestamp = resultSet.getTimestamp("latest_timestamp");
+                    if (latestTimestamp != null) {
+                        return latestTimestamp.toInstant();
+                    }
+                }
+                return null;
+            }
+
+        } catch (SQLException e) {
+            log.error("Failed to get latest replication timestamp: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to get latest replication timestamp", e);
+        } finally {
+            dataSource.close();
+        }
+    }
 }

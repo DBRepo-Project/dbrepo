@@ -52,4 +52,13 @@ public interface ReplicationTimestampService {
      * Ensure the tuple_replication_timestamps table exists in the specified database
      */
     void ensureTableExists(DatabaseDto database);
+
+    /**
+     * Get the latest replication timestamp from the tuple_replication_timestamps table.
+     * This method returns the most recent timestamp when the service received updates.
+     * 
+     * @param database The database to query
+     * @return The latest timestamp, or null if no timestamps exist
+     */
+    java.time.Instant getLatestReplicationTimestamp(DatabaseDto database);
 }

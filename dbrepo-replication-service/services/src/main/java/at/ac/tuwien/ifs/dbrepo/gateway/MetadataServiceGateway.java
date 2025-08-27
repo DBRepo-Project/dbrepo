@@ -149,12 +149,20 @@ public interface MetadataServiceGateway {
      *
      * @param path The API path to call
      * @param databaseId The database ID where the table should be created
-     * @param createTableDto The table creation data
      * @return The response from the metadata service with table ID
      * @throws RemoteUnavailableException The remote service is not available
      * @throws MetadataServiceException The remote service returned invalid data
      */
     Map<String, Object> createReplicatedTable(String path, UUID databaseId, TableNotificationDto tableNotificationDto)
             throws RemoteUnavailableException, MetadataServiceException;
+
+    /**
+     * Get all databases from the metadata service.
+     *
+     * @return List of all databases
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     */
+    List<DatabaseDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException;
 
 }

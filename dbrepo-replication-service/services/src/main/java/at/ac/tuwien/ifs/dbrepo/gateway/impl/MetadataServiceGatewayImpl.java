@@ -379,4 +379,28 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         log.info("Created replicated table successfully");
         return response.getBody();
     }
+
+    @Override
+    public List<DatabaseDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException {
+        final ResponseEntity<DatabaseDto[]> response;
+        final String url = "/api/v1/database";
+        log.debug("get all databases from metadata service: {}", url);
+        internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
+        try {
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseDto[].class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to get all databases: {}", e.getMessage());
+            throw new RemoteUnavailableException("Failed to get all databases: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get all databases: service responded unsuccessful: {}", response.getStatusCode());
+            throw new MetadataServiceException("Failed to get all databases: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to get all databases: body is null");
+            throw new MetadataServiceException("Failed to get all databases: body is null");
+        }
+        log.info("Retrieved {} databases from metadata service", response.getBody().length);
+        return List.of(response.getBody());
+    }
 }

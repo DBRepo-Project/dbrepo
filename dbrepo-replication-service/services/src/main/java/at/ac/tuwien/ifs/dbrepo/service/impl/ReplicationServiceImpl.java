@@ -22,6 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.context.event.EventListener;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,12 +40,18 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     private final RestTemplate externalReplicationRestTemplate;
     private final GatewayConfig gatewayConfig;
+    private final ReplicationTimestampService replicationTimestampService;
+    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public ReplicationServiceImpl(@Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
-                                GatewayConfig gatewayConfig) {
+                                GatewayConfig gatewayConfig,
+                                ReplicationTimestampService replicationTimestampService,
+                                MetadataServiceGateway metadataServiceGateway) {
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
         this.gatewayConfig = gatewayConfig;
+        this.replicationTimestampService = replicationTimestampService;
+        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @Override
@@ -389,21 +400,22 @@ public class ReplicationServiceImpl implements ReplicationService {
     private void performStartupTasks() {
         log.info("Performing replication service startup tasks...");
         
-        // Example startup tasks - customize these based on your requirements:
+        // 1. Get the latest replication timestamp to determine when the service received updates last
+        getLatestReplicationTimestamp();
         
-        // 1. Initialize replication state
+        // 2. Initialize replication state
         log.info("Initializing replication state...");
         
-        // 2. Check connectivity to replica instances
+        // 3. Check connectivity to replica instances
         log.info("Checking replica instance connectivity...");
         
-        // 3. Validate configuration
+        // 4. Validate configuration
         log.info("Validating replication configuration...");
         
-        // 4. Initialize any required resources
+        // 5. Initialize any required resources
         log.info("Initializing replication resources...");
         
-        // 5. Start any background processes if needed
+        // 6. Start any background processes if needed
         log.info("Starting background replication processes...");
         
         // Add your specific startup logic here
@@ -414,5 +426,67 @@ public class ReplicationServiceImpl implements ReplicationService {
         // - Start monitoring services
         // - Initialize caches
         // - etc.
+    }
+
+    /**
+     * Gets the latest replication timestamp from all databases by querying the metadata service.
+     * This helps determine when the service received updates for the last time.
+     */
+    private void getLatestReplicationTimestamp() {
+        try {
+            log.info("Retrieving all databases from metadata service to check replication timestamps...");
+            
+            // Get all databases from the metadata service
+            List<DatabaseDto> allDatabases = metadataServiceGateway.getAllDatabases();
+            log.info("Found {} databases in metadata service", allDatabases.size());
+            
+            java.time.Instant overallLatestTimestamp = null;
+            DatabaseDto databaseWithLatestTimestamp = null;
+            
+            // Check each database for replication timestamps
+            for (DatabaseDto database : allDatabases) {
+                try {
+                    log.debug("Checking replication timestamps for database: {} ({})", 
+                            database.getInternalName(), database.getId());
+                    
+                    java.time.Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(database);
+                    
+                    if (latestTimestamp != null) {
+                        log.debug("Database {} has latest replication timestamp: {}", 
+                                database.getInternalName(), latestTimestamp);
+                        
+                        // Track the overall latest timestamp across all databases
+                        if (overallLatestTimestamp == null || latestTimestamp.isAfter(overallLatestTimestamp)) {
+                            overallLatestTimestamp = latestTimestamp;
+                            databaseWithLatestTimestamp = database;
+                        }
+                    } else {
+                        log.debug("Database {} has no replication timestamps", database.getInternalName());
+                    }
+                    
+                } catch (Exception e) {
+                    log.warn("Could not check replication timestamps for database {}: {}", 
+                            database.getInternalName(), e.getMessage());
+                    log.debug("Database timestamp check failed for {}", database.getInternalName(), e);
+                }
+            }
+            
+            // Log the overall result
+            if (overallLatestTimestamp != null) {
+                log.info("Overall latest replication timestamp: {} (from database: {})", 
+                        overallLatestTimestamp, databaseWithLatestTimestamp.getInternalName());
+                log.info("Service last received updates at: {}", overallLatestTimestamp);
+            } else {
+                log.info("No replication timestamps found in any database - this appears to be the first startup");
+            }
+            
+        } catch (RemoteUnavailableException e) {
+            log.error("Metadata service is not available: {}", e.getMessage());
+        } catch (MetadataServiceException e) {
+            log.error("Error retrieving databases from metadata service: {}", e.getMessage());
+        } catch (Exception e) {
+            log.warn("Could not retrieve latest replication timestamp: {}", e.getMessage());
+            log.debug("Timestamp retrieval failed", e);
+        }
     }
 } 
