@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import java.util.List;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
@@ -211,9 +213,17 @@ public class DatabaseEndpoint extends RestEndpoint {
             final DatabaseDto database = cacheService.getDatabase(databaseId);
             
             // Delegate to table service
-            java.util.Map<String, Object> response = tableService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
+            boolean hasNewTuples = tableService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
+
+            if (hasNewTuples) {
+                List<TupleDto> tuples = tableService.loadNewTuplesAfterTimestamp(database, timestamp);
+                log.info("Found {} new tuples after timestamp {}", tuples.size(), timestamp);
+                for (TupleDto tuple : tuples) {
+                    log.debug("New tuple data: {}", tuple.getData());
+                }
+            }
             
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(null);
             
         } catch (Exception e) {
             log.error("❌ Error checking tuples after timestamp: {}", e.getMessage(), e);

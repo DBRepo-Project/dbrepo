@@ -160,12 +160,25 @@ public interface TableService {
      * @param database The database to check.
      * @param timestamp The timestamp to check against.
      * @param replicaDatabaseId The ID of the replica database.
-     * @return A map containing the analysis results including tables with new tuples.
+     * @return true if there are new tuples after the timestamp, false otherwise.
      * @throws SQLException Failed to establish connection to database.
      * @throws QueryMalformedException The count query is malformed.
      */
-    java.util.Map<String, Object> checkTuplesAfterTimestamp(DatabaseDto database, 
-                                                           java.time.Instant timestamp, 
-                                                           String replicaDatabaseId) throws SQLException, 
-                                                           QueryMalformedException;
+    boolean checkTuplesAfterTimestamp(DatabaseDto database, 
+                                    java.time.Instant timestamp, 
+                                    String replicaDatabaseId) throws SQLException, 
+                                    QueryMalformedException;
+
+    /**
+     * Loads all tuples inserted after a given timestamp across all tables in a database.
+     *
+     * @param database The database to load from.
+     * @param timestamp The timestamp to check against.
+     * @return A list of TupleDto objects containing the new tuples.
+     * @throws SQLException Failed to establish connection to database.
+     * @throws QueryMalformedException The query is malformed.
+     */
+    java.util.List<TupleDto> loadNewTuplesAfterTimestamp(DatabaseDto database, 
+                                                        java.time.Instant timestamp) throws SQLException,
+                                                        QueryMalformedException;
 }

@@ -707,10 +707,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public java.util.Map<String, Object> checkTuplesAfterTimestamp(DatabaseDto database, 
-                                                                 java.time.Instant timestamp, 
-                                                                 String replicaDatabaseId) throws SQLException, 
-                                                                 QueryMalformedException {
+    public boolean checkTuplesAfterTimestamp(DatabaseDto database, 
+                                           java.time.Instant timestamp, 
+                                           String replicaDatabaseId) throws SQLException, 
+                                           QueryMalformedException {
         log.info("=== CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Timestamp: {}", timestamp);
@@ -720,7 +720,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
         // Check each table for new tuples after the timestamp
         boolean hasNewTuples = false;
-        java.util.List<java.util.Map<String, Object>> tablesWithNewTuples = new java.util.ArrayList<>();
         
         if (database.getTables() != null && !database.getTables().isEmpty()) {
             log.info("Checking {} tables for new tuples...", database.getTables().size());
@@ -745,16 +744,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         hasNewTuples = true;
                         log.info("✅ Table {} has {} new tuples since timestamp {}", 
                                 table.getInternalName(), newTuplesCount, timestamp);
-                        
-                        // Add table info to the list
-                        java.util.Map<String, Object> tableInfo = java.util.Map.of(
-                            "tableName", table.getName(),
-                            "tableInternalName", table.getInternalName(),
-                            "newTuplesCount", newTuplesCount,
-                            "currentCount", currentCount,
-                            "timestampCount", timestampCount
-                        );
-                        tablesWithNewTuples.add(tableInfo);
+                        break; // Found new tuples, no need to check other tables
                     } else {
                         log.info("ℹ️ Table {} has no new tuples since timestamp {}", 
                                 table.getInternalName(), timestamp);
@@ -769,51 +759,117 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             log.info("No tables found in database");
         }
 
-        // Prepare response based on findings
-        java.util.Map<String, Object> response;
-        
         if (hasNewTuples) {
-            log.info("🔍 Found new tuples in {} tables since timestamp {}", tablesWithNewTuples.size(), timestamp);
-            
-            response = java.util.Map.of(
-                "status", "tuples_found",
-                "databaseId", database.getId().toString(),
-                "timestamp", timestamp.toString(),
-                "replicaDatabaseId", replicaDatabaseId,
-                "databaseName", database.getName(),
-                "databaseInternalName", database.getInternalName(),
-                "hasNewTuples", true,
-                "tablesWithNewTuples", tablesWithNewTuples,
-                "totalNewTuples", tablesWithNewTuples.stream()
-                    .mapToLong(table -> (Long) table.get("newTuplesCount"))
-                    .sum(),
-                "todo", "Implement tuple handover mechanism to send new tuples to replica database " + replicaDatabaseId
-            );
-            
-            log.info("TODO: Implement tuple handover to replica database {}", replicaDatabaseId);
-            log.info("Tables with new tuples: {}", tablesWithNewTuples.stream()
-                .map(table -> table.get("tableInternalName") + "(" + table.get("newTuplesCount") + ")")
-                .collect(java.util.stream.Collectors.joining(", ")));
-            
+            log.info("🔍 Found new tuples since timestamp {}", timestamp);
         } else {
             log.info("✅ No new tuples found since timestamp {}", timestamp);
-            
-            response = java.util.Map.of(
-                "status", "no_tuples",
-                "message", "No new tuples found after timestamp",
-                "databaseId", database.getId().toString(),
-                "timestamp", timestamp.toString(),
-                "replicaDatabaseId", replicaDatabaseId,
-                "databaseName", database.getName(),
-                "databaseInternalName", database.getInternalName(),
-                "hasNewTuples", false,
-                "tablesWithNewTuples", new java.util.ArrayList<>(),
-                "totalNewTuples", 0
-            );
         }
 
         log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
-        return response;
+        return hasNewTuples;
+    }
+
+    @Override
+    public java.util.List<TupleDto> loadNewTuplesAfterTimestamp(DatabaseDto database, 
+                                                               java.time.Instant timestamp) throws SQLException,
+                                                               QueryMalformedException {
+        log.info("=== LOADING NEW TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
+        log.info("Database: {} ({})", database.getName(), database.getInternalName());
+        log.info("Timestamp: {}", timestamp);
+
+        List<TupleDto> allNewTuples = new java.util.ArrayList<>();
+        
+        if (database.getTables() != null && !database.getTables().isEmpty()) {
+            log.info("Loading new tuples from {} tables...", database.getTables().size());
+            
+            for (TableDto table : database.getTables()) {
+                try {
+                        // Load the actual tuples from the table
+                        List<TupleDto> tableTuples = loadNewTuplesFromTable(database, table, timestamp);
+                        allNewTuples.addAll(tableTuples);
+                        
+                        log.info("✅ Loaded {} tuples from table {}", tableTuples.size(), table.getInternalName());
+
+                    
+                } catch (Exception e) {
+                    log.error("❌ Error loading tuples from table {}: {}", table.getInternalName(), e.getMessage());
+                    // Continue with other tables
+                }
+            }
+        } else {
+            log.info("No tables found in database");
+        }
+
+        log.info("=== END LOADING NEW TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
+        log.info("Total new tuples loaded: {}", allNewTuples.size());
+        return allNewTuples;
+    }
+
+    /**
+     * Loads new tuples from a specific table after the given timestamp
+     */
+    private java.util.List<TupleDto> loadNewTuplesFromTable(DatabaseDto database, TableDto table, java.time.Instant timestamp) 
+            throws SQLException, QueryMalformedException {
+        
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        java.util.List<TupleDto> tuples = new java.util.ArrayList<>();
+        
+        try {
+            // Build query to select new tuples after timestamp
+            // Using system versioning to get tuples inserted after the timestamp
+            final StringBuilder select = new StringBuilder("SELECT ");
+            final int[] colIdx = new int[]{0};
+            for (ColumnDto c : table.getColumns()) {
+                select.append(colIdx[0]++ == 0 ? "" : ", ")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`");
+            }
+            
+            select.append(" FROM `")
+                    .append(database.getInternalName())
+                    .append("`.`")
+                    .append(table.getInternalName())
+                    .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(DataMapper.mariaDbFormatter.format(java.time.Instant.now()))
+                    .append("' WHERE ROW_START > TIMESTAMP '")
+                    .append(DataMapper.mariaDbFormatter.format(timestamp))
+                    .append("'");
+
+            log.debug("Executing query: {}", select.toString());
+            
+            final PreparedStatement selectStmt = connection.prepareStatement(select.toString());
+            final ResultSet rs = selectStmt.executeQuery();
+            
+            while (rs.next()) {
+                java.util.Map<String, Object> tupleData = new java.util.HashMap<>();
+                
+                // Extract all column values
+                for (ColumnDto column : table.getColumns()) {
+                    Object value = rs.getObject(column.getInternalName());
+                    tupleData.put(column.getInternalName(), value);
+                }
+                
+                // Create TupleDto and add to list
+                TupleDto tuple = TupleDto.builder()
+                    .data(tupleData)
+                    .build();
+                tuples.add(tuple);
+            }
+            
+            connection.commit();
+            
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to load new tuples from table {}.{}: {}", 
+                    database.getInternalName(), table.getInternalName(), e.getMessage());
+            throw new QueryMalformedException("Failed to load new tuples from table: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        
+        return tuples;
     }
 
 }
