@@ -600,7 +600,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             
             // Since we're checking at database level, we need a different endpoint
             // We'll use a database-level endpoint instead of table-level
-            String endpoint = String.format("/api/v1/database/%s/check-tuples-after-timestamp", database.getId());
+            String endpoint = String.format("/api/v1/database/%s/check-tuples-after-timestamp", replicaDatabaseId.toString());
             
             String fullUrl = baseUrl + endpoint;
             log.info("Full URL: {}", fullUrl);
