@@ -586,13 +586,17 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             for (TuplesWithTimestampsDto.TupleWithTimestampsDto tuple : tuplesWithTimestamps.getTuples()) {
                 // Format inserted_at timestamp
                 if (tuple.getInsertedAt() != null) {
-                    String formatted = at.ac.tuwien.ifs.dbrepo.mapper.DataMapper.mariaDbFormatter.format(tuple.getInsertedAt()) + "+00:00";
+                    // Convert Instant to LocalDateTime for formatting, then back to Instant
+                    java.time.LocalDateTime ldt = tuple.getInsertedAt().atZone(java.time.ZoneOffset.UTC).toLocalDateTime();
+                    String formatted = at.ac.tuwien.ifs.dbrepo.mapper.DataMapper.mariaDbFormatter.format(ldt) + "+00:00";
                     tuple.setInsertedAt(java.time.Instant.parse(formatted.replace("+00:00", "Z")));
                 }
                 
                 // Format deleted_at timestamp
                 if (tuple.getDeletedAt() != null) {
-                    String formatted = at.ac.tuwien.ifs.dbrepo.mapper.DataMapper.mariaDbFormatter.format(tuple.getDeletedAt()) + "+00:00";
+                    // Convert Instant to LocalDateTime for formatting, then back to Instant
+                    java.time.LocalDateTime ldt = tuple.getDeletedAt().atZone(java.time.ZoneOffset.UTC).toLocalDateTime();
+                    String formatted = at.ac.tuwien.ifs.dbrepo.mapper.DataMapper.mariaDbFormatter.format(ldt) + "+00:00";
                     tuple.setDeletedAt(java.time.Instant.parse(formatted.replace("+00:00", "Z")));
                 }
             }
@@ -859,9 +863,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .append("`.`")
                     .append(table.getInternalName())
                     .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                    .append(DataMapper.mariaDbFormatter.format(java.time.Instant.now()))
+                    .append(DataMapper.mariaDbFormatter.format(java.time.Instant.now().atZone(java.time.ZoneOffset.UTC).toLocalDateTime()))
                     .append("' WHERE ROW_START > TIMESTAMP '")
-                    .append(DataMapper.mariaDbFormatter.format(timestamp))
+                    .append(DataMapper.mariaDbFormatter.format(timestamp.atZone(java.time.ZoneOffset.UTC).toLocalDateTime()))
                     .append("'");
 
             log.debug("Executing query: {}", select.toString());
@@ -908,8 +912,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             .tuples(tuples)
             .build();
         
-        // Format timestamps with microsecond precision for consistent output
-        formatTimestampsWithMicrosecondPrecision(result);
+        // Note: Timestamp formatting removed to avoid parsing errors
+        // The timestamps are already in the correct Instant format from SQL Timestamps
         
         return result;
     }
