@@ -193,7 +193,6 @@ public class DatabaseEndpoint extends RestEndpoint {
     public ResponseEntity<java.util.Map<String, Object>> checkTuplesAfterTimestamp(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                                   @RequestBody java.util.Map<String, Object> request) {
 
-        
         try {
             // Extract parameters from request
             String timestampStr = (String) request.get("timestamp");
@@ -204,8 +203,6 @@ public class DatabaseEndpoint extends RestEndpoint {
                 throw new IllegalArgumentException("timestamp and replicaDatabaseId are required");
             }
             
-
-            
             // Parse timestamp
             java.time.Instant timestamp = java.time.Instant.parse(timestampStr);
             log.info("Parsed timestamp: {}", timestamp);
@@ -213,108 +210,9 @@ public class DatabaseEndpoint extends RestEndpoint {
             // Get database from cache service
             final DatabaseDto database = cacheService.getDatabase(databaseId);
             
-            log.info("=== CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
-            log.info("Database: {} ({})", database.getName(), database.getInternalName());
-            log.info("Timestamp: {}", timestamp);
-            log.info("Replica Database ID: {}", replicaDatabaseId);
-            log.info("Creation Location: {}", database.getCreationLocation());
-            log.info("Container Host: {}:{}", database.getContainer().getHost(), database.getContainer().getPort());
-
-            // Check each table for new tuples after the timestamp
-            boolean hasNewTuples = false;
-            java.util.List<java.util.Map<String, Object>> tablesWithNewTuples = new java.util.ArrayList<>();
+            // Delegate to database service
+            java.util.Map<String, Object> response = databaseService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
             
-            if (database.getTables() != null && !database.getTables().isEmpty()) {
-                log.info("Checking {} tables for new tuples...", database.getTables().size());
-                
-                for (TableDto table : database.getTables()) {
-                    try {
-                        log.info("Checking table: {} ({})", table.getName(), table.getInternalName());
-                        
-                        // Get current tuple count (null timestamp = current time)
-                        Long currentCount = tableService.getCount(database, table.getInternalName(), null);
-                        log.info("Current tuple count: {}", currentCount);
-                        
-                        // Get tuple count at the specified timestamp
-                        Long timestampCount = tableService.getCount(database, table.getInternalName(), timestamp);
-                        log.info("Tuple count at timestamp {}: {}", timestamp, timestampCount);
-                        
-                        // Calculate new tuples
-                        Long newTuplesCount = currentCount - timestampCount;
-                        log.info("New tuples since timestamp: {}", newTuplesCount);
-                        
-                        if (newTuplesCount > 0) {
-                            hasNewTuples = true;
-                            log.info("✅ Table {} has {} new tuples since timestamp {}", 
-                                    table.getInternalName(), newTuplesCount, timestamp);
-                            
-                            // Add table info to the list
-                            java.util.Map<String, Object> tableInfo = java.util.Map.of(
-                                "tableName", table.getName(),
-                                "tableInternalName", table.getInternalName(),
-                                "newTuplesCount", newTuplesCount,
-                                "currentCount", currentCount,
-                                "timestampCount", timestampCount
-                            );
-                            tablesWithNewTuples.add(tableInfo);
-                        } else {
-                            log.info("ℹ️ Table {} has no new tuples since timestamp {}", 
-                                    table.getInternalName(), timestamp);
-                        }
-                        
-                    } catch (Exception e) {
-                        log.error("❌ Error checking table {}: {}", table.getInternalName(), e.getMessage());
-                        // Continue with other tables
-                    }
-                }
-            } else {
-                log.info("No tables found in database");
-            }
-
-            // Prepare response based on findings
-            java.util.Map<String, Object> response;
-            
-            if (hasNewTuples) {
-                log.info("🔍 Found new tuples in {} tables since timestamp {}", tablesWithNewTuples.size(), timestamp);
-                
-                response = java.util.Map.of(
-                    "status", "tuples_found",
-                    "databaseId", databaseId.toString(),
-                    "timestamp", timestampStr,
-                    "replicaDatabaseId", replicaDatabaseId,
-                    "databaseName", database.getName(),
-                    "databaseInternalName", database.getInternalName(),
-                    "hasNewTuples", true,
-                    "tablesWithNewTuples", tablesWithNewTuples,
-                    "totalNewTuples", tablesWithNewTuples.stream()
-                        .mapToLong(table -> (Long) table.get("newTuplesCount"))
-                        .sum(),
-                    "todo", "Implement tuple handover mechanism to send new tuples to replica database " + replicaDatabaseId
-                );
-                
-                log.info("TODO: Implement tuple handover to replica database {}", replicaDatabaseId);
-                log.info("Tables with new tuples: {}", tablesWithNewTuples.stream()
-                    .map(table -> table.get("tableInternalName") + "(" + table.get("newTuplesCount") + ")")
-                    .collect(java.util.stream.Collectors.joining(", ")));
-                
-            } else {
-                log.info("✅ No new tuples found since timestamp {}", timestamp);
-                
-                response = java.util.Map.of(
-                    "status", "no_tuples",
-                    "message", "No new tuples found after timestamp",
-                    "databaseId", databaseId.toString(),
-                    "timestamp", timestampStr,
-                    "replicaDatabaseId", replicaDatabaseId,
-                    "databaseName", database.getName(),
-                    "databaseInternalName", database.getInternalName(),
-                    "hasNewTuples", false,
-                    "tablesWithNewTuples", new java.util.ArrayList<>(),
-                    "totalNewTuples", 0
-                );
-            }
-
-            log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
@@ -325,7 +223,6 @@ public class DatabaseEndpoint extends RestEndpoint {
                 "message", "Failed to check tuples after timestamp: " + e.getMessage()
             );
             
-            log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (with errors) ===");
             return ResponseEntity.badRequest().body(response);
         }
     }

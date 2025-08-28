@@ -96,4 +96,19 @@ public interface DatabaseService {
      */
     void update(DatabaseDto database, UpdateUserPasswordDto data) throws SQLException,
             DatabaseMalformedException;
+
+    /**
+     * Checks for tuples inserted after a given timestamp in the specified database.
+     *
+     * @param database The database to check.
+     * @param timestamp The timestamp to check against.
+     * @param replicaDatabaseId The ID of the replica database.
+     * @return A map containing the analysis results including tables with new tuples.
+     * @throws SQLException Failed to establish connection to database.
+     * @throws QueryMalformedException The count query is malformed.
+     */
+    java.util.Map<String, Object> checkTuplesAfterTimestamp(DatabaseDto database, 
+                                                           java.time.Instant timestamp, 
+                                                           String replicaDatabaseId) throws SQLException, 
+                                                           QueryMalformedException;
 }
