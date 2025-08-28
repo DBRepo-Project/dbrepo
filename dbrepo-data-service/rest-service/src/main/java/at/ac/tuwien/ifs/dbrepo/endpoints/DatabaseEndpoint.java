@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -40,17 +41,19 @@ public class DatabaseEndpoint extends RestEndpoint {
     private final AnalyseService analyseService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
+    private final TableService tableService;
 
     @Autowired
     public DatabaseEndpoint(DataMapper dataMapper, CacheService cacheService, AccessService accessService,
                             AnalyseService analyseService, DatabaseService databaseService,
-                            ContainerService containerService) {
+                            ContainerService containerService, TableService tableService) {
         this.dataMapper = dataMapper;
         this.cacheService = cacheService;
         this.accessService = accessService;
         this.analyseService = analyseService;
         this.databaseService = databaseService;
         this.containerService = containerService;
+        this.tableService = tableService;
     }
 
     @PostMapping
@@ -189,9 +192,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     })
     public ResponseEntity<java.util.Map<String, Object>> checkTuplesAfterTimestamp(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                                   @RequestBody java.util.Map<String, Object> request) {
-        log.info("=== CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
-        log.info("Database ID: {}", databaseId);
-        log.info("Request body: {}", request);
+
         
         try {
             // Extract parameters from request
@@ -203,8 +204,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                 throw new IllegalArgumentException("timestamp and replicaDatabaseId are required");
             }
             
-            log.info("Timestamp to check: {}", timestampStr);
-            log.info("Replica Database ID: {}", replicaDatabaseId);
+
             
             // Parse timestamp
             java.time.Instant timestamp = java.time.Instant.parse(timestampStr);
@@ -213,30 +213,107 @@ public class DatabaseEndpoint extends RestEndpoint {
             // Get database from cache service
             final DatabaseDto database = cacheService.getDatabase(databaseId);
             
+            log.info("=== CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
             log.info("Database: {} ({})", database.getName(), database.getInternalName());
-            log.info("Database creation location: {}", database.getCreationLocation());
-            log.info("Database container: {}:{}", database.getContainer().getHost(), database.getContainer().getPort());
+            log.info("Timestamp: {}", timestamp);
+            log.info("Replica Database ID: {}", replicaDatabaseId);
+            log.info("Creation Location: {}", database.getCreationLocation());
+            log.info("Container Host: {}:{}", database.getContainer().getHost(), database.getContainer().getPort());
+
+            // Check each table for new tuples after the timestamp
+            boolean hasNewTuples = false;
+            java.util.List<java.util.Map<String, Object>> tablesWithNewTuples = new java.util.ArrayList<>();
             
-            // TODO: Implement actual logic to check for tuples after timestamp
-            // For now, just log the information and return a placeholder response
-            log.info("=== PLACEHOLDER IMPLEMENTATION ===");
-            log.info("Would check for tuples in database '{}' after timestamp: {}", database.getInternalName(), timestamp);
-            log.info("This is a placeholder - actual tuple checking logic will be implemented in the next step");
-            log.info("Would query tuple_replication_timestamps table for entries after: {}", timestamp);
+            if (database.getTables() != null && !database.getTables().isEmpty()) {
+                log.info("Checking {} tables for new tuples...", database.getTables().size());
+                
+                for (TableDto table : database.getTables()) {
+                    try {
+                        log.info("Checking table: {} ({})", table.getName(), table.getInternalName());
+                        
+                        // Get current tuple count (null timestamp = current time)
+                        Long currentCount = tableService.getCount(database, table.getInternalName(), null);
+                        log.info("Current tuple count: {}", currentCount);
+                        
+                        // Get tuple count at the specified timestamp
+                        Long timestampCount = tableService.getCount(database, table.getInternalName(), timestamp);
+                        log.info("Tuple count at timestamp {}: {}", timestamp, timestampCount);
+                        
+                        // Calculate new tuples
+                        Long newTuplesCount = currentCount - timestampCount;
+                        log.info("New tuples since timestamp: {}", newTuplesCount);
+                        
+                        if (newTuplesCount > 0) {
+                            hasNewTuples = true;
+                            log.info("✅ Table {} has {} new tuples since timestamp {}", 
+                                    table.getInternalName(), newTuplesCount, timestamp);
+                            
+                            // Add table info to the list
+                            java.util.Map<String, Object> tableInfo = java.util.Map.of(
+                                "tableName", table.getName(),
+                                "tableInternalName", table.getInternalName(),
+                                "newTuplesCount", newTuplesCount,
+                                "currentCount", currentCount,
+                                "timestampCount", timestampCount
+                            );
+                            tablesWithNewTuples.add(tableInfo);
+                        } else {
+                            log.info("ℹ️ Table {} has no new tuples since timestamp {}", 
+                                    table.getInternalName(), timestamp);
+                        }
+                        
+                    } catch (Exception e) {
+                        log.error("❌ Error checking table {}: {}", table.getInternalName(), e.getMessage());
+                        // Continue with other tables
+                    }
+                }
+            } else {
+                log.info("No tables found in database");
+            }
+
+            // Prepare response based on findings
+            java.util.Map<String, Object> response;
             
-            java.util.Map<String, Object> response = java.util.Map.of(
-                "status", "success",
-                "message", "Check completed (placeholder implementation)",
-                "databaseId", databaseId.toString(),
-                "timestamp", timestampStr,
-                "replicaDatabaseId", replicaDatabaseId,
-                "databaseName", database.getName(),
-                "databaseInternalName", database.getInternalName(),
-                "creationLocation", database.getCreationLocation(),
-                "containerHost", database.getContainer().getHost(),
-                "containerPort", database.getContainer().getPort()
-            );
-            
+            if (hasNewTuples) {
+                log.info("🔍 Found new tuples in {} tables since timestamp {}", tablesWithNewTuples.size(), timestamp);
+                
+                response = java.util.Map.of(
+                    "status", "tuples_found",
+                    "databaseId", databaseId.toString(),
+                    "timestamp", timestampStr,
+                    "replicaDatabaseId", replicaDatabaseId,
+                    "databaseName", database.getName(),
+                    "databaseInternalName", database.getInternalName(),
+                    "hasNewTuples", true,
+                    "tablesWithNewTuples", tablesWithNewTuples,
+                    "totalNewTuples", tablesWithNewTuples.stream()
+                        .mapToLong(table -> (Long) table.get("newTuplesCount"))
+                        .sum(),
+                    "todo", "Implement tuple handover mechanism to send new tuples to replica database " + replicaDatabaseId
+                );
+                
+                log.info("TODO: Implement tuple handover to replica database {}", replicaDatabaseId);
+                log.info("Tables with new tuples: {}", tablesWithNewTuples.stream()
+                    .map(table -> table.get("tableInternalName") + "(" + table.get("newTuplesCount") + ")")
+                    .collect(java.util.stream.Collectors.joining(", ")));
+                
+            } else {
+                log.info("✅ No new tuples found since timestamp {}", timestamp);
+                
+                response = java.util.Map.of(
+                    "status", "no_tuples",
+                    "message", "No new tuples found after timestamp",
+                    "databaseId", databaseId.toString(),
+                    "timestamp", timestampStr,
+                    "replicaDatabaseId", replicaDatabaseId,
+                    "databaseName", database.getName(),
+                    "databaseInternalName", database.getInternalName(),
+                    "hasNewTuples", false,
+                    "tablesWithNewTuples", new java.util.ArrayList<>(),
+                    "totalNewTuples", 0
+                );
+            }
+
             log.info("=== END CHECKING TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
             return ResponseEntity.ok(response);
             
