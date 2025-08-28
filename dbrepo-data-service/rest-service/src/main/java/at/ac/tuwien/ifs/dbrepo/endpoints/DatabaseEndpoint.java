@@ -219,7 +219,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                 List<TupleDto> tuples = tableService.loadNewTuplesAfterTimestamp(database, timestamp);
                 log.info("Found {} new tuples after timestamp {}", tuples.size(), timestamp);
                 for (TupleDto tuple : tuples) {
-                    log.debug("New tuple data: {}", tuple.getData());
+                    log.info("New tuple data: {}", tuple.getData());
                 }
             }
             
