@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TuplesWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -216,10 +217,14 @@ public class DatabaseEndpoint extends RestEndpoint {
             boolean hasNewTuples = tableService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
 
             if (hasNewTuples) {
-                List<TupleDto> tuples = tableService.loadNewTuplesAfterTimestamp(database, timestamp);
-                log.info("Found {} new tuples after timestamp {}", tuples.size(), timestamp);
-                for (TupleDto tuple : tuples) {
-                    log.info("New tuple data: {}", tuple.getData());
+                List<TuplesWithTimestampsDto.TupleWithTimestampsDto> tuplesWithTimestamps = tableService.loadNewTuplesAfterTimestamp(database, timestamp);
+                log.info("Found {} new tuples after timestamp {}", tuplesWithTimestamps.size(), timestamp);
+                for (TuplesWithTimestampsDto.TupleWithTimestampsDto tuple : tuplesWithTimestamps) {
+                    log.info("New tuple data: {} | inserted_at: {} | deleted_at: {} | replication_key: {}", 
+                        tuple.getData(), 
+                        tuple.getInsertedAt(), 
+                        tuple.getDeletedAt(), 
+                        tuple.getReplicationKey());
                 }
             }
             

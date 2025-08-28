@@ -174,11 +174,11 @@ public interface TableService {
      *
      * @param database The database to load from.
      * @param timestamp The timestamp to check against.
-     * @return A list of TupleDto objects containing the new tuples.
+     * @return A list of TupleWithTimestampsDto objects containing the new tuples with their timestamps.
      * @throws SQLException Failed to establish connection to database.
      * @throws QueryMalformedException The query is malformed.
      */
-    java.util.List<TupleDto> loadNewTuplesAfterTimestamp(DatabaseDto database, 
+    java.util.List<TuplesWithTimestampsDto.TupleWithTimestampsDto> loadNewTuplesAfterTimestamp(DatabaseDto database, 
                                                         java.time.Instant timestamp) throws SQLException,
                                                         QueryMalformedException;
 }
