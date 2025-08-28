@@ -210,8 +210,8 @@ public class DatabaseEndpoint extends RestEndpoint {
             // Get database from cache service
             final DatabaseDto database = cacheService.getDatabase(databaseId);
             
-            // Delegate to database service
-            java.util.Map<String, Object> response = databaseService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
+            // Delegate to table service
+            java.util.Map<String, Object> response = tableService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
             
             return ResponseEntity.ok(response);
             

@@ -56,7 +56,7 @@ public interface DatabaseService {
      * @param database The database.
      * @return The list of view metadata.
      * @throws SQLException               The connection to the data database was unsuccessful.
-     * @throws DatabaseMalformedException The columns that are referenced in the views are unknown to the Metadata Database. Call {@link TableService#getSchemas(DatabaseDto)} beforehand.
+     * @throws DatabaseMalformedException The columns that are referenced in the views are unknown to the Metadata Database.
      * @throws ViewNotFoundException      The view with given name was not found.
      */
     List<ViewDto> exploreViews(DatabaseDto database) throws SQLException, DatabaseMalformedException,
@@ -96,19 +96,4 @@ public interface DatabaseService {
      */
     void update(DatabaseDto database, UpdateUserPasswordDto data) throws SQLException,
             DatabaseMalformedException;
-
-    /**
-     * Checks for tuples inserted after a given timestamp in the specified database.
-     *
-     * @param database The database to check.
-     * @param timestamp The timestamp to check against.
-     * @param replicaDatabaseId The ID of the replica database.
-     * @return A map containing the analysis results including tables with new tuples.
-     * @throws SQLException Failed to establish connection to database.
-     * @throws QueryMalformedException The count query is malformed.
-     */
-    java.util.Map<String, Object> checkTuplesAfterTimestamp(DatabaseDto database, 
-                                                           java.time.Instant timestamp, 
-                                                           String replicaDatabaseId) throws SQLException, 
-                                                           QueryMalformedException;
 }
