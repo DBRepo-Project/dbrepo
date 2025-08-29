@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
@@ -30,6 +31,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
@@ -381,15 +383,24 @@ public class ReplicationServiceImpl implements ReplicationService {
     @EventListener(ApplicationReadyEvent.class)
     @Override
     public void onApplicationStartup() {
-        log.info("Replication service is starting up - performing startup tasks...");
+        log.info("🚀 Replication service is starting up - performing startup tasks...");
         
         try {
-            // Add your startup logic here
-            performStartupTasks();
+            // Perform startup tasks and get replication data if available
+            ReplicationSynchronisationDataDto replicationData = performStartupTasks();
             
-            log.info("Replication service startup tasks completed successfully");
+            if (replicationData != null) {
+                log.info("🎯 Replication service found new data during startup!");
+                log.info("📊 Summary: {} tuples, {} replication timestamps", 
+                        replicationData.getTuples() != null ? replicationData.getTuples().size() : 0,
+                        replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
+            } else {
+                log.info("ℹ️ No new replication data found during startup");
+            }
+            
+            log.info("✅ Replication service startup tasks completed successfully");
         } catch (Exception e) {
-            log.error("Error during replication service startup: {}", e.getMessage(), e);
+            log.error("❌ Error during replication service startup: {}", e.getMessage(), e);
             // You can choose to throw the exception to prevent the application from starting
             // or handle it gracefully depending on your requirements
         }
@@ -397,131 +408,110 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     /**
      * Performs the actual startup tasks for the replication service.
-     * Override this method or add your specific startup logic here.
+     * This is the central orchestrator with all logic in one place - no nested method calls!
+     * Returns ReplicationSynchronisationDataDto if new data is found, null otherwise.
      */
-    private void performStartupTasks() {
-        log.info("Performing replication service startup tasks...");
+    private ReplicationSynchronisationDataDto performStartupTasks() {
+        log.info("=== STARTING REPLICATION SERVICE STARTUP TASKS ===");
         
-        // 1. Get the latest replication timestamp to determine when the service received updates last
-        getLatestReplicationTimestamp();
-        
-        // 2. Initialize replication state
-        log.info("Initializing replication state...");
-        
-        // 3. Check connectivity to replica instances
-        log.info("Checking replica instance connectivity...");
-        
-        // 4. Validate configuration
-        log.info("Validating replication configuration...");
-        
-        // 5. Initialize any required resources
-        log.info("Initializing replication resources...");
-        
-        // 6. Start any background processes if needed
-        log.info("Starting background replication processes...");
-        
-        // Add your specific startup logic here
-        // For example:
-        // - Initialize connection pools
-        // - Load configuration from external sources
-        // - Establish connections to replica databases
-        // - Start monitoring services
-        // - Initialize caches
-        // - etc.
-    }
-
-    /**
-     * Gets the latest replication timestamp from all databases by querying the metadata service.
-     * This helps determine when the service received updates for the last time.
-     */
-    private void getLatestReplicationTimestamp() {
         try {
-            log.info("Retrieving all databases from metadata service to check replication timestamps...");
+            // 1. Get all databases from metadata service
+            log.info("Step 1: Retrieving databases from metadata service...");
+            List<DatabaseBriefDto> allDatabases;
+            try {
+                allDatabases = metadataServiceGateway.getAllDatabases();
+                log.info("Found {} databases in metadata service", allDatabases.size());
+            } catch (RemoteUnavailableException e) {
+                log.error("Metadata service is not available: {}", e.getMessage());
+                return null;
+            } catch (MetadataServiceException e) {
+                log.error("Error retrieving databases from metadata service: {}", e.getMessage());
+                return null;
+            } catch (Exception e) {
+                log.warn("Could not retrieve databases from metadata service: {}", e.getMessage());
+                log.debug("Database retrieval failed", e);
+                return null;
+            }
             
-            // Get all databases from the metadata service (brief information)
-            List<DatabaseBriefDto> allDatabaseBriefs = metadataServiceGateway.getAllDatabases();
-            log.info("Found {} databases in metadata service", allDatabaseBriefs.size());
+            if (allDatabases.isEmpty()) {
+                log.warn("No databases found in metadata service");
+                return null;
+            }
             
-            java.time.Instant overallLatestTimestamp = null;
-            String databaseNameWithLatestTimestamp = null;
+            log.info("✅ Retrieved {} databases from metadata service", allDatabases.size());
             
-            // Check each database for replication timestamps
-            for (DatabaseBriefDto databaseBrief : allDatabaseBriefs) {
+            // 2. Process each database sequentially
+            log.info("Step 2: Processing each database for replication timestamps...");
+            for (DatabaseBriefDto databaseBrief : allDatabases) {
                 try {
-                    log.info("Fetching full database details...");
+                    log.info("=== PROCESSING DATABASE: {} ===", databaseBrief.getInternalName());
+                    
+                    // Get full database details
                     DatabaseDto fullDatabase = metadataServiceGateway.getDatabaseById(databaseBrief.getId());
                     
-                    // Log additional details from full database
-
-                    log.info("Is Dashboard Enabled: {}", fullDatabase.getIsDashboardEnabled());
-                    log.info("Creation Location: {}", fullDatabase.getCreationLocation());
-                    log.info("Created: {}", fullDatabase.getCreated());
-                    log.info("Last Retrieved: {}", fullDatabase.getLastRetrieved());
-                    log.info("Tables Count: {}", fullDatabase.getTables() != null ? fullDatabase.getTables().size() : 0);
-                    log.info("Views Count: {}", fullDatabase.getViews() != null ? fullDatabase.getViews().size() : 0);
-                    log.info("Accesses Count: {}", fullDatabase.getAccesses() != null ? fullDatabase.getAccesses().size() : 0);
-                    log.info("Subsets Count: {}", fullDatabase.getSubsets() != null ? fullDatabase.getSubsets().size() : 0);
-                    
-                    // Log container information if available
-
                     // Log replica URLs if available
                     if (fullDatabase.getReplicaUrls() != null && !fullDatabase.getReplicaUrls().isEmpty()) {
-                        log.info("=== Replica URLs ===");
+                        log.info("  - Replica URLs:");
                         fullDatabase.getReplicaUrls().forEach((url, id) -> 
-                            log.info("Replica URL: {} -> Database ID: {}", url, id));
+                            log.info("    * {} -> Database ID: {}", url, id));
                     } else {
-                        log.info("Replica URLs: None configured");
+                        log.info("  - Replica URLs: None configured");
                     }
                     
-                    log.info("=== Checking Replication Timestamps ===");
-                    java.time.Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(fullDatabase);
+                    // Get latest replication timestamp for this database
+                    Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(fullDatabase);
                     
                     if (latestTimestamp != null) {
                         log.info("✅ Database {} has latest replication timestamp: {}", 
                                 databaseBrief.getInternalName(), latestTimestamp);
                         
-                        // Track the overall latest timestamp across all databases
-                        if (overallLatestTimestamp == null || latestTimestamp.isAfter(overallLatestTimestamp)) {
-                            overallLatestTimestamp = latestTimestamp;
-                            databaseNameWithLatestTimestamp = databaseBrief.getInternalName();
-                            log.info("🏆 NEW OVERALL LATEST TIMESTAMP: {} from database: {}", 
-                                    latestTimestamp, databaseBrief.getInternalName());
+                        // Check for new tuples after this timestamp
+                        ReplicationSynchronisationDataDto replicationData = checkForNewTuplesAfterTimestamp(fullDatabase, latestTimestamp, databaseBrief);
+                        
+                        if (replicationData != null) {
+                            log.info("🔄 Found replication data for database {}: {} tuples, {} replication timestamps", 
+                                    databaseBrief.getInternalName(), 
+                                    replicationData.getTuples() != null ? replicationData.getTuples().size() : 0,
+                                    replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
+                            
+                            // Return the replication data to the main method
+                            return replicationData;
                         }
                     } else {
                         log.info("ℹ️ Database {} has no replication timestamps", databaseBrief.getInternalName());
                     }
                     
-                    log.info("=== End Database Processing ===\n");
-                    
-                    // Step 2: Check for tuples inserted after the last timestamp
-                    if (latestTimestamp != null) {
-                        log.info("🔍 Checking for new tuples after timestamp: {}", latestTimestamp);
-                        checkForNewTuplesAfterTimestamp(fullDatabase, latestTimestamp, databaseBrief);
-                    }
+                    log.info("=== END PROCESSING DATABASE: {} ===\n", databaseBrief.getInternalName());
                     
                 } catch (Exception e) {
-                    log.error("❌ Could not check replication timestamps for database {}: {}", 
+                    log.error("❌ Could not process database {}: {}", 
                             databaseBrief.getInternalName(), e.getMessage());
-                    log.debug("Database timestamp check failed for {}", databaseBrief.getInternalName(), e);
-                    log.info("=== End Database Processing (with errors) ===\n");
+                    log.debug("Database processing failed for {}", databaseBrief.getInternalName(), e);
                 }
             }
             
-        } catch (RemoteUnavailableException e) {
-            log.error("Metadata service is not available: {}", e.getMessage());
-        } catch (MetadataServiceException e) {
-            log.error("Error retrieving databases from metadata service: {}", e.getMessage());
+            log.info("=== REPLICATION SERVICE STARTUP TASKS COMPLETED SUCCESSFULLY ===");
+            log.info("ℹ️ No new replication data found in any database");
+            return null;
+            
         } catch (Exception e) {
-            log.warn("Could not retrieve latest replication timestamp: {}", e.getMessage());
-            log.debug("Timestamp retrieval failed", e);
+            log.error("❌ Error during startup tasks: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to complete startup tasks", e);
         }
     }
+
+
+
+
+
+
 
     /**
      * Checks for new tuples inserted after a given timestamp by calling the data service
      * at the creation location of the database.
+     * Returns ReplicationSynchronisationDataDto if new data is found, null otherwise.
      */
-    private void checkForNewTuplesAfterTimestamp(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief) {
+    private ReplicationSynchronisationDataDto checkForNewTuplesAfterTimestamp(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief) {
         log.info("=== CHECKING FOR NEW TUPLES AFTER TIMESTAMP ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Timestamp: {}", timestamp);
@@ -531,13 +521,13 @@ public class ReplicationServiceImpl implements ReplicationService {
             // Check if creation location is available
             if (database.getCreationLocation() == null || database.getCreationLocation().trim().isEmpty()) {
                 log.warn("⚠️ No creation location available for database: {}", database.getInternalName());
-                return;
+                return null;
             }
             
             // Check if replica URLs are available
             if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
                 log.info("ℹ️ No replica URLs configured for database: {}", database.getInternalName());
-                return;
+                return null;
             }
             
             log.info("📊 Found {} replica URLs to check", database.getReplicaUrls().size());
@@ -560,22 +550,37 @@ public class ReplicationServiceImpl implements ReplicationService {
             
             if (matchingReplicaUrl != null) {
                 log.info("🔍 Calling data service at creation location: {}", matchingReplicaUrl);
-                callDataServiceForNewTuples(database, timestamp, databaseBrief, matchingReplicaUrl, matchingReplicaDatabaseId);
+                ReplicationSynchronisationDataDto replicationData = callDataServiceForNewTuples(database, timestamp, databaseBrief, matchingReplicaUrl, matchingReplicaDatabaseId);
+                
+                if (replicationData != null) {
+                    log.info("✅ Successfully received replication synchronisation data from remote service");
+                    log.info("📊 Summary: {} tuples, {} replication timestamps", 
+                        replicationData.getTuples() != null ? replicationData.getTuples().size() : 0,
+                        replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
+                    
+                    log.info("=== END CHECKING FOR NEW TUPLES ===");
+                    return replicationData;
+                } else {
+                    log.warn("⚠️ No replication data received from remote service");
+                }
             } else {
                 log.info("ℹ️ No replica URL matches creation location: {}", database.getCreationLocation());
             }
             
             log.info("=== END CHECKING FOR NEW TUPLES ===");
+            return null;
             
         } catch (Exception e) {
             log.error("❌ Error in checkForNewTuplesAfterTimestamp: {}", e.getMessage(), e);
+            return null;
         }
     }
 
     /**
      * Makes an external call to the data service to check for new tuples after a timestamp.
+     * Returns the ReplicationSynchronisationDataDto from the remote service.
      */
-    private void callDataServiceForNewTuples(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief, String replicaUrl, UUID replicaDatabaseId) {
+    private ReplicationSynchronisationDataDto callDataServiceForNewTuples(DatabaseDto database, java.time.Instant timestamp, DatabaseBriefDto databaseBrief, String replicaUrl, UUID replicaDatabaseId) {
         log.info("=== CALLING DATA SERVICE FOR NEW TUPLES ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Database ID: {}", database.getId());
@@ -612,38 +617,67 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.info("📡 Sending POST request to: {}", fullUrl);
             
             try {
-                ResponseEntity<Map> response = externalReplicationRestTemplate.postForEntity(
+                ResponseEntity<ReplicationSynchronisationDataDto> response = externalReplicationRestTemplate.postForEntity(
                     fullUrl, 
                     requestPayload, 
-                    Map.class
+                    ReplicationSynchronisationDataDto.class
                 );
                 
                 log.info("✅ HTTP call successful! Status: {}", response.getStatusCode());
-                log.info("Response body: {}", response.getBody());
                 
                 // Process the response
                 if (response.getBody() != null) {
-                    Map<String, Object> responseBody = response.getBody();
-                    log.info("=== RESPONSE ANALYSIS ===");
-                    log.info("Status: {}", responseBody.get("status"));
-                    log.info("Message: {}", responseBody.get("message"));
-                    log.info("Database Name: {}", responseBody.get("databaseName"));
-                    log.info("Database Internal Name: {}", responseBody.get("databaseInternalName"));
-                    log.info("Creation Location: {}", responseBody.get("creationLocation"));
-                    log.info("Container Host: {}", responseBody.get("containerHost"));
-                    log.info("Container Port: {}", responseBody.get("containerPort"));
-                    log.info("Note: {}", responseBody.get("note"));
-                    log.info("=== END RESPONSE ANALYSIS ===");
+                    ReplicationSynchronisationDataDto replicationData = response.getBody();
+                    log.info("=== REPLICATION SYNCHRONISATION DATA RECEIVED ===");
+                    log.info("Tuples count: {}", replicationData.getTuples() != null ? replicationData.getTuples().size() : 0);
+                    log.info("Replication timestamps count: {}", replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
+                    
+                    // Log detailed tuple information
+                    if (replicationData.getTuples() != null && !replicationData.getTuples().isEmpty()) {
+                        log.info("=== TUPLES DETAILS ===");
+                        for (int i = 0; i < replicationData.getTuples().size(); i++) {
+                            var tuple = replicationData.getTuples().get(i);
+                            log.info("Tuple {}: replicationKey={}, insertedAt={}, deletedAt={}, dataSize={}", 
+                                i + 1, 
+                                tuple.getReplicationKey(),
+                                tuple.getInsertedAt(),
+                                tuple.getDeletedAt(),
+                                tuple.getData() != null ? tuple.getData().size() : 0);
+                        }
+                    }
+                    
+                    // Log detailed replication timestamp information
+                    if (replicationData.getReplicationTimestamps() != null && !replicationData.getReplicationTimestamps().isEmpty()) {
+                        log.info("=== REPLICATION TIMESTAMPS DETAILS ===");
+                        for (int i = 0; i < replicationData.getReplicationTimestamps().size(); i++) {
+                            var tmpTimestamp = replicationData.getReplicationTimestamps().get(i);
+                            log.info("Timestamp {}: siteUrl={}, replicationId={}, databaseId={}, tableId={}, rowStart={}, rowEnd={}", 
+                                i + 1,
+                                    tmpTimestamp.getSiteUrl(),
+                                    tmpTimestamp.getReplicationId(),
+                                    tmpTimestamp.getDatabaseId(),
+                                    tmpTimestamp.getTableId(),
+                                    tmpTimestamp.getRowStart(),
+                                    tmpTimestamp.getRowEnd());
+                        }
+                    }
+                    
+                    log.info("=== END REPLICATION DATA ANALYSIS ===");
+                    
+                    return replicationData;
+                } else {
+                    log.warn("⚠️ Response body is null");
+                    return null;
                 }
                 
             } catch (Exception httpException) {
                 log.error("❌ HTTP call failed: {}", httpException.getMessage(), httpException);
+                return null;
             }
-            
-            log.info("=== END CALLING DATA SERVICE ===");
             
         } catch (Exception e) {
             log.error("❌ Error calling data service: {}", e.getMessage(), e);
+            return null;
         }
     }
 } 
