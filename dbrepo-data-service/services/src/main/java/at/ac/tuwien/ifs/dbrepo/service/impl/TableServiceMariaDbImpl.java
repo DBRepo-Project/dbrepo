@@ -1,19 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -31,10 +25,7 @@ import org.apache.spark.sql.SaveMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -579,11 +570,11 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     /**
-     * Formats timestamps in TuplesWithTimestampsDto with microsecond precision
+     * Formats timestamps in a list of TupleWithTimestampsDto with microsecond precision
      */
-    private void formatTimestampsWithMicrosecondPrecision(TuplesWithTimestampsDto tuplesWithTimestamps) {
-        if (tuplesWithTimestamps.getTuples() != null) {
-            for (TuplesWithTimestampsDto.TupleWithTimestampsDto tuple : tuplesWithTimestamps.getTuples()) {
+    private void formatTimestampsWithMicrosecondPrecision(List<TupleWithTimestampsDto> tuplesWithTimestamps) {
+        if (tuplesWithTimestamps != null) {
+            for (TupleWithTimestampsDto tuple : tuplesWithTimestamps) {
                 // Format inserted_at timestamp
                 if (tuple.getInsertedAt() != null) {
                     // Convert Instant to LocalDateTime for formatting, then back to Instant
@@ -795,14 +786,15 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public java.util.List<TuplesWithTimestampsDto.TupleWithTimestampsDto> loadNewTuplesAfterTimestamp(DatabaseDto database, 
-                                                               java.time.Instant timestamp) throws SQLException,
+    public ReplicationSynchronisationDataDto loadNewTuplesAfterTimestamp(DatabaseDto database,
+                                                                         Instant timestamp) throws SQLException,
                                                                QueryMalformedException {
         log.info("=== LOADING NEW TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Timestamp: {}", timestamp);
 
-        List<TuplesWithTimestampsDto.TupleWithTimestampsDto> allNewTuples = new java.util.ArrayList<>();
+        List<TupleWithTimestampsDto> allNewTuples = new java.util.ArrayList<>();
+        List<TupleReplicationTimestampDto> allReplicationTimestamps = new java.util.ArrayList<>();
         
         if (database.getTables() != null && !database.getTables().isEmpty()) {
             log.info("Loading new tuples from {} tables...", database.getTables().size());
@@ -810,16 +802,69 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             for (TableDto table : database.getTables()) {
                 try {
                         // Load the actual tuples from the table
-                        TuplesWithTimestampsDto tableTuplesWithTimestamps = loadNewTuplesFromTable(database, table, timestamp);
+                        List<TupleWithTimestampsDto> tableTuples = loadNewTuplesFromTable(database, table, timestamp);
                         // Add all tuples with timestamps to the main list
-                        allNewTuples.addAll(tableTuplesWithTimestamps.getTuples());
+                        allNewTuples.addAll(tableTuples);
                         
-                        log.info("✅ Loaded {} tuples from table {}", tableTuplesWithTimestamps.getTuples().size(), table.getInternalName());
+                        // Create replication timestamps for tuples from this table
+                        for (TupleWithTimestampsDto tuple : tableTuples) {
+                            if (tuple.getReplicationKey() != null) {
+                                TupleReplicationTimestampDto replicationTimestamp = TupleReplicationTimestampDto.builder()
+                                    .siteUrl(table.getCreationLocation())
+                                    .replicationId(tuple.getReplicationKey())
+                                    .databaseId(database.getId())
+                                    .tableId(table.getId()) // Now we have the table ID!
+                                    .rowStart(Timestamp.from(tuple.getInsertedAt()))
+                                    .rowEnd(Timestamp.from(tuple.getDeletedAt()))
+                                    .build();
+                                allReplicationTimestamps.add(replicationTimestamp);
+                            }
+                        }
+                        
+                        log.info("✅ Loaded {} tuples from table {} and created {} local replication timestamps", 
+                            tableTuples.size(), 
+                            table.getInternalName(),
+                            tableTuples.stream()
+                                .filter(t -> t.getReplicationKey() != null)
+                                .count());
 
                     
                 } catch (Exception e) {
                     log.error("❌ Error loading tuples from table {}: {}", table.getInternalName(), e.getMessage());
                     // Continue with other tables
+                }
+            }
+            
+            // Now load existing replication timestamps from the database for other sites
+            log.info("Loading existing replication timestamps from database for {} replication keys...", allReplicationTimestamps.size());
+            
+            // Now load existing replication timestamps from the database for other sites
+            log.info("Loading existing replication timestamps from database for {} replication keys...", allReplicationTimestamps.size());
+            for (TupleReplicationTimestampDto localTimestamp : allReplicationTimestamps) {
+                try {
+                    List<TupleReplicationTimestamp> existingTimestamps = replicationTimestampService
+                        .findByReplicationId(database, localTimestamp.getReplicationId());
+                    
+                    // Convert existing entity timestamps to DTOs and add them
+                    for (TupleReplicationTimestamp existing : existingTimestamps) {
+                        TupleReplicationTimestampDto remoteTimestamp = TupleReplicationTimestampDto.builder()
+                            .siteUrl(existing.getSiteUrl())
+                            .replicationId(existing.getReplicationId())
+                            .databaseId(existing.getDatabaseId())
+                            .tableId(existing.getTableId())
+                            .rowStart(existing.getRowStart() != null ? existing.getRowStart() : null)
+                            .rowEnd(existing.getRowEnd() != null ? existing.getRowEnd() : null)
+                            .build();
+                        allReplicationTimestamps.add(remoteTimestamp);
+                    }
+                    
+                    log.info("Found {} existing replication timestamps for replication key: {}",
+                        existingTimestamps.size(), localTimestamp.getReplicationId());
+                        
+                } catch (Exception e) {
+                    log.warn("Failed to load existing replication timestamps for replication key {}: {}", 
+                        localTimestamp.getReplicationId(), e.getMessage());
+                    // Continue with other replication keys
                 }
             }
         } else {
@@ -828,19 +873,23 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
         log.info("=== END LOADING NEW TUPLES AFTER TIMESTAMP (DATABASE LEVEL) ===");
         log.info("Total new tuples loaded: {}", allNewTuples.size());
+        log.info("Total replication timestamps (local + remote): {}", allReplicationTimestamps.size());
         
-        return allNewTuples;
+        return ReplicationSynchronisationDataDto.builder()
+            .tuples(allNewTuples)
+            .replicationTimestamps(allReplicationTimestamps)
+            .build();
     }
 
     /**
      * Loads new tuples from a specific table after the given timestamp
      */
-    private TuplesWithTimestampsDto loadNewTuplesFromTable(DatabaseDto database, TableDto table, java.time.Instant timestamp) 
+    private List<TupleWithTimestampsDto> loadNewTuplesFromTable(DatabaseDto database, TableDto table, java.time.Instant timestamp)
             throws SQLException, QueryMalformedException {
         
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
-        java.util.List<TuplesWithTimestampsDto.TupleWithTimestampsDto> tuples = new java.util.ArrayList<>();
+        java.util.List<TupleWithTimestampsDto> tuples = new java.util.ArrayList<>();
         
         try {
             // Build query to select new tuples after timestamp with timestamps
@@ -888,7 +937,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 Object replicationKey = rs.getObject("replication_key");
                 
                 // Create TupleWithTimestampsDto and add to list
-                TuplesWithTimestampsDto.TupleWithTimestampsDto tuple = TuplesWithTimestampsDto.TupleWithTimestampsDto.builder()
+                TupleWithTimestampsDto tuple = TupleWithTimestampsDto.builder()
                     .data(tupleData)
                     .insertedAt(rowStart instanceof java.sql.Timestamp ? ((java.sql.Timestamp) rowStart).toInstant() : null)
                     .deletedAt(rowEnd instanceof java.sql.Timestamp ? ((java.sql.Timestamp) rowEnd).toInstant() : null)
@@ -908,14 +957,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             dataSource.close();
         }
         
-        TuplesWithTimestampsDto result = TuplesWithTimestampsDto.builder()
-            .tuples(tuples)
-            .build();
-        
-        // Note: Timestamp formatting removed to avoid parsing errors
-        // The timestamps are already in the correct Instant format from SQL Timestamps
-        
-        return result;
+        return tuples;
     }
 
 }

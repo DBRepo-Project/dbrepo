@@ -172,13 +172,13 @@ public interface TableService {
     /**
      * Loads all tuples inserted after a given timestamp across all tables in a database.
      *
-     * @param database The database to load from.
+     * @param database  The database to load from.
      * @param timestamp The timestamp to check against.
-     * @return A list of TupleWithTimestampsDto objects containing the new tuples with their timestamps.
-     * @throws SQLException Failed to establish connection to database.
+     * @return A TuplesAndReplicationTimestampsResponse object containing both new tuples with timestamps and replication timestamps.
+     * @throws SQLException            Failed to establish connection to database.
      * @throws QueryMalformedException The query is malformed.
      */
-    java.util.List<TuplesWithTimestampsDto.TupleWithTimestampsDto> loadNewTuplesAfterTimestamp(DatabaseDto database, 
-                                                        java.time.Instant timestamp) throws SQLException,
+    ReplicationSynchronisationDataDto loadNewTuplesAfterTimestamp(DatabaseDto database,
+                                                                  Instant timestamp) throws SQLException,
                                                         QueryMalformedException;
 }

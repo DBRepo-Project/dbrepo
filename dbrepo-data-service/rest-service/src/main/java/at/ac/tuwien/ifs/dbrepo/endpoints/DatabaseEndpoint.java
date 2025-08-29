@@ -5,10 +5,14 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TuplesWithTimestampsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
+
+
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
@@ -217,14 +221,28 @@ public class DatabaseEndpoint extends RestEndpoint {
             boolean hasNewTuples = tableService.checkTuplesAfterTimestamp(database, timestamp, replicaDatabaseId);
 
             if (hasNewTuples) {
-                List<TuplesWithTimestampsDto.TupleWithTimestampsDto> tuplesWithTimestamps = tableService.loadNewTuplesAfterTimestamp(database, timestamp);
-                log.info("Found {} new tuples after timestamp {}", tuplesWithTimestamps.size(), timestamp);
-                for (TuplesWithTimestampsDto.TupleWithTimestampsDto tuple : tuplesWithTimestamps) {
+                ReplicationSynchronisationDataDto result = tableService.loadNewTuplesAfterTimestamp(database, timestamp);
+                log.info("Found {} new tuples and {} replication timestamps after timestamp {}", 
+                    result.getTuples().size(), result.getReplicationTimestamps().size(), timestamp);
+                
+                // Log tuple information
+                for (TupleWithTimestampsDto tuple : result.getTuples()) {
                     log.info("New tuple data: {} | inserted_at: {} | deleted_at: {} | replication_key: {}", 
                         tuple.getData(), 
                         tuple.getInsertedAt(), 
                         tuple.getDeletedAt(), 
                         tuple.getReplicationKey());
+                }
+                
+                // Log replication timestamp information
+                for (TupleReplicationTimestampDto replicationTimestamp : result.getReplicationTimestamps()) {
+                    log.info("Replication timestamp: site={} | replicationId={} | databaseId={} | tableId={} | rowStart={} | rowEnd={}", 
+                        replicationTimestamp.getSiteUrl(),
+                        replicationTimestamp.getReplicationId(),
+                        replicationTimestamp.getDatabaseId(),
+                        replicationTimestamp.getTableId(),
+                        replicationTimestamp.getRowStart(),
+                        replicationTimestamp.getRowEnd());
                 }
             }
             
