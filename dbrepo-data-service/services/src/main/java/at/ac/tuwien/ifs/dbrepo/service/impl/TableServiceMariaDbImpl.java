@@ -838,14 +838,18 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             // Now load existing replication timestamps from the database for other sites
             log.info("Loading existing replication timestamps from database for {} replication keys...", allReplicationTimestamps.size());
             
-            // Now load existing replication timestamps from the database for other sites
+                        // Now load existing replication timestamps from the database for other sites
             log.info("Loading existing replication timestamps from database for {} replication keys...", allReplicationTimestamps.size());
+            
+            // Collect new timestamps in a separate list to avoid concurrent modification
+            List<TupleReplicationTimestampDto> newRemoteTimestamps = new java.util.ArrayList<>();
+            
             for (TupleReplicationTimestampDto localTimestamp : allReplicationTimestamps) {
                 try {
                     List<TupleReplicationTimestamp> existingTimestamps = replicationTimestampService
                         .findByReplicationId(database, localTimestamp.getReplicationId());
                     
-                    // Convert existing entity timestamps to DTOs and add them
+                    // Convert existing entity timestamps to DTOs and collect them
                     for (TupleReplicationTimestamp existing : existingTimestamps) {
                         TupleReplicationTimestampDto remoteTimestamp = TupleReplicationTimestampDto.builder()
                             .siteUrl(existing.getSiteUrl())
@@ -855,10 +859,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                             .rowStart(existing.getRowStart() != null ? existing.getRowStart() : null)
                             .rowEnd(existing.getRowEnd() != null ? existing.getRowEnd() : null)
                             .build();
-                        allReplicationTimestamps.add(remoteTimestamp);
+                        newRemoteTimestamps.add(remoteTimestamp);
                     }
                     
-                    log.info("Found {} existing replication timestamps for replication key: {}",
+                    log.info("Found {} existing replication timestamps for replication key: {}", 
                         existingTimestamps.size(), localTimestamp.getReplicationId());
                         
                 } catch (Exception e) {
@@ -867,6 +871,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     // Continue with other replication keys
                 }
             }
+            
+            // Add all new remote timestamps at once
+            allReplicationTimestamps.addAll(newRemoteTimestamps);
+            log.info("Added {} new remote replication timestamps", newRemoteTimestamps.size());
         } else {
             log.info("No tables found in database");
         }
