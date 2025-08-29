@@ -186,7 +186,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                     description = "Check completed successfully",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = java.util.Map.class))}),
+                            schema = @Schema(implementation = ReplicationSynchronisationDataDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid request parameters",
                     content = {@Content}),
@@ -197,7 +197,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                     description = "Failed to establish connection to database",
                     content = {@Content}),
     })
-    public ResponseEntity<java.util.Map<String, Object>> checkTuplesAfterTimestamp(@NotNull @PathVariable("databaseId") UUID databaseId,
+    public ResponseEntity<ReplicationSynchronisationDataDto> checkTuplesAfterTimestamp(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                                   @RequestBody java.util.Map<String, Object> request) {
 
         try {
@@ -244,9 +244,16 @@ public class DatabaseEndpoint extends RestEndpoint {
                         replicationTimestamp.getRowStart(),
                         replicationTimestamp.getRowEnd());
                 }
+                
+                // Return the replication synchronisation data to the requesting instance
+                return ResponseEntity.ok(result);
+            } else {
+                // No new tuples found, return empty response
+                return ResponseEntity.ok(ReplicationSynchronisationDataDto.builder()
+                    .tuples(new java.util.ArrayList<>())
+                    .replicationTimestamps(new java.util.ArrayList<>())
+                    .build());
             }
-            
-            return ResponseEntity.ok(null);
             
         } catch (Exception e) {
             log.error("❌ Error checking tuples after timestamp: {}", e.getMessage(), e);
@@ -256,7 +263,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                 "message", "Failed to check tuples after timestamp: " + e.getMessage()
             );
             
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body((ReplicationSynchronisationDataDto) response);
         }
     }
 
