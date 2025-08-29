@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisatio
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
@@ -34,25 +35,30 @@ import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
+
 
 @Slf4j
 @Service
 public class ReplicationServiceImpl implements ReplicationService {
 
     private final RestTemplate externalReplicationRestTemplate;
+    private final RestTemplate localDataServiceRestTemplate;
     private final GatewayConfig gatewayConfig;
     private final ReplicationTimestampService replicationTimestampService;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public ReplicationServiceImpl(@Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
+                                @Qualifier("dataRestTemplate") RestTemplate localDataServiceRestTemplate,
                                 GatewayConfig gatewayConfig,
                                 ReplicationTimestampService replicationTimestampService,
                                 MetadataServiceGateway metadataServiceGateway) {
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
+        this.localDataServiceRestTemplate = localDataServiceRestTemplate;
         this.gatewayConfig = gatewayConfig;
         this.replicationTimestampService = replicationTimestampService;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -474,6 +480,10 @@ public class ReplicationServiceImpl implements ReplicationService {
                                     replicationData.getTuples() != null ? replicationData.getTuples().size() : 0,
                                     replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
                             
+                            // Add replication timestamps to local data service
+                            log.info("📥 Adding replication timestamps to local data service...");
+                            addReplicationTimestampsToLocalDataService(replicationData, fullDatabase);
+                            
                             // Return the replication data to the main method
                             return replicationData;
                         }
@@ -680,4 +690,115 @@ public class ReplicationServiceImpl implements ReplicationService {
             return null;
         }
     }
+
+    /**
+     * Adds replication timestamps to the local data service.
+     * This method processes the ReplicationSynchronisationDataDto and inserts
+     * replication timestamps into the appropriate local database tables.
+     */
+    private void addReplicationTimestampsToLocalDataService(ReplicationSynchronisationDataDto replicationData, DatabaseDto database) {
+        if (replicationData == null) {
+            log.warn("⚠️ No replication data to process");
+            return;
+        }
+
+        log.info("=== ADDING REPLICATION TIMESTAMPS TO LOCAL DATA SERVICE ===");
+        log.info("Database: {} ({})", database.getName(), database.getInternalName());
+        log.info("Database ID: {}", database.getId());
+
+        try {
+            // Process replication timestamps
+            if (replicationData.getReplicationTimestamps() != null && !replicationData.getReplicationTimestamps().isEmpty()) {
+                log.info("📥 Processing {} replication timestamps...", replicationData.getReplicationTimestamps().size());
+                addReplicationTimestampsToLocalDataService(replicationData.getReplicationTimestamps(), database);
+            } else {
+                log.info("ℹ️ No replication timestamps to process");
+            }
+
+            log.info("✅ Successfully processed all replication timestamps for database: {}", database.getInternalName());
+
+        } catch (Exception e) {
+            log.error("❌ Error adding replication timestamps to local data service: {}", e.getMessage(), e);
+        }
+    }
+
+
+
+    /**
+     * Adds replication timestamps to the local data service.
+     */
+    private void addReplicationTimestampsToLocalDataService(List<TupleReplicationTimestampDto> timestamps, DatabaseDto database) {
+        log.info("=== ADDING REPLICATION TIMESTAMPS TO LOCAL DATA SERVICE ===");
+        
+        // Group timestamps by table ID
+        Map<UUID, List<TupleReplicationTimestampDto>> timestampsByTable = new HashMap<>();
+        
+        for (TupleReplicationTimestampDto timestamp : timestamps) {
+            UUID tableId = timestamp.getTableId();
+            timestampsByTable.computeIfAbsent(tableId, k -> new ArrayList<>()).add(timestamp);
+        }
+
+        // Process each table's timestamps
+        for (Map.Entry<UUID, List<TupleReplicationTimestampDto>> entry : timestampsByTable.entrySet()) {
+            UUID tableId = entry.getKey();
+            List<TupleReplicationTimestampDto> tableTimestamps = entry.getValue();
+            
+            log.info("📋 Processing {} timestamps for table ID: {}", tableTimestamps.size(), tableId);
+            
+            try {
+                addTableTimestampsToLocalDataService(tableTimestamps, database.getId(), tableId);
+            } catch (Exception e) {
+                log.error("❌ Failed to add timestamps for table ID {}: {}", tableId, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Adds timestamps for a specific table to the local data service.
+     */
+    private void addTableTimestampsToLocalDataService(List<TupleReplicationTimestampDto> timestamps, UUID databaseId, UUID tableId) {
+        try {
+            // Convert TupleReplicationTimestampDto to the format expected by the endpoint
+            List<Map<String, Object>> timestampsList = new ArrayList<>();
+            
+            for (TupleReplicationTimestampDto timestamp : timestamps) {
+                Map<String, Object> timestampMap = Map.of(
+                    "siteUrl", timestamp.getSiteUrl(),
+                    "replicationId", timestamp.getReplicationId(),
+                    "databaseId", timestamp.getDatabaseId().toString(),
+                    "tableId", timestamp.getTableId().toString(),
+                    "rowStart", timestamp.getRowStart() != null ? timestamp.getRowStart().toString() : null,
+                    "rowEnd", timestamp.getRowEnd() != null ? timestamp.getRowEnd().toString() : null
+                );
+                timestampsList.add(timestampMap);
+            }
+
+            // Build the request payload
+            Map<String, Object> requestPayload = Map.of("timestamps", timestampsList);
+
+            // Build the full URL for the timestamps endpoint
+            String path = String.format("/api/v1/database/%s/table/%s/timestamps", databaseId, tableId);
+
+            log.info("🌐 Adding timestamps to local data service: {}", path);
+            log.info("📤 Timestamps count: {}", timestamps.size());
+
+            // Make the HTTP call to local data service
+            ResponseEntity<Map> response = localDataServiceRestTemplate.postForEntity(
+                path,
+                requestPayload, 
+                Map.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("✅ Successfully added {} timestamps for table ID: {}", timestamps.size(), tableId);
+            } else {
+                log.warn("⚠️ Failed to add timestamps for table ID {}: Status {}", 
+                        tableId, response.getStatusCode());
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error adding timestamps for table ID {}: {}", tableId, e.getMessage(), e);
+        }
+    }
+
 } 
