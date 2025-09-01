@@ -484,6 +484,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                                     replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
                             
                             // Add replication timestamps to local data service
+                            log.info("Timestmap format returned from remote data service:");
+                            log.info(String.valueOf(replicationData.getReplicationTimestamps().get(0).getRowStart()));
                             log.info("📥 Adding replication timestamps to local data service...");
                             addReplicationTimestampsToLocalDataService(replicationData, fullDatabase);
                             
@@ -512,11 +514,6 @@ public class ReplicationServiceImpl implements ReplicationService {
             throw new RuntimeException("Failed to complete startup tasks", e);
         }
     }
-
-
-
-
-
 
 
     /**
