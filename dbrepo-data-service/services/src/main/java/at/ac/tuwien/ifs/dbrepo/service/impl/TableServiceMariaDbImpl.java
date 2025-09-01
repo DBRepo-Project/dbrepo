@@ -808,14 +808,15 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         
                         // Create replication timestamps for tuples from this table
                         for (TupleWithTimestampsDto tuple : tableTuples) {
+                            log.info("Timestamp from tuple: {}", tuple.getInsertedAt());
                             if (tuple.getReplicationKey() != null) {
                                 TupleReplicationTimestampDto replicationTimestamp = TupleReplicationTimestampDto.builder()
                                     .siteUrl(table.getCreationLocation())
                                     .replicationId(tuple.getReplicationKey())
                                     .databaseId(database.getId())
                                     .tableId(table.getId()) // Now we have the table ID!
-                                    .rowStart(Timestamp.from(tuple.getInsertedAt()))
-                                    .rowEnd(Timestamp.from(tuple.getDeletedAt()))
+                                    .rowStart(createTimestampWithMicrosecondPrecision(tuple.getInsertedAt()))
+                                    .rowEnd(createTimestampWithMicrosecondPrecision(tuple.getDeletedAt()))
                                     .build();
                                 allReplicationTimestamps.add(replicationTimestamp);
                             }
@@ -968,4 +969,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         return tuples;
     }
 
+    /**
+     * Creates a Timestamp object with microsecond precision (6 digits)
+     */
+    private java.sql.Timestamp createTimestampWithMicrosecondPrecision(java.time.Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        java.time.LocalDateTime ldt = instant.atZone(java.time.ZoneOffset.UTC).toLocalDateTime();
+        return java.sql.Timestamp.valueOf(ldt);
+    }
 }

@@ -784,8 +784,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                     "replicationId", timestamp.getReplicationId(),
                     "databaseId", timestamp.getDatabaseId().toString(),
                     "tableId", timestamp.getTableId().toString(),
-                    "rowStart", timestamp.getRowStart() != null ? formatTimestampMicros(timestamp.getRowStart()) : null,
-                    "rowEnd", timestamp.getRowEnd() != null ? formatTimestampMicros(timestamp.getRowEnd()) : null
+                    "rowStart", timestamp.getRowStart() != null ? timestamp.getRowStart().toString() : null,
+                    "rowEnd", timestamp.getRowEnd() != null ? timestamp.getRowEnd().toString() : null
                 );
                 timestampsList.add(timestampMap);
             }
@@ -818,12 +818,5 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
 
-    /**
-     * Format java.sql.Timestamp to microsecond precision string: yyyy-MM-dd HH:mm:ss.SSSSSS
-     */
-    private String formatTimestampMicros(java.sql.Timestamp ts) {
-        LocalDateTime ldt = ts.toLocalDateTime();
-        return ldt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-    }
 
 } 
