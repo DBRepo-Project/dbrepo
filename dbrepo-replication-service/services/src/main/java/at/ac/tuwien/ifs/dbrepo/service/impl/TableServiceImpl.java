@@ -258,12 +258,10 @@ public class TableServiceImpl implements TableService {
     private Timestamp parseTimestamp(String timestampStr) {
         if (timestampStr == null) return null;
 
-        log.info(timestampStr);
 
         String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
         LocalDateTime ldt = LocalDateTime.parse(withoutTz,
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-        log.info(String.valueOf(Timestamp.valueOf(ldt)));
         return Timestamp.valueOf(ldt);
     }
 }
