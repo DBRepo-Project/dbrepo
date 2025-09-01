@@ -29,10 +29,8 @@ public class TupleReplicationTimestampDto {
     private UUID tableId;
 
     @Schema(description = "Timestamp when the row/tuple replication started")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "UTC")
-    private Timestamp rowStart;
+    private Instant rowStart;
 
     @Schema(description = "Timestamp when the row/tuple replication ended (null if still active)")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "UTC")
-    private Timestamp rowEnd;
+    private Instant rowEnd;
 }

@@ -815,8 +815,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                                     .replicationId(tuple.getReplicationKey())
                                     .databaseId(database.getId())
                                     .tableId(table.getId()) // Now we have the table ID!
-                                    .rowStart(createTimestampWithMicrosecondPrecision(tuple.getInsertedAt()))
-                                    .rowEnd(createTimestampWithMicrosecondPrecision(tuple.getDeletedAt()))
+                                    .rowStart(tuple.getInsertedAt())
+                                    .rowEnd(tuple.getDeletedAt())
                                     .build();
                                 allReplicationTimestamps.add(replicationTimestamp);
                             }
@@ -852,13 +852,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     
                     // Convert existing entity timestamps to DTOs and collect them
                     for (TupleReplicationTimestamp existing : existingTimestamps) {
+                        log.info("Tuple Replication Timestamp when retrieved: {}", existing.getRowStart());
                         TupleReplicationTimestampDto remoteTimestamp = TupleReplicationTimestampDto.builder()
                             .siteUrl(existing.getSiteUrl())
                             .replicationId(existing.getReplicationId())
                             .databaseId(existing.getDatabaseId())
                             .tableId(existing.getTableId())
-                            .rowStart(existing.getRowStart() != null ? existing.getRowStart() : null)
-                            .rowEnd(existing.getRowEnd() != null ? existing.getRowEnd() : null)
+                            .rowStart(existing.getRowStart() != null ? existing.getRowStart().toInstant() : null)
+                            .rowEnd(existing.getRowEnd() != null ? existing.getRowEnd().toInstant() : null)
                             .build();
                         newRemoteTimestamps.add(remoteTimestamp);
                     }
@@ -969,14 +970,4 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         return tuples;
     }
 
-    /**
-     * Creates a Timestamp object with microsecond precision (6 digits)
-     */
-    private java.sql.Timestamp createTimestampWithMicrosecondPrecision(java.time.Instant instant) {
-        if (instant == null) {
-            return null;
-        }
-        java.time.LocalDateTime ldt = instant.atZone(java.time.ZoneOffset.UTC).toLocalDateTime();
-        return java.sql.Timestamp.valueOf(ldt);
-    }
 }
