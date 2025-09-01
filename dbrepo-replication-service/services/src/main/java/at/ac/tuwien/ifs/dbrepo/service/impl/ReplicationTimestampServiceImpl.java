@@ -69,9 +69,7 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             row_start = VALUES(row_start),
             row_end = VALUES(row_end)
             """;
-        System.out.println(sql);
         final ComboPooledDataSource dataSource = getDataSource(database);
-        System.out.println(dataSource.toString());
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -86,6 +84,7 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
                 statement.setTimestamp(6, timestamp.getRowEnd());
                 statement.addBatch();
             }
+            log.info(statement.toString());
 
             statement.executeBatch();
             connection.commit();
