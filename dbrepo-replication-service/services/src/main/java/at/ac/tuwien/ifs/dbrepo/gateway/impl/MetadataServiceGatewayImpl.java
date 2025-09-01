@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
@@ -402,5 +403,34 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         log.info("Retrieved {} databases from metadata service", response.getBody().length);
         return List.of(response.getBody());
+    }
+
+    @Override
+    public LocalTableIdDto getLocalTableIdByReplicaTableId(UUID databaseId, UUID replicaTableId)
+            throws RemoteUnavailableException, MetadataServiceException, TableNotFoundException {
+        final ResponseEntity<LocalTableIdDto> response;
+        final String url = "/api/v1/database/" + databaseId + "/table/replica/" + replicaTableId + "/local-id";
+        log.debug("resolve local table id from metadata service: {}", url);
+        internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
+        try {
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, LocalTableIdDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to resolve local table id for replica {}: {}", replicaTableId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to resolve local table id: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Replica table id not found {}: {}", replicaTableId, e.getMessage());
+            throw new TableNotFoundException("Replica table id not found: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to resolve local table id for replica {}: service responded unsuccessful: {}",
+                    replicaTableId, response.getStatusCode());
+            throw new MetadataServiceException("Failed to resolve local table id: service responded unsuccessful: "
+                    + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to resolve local table id for replica {}: body is empty", replicaTableId);
+            throw new MetadataServiceException("Failed to resolve local table id: body is empty");
+        }
+        return response.getBody();
     }
 }

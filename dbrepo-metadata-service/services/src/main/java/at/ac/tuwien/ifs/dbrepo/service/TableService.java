@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 
 import java.security.Principal;
 import java.util.UUID;
@@ -176,4 +177,13 @@ public interface TableService {
      */
     Table updateReplicationUrl(UUID tableId, TableUpdateReplicationUrlDto data) throws TableNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DatabaseNotFoundException;
+
+    /**
+     * Find the local table ID by replica table ID from the mdb_tables_replica_urls table.
+     *
+     * @param replicaTableId The replica table ID to search for
+     * @return The local table ID DTO containing both IDs, if found
+     * @throws TableNotFoundException The table with this replica table ID was not found
+     */
+    LocalTableIdDto findLocalTableIdByReplicaTableId(UUID replicaTableId) throws TableNotFoundException;
 }

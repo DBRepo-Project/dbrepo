@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
@@ -702,6 +703,12 @@ public class ReplicationServiceImpl implements ReplicationService {
             return;
         }
 
+        /*todo: fix table id (is currently from remote sites, therefore not found exception)
+        either fuck it (not necessary for timestamps) or get it somehow (we will need a method for the tuples anyways and
+        if we make tuple replication tables per table, we would also need it
+
+         */
+
         log.info("=== ADDING REPLICATION TIMESTAMPS TO LOCAL DATA SERVICE ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Database ID: {}", database.getId());
@@ -758,6 +765,17 @@ public class ReplicationServiceImpl implements ReplicationService {
      */
     private void addTableTimestampsToLocalDataService(List<TupleReplicationTimestampDto> timestamps, UUID databaseId, UUID tableId) {
         try {
+            // Resolve local table ID in case provided ID is from a remote site
+            UUID resolvedLocalTableId = tableId;
+            try {
+                LocalTableIdDto localIdDto = metadataServiceGateway.getLocalTableIdByReplicaTableId(databaseId, tableId);
+                if (localIdDto != null && localIdDto.getLocalTableId() != null) {
+                    resolvedLocalTableId = localIdDto.getLocalTableId();
+                    log.info("🔁 Resolved remote tableId {} to local tableId {}", tableId, resolvedLocalTableId);
+                }
+            } catch (Exception resolveEx) {
+                log.warn("⚠️ Could not resolve local table ID for {}: {}. Proceeding with provided ID.", tableId, resolveEx.getMessage());
+            }
             // Convert TupleReplicationTimestampDto to the format expected by the endpoint
             List<Map<String, Object>> timestampsList = new ArrayList<>();
             
@@ -777,7 +795,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             Map<String, Object> requestPayload = Map.of("timestamps", timestampsList);
 
             // Build the full URL for the timestamps endpoint
-            String path = String.format("/api/v1/database/%s/table/%s/timestamps", databaseId, tableId);
+            String path = String.format("/api/v1/database/%s/table/%s/timestamps", databaseId, resolvedLocalTableId);
 
             log.info("🌐 Adding timestamps to local data service: {}", path);
             log.info("📤 Timestamps count: {}", timestamps.size());
@@ -790,10 +808,10 @@ public class ReplicationServiceImpl implements ReplicationService {
             );
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("✅ Successfully added {} timestamps for table ID: {}", timestamps.size(), tableId);
+                log.info("✅ Successfully added {} timestamps for table ID: {}", timestamps.size(), resolvedLocalTableId);
             } else {
                 log.warn("⚠️ Failed to add timestamps for table ID {}: Status {}", 
-                        tableId, response.getStatusCode());
+                        resolvedLocalTableId, response.getStatusCode());
             }
 
         } catch (Exception e) {

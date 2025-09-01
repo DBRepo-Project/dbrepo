@@ -18,6 +18,7 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.repository.TableRepository;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 
 @Slf4j
 @Service
@@ -49,12 +51,13 @@ public class TableServiceImpl implements TableService {
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
+    private final TableRepository tableRepository;
 
     @Autowired
     public TableServiceImpl(UserService userService, UnitService unitService, RabbitConfig rabbitConfig,
                             EntityService entityService, ConceptService conceptService, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
-                            SearchServiceGateway searchServiceGateway) {
+                            SearchServiceGateway searchServiceGateway, TableRepository tableRepository) {
         this.userService = userService;
         this.unitService = unitService;
         this.rabbitConfig = rabbitConfig;
@@ -64,6 +67,7 @@ public class TableServiceImpl implements TableService {
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
+        this.tableRepository = tableRepository;
     }
 
     @Override
@@ -414,6 +418,24 @@ public class TableServiceImpl implements TableService {
         searchServiceGateway.update(updatedDatabase);
         log.info("Updated replication URL for table with id {} & search database", table.getId());
         return table;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LocalTableIdDto findLocalTableIdByReplicaTableId(UUID replicaTableId) throws TableNotFoundException {
+        log.debug("Finding local table ID by replica table ID: {}", replicaTableId);
+
+        Optional<Table> tableOptional = tableRepository.findByReplicaTableId(replicaTableId);
+        
+        if (tableOptional.isEmpty()) {
+            log.error("Failed to find table with replica table ID {}", replicaTableId);
+            throw new TableNotFoundException("Failed to find table with replica table ID " + replicaTableId);
+        }
+
+        Table table = tableOptional.get();
+        log.info("Found local table ID {} for replica table ID {}", table.getId(), replicaTableId);
+        
+        return new LocalTableIdDto(table.getId(), replicaTableId);
     }
 
 }
