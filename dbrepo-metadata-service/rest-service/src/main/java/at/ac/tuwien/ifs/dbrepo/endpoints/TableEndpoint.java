@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
@@ -656,6 +657,39 @@ public class TableEndpoint extends AbstractEndpoint {
         final Table updatedTable = tableService.updateReplicationUrl(tableId, data);
         return ResponseEntity.accepted()
                 .body(metadataMapper.tableToTableBriefDto(updatedTable));
+    }
+
+    @GetMapping("/replica/{replicaTableId}/local-id")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replica_to_local_id")
+    @Operation(summary = "Get local table ID by replica table ID",
+            description = "Finds the local table ID by looking up the replica table ID in the mdb_tables_replica_urls table. Requires role `system`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Local table ID found successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LocalTableIdDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table with this replica table ID was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<LocalTableIdDto> getLocalTableIdByReplicaTableId(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("replicaTableId") UUID replicaTableId,
+            Principal principal) throws TableNotFoundException {
+        log.debug("endpoint get local table ID by replica table ID, databaseId={}, replicaTableId={}", databaseId, replicaTableId);
+        final LocalTableIdDto result = tableService.findLocalTableIdByReplicaTableId(replicaTableId);
+        return ResponseEntity.ok(result);
     }
 
 }
