@@ -702,12 +702,6 @@ public class ReplicationServiceImpl implements ReplicationService {
             return;
         }
 
-        /*todo: fix table id (is currently from remote sites, therefore not found exception)
-        either fuck it (not necessary for timestamps) or get it somehow (we will need a method for the tuples anyways and
-        if we make tuple replication tables per table, we would also need it
-
-         */
-
         log.info("=== ADDING REPLICATION TIMESTAMPS TO LOCAL DATA SERVICE ===");
         log.info("Database: {} ({})", database.getName(), database.getInternalName());
         log.info("Database ID: {}", database.getId());

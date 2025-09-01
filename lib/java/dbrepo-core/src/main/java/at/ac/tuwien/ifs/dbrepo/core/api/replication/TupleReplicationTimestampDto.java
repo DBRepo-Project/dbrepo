@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.replication;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -28,8 +29,10 @@ public class TupleReplicationTimestampDto {
     private UUID tableId;
 
     @Schema(description = "Timestamp when the row/tuple replication started")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "UTC")
     private Timestamp rowStart;
 
     @Schema(description = "Timestamp when the row/tuple replication ended (null if still active)")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "UTC")
     private Timestamp rowEnd;
 }
