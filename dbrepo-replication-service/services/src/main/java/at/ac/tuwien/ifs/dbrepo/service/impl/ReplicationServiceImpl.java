@@ -34,6 +34,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
@@ -785,8 +787,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                     "replicationId", timestamp.getReplicationId(),
                     "databaseId", timestamp.getDatabaseId().toString(),
                     "tableId", timestamp.getTableId().toString(),
-                    "rowStart", timestamp.getRowStart() != null ? timestamp.getRowStart().toString() : null,
-                    "rowEnd", timestamp.getRowEnd() != null ? timestamp.getRowEnd().toString() : null
+                    "rowStart", timestamp.getRowStart() != null ? formatTimestampMicros(timestamp.getRowStart()) : null,
+                    "rowEnd", timestamp.getRowEnd() != null ? formatTimestampMicros(timestamp.getRowEnd()) : null
                 );
                 timestampsList.add(timestampMap);
             }
@@ -817,6 +819,14 @@ public class ReplicationServiceImpl implements ReplicationService {
         } catch (Exception e) {
             log.error("❌ Error adding timestamps for table ID {}: {}", tableId, e.getMessage(), e);
         }
+    }
+
+    /**
+     * Format java.sql.Timestamp to microsecond precision string: yyyy-MM-dd HH:mm:ss.SSSSSS
+     */
+    private String formatTimestampMicros(java.sql.Timestamp ts) {
+        LocalDateTime ldt = ts.toLocalDateTime();
+        return ldt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
     }
 
 } 
