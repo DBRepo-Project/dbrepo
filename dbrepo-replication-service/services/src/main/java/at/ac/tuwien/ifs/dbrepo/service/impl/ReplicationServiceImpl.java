@@ -774,7 +774,8 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.info("📊 Created replication timestamps map with {} entries", replicationTimestampsMap.size());
         }
 
-        List<TupleReplicationTimestampDto> allReplicationTimestamps = new ArrayList<>();
+        // Group tuples by table ID
+        Map<UUID, List<TupleWithTimestampsDto>> tuplesByTable = new HashMap<>();
         
         for (TupleWithTimestampsDto tuple : tuples) {
             try {
@@ -782,22 +783,40 @@ public class ReplicationServiceImpl implements ReplicationService {
                 UUID tableId = getTableIdForTuple(tuple, database.getId(), replicationTimestampsMap);
                 
                 if (tableId != null) {
-                    log.info("📋 Processing tuple for table ID: {}", tableId);
-                    
-                    // Send tuple to data service and get back replication timestamps
-                    List<TupleReplicationTimestampDto> tableReplicationTimestamps = 
-                        addTupleToLocalDataService(tuple, database.getId(), tableId);
-                    
-                    if (tableReplicationTimestamps != null) {
-                        allReplicationTimestamps.addAll(tableReplicationTimestamps);
-                        log.info("✅ Successfully processed tuple for table ID: {}", tableId);
-                    }
+                    tuplesByTable.computeIfAbsent(tableId, k -> new ArrayList<>()).add(tuple);
+                    log.debug("📋 Grouped tuple for table ID: {}", tableId);
                 } else {
                     log.warn("⚠️ Could not determine table ID for tuple: {}", tuple);
                 }
                 
             } catch (Exception e) {
-                log.error("❌ Failed to process tuple: {}", e.getMessage(), e);
+                log.error("❌ Failed to determine table ID for tuple: {}", e.getMessage(), e);
+            }
+        }
+
+        log.info("📊 Grouped tuples by {} different tables", tuplesByTable.size());
+
+        List<TupleReplicationTimestampDto> allReplicationTimestamps = new ArrayList<>();
+        
+        // Process each table's tuples in batch
+        for (Map.Entry<UUID, List<TupleWithTimestampsDto>> entry : tuplesByTable.entrySet()) {
+            UUID tableId = entry.getKey();
+            List<TupleWithTimestampsDto> tableTuples = entry.getValue();
+            
+            try {
+                log.info("📋 Processing {} tuples for table ID: {}", tableTuples.size(), tableId);
+                
+                // Send all tuples for this table to data service and get back replication timestamps
+                List<TupleReplicationTimestampDto> tableReplicationTimestamps = 
+                    addTuplesToLocalDataService(tableTuples, database.getId(), tableId);
+                
+                if (tableReplicationTimestamps != null) {
+                    allReplicationTimestamps.addAll(tableReplicationTimestamps);
+                    log.info("✅ Successfully processed {} tuples for table ID: {}", tableTuples.size(), tableId);
+                }
+                
+            } catch (Exception e) {
+                log.error("❌ Failed to process tuples for table ID {}: {}", tableId, e.getMessage(), e);
             }
         }
 
@@ -859,9 +878,9 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     /**
-     * Adds a tuple to the local data service and returns replication timestamps.
+     * Adds a batch of tuples to the local data service and returns replication timestamps.
      */
-    private List<TupleReplicationTimestampDto> addTupleToLocalDataService(TupleWithTimestampsDto tuple, UUID databaseId, UUID tableId) {
+    private List<TupleReplicationTimestampDto> addTuplesToLocalDataService(List<TupleWithTimestampsDto> tuples, UUID databaseId, UUID tableId) {
         try {
             // Resolve local table ID in case provided ID is from a remote site
             UUID resolvedLocalTableId = tableId;
@@ -878,26 +897,27 @@ public class ReplicationServiceImpl implements ReplicationService {
             // Build the full URL for the tuples endpoint
             String path = String.format("/api/v1/database/%s/table/%s/tuples", databaseId, resolvedLocalTableId);
 
-            log.info("🌐 Adding tuple to local data service: {}", path);
+            log.info("🌐 Adding {} tuples to local data service: {}", tuples.size(), path);
 
             // Make the HTTP call to local data service
-            ResponseEntity<List<TupleReplicationTimestampDto>> response = localDataServiceRestTemplate.postForEntity(
+            ResponseEntity<List<TupleReplicationTimestampDto>> response = localDataServiceRestTemplate.exchange(
                 path,
-                List.of(tuple), 
+                org.springframework.http.HttpMethod.POST,
+                new org.springframework.http.HttpEntity<>(tuples),
                 new org.springframework.core.ParameterizedTypeReference<List<TupleReplicationTimestampDto>>() {}
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                log.info("✅ Successfully added tuple for table ID: {}", resolvedLocalTableId);
+                log.info("✅ Successfully added {} tuples for table ID: {}", tuples.size(), resolvedLocalTableId);
                 return response.getBody();
             } else {
-                log.warn("⚠️ Failed to add tuple for table ID {}: Status {}", 
+                log.warn("⚠️ Failed to add tuples for table ID {}: Status {}", 
                         resolvedLocalTableId, response.getStatusCode());
                 return null;
             }
 
         } catch (Exception e) {
-            log.error("❌ Error adding tuple for table ID {}: {}", tableId, e.getMessage(), e);
+            log.error("❌ Error adding tuples for table ID {}: {}", tableId, e.getMessage(), e);
             return null;
         }
     }
