@@ -288,7 +288,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             /* import tuple */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.temporaryTableToRawMergeQuery(temporaryTable,
-                            table.getInternalName(), table.getColumns().stream().map(c -> c.getInternalName()).toList()))
+                            table.getInternalName(), table.getColumns().stream().map(ColumnDto::getInternalName).toList()))
                     .execute();
             connection.commit();
             log.atDebug()

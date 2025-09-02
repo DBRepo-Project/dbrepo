@@ -158,6 +158,7 @@
           cols="auto"
           class="mt-3 ml-5">
           <v-btn
+            v-if="!frozen"
             size="small"
             :color="disabled ? '' : 'error'"
             variant="flat"
@@ -170,6 +171,7 @@
         dense>
         <v-col>
           <v-btn
+            v-if="!frozen"
             size="small"
             :color="disabled ? '' : 'tertiary'"
             :variant="buttonVariant"
@@ -220,8 +222,14 @@ export default {
     },
     submitText: {
       type: String,
-      default () {
+      default() {
         return null
+      }
+    },
+    frozen: {
+      type: Boolean,
+      default () {
+        return false
       }
     }
   },
