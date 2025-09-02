@@ -128,13 +128,12 @@ public class TableServiceImpl implements TableService {
                 log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
                 log.debug("Full remote response body: {}", response.getBody());
 
-                log.info("Replication ID: " + (String) dataReplicationDto.getTuple().get("replication_key"));
-
+                log.info("Replication ID: " + dataReplicationDto.getTuple().getReplicationKey());
 
                 // Create timestamp record for successful replication
                 TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
                         .siteUrl(replicaUrl)
-                        .replicationId((String) dataReplicationDto.getTuple().get("replication_key"))
+                        .replicationId(dataReplicationDto.getTuple().getReplicationKey())
                         .databaseId(remoteDatabaseId)
                         .tableId(remoteTableId)
                         .rowStart(parseTimestamp((String) tsInserted))
@@ -162,11 +161,11 @@ public class TableServiceImpl implements TableService {
                 timestampsToSave.add(
                         TupleReplicationTimestamp.builder()
                                 .siteUrl(baseUrl)
-                                .replicationId((String) dataReplicationDto.getTuple().get("replication_key"))
+                                .replicationId(dataReplicationDto.getTuple().getReplicationKey())
                                 .databaseId(database.getId())
                                 .tableId(table.getId())
-                                .rowStart(parseTimestamp((String) dataReplicationDto.getTuple().get("inserted_at")))
-                                .rowEnd(parseTimestamp((String) dataReplicationDto.getTuple().get("deleted_at")))
+                                .rowStart(parseTimestamp(dataReplicationDto.getTuple().getInsertedAt().toString()))
+                                .rowEnd(parseTimestamp(dataReplicationDto.getTuple().getDeletedAt() != null ? dataReplicationDto.getTuple().getDeletedAt().toString() : null))
                                 .build());
 
                 // Now replicate these timestamps to all other replica sites
