@@ -113,21 +113,21 @@ public interface TableService {
     /**
      * Creates a tuple in a table and returns the created tuple including its versioning timestamps.
      *
-     * <p>For system-versioned tables, the returned map contains all table columns plus the keys
-     * {@code inserted_at} and {@code deleted_at} representing the MariaDB ROW_START and ROW_END values
-     * (ROW_END will be null for active rows).</p>
+     * <p>For system-versioned tables, the returned DTO contains the tuple data plus the timestamps
+     * {@code insertedAt} and {@code deletedAt} representing the MariaDB ROW_START and ROW_END values
+     * (deletedAt will be null for active rows).</p>
      *
      * @param database The database.
      * @param table    The table.
      * @param data     The tuple.
-     * @return A map of column name to value including versioning timestamps.
+     * @return A DTO containing the created tuple data and timestamps.
      * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException     The create or select query is malformed.
      * @throws TableMalformedException     The tuple is malformed and does not fit the table schema.
      * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
      * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
      */
-    java.util.Map<String, Object> createTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
+    TupleWithTimestampsDto createTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException;
 
     /**

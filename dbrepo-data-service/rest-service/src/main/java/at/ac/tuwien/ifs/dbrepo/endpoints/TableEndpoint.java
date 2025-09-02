@@ -352,7 +352,7 @@ public class TableEndpoint extends RestEndpoint {
         
         try {
             if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
-                final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, data);
+                final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table, data);
                 log.atInfo()
                         .setMessage("created tuple with timestamps")
                         .addKeyValue("created", created)
@@ -396,7 +396,7 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Failed to establish connection with the metadata service or storage service",
                     content = {@Content}),
     })
-    public ResponseEntity<Map<String, Object>> insertTupleForReplication(@NotNull @PathVariable("databaseId") UUID databaseId,
+    public ResponseEntity<TupleWithTimestampsDto> insertTupleForReplication(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                          @NotNull @PathVariable("tableId") UUID tableId,
                                                                          @Valid @RequestBody DataReplicationDto data,
                                                                          Principal principal,
@@ -411,23 +411,21 @@ public class TableEndpoint extends RestEndpoint {
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             // Log remote timestamps for debugging/traceability
-            final Object remoteInsertedAt = data.getTuple() != null ? data.getTuple().get("inserted_at") : null;
-            final Object remoteDeletedAt = data.getTuple() != null ? data.getTuple().get("deleted_at") : null;
+            final Instant remoteInsertedAt = data.getTuple() != null ? data.getTuple().getInsertedAt() : null;
+            final Instant remoteDeletedAt = data.getTuple() != null ? data.getTuple().getDeletedAt() : null;
             log.info("remote timestamps inserted_at={}, deleted_at={}", remoteInsertedAt, remoteDeletedAt);
 
             // Build a clean TupleDto containing only actual table columns (exclude versioning/meta keys)
             final java.util.Map<String, Object> clean = new java.util.LinkedHashMap<>();
             for (ColumnDto c : table.getColumns()) {
-                clean.put(c.getInternalName(), data.getTuple() != null ? data.getTuple().get(c.getInternalName()) : null);
+                clean.put(c.getInternalName(), data.getTuple() != null ? data.getTuple().getData().get(c.getInternalName()) : null);
             }
             final TupleDto tuple = TupleDto.builder().data(clean).build();
 
-            final Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, tuple);
+            final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table, tuple);
             
             // Log created timestamps with full precision for debugging
-            final Object createdInsertedAt = created.get("inserted_at");
-            final Object createdDeletedAt = created.get("deleted_at");
-            log.info("created timestamps inserted_at={}, deleted_at={}", createdInsertedAt, createdDeletedAt);
+            log.info("created timestamps inserted_at={}, deleted_at={}", created.getInsertedAt(), created.getDeletedAt());
             
             // Log the full created object for debugging
             log.info("full created object: {}", created);
@@ -820,21 +818,18 @@ public class TableEndpoint extends RestEndpoint {
                         .build();
                     
                     // Create tuple with timestamps using the service
-                    Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, tupleDto);
+                    TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table, tupleDto);
                     
                     // Extract timestamps from the created tuple
                     if (created != null) {
-                        Object insertedAt = created.get("inserted_at");
-                        Object deletedAt = created.get("deleted_at");
-                        
                         // Create TupleReplicationTimestampDto
                         TupleReplicationTimestampDto replicationTimestamp = TupleReplicationTimestampDto.builder()
                             .siteUrl(database.getCreationLocation()) // Current site URL
                             .replicationId(tuple.getReplicationKey() != null ? tuple.getReplicationKey() : java.util.UUID.randomUUID().toString())
                             .databaseId(databaseId)
                             .tableId(tableId)
-                            .rowStart(insertedAt != null ? Instant.parse(insertedAt.toString()) : Instant.now())
-                            .rowEnd(deletedAt != null ? Instant.parse(deletedAt.toString()) : null)
+                            .rowStart(created.getInsertedAt() != null ? created.getInsertedAt() : Instant.now())
+                            .rowEnd(created.getDeletedAt())
                             .build();
                         
                         replicationTimestamps.add(replicationTimestamp);

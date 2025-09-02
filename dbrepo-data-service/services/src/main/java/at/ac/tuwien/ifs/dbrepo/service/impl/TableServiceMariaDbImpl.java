@@ -422,7 +422,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     @Timed(value = "dbrepo_data_create_tuple_with_ts", description = "Time spent creating a table tuple incl. timestamps", histogram = true)
-    public Map<String, Object> createTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
+    public TupleWithTimestampsDto createTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple with timestamps: {}", data);
 
@@ -537,7 +537,16 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         formatTimestampsWithMicrosecondPrecision(createdTupleWithTimestamps);
         
         log.info("Created tuple(s) in table (with ts): {}.{}", database.getInternalName(), table.getInternalName());
-        return createdTupleWithTimestamps;
+        
+        // Convert Map to DTO
+        TupleWithTimestampsDto result = TupleWithTimestampsDto.builder()
+            .data(createdTupleWithTimestamps)
+            .insertedAt(parseTimestampToInstant(createdTupleWithTimestamps.get("inserted_at")))
+            .deletedAt(parseTimestampToInstant(createdTupleWithTimestamps.get("deleted_at")))
+            .replicationKey((String) createdTupleWithTimestamps.get("replication_key"))
+            .build();
+            
+        return result;
     }
 
     /**
@@ -973,6 +982,29 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         }
         
         return tuples;
+    }
+
+    /**
+     * Parse timestamp object to Instant, handling various formats
+     */
+    private Instant parseTimestampToInstant(Object timestamp) {
+        if (timestamp == null) return null;
+        
+        if (timestamp instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) timestamp).toInstant();
+        } else if (timestamp instanceof Instant) {
+            return (Instant) timestamp;
+        } else if (timestamp instanceof String) {
+            try {
+                return Instant.parse((String) timestamp);
+            } catch (Exception e) {
+                log.error("Failed to parse timestamp string: {} - Error: {}", timestamp, e.getMessage());
+                return null;
+            }
+        } else {
+            log.error("Unknown timestamp type: {}", timestamp.getClass().getName());
+            return null;
+        }
     }
 
 }

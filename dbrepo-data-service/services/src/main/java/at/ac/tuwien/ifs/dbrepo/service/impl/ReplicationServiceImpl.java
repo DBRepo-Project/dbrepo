@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -67,9 +68,11 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void replicateTuple(java.util.Map<String, Object> tupleWithTimestamps, DatabaseDto database, TableDto table) {
+    public void replicateTuple(TupleWithTimestampsDto tupleWithTimestamps, DatabaseDto database, TableDto table) {
         try {
-            log.info("Sending tuple replication to replication service for {}.{}, keys={}", database.getInternalName(), table.getInternalName(), tupleWithTimestamps != null ? tupleWithTimestamps.keySet() : null);
+            log.info("Sending tuple replication to replication service for {}.{}, replicationKey={}", 
+                    database.getInternalName(), table.getInternalName(), 
+                    tupleWithTimestamps != null ? tupleWithTimestamps.getReplicationKey() : null);
 
             final var request = DataReplicationDto.builder()
                     .tuple(tupleWithTimestamps)
