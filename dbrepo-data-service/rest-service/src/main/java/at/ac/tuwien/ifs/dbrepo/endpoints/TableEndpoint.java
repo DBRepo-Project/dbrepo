@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -775,6 +776,85 @@ public class TableEndpoint extends RestEndpoint {
             );
             
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/{tableId}/tuples")
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbrepo_table_tuples_receive")
+    @Operation(summary = "Insert tuples with timestamps",
+            description = "Insert tuples with timestamps from other sites into local site and return replication timestamps",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<List<TupleReplicationTimestampDto>> receiveTuplesWithTimestamps(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                                         @NotNull @PathVariable("tableId") UUID tableId,
+                                                                                         @RequestBody List<TupleWithTimestampsDto> tuples,
+                                                                                         Principal principal) {
+        log.info("endpoint receive tuples with timestamps, databaseId={}, tableId={}, tuplesCount={}", databaseId, tableId, tuples.size());
+        
+        try {
+            if (tuples == null || tuples.isEmpty()) {
+                log.error("tuples is null or empty in request");
+                throw new IllegalArgumentException("tuples list is required and cannot be empty");
+            }
+            
+            log.info("Received {} tuples with timestamps", tuples.size());
+            
+            // Get database and table from cache service
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            final TableDto table = cacheService.getTable(databaseId, tableId);
+            
+            // Validate access
+            final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
+            
+            // Process each tuple and collect replication timestamps
+            List<TupleReplicationTimestampDto> replicationTimestamps = new ArrayList<>();
+            
+            for (TupleWithTimestampsDto tuple : tuples) {
+                try {
+                    log.info("Processing tuple: {}", tuple);
+                    
+                    // Convert TupleWithTimestampsDto to TupleDto for the service
+                    TupleDto tupleDto = TupleDto.builder()
+                        .data(tuple.getData())
+                        .build();
+                    
+                    // Create tuple with timestamps using the service
+                    Map<String, Object> created = tableService.createTupleWithTimestamps(database, table, tupleDto);
+                    
+                    // Extract timestamps from the created tuple
+                    if (created != null) {
+                        Object insertedAt = created.get("inserted_at");
+                        Object deletedAt = created.get("deleted_at");
+                        
+                        // Create TupleReplicationTimestampDto
+                        TupleReplicationTimestampDto replicationTimestamp = TupleReplicationTimestampDto.builder()
+                            .siteUrl(database.getCreationLocation()) // Current site URL
+                            .replicationId(tuple.getReplicationKey() != null ? tuple.getReplicationKey() : java.util.UUID.randomUUID().toString())
+                            .databaseId(databaseId)
+                            .tableId(tableId)
+                            .rowStart(insertedAt != null ? Instant.parse(insertedAt.toString()) : Instant.now())
+                            .rowEnd(deletedAt != null ? Instant.parse(deletedAt.toString()) : null)
+                            .build();
+                        
+                        replicationTimestamps.add(replicationTimestamp);
+                        
+                        log.info("Created tuple with replication timestamp: {}", replicationTimestamp);
+                    }
+                    
+                } catch (Exception e) {
+                    log.error("Failed to process tuple: {}", e.getMessage(), e);
+                    // Continue with other tuples
+                }
+            }
+            
+            log.info("Successfully processed {} tuples, returning {} replication timestamps", tuples.size(), replicationTimestamps.size());
+            
+            return ResponseEntity.ok(replicationTimestamps);
+            
+        } catch (Exception e) {
+            log.error("Error processing tuples with timestamps: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to process tuples with timestamps: " + e.getMessage(), e);
         }
     }
 

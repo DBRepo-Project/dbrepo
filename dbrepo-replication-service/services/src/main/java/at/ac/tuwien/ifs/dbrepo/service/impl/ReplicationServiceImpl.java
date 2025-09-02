@@ -1,16 +1,14 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,17 +23,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.context.event.EventListener;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.core.ParameterizedTypeReference;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
-import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
@@ -487,7 +483,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                             log.info("Timestmap format returned from remote data service:");
                             log.info(String.valueOf(replicationData.getReplicationTimestamps().get(0).getRowStart()));
                             log.info("📥 Adding replication timestamps to local data service...");
-                            addReplicationTimestampsToLocalDataService(replicationData, fullDatabase);
+                            synchronizeReplicas(replicationData, fullDatabase);
                             
                             // Return the replication data to the main method
                             return replicationData;
@@ -696,7 +692,7 @@ public class ReplicationServiceImpl implements ReplicationService {
      * This method processes the ReplicationSynchronisationDataDto and inserts
      * replication timestamps into the appropriate local database tables.
      */
-    private void addReplicationTimestampsToLocalDataService(ReplicationSynchronisationDataDto replicationData, DatabaseDto database) {
+    private void synchronizeReplicas(ReplicationSynchronisationDataDto replicationData, DatabaseDto database) {
         if (replicationData == null) {
             log.warn("⚠️ No replication data to process");
             return;
@@ -710,7 +706,8 @@ public class ReplicationServiceImpl implements ReplicationService {
             // Process replication timestamps
             if (replicationData.getReplicationTimestamps() != null && !replicationData.getReplicationTimestamps().isEmpty()) {
                 log.info("📥 Processing {} replication timestamps...", replicationData.getReplicationTimestamps().size());
-                addReplicationTimestampsToLocalDataService(replicationData.getReplicationTimestamps(), database);
+                synchronizeReplicationTimestamps(replicationData.getReplicationTimestamps(), database);
+                synchronizeTuples(replicationData.getTuples(), database, replicationData.getReplicationTimestamps());
             } else {
                 log.info("ℹ️ No replication timestamps to process");
             }
@@ -727,7 +724,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     /**
      * Adds replication timestamps to the local data service.
      */
-    private void addReplicationTimestampsToLocalDataService(List<TupleReplicationTimestampDto> timestamps, DatabaseDto database) {
+    private void synchronizeReplicationTimestamps(List<TupleReplicationTimestampDto> timestamps, DatabaseDto database) {
         log.info("=== ADDING REPLICATION TIMESTAMPS TO LOCAL DATA SERVICE ===");
         
         // Group timestamps by table ID
@@ -750,6 +747,158 @@ public class ReplicationServiceImpl implements ReplicationService {
             } catch (Exception e) {
                 log.error("❌ Failed to add timestamps for table ID {}: {}", tableId, e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Synchronizes tuples with timestamps to the local data service.
+     * This method processes tuples and sends them to the data service for insertion.
+     */
+    private void synchronizeTuples(List<TupleWithTimestampsDto> tuples, DatabaseDto database, List<TupleReplicationTimestampDto> replicationTimestamps) {
+        if (tuples == null || tuples.isEmpty()) {
+            log.info("ℹ️ No tuples to synchronize");
+            return;
+        }
+
+        log.info("=== SYNCHRONIZING TUPLES TO LOCAL DATA SERVICE ===");
+        log.info("Database: {} ({})", database.getName(), database.getInternalName());
+        log.info("Database ID: {}", database.getId());
+        log.info("📥 Processing {} tuples...", tuples.size());
+
+        // Create a HashMap for O(1) access to replication timestamps by replication key
+        Map<String, TupleReplicationTimestampDto> replicationTimestampsMap = new HashMap<>();
+        if (replicationTimestamps != null) {
+            for (TupleReplicationTimestampDto timestamp : replicationTimestamps) {
+                replicationTimestampsMap.put(timestamp.getReplicationId(), timestamp);
+            }
+            log.info("📊 Created replication timestamps map with {} entries", replicationTimestampsMap.size());
+        }
+
+        List<TupleReplicationTimestampDto> allReplicationTimestamps = new ArrayList<>();
+        
+        for (TupleWithTimestampsDto tuple : tuples) {
+            try {
+                // Get the table ID for this tuple using replication key
+                UUID tableId = getTableIdForTuple(tuple, database.getId(), replicationTimestampsMap);
+                
+                if (tableId != null) {
+                    log.info("📋 Processing tuple for table ID: {}", tableId);
+                    
+                    // Send tuple to data service and get back replication timestamps
+                    List<TupleReplicationTimestampDto> tableReplicationTimestamps = 
+                        addTupleToLocalDataService(tuple, database.getId(), tableId);
+                    
+                    if (tableReplicationTimestamps != null) {
+                        allReplicationTimestamps.addAll(tableReplicationTimestamps);
+                        log.info("✅ Successfully processed tuple for table ID: {}", tableId);
+                    }
+                } else {
+                    log.warn("⚠️ Could not determine table ID for tuple: {}", tuple);
+                }
+                
+            } catch (Exception e) {
+                log.error("❌ Failed to process tuple: {}", e.getMessage(), e);
+            }
+        }
+
+        // Log all collected replication timestamps for fan-out later
+        if (!allReplicationTimestamps.isEmpty()) {
+            log.info("📊 Collected {} replication timestamps for fan-out:", allReplicationTimestamps.size());
+            for (TupleReplicationTimestampDto timestamp : allReplicationTimestamps) {
+                log.info("  - Table: {}, ReplicationId: {}, RowStart: {}, RowEnd: {}", 
+                    timestamp.getTableId(), timestamp.getReplicationId(), 
+                    timestamp.getRowStart(), timestamp.getRowEnd());
+            }
+        }
+
+        log.info("✅ Successfully synchronized {} tuples for database: {}", tuples.size(), database.getInternalName());
+    }
+
+    /**
+     * Gets the table ID for a given tuple using replication key lookup.
+     * This method finds the table ID by looking up the replication key in the replication timestamps.
+     */
+    private UUID getTableIdForTuple(TupleWithTimestampsDto tuple, UUID databaseId, Map<String, TupleReplicationTimestampDto> replicationTimestampsMap) {
+        // Extract replication key from tuple data
+        String replicationKey = null;
+        if (tuple.getData() != null && tuple.getData().containsKey("replication_key")) {
+            replicationKey = (String) tuple.getData().get("replication_key");
+        }
+        
+        if (replicationKey == null) {
+            log.warn("⚠️ Tuple does not contain replication_key in data: {}", tuple);
+            return null;
+        }
+        
+        // Look up the replication timestamp using the replication key
+        TupleReplicationTimestampDto replicationTimestamp = replicationTimestampsMap.get(replicationKey);
+        if (replicationTimestamp == null) {
+            log.warn("⚠️ Could not find replication timestamp for replication key: {}", replicationKey);
+            return null;
+        }
+        
+        UUID remoteTableId = replicationTimestamp.getTableId();
+        log.debug("Found remote table ID {} for replication key: {}", remoteTableId, replicationKey);
+        
+        // Resolve to local table ID using metadata service
+        try {
+            LocalTableIdDto localIdDto = metadataServiceGateway.getLocalTableIdByReplicaTableId(databaseId, remoteTableId);
+            if (localIdDto != null && localIdDto.getLocalTableId() != null) {
+                UUID localTableId = localIdDto.getLocalTableId();
+                log.info("🔁 Resolved remote tableId {} to local tableId {} for replication key: {}", 
+                    remoteTableId, localTableId, replicationKey);
+                return localTableId;
+            } else {
+                log.warn("⚠️ Could not resolve local table ID for remote tableId: {}", remoteTableId);
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("❌ Error resolving local table ID for remote tableId {}: {}", remoteTableId, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Adds a tuple to the local data service and returns replication timestamps.
+     */
+    private List<TupleReplicationTimestampDto> addTupleToLocalDataService(TupleWithTimestampsDto tuple, UUID databaseId, UUID tableId) {
+        try {
+            // Resolve local table ID in case provided ID is from a remote site
+            UUID resolvedLocalTableId = tableId;
+            try {
+                LocalTableIdDto localIdDto = metadataServiceGateway.getLocalTableIdByReplicaTableId(databaseId, tableId);
+                if (localIdDto != null && localIdDto.getLocalTableId() != null) {
+                    resolvedLocalTableId = localIdDto.getLocalTableId();
+                    log.info("🔁 Resolved remote tableId {} to local tableId {}", tableId, resolvedLocalTableId);
+                }
+            } catch (Exception resolveEx) {
+                log.warn("⚠️ Could not resolve local table ID for {}: {}. Proceeding with provided ID.", tableId, resolveEx.getMessage());
+            }
+
+            // Build the full URL for the tuples endpoint
+            String path = String.format("/api/v1/database/%s/table/%s/tuples", databaseId, resolvedLocalTableId);
+
+            log.info("🌐 Adding tuple to local data service: {}", path);
+
+            // Make the HTTP call to local data service
+            ResponseEntity<List<TupleReplicationTimestampDto>> response = localDataServiceRestTemplate.postForEntity(
+                path,
+                List.of(tuple), 
+                new org.springframework.core.ParameterizedTypeReference<List<TupleReplicationTimestampDto>>() {}
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                log.info("✅ Successfully added tuple for table ID: {}", resolvedLocalTableId);
+                return response.getBody();
+            } else {
+                log.warn("⚠️ Failed to add tuple for table ID {}: Status {}", 
+                        resolvedLocalTableId, response.getStatusCode());
+                return null;
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error adding tuple for table ID {}: {}", tableId, e.getMessage(), e);
+            return null;
         }
     }
 
