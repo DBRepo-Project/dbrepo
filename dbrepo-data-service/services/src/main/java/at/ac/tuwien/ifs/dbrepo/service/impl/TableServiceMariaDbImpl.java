@@ -704,8 +704,13 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         if (timestampStr == null) return null;
         
         try {
-            // Handle timestamps with timezone (e.g., "2025-08-25 06:14:19.776954+00:00")
-            if (timestampStr.contains("+") || timestampStr.contains("-") && timestampStr.lastIndexOf("-") > 10) {
+            // Handle ISO 8601 format with 'T' separator and 'Z' timezone (e.g., "2025-09-02T07:13:54.143412Z")
+            if (timestampStr.contains("T") && timestampStr.endsWith("Z")) {
+                java.time.Instant instant = java.time.Instant.parse(timestampStr);
+                return java.sql.Timestamp.from(instant);
+            }
+            // Handle timestamps with timezone offset (e.g., "2025-08-25 06:14:19.776954+00:00")
+            else if (timestampStr.contains("+") || (timestampStr.contains("-") && timestampStr.lastIndexOf("-") > 10)) {
                 String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
                 java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(withoutTz, 
                     java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
