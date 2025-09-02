@@ -43,7 +43,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void createAccess(UUID databaseId, String username, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/access/" + username;
+        final String path = "/api/v1/database/" + databaseId + "/access/" + username;
         log.trace("create access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST,
@@ -68,7 +68,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void updateAccess(UUID databaseId, String username, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, AccessNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/access/" + username;
+        final String path = "/api/v1/database/" + databaseId + "/access/" + username;
         log.trace("update access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT,
@@ -93,7 +93,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void deleteAccess(UUID databaseId, String username) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/access/" + username;
+        final String path = "/api/v1/database/" + databaseId + "/access/" + username;
         log.trace("delete access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
@@ -117,7 +117,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public DatabaseDto createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<DatabaseDto> response;
-        final String path = "/api/database";
+        final String path = "/api/v1/database";
         log.trace("create database at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), DatabaseDto.class);
@@ -142,7 +142,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void updateDatabase(UUID databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId;
+        final String path = "/api/v1/database/" + databaseId;
         log.trace("update database at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -166,7 +166,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void updateTable(UUID databaseId, UUID tableId, TableUpdateDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/table/" + tableId;
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId;
         log.trace("update table at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -190,7 +190,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void createTable(UUID databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/table";
+        final String path = "/api/v1/database/" + databaseId + "/table";
         log.trace("create table at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), Void.class);
@@ -217,7 +217,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void deleteTable(UUID databaseId, UUID tableId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/table/" + tableId;
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId;
         log.trace("delete table at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
@@ -241,7 +241,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public ViewDto createView(UUID databaseId, CreateViewDto data) throws DataServiceConnectionException,
             DataServiceException, ColumnNotFoundException {
         final ResponseEntity<ViewDto> response;
-        final String path = "/api/database/" + databaseId + "/view";
+        final String path = "/api/v1/database/" + databaseId + "/view";
         log.trace("create view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), ViewDto.class);
@@ -270,7 +270,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void deleteView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException {
         final ResponseEntity<Void> response;
-        final String path = "/api/database/" + databaseId + "/view/" + viewId;
+        final String path = "/api/v1/database/" + databaseId + "/view/" + viewId;
         log.trace("delete view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
@@ -294,7 +294,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public QueryDto findQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException {
         final ResponseEntity<QueryDto> response;
-        final String path = "/api/database/" + databaseId + "/subset/" + queryId;
+        final String path = "/api/v1/database/" + databaseId + "/subset/" + queryId;
         log.trace("find subset at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, QueryDto.class);
@@ -322,7 +322,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public List<TableDto> getTableSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException {
         final ResponseEntity<TableDto[]> response;
-        final String path = "/api/database/" + databaseId + "/table";
+        final String path = "/api/v1/database/" + databaseId + "/table";
         log.trace("get table schemas at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, TableDto[].class);
@@ -353,7 +353,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public List<ViewDto> getViewSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException {
         final ResponseEntity<ViewDto[]> response;
-        final String path = "/api/database/" + databaseId + "/view";
+        final String path = "/api/v1/database/" + databaseId + "/view";
         log.trace("get view schemas at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, ViewDto[].class);
@@ -384,7 +384,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public TableStatisticDto getTableStatistics(UUID databaseId, UUID tableId) throws DataServiceConnectionException,
             DataServiceException, TableNotFoundException {
         final ResponseEntity<TableStatisticDto> response;
-        final String path = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId + "/statistic";
         log.trace("get table statistics at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, TableStatisticDto.class);

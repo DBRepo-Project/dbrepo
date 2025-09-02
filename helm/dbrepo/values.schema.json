@@ -830,17 +830,6 @@
                             "type": "string"
                         }
                     }
-                },
-                "updateStrategy": {
-                    "type": "object",
-                    "properties": {
-                        "Recreate": {
-                            "type": "object"
-                        },
-                        "type": {
-                            "type": "string"
-                        }
-                    }
                 }
             }
         },

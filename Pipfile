@@ -27,7 +27,6 @@ rdflib = "*"
 boto3 = "*"
 build = "*"
 setuptools = "*"
-mike = "*"
 
 [requires]
 python_version = "3.11"

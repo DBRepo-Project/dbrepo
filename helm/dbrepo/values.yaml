@@ -1066,11 +1066,6 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
-  updateStrategy:
-    ## @skip gatewayservice.updateStrategy.type
-    type: Recreate
-    ## @skip gatewayservice.updateStrategy.Recreate
-    Recreate: { }
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP
