@@ -158,7 +158,7 @@
               <v-container>
                 <TableSchema
                   ref="schema"
-                  :back="false"
+                  :frozen="true"
                   :disabled="step !== 3"
                   :loading="loading"
                   :submit-text="$t('navigation.continue')"
