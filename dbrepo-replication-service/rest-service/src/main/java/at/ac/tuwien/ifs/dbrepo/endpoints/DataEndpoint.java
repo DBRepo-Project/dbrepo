@@ -37,7 +37,7 @@ public class DataEndpoint {
                 "status", "accepted",
                 "database", request.getDatabase() != null ? request.getDatabase().getId() : null,
                 "table", request.getTable() != null ? request.getTable().getId() : null,
-                "receivedTupleKeys", request.getTuple() != null ? request.getTuple().keySet() : null
+                "receivedTupleKeys", request.getTuple() != null ? request.getTuple().getData().keySet() : null
         );
         return ResponseEntity.ok(response);
     }
