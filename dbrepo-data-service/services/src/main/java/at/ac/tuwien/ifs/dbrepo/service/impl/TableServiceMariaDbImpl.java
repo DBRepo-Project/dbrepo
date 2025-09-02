@@ -995,10 +995,26 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } else if (timestamp instanceof Instant) {
             return (Instant) timestamp;
         } else if (timestamp instanceof String) {
+            String timestampStr = (String) timestamp;
             try {
-                return Instant.parse((String) timestamp);
+                // Handle ISO 8601 format with 'T' separator and 'Z' timezone (e.g., "2025-09-02T07:13:54.143412Z")
+                if (timestampStr.contains("T") && timestampStr.endsWith("Z")) {
+                    return Instant.parse(timestampStr);
+                }
+                // Handle timestamps with timezone offset (e.g., "2025-09-02 09:27:55.540567+00:00")
+                else if (timestampStr.contains("+") || (timestampStr.contains("-") && timestampStr.lastIndexOf("-") > 10)) {
+                    String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
+                    java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(withoutTz, 
+                        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+                    return ldt.atZone(java.time.ZoneOffset.UTC).toInstant();
+                } else {
+                    // Handle timestamps without timezone (e.g., "2025-08-25 06:14:19.776954")
+                    java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(timestampStr, 
+                        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+                    return ldt.atZone(java.time.ZoneOffset.UTC).toInstant();
+                }
             } catch (Exception e) {
-                log.error("Failed to parse timestamp string: {} - Error: {}", timestamp, e.getMessage());
+                log.error("Failed to parse timestamp string: {} - Error: {}", timestampStr, e.getMessage());
                 return null;
             }
         } else {
