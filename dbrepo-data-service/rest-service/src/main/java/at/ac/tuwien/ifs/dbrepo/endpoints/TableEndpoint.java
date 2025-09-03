@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -63,6 +64,9 @@ public class TableEndpoint extends RestEndpoint {
     private final ReplicationService replicationService;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
+
+    @Value("${dbrepo.baseUrl}")
+    private String baseUrl;
 
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
@@ -824,7 +828,7 @@ public class TableEndpoint extends RestEndpoint {
                     if (created != null) {
                         // Create TupleReplicationTimestampDto
                         TupleReplicationTimestampDto replicationTimestamp = TupleReplicationTimestampDto.builder()
-                            .siteUrl(database.getCreationLocation()) // Current site URL
+                            .siteUrl(baseUrl)
                             .replicationId(tuple.getReplicationKey() != null ? tuple.getReplicationKey() : java.util.UUID.randomUUID().toString())
                             .databaseId(databaseId)
                             .tableId(tableId)
