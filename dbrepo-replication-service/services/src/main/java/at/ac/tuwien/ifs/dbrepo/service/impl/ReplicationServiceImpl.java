@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
@@ -495,6 +496,9 @@ public class ReplicationServiceImpl implements ReplicationService {
                     } else {
                         log.info("ℹ️ Database {} has no replication timestamps", databaseBrief.getInternalName());
                     }
+
+                    // Synchronize subset queries created on remote sites
+                    synchronizeSubsets(fullDatabase);
                     
                     log.info("=== END PROCESSING DATABASE: {} ===\n", databaseBrief.getInternalName());
                     
@@ -978,6 +982,115 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
 
+
+    /**
+     * Synchronize subset (QueryDto) entries from remote sites into the local query store.
+     * - Determine last local subset creation time (or epoch if none)
+     * - Pick preferred replica (creationLocation if present)
+     * - Fetch remote subsets created after that time
+     * - Insert into local via local data-service endpoint
+     */
+    private void synchronizeSubsets(DatabaseDto database) {
+        try {
+            if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+                log.info("No replicas configured for database {}, skipping subset sync", database.getInternalName());
+                return;
+            }
+
+            // 1) Determine last local subset creation time
+            Instant lastCreated = getLastLocalSubsetCreatedAt(database.getId());
+            if (lastCreated == null) {
+                lastCreated = Instant.EPOCH;
+            }
+            log.info("Subset sync baseline for {}: {}", database.getInternalName(), lastCreated);
+
+            // 2) Choose a replica to query - prefer creationLocation
+            String targetReplicaUrl = database.getCreationLocation();
+            if (targetReplicaUrl == null || !database.getReplicaUrls().containsKey(targetReplicaUrl)) {
+                targetReplicaUrl = database.getReplicaUrls().keySet().iterator().next();
+            }
+            UUID remoteDatabaseId = database.getReplicaUrls().get(targetReplicaUrl);
+
+            // 3) Fetch remote subsets after baseline
+            List<QueryDto> remoteNewSubsets = fetchRemoteSubsetsAfter(targetReplicaUrl, remoteDatabaseId, lastCreated);
+            if (remoteNewSubsets == null || remoteNewSubsets.isEmpty()) {
+                log.info("No new remote subsets found for {}", database.getInternalName());
+                return;
+            }
+            log.info("Found {} new remote subsets for {}", remoteNewSubsets.size(), database.getInternalName());
+
+            // 4) Insert into local via local data-service
+            for (QueryDto query : remoteNewSubsets) {
+                try {
+                    replicateLocalSubset(database.getId(), query);
+                } catch (Exception e) {
+                    log.warn("Failed to replicate subset {} locally: {}", query.getId(), e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            log.warn("Subset synchronization failed for {}: {}", database.getInternalName(), e.getMessage());
+        }
+    }
+
+    // Retrieves the last created timestamp of any local subset in this database
+    private Instant getLastLocalSubsetCreatedAt(UUID databaseId) {
+        try {
+            String path = String.format("/api/v1/database/%s/subset", databaseId);
+            ResponseEntity<java.util.List<QueryDto>> response = localDataServiceRestTemplate.exchange(
+                path,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<java.util.List<QueryDto>>() {}
+            );
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return null;
+            }
+            return response.getBody().stream()
+                .map(QueryDto::getCreated)
+                .filter(java.util.Objects::nonNull)
+                .max(java.time.Instant::compareTo)
+                .orElse(null);
+        } catch (Exception e) {
+            log.warn("Could not determine last local subset creation time for {}: {}", databaseId, e.getMessage());
+            return null;
+        }
+    }
+
+    // Calls remote data service to list subsets and filters by created > baseline
+    private List<QueryDto> fetchRemoteSubsetsAfter(String replicaUrl, UUID remoteDatabaseId, Instant baseline) {
+        try {
+            String base = replicaUrl.endsWith("/") ? replicaUrl.substring(0, replicaUrl.length() - 1) : replicaUrl;
+            String path = base + String.format("/api/v1/database/%s/subset", remoteDatabaseId);
+            ResponseEntity<java.util.List<QueryDto>> response = externalReplicationRestTemplate.exchange(
+                path,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<java.util.List<QueryDto>>() {}
+            );
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return java.util.Collections.emptyList();
+            }
+            return response.getBody().stream()
+                .filter(q -> q.getCreated() != null && q.getCreated().isAfter(baseline))
+                .toList();
+        } catch (Exception e) {
+            log.warn("Failed to fetch remote subsets from {}: {}", replicaUrl, e.getMessage());
+            return java.util.Collections.emptyList();
+        }
+    }
+
+    // Sends the subset to the local data service replicate endpoint to insert into query store
+    private void replicateLocalSubset(UUID databaseId, QueryDto query) {
+        String path = String.format("/api/v1/database/%s/subset/replicate", databaseId);
+        ResponseEntity<java.util.Map> response = localDataServiceRestTemplate.exchange(
+            path,
+            org.springframework.http.HttpMethod.POST,
+            new org.springframework.http.HttpEntity<>(query),
+            java.util.Map.class
+        );
+        log.info("Replicated subset {} locally, status {}", query.getId(), response.getStatusCode());
+    }
 
     /**
      * Fan out locally collected timestamps to all other replica sites for the given database.
