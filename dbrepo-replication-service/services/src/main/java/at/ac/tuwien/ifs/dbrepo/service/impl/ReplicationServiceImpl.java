@@ -453,11 +453,13 @@ public class ReplicationServiceImpl implements ReplicationService {
             // 2. Process each database sequentially
             log.info("Step 2: Processing each database for replication timestamps...");
             for (DatabaseBriefDto databaseBrief : allDatabases) {
+
                 try {
                     log.info("=== PROCESSING DATABASE: {} ===", databaseBrief.getInternalName());
                     
                     // Get full database details
                     DatabaseDto fullDatabase = metadataServiceGateway.getDatabaseById(databaseBrief.getId());
+                    synchronizeSubsets(fullDatabase);
                     
                     // Log replica URLs if available
                     if (fullDatabase.getReplicaUrls() != null && !fullDatabase.getReplicaUrls().isEmpty()) {
@@ -497,10 +499,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                         log.info("ℹ️ Database {} has no replication timestamps", databaseBrief.getInternalName());
                     }
 
-                    // Synchronize subset queries created on remote sites
-                    synchronizeSubsets(fullDatabase);
-                    
-                    log.info("=== END PROCESSING DATABASE: {} ===\n", databaseBrief.getInternalName());
+
                     
                 } catch (Exception e) {
                     log.error("❌ Could not process database {}: {}", 
