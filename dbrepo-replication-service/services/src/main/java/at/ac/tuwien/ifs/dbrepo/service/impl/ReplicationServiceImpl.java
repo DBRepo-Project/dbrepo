@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.context.event.EventListener;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.beans.factory.annotation.Value;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
@@ -49,6 +50,9 @@ public class ReplicationServiceImpl implements ReplicationService {
     private final GatewayConfig gatewayConfig;
     private final ReplicationTimestampService replicationTimestampService;
     private final MetadataServiceGateway metadataServiceGateway;
+
+    @Value("${BASE_URL:http://localhost:8080}")
+    private String baseUrl;
 
     @Autowired
     public ReplicationServiceImpl(@Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
@@ -828,6 +832,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                     timestamp.getTableId(), timestamp.getReplicationId(), 
                     timestamp.getRowStart(), timestamp.getRowEnd());
             }
+            // Fan out the locally collected timestamps to all other replicas
+            synchronizeTimestampsToAllSites(database, allReplicationTimestamps);
         }
 
         log.info("✅ Successfully synchronized {} tuples for database: {}", tuples.size(), database.getInternalName());
@@ -981,5 +987,85 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
 
+
+    /**
+     * Fan out locally collected timestamps to all other replica sites for the given database.
+     * Uses the same endpoint as in replicateTimestampsToAllSites.
+     */
+    private void synchronizeTimestampsToAllSites(DatabaseDto database, List<TupleReplicationTimestampDto> timestamps) {
+        if (database == null || database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+            log.info("No replica URLs available for timestamp synchronization");
+            return;
+        }
+
+        // Group timestamps by their local tableId; only include those created at this site (siteUrl == baseUrl)
+        Map<UUID, List<TupleReplicationTimestampDto>> timestampsByLocalTable = new HashMap<>();
+        for (TupleReplicationTimestampDto ts : timestamps) {
+            if (ts.getSiteUrl() != null && ts.getSiteUrl().equals(baseUrl)) {
+                timestampsByLocalTable.computeIfAbsent(ts.getTableId(), k -> new ArrayList<>()).add(ts);
+            }
+        }
+
+        if (timestampsByLocalTable.isEmpty()) {
+            log.info("No local timestamps to synchronize to other replicas");
+            return;
+        }
+
+        // Iterate over each replica URL (target sites)
+        for (Map.Entry<String, UUID> replicaEntry : database.getReplicaUrls().entrySet()) {
+            final String replicaUrl = replicaEntry.getKey();
+            final UUID targetDatabaseId = replicaEntry.getValue();
+
+            // Skip current site
+            if (replicaUrl.equals(baseUrl)) {
+                continue;
+            }
+
+            // For each local table, resolve the remote table id for this replica and send timestamps
+            for (Map.Entry<UUID, List<TupleReplicationTimestampDto>> tableEntry : timestampsByLocalTable.entrySet()) {
+                final UUID localTableId = tableEntry.getKey();
+                final List<TupleReplicationTimestampDto> tableTimestamps = tableEntry.getValue();
+
+                try {
+                    // Resolve remote table id using metadata service (via TableDto.replicaUrls)
+                    final var tableDto = metadataServiceGateway.getTableById(database.getId(), localTableId);
+                    final Map<String, UUID> replicaTableMap = tableDto.getReplicaUrls();
+                    if (replicaTableMap == null || !replicaTableMap.containsKey(replicaUrl)) {
+                        log.warn("Missing remote table id for replicaUrl={} for local table {} - skipping", replicaUrl, localTableId);
+                        continue;
+                    }
+                    final UUID targetTableId = replicaTableMap.get(replicaUrl);
+
+                    // Build payload: replicate exactly the local timestamps as received
+                    List<Map<String, Object>> timestampsForReplication = new ArrayList<>();
+                    for (TupleReplicationTimestampDto ts : tableTimestamps) {
+                        Map<String, Object> tsMap = Map.of(
+                            "siteUrl", ts.getSiteUrl(),
+                            "replicationId", ts.getReplicationId(),
+                            "databaseId", ts.getDatabaseId().toString(),
+                            "tableId", ts.getTableId().toString(),
+                            "rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null,
+                            "rowEnd", ts.getRowEnd() != null ? ts.getRowEnd().toString() : null
+                        );
+                        timestampsForReplication.add(tsMap);
+                    }
+
+                    log.info("Synchronizing {} timestamps to replica {} for databaseId={}, tableId={}",
+                        timestampsForReplication.size(), replicaUrl, targetDatabaseId, targetTableId);
+
+                    final String path = replicaUrl + "/api/v1/database/" + targetDatabaseId + "/table/" + targetTableId + "/timestamps";
+                    final Map<String, Object> request = Map.of("timestamps", timestampsForReplication);
+
+                    final HttpEntity<Map<String, Object>> httpRequest = new HttpEntity<>(request);
+                    ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
+                        path, org.springframework.http.HttpMethod.POST, httpRequest, Map.class);
+
+                    log.info("Timestamp synchronization to {}: {}", replicaUrl, response.getStatusCode());
+                } catch (Exception e) {
+                    log.error("Failed to synchronize timestamps to {} for table {}: {}", replicaUrl, localTableId, e.getMessage());
+                }
+            }
+        }
+    }
 
 } 
