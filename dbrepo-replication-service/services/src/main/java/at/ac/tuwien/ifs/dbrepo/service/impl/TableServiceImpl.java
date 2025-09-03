@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -120,24 +121,31 @@ public class TableServiceImpl implements TableService {
                 final String path = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/" + remoteTableId + "/data/replicate";
                 log.info("Fan-out data replication to {}", path);
                 final HttpEntity<DataReplicationDto> request = new HttpEntity<>(dataReplicationDto);
-                ResponseEntity<java.util.Map> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST, request, java.util.Map.class);
+                ResponseEntity<TupleWithTimestampsDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST, request, TupleWithTimestampsDto.class);
                 log.info("Fan-out replication response: {}", response.getStatusCode());
 
-                final Object tsInserted = response.getBody().get("inserted_at");
-                final Object tsDeleted = response.getBody().get("deleted_at");
-                log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, tsInserted, tsDeleted);
-                log.debug("Full remote response body: {}", response.getBody());
+                final TupleWithTimestampsDto createdRemote = response.getBody();
+                final Instant insertedAtRemote = createdRemote != null ? createdRemote.getInsertedAt() : null;
+                final Instant deletedAtRemote = createdRemote != null ? createdRemote.getDeletedAt() : null;
+                log.info("Remote timestamps from {}: inserted_at={}, deleted_at={}", replicaUrl, insertedAtRemote, deletedAtRemote);
+                log.debug("Full remote response body: {}", createdRemote);
 
                 log.info("Replication ID: " + dataReplicationDto.getTuple().getReplicationKey());
 
                 // Create timestamp record for successful replication
+                // Build SQL Timestamps with microsecond precision
+                Timestamp rowStartTs = insertedAtRemote != null ? Timestamp.from(insertedAtRemote) : null;
+                if (rowStartTs != null) rowStartTs.setNanos((rowStartTs.getNanos() / 1000) * 1000);
+                Timestamp rowEndTs = deletedAtRemote != null ? Timestamp.from(deletedAtRemote) : null;
+                if (rowEndTs != null) rowEndTs.setNanos((rowEndTs.getNanos() / 1000) * 1000);
+
                 TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
                         .siteUrl(replicaUrl)
                         .replicationId(dataReplicationDto.getTuple().getReplicationKey())
                         .databaseId(remoteDatabaseId)
                         .tableId(remoteTableId)
-                        .rowStart(parseTimestamp((String) tsInserted))
-                        .rowEnd(parseTimestamp((String) tsDeleted)) // Replication completed
+                        .rowStart(rowStartTs)
+                        .rowEnd(rowEndTs) // Replication completed
                         .build();
 
                 timestampsToSave.add(timestamp);
@@ -158,14 +166,22 @@ public class TableServiceImpl implements TableService {
                 log.info("Saved {} replication timestamps to database", timestampsToSave.size());
 
                 // add local timestamp to be included in full replication
+                // Add local timestamp entry with microsecond precision
+                Timestamp localStart = dataReplicationDto.getTuple().getInsertedAt() != null
+                        ? Timestamp.from(dataReplicationDto.getTuple().getInsertedAt()) : null;
+                if (localStart != null) localStart.setNanos((localStart.getNanos() / 1000) * 1000);
+                Timestamp localEnd = dataReplicationDto.getTuple().getDeletedAt() != null
+                        ? Timestamp.from(dataReplicationDto.getTuple().getDeletedAt()) : null;
+                if (localEnd != null) localEnd.setNanos((localEnd.getNanos() / 1000) * 1000);
+
                 timestampsToSave.add(
                         TupleReplicationTimestamp.builder()
                                 .siteUrl(baseUrl)
                                 .replicationId(dataReplicationDto.getTuple().getReplicationKey())
                                 .databaseId(database.getId())
                                 .tableId(table.getId())
-                                .rowStart(parseTimestamp(dataReplicationDto.getTuple().getInsertedAt().toString()))
-                                .rowEnd(parseTimestamp(dataReplicationDto.getTuple().getDeletedAt() != null ? dataReplicationDto.getTuple().getDeletedAt().toString() : null))
+                                .rowStart(localStart)
+                                .rowEnd(localEnd)
                                 .build());
 
                 // Now replicate these timestamps to all other replica sites
