@@ -888,17 +888,8 @@ public class ReplicationServiceImpl implements ReplicationService {
      */
     private List<TupleReplicationTimestampDto> addTuplesToLocalDataService(List<TupleWithTimestampsDto> tuples, UUID databaseId, UUID tableId) {
         try {
-            // Resolve local table ID in case provided ID is from a remote site
+            // The provided tableId is already the local table ID. Use it directly for local insertion.
             UUID resolvedLocalTableId = tableId;
-            try {
-                LocalTableIdDto localIdDto = metadataServiceGateway.getLocalTableIdByReplicaTableId(databaseId, tableId);
-                if (localIdDto != null && localIdDto.getLocalTableId() != null) {
-                    resolvedLocalTableId = localIdDto.getLocalTableId();
-                    log.info("🔁 Resolved remote tableId {} to local tableId {}", tableId, resolvedLocalTableId);
-                }
-            } catch (Exception resolveEx) {
-                log.warn("⚠️ Could not resolve local table ID for {}: {}. Proceeding with provided ID.", tableId, resolveEx.getMessage());
-            }
 
             // Build the full URL for the tuples endpoint
             String path = String.format("/api/v1/database/%s/table/%s/tuples", databaseId, resolvedLocalTableId);
