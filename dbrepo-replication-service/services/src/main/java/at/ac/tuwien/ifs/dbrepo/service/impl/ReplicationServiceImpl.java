@@ -828,9 +828,9 @@ public class ReplicationServiceImpl implements ReplicationService {
         if (!allReplicationTimestamps.isEmpty()) {
             log.info("📊 Collected {} replication timestamps for fan-out:", allReplicationTimestamps.size());
             for (TupleReplicationTimestampDto timestamp : allReplicationTimestamps) {
-                log.info("  - Table: {}, ReplicationId: {}, RowStart: {}, RowEnd: {}", 
+                log.info("  - Table: {}, ReplicationId: {}, RowStart: {}, RowEnd: {}, SiteUrl: {}", 
                     timestamp.getTableId(), timestamp.getReplicationId(), 
-                    timestamp.getRowStart(), timestamp.getRowEnd());
+                    timestamp.getRowStart(), timestamp.getRowEnd(), timestamp.getSiteUrl());
             }
             // Fan out the locally collected timestamps to all other replicas
             synchronizeTimestampsToAllSites(database, allReplicationTimestamps);
@@ -989,12 +989,10 @@ public class ReplicationServiceImpl implements ReplicationService {
             return;
         }
 
-        // Group timestamps by their local tableId; only include those created at this site (siteUrl == baseUrl)
+        // Group timestamps by their local tableId – replicate exactly the collected ones
         Map<UUID, List<TupleReplicationTimestampDto>> timestampsByLocalTable = new HashMap<>();
         for (TupleReplicationTimestampDto ts : timestamps) {
-            if (ts.getSiteUrl() != null && ts.getSiteUrl().equals(baseUrl)) {
-                timestampsByLocalTable.computeIfAbsent(ts.getTableId(), k -> new ArrayList<>()).add(ts);
-            }
+            timestampsByLocalTable.computeIfAbsent(ts.getTableId(), k -> new ArrayList<>()).add(ts);
         }
 
         if (timestampsByLocalTable.isEmpty()) {
