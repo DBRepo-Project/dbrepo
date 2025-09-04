@@ -93,6 +93,31 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
+    public void replicateTupleDelete(TupleWithTimestampsDto tupleWithTimestamps, DatabaseDto database, TableDto table) {
+        try {
+            log.info("Sending tuple delete replication to replication service for {}.{}, replicationKey={}",
+                    database.getInternalName(), table.getInternalName(),
+                    tupleWithTimestamps != null ? tupleWithTimestamps.getReplicationKey() : null);
+
+            final var request = DataReplicationDto.builder()
+                    .tuple(tupleWithTimestamps)
+                    .database(database)
+                    .table(table)
+                    .build();
+
+            ResponseEntity<Void> response = replicationRestTemplate.exchange(
+                    "/api/replication/data/delete",
+                    HttpMethod.DELETE,
+                    new HttpEntity<>(request),
+                    Void.class
+            );
+            log.info("Tuple delete replication sent. Status: {}", response.getStatusCode());
+        } catch (Exception e) {
+            log.error("Failed to send tuple delete replication: {}", e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void replicateQuery(DatabaseDto database, QueryDto query) {
         try {
             log.info("Sending query replication to replication service for database: {}, query: {}", 

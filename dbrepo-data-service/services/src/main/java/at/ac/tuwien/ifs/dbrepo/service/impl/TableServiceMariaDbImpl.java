@@ -370,6 +370,104 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_delete_tuple_with_ts", description = "Time spent deleting a table tuple incl. timestamps", histogram = true)
+    public TupleWithTimestampsDto deleteTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDeleteDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException {
+        log.trace("delete tuple with timestamps: {}", data);
+
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        Map<String, Object> deletedTupleWithTimestamps = null;
+        try {
+            // 1) Perform the delete
+            final int[] idx = new int[]{1};
+            final PreparedStatement deleteStmt = connection.prepareStatement(
+                    mariaDbMapper.tupleToRawDeleteQuery(database.getInternalName(), table, data));
+            for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                mariaDbMapper.prepareStatementWithColumnTypeObject(deleteStmt,
+                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                idx[0]++;
+            }
+            final long start = System.currentTimeMillis();
+            deleteStmt.executeUpdate();
+            log.atDebug()
+                    .setMessage("delete tuple in table (with ts): " + table.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_delete_tuple_with_ts")
+                    .log();
+
+            connection.commit();
+
+            // 2) Re-read latest version including versioning timestamps after deletion
+            final StringBuilder selectAll = new StringBuilder("SELECT ");
+            final int[] colIdx = new int[]{0};
+            for (ColumnDto c : table.getColumns()) {
+                selectAll.append(colIdx[0]++ == 0 ? "" : ", ")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`");
+            }
+            selectAll.append(", `replication_key`");
+            selectAll.append(", ROW_START AS inserted_at, ROW_END AS deleted_at FROM `")
+                    .append(database.getInternalName())
+                    .append("`.`")
+                    .append(table.getInternalName())
+                    .append("` FOR SYSTEM_TIME ALL WHERE ");
+
+            // Build WHERE condition respecting NULLs
+            final int[] whereIdx = new int[]{0};
+            for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                selectAll.append(whereIdx[0]++ == 0 ? "" : " AND ")
+                        .append("`").append(entry.getKey()).append("`");
+                if (entry.getValue() == null) {
+                    selectAll.append(" IS NULL");
+                } else {
+                    selectAll.append(" = ?");
+                }
+            }
+            selectAll.append(" ORDER BY inserted_at DESC LIMIT 1;");
+
+            final PreparedStatement selectStmt = connection.prepareStatement(selectAll.toString());
+            int bind = 1;
+            for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                if (entry.getValue() != null) {
+                    mariaDbMapper.prepareStatementWithColumnTypeObject(selectStmt,
+                            getColumnType(table.getColumns(), entry.getKey()), bind++, entry.getKey(), entry.getValue());
+                }
+            }
+            final ResultSet rs = selectStmt.executeQuery();
+            if (rs.next()) {
+                deletedTupleWithTimestamps = new java.util.HashMap<>();
+                for (ColumnDto c : table.getColumns()) {
+                    deletedTupleWithTimestamps.put(c.getInternalName(), rs.getObject(c.getInternalName()));
+                }
+                putIfColumnExists(rs, deletedTupleWithTimestamps, "replication_key");
+                putIfColumnExists(rs, deletedTupleWithTimestamps, "inserted_at");
+                putIfColumnExists(rs, deletedTupleWithTimestamps, "deleted_at");
+            }
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to delete tuple with timestamps: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to delete tuple with timestamps: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+
+        if (deletedTupleWithTimestamps != null) {
+            formatTimestampsWithMicrosecondPrecision(deletedTupleWithTimestamps);
+        }
+
+        log.info("Deleted tuple(s) in table (with ts): {}.{}", database.getInternalName(), table.getInternalName());
+
+        return TupleWithTimestampsDto.builder()
+                .data(deletedTupleWithTimestamps)
+                .insertedAt(parseTimestampToInstant(deletedTupleWithTimestamps != null ? deletedTupleWithTimestamps.get("inserted_at") : null))
+                .deletedAt(parseTimestampToInstant(deletedTupleWithTimestamps != null ? deletedTupleWithTimestamps.get("deleted_at") : null))
+                .replicationKey(deletedTupleWithTimestamps != null ? (String) deletedTupleWithTimestamps.get("replication_key") : null)
+                .build();
+    }
+
+    @Override
     @Timed(value = "dbrepo_data_create_tuple", description = "Time spent creating a table tuple", histogram = true)
     public void createTuple(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {

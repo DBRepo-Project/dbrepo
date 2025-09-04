@@ -14,5 +14,7 @@ public interface ReplicationService {
 
     void replicateTuple(TupleWithTimestampsDto tupleWithTimestamps, DatabaseDto database, TableDto table);
     
+    void replicateTupleDelete(TupleWithTimestampsDto tupleWithTimestamps, DatabaseDto database, TableDto table);
+    
     void replicateQuery(DatabaseDto database, QueryDto query);
 }
