@@ -131,6 +131,12 @@ public interface TableService {
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException;
 
     /**
+     * Deletes a tuple and returns the versioned row including ROW_START/ROW_END as timestamps.
+     */
+    TupleWithTimestampsDto deleteTupleWithTimestamps(DatabaseDto database, TableDto table, TupleDeleteDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException;
+
+    /**
      * Updates a tuple in a table.
      *
      * @param table The table.
