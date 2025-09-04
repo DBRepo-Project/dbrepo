@@ -230,6 +230,7 @@ export const useTableService = (): any => {
         name: c.name,
         type: c.type,
         size: c.size ? c.size : null,
+        description: c.comment ? c.comment : null,
         d: c.d ? c.d : null,
         enums: c.enums_values ? c.enums_values.split(',') : [],
         sets: c.sets_values ? c.sets_values.split(',') : [],

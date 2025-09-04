@@ -166,8 +166,8 @@ export default {
         { value: 'extra', title: this.$t('pages.table.subpages.schema.extra.title') },
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
-        { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
+        { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
       ],
       dateColumns: [],
       cacheStore: useCacheStore()

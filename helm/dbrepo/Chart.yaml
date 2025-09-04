@@ -4,21 +4,21 @@ annotations:
     - name: openldap
       image: docker.io/bitnami/openldap:2.6.8-debian-12-r1
     - name: metadata-service
-      image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.10.5
     - name: data-service
-      image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.10.5
     - name: search-service
-      image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.10.5
     - name: search-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.10.5
     - name: storage-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.5
     - name: storage-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.10.5
     - name: ui
-      image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.10.5
     - name: dashboard-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.10.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.10.5
   licenses: Apache-2.0
 apiVersion: v2
 name: dbrepo
@@ -26,8 +26,8 @@ description: Helm Chart for installing DBRepo
 sources:
   - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 type: application
-version: "1.10.4"
-appVersion: "1.10.4"
+version: "1.10.5"
+appVersion: "1.10.5"
 keywords:
   - dbrepo
 maintainers:

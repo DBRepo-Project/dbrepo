@@ -487,6 +487,9 @@
           "remove": {
             "text": "Remove"
           },
+          "comment": {
+            "label": "Description"
+          },
           "internal-name": {
             "title": "Internal Name"
           },
