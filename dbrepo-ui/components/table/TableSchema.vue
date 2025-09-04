@@ -84,9 +84,9 @@
             @focusout="formatValues(c)" />
         </v-col>
         <v-col
-          v-if="columnType(c) && columnType(c).size_required !== null"
           cols="1">
           <v-text-field
+            v-if="columnType(c) && columnType(c).size_required !== null"
             v-model.number="c.size"
             type="number"
             :min="columnType(c).size_min"
@@ -105,9 +105,9 @@
             :label="$t('pages.table.subpages.schema.size.label')" />
         </v-col>
         <v-col
-          v-if="columnType(c) && columnType(c).d_required !== null"
           cols="1">
           <v-text-field
+            v-if="columnType(c) && columnType(c).d_required !== null"
             v-model.number="c.d"
             type="number"
             :min="columnType(c).d_min !== null ? columnType(c).d_min : null"
@@ -126,8 +126,16 @@
             :label="$t('pages.table.subpages.schema.d.label')" />
         </v-col>
         <v-col
-          v-if="shift(c)"
-          :cols="shift(c)" />
+          cols="1"
+          class="pl-1">
+          <v-text-field
+            v-model="c.comment"
+            required
+            persistent-hint
+            :variant="inputVariant"
+            :label="$t('pages.table.subpages.schema.comment.label')"
+            @focusout="formatValues(c)" />
+        </v-col>
         <v-col
           cols="auto"
           class="pl-2">
@@ -139,7 +147,7 @@
         </v-col>
         <v-col
           cols="auto"
-          class="pl-10">
+          class="pl-1">
           <v-checkbox
             v-model="c.null_allowed"
             :disabled="c.primary_key || c.type === 'serial' || disabled"
@@ -147,7 +155,7 @@
         </v-col>
         <v-col
           cols="auto"
-          class="pl-10">
+          class="pl-1">
           <v-checkbox
             v-model="c.unique"
             :disabled="disabled || c.type === 'serial'"
@@ -298,10 +306,13 @@ export default {
         return false
       }
       let shift = 0
-      if (!this.hasEnumOrSet(column) && (this.columnType(column).size_required === null || this.columnType(column).size_required === undefined) && this.columns.filter(c => (this.columnType(c).size_required !== null || this.columnType(c).size_required !== undefined)).length > 0) {
+      if (this.hasEnumOrSet(column)) {
+        return 0
+      }
+      if (!this.columnType(column).size_required && this.columns.filter(c => (this.columnType(c).size_required)).length > 0) {
         shift++
       }
-      if (!this.hasEnumOrSet(column) && (this.columnType(column).d_required === null || this.columnType(column).d_required === undefined) && this.columns.filter(c => (this.columnType(c).d_required !== null || this.columnType(c).d_required !== undefined)).length > 0) {
+      if (!this.columnType(column).d_required && this.columns.filter(c => (this.columnType(c).d_required)).length > 0) {
         shift++
       }
       return shift
