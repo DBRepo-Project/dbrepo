@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,8 +111,8 @@ public class TableServiceImpl implements TableService {
         // For each replica URL in the database, send the tuple to its replication endpoint with the proper remote table id
         for (var entry : database.getReplicaUrls().entrySet()) {
             final String replicaUrl = entry.getKey();
-            final java.util.UUID remoteDatabaseId = entry.getValue();
-            final java.util.UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
+            final UUID remoteDatabaseId = entry.getValue();
+            final UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
             if (remoteTableId == null) {
                 log.warn("Missing remote table id for replicaUrl={} in table replica map; skipping", replicaUrl);
                 continue;
@@ -202,13 +203,13 @@ public class TableServiceImpl implements TableService {
             return;
         }
 
-        // Collect timestamps returned by each replica (for now, log them)
-        java.util.List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> collected = new java.util.ArrayList<>();
+        // Collect timestamps returned by each replica
+        List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> collected = new ArrayList<>();
 
         for (var entry : database.getReplicaUrls().entrySet()) {
             final String replicaUrl = entry.getKey();
-            final java.util.UUID remoteDatabaseId = entry.getValue();
-            final java.util.UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
+            final UUID remoteDatabaseId = entry.getValue();
+            final UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
             if (remoteTableId == null) {
                 log.warn("Missing remote table id for replicaUrl={} in table replica map; skipping", replicaUrl);
                 continue;
@@ -224,14 +225,30 @@ public class TableServiceImpl implements TableService {
                 if (deletedRemote != null) {
                     log.info("Remote deleted tuple timestamps from {}: insertedAt={}, deletedAt={}, replicationKey={}",
                             replicaUrl, deletedRemote.getInsertedAt(), deletedRemote.getDeletedAt(), deletedRemote.getReplicationKey());
+
+                    // Convert to replication timestamp dto and collect
+                    TupleReplicationTimestampDto ts =
+                            at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto.builder()
+                                    .siteUrl(replicaUrl)
+                                    .replicationId(deletedRemote.getReplicationKey())
+                                    .databaseId(remoteDatabaseId)
+                                    .tableId(remoteTableId)
+                                    .rowStart(deletedRemote.getInsertedAt())
+                                    .rowEnd(deletedRemote.getDeletedAt())
+                                    .build();
+                    collected.add(ts);
                 }
             } catch (Exception e) {
                 log.error("Failed to replicate delete to {}: {}", replicaUrl, e.getMessage());
             }
         }
 
-        // For now just log that we would update timestamps here
-        log.info("Collected delete replication timestamps from replicas: {} (logging only)", collected.size());
+        // For now just log collected timestamps
+        log.info("Collected {} delete replication timestamps", collected.size());
+        for (var ts : collected) {
+            log.info("Collected TS -> siteUrl={}, replicationId={}, dbId={}, tableId={}, rowStart={}, rowEnd={}",
+                    ts.getSiteUrl(), ts.getReplicationId(), ts.getDatabaseId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
+        }
     }
 
     /**
