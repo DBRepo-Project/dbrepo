@@ -243,11 +243,112 @@ public class TableServiceImpl implements TableService {
             }
         }
 
-        // For now just log collected timestamps
-        log.info("Collected {} delete replication timestamps", collected.size());
+        // Add local timestamp from the originating delete
+        if (dataReplicationDto.getTuple() != null) {
+            TupleReplicationTimestampDto localTs = TupleReplicationTimestampDto.builder()
+                    .siteUrl(baseUrl)
+                    .replicationId(dataReplicationDto.getTuple().getReplicationKey())
+                    .databaseId(database.getId())
+                    .tableId(table.getId())
+                    .rowStart(dataReplicationDto.getTuple().getInsertedAt())
+                    .rowEnd(dataReplicationDto.getTuple().getDeletedAt())
+                    .build();
+            collected.add(localTs);
+        }
+
+        log.info("Collected {} delete replication timestamps (incl. local)", collected.size());
         for (var ts : collected) {
             log.info("Collected TS -> siteUrl={}, replicationId={}, dbId={}, tableId={}, rowStart={}, rowEnd={}",
                     ts.getSiteUrl(), ts.getReplicationId(), ts.getDatabaseId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
+        }
+
+        // Persist/update timestamps locally and synchronize to all sites (update semantics: only set row_end)
+        try {
+            // Convert to entities and update only row_end
+            replicationTimestampService.ensureTableExists(database);
+            List<TupleReplicationTimestamp> toSave = new ArrayList<>();
+            for (TupleReplicationTimestampDto tsDto : collected) {
+                // Skip local site entries for LOCAL updates (they don't exist locally)
+                if (tsDto.getSiteUrl() != null && tsDto.getSiteUrl().equals(baseUrl)) {
+                    log.debug("Skipping local site timestamp for local update: replicationId={}, siteUrl={}", tsDto.getReplicationId(), tsDto.getSiteUrl());
+                    continue;
+                }
+                Timestamp rs = tsDto.getRowStart() != null ? Timestamp.from(tsDto.getRowStart()) : null;
+                if (rs != null) rs.setNanos((rs.getNanos() / 1000) * 1000);
+                Timestamp re = tsDto.getRowEnd() != null ? Timestamp.from(tsDto.getRowEnd()) : null;
+                if (re != null) re.setNanos((re.getNanos() / 1000) * 1000);
+                toSave.add(TupleReplicationTimestamp.builder()
+                        .siteUrl(tsDto.getSiteUrl())
+                        .replicationId(tsDto.getReplicationId())
+                        .databaseId(tsDto.getDatabaseId())
+                        .tableId(tsDto.getTableId())
+                        .rowStart(rs)
+                        .rowEnd(re)
+                        .build());
+            }
+            replicationTimestampService.updateReplicationTimestampsRowEnd(database, toSave);
+            log.info("Updated row_end for {} delete replication timestamps locally", toSave.size());
+
+            // Fan-out updates to all other sites by sending only row_end updates
+            synchronizeDeleteTimestampsToAllSites(database, table, toSave);
+        } catch (Exception e) {
+            log.error("Failed to persist/synchronize delete replication timestamps: {}", e.getMessage(), e);
+        }
+    }
+
+    // Send only row_end updates to all replicas
+    private void synchronizeDeleteTimestampsToAllSites(DatabaseDto database, TableDto table, List<TupleReplicationTimestamp> timestamps) {
+        if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+            log.info("No replica URLs available for delete timestamp synchronization");
+            return;
+        }
+
+        for (Map.Entry<String, UUID> replicaEntry : database.getReplicaUrls().entrySet()) {
+            final String replicaUrl = replicaEntry.getKey();
+            final UUID targetDatabaseId = replicaEntry.getValue();
+
+            // Resolve remote table id for this replica
+            UUID targetTableId;
+            try {
+                final var tableDto = metadataServiceGateway.getTableById(database.getId(), table.getId());
+                final Map<String, UUID> replicaTableMap = tableDto.getReplicaUrls();
+                if (replicaTableMap == null || !replicaTableMap.containsKey(replicaUrl)) {
+                    log.warn("Missing remote table id for replicaUrl={} for local table {} - skipping", replicaUrl, table.getId());
+                    continue;
+                }
+                targetTableId = replicaTableMap.get(replicaUrl);
+            } catch (Exception e) {
+                log.warn("Could not resolve remote table id for replicaUrl={}: {}", replicaUrl, e.getMessage());
+                continue;
+            }
+
+            // Build payload with only row_end updates for timestamps
+            List<Map<String, Object>> timestampsForReplication = new ArrayList<>();
+            for (TupleReplicationTimestamp ts : timestamps) {
+                Map<String, Object> tsMap = Map.of(
+                        "siteUrl", ts.getSiteUrl(),
+                        "replicationId", ts.getReplicationId(),
+                        "databaseId", ts.getDatabaseId().toString(),
+                        "tableId", ts.getTableId().toString(),
+                        "rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null,
+                        "rowEnd", ts.getRowEnd() != null ? ts.getRowEnd().toString() : null
+                );
+                timestampsForReplication.add(tsMap);
+            }
+
+            log.info("Synchronizing delete timestamps (row_end) to replica {} for databaseId={}, tableId={}",
+                    replicaUrl, targetDatabaseId, targetTableId);
+
+            try {
+                final String path = replicaUrl + "/api/v1/database/" + targetDatabaseId + "/table/" + targetTableId + "/timestamps";
+                final Map<String, Object> request = Map.of("timestamps", timestampsForReplication);
+                final HttpEntity<Map<String, Object>> httpRequest = new HttpEntity<>(request);
+                ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
+                        path, HttpMethod.POST, httpRequest, Map.class);
+                log.info("Delete timestamp synchronization to {}: {}", replicaUrl, response.getStatusCode());
+            } catch (Exception e) {
+                log.error("Failed to synchronize delete timestamps to {}: {}", replicaUrl, e.getMessage());
+            }
         }
     }
 

@@ -99,6 +99,44 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
     }
 
     @Override
+    public void updateReplicationTimestampsRowEnd(DatabaseDto database, List<TupleReplicationTimestamp> timestamps) {
+        if (timestamps == null || timestamps.isEmpty()) {
+            return;
+        }
+
+        final String sql = """
+            UPDATE tuple_replication_timestamps
+            SET row_end = ?
+            WHERE site_url = ? AND replication_id = ? AND database_id = ? AND table_id = ?
+            """;
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            connection.setAutoCommit(false);
+
+            for (TupleReplicationTimestamp timestamp : timestamps) {
+                statement.setTimestamp(1, timestamp.getRowEnd());
+                statement.setString(2, timestamp.getSiteUrl());
+                statement.setString(3, timestamp.getReplicationId());
+                statement.setString(4, timestamp.getDatabaseId().toString());
+                statement.setString(5, timestamp.getTableId().toString());
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+            connection.commit();
+            log.debug("Updated row_end for {} replication timestamps", timestamps.size());
+
+        } catch (SQLException e) {
+            log.error("Failed to update replication timestamps row_end: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to update replication timestamps row_end", e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
     public List<TupleReplicationTimestamp> findByDatabaseIdAndTableId(DatabaseDto database, UUID databaseId, UUID tableId) {
         final String sql = "SELECT * FROM tuple_replication_timestamps WHERE database_id = ? AND table_id = ?";
 

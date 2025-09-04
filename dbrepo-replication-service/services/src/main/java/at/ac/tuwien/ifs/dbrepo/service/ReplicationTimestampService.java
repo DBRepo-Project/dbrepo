@@ -19,6 +19,11 @@ public interface ReplicationTimestampService {
     void saveReplicationTimestamps(DatabaseDto database, List<TupleReplicationTimestamp> timestamps);
 
     /**
+     * Update row_end for existing replication timestamps (no inserts).
+     */
+    void updateReplicationTimestampsRowEnd(DatabaseDto database, List<TupleReplicationTimestamp> timestamps);
+
+    /**
      * Find all timestamps for a specific database and table
      */
     List<TupleReplicationTimestamp> findByDatabaseIdAndTableId(DatabaseDto database, UUID databaseId, UUID tableId);
