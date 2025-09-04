@@ -106,7 +106,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     .build();
 
             ResponseEntity<Void> response = replicationRestTemplate.exchange(
-                    "/api/replication/data/delete",
+                    "/api/replication/data",
                     HttpMethod.DELETE,
                     new HttpEntity<>(request),
                     Void.class

@@ -17,4 +17,6 @@ public interface TableService {
     Map<String, Object> insertReplicatedTable(UUID databaseId, TableNotificationDto tableNotificationDto);
 
     void handleDataReplication(DataReplicationDto dataReplicationDto);
+
+    void handleDataDeleteReplication(DataReplicationDto dataReplicationDto);
 }

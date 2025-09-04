@@ -42,33 +42,12 @@ public class DataEndpoint {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/delete")
-    @Operation(summary = "Receive delete replication", description = "Receives a delete replication (tuple incl. timestamps) and fans out to replicas")
+    @DeleteMapping
+    @Operation(summary = "Receive delete replication", description = "Receives a delete replication (tuple incl. timestamps) and fans out to replicas on the same base path")
     public ResponseEntity<Map<String, Object>> receiveDeleteReplication(@RequestBody DataReplicationDto request) {
         log.info("Received delete replication");
-        log.info("Full request: {}", request);
-        if (request.getDatabase() != null) {
-            log.info("Database: id={}, internalName={}, replicas={}",
-                    request.getDatabase().getId(),
-                    request.getDatabase().getInternalName(),
-                    request.getDatabase().getReplicaUrls() != null ? request.getDatabase().getReplicaUrls().size() : 0);
-        }
-        if (request.getTable() != null) {
-            log.info("Table: id={}, internalName={}, replicas={}",
-                    request.getTable().getId(),
-                    request.getTable().getInternalName(),
-                    request.getTable().getReplicaUrls() != null ? request.getTable().getReplicaUrls().size() : 0);
-        }
-        if (request.getTuple() != null) {
-            log.info("Tuple: replicationKey={}, insertedAt={}, deletedAt={}",
-                    request.getTuple().getReplicationKey(),
-                    request.getTuple().getInsertedAt(),
-                    request.getTuple().getDeletedAt());
-            log.info("Tuple data keys: {}", request.getTuple().getData() != null ? request.getTuple().getData().keySet() : null);
-            log.info("Tuple data: {}", request.getTuple().getData());
-        }
 
-        tableService.handleDataReplication(request);
+        tableService.handleDataDeleteReplication(request);
 
         final Map<String, Object> response = Map.of(
                 "status", "accepted",

@@ -447,6 +447,43 @@ public class TableEndpoint extends RestEndpoint {
         }
     }
 
+    @DeleteMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbrepo_table_data_delete_replicate_remote")
+    @Operation(summary = "Replicate delete (remote)",
+            description = "Deletes a tuple locally using incoming replicated data and returns the tuple timestamps.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<TupleWithTimestampsDto> deleteTupleForReplicationRemote(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                                  @NotNull @PathVariable("tableId") UUID tableId,
+                                                                                  @Valid @RequestBody DataReplicationDto data,
+                                                                                  Principal principal) {
+        log.info("endpoint replicate delete (remote), databaseId={}, tableId={}", databaseId, tableId);
+        try {
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            final TableDto table = cacheService.getTable(databaseId, tableId);
+
+            // Build keys from tuple data based on PK
+            final java.util.Map<String, Object> keys = new java.util.LinkedHashMap<>();
+            for (var pk : table.getConstraints().getPrimaryKey()) {
+                final String col = pk.getColumn().getInternalName();
+                keys.put(col, data.getTuple() != null ? data.getTuple().getData().get(col) : null);
+            }
+            final TupleDeleteDto deleteDto = TupleDeleteDto.builder().keys(keys).build();
+
+            TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table, deleteDto);
+
+            log.info("remote delete produced timestamps: insertedAt={}, deletedAt={}, replicationKey={}",
+                    deleted != null ? deleted.getInsertedAt() : null,
+                    deleted != null ? deleted.getDeletedAt() : null,
+                    deleted != null ? deleted.getReplicationKey() : null);
+
+            return ResponseEntity.status(HttpStatus.OK).body(deleted);
+        } catch (Exception e) {
+            log.error("Failed to process remote replicated delete: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
     @PutMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_update")

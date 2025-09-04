@@ -193,6 +193,47 @@ public class TableServiceImpl implements TableService {
         }
     }
 
+    @Override
+    public void handleDataDeleteReplication(DataReplicationDto dataReplicationDto) {
+        final DatabaseDto database = dataReplicationDto.getDatabase();
+        final TableDto table = dataReplicationDto.getTable();
+        if (database == null || table == null || database.getReplicaUrls() == null || table.getReplicaUrls() == null) {
+            log.info("No replica URLs provided for delete replication; skipping fan-out");
+            return;
+        }
+
+        // Collect timestamps returned by each replica (for now, log them)
+        java.util.List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> collected = new java.util.ArrayList<>();
+
+        for (var entry : database.getReplicaUrls().entrySet()) {
+            final String replicaUrl = entry.getKey();
+            final java.util.UUID remoteDatabaseId = entry.getValue();
+            final java.util.UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
+            if (remoteTableId == null) {
+                log.warn("Missing remote table id for replicaUrl={} in table replica map; skipping", replicaUrl);
+                continue;
+            }
+            try {
+                final String path = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/" + remoteTableId + "/data/replicate";
+                log.info("Fan-out delete replication to {}", path);
+                final HttpEntity<DataReplicationDto> request = new HttpEntity<>(dataReplicationDto);
+                ResponseEntity<TupleWithTimestampsDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.DELETE, request, TupleWithTimestampsDto.class);
+                log.info("Delete replication response: {}", response.getStatusCode());
+
+                final TupleWithTimestampsDto deletedRemote = response.getBody();
+                if (deletedRemote != null) {
+                    log.info("Remote deleted tuple timestamps from {}: insertedAt={}, deletedAt={}, replicationKey={}",
+                            replicaUrl, deletedRemote.getInsertedAt(), deletedRemote.getDeletedAt(), deletedRemote.getReplicationKey());
+                }
+            } catch (Exception e) {
+                log.error("Failed to replicate delete to {}: {}", replicaUrl, e.getMessage());
+            }
+        }
+
+        // For now just log that we would update timestamps here
+        log.info("Collected delete replication timestamps from replicas: {} (logging only)", collected.size());
+    }
+
     /**
      * Replicate timestamps to all other replica sites
      */
