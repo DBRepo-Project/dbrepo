@@ -530,9 +530,21 @@ public class TableEndpoint extends RestEndpoint {
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
-            tableService.deleteTuple(database, table, data);
-            return ResponseEntity.status(HttpStatus.ACCEPTED)
-                    .build();
+            if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
+                final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table, data);
+                log.atInfo()
+                        .setMessage("deleted tuple with timestamps")
+                        .addKeyValue("deleted", deleted)
+                        .log();
+
+                // fan-out delete to replication service
+                replicationService.replicateTupleDelete(deleted, database, table);
+            } else {
+                tableService.deleteTuple(database, table, data);
+                log.debug("deleted tuple without timestamps (no replicas configured)");
+            }
+            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
