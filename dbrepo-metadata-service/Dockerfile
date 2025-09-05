@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
+FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-21 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
@@ -17,20 +17,21 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM amazoncorretto:17-alpine3.21 AS runtime
+FROM --platform=$BUILDPLATFORM bitnami/java:21 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk --no-cache add \
-    bash \
+RUN apt-get update && \
+    apt-get install -y \
     curl \
-    jq
+    jq && \
+    apt-get clean
 
 WORKDIR /app
 
 RUN mkdir -p /var/log/app/service/metadata && \
     chown -R 1001:1001 /var/log/app
 
-RUN adduser -D dbrepo --uid 1001 && \
+RUN adduser dbrepo --uid 1001 && \
     chown -R 1001:1001 /app
 
 USER 1001

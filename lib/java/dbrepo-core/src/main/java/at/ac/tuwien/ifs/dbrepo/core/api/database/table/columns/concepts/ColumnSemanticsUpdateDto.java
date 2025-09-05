@@ -22,4 +22,7 @@ public class ColumnSemanticsUpdateDto {
     @JsonProperty("unit_uri")
     @Schema(description = "The URI of the unit", example = "http://www.wikidata.org/entity/Q11466")
     private String unitUri;
+
+    @Schema(description = "The description", example = "physical property of matter that quantitatively expresses the common notions of hot and cold")
+    private String description;
 }

@@ -376,7 +376,7 @@ export default {
         hint += ' ' + this.$t('pages.table.subpages.data.auto.hint')
       }
       if (is_primary_key) {
-        hint += ' ' + this.$t('pages.table.subpages.data.primary-key.hint')
+        hint += ' ' + this.$t('pages.table.subpages.data.primary_key.hint')
       }
       if (this.formatHint(column)) {
         hint += this.$t('pages.table.subpages.data.format.hint') + ' ' + this.formatHint(column)
