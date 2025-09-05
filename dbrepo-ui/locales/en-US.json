@@ -487,6 +487,9 @@
           "remove": {
             "text": "Remove"
           },
+          "comment": {
+            "label": "Description"
+          },
           "internal-name": {
             "title": "Internal Name"
           },
@@ -528,10 +531,10 @@
           "d": {
             "label": "d"
           },
-          "primary-key": {
+          "primary_key": {
             "label": "Primary key"
           },
-          "foreign-key": {
+          "foreign_key": {
             "label": "Foreign key"
           },
           "references": {
@@ -542,6 +545,9 @@
           },
           "unique": {
             "label": "Unique"
+          },
+          "check": {
+            "label": "Check"
           },
           "fsp": {
             "label": "fsp"
@@ -560,14 +566,22 @@
           }
         },
         "semantics": {
-          "title": "Assign semantic {type} for table column",
+          "title": "Update semantics for table column",
           "subtitle": "Semantic instances help machines to get the proper context of your dataset",
           "recommended": "Recommended semantic instances",
           "bullet": "●",
           "info": "The following ontologies automatically will query the fields rdfs:label and store it for this column. You can still use other URIs that are not matching these ontologies, the URI will be displayed instead",
-          "uri": {
-            "label": "Semantic Instance URI",
+          "concept": {
+            "label": "Concept URI",
             "hint": "This URI can be automatically resolved"
+          },
+          "unit": {
+            "label": "Unit URI",
+            "hint": "This URI can be automatically resolved"
+          },
+          "description": {
+            "label": "Description",
+            "hint": "Human-understandable description what the column represents"
           }
         },
         "versioning": {

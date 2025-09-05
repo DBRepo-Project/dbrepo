@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-17 AS build
+FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-21 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
@@ -16,7 +16,7 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM bitnami/java:17 AS runtime
+FROM --platform=$BUILDPLATFORM bitnami/java:21 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ARG DUCKDB_VERSION="v1.2.2"

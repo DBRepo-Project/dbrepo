@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d5410d1f41eeacecb62abcf45a1862167d52f09fb86c7551a3bf4f50d771f04f"
+            "sha256": "0ce72bfd18cf9f0c0fe76551f13c9c9d4c4d35b07ad354b9947fb2dce12f55de"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -259,11 +259,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:06eda308f6606d0c4758060488b6cd5157c1d3709472f0aa488712f2eeb05717",
-                "sha256:e1d944a43ccb7dd490c103047a13e3ed6403002ae62985e735fd3c2a4c78435c"
+                "sha256:727baae65204cd5b2cdce3a0f2ae6e46e1c1fca14b63c1848005e93aba78c268"
             ],
-            "markers": "python_version >= '3.11'",
-            "path": "./lib/dbrepo-1.10.4.tar.gz"
+            "path": "./lib/dbrepo-1.10.5.tar.gz"
         },
         "ecs-logging": {
             "hashes": [
@@ -317,12 +315,12 @@
         },
         "grafana-client": {
             "hashes": [
-                "sha256:ca2c6935f6e8935c0b72509a1f707fbf273d602ca9515260d56786cddfbf5cfb",
-                "sha256:f2e63a306aadf07011ffadd969343bfb4e01fe5d1ca5857df4821e64ec7c4626"
+                "sha256:9d216b37fceebe6827ed8ae87b11fb5679e38fb009d200ce21c4f1935f32e675",
+                "sha256:b5ad0b9213fcb4d889e966916686468d364c06789942f2de7840c731ea6feb20"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7'",
-            "version": "==5.0.0"
+            "version": "==5.0.1"
         },
         "gunicorn": {
             "hashes": [
@@ -892,12 +890,12 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7",
-                "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c"
+                "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01",
+                "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==8.4.1"
+            "version": "==8.4.2"
         },
         "python-dateutil": {
             "hashes": [
@@ -1572,12 +1570,12 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7",
-                "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c"
+                "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01",
+                "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==8.4.1"
+            "version": "==8.4.2"
         },
         "python-dotenv": {
             "hashes": [
