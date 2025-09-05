@@ -667,6 +667,7 @@ interface ColumnCreateDto {
   d: number | null;
   enums: string[];
   sets: string[];
+  description: string | null;
   index_length: number;
   null_allowed: boolean;
 }
@@ -678,6 +679,7 @@ interface InternalColumnDto {
   d: number;
   enums: string[];
   sets: string[];
+  comment: string | null;
   primary_key: boolean;
   index_length: number;
   null_allowed: boolean;

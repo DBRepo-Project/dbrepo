@@ -18,7 +18,7 @@
 
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>metadata-service</artifactId>
-    <version>1.10.4</version>
+    <version>1.10.5</version>
 
     <packaging>pom</packaging>
     <modules>
@@ -39,7 +39,7 @@
     </developers>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <commons-io.version>2.17.0</commons-io.version>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.10.4</version>
+            <version>1.10.5</version>
         </dependency>
         <!-- API Filters -->
         <dependency>

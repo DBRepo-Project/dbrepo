@@ -100,19 +100,19 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private Long d;
 
-    @Column(name = "val_min")
+    @Column(name = "val_min", columnDefinition = "DECIMAL(65,4)")
     private BigDecimal min;
 
-    @Column(name = "val_max")
+    @Column(name = "val_max", columnDefinition = "DECIMAL(65,4)")
     private BigDecimal max;
 
-    @Column
+    @Column(columnDefinition = "DECIMAL(65,4)")
     private BigDecimal mean;
 
-    @Column
+    @Column(columnDefinition = "DECIMAL(65,4)")
     private BigDecimal median;
 
-    @Column(name = "std_dev")
+    @Column(name = "std_dev", columnDefinition = "DECIMAL(65,4)")
     private BigDecimal stdDev;
 
     @EqualsAndHashCode.Exclude

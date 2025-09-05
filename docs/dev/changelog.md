@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.10.5](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.5) - 2025-09-05
+
+### Changes
+
+* Added a free-text field to optionally add data description comments to each column 
+  in [#564](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/564).
+* Updated the version of all Java-based services from 17 (EOL) to 21 and updated the version of all Node-based services 
+  from 20 (EOL) to 24 in [#562](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/562).
+
 ## [v1.10.4](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.10.4) - 2025-08-04
 
 #### Changes
