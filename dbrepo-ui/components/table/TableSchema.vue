@@ -142,7 +142,7 @@
           <v-checkbox
             v-model="c.primary_key"
             :disabled="disabled"
-            :label="$t('pages.table.subpages.schema.primary-key.label')"
+            :label="$t('pages.table.subpages.schema.primary_key.label')"
             @click="setOthers(c)" />
         </v-col>
         <v-col
@@ -300,22 +300,6 @@ export default {
         .finally(() => {
           this.loadingColumnTypes = false
         })
-    },
-    shift (column) {
-      if (!this.columns || this.columns.length === 0) {
-        return false
-      }
-      let shift = 0
-      if (this.hasEnumOrSet(column)) {
-        return 0
-      }
-      if (!this.columnType(column).size_required && this.columns.filter(c => (this.columnType(c).size_required)).length > 0) {
-        shift++
-      }
-      if (!this.columnType(column).d_required && this.columns.filter(c => (this.columnType(c).d_required)).length > 0) {
-        shift++
-      }
-      return shift
     },
     submit () {
       const tableService = useTableService()
