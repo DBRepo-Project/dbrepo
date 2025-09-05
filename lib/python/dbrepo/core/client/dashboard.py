@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 import requests
 from grafana_client import GrafanaApi
@@ -175,7 +176,7 @@ class DashboardServiceClient:
         response = self.client.dashboard.update_dashboard(payload)
         logging.info(f"Updated dashboard with uid: {response['uid']}")
 
-    def map_links(self, database: Database) -> [dict]:
+    def map_links(self, database: Database) -> List[dict]:
         links = []
         if len(database.identifiers) > 0:
             links.append(map_link('Database', f"{self.base_url}/pid/{database.identifiers[0].id}"))
