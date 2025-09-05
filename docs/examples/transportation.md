@@ -5,7 +5,7 @@ author: Martin Weise
 ## tl;dr
 
 [:fontawesome-solid-database: &nbsp;Dataset](https://handle.test.datacite.org/10.82556/g00j-se74){ .md-button .md-button--primary target="_blank" }
-[:simple-grafana: &nbsp;Dashboard](https://dbrepo1.ec.tuwien.ac.at/dashboard/d/cehxheycgsyyob){ .md-button .md-button--secondary target="_blank" }
+[:simple-grafana: &nbsp;Dashboard](https://dbrepo.datalab.tuwien.ac.at/dashboard/d/cehxheycgsyyob){ .md-button .md-button--secondary target="_blank" }
 
 ## Description
 

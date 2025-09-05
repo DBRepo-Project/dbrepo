@@ -30,48 +30,94 @@
           <pre>{{ extra(item) }}</pre>
         </template>
         <template v-slot:item.column_concept="{ item }">
-          <v-btn
-            v-if="canAssignSemanticInformation && !hasConcept(item)"
-            size="small"
-            color="tertiary"
-            :variant="buttonVariant"
-            :text="$t('pages.table.subpages.schema.assign')"
-            @click="pick(item, 'concept')" />
-          <v-btn
-            v-if="canAssignSemanticInformation && hasConcept(item)"
-            :title="item.concept.uri"
-            color="tertiary"
-            :variant="buttonVariant"
-            size="small"
-            :text="item.concept.name ? item.concept.name : item.concept.uri"
-            @click="pick(item, 'concept')" />
           <a
-            v-if="!canAssignSemanticInformation && hasConcept(item)"
-            :href="item.concept.uri">
-            {{ item.concept.name ? item.concept.name : item.concept.uri }}
+            v-if="item.concept && !canAssignSemanticInformation"
+            :href="item.concept.uri"
+            v-bind="props">
+            {{ item.concept.uri }}
           </a>
+          <v-tooltip
+            v-if="item.concept && !canAssignSemanticInformation && tooltip(item, 'concept')"
+            :text="tooltip(item, 'concept')">
+            <template
+              v-slot:activator="{ props }">
+              <v-icon
+                class="ml-1"
+                v-bind="props">
+                mdi-information-slab-circle-outline
+              </v-icon>
+            </template>
+          </v-tooltip>
+          <v-text-field
+            v-if="canAssignSemanticInformation"
+            :model-value="item.concept?.uri"
+            readonly
+            variant="plain">
+            <template
+              v-slot:append>
+              <v-btn
+                variant="flat"
+                size="xs"
+                @click="pick(item)">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
         </template>
         <template v-slot:item.column_unit="{ item }">
-          <v-btn
-            v-if="canAssignSemanticInformation && !hasUnit(item)"
-            size="small"
-            color="tertiary"
-            :variant="buttonVariant"
-            :text="$t('pages.table.subpages.schema.assign')"
-            @click="pick(item, 'unit')" />
-          <v-btn
-            v-if="canAssignSemanticInformation && hasUnit(item)"
-            :title="item.unit.uri"
-            color="tertiary"
-            :variant="buttonVariant"
-            size="small"
-            :text="item.unit.name ? item.unit.name : item.unit.uri"
-            @click="pick(item, 'unit')" />
           <a
-            v-if="!canAssignSemanticInformation && hasUnit(item)"
-            :href="item.unit.uri">
-            {{ item.unit.name ? item.unit.name : item.unit.uri }}
+            v-if="item.unit && !canAssignSemanticInformation"
+            :href="item.unit.uri"
+            v-bind="props">
+            {{ item.unit.uri }}
           </a>
+          <v-tooltip
+            v-if="item.unit && !canAssignSemanticInformation && tooltip(item, 'unit')"
+            :text="tooltip(item, 'unit')">
+            <template
+              v-slot:activator="{ props }">
+              <v-icon
+                class="ml-1"
+                v-bind="props">
+                mdi-information-slab-circle-outline
+              </v-icon>
+            </template>
+          </v-tooltip>
+          <v-text-field
+            v-if="canAssignSemanticInformation"
+            :model-value="item.unit?.uri"
+            readonly
+            variant="plain">
+            <template
+              v-slot:append>
+              <v-btn
+                variant="flat"
+                size="xs"
+                @click="pick(item)">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
+        </template>
+        <template v-slot:item.description="{ item }">
+          <span
+            v-if="item.description && !canAssignSemanticInformation"
+            v-text="item.description" />
+          <v-text-field
+            v-if="canAssignSemanticInformation"
+            :model-value="item.description"
+            readonly
+            variant="plain">
+            <template
+              v-slot:append>
+              <v-btn
+                variant="flat"
+                size="xs"
+                @click="pick(item)">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
         </template>
       </v-data-table>
     </v-card>
@@ -85,18 +131,27 @@
         <v-container>
           <ul>
             <li v-if="table.constraints.primary_key.length > 0">
-              <strong>PRIMARY KEY</strong>
+              <strong
+                class="text-uppercase"
+                v-text="$t('pages.table.subpages.schema.primary_key.label')" />
               (<i>{{ primaryKeysColumns }}</i>)
             </li>
             <li v-for="(foreignKey, i) in table.constraints.foreign_keys" :key="`fk-${i}`">
-              <strong>FOREIGN KEY</strong> <span>{{ foreignKey.name }}</span> (<i>{{ foreignKeyColumns(foreignKey) }}</i>) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>)
+              <strong
+                class="text-uppercase"
+                v-text="$t('pages.table.subpages.schema.foreign_key.label')" />
+              <span>{{ foreignKey.name }}</span> (<i>{{ foreignKeyColumns(foreignKey) }}</i>) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>)
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
-              <strong>UNIQUE INDEX</strong>
+              <strong
+                class="text-uppercase"
+                v-text="$t('pages.table.subpages.schema.unique.label')" />
               (<i>{{ uniqueColumns(uniqueConstraint) }}</i>)
             </li>
             <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`uk-${i}`">
-              <strong>CHECK CONSTRAINT</strong>
+              <strong
+                class="text-uppercase"
+                v-text="$t('pages.table.subpages.schema.check.label')" />
               (<i>{{ checkConstraint }}</i>)
             </li>
           </ul>
@@ -109,7 +164,6 @@
       max-width="640">
       <DialogsSemantics
         :column="column"
-        :mode="mode"
         :table-id="table.id"
         :database="database"
         @close="closed" />
@@ -135,7 +189,6 @@ export default {
     return {
       selection: [],
       column: null,
-      mode: null,
       dialogSemantic: false,
       items: [
         {
@@ -166,8 +219,8 @@ export default {
         { value: 'extra', title: this.$t('pages.table.subpages.schema.extra.title') },
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
-        { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
+        { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
       ],
       dateColumns: [],
       cacheStore: useCacheStore()
@@ -267,9 +320,8 @@ export default {
     hasConcept (item) {
       return item.concept && 'uri' in item.concept
     },
-    pick (item, mode) {
+    pick (item) {
       this.column = item
-      this.mode = mode
       this.dialogSemantic = true
     },
     closed (event) {
@@ -305,6 +357,18 @@ export default {
         return null
       }
       return uniqueConstraint.columns.map(c => c.internal_name).join(',')
+    },
+    tooltip (item, mode) {
+      if (!item[mode]) {
+        return null
+      }
+      if (item[mode].name) {
+        return item[mode].name
+      }
+      if (item[mode].description) {
+        return item[mode].description
+      }
+      return null
     }
   }
 }

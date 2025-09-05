@@ -2,11 +2,9 @@
 author: Martin Weise
 ---
 
-[:fontawesome-solid-database: &nbsp;Internal Dataset](https://handle.test.datacite.org/10.82556/6ejq-jv72){ .md-button .md-button--primary target="_blank" }
-
 ## tl;dr
 
-tbd
+Mirroring of internal database for users not authorized in the partner university.
 
 ## Description
 
@@ -21,7 +19,8 @@ edition.
 
 ## Solution
 
-tbd
+We set up a mirror script that copies the internal database for users not authorized in the partner university to a
+local, downstream database where they can access the database for analysis.
 
 ## DBRepo Features
 

@@ -249,17 +249,6 @@ public class TableServiceImpl implements TableService {
             SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
             SemanticEntityNotFoundException {
         /* assign */
-        if (data.getUnitUri() != null) {
-            TableColumnUnit unit;
-            try {
-                unit = unitService.find(data.getUnitUri());
-            } catch (UnitNotFoundException e) {
-                unit = metadataMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(data.getUnitUri()));
-            }
-            column.setUnit(unit);
-        } else {
-            column.setUnit(null);
-        }
         if (data.getConceptUri() != null) {
             TableColumnConcept concept;
             try {
@@ -271,6 +260,18 @@ public class TableServiceImpl implements TableService {
         } else {
             column.setConcept(null);
         }
+        if (data.getUnitUri() != null) {
+            TableColumnUnit unit;
+            try {
+                unit = unitService.find(data.getUnitUri());
+            } catch (UnitNotFoundException e) {
+                unit = metadataMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(data.getUnitUri()));
+            }
+            column.setUnit(unit);
+        } else {
+            column.setUnit(null);
+        }
+        column.setDescription(data.getDescription());
         /* update in metadata database */
         final Table table = column.getTable();
         table.getColumns()

@@ -14,7 +14,7 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 with:
 
 ```bash
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.7/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/install.sh | bash
 ```
 
 ## Documentation
@@ -33,7 +33,7 @@ Recommended for getting familiar with the system.
 
 ### Run
 
-After [building the docker containers](#build) you can run them using the default `docker-compose.yml` in the root of
+After building the docker containers you can run them using the default `docker-compose.yml` in the root of
 the sourcecode directory. This starts all services in the background (as daemons hence the `-d` flag).
 
 ```shell
@@ -63,12 +63,6 @@ We want to thank the following organizations:
 * Bundesministerium für Bildung, Wissenschaft und Forschung (BMBWF) for funding during
   the [call](https://www.bmbwf.gv.at/Themen/HS-Uni/Aktuelles/Ausschreibung--Digitale-und-soziale-Transformation-in-der-Hochschulbildung-.html)
   "Digitale und soziale Transformation in der Hochschulbildung".
-
-## Roadmap
-
-* Q2/2024: Kubernetes deployment on major private cloud provisioners (OpenShift, Rancher, OpenStack).
-* Q3/2024: Frontend tests, database dashboards
-* Q4/2024: Release 2.0.0
 
 ## License
 

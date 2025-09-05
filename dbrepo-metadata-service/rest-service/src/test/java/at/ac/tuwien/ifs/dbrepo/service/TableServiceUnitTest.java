@@ -17,13 +17,16 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,6 +70,127 @@ public class TableServiceUnitTest extends BaseTest {
 
     @Autowired
     private TableService tableService;
+
+    public static Stream<Arguments> updateStatistics_fails_parameters() {
+        return Stream.of(
+                Arguments.of("name_invalid", TableStatisticDto.builder()
+                                .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                        .name("")
+                                        .min(BigDecimal.ZERO)
+                                        .max(BigDecimal.ZERO)
+                                        .mean(BigDecimal.ZERO)
+                                        .median(BigDecimal.ZERO)
+                                        .stdDev(BigDecimal.ZERO)
+                                        .build())))
+                                .build(),
+                        MalformedException.class)
+        );
+    }
+
+    public static Stream<Arguments> updateStatistics_succeeds_parameters() {
+        return Stream.of(
+                Arguments.of("min_large", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.valueOf(Long.MAX_VALUE))
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("min_small", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.valueOf(Long.MIN_VALUE))
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("max_large", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.valueOf(Long.MAX_VALUE))
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("max_small", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.valueOf(Long.MIN_VALUE))
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("mean_large", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.valueOf(Long.MAX_VALUE))
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("mean_small", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.valueOf(Long.MIN_VALUE))
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("median_large", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.valueOf(Long.MAX_VALUE))
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("median_small", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.valueOf(Long.MIN_VALUE))
+                                .stdDev(BigDecimal.ZERO)
+                                .build())))
+                        .build()),
+                Arguments.of("stddev_large", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.valueOf(Long.MAX_VALUE))
+                                .build())))
+                        .build()),
+                Arguments.of("stddev_small", TableStatisticDto.builder()
+                        .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                                .name(COLUMN_8_1_INTERNAL_NAME)
+                                .min(BigDecimal.ZERO)
+                                .max(BigDecimal.ZERO)
+                                .mean(BigDecimal.ZERO)
+                                .median(BigDecimal.ZERO)
+                                .stdDev(BigDecimal.valueOf(Long.MIN_VALUE))
+                                .build())))
+                        .build())
+        );
+    }
 
     @Test
     public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException {
@@ -156,6 +281,45 @@ public class TableServiceUnitTest extends BaseTest {
         assertThrows(DatabaseNotFoundException.class, () -> {
             tableService.updateStatistics(TABLE_8);
         });
+    }
+
+    @ParameterizedTest
+    @MethodSource("updateStatistics_fails_parameters")
+    public void updateStatistics_largeNumbers_fails(String name, TableStatisticDto statistic,
+                                                    Class<? extends Exception> ex) throws TableNotFoundException,
+            DataServiceException, DataServiceConnectionException, SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
+
+        /* mock */
+        when(dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(statistic);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        assertThrows(ex, () -> {
+            tableService.updateStatistics(TABLE_8);
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("updateStatistics_succeeds_parameters")
+    public void updateStatistics_largeNumbers_fails(String name, TableStatisticDto statistic) throws TableNotFoundException,
+            DataServiceException, DataServiceConnectionException, SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException, MalformedException {
+
+        /* mock */
+        when(dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(statistic);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        tableService.updateStatistics(TABLE_8);
     }
 
     @Test

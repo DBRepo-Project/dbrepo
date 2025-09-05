@@ -174,29 +174,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-auth-service-init:
-    init: true
-    restart: "no"
-    container_name: dbrepo-auth-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:${APP_VERSION}
-    environment:
-      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
-      METADATA_DB: "${METADATA_DB:-dbrepo}"
-      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
-      METADATA_USERNAME: "root"
-      READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
-      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
-      SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-admin}
-    depends_on:
-      dbrepo-auth-service:
-        condition: service_healthy
-      dbrepo-gateway-service:
-        condition: service_started
-      dbrepo-metadata-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-metadata-service:
     restart: "no"
     container_name: dbrepo-metadata-service
