@@ -15,7 +15,7 @@
   },
   "externalDocs": {
     "description": "Sourcecode Documentation",
-    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/system-services-metadata/"
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10.5/system-services-metadata/"
   },
   "servers": [
     {
@@ -2923,7 +2923,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/OaiListIdentifiersParameters"
+              "$ref": "#/components/schemas/OaiListRecordsParameters"
             }
           }
         ],
@@ -6254,6 +6254,11 @@
       "ColumnSemanticsUpdateDto": {
         "type": "object",
         "properties": {
+          "description": {
+            "type": "string",
+            "description": "The description",
+            "example": "physical property of matter that quantitatively expresses the common notions of hot and cold"
+          },
           "concept_uri": {
             "type": "string",
             "description": "The URI of the concept",
@@ -8337,7 +8342,7 @@
           "uri"
         ]
       },
-      "OaiListIdentifiersParameters": {
+      "OaiListRecordsParameters": {
         "type": "object",
         "properties": {
           "metadataPrefix": {

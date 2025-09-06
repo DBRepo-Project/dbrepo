@@ -190,7 +190,7 @@ that are used between the services themselves.
 | UnitDto | [#/components/schemas/UnitDto](#componentsschemasunitdto) |  |
 | OntologyBriefDto | [#/components/schemas/OntologyBriefDto](#componentsschemasontologybriefdto) |  |
 | EntityDto | [#/components/schemas/EntityDto](#componentsschemasentitydto) |  |
-| OaiListIdentifiersParameters | [#/components/schemas/OaiListIdentifiersParameters](#componentsschemasoailistidentifiersparameters) |  |
+| OaiListRecordsParameters | [#/components/schemas/OaiListRecordsParameters](#componentsschemasoailistrecordsparameters) |  |
 | BannerMessageDto | [#/components/schemas/BannerMessageDto](#componentsschemasbannermessagedto) |  |
 | ImageBriefDto | [#/components/schemas/ImageBriefDto](#componentsschemasimagebriefdto) |  |
 | LdCreatorDto | [#/components/schemas/LdCreatorDto](#componentsschemasldcreatordto) |  |
@@ -3914,6 +3914,8 @@ basicAuth
 
 ```ts
 {
+  // The description
+  description?: string
   // The URI of the concept
   concept_uri?: string
   // The URI of the unit
@@ -7656,6 +7658,8 @@ body: {
 
 ```ts
 {
+  // The description
+  description?: string
   // The URI of the concept
   concept_uri?: string
   // The URI of the unit
@@ -8345,7 +8349,7 @@ body: {
 }
 ```
 
-### #/components/schemas/OaiListIdentifiersParameters
+### #/components/schemas/OaiListRecordsParameters
 
 ```ts
 {
