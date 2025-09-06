@@ -1,0 +1,286 @@
+{
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "properties": {
+          "code": {
+            "example": "error.dashboard.create",
+            "type": "string"
+          },
+          "message": {
+            "example": "Message",
+            "type": "string"
+          },
+          "status": {
+            "example": "BAD_REQUEST",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "in": "header",
+        "scheme": "basic",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "in": "header",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Sourcecode Documentation",
+    "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/"
+  },
+  "info": {
+    "contact": {
+      "email": "andreas.rauber@tuwien.ac.at",
+      "name": "Prof. Andreas Rauber"
+    },
+    "description": "Service that manages the dashboards",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "title": "Database Repository Dashboard Service API",
+    "version": "1.9.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/dashboard": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates a dashboard in the Dashboard UI. Requires role `system`.",
+        "operationId": "create_dashboard",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "database_name": {
+                  "example": "some_database",
+                  "type": "string"
+                },
+                "is_public": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "is_schema_public": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "owner_username": {
+                  "example": "foobar",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "is_public",
+                "is_schema_public",
+                "database_name",
+                "owner_username"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Created dashboard successfully"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Dashboard exists with same name"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unexpected system error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ],
+        "summary": "Create dashboard",
+        "tags": [
+          "dashboard-endpoint"
+        ]
+      }
+    },
+    "/api/v1/dashboard/{uid}": {
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates a dashboard in the Dashboard UI. Requires role `system`.",
+        "operationId": "update_dashboard",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uid",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Updated dashboard successfully"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Dashboard not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unexpected system error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ],
+        "summary": "Update dashboard",
+        "tags": [
+          "dashboard-endpoint"
+        ]
+      }
+    },
+    "/api/v1/dashboard/{uid}/access/{username}": {
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates a dashboard access in the Dashboard UI. Requires role `system`.",
+        "operationId": "update_dashboard_access",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uid",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Updated dashboard access successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "basicAuth": []
+          }
+        ],
+        "summary": "Update dashboard access",
+        "tags": [
+          "dashboard-endpoint"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Generated server url",
+      "url": "http://localhost"
+    },
+    {
+      "description": "Sandbox",
+      "url": "https://test.dbrepo.tuwien.ac.at"
+    }
+  ]
+}

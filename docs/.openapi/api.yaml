@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: REST API
-  version: 1.10.5
+  version: null
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//'
 paths:
   '/api/v1/database/{databaseId}/view/{viewId}/data':
     get:
@@ -3036,7 +3036,7 @@ paths:
           in: query
           required: true
           schema:
-            $ref: '#/components/schemas/OaiListIdentifiersParameters'
+            $ref: '#/components/schemas/OaiListRecordsParameters'
       responses:
         '200':
           description: List containers
@@ -6627,6 +6627,12 @@ components:
     ColumnSemanticsUpdateDto:
       type: object
       properties:
+        description:
+          type: string
+          description: The description
+          example: >-
+            physical property of matter that quantitatively expresses the common
+            notions of hot and cold
         concept_uri:
           type: string
           description: The URI of the concept
@@ -8305,7 +8311,7 @@ components:
       required:
         - label
         - uri
-    OaiListIdentifiersParameters:
+    OaiListRecordsParameters:
       type: object
       properties:
         metadataPrefix:

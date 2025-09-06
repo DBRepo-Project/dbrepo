@@ -1,8 +1,10 @@
-import os
-import pika
-import sys
 import json
 import logging
+import os
+import sys
+
+import pika
+from pandas import DataFrame
 
 from dbrepo.api.exceptions import AuthenticationError
 
@@ -43,12 +45,12 @@ class AmqpClient:
         self.username = os.environ.get('AMQP_API_USERNAME', username)
         self.password = os.environ.get('AMQP_API_PASSWORD', password)
 
-    def publish(self, routing_key: str, data=dict, exchange: str = 'dbrepo') -> None:
+    def publish(self, routing_key: str, data: dict, exchange: str = 'dbrepo') -> None:
         """
         Publishes data to a given exchange with the given routing key with a blocking connection.
 
         :param routing_key: The routing key.
-        :param data: The data.
+        :param data: The data tuple.
         :param exchange: The exchange name. Default: "dbrepo".
         """
         if self.username is None or self.password is None:
@@ -60,4 +62,25 @@ class AmqpClient:
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.basic_publish(exchange=exchange, routing_key=routing_key, body=json.dumps(data))
+        connection.close()
+
+    def publish_dataframe(self, routing_key: str, data: DataFrame, exchange: str = 'dbrepo') -> None:
+        """
+        Publishes bulk of data to a given exchange with the given routing key with a blocking connection.
+
+        :param routing_key: The routing key.
+        :param data: The dataframe
+        :param exchange: The exchange name. Default: "dbrepo".
+        """
+        if self.username is None or self.password is None:
+            raise AuthenticationError(f"Failed to perform request: authentication required")
+        parameters = pika.ConnectionParameters(host=self.broker_host, port=self.broker_port,
+                                               virtual_host=self.broker_virtual_host,
+                                               credentials=pika.credentials.PlainCredentials(self.username,
+                                                                                             self.password))
+        connection = pika.BlockingConnection(parameters)
+        channel = connection.channel()
+        for idx, row in data.iterrows():
+            body = row.to_json()
+            channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
         connection.close()
