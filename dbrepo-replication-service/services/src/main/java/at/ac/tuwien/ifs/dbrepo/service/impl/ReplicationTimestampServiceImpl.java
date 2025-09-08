@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
@@ -16,6 +17,9 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class ReplicationTimestampServiceImpl extends DataConnector implements ReplicationTimestampService {
+
+    @Value("${BASE_URL:http://localhost:8080}")
+    private String baseUrl;
 
     @Override
     public void saveReplicationTimestamp(DatabaseDto database, TupleReplicationTimestamp timestamp) {
@@ -76,13 +80,16 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             connection.setAutoCommit(false);
 
             for (TupleReplicationTimestamp timestamp : timestamps) {
-                statement.setString(1, timestamp.getSiteUrl());
-                statement.setString(2, timestamp.getReplicationId());
-                statement.setString(3, timestamp.getDatabaseId().toString());
-                statement.setString(4, timestamp.getTableId().toString());
-                statement.setTimestamp(5, timestamp.getRowStart());
-                statement.setTimestamp(6, timestamp.getRowEnd());
-                statement.addBatch();
+                if (!timestamp.getSiteUrl().equals(baseUrl)) {
+                    statement.setString(1, timestamp.getSiteUrl());
+                    statement.setString(2, timestamp.getReplicationId());
+                    statement.setString(3, timestamp.getDatabaseId().toString());
+                    statement.setString(4, timestamp.getTableId().toString());
+                    statement.setTimestamp(5, timestamp.getRowStart());
+                    statement.setTimestamp(6, timestamp.getRowEnd());
+                    statement.addBatch();
+                }
+
             }
             log.info(statement.toString());
 
@@ -116,12 +123,15 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             connection.setAutoCommit(false);
 
             for (TupleReplicationTimestamp timestamp : timestamps) {
-                statement.setTimestamp(1, timestamp.getRowEnd());
-                statement.setString(2, timestamp.getSiteUrl());
-                statement.setString(3, timestamp.getReplicationId());
-                statement.setString(4, timestamp.getDatabaseId().toString());
-                statement.setString(5, timestamp.getTableId().toString());
-                statement.addBatch();
+                if (!timestamp.getSiteUrl().equals(baseUrl)) {
+                    statement.setTimestamp(1, timestamp.getRowEnd());
+                    statement.setString(2, timestamp.getSiteUrl());
+                    statement.setString(3, timestamp.getReplicationId());
+                    statement.setString(4, timestamp.getDatabaseId().toString());
+                    statement.setString(5, timestamp.getTableId().toString());
+                    statement.addBatch();
+                }
+
             }
 
             statement.executeBatch();
