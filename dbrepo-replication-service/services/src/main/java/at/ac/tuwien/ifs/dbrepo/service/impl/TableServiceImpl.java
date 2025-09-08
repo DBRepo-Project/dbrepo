@@ -268,11 +268,6 @@ public class TableServiceImpl implements TableService {
             replicationTimestampService.ensureTableExists(database);
             List<TupleReplicationTimestamp> toSave = new ArrayList<>();
             for (TupleReplicationTimestampDto tsDto : collected) {
-                // Skip local site entries for LOCAL updates (they don't exist locally)
-                if (tsDto.getSiteUrl() != null && tsDto.getSiteUrl().equals(baseUrl)) {
-                    log.debug("Skipping local site timestamp for local update: replicationId={}, siteUrl={}", tsDto.getReplicationId(), tsDto.getSiteUrl());
-                    continue;
-                }
                 Timestamp rs = tsDto.getRowStart() != null ? Timestamp.from(tsDto.getRowStart()) : null;
                 if (rs != null) rs.setNanos((rs.getNanos() / 1000) * 1000);
                 Timestamp re = tsDto.getRowEnd() != null ? Timestamp.from(tsDto.getRowEnd()) : null;
