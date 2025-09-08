@@ -114,7 +114,12 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
         final String sql = """
             UPDATE tuple_replication_timestamps
             SET row_end = ?
-            WHERE site_url = ? AND replication_id = ? AND database_id = ? AND table_id = ?
+            WHERE site_url = ?
+              AND replication_id = ?
+              AND database_id = ?
+              AND table_id = ?
+              AND (row_end IS NULL OR row_end > CURRENT_TIMESTAMP(6))
+              AND row_start < ?
             """;
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection();
@@ -123,15 +128,15 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
             connection.setAutoCommit(false);
 
             for (TupleReplicationTimestamp timestamp : timestamps) {
-                if (!timestamp.getSiteUrl().equals(baseUrl)) {
+                if (!timestamp.getSiteUrl().equals(baseUrl) && timestamp.getRowEnd() != null) {
                     statement.setTimestamp(1, timestamp.getRowEnd());
                     statement.setString(2, timestamp.getSiteUrl());
                     statement.setString(3, timestamp.getReplicationId());
                     statement.setString(4, timestamp.getDatabaseId().toString());
                     statement.setString(5, timestamp.getTableId().toString());
+                    statement.setTimestamp(6, timestamp.getRowEnd());
                     statement.addBatch();
                 }
-
             }
 
             statement.executeBatch();
