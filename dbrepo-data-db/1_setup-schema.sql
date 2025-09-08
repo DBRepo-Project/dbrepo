@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS tuple_replication_timestamps
     table_id        VARCHAR(36)  NOT NULL,
     row_start       TIMESTAMP(6) NOT NULL,
     row_end         TIMESTAMP(6),
-    PRIMARY KEY (`site_url`(255), `replication_id`)
+    PRIMARY KEY (`site_url`(255), `replication_id`, `row_start`)
 );
 
 COMMIT;

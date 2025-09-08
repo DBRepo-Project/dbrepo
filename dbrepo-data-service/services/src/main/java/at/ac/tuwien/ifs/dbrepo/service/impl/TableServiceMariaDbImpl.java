@@ -904,7 +904,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     public void processReplicationUpdateTimestamps(DatabaseDto database, TableDto table,
-            List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException {
+            List<TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException {
         if (timestamps == null || timestamps.isEmpty()) {
             log.info("No update timestamps to process");
             return;
@@ -912,11 +912,11 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
         log.info("Processing {} replication update timestamps", timestamps.size());
 
-        // Build two lists: updates to close current windows, and new rows to insert
+        // Build lists: updates to close current windows, and new rows to insert
         List<TupleReplicationTimestamp> toClose = new ArrayList<>();
         List<TupleReplicationTimestamp> toInsert = new ArrayList<>();
 
-        for (at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto tsDto : timestamps) {
+        for (TupleReplicationTimestampDto tsDto : timestamps) {
             try {
                 java.sql.Timestamp rowStart = tsDto.getRowStart() != null ? java.sql.Timestamp.from(tsDto.getRowStart()) : null;
                 if (rowStart != null) rowStart.setNanos((rowStart.getNanos() / 1000) * 1000);
