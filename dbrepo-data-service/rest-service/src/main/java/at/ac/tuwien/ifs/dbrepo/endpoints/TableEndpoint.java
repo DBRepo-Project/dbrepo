@@ -784,19 +784,15 @@ public class TableEndpoint extends RestEndpoint {
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<Map<String, Object>> receiveReplicationTimestamps(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                            @NotNull @PathVariable("tableId") UUID tableId,
-                                                                           @RequestBody Map<String, Object> request,
+                                                                           @RequestBody java.util.List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps,
                                                                            Principal principal) {
         log.info("endpoint receive replication timestamps, databaseId={}, tableId={}", databaseId, tableId);
         
         try {
-            List<Map<String, Object>> timestamps = (List<Map<String, Object>>) request.get("timestamps");
-
-            
             if (timestamps == null) {
-                log.error("timestamps is null in request: {}", request);
+                log.error("timestamps is null in request body");
                 throw new IllegalArgumentException("timestamps is required");
             }
-            
             log.info("Received {} replication timestamps", timestamps.size());
             
             // Get database and table from cache service

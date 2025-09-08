@@ -158,7 +158,7 @@ public interface TableService {
      * @throws QueryMalformedException The query is malformed, likely due to a bug in the application.
      */
     void processReplicationTimestamps(DatabaseDto database, TableDto table,
-                                    List<Map<String, Object>> timestamps) throws SQLException, QueryMalformedException;
+                                    List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException;
 
     /**
      * Checks for tuples inserted after a given timestamp across all tables in a database.

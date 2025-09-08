@@ -321,14 +321,10 @@ public class TableServiceImpl implements TableService {
                 continue;
             }
 
-            // Build payload with only row_end updates for timestamps
-            List<Map<String, Object>> timestampsForReplication = new ArrayList<>();
+            // Build payload of TupleReplicationTimestampDto for timestamps
+            List<TupleReplicationTimestampDto> timestampsForReplication = new ArrayList<>();
             for (TupleReplicationTimestamp ts : timestamps) {
-                // Skip local site rows and invalid entries
-                if (ts.getSiteUrl() != null && ts.getSiteUrl().equals(baseUrl)) {
-                    log.debug("Skipping local site timestamp for remote sync: replicationId={}, siteUrl={}", ts.getReplicationId(), ts.getSiteUrl());
-                    continue;
-                }
+
                 if (ts.getReplicationId() == null) {
                     log.debug("Skipping timestamp without replicationId for remote sync: siteUrl={}", ts.getSiteUrl());
                     continue;
@@ -337,14 +333,20 @@ public class TableServiceImpl implements TableService {
                     log.debug("Skipping timestamp without rowEnd for remote sync: replicationId={}, siteUrl={}", ts.getReplicationId(), ts.getSiteUrl());
                     continue;
                 }
-                Map<String, Object> tsMap = new java.util.HashMap<>();
-                tsMap.put("siteUrl", ts.getSiteUrl());
-                tsMap.put("replicationId", ts.getReplicationId());
-                tsMap.put("databaseId", ts.getDatabaseId().toString());
-                tsMap.put("tableId", ts.getTableId().toString());
-                tsMap.put("rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null);
-                tsMap.put("rowEnd", ts.getRowEnd().toString());
-                timestampsForReplication.add(tsMap);
+
+                if (ts.getSiteUrl().equals(replicaUrl)) {
+                    log.info("{} not replicated to {}", ts.getSiteUrl(), replicaUrl);
+                    continue;
+                }
+
+                timestampsForReplication.add(TupleReplicationTimestampDto.builder()
+                        .siteUrl(ts.getSiteUrl())
+                        .replicationId(ts.getReplicationId())
+                        .databaseId(ts.getDatabaseId())
+                        .tableId(ts.getTableId())
+                        .rowStart(ts.getRowStart() != null ? ts.getRowStart().toInstant() : null)
+                        .rowEnd(ts.getRowEnd() != null ? ts.getRowEnd().toInstant() : null)
+                        .build());
             }
 
             log.info("Synchronizing delete timestamps (row_end) to replica {} for databaseId={}, tableId={}",
@@ -352,8 +354,7 @@ public class TableServiceImpl implements TableService {
 
             try {
                 final String path = replicaUrl + "/api/v1/database/" + targetDatabaseId + "/table/" + targetTableId + "/timestamps";
-                final Map<String, Object> request = Map.of("timestamps", timestampsForReplication);
-                final HttpEntity<Map<String, Object>> httpRequest = new HttpEntity<>(request);
+                final HttpEntity<List<TupleReplicationTimestampDto>> httpRequest = new HttpEntity<>(timestampsForReplication);
                 ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
                         path, HttpMethod.POST, httpRequest, Map.class);
                 log.info("Delete timestamp synchronization to {}: {}", replicaUrl, response.getStatusCode());

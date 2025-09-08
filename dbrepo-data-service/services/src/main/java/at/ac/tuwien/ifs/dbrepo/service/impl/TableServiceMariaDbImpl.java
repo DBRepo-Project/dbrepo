@@ -764,36 +764,39 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     public void processReplicationTimestamps(DatabaseDto database, TableDto table,
-                                          List<Map<String, Object>> timestamps) throws SQLException, QueryMalformedException {
+                                          List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException {
         if (timestamps == null || timestamps.isEmpty()) {
             log.info("No timestamps to process");
             return;
         }
-        
+
         log.info("Processing {} replication timestamps", timestamps.size());
-        
-        // Convert the received timestamps to TupleReplicationTimestamp objects
+
+        // Convert DTOs to entities
         List<TupleReplicationTimestamp> timestampsToSave = new ArrayList<>();
-        for (Map<String, Object> ts : timestamps) {
+        for (at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto ts : timestamps) {
             try {
-                // Replace the replica URL with the current site URL to avoid duplicates
+                java.sql.Timestamp rowStart = ts.getRowStart() != null ? java.sql.Timestamp.from(ts.getRowStart()) : null;
+                if (rowStart != null) rowStart.setNanos((rowStart.getNanos() / 1000) * 1000);
+                java.sql.Timestamp rowEnd = ts.getRowEnd() != null ? java.sql.Timestamp.from(ts.getRowEnd()) : null;
+                if (rowEnd != null) rowEnd.setNanos((rowEnd.getNanos() / 1000) * 1000);
+
                 TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
-                    .siteUrl((String) ts.get("siteUrl"))
-                    .replicationId((String) ts.get("replicationId"))
-                    .databaseId(UUID.fromString((String) ts.get("databaseId")))
-                    .tableId(UUID.fromString((String) ts.get("tableId")))
-                    .rowStart(parseTimestamp((String) ts.get("rowStart")))
-                    .rowEnd(parseTimestamp((String) ts.get("rowEnd")))
-                    .build();
+                        .siteUrl(ts.getSiteUrl())
+                        .replicationId(ts.getReplicationId())
+                        .databaseId(ts.getDatabaseId())
+                        .tableId(ts.getTableId())
+                        .rowStart(rowStart)
+                        .rowEnd(rowEnd)
+                        .build();
                 timestampsToSave.add(timestamp);
             } catch (Exception e) {
-                log.error("Failed to process timestamp {}: {}", ts, e.getMessage());
+                log.error("Failed to process timestamp DTO {}: {}", ts, e.getMessage());
             }
         }
-        
+
         if (!timestampsToSave.isEmpty()) {
             try {
-                // Ensure the table exists before saving
                 replicationTimestampService.ensureTableExists(database);
                 replicationTimestampService.saveReplicationTimestamps(database, timestampsToSave);
                 log.info("Successfully saved {} replication timestamps to database", timestampsToSave.size());
