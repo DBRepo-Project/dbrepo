@@ -484,6 +484,59 @@ public class TableEndpoint extends RestEndpoint {
         }
     }
 
+    @PutMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbrepo_table_data_update_replicate_remote")
+    @Operation(summary = "Replicate update (remote)",
+            description = "Updates a tuple locally using incoming replicated data and returns the tuple timestamps.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<TupleWithTimestampsDto> updateTupleForReplicationRemote(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                                  @NotNull @PathVariable("tableId") UUID tableId,
+                                                                                  @Valid @RequestBody DataReplicationDto data,
+                                                                                  Principal principal) {
+        log.info("endpoint replicate update (remote), databaseId={}, tableId={}", databaseId, tableId);
+        try {
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            final TableDto table = cacheService.getTable(databaseId, tableId);
+
+            // Build keys from tuple data based on PK
+            final java.util.Map<String, Object> keys = new java.util.LinkedHashMap<>();
+            for (var pk : table.getConstraints().getPrimaryKey()) {
+                final String col = pk.getColumn().getInternalName();
+                keys.put(col, data.getTuple() != null ? data.getTuple().getData().get(col) : null);
+            }
+
+            // Build data map for non-PK columns only
+            final java.util.Map<String, Object> values = new java.util.LinkedHashMap<>();
+            final java.util.Set<String> pkColumns = table.getConstraints().getPrimaryKey().stream()
+                    .map(pk -> pk.getColumn().getInternalName())
+                    .collect(java.util.stream.Collectors.toSet());
+            for (ColumnDto c : table.getColumns()) {
+                final String col = c.getInternalName();
+                if (!pkColumns.contains(col)) {
+                    values.put(col, data.getTuple() != null ? data.getTuple().getData().get(col) : null);
+                }
+            }
+
+            final TupleUpdateDto updateDto = TupleUpdateDto.builder()
+                    .keys(keys)
+                    .data(values)
+                    .build();
+
+            TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table, updateDto);
+
+            log.info("remote update produced timestamps: insertedAt={}, deletedAt={}, replicationKey={}",
+                    updated != null ? updated.getInsertedAt() : null,
+                    updated != null ? updated.getDeletedAt() : null,
+                    updated != null ? updated.getReplicationKey() : null);
+
+            return ResponseEntity.status(HttpStatus.OK).body(updated);
+        } catch (Exception e) {
+            log.error("Failed to process remote replicated update: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
     @PutMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_update")

@@ -300,7 +300,7 @@ public class TableServiceImpl implements TableService {
             return;
         }
 
-        // Fan-out tuple update to all replicas and collect returned timestamps (currently not used further)
+        // Fan-out tuple update to all replicas and collect returned timestamps
         for (var entry : database.getReplicaUrls().entrySet()) {
             final String replicaUrl = entry.getKey();
             final UUID remoteDatabaseId = entry.getValue();
@@ -315,6 +315,12 @@ public class TableServiceImpl implements TableService {
                 final HttpEntity<DataReplicationDto> request = new HttpEntity<>(dataReplicationDto);
                 ResponseEntity<TupleWithTimestampsDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.PUT, request, TupleWithTimestampsDto.class);
                 log.info("Update replication response: {}", response.getStatusCode());
+
+                final TupleWithTimestampsDto updatedRemote = response.getBody();
+                if (updatedRemote != null) {
+                    log.info("Remote update returned timestamps: insertedAt={}, deletedAt={}, replicationKey={}",
+                            updatedRemote.getInsertedAt(), updatedRemote.getDeletedAt(), updatedRemote.getReplicationKey());
+                }
             } catch (Exception e) {
                 log.error("Failed to replicate update to {}: {}", replicaUrl, e.getMessage());
             }
