@@ -310,8 +310,7 @@ public class TableServiceImpl implements TableService {
             // Resolve remote table id for this replica
             UUID targetTableId;
             try {
-                final var tableDto = metadataServiceGateway.getTableById(database.getId(), table.getId());
-                final Map<String, UUID> replicaTableMap = tableDto.getReplicaUrls();
+                final Map<String, UUID> replicaTableMap = table.getReplicaUrls();
                 if (replicaTableMap == null || !replicaTableMap.containsKey(replicaUrl)) {
                     log.warn("Missing remote table id for replicaUrl={} for local table {} - skipping", replicaUrl, table.getId());
                     continue;
@@ -325,14 +324,26 @@ public class TableServiceImpl implements TableService {
             // Build payload with only row_end updates for timestamps
             List<Map<String, Object>> timestampsForReplication = new ArrayList<>();
             for (TupleReplicationTimestamp ts : timestamps) {
-                Map<String, Object> tsMap = Map.of(
-                        "siteUrl", ts.getSiteUrl(),
-                        "replicationId", ts.getReplicationId(),
-                        "databaseId", ts.getDatabaseId().toString(),
-                        "tableId", ts.getTableId().toString(),
-                        "rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null,
-                        "rowEnd", ts.getRowEnd() != null ? ts.getRowEnd().toString() : null
-                );
+                // Skip local site rows and invalid entries
+                if (ts.getSiteUrl() != null && ts.getSiteUrl().equals(baseUrl)) {
+                    log.debug("Skipping local site timestamp for remote sync: replicationId={}, siteUrl={}", ts.getReplicationId(), ts.getSiteUrl());
+                    continue;
+                }
+                if (ts.getReplicationId() == null) {
+                    log.debug("Skipping timestamp without replicationId for remote sync: siteUrl={}", ts.getSiteUrl());
+                    continue;
+                }
+                if (ts.getRowEnd() == null) {
+                    log.debug("Skipping timestamp without rowEnd for remote sync: replicationId={}, siteUrl={}", ts.getReplicationId(), ts.getSiteUrl());
+                    continue;
+                }
+                Map<String, Object> tsMap = new java.util.HashMap<>();
+                tsMap.put("siteUrl", ts.getSiteUrl());
+                tsMap.put("replicationId", ts.getReplicationId());
+                tsMap.put("databaseId", ts.getDatabaseId().toString());
+                tsMap.put("tableId", ts.getTableId().toString());
+                tsMap.put("rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null);
+                tsMap.put("rowEnd", ts.getRowEnd().toString());
                 timestampsForReplication.add(tsMap);
             }
 

@@ -809,28 +809,35 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
      */
     private java.sql.Timestamp parseTimestamp(String timestampStr) {
         if (timestampStr == null) return null;
-        
+        final String original = timestampStr;
         try {
-            // Handle ISO 8601 format with 'T' separator and 'Z' timezone (e.g., "2025-09-02T07:13:54.143412Z")
+            // ISO 8601 like 2025-09-02T07:13:54.143412Z
             if (timestampStr.contains("T") && timestampStr.endsWith("Z")) {
-                java.time.Instant instant = java.time.Instant.parse(timestampStr);
-                return java.sql.Timestamp.from(instant);
+                return java.sql.Timestamp.from(java.time.Instant.parse(timestampStr));
             }
-            // Handle timestamps with timezone offset (e.g., "2025-08-25 06:14:19.776954+00:00")
-            else if (timestampStr.contains("+") || (timestampStr.contains("-") && timestampStr.lastIndexOf("-") > 10)) {
-                String withoutTz = timestampStr.substring(0, timestampStr.length() - 6);
-                java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(withoutTz, 
-                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-                return java.sql.Timestamp.valueOf(ldt);
-            } else {
-                // Handle timestamps without timezone (e.g., "2025-08-25 06:14:19.776954")
-                java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(timestampStr, 
-                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-                return java.sql.Timestamp.valueOf(ldt);
+
+            // Normalize timezone offsets like "+00:00" or "-03:00" by stripping them
+            // Only if offset exists after seconds
+            int plusIdx = timestampStr.lastIndexOf('+');
+            int minusIdx = timestampStr.lastIndexOf('-');
+            int tzIdx = Math.max(plusIdx, (minusIdx > 10 ? minusIdx : -1));
+            if (tzIdx > 0) {
+                timestampStr = timestampStr.substring(0, tzIdx).trim();
             }
+
+            // Accept fractional seconds with variable precision (1-9)
+            java.time.format.DateTimeFormatter formatter = new java.time.format.DateTimeFormatterBuilder()
+                    .appendPattern("yyyy-MM-dd HH:mm:ss")
+                    .optionalStart()
+                    .appendFraction(java.time.temporal.ChronoField.NANO_OF_SECOND, 1, 9, true)
+                    .optionalEnd()
+                    .toFormatter();
+
+            java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(timestampStr, formatter);
+            return java.sql.Timestamp.valueOf(ldt);
         } catch (Exception e) {
-            log.error("Failed to parse timestamp: {} - Error: {}", timestampStr, e.getMessage());
-            throw new IllegalArgumentException("Failed to parse timestamp: " + timestampStr, e);
+            log.error("Failed to parse timestamp: {} - Error: {}", original, e.getMessage());
+            throw new IllegalArgumentException("Failed to parse timestamp: " + original, e);
         }
     }
 

@@ -127,7 +127,7 @@ public class ReplicationTimestampServiceImpl extends DataConnector implements Re
 
             statement.executeBatch();
             connection.commit();
-            log.debug("Updated row_end for {} replication timestamps", timestamps.size());
+            log.info("Updated row_end for {} replication timestamps", timestamps.size());
 
         } catch (SQLException e) {
             log.error("Failed to update replication timestamps row_end: {}", e.getMessage(), e);
