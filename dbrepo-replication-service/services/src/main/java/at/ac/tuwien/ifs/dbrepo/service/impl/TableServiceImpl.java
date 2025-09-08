@@ -301,6 +301,7 @@ public class TableServiceImpl implements TableService {
         }
 
         // Fan-out tuple update to all replicas and collect returned timestamps
+        List<TupleReplicationTimestampDto> collected = new ArrayList<>();
         for (var entry : database.getReplicaUrls().entrySet()) {
             final String replicaUrl = entry.getKey();
             final UUID remoteDatabaseId = entry.getValue();
@@ -320,9 +321,133 @@ public class TableServiceImpl implements TableService {
                 if (updatedRemote != null) {
                     log.info("Remote update returned timestamps: insertedAt={}, deletedAt={}, replicationKey={}",
                             updatedRemote.getInsertedAt(), updatedRemote.getDeletedAt(), updatedRemote.getReplicationKey());
+                    // Collect update timestamp DTO for batch processing after fan-out
+                    TupleReplicationTimestampDto updateTs = TupleReplicationTimestampDto.builder()
+                            .siteUrl(replicaUrl)
+                            .replicationId(updatedRemote.getReplicationKey())
+                            .databaseId(remoteDatabaseId)
+                            .tableId(remoteTableId)
+                            .rowStart(updatedRemote.getInsertedAt())
+                            .rowEnd(updatedRemote.getDeletedAt())
+                            .build();
+                    collected.add(updateTs);
                 }
             } catch (Exception e) {
                 log.error("Failed to replicate update to {}: {}", replicaUrl, e.getMessage());
+            }
+        }
+
+        // Add local timestamp from the originating update (if present)
+        if (dataReplicationDto.getTuple() != null) {
+            TupleReplicationTimestampDto localTs = TupleReplicationTimestampDto.builder()
+                    .siteUrl(baseUrl)
+                    .replicationId(dataReplicationDto.getTuple().getReplicationKey())
+                    .databaseId(database.getId())
+                    .tableId(table.getId())
+                    .rowStart(dataReplicationDto.getTuple().getInsertedAt())
+                    .rowEnd(dataReplicationDto.getTuple().getDeletedAt())
+                    .build();
+            collected.add(localTs);
+        }
+
+        log.info("Collected {} update replication timestamps (incl. local)", collected.size());
+        for (var ts : collected) {
+            log.info("Collected UPDATE TS -> siteUrl={}, replicationId={}, dbId={}, tableId={}, rowStart={}, rowEnd={}",
+                    ts.getSiteUrl(), ts.getReplicationId(), ts.getDatabaseId(), ts.getTableId(), ts.getRowStart(), ts.getRowEnd());
+        }
+
+        // Persist/update timestamps locally and synchronize to all sites
+        try {
+            replicationTimestampService.ensureTableExists(database);
+
+            // Close existing active windows locally (row_end = rowStart) and insert new windows
+            List<TupleReplicationTimestamp> toClose = new ArrayList<>();
+            List<TupleReplicationTimestamp> toInsert = new ArrayList<>();
+            for (TupleReplicationTimestampDto tsDto : collected) {
+                Timestamp start = tsDto.getRowStart() != null ? Timestamp.from(tsDto.getRowStart()) : null;
+                if (start != null) start.setNanos((start.getNanos() / 1000) * 1000);
+                Timestamp end = tsDto.getRowEnd() != null ? Timestamp.from(tsDto.getRowEnd()) : null;
+                if (end != null) end.setNanos((end.getNanos() / 1000) * 1000);
+
+                toClose.add(TupleReplicationTimestamp.builder()
+                        .siteUrl(tsDto.getSiteUrl())
+                        .replicationId(tsDto.getReplicationId())
+                        .databaseId(tsDto.getDatabaseId())
+                        .tableId(tsDto.getTableId())
+                        .rowEnd(start)
+                        .build());
+                toInsert.add(TupleReplicationTimestamp.builder()
+                        .siteUrl(tsDto.getSiteUrl())
+                        .replicationId(tsDto.getReplicationId())
+                        .databaseId(tsDto.getDatabaseId())
+                        .tableId(tsDto.getTableId())
+                        .rowStart(start)
+                        .rowEnd(end)
+                        .build());
+            }
+
+            if (!toClose.isEmpty()) {
+                replicationTimestampService.updateReplicationTimestampsRowEnd(database, toClose);
+                log.info("Updated row_end for {} update replication timestamps locally", toClose.size());
+            }
+            if (!toInsert.isEmpty()) {
+                replicationTimestampService.saveReplicationTimestamps(database, toInsert);
+                log.info("Inserted {} new update replication timestamps locally", toInsert.size());
+            }
+
+            // Fan-out updates to all other sites by sending the batch
+            synchronizeUpdateTimestampsToAllSites(database, table, collected);
+        } catch (Exception e) {
+            log.error("Failed to persist/synchronize update replication timestamps: {}", e.getMessage(), e);
+        }
+    }
+
+    // Send batch update timestamps to all replicas using PUT /timestamps
+    private void synchronizeUpdateTimestampsToAllSites(DatabaseDto database, TableDto table, List<TupleReplicationTimestampDto> timestamps) {
+        if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+            log.info("No replica URLs available for update timestamp synchronization");
+            return;
+        }
+
+        for (Map.Entry<String, UUID> replicaEntry : database.getReplicaUrls().entrySet()) {
+            final String replicaUrl = replicaEntry.getKey();
+            final UUID targetDatabaseId = replicaEntry.getValue();
+
+            // Resolve remote table id for this replica
+            UUID targetTableId;
+            try {
+                final Map<String, UUID> replicaTableMap = table.getReplicaUrls();
+                if (replicaTableMap == null || !replicaTableMap.containsKey(replicaUrl)) {
+                    log.warn("Missing remote table id for replicaUrl={} for local table {} - skipping", replicaUrl, table.getId());
+                    continue;
+                }
+                targetTableId = replicaTableMap.get(replicaUrl);
+            } catch (Exception e) {
+                log.warn("Could not resolve remote table id for replicaUrl={}: {}", replicaUrl, e.getMessage());
+                continue;
+            }
+
+            // Build payload of TupleReplicationTimestampDto for timestamps, excluding ones that originated from the target replica
+            List<TupleReplicationTimestampDto> timestampsForReplication = new ArrayList<>();
+            for (TupleReplicationTimestampDto ts : timestamps) {
+                if (replicaUrl.equals(ts.getSiteUrl())) {
+                    // skip timestamps that belong to the target site to avoid redundant writes
+                    continue;
+                }
+                timestampsForReplication.add(ts);
+            }
+
+            log.info("Synchronizing {} update timestamps to replica {} for databaseId={}, tableId={}",
+                    timestampsForReplication.size(), replicaUrl, targetDatabaseId, targetTableId);
+
+            try {
+                final String path = replicaUrl + "/api/v1/database/" + targetDatabaseId + "/table/" + targetTableId + "/timestamps";
+                final HttpEntity<List<TupleReplicationTimestampDto>> httpRequest = new HttpEntity<>(timestampsForReplication);
+                ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
+                        path, HttpMethod.PUT, httpRequest, Map.class);
+                log.info("Update timestamp synchronization to {}: {}", replicaUrl, response.getStatusCode());
+            } catch (Exception e) {
+                log.error("Failed to synchronize update timestamps to {}: {}", replicaUrl, e.getMessage());
             }
         }
     }

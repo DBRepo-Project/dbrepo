@@ -901,6 +901,76 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             }
         }
     }
+
+    @Override
+    public void processReplicationUpdateTimestamps(DatabaseDto database, TableDto table,
+            List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException {
+        if (timestamps == null || timestamps.isEmpty()) {
+            log.info("No update timestamps to process");
+            return;
+        }
+
+        log.info("Processing {} replication update timestamps", timestamps.size());
+
+        // Build two lists: updates to close current windows, and new rows to insert
+        List<TupleReplicationTimestamp> toClose = new ArrayList<>();
+        List<TupleReplicationTimestamp> toInsert = new ArrayList<>();
+
+        for (at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto tsDto : timestamps) {
+            try {
+                java.sql.Timestamp rowStart = tsDto.getRowStart() != null ? java.sql.Timestamp.from(tsDto.getRowStart()) : null;
+                if (rowStart != null) rowStart.setNanos((rowStart.getNanos() / 1000) * 1000);
+                java.sql.Timestamp rowEnd = tsDto.getRowEnd() != null ? java.sql.Timestamp.from(tsDto.getRowEnd()) : null;
+                if (rowEnd != null) rowEnd.setNanos((rowEnd.getNanos() / 1000) * 1000);
+
+                // Close current active window: set row_end = rowStart for same (siteUrl, replicationId, databaseId, tableId) where row_end IS NULL
+                TupleReplicationTimestamp closeTs = TupleReplicationTimestamp.builder()
+                        .siteUrl(tsDto.getSiteUrl())
+                        .replicationId(tsDto.getReplicationId())
+                        .databaseId(tsDto.getDatabaseId())
+                        .tableId(tsDto.getTableId())
+                        .rowEnd(rowStart)
+                        .rowStart(null)
+                        .build();
+                toClose.add(closeTs);
+
+                // Insert new row with the returned timestamps
+                TupleReplicationTimestamp newRow = TupleReplicationTimestamp.builder()
+                        .siteUrl(tsDto.getSiteUrl())
+                        .replicationId(tsDto.getReplicationId())
+                        .databaseId(tsDto.getDatabaseId())
+                        .tableId(tsDto.getTableId())
+                        .rowStart(rowStart)
+                        .rowEnd(rowEnd)
+                        .build();
+                toInsert.add(newRow);
+            } catch (Exception e) {
+                log.error("Failed to transform update timestamp DTO {}: {}", tsDto, e.getMessage());
+            }
+        }
+
+        if (toClose.isEmpty() && toInsert.isEmpty()) {
+            log.info("Nothing to update for replication timestamps");
+            return;
+        }
+
+        try {
+            replicationTimestampService.ensureTableExists(database);
+            // First close existing active windows
+            if (!toClose.isEmpty()) {
+                replicationTimestampService.updateReplicationTimestampsRowEnd(database, toClose);
+                log.info("Updated row_end for {} active timestamp windows", toClose.size());
+            }
+            // Then insert the new windows
+            if (!toInsert.isEmpty()) {
+                replicationTimestampService.saveReplicationTimestamps(database, toInsert);
+                log.info("Inserted {} new replication timestamp windows", toInsert.size());
+            }
+        } catch (Exception e) {
+            log.error("Failed to process replication update timestamps: {}", e.getMessage(), e);
+            throw new QueryMalformedException("Failed to process replication update timestamps: " + e.getMessage(), e);
+        }
+    }
     
     /**
      * Parse microsecond timestamp string to SQL Timestamp

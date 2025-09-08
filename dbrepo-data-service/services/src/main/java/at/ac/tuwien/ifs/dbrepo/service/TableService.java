@@ -167,6 +167,14 @@ public interface TableService {
                                     List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException;
 
     /**
+     * Processes replication update timestamps: closes the current active timestamp window by
+     * setting row_end to the provided rowStart, and inserts a new timestamp row with the
+     * provided rowStart/rowEnd for reproducibility of system-versioned tables.
+     */
+    void processReplicationUpdateTimestamps(DatabaseDto database, TableDto table,
+                                            List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps) throws SQLException, QueryMalformedException;
+
+    /**
      * Checks for tuples inserted after a given timestamp across all tables in a database.
      *
      * @param database The database to check.

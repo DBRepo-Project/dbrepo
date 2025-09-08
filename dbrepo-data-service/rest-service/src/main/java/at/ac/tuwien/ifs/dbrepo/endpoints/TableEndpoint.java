@@ -889,6 +889,50 @@ public class TableEndpoint extends RestEndpoint {
         }
     }
 
+    @PutMapping("/{tableId}/timestamps")
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbrepo_table_timestamps_update_receive")
+    @Operation(summary = "Update replication timestamps",
+            description = "Closes current active timestamp windows and inserts new timestamp entries for updates",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<Map<String, Object>> updateReplicationTimestamps(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                           @NotNull @PathVariable("tableId") UUID tableId,
+                                                                           @RequestBody java.util.List<at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto> timestamps,
+                                                                           Principal principal) {
+        log.info("endpoint update replication timestamps, databaseId={}, tableId={}, count={}", databaseId, tableId, timestamps != null ? timestamps.size() : 0);
+
+        try {
+            if (timestamps == null || timestamps.isEmpty()) {
+                log.error("timestamps is null or empty in request body");
+                throw new IllegalArgumentException("timestamps list is required and cannot be empty");
+            }
+
+            final DatabaseDto database = cacheService.getDatabase(databaseId);
+            final TableDto table = cacheService.getTable(databaseId, tableId);
+
+            // Validate access
+            final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
+            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
+
+            // Process timestamps via service
+            tableService.processReplicationUpdateTimestamps(database, table, timestamps);
+
+            Map<String, Object> response = Map.of(
+                    "status", "success",
+                    "message", "Processed " + timestamps.size() + " replication update timestamps",
+                    "processedCount", timestamps.size()
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error processing replication update timestamps: {}", e.getMessage(), e);
+            Map<String, Object> response = Map.of(
+                    "status", "error",
+                    "message", "Failed to process replication update timestamps: " + e.getMessage()
+            );
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     @PostMapping("/{tableId}/tuples")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_tuples_receive")
