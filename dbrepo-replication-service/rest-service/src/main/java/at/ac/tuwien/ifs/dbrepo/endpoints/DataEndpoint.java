@@ -57,6 +57,21 @@ public class DataEndpoint {
         );
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping
+    @Operation(summary = "Receive update replication", description = "Receives an update replication (tuple incl. timestamps) and fans out to replicas on the same base path")
+    public ResponseEntity<Map<String, Object>> receiveUpdateReplication(@RequestBody DataReplicationDto request) {
+        log.info("Received update replication");
+
+        tableService.handleDataUpdateReplication(request);
+
+        final Map<String, Object> response = Map.of(
+                "status", "accepted",
+                "database", request.getDatabase() != null ? request.getDatabase().getId() : null,
+                "table", request.getTable() != null ? request.getTable().getId() : null
+        );
+        return ResponseEntity.ok(response);
+    }
 }
 
 

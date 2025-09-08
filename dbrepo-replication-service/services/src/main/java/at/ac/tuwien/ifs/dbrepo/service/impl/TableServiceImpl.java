@@ -291,6 +291,36 @@ public class TableServiceImpl implements TableService {
         }
     }
 
+    @Override
+    public void handleDataUpdateReplication(DataReplicationDto dataReplicationDto) {
+        final DatabaseDto database = dataReplicationDto.getDatabase();
+        final TableDto table = dataReplicationDto.getTable();
+        if (database == null || table == null || database.getReplicaUrls() == null || table.getReplicaUrls() == null) {
+            log.info("No replica URLs provided for update replication; skipping fan-out");
+            return;
+        }
+
+        // Fan-out tuple update to all replicas and collect returned timestamps (currently not used further)
+        for (var entry : database.getReplicaUrls().entrySet()) {
+            final String replicaUrl = entry.getKey();
+            final UUID remoteDatabaseId = entry.getValue();
+            final UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
+            if (remoteTableId == null) {
+                log.warn("Missing remote table id for replicaUrl={} in table replica map; skipping", replicaUrl);
+                continue;
+            }
+            try {
+                final String path = replicaUrl + "/api/v1/database/" + remoteDatabaseId + "/table/" + remoteTableId + "/data/replicate";
+                log.info("Fan-out update replication to {}", path);
+                final HttpEntity<DataReplicationDto> request = new HttpEntity<>(dataReplicationDto);
+                ResponseEntity<TupleWithTimestampsDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.PUT, request, TupleWithTimestampsDto.class);
+                log.info("Update replication response: {}", response.getStatusCode());
+            } catch (Exception e) {
+                log.error("Failed to replicate update to {}: {}", replicaUrl, e.getMessage());
+            }
+        }
+    }
+
     // Send only row_end updates to all replicas
     private void synchronizeDeleteTimestampsToAllSites(DatabaseDto database, TableDto table, List<TupleReplicationTimestamp> timestamps) {
         if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {

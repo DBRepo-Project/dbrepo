@@ -149,6 +149,12 @@ public interface TableService {
             QueryMalformedException, TableMalformedException;
 
     /**
+     * Updates a tuple and returns the versioned row including ROW_START/ROW_END as timestamps.
+     */
+    TupleWithTimestampsDto updateTupleWithTimestamps(DatabaseDto database, TableDto table, TupleUpdateDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException;
+
+    /**
      * Processes and persists replication timestamps received from other sites.
      *
      * @param database The database.

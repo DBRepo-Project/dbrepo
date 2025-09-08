@@ -19,4 +19,6 @@ public interface TableService {
     void handleDataReplication(DataReplicationDto dataReplicationDto);
 
     void handleDataDeleteReplication(DataReplicationDto dataReplicationDto);
+
+    void handleDataUpdateReplication(DataReplicationDto dataReplicationDto);
 }

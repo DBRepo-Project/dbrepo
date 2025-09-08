@@ -751,6 +751,101 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         log.info("Updated tuple(s) from table: {}.{}", database.getInternalName(), table.getInternalName());
     }
 
+    @Override
+    @Timed(value = "dbrepo_data_update_tuple_with_ts", description = "Time spent updating a table tuple incl. timestamps", histogram = true)
+    public TupleWithTimestampsDto updateTupleWithTimestamps(DatabaseDto database, TableDto table, TupleUpdateDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException {
+        log.trace("update tuple with timestamps: {}", data);
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        Map<String, Object> updatedTupleWithTimestamps = null;
+        try {
+            // Perform update
+            final int[] idx = new int[]{1};
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
+                    database.getInternalName(), table, data));
+            for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
+                mariaDbMapper.prepareStatementWithColumnTypeObject(statement,
+                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                idx[0]++;
+            }
+            for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                mariaDbMapper.prepareStatementWithColumnTypeObject(statement,
+                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                idx[0]++;
+            }
+            final long start = System.currentTimeMillis();
+            statement.executeUpdate();
+            log.atDebug()
+                    .setMessage("update tuple in table (with ts): " + table.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_update_tuple_with_ts")
+                    .log();
+
+            // Read updated row FOR SYSTEM_TIME AS OF NOW()
+            final List<String> primaryKeyColumns = table.getConstraints().getPrimaryKey().stream()
+                    .map(pk -> pk.getColumn().getInternalName())
+                    .toList();
+            final StringBuilder select = new StringBuilder("SELECT ");
+            final int[] colIdx = new int[]{0};
+            for (ColumnDto c : table.getColumns()) {
+                select.append(colIdx[0]++ == 0 ? "" : ", ")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`");
+            }
+            select.append(", `replication_key`");
+            select.append(", ROW_START AS inserted_at, ROW_END AS deleted_at FROM `")
+                    .append(database.getInternalName())
+                    .append("`.`")
+                    .append(table.getInternalName())
+                    .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(DataMapper.mariaDbFormatter.format(java.time.Instant.now()))
+                    .append("' WHERE ");
+            final int[] sIdx = new int[]{0};
+            for (String col : primaryKeyColumns) {
+                select.append(sIdx[0]++ == 0 ? "" : " AND ")
+                        .append("`").append(col).append("` = ?");
+            }
+            select.append(" LIMIT 1;");
+
+            final PreparedStatement selectStmt = connection.prepareStatement(select.toString());
+            int bind = 1;
+            for (String col : primaryKeyColumns) {
+                final Object value = data.getKeys().get(col);
+                mariaDbMapper.prepareStatementWithColumnTypeObject(selectStmt, getColumnType(table.getColumns(), col), bind++, col, value);
+            }
+            final ResultSet rs = selectStmt.executeQuery();
+            if (rs.next()) {
+                updatedTupleWithTimestamps = new java.util.HashMap<>();
+                for (ColumnDto c : table.getColumns()) {
+                    updatedTupleWithTimestamps.put(c.getInternalName(), rs.getObject(c.getInternalName()));
+                }
+                putIfColumnExists(rs, updatedTupleWithTimestamps, "replication_key");
+                putIfColumnExists(rs, updatedTupleWithTimestamps, "inserted_at");
+                putIfColumnExists(rs, updatedTupleWithTimestamps, "deleted_at");
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to update tuple with timestamps: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to update tuple with timestamps: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+
+        if (updatedTupleWithTimestamps != null) {
+            formatTimestampsWithMicrosecondPrecision(updatedTupleWithTimestamps);
+        }
+
+        return TupleWithTimestampsDto.builder()
+                .data(updatedTupleWithTimestamps)
+                .insertedAt(parseTimestampToInstant(updatedTupleWithTimestamps != null ? updatedTupleWithTimestamps.get("inserted_at") : null))
+                .deletedAt(parseTimestampToInstant(updatedTupleWithTimestamps != null ? updatedTupleWithTimestamps.get("deleted_at") : null))
+                .replicationKey(updatedTupleWithTimestamps != null ? (String) updatedTupleWithTimestamps.get("replication_key") : null)
+                .build();
+    }
+
     public ColumnTypeDto getColumnType(List<ColumnDto> columns, String name) throws QueryMalformedException {
         final Optional<ColumnDto> optional = columns.stream()
                 .filter(c -> c.getInternalName().equals(name)).findFirst();

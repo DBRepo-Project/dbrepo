@@ -521,9 +521,19 @@ public class TableEndpoint extends RestEndpoint {
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
         final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
-            tableService.updateTuple(database, table, data);
-            return ResponseEntity.status(HttpStatus.ACCEPTED)
-                    .build();
+            if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) {
+                final TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table, data);
+                log.atInfo()
+                        .setMessage("updated tuple with timestamps")
+                        .addKeyValue("updated", updated)
+                        .log();
+                replicationService.replicateTupleUpdate(updated, database, table);
+            } else {
+                tableService.updateTuple(database, table, data);
+                log.debug("updated tuple without timestamps (no replicas configured)");
+            }
+            metadataServiceGateway.updateTableStatistics(databaseId, tableId, authorization);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

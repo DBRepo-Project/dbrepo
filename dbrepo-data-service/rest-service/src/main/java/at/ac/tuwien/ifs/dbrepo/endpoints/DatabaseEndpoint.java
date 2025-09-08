@@ -6,8 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 
 
