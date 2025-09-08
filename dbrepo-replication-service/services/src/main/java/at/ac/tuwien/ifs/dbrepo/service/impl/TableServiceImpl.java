@@ -427,18 +427,18 @@ public class TableServiceImpl implements TableService {
             UUID targetTableId = replicaTimestamp.getTableId();
 
             // Prepare timestamps to send (all timestamps EXCEPT the one for this replica)
-            List<Map<String, Object>> timestampsForReplication = new ArrayList<>();
+            List<TupleReplicationTimestampDto> timestampsForReplication = new ArrayList<>();
             for (TupleReplicationTimestamp ts : timestamps) {
                 if (!ts.getSiteUrl().equals(replicaUrl)) {
-                    Map<String, Object> tsMap = Map.of(
-                            "siteUrl", ts.getSiteUrl(),
-                            "replicationId", ts.getReplicationId(),
-                            "databaseId", ts.getDatabaseId().toString(),
-                            "tableId", ts.getTableId().toString(),
-                            "rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null,
-                            "rowEnd", ts.getRowEnd() != null ? ts.getRowEnd().toString() : null
-                    );
-                    timestampsForReplication.add(tsMap);
+                    TupleReplicationTimestampDto dto = TupleReplicationTimestampDto.builder()
+                            .siteUrl(ts.getSiteUrl())
+                            .replicationId(ts.getReplicationId())
+                            .databaseId(ts.getDatabaseId())
+                            .tableId(ts.getTableId())
+                            .rowStart(ts.getRowStart() != null ? ts.getRowStart().toInstant() : null)
+                            .rowEnd(ts.getRowEnd() != null ? ts.getRowEnd().toInstant() : null)
+                            .build();
+                    timestampsForReplication.add(dto);
                 }
             }
 
@@ -447,11 +447,7 @@ public class TableServiceImpl implements TableService {
 
             try {
                 String path = replicaUrl + "/api/v1/database/" + targetDatabaseId + "/table/" + targetTableId + "/timestamps";
-                Map<String, Object> request = Map.of(
-                        "timestamps", timestampsForReplication
-                );
-
-                HttpEntity<Map<String, Object>> httpRequest = new HttpEntity<>(request);
+                HttpEntity<List<TupleReplicationTimestampDto>> httpRequest = new HttpEntity<>(timestampsForReplication);
                 ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
                         path, HttpMethod.POST, httpRequest, Map.class);
 

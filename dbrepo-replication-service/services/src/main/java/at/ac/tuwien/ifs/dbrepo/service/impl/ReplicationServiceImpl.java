@@ -938,24 +938,6 @@ public class ReplicationServiceImpl implements ReplicationService {
             } catch (Exception resolveEx) {
                 log.warn("⚠️ Could not resolve local table ID for {}: {}. Proceeding with provided ID.", tableId, resolveEx.getMessage());
             }
-            // Convert TupleReplicationTimestampDto to the format expected by the endpoint
-            List<Map<String, Object>> timestampsList = new ArrayList<>();
-            
-            for (TupleReplicationTimestampDto timestamp : timestamps) {
-                Map<String, Object> timestampMap = Map.of(
-                    "siteUrl", timestamp.getSiteUrl(),
-                    "replicationId", timestamp.getReplicationId(),
-                    "databaseId", timestamp.getDatabaseId().toString(),
-                    "tableId", timestamp.getTableId().toString(),
-                    "rowStart", timestamp.getRowStart() != null ? timestamp.getRowStart().toString() : null,
-                    "rowEnd", timestamp.getRowEnd() != null ? timestamp.getRowEnd().toString() : null
-                );
-                timestampsList.add(timestampMap);
-            }
-
-            // Build the request payload
-            Map<String, Object> requestPayload = Map.of("timestamps", timestampsList);
-
             // Build the full URL for the timestamps endpoint
             String path = String.format("/api/v1/database/%s/table/%s/timestamps", databaseId, resolvedLocalTableId);
 
@@ -965,7 +947,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             // Make the HTTP call to local data service
             ResponseEntity<Map> response = localDataServiceRestTemplate.postForEntity(
                 path,
-                requestPayload, 
+                timestamps,
                 Map.class
             );
 
@@ -1138,26 +1120,14 @@ public class ReplicationServiceImpl implements ReplicationService {
                     final UUID targetTableId = replicaTableMap.get(replicaUrl);
 
                     // Build payload: replicate exactly the local timestamps as received
-                    List<Map<String, Object>> timestampsForReplication = new ArrayList<>();
-                    for (TupleReplicationTimestampDto ts : tableTimestamps) {
-                        Map<String, Object> tsMap = Map.of(
-                            "siteUrl", ts.getSiteUrl(),
-                            "replicationId", ts.getReplicationId(),
-                            "databaseId", ts.getDatabaseId().toString(),
-                            "tableId", ts.getTableId().toString(),
-                            "rowStart", ts.getRowStart() != null ? ts.getRowStart().toString() : null,
-                            "rowEnd", ts.getRowEnd() != null ? ts.getRowEnd().toString() : null
-                        );
-                        timestampsForReplication.add(tsMap);
-                    }
+                    List<TupleReplicationTimestampDto> timestampsForReplication = new ArrayList<>(tableTimestamps);
 
                     log.info("Synchronizing {} timestamps to replica {} for databaseId={}, tableId={}",
                         timestampsForReplication.size(), replicaUrl, targetDatabaseId, targetTableId);
 
                     final String path = replicaUrl + "/api/v1/database/" + targetDatabaseId + "/table/" + targetTableId + "/timestamps";
-                    final Map<String, Object> request = Map.of("timestamps", timestampsForReplication);
 
-                    final HttpEntity<Map<String, Object>> httpRequest = new HttpEntity<>(request);
+                    final HttpEntity<List<TupleReplicationTimestampDto>> httpRequest = new HttpEntity<>(timestampsForReplication);
                     ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
                         path, org.springframework.http.HttpMethod.POST, httpRequest, Map.class);
 
