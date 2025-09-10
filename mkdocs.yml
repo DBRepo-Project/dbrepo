@@ -28,6 +28,7 @@ nav:
       - Import Live Data: user-guide/import-live-data.md
   - Maintainer Guide:
     - maintainer-guide/index.md
+    - maintainer-guide/configuration.md
     - Deployments:
       - Install on Docker: maintainer-guide/docker.md
       - Install on Kubernetes: maintainer-guide/kubernetes.md
