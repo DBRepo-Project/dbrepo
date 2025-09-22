@@ -301,7 +301,7 @@ services:
       FEDERATION_UPSTREAM_URI: ${FEDERATION_UPSTREAM_URI:-}
       FEDERATION_UPSTREAM_SET_NAME: ${FEDERATION_UPSTREAM_SET_NAME:-}
       FEDERATION_POLICY_NAME: ${FEDERATION_POLICY_NAME:-federate-replication-exchange}
-    command: ["bash", "-lc", "apt-get update && apt-get install -y curl && chmod +x /app/setup-federation.sh && /app/setup-federation.sh"]
+    command: ["bash", "-lc", "apt-get update && apt-get install -y curl && bash /app/setup-federation.sh"]
     depends_on:
       dbrepo-broker-service:
         condition: service_healthy
