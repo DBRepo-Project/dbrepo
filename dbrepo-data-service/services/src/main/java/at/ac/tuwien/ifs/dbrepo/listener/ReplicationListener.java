@@ -51,41 +51,48 @@ public class ReplicationListener implements MessageListener {
             return;
         }
         final String[] parts = properties.getReceivedRoutingKey().split("\\.");
-        // Support legacy 3-part (dbrepo.<dbId>.<tableId>) and new 4-part (dbrepo.<siteId>.<dbId>.<tableId>) keys
-        final UUID databaseId;
-        final UUID tableId;
-        if (parts.length == 3) {
-            databaseId = UUID.fromString(parts[1]);
-            tableId = UUID.fromString(parts[2]);
-        } else if (parts.length == 4) {
-            databaseId = UUID.fromString(parts[2]);
-            tableId = UUID.fromString(parts[3]);
-        } else {
-            log.error("Failed to map database and table names from routing key: unexpected parts: {}", parts.length);
+        // Require new 4-part (dbrepo.<siteId>.<dbId>.<tableId>) keys
+        if (parts.length != 4) {
+            log.error("Invalid routing key format (expected 4 parts: dbrepo.<siteId>.<dbId>.<tableId>): {}", properties.getReceivedRoutingKey());
             return;
         }
+        final String siteId = parts[1];
+        final UUID databaseId = UUID.fromString(parts[2]);
+        final UUID tableId = UUID.fromString(parts[3]);
+        log.debug("replication: routing key parts parsed (site={}, db={}, table={})", siteId, databaseId, tableId);
         final Map<String, Object> body;
         log.info("received replicated message from routing key: {}", properties.getReceivedRoutingKey());
         try {
             final DatabaseDto database = cacheService.getDatabase(databaseId);
             final TableDto table = cacheService.getTable(databaseId, tableId);
             body = objectMapper.readValue(message.getBody(), typeRef);
-            log.trace("received replicated message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), body.keySet());
+            final Object rk = body.get("replication_key");
+            final Object id = body.get("id");
+            log.info("received replicated message of {} bytes with keys: {} (site={}, db={}, table={}, id={}, replication_key={})",
+                    message.getMessageProperties().getContentLength(), body.keySet(), siteId, databaseId, tableId, id, rk);
             // Do NOT generate replication_key here; it must be preserved across sites
             final boolean hasReplicationKeyColumn = table.getColumns().stream().anyMatch(c -> "replication_key".equalsIgnoreCase(c.getInternalName()));
             if (hasReplicationKeyColumn && !body.containsKey("replication_key")) {
-                log.error("replication_key missing in replicated payload for table {}.{}; skipping insert to preserve consistency", database.getInternalName(), table.getInternalName());
+                log.error("replication_key missing in replicated payload for table {}.{}; skipping insert to preserve consistency. bodyKeys={}, routingKey={}",
+                        database.getInternalName(), table.getInternalName(), body.keySet(), properties.getReceivedRoutingKey());
                 return;
             }
+            log.debug("replication: inserting tuple into {}.{} (site={}, id={}, replication_key={})",
+                    database.getInternalName(), table.getInternalName(), siteId, id, rk);
             queueService.insert(database, table, body);
+            log.info("replication: insert success into {}.{} (site={}, id={}, replication_key={})",
+                    database.getInternalName(), table.getInternalName(), siteId, id, rk);
         } catch (IOException e) {
-            log.error("Failed to read object: {}", e.getMessage());
+            log.error("Failed to read replicated object (routingKey={}): {}", properties.getReceivedRoutingKey(), e.getMessage());
         } catch (SQLException | RemoteUnavailableException e) {
-            log.error("Failed to insert replicated tuple: {}", e.getMessage());
+            log.error("Failed to insert replicated tuple (routingKey={}, site={}, db={}, table={}): {}",
+                    properties.getReceivedRoutingKey(), siteId, databaseId, tableId, e.getMessage());
         } catch (TableNotFoundException | MetadataServiceException e) {
-            log.error("Failed to find replicated table: {}", e.getMessage());
+            log.error("Failed to find replicated table (routingKey={}, db={}, table={}): {}",
+                    properties.getReceivedRoutingKey(), databaseId, tableId, e.getMessage());
         } catch (DatabaseNotFoundException e) {
-            log.error("Failed to find replicated database: {}", e.getMessage());
+            log.error("Failed to find replicated database (routingKey={}, db={}): {}",
+                    properties.getReceivedRoutingKey(), databaseId, e.getMessage());
         }
     }
 }
