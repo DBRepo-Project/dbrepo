@@ -72,6 +72,13 @@ public class DefaultListener implements MessageListener {
             final TableDto table = cacheService.getTable(databaseId, tableId);
             body = objectMapper.readValue(message.getBody(), typeRef);
             log.trace("received message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), body.keySet());
+            // Ensure replication_key is stable across sites: generate on publisher if column exists and missing in payload
+            final boolean hasReplicationKeyColumn = table.getColumns().stream().anyMatch(c -> "replication_key".equalsIgnoreCase(c.getInternalName()));
+            if (hasReplicationKeyColumn && !body.containsKey("replication_key")) {
+                final String replicationKey = java.util.UUID.randomUUID().toString();
+                body.put("replication_key", replicationKey);
+                log.debug("generated replication_key on ingest: {}", replicationKey);
+            }
             queueService.insert(database, table, body);
 
             // Fan-out to replication exchange for each replica (routing key: dbrepo.<siteId>.<remoteDatabaseId>.<remoteTableId>)
@@ -89,7 +96,8 @@ public class DefaultListener implements MessageListener {
                         final String siteId = host != null && host.contains(".") ? host.substring(0, host.indexOf('.')) : host;
                         final String routingKey = "dbrepo." + siteId + "." + remoteDatabaseId + "." + remoteTableId;
                         log.info("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
-                        rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, message.getBody());
+                        final byte[] payload = objectMapper.writeValueAsBytes(body);
+                        rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, payload);
                         log.debug("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
                     } catch (Exception ex) {
                         log.warn("Failed to publish replicated message to {}: {}", replicaUrl, ex.getMessage());

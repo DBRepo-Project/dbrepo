@@ -51,12 +51,19 @@ public class ReplicationListener implements MessageListener {
             return;
         }
         final String[] parts = properties.getReceivedRoutingKey().split("\\.");
-        if (parts.length != 3) {
-            log.error("Failed to map database and table names from routing key: is not 3-part");
+        // Support legacy 3-part (dbrepo.<dbId>.<tableId>) and new 4-part (dbrepo.<siteId>.<dbId>.<tableId>) keys
+        final UUID databaseId;
+        final UUID tableId;
+        if (parts.length == 3) {
+            databaseId = UUID.fromString(parts[1]);
+            tableId = UUID.fromString(parts[2]);
+        } else if (parts.length == 4) {
+            databaseId = UUID.fromString(parts[2]);
+            tableId = UUID.fromString(parts[3]);
+        } else {
+            log.error("Failed to map database and table names from routing key: unexpected parts: {}", parts.length);
             return;
         }
-        final UUID databaseId = UUID.fromString(parts[1]);
-        final UUID tableId = UUID.fromString(parts[2]);
         final Map<String, Object> body;
         log.info("received replicated message from routing key: {}", properties.getReceivedRoutingKey());
         try {
@@ -64,6 +71,12 @@ public class ReplicationListener implements MessageListener {
             final TableDto table = cacheService.getTable(databaseId, tableId);
             body = objectMapper.readValue(message.getBody(), typeRef);
             log.trace("received replicated message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), body.keySet());
+            // Do NOT generate replication_key here; it must be preserved across sites
+            final boolean hasReplicationKeyColumn = table.getColumns().stream().anyMatch(c -> "replication_key".equalsIgnoreCase(c.getInternalName()));
+            if (hasReplicationKeyColumn && !body.containsKey("replication_key")) {
+                log.error("replication_key missing in replicated payload for table {}.{}; skipping insert to preserve consistency", database.getInternalName(), table.getInternalName());
+                return;
+            }
             queueService.insert(database, table, body);
         } catch (IOException e) {
             log.error("Failed to read object: {}", e.getMessage());
