@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Getter
 @Slf4j
@@ -61,8 +62,9 @@ public class RabbitConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(queueName);
         container.setMessageListener(listenerAdapter);
-        container.setConcurrentConsumers(minConcurrent);
-        container.setMaxConcurrentConsumers(maxConcurrent);
+        container.setConcurrentConsumers(1);
+        container.setMaxConcurrentConsumers(1);
+        container.setExclusive(true);
         return container;
     }
 
@@ -113,11 +115,13 @@ public class RabbitConfig {
 
     // Auto-declarations for replication topology (local site)
     @Bean
+    @ConditionalOnProperty(name = "dbrepo.replication.autoDeclare", havingValue = "true")
     public Exchange replicationExchange() {
         return ExchangeBuilder.topicExchange(replicationExchangeName).durable(true).build();
     }
 
     @Bean
+    @ConditionalOnProperty(name = "dbrepo.replication.autoDeclare", havingValue = "true")
     public Declarables replicationQueuesAndBindings() {
         final java.util.List<Declarable> declarables = new java.util.ArrayList<>();
 
