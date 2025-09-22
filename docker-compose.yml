@@ -96,6 +96,8 @@ services:
     depends_on:
       dbrepo-data-db:
         condition: service_healthy
+      dbrepo-broker-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
