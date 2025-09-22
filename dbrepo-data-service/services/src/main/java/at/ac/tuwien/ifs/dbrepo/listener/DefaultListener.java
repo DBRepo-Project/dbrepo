@@ -96,8 +96,7 @@ public class DefaultListener implements MessageListener {
                         final String siteId = host != null && host.contains(".") ? host.substring(0, host.indexOf('.')) : host;
                         final String routingKey = "dbrepo." + siteId + "." + remoteDatabaseId + "." + remoteTableId;
                         log.info("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
-                        final byte[] payload = objectMapper.writeValueAsBytes(body);
-                        rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, payload);
+                        rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, body);
                         log.debug("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
                     } catch (Exception ex) {
                         log.warn("Failed to publish replicated message to {}: {}", replicaUrl, ex.getMessage());
