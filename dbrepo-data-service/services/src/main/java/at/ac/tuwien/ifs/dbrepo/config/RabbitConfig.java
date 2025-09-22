@@ -107,9 +107,11 @@ public class RabbitConfig {
         }
         container.setQueueNames(queueNames);
         container.setMessageListener(replicationListenerAdapter);
-        container.setConcurrentConsumers(minConcurrent);
-        container.setMaxConcurrentConsumers(maxConcurrent);
+        container.setConcurrentConsumers(1);
+        container.setMaxConcurrentConsumers(1);
         container.setMissingQueuesFatal(false);
+        container.setExclusive(true);
+
         container.setAutoStartup(replicationConsumerEnabled);
         return container;
     }
