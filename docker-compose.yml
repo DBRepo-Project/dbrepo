@@ -254,9 +254,23 @@ services:
       - ./dbrepo-broker-service/advanced.config:/etc/rabbitmq/advanced.config
       - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
+      - ./dbrepo-broker-service/setup-federation.sh:/docker-entrypoint-initdb.d/99-setup-federation.sh:ro
       - broker-service-data:/bitnami/rabbitmq/mnesia
     environment:
       RABBITMQ_FEATURE_FLAGS: mqtt_v5
+      # Replication/federation env (override per-site in .env or deployment)
+      REPLICATION_EXCHANGE_NAME: ${REPLICATION_EXCHANGE_NAME:-dbrepo-replication}
+      REPLICATION_QUEUE_NAME: ${REPLICATION_QUEUE_NAME:-}
+      REPLICATION_SITE_ID: ${REPLICATION_SITE_ID:-}
+      BROKER_VHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      BROKER_USERNAME: ${SYSTEM_USERNAME:-admin}
+      BROKER_PASSWORD: ${SYSTEM_PASSWORD:-admin}
+      BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
+      # Federation upstream (set on receiving sites)
+      FEDERATION_UPSTREAM_NAME: ${FEDERATION_UPSTREAM_NAME:-upstream-remote}
+      FEDERATION_UPSTREAM_URI: ${FEDERATION_UPSTREAM_URI:-}
+      FEDERATION_UPSTREAM_SET_NAME: ${FEDERATION_UPSTREAM_SET_NAME:-}
+      FEDERATION_POLICY_NAME: ${FEDERATION_POLICY_NAME:-federate-replication-exchange}
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
