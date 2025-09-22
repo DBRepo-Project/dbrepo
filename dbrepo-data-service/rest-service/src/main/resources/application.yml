@@ -107,3 +107,9 @@ dbrepo:
   routingKey: "${BROKER_ROUTING_KEY:#}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   baseUrl: "${BASE_URL:http://localhost}"
+  replication:
+    exchangeName: "${REPLICATION_EXCHANGE_NAME:dbrepo-replication}"
+    queueName: "${REPLICATION_QUEUE_NAME:dbrepo-replication}"
+    queueNames: "${REPLICATION_QUEUE_NAMES:}"
+    consumerEnabled: "${REPLICATION_CONSUMER_ENABLED:true}"
+    siteId: "${REPLICATION_SITE_ID:}"

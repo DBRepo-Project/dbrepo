@@ -38,6 +38,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.security.Principal;
 import java.sql.SQLException;
@@ -62,16 +64,22 @@ public class TableEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
     private final ReplicationService replicationService;
+    private final RabbitTemplate rabbitTemplate;
+    private final ObjectMapper objectMapper;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Value("${dbrepo.baseUrl}")
     private String baseUrl;
 
+    @Value("${dbrepo.replication.exchangeName:dbrepo-replication}")
+    private String replicationExchangeName;
+
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
                          SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, ReplicationService replicationService) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, ReplicationService replicationService,
+                         RabbitTemplate rabbitTemplate, ObjectMapper objectMapper) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -81,6 +89,8 @@ public class TableEndpoint extends RestEndpoint {
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
         this.replicationService = replicationService;
+        this.rabbitTemplate = rabbitTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @PostMapping
@@ -363,8 +373,18 @@ public class TableEndpoint extends RestEndpoint {
                         .log();
 
                 log.info("created tuple with timestamps {}", created);
-                // replicate tuple to replication service
-                replicationService.replicateTuple(created, database, table);
+                // Replicate via AMQP to each replica using federation
+                for (var entry : database.getReplicaUrls().entrySet()) {
+                    try {
+                        final java.util.UUID remoteDatabaseId = entry.getValue();
+                        final String routingKey = "dbrepo." + remoteDatabaseId + "." + tableId;
+                        final byte[] body = objectMapper.writeValueAsBytes(data.getData());
+                        rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, body);
+                        log.debug("published insert to replication exchange={}, routingKey={} (replica {})", replicationExchangeName, routingKey, entry.getKey());
+                    } catch (Exception ex) {
+                        log.warn("Failed to publish insert to replica {}: {}", entry.getKey(), ex.getMessage());
+                    }
+                }
             } else {
                 tableService.createTuple(database, table, data);
                 log.debug("created tuple without timestamps (no replicas configured)");

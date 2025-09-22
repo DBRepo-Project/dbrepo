@@ -13,10 +13,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -24,6 +26,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.net.URI;
 
 @Slf4j
 @Component
@@ -32,12 +35,17 @@ public class DefaultListener implements MessageListener {
     private final CacheService cacheService;
     private final ObjectMapper objectMapper;
     private final QueueService queueService;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${dbrepo.replication.exchangeName:dbrepo-replication}")
+    private String replicationExchangeName;
 
     @Autowired
-    public DefaultListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService) {
+    public DefaultListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService, RabbitTemplate rabbitTemplate) {
         this.cacheService = cacheService;
         this.objectMapper = objectMapper;
         this.queueService = queueService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -65,6 +73,29 @@ public class DefaultListener implements MessageListener {
             body = objectMapper.readValue(message.getBody(), typeRef);
             log.trace("received message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), body.keySet());
             queueService.insert(database, table, body);
+
+            // Fan-out to replication exchange for each replica (routing key: dbrepo.<siteId>.<remoteDatabaseId>.<remoteTableId>)
+            if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty() && table.getReplicaUrls() != null) {
+                for (var entry : database.getReplicaUrls().entrySet()) {
+                    final String replicaUrl = entry.getKey();
+                    final java.util.UUID remoteDatabaseId = entry.getValue();
+                    final java.util.UUID remoteTableId = table.getReplicaUrls().get(replicaUrl);
+                    if (remoteTableId == null) {
+                        log.warn("replication: missing remoteTableId for replicaUrl={}, skipping", replicaUrl);
+                        continue;
+                    }
+                    try {
+                        final String host = new URI(replicaUrl).getHost();
+                        final String siteId = host != null && host.contains(".") ? host.substring(0, host.indexOf('.')) : host;
+                        final String routingKey = "dbrepo." + siteId + "." + remoteDatabaseId + "." + remoteTableId;
+                        log.info("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
+                        rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, message.getBody());
+                        log.debug("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
+                    } catch (Exception ex) {
+                        log.warn("Failed to publish replicated message to {}: {}", replicaUrl, ex.getMessage());
+                    }
+                }
+            }
         } catch (IOException e) {
             log.error("Failed to read object: {}", e.getMessage());
         } catch (SQLException | RemoteUnavailableException e) {
