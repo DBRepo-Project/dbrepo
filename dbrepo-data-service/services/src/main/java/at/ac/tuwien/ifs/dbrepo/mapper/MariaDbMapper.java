@@ -405,10 +405,7 @@ public interface MariaDbMapper {
                     .append(columnTypeDtoToDataType(column))
                     /* null expressions */
                     .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL");
-            // Auto-generate replication_key on insert
-            if ("replication_key".equalsIgnoreCase(nameToInternalName(column.getName()))) {
-                stringBuilder.append(" DEFAULT UUID()");
-            }
+            // Do not auto-generate replication_key at DB level; it must be propagated across sites
             if (column.getDescription() != null && !column.getDescription().isEmpty()) {
                 /* comments */
                 stringBuilder.append(" COMMENT \"")
