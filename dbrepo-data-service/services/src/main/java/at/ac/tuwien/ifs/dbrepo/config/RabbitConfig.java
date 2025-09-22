@@ -55,6 +55,9 @@ public class RabbitConfig {
     @Value("${dbrepo.connectionTimeout}")
     private Integer connectionTimeout;
 
+    @Value("${dbrepo.publisher.consumerEnabled:true}")
+    private boolean publisherConsumerEnabled;
+
     @Bean
     public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
                                              MessageListenerAdapter listenerAdapter) {
@@ -65,6 +68,7 @@ public class RabbitConfig {
         container.setConcurrentConsumers(1);
         container.setMaxConcurrentConsumers(1);
         container.setExclusive(true);
+        container.setAutoStartup(publisherConsumerEnabled);
         return container;
     }
 
@@ -115,13 +119,13 @@ public class RabbitConfig {
 
     // Auto-declarations for replication topology (local site)
     @Bean
-    @ConditionalOnProperty(name = "dbrepo.replication.autoDeclare", havingValue = "true")
+    @ConditionalOnProperty(name = "dbrepo.replication.autoDeclare", havingValue = "true", matchIfMissing = true)
     public Exchange replicationExchange() {
         return ExchangeBuilder.topicExchange(replicationExchangeName).durable(true).build();
     }
 
     @Bean
-    @ConditionalOnProperty(name = "dbrepo.replication.autoDeclare", havingValue = "true")
+    @ConditionalOnProperty(name = "dbrepo.replication.autoDeclare", havingValue = "true", matchIfMissing = true)
     public Declarables replicationQueuesAndBindings() {
         final java.util.List<Declarable> declarables = new java.util.ArrayList<>();
 
