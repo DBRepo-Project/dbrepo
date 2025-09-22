@@ -137,7 +137,7 @@ public class RabbitConfig {
 
         // declare each queue and bind by siteId if available; otherwise, skip binding and rely on external policy
         for (String q : queues) {
-            Queue queue = QueueBuilder.durable(q).build();
+            Queue queue = QueueBuilder.durable(q).singleActiveConsumer().build();
             declarables.add(queue);
             if (siteId != null && !siteId.isBlank()) {
                 String bindingKey = "dbrepo." + siteId + ".*.*";

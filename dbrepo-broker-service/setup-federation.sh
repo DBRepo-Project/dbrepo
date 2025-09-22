@@ -47,7 +47,7 @@ if [[ -n "${REPL_QUEUE_NAME}" ]]; then
   echo "[federation-init] Declaring replication queue '${REPL_QUEUE_NAME}' (durable)"
   curl "${curl_auth[@]}" "${curl_base[@]}" -H 'content-type: application/json' \
     -X PUT "${BROKER_MGMT_URL}/api/queues/${BROKER_VHOST}/${REPL_QUEUE_NAME}" \
-    --data '{"durable":true,"auto_delete":false,"arguments":{}}'
+    --data '{"durable":true,"auto_delete":false,"arguments":{"x-single-active-consumer":true}}'
 
   if [[ -n "${REPL_SITE_ID}" ]]; then
     BINDING_KEY="dbrepo.${REPL_SITE_ID}.*.*"
