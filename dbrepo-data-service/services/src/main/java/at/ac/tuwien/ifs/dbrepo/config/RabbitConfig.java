@@ -70,8 +70,9 @@ public class RabbitConfig {
         container.setMessageListener(listenerAdapter);
         container.setConcurrentConsumers(1);
         container.setMaxConcurrentConsumers(1);
-        container.setExclusive(true);
         container.setAutoStartup(publisherConsumerEnabled);
+        container.setMissingQueuesFatal(true);
+        container.setExclusive(false);
         return container;
     }
 
@@ -111,7 +112,8 @@ public class RabbitConfig {
         container.setConcurrentConsumers(1);
         container.setMaxConcurrentConsumers(1);
         container.setMissingQueuesFatal(false);
-        container.setExclusive(true);
+        container.setMissingQueuesFatal(true);
+        container.setExclusive(false);
 
         container.setAutoStartup(replicationConsumerEnabled);
         return container;
