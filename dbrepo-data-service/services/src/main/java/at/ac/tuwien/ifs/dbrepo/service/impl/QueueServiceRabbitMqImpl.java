@@ -132,7 +132,7 @@ public class QueueServiceRabbitMqImpl extends DataConnector implements QueueServ
                 if (optional.isEmpty()) {
                     continue;
                 }
-                dataMapper.prepareStatementWithColumnTypeObject(selectStmt, optional.get().getColumnType(), bind++, col, value);
+                dataMapper.prepareStatementWithColumnTypeObject(selectStmt, optional.get().getColumnType(), bind++, value);
             }
             final ResultSet rs = selectStmt.executeQuery();
             if (rs.next()) {
