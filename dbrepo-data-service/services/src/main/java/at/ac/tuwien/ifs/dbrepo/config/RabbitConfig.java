@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.listener.DefaultListener;
 import at.ac.tuwien.ifs.dbrepo.listener.ReplicationListener;
+import at.ac.tuwien.ifs.dbrepo.listener.ReplicationTimestampListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
@@ -171,6 +172,87 @@ public class RabbitConfig {
     @Bean
     public MessageConverter jacksonMessageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    // === Replication timestamps publishing topology ===
+    @Value("${dbrepo.replication.timestamps.exchangeName:dbrepo-replication-timestamps}")
+    private String replicationTimestampsExchangeName;
+    @Value("${dbrepo.replication.timestamps.queueName:dbrepo-replication-timestamps}")
+    private String replicationTimestampsQueueName;
+    @Value("${dbrepo.replication.timestamps.queueNames:}")
+    private String replicationTimestampsQueueNamesCsv;
+    @Value("${dbrepo.replication.siteId:}")
+    private String timestampsSiteId;
+
+    @Bean
+    @ConditionalOnProperty(name = "dbrepo.replication.timestamps.autoDeclare", havingValue = "true", matchIfMissing = true)
+    public Exchange replicationTimestampsExchange() {
+        return ExchangeBuilder.topicExchange(replicationTimestampsExchangeName).durable(true).build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "dbrepo.replication.timestamps.autoDeclare", havingValue = "true", matchIfMissing = true)
+    public Declarables replicationTimestampsQueuesAndBindings() {
+        final java.util.List<Declarable> declarables = new java.util.ArrayList<>();
+
+        // declare exchange
+        declarables.add(replicationTimestampsExchange());
+
+        // determine queues to declare
+        final java.util.List<String> queues = new java.util.ArrayList<>();
+        if (replicationTimestampsQueueNamesCsv != null && !replicationTimestampsQueueNamesCsv.isBlank()) {
+            java.util.Arrays.stream(replicationTimestampsQueueNamesCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(queues::add);
+        } else if (replicationTimestampsQueueName != null && !replicationTimestampsQueueName.isBlank()) {
+            queues.add(replicationTimestampsQueueName);
+        }
+
+        for (String q : queues) {
+            Queue queue = QueueBuilder.durable(q).singleActiveConsumer().build();
+            declarables.add(queue);
+            if (timestampsSiteId != null && !timestampsSiteId.isBlank()) {
+                String bindingKey = "dbrepo." + timestampsSiteId + ".*.*";
+                Binding binding = BindingBuilder.bind(queue).to((TopicExchange) replicationTimestampsExchange()).with(bindingKey);
+                declarables.add(binding);
+            }
+        }
+
+        return new Declarables(declarables);
+    }
+
+    // Listener container for replication timestamps
+    @Value("${dbrepo.replication.timestamps.consumerEnabled:true}")
+    private boolean replicationTimestampsConsumerEnabled;
+
+    @Bean
+    public SimpleMessageListenerContainer replicationTimestampsContainer(ConnectionFactory connectionFactory,
+                                                                         MessageListenerAdapter replicationTimestampsListenerAdapter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        String[] queueNames;
+        if (replicationTimestampsQueueNamesCsv != null && !replicationTimestampsQueueNamesCsv.isBlank()) {
+            queueNames = java.util.Arrays.stream(replicationTimestampsQueueNamesCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        } else {
+            queueNames = new String[]{replicationTimestampsQueueName};
+        }
+        container.setQueueNames(queueNames);
+        container.setMessageListener(replicationTimestampsListenerAdapter);
+        container.setConcurrentConsumers(1);
+        container.setMaxConcurrentConsumers(1);
+        container.setMissingQueuesFatal(false);
+        container.setExclusive(true);
+        container.setAutoStartup(replicationTimestampsConsumerEnabled);
+        return container;
+    }
+
+    @Bean
+    public MessageListenerAdapter replicationTimestampsListenerAdapter(ReplicationTimestampListener listener) {
+        return new MessageListenerAdapter(listener, "onMessage");
     }
 
 }

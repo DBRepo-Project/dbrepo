@@ -8,15 +8,19 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.QueueService;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -32,12 +36,17 @@ public class ReplicationListener implements MessageListener {
     private final CacheService cacheService;
     private final ObjectMapper objectMapper;
     private final QueueService queueService;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${dbrepo.replication.timestamps.exchangeName:dbrepo-replication-timestamps}")
+    private String replicationTimestampsExchangeName;
 
     @Autowired
-    public ReplicationListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService) {
+    public ReplicationListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService, RabbitTemplate rabbitTemplate) {
         this.cacheService = cacheService;
         this.objectMapper = objectMapper;
         this.queueService = queueService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -79,9 +88,29 @@ public class ReplicationListener implements MessageListener {
             }
             log.debug("replication: inserting tuple into {}.{} (site={}, id={}, replication_key={})",
                     database.getInternalName(), table.getInternalName(), siteId, id, rk);
-            queueService.insert(database, table, body);
+            final TupleWithTimestampsDto created = queueService.insertWithTimestamps(database, table, body);
             log.info("replication: insert success into {}.{} (site={}, id={}, replication_key={})",
                     database.getInternalName(), table.getInternalName(), siteId, id, rk);
+
+            // Immediately publish timestamp info to new queue/exchange using DTO payload
+            if (created != null) {
+                final TupleReplicationTimestampDto tsDto = TupleReplicationTimestampDto.builder()
+                        .siteUrl(siteId) // use parsed siteId; field name is siteUrl in DTO
+                        .replicationId(created.getReplicationKey())
+                        .databaseId(databaseId)
+                        .tableId(tableId)
+                        .rowStart(created.getInsertedAt())
+                        .rowEnd(created.getDeletedAt())
+                        .build();
+
+                final String tsRoutingKey = "dbrepo." + siteId + "." + databaseId + "." + tableId;
+                rabbitTemplate.convertAndSend(replicationTimestampsExchangeName, tsRoutingKey, tsDto);
+                log.info("replication: published timestamp DTO to exchange={}, routingKey={}",
+                        replicationTimestampsExchangeName, tsRoutingKey);
+            } else {
+                log.warn("replication: timestamps could not be retrieved after insert for {}.{}, skipping timestamp publish",
+                        database.getInternalName(), table.getInternalName());
+            }
         } catch (IOException e) {
             log.error("Failed to read replicated object (routingKey={}): {}", properties.getReceivedRoutingKey(), e.getMessage());
         } catch (SQLException | RemoteUnavailableException e) {
