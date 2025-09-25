@@ -10,8 +10,7 @@ target/
 ### local repo ###
 lib/**/1.8*
 lib/**/1.9*
-lib/**/1.10.0*
-lib/**/1.10.1*
+lib/**/1.10*
 
 ### Generated ###
 ready
