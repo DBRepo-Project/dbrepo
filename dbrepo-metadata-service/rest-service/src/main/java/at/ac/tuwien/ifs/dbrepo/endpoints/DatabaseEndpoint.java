@@ -644,4 +644,36 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                 .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(updatedDatabase)));
     }
 
+    @GetMapping("/replica/{replicaDatabaseId}/local-id")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_database_replica_to_local_id")
+    @Operation(summary = "Get local database ID by replica database ID",
+            description = "Finds the local database ID by looking up the replica database ID in the mdb_databases_replica_urls table. Requires role `system`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Local database ID found successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LocalDatabaseIdDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database with this replica database ID was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<LocalDatabaseIdDto> getLocalDatabaseIdByReplicaDatabaseId(
+            @NotNull @PathVariable("replicaDatabaseId") UUID replicaDatabaseId,
+            Principal principal) throws DatabaseNotFoundException {
+        log.debug("endpoint get local database ID by replica database ID, replicaDatabaseId={}", replicaDatabaseId);
+        final LocalDatabaseIdDto result = databaseService.findLocalDatabaseIdByReplicaDatabaseId(replicaDatabaseId);
+        return ResponseEntity.ok(result);
+    }
+
 }

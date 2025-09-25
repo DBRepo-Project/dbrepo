@@ -322,4 +322,72 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
     }
 
+    @Override
+    public TableDto getLocalTableByRemoteTableId(UUID databaseId, UUID remoteTableId)
+            throws RemoteUnavailableException, MetadataServiceException, TableNotFoundException {
+        // First get the local table ID using the existing endpoint
+        final ResponseEntity<at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto> localIdResponse;
+        final String localIdUrl = "/api/v1/database/" + databaseId + "/table/replica/" + remoteTableId + "/local-id";
+        log.debug("get local table id by remote table id from metadata service: {}", localIdUrl);
+        internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
+        try {
+            localIdResponse = internalRestTemplate.exchange(localIdUrl, HttpMethod.GET, HttpEntity.EMPTY, 
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to get local table id by remote table id {}: {}", remoteTableId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to get local table id by remote table id: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Remote table id not found {}: {}", remoteTableId, e.getMessage());
+            throw new TableNotFoundException("Remote table id not found: " + e.getMessage(), e);
+        }
+        if (!localIdResponse.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get local table id by remote table id {}: service responded unsuccessful: {}",
+                    remoteTableId, localIdResponse.getStatusCode());
+            throw new MetadataServiceException("Failed to get local table id by remote table id: service responded unsuccessful: "
+                    + localIdResponse.getStatusCode());
+        }
+        if (localIdResponse.getBody() == null) {
+            log.error("Failed to get local table id by remote table id {}: body is null", remoteTableId);
+            throw new MetadataServiceException("Failed to get local table id by remote table id: body is null");
+        }
+        
+        // Now get the full table using the local table ID
+        final UUID localTableId = localIdResponse.getBody().getLocalTableId();
+        return getTableById(databaseId, localTableId);
+    }
+
+    @Override
+    public DatabaseDto getLocalDatabaseByRemoteDatabaseId(UUID remoteDatabaseId)
+            throws RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+        // First get the local database ID using the new endpoint
+        final ResponseEntity<at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto> localIdResponse;
+        final String localIdUrl = "/api/v1/database/replica/" + remoteDatabaseId + "/local-id";
+        log.debug("get local database id by remote database id from metadata service: {}", localIdUrl);
+        internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
+        try {
+            localIdResponse = internalRestTemplate.exchange(localIdUrl, HttpMethod.GET, HttpEntity.EMPTY, 
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to get local database id by remote database id {}: {}", remoteDatabaseId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to get local database id by remote database id: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Remote database id not found {}: {}", remoteDatabaseId, e.getMessage());
+            throw new DatabaseNotFoundException("Remote database id not found: " + e.getMessage(), e);
+        }
+        if (!localIdResponse.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get local database id by remote database id {}: service responded unsuccessful: {}",
+                    remoteDatabaseId, localIdResponse.getStatusCode());
+            throw new MetadataServiceException("Failed to get local database id by remote database id: service responded unsuccessful: "
+                    + localIdResponse.getStatusCode());
+        }
+        if (localIdResponse.getBody() == null) {
+            log.error("Failed to get local database id by remote database id {}: body is null", remoteDatabaseId);
+            throw new MetadataServiceException("Failed to get local database id by remote database id: body is null");
+        }
+        
+        // Now get the full database using the local database ID
+        final UUID localDatabaseId = localIdResponse.getBody().getLocalDatabaseId();
+        return getDatabaseById(localDatabaseId);
+    }
+
 }

@@ -35,13 +35,17 @@ public class CacheServiceImpl implements CacheService {
     private final Cache<UUID, ContainerDto> containerCache;
     private final Cache<UUID, DatabaseAccessDto> accessCache;
     private final Cache<UUID, TableStatisticDto> statisticCache;
+    private final Cache<String, TableDto> localTableByRemoteTableIdCache;
+    private final Cache<UUID, DatabaseDto> localDatabaseByRemoteDatabaseIdCache;
 
     @Autowired
     public CacheServiceImpl(TableService tableService, MetadataServiceGateway gateway, Cache<String, UserDto> userCache,
                             Cache<UUID, ViewDto> viewCache, Cache<UUID, ImageDto> imageCache,
                             Cache<UUID, TableDto> tableCache, Cache<UUID, DatabaseAccessDto> accessCache,
                             Cache<UUID, DatabaseDto> databaseCache, Cache<UUID, ContainerDto> containerCache,
-                            Cache<UUID, TableStatisticDto> statisticCache) {
+                            Cache<UUID, TableStatisticDto> statisticCache,
+                            Cache<String, TableDto> localTableByRemoteTableIdCache,
+                            Cache<UUID, DatabaseDto> localDatabaseByRemoteDatabaseIdCache) {
         this.tableService = tableService;
         this.gateway = gateway;
         this.userCache = userCache;
@@ -52,6 +56,8 @@ public class CacheServiceImpl implements CacheService {
         this.databaseCache = databaseCache;
         this.containerCache = containerCache;
         this.statisticCache = statisticCache;
+        this.localTableByRemoteTableIdCache = localTableByRemoteTableIdCache;
+        this.localDatabaseByRemoteDatabaseIdCache = localDatabaseByRemoteDatabaseIdCache;
     }
 
     @Override
@@ -223,6 +229,53 @@ public class CacheServiceImpl implements CacheService {
         return access;
     }
 
+    @Override
+    public TableDto getLocalTableByRemoteTableId(UUID databaseId, UUID remoteTableId) throws RemoteUnavailableException,
+            MetadataServiceException, TableNotFoundException {
+        final String cacheKey = databaseId.toString() + ":" + remoteTableId.toString();
+        final TableDto cacheTable = localTableByRemoteTableIdCache.getIfPresent(cacheKey);
+        if (cacheTable != null) {
+            log.atTrace()
+                    .setMessage("found local table by remote table id")
+                    .addKeyValue("cache_hit", true)
+                    .addKeyValue("databaseId", databaseId)
+                    .addKeyValue("remoteTableId", remoteTableId)
+                    .log();
+            return cacheTable;
+        }
+        log.atTrace()
+                .setMessage("reload local table by remote table id from metadata service")
+                .addKeyValue("cache_hit", false)
+                .addKeyValue("databaseId", databaseId)
+                .addKeyValue("remoteTableId", remoteTableId)
+                .log();
+        final TableDto table = gateway.getLocalTableByRemoteTableId(databaseId, remoteTableId);
+        localTableByRemoteTableIdCache.put(cacheKey, table);
+        return table;
+    }
+
+    @Override
+    public DatabaseDto getLocalDatabaseByRemoteDatabaseId(UUID remoteDatabaseId) throws RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException {
+        final DatabaseDto cacheDatabase = localDatabaseByRemoteDatabaseIdCache.getIfPresent(remoteDatabaseId);
+        if (cacheDatabase != null) {
+            log.atTrace()
+                    .setMessage("found local database by remote database id")
+                    .addKeyValue("cache_hit", true)
+                    .addKeyValue("remoteDatabaseId", remoteDatabaseId)
+                    .log();
+            return cacheDatabase;
+        }
+        log.atTrace()
+                .setMessage("reload local database by remote database id from metadata service")
+                .addKeyValue("cache_hit", false)
+                .addKeyValue("remoteDatabaseId", remoteDatabaseId)
+                .log();
+        final DatabaseDto database = gateway.getLocalDatabaseByRemoteDatabaseId(remoteDatabaseId);
+        localDatabaseByRemoteDatabaseIdCache.put(remoteDatabaseId, database);
+        return database;
+    }
+
     /**
      * Method for test cases to remove all caches.
      */
@@ -235,6 +288,8 @@ public class CacheServiceImpl implements CacheService {
         containerCache.invalidateAll();
         imageCache.invalidateAll();
         statisticCache.invalidateAll();
+        localTableByRemoteTableIdCache.invalidateAll();
+        localDatabaseByRemoteDatabaseIdCache.invalidateAll();
     }
 
 }

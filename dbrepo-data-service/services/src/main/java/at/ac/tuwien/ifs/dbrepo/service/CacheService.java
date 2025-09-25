@@ -125,4 +125,29 @@ public interface CacheService {
      */
     DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException,
             MetadataServiceException, NotAllowedException;
+
+    /**
+     * Gets local table by remote table ID either from the cache (if not expired) or retrieves it from the Metadata Service.
+     *
+     * @param databaseId The local database ID context
+     * @param remoteTableId The remote table ID
+     * @return The local table DTO
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     * @throws TableNotFoundException Table not found
+     */
+    TableDto getLocalTableByRemoteTableId(UUID databaseId, UUID remoteTableId) throws RemoteUnavailableException,
+            MetadataServiceException, TableNotFoundException;
+
+    /**
+     * Gets local database by remote database ID either from the cache (if not expired) or retrieves it from the Metadata Service.
+     *
+     * @param remoteDatabaseId The remote database ID
+     * @return The local database DTO
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     * @throws DatabaseNotFoundException Database not found
+     */
+    DatabaseDto getLocalDatabaseByRemoteDatabaseId(UUID remoteDatabaseId) throws RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException;
 }

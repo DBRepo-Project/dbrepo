@@ -447,4 +447,21 @@ public class DatabaseServiceImpl implements DatabaseService {
         return updatedDatabase;
     }
 
+    @Override
+    public LocalDatabaseIdDto findLocalDatabaseIdByReplicaDatabaseId(UUID replicaDatabaseId) throws DatabaseNotFoundException {
+        log.debug("Finding local database ID by replica database ID: {}", replicaDatabaseId);
+
+        Optional<Database> databaseOptional = databaseRepository.findByReplicaDatabaseId(replicaDatabaseId);
+        
+        if (databaseOptional.isEmpty()) {
+            log.error("Failed to find database with replica database ID {}", replicaDatabaseId);
+            throw new DatabaseNotFoundException("Failed to find database with replica database ID " + replicaDatabaseId);
+        }
+
+        Database database = databaseOptional.get();
+        log.info("Found local database ID {} for replica database ID {}", database.getId(), replicaDatabaseId);
+        
+        return new LocalDatabaseIdDto(database.getId(), replicaDatabaseId);
+    }
+
 }

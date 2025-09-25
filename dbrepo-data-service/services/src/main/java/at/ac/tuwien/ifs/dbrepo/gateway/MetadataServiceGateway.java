@@ -127,4 +127,29 @@ public interface MetadataServiceGateway {
      */
     void updateTableStatistics(UUID databaseId, UUID tableId, String authorization) throws TableNotFoundException,
             MetadataServiceException, RemoteUnavailableException;
+
+    /**
+     * Get local table by remote table ID from the metadata service.
+     *
+     * @param databaseId The local database ID context
+     * @param remoteTableId The remote table ID
+     * @return The local table DTO
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     * @throws TableNotFoundException Table not found
+     */
+    TableDto getLocalTableByRemoteTableId(UUID databaseId, UUID remoteTableId)
+            throws RemoteUnavailableException, MetadataServiceException, TableNotFoundException;
+
+    /**
+     * Get local database by remote database ID from the metadata service.
+     *
+     * @param remoteDatabaseId The remote database ID
+     * @return The local database DTO
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     * @throws DatabaseNotFoundException Database not found
+     */
+    DatabaseDto getLocalDatabaseByRemoteDatabaseId(UUID remoteDatabaseId)
+            throws RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException;
 }

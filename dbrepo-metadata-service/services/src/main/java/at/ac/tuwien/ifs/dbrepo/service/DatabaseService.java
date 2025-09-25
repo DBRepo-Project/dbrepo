@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
@@ -227,4 +228,13 @@ public interface DatabaseService {
      */
     Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data) throws DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException;
+
+    /**
+     * Find the local database ID by replica database ID from the mdb_databases_replica_urls table.
+     *
+     * @param replicaDatabaseId The replica database ID to look up.
+     * @return The local database ID DTO.
+     * @throws DatabaseNotFoundException The database with this replica database ID was not found.
+     */
+    LocalDatabaseIdDto findLocalDatabaseIdByReplicaDatabaseId(UUID replicaDatabaseId) throws DatabaseNotFoundException;
 }
