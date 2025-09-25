@@ -225,7 +225,7 @@ public class RabbitConfig {
     }
 
     // Listener container for replication timestamps
-    @Value("${dbrepo.replication.timestamps.consumerEnabled:true}")
+    @Value("${dbrepo.replication.timestamps.timestampsConsumerEnabled:true}")
     private boolean replicationTimestampsConsumerEnabled;
 
     @Bean
