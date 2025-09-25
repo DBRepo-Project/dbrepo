@@ -111,5 +111,5 @@ dbrepo:
     exchangeName: "${REPLICATION_EXCHANGE_NAME:dbrepo-replication}"
     queueName: "${REPLICATION_QUEUE_NAME:dbrepo-replication}"
     queueNames: "${REPLICATION_QUEUE_NAMES:}"
-    consumerEnabled: "${REPLICATION_CONSUMER_ENABLED:true}"
+    consumerEnabled: "${REPLICATION_TIMESTAMPS_CONSUMER_ENABLED:true}"
     siteId: "${REPLICATION_SITE_ID:}"
