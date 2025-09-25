@@ -69,6 +69,16 @@ public class CacheConfig {
         return new ExpiryCache<String, TokenDto>().build();
     }
 
+    @Bean
+    public Cache<String, TableDto> localTableByRemoteTableIdCache() {
+        return new ExpiryCache<String, TableDto>().build();
+    }
+
+    @Bean
+    public Cache<UUID, DatabaseDto> localDatabaseByRemoteDatabaseIdCache() {
+        return new ExpiryCache<UUID, DatabaseDto>().build();
+    }
+
     class ExpiryCache<K, T> {
 
         Cache<K, T> build() {
