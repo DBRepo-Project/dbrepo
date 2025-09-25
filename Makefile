@@ -1,8 +1,8 @@
 .PHONY: all
 
-DOC_VERSION ?= 1.10
-APP_VERSION ?= 1.10.5
-CHART_VERSION ?= 1.10.5
+DOC_VERSION ?= 1.11
+APP_VERSION ?= 1.11.0
+CHART_VERSION ?= 1.11.0
 REPOSITORY_URL ?= registry.datalab.tuwien.ac.at/dbrepo
 
 .PHONY: all

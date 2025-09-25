@@ -2,6 +2,13 @@
 author: Martin Weise
 ---
 
+A subset is defined by a query that specifies which part of a dataset (=view) is included. By default, the DBRepo
+restricts certain operations (e.g. computing functions) to ensure i) long-term stability, ii) -compatibility and iii)
+cross-database vendor compatibility for future possible migration scenarios.
+
+Currently, only plain `SELECT column1, ... FROM some_view [ORDER BY ... [ASC|DESC]]` statements are supported for subset
+creation.
+
 ### UI
 
 A subset can be created by specifying a source view (e.g. My View), select the columns that are included in the subset
