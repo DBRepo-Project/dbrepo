@@ -2,7 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.listener.DefaultListener;
 import at.ac.tuwien.ifs.dbrepo.listener.ReplicationListener;
-import at.ac.tuwien.ifs.dbrepo.listener.ReplicationTimestampListener;
+import at.ac.tuwien.ifs.dbrepo.listener.ReplicationMasterTimestampListener;
+import at.ac.tuwien.ifs.dbrepo.listener.ReplicationTimestampForwarderListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
@@ -253,7 +254,85 @@ public class RabbitConfig {
     }
 
     @Bean
-    public MessageListenerAdapter replicationTimestampsListenerAdapter(ReplicationTimestampListener listener) {
+    public MessageListenerAdapter replicationTimestampsListenerAdapter(ReplicationMasterTimestampListener listener) {
+        return new MessageListenerAdapter(listener, "onMessage");
+    }
+
+    // === Replication timestamp forwarding topology ===
+    @Value("${dbrepo.replication.timestampForwarding.exchangeName:dbrepo-replication-timestamp-forwarding}")
+    private String replicationTimestampForwardingExchangeName;
+    @Value("${dbrepo.replication.timestampForwarding.queueName:dbrepo-replication-timestamp-forwarding}")
+    private String replicationTimestampForwardingQueueName;
+    @Value("${dbrepo.replication.timestampForwarding.queueNames:}")
+    private String replicationTimestampForwardingQueueNamesCsv;
+
+    @Bean
+    @ConditionalOnProperty(name = "dbrepo.replication.timestampForwarding.autoDeclare", havingValue = "true", matchIfMissing = true)
+    public Exchange replicationTimestampForwardingExchange() {
+        return ExchangeBuilder.topicExchange(replicationTimestampForwardingExchangeName).durable(true).build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "dbrepo.replication.timestampForwarding.autoDeclare", havingValue = "true", matchIfMissing = true)
+    public Declarables replicationTimestampForwardingQueuesAndBindings() {
+        final java.util.List<Declarable> declarables = new java.util.ArrayList<>();
+
+        // declare exchange
+        declarables.add(replicationTimestampForwardingExchange());
+
+        // determine queues to declare
+        final java.util.List<String> queues = new java.util.ArrayList<>();
+        if (replicationTimestampForwardingQueueNamesCsv != null && !replicationTimestampForwardingQueueNamesCsv.isBlank()) {
+            java.util.Arrays.stream(replicationTimestampForwardingQueueNamesCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(queues::add);
+        } else if (replicationTimestampForwardingQueueName != null && !replicationTimestampForwardingQueueName.isBlank()) {
+            queues.add(replicationTimestampForwardingQueueName);
+        }
+
+        for (String q : queues) {
+            Queue queue = QueueBuilder.durable(q).singleActiveConsumer().build();
+            declarables.add(queue);
+            // Bind to all timestamp forwarding messages
+            String bindingKey = "dbrepo.timestamp-forwarding.*.*.*";
+            Binding binding = BindingBuilder.bind(queue).to((TopicExchange) replicationTimestampForwardingExchange()).with(bindingKey);
+            declarables.add(binding);
+        }
+
+        return new Declarables(declarables);
+    }
+
+    // Listener container for replication timestamp forwarding
+    @Value("${dbrepo.replication.timestampForwardingConsumerEnabled:true}")
+    private boolean replicationTimestampForwardingConsumerEnabled;
+
+    @Bean
+    public SimpleMessageListenerContainer replicationTimestampForwardingContainer(ConnectionFactory connectionFactory,
+                                                                                 MessageListenerAdapter replicationTimestampForwardingListenerAdapter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        String[] queueNames;
+        if (replicationTimestampForwardingQueueNamesCsv != null && !replicationTimestampForwardingQueueNamesCsv.isBlank()) {
+            queueNames = java.util.Arrays.stream(replicationTimestampForwardingQueueNamesCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        } else {
+            queueNames = new String[]{replicationTimestampForwardingQueueName};
+        }
+        container.setQueueNames(queueNames);
+        container.setMessageListener(replicationTimestampForwardingListenerAdapter);
+        container.setConcurrentConsumers(1);
+        container.setMaxConcurrentConsumers(1);
+        container.setMissingQueuesFatal(false);
+        container.setExclusive(false);
+        container.setAutoStartup(replicationTimestampForwardingConsumerEnabled);
+        return container;
+    }
+
+    @Bean
+    public MessageListenerAdapter replicationTimestampForwardingListenerAdapter(ReplicationTimestampForwarderListener listener) {
         return new MessageListenerAdapter(listener, "onMessage");
     }
 

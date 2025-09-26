@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
@@ -24,17 +26,25 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class ReplicationTimestampListener implements MessageListener {
+public class ReplicationMasterTimestampListener implements MessageListener {
 
     private final ObjectMapper objectMapper;
     private final TableService tableService;
     private final CacheService cacheService;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${dbrepo.replication.timestampForwarding.exchangeName:dbrepo-replication-timestamp-forwarding}")
+    private String replicationTimestampForwardingExchangeName;
+
+    @Value("${dbrepo.replication.siteId:}")
+    private String localSiteId;
 
     @Autowired
-    public ReplicationTimestampListener(ObjectMapper objectMapper, TableService tableService, CacheService cacheService) {
+    public ReplicationMasterTimestampListener(ObjectMapper objectMapper, TableService tableService, CacheService cacheService, RabbitTemplate rabbitTemplate) {
         this.objectMapper = objectMapper;
         this.tableService = tableService;
         this.cacheService = cacheService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -67,6 +77,9 @@ public class ReplicationTimestampListener implements MessageListener {
             log.info("Successfully processed replication timestamp for databaseId={}, tableId={}, replicationId={}", 
                     dto.getDatabaseId(), dto.getTableId(), dto.getReplicationId());
             
+            // Forward timestamp to other replicas via forwarding queue
+            forwardTimestampToForwardingQueue(dto, properties.getReceivedRoutingKey());
+            
         } catch (DatabaseNotFoundException e) {
             log.error("Database not found for replication timestamp databaseId={}: {}", 
                     properties.getReceivedRoutingKey(), e.getMessage());
@@ -87,6 +100,47 @@ public class ReplicationTimestampListener implements MessageListener {
                     properties.getReceivedRoutingKey(), e.getMessage());
         }
     }
+    
+    /**
+     * Forward timestamp to forwarding queue for distribution to other replicas
+     */
+    private void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, String originalRoutingKey) {
+        try {
+            // Extract source site ID from original routing key
+            final String sourceSiteId = extractSourceSiteId(originalRoutingKey);
+            if (sourceSiteId == null) {
+                log.warn("Could not extract source site ID from routing key: {}, skipping forwarding", originalRoutingKey);
+                return;
+            }
+            
+            // Create forwarding routing key: dbrepo.timestamp-forwarding.{sourceSiteId}.{databaseId}.{tableId}
+            final String forwardingRoutingKey = "dbrepo.timestamp-forwarding." + sourceSiteId + "." + dto.getDatabaseId() + "." + dto.getTableId();
+            
+            // Send to forwarding exchange
+            rabbitTemplate.convertAndSend(replicationTimestampForwardingExchangeName, forwardingRoutingKey, dto);
+            
+            log.info("Forwarded timestamp to forwarding queue: routingKey={}, replicationId={}", 
+                    forwardingRoutingKey, dto.getReplicationId());
+            
+        } catch (Exception e) {
+            log.error("Failed to forward timestamp to forwarding queue: {}", e.getMessage());
+        }
+    }
+    
+    /**
+     * Extract source site ID from routing key format: dbrepo.{siteId}.{databaseId}.{tableId}
+     */
+    private String extractSourceSiteId(String routingKey) {
+        if (routingKey == null || !routingKey.contains(".")) {
+            return null;
+        }
+        final String[] parts = routingKey.split("\\.");
+        if (parts.length >= 3) {
+            return parts[1]; // siteId is the 2nd part
+        }
+        return null;
+    }
+    
 }
 
 
