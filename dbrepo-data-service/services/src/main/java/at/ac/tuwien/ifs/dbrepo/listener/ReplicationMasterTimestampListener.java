@@ -119,8 +119,8 @@ public class ReplicationMasterTimestampListener implements MessageListener {
             }
             
             int forwardedCount = 0;
-            for (var replicaLocation : database.getReplicaUrls()) {
-                final String replicaUrl = replicaLocation.getUrl();
+            for (var entry : database.getReplicaUrls().entrySet()) {
+                final String replicaUrl = entry.getKey();
                 final String replicaSiteId = extractSiteIdFromUrl(replicaUrl);
                 
                 // Skip if this is the source replica or local replica
