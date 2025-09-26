@@ -78,7 +78,7 @@ public class ReplicationMasterTimestampListener implements MessageListener {
                     dto.getDatabaseId(), dto.getTableId(), dto.getReplicationId());
             
             // Forward timestamp to other replicas via forwarding queue
-            forwardTimestampToForwardingQueue(dto, properties.getReceivedRoutingKey());
+            forwardTimestampToForwardingQueue(dto, database, properties.getReceivedRoutingKey());
             
         } catch (DatabaseNotFoundException e) {
             log.error("Database not found for replication timestamp databaseId={}: {}", 
@@ -102,9 +102,9 @@ public class ReplicationMasterTimestampListener implements MessageListener {
     }
     
     /**
-     * Forward timestamp to forwarding queue for distribution to other replicas
+     * Forward timestamp to forwarding queue for each replica
      */
-    private void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, String originalRoutingKey) {
+    private void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, DatabaseDto database, String originalRoutingKey) {
         try {
             // Extract source site ID from original routing key
             final String sourceSiteId = extractSourceSiteId(originalRoutingKey);
@@ -113,14 +113,40 @@ public class ReplicationMasterTimestampListener implements MessageListener {
                 return;
             }
             
-            // Create forwarding routing key: dbrepo.timestamp-forwarding.{sourceSiteId}.{databaseId}.{tableId}
-            final String forwardingRoutingKey = "dbrepo.timestamp-forwarding." + sourceSiteId + "." + dto.getDatabaseId() + "." + dto.getTableId();
+            if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+                log.debug("No replica URLs configured for database {}, skipping timestamp forwarding", database.getInternalName());
+                return;
+            }
             
-            // Send to forwarding exchange
-            rabbitTemplate.convertAndSend(replicationTimestampForwardingExchangeName, forwardingRoutingKey, dto);
+            int forwardedCount = 0;
+            for (var replicaLocation : database.getReplicaUrls()) {
+                final String replicaUrl = replicaLocation.getUrl();
+                final String replicaSiteId = extractSiteIdFromUrl(replicaUrl);
+                
+                // Skip if this is the source replica or local replica
+                if (replicaSiteId.equals(sourceSiteId) || replicaSiteId.equals(localSiteId)) {
+                    log.debug("Skipping timestamp forwarding to source site {} or local site {}", sourceSiteId, localSiteId);
+                    continue;
+                }
+                
+                try {
+                    // Create forwarding routing key: dbrepo.timestamp-forwarding.{replicaSiteId}.{databaseId}.{tableId}
+                    final String forwardingRoutingKey = "dbrepo.timestamp-forwarding." + replicaSiteId + "." + dto.getDatabaseId() + "." + dto.getTableId();
+                    
+                    // Send to forwarding exchange
+                    rabbitTemplate.convertAndSend(replicationTimestampForwardingExchangeName, forwardingRoutingKey, dto);
+                    
+                    log.info("Forwarded timestamp to forwarding queue for replica site={}, routingKey={}, replicationId={}", 
+                            replicaSiteId, forwardingRoutingKey, dto.getReplicationId());
+                    forwardedCount++;
+                    
+                } catch (Exception e) {
+                    log.error("Failed to forward timestamp to replica site {}: {}", replicaSiteId, e.getMessage());
+                }
+            }
             
-            log.info("Forwarded timestamp to forwarding queue: routingKey={}, replicationId={}", 
-                    forwardingRoutingKey, dto.getReplicationId());
+            log.info("Timestamp forwarding completed: forwarded {} out of {} replicas", 
+                    forwardedCount, database.getReplicaUrls().size());
             
         } catch (Exception e) {
             log.error("Failed to forward timestamp to forwarding queue: {}", e.getMessage());
@@ -139,6 +165,31 @@ public class ReplicationMasterTimestampListener implements MessageListener {
             return parts[1]; // siteId is the 2nd part
         }
         return null;
+    }
+    
+    /**
+     * Extract site ID from replica URL format: https://<key>.datalab.tuwien.ac.at
+     */
+    private String extractSiteIdFromUrl(String replicaUrl) {
+        if (replicaUrl == null || replicaUrl.isEmpty()) {
+            return "unknown";
+        }
+        
+        try {
+            // Extract the key from URL format: https://<key>.datalab.tuwien.ac.at
+            if (replicaUrl.contains("://") && replicaUrl.contains(".datalab.tuwien.ac.at")) {
+                String hostname = replicaUrl.substring(replicaUrl.indexOf("://") + 3);
+                if (hostname.contains(".")) {
+                    return hostname.substring(0, hostname.indexOf("."));
+                }
+            }
+            
+            // Fallback: use the URL as-is, sanitized
+            return replicaUrl.replaceAll("[^a-zA-Z0-9]", "_");
+        } catch (Exception e) {
+            log.warn("Could not extract site ID from URL: {}, using 'unknown'", replicaUrl);
+            return "unknown";
+        }
     }
     
 }

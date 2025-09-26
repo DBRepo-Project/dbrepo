@@ -294,10 +294,12 @@ public class RabbitConfig {
         for (String q : queues) {
             Queue queue = QueueBuilder.durable(q).singleActiveConsumer().build();
             declarables.add(queue);
-            // Bind to all timestamp forwarding messages
-            String bindingKey = "dbrepo.timestamp-forwarding.*.*.*";
-            Binding binding = BindingBuilder.bind(queue).to((TopicExchange) replicationTimestampForwardingExchange()).with(bindingKey);
-            declarables.add(binding);
+            // Bind to timestamp forwarding messages for this site only
+            if (timestampsSiteId != null && !timestampsSiteId.isBlank()) {
+                String bindingKey = "dbrepo.timestamp-forwarding." + timestampsSiteId + ".*.*";
+                Binding binding = BindingBuilder.bind(queue).to((TopicExchange) replicationTimestampForwardingExchange()).with(bindingKey);
+                declarables.add(binding);
+            }
         }
 
         return new Declarables(declarables);
