@@ -59,6 +59,11 @@ public class RabbitConfig {
     @Value("${dbrepo.connectionTimeout}")
     private Integer connectionTimeout;
 
+    // Listener container for replication timestamp forwarding
+    @Value("${dbrepo.replication.isMaster:false}")
+    private boolean isMaster;
+
+
     @Value("${dbrepo.publisher.consumerEnabled:true}")
     private boolean publisherConsumerEnabled;
 
@@ -87,8 +92,7 @@ public class RabbitConfig {
     private String replicationQueueName;
     @Value("${dbrepo.replication.queueNames:}")
     private String replicationQueueNamesCsv;
-    @Value("${dbrepo.replication.consumerEnabled:true}")
-    private boolean replicationConsumerEnabled;
+
     @Value("${dbrepo.replication.exchangeName:dbrepo-replication}")
     private String replicationExchangeName;
     @Value("${dbrepo.replication.siteId:}")
@@ -116,7 +120,7 @@ public class RabbitConfig {
         container.setMissingQueuesFatal(true);
         container.setExclusive(false);
 
-        container.setAutoStartup(replicationConsumerEnabled);
+        container.setAutoStartup(!isMaster);
         return container;
     }
 
@@ -225,9 +229,7 @@ public class RabbitConfig {
         return new Declarables(declarables);
     }
 
-    // Listener container for replication timestamps
-    @Value("${dbrepo.replication.timestampsConsumerEnabled:true}")
-    private boolean replicationTimestampsConsumerEnabled;
+
 
     @Bean
     public SimpleMessageListenerContainer replicationTimestampsContainer(ConnectionFactory connectionFactory,
@@ -249,7 +251,7 @@ public class RabbitConfig {
         container.setMaxConcurrentConsumers(1);
         container.setMissingQueuesFatal(false);
         container.setExclusive(false);
-        container.setAutoStartup(replicationTimestampsConsumerEnabled);
+        container.setAutoStartup(isMaster);
         return container;
     }
 
@@ -305,9 +307,6 @@ public class RabbitConfig {
         return new Declarables(declarables);
     }
 
-    // Listener container for replication timestamp forwarding
-    @Value("${dbrepo.replication.timestampForwardingConsumerEnabled:true}")
-    private boolean replicationTimestampForwardingConsumerEnabled;
 
     @Bean
     public SimpleMessageListenerContainer replicationTimestampForwardingContainer(ConnectionFactory connectionFactory,
@@ -329,7 +328,7 @@ public class RabbitConfig {
         container.setMaxConcurrentConsumers(1);
         container.setMissingQueuesFatal(false);
         container.setExclusive(false);
-        container.setAutoStartup(replicationTimestampForwardingConsumerEnabled);
+        container.setAutoStartup(!isMaster);
         return container;
     }
 
