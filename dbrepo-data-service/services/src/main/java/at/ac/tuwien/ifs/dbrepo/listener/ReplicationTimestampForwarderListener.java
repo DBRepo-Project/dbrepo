@@ -46,16 +46,11 @@ public class ReplicationTimestampForwarderListener implements MessageListener {
                     dto.getDatabaseId(),
                     dto.getTableId());
             
-            // Extract source site ID from the routing key (dbrepo.timestamp-forwarding.{sourceSiteId}.{dbId}.{tableId})
-            final String sourceSiteId = extractSourceSiteId(properties.getReceivedRoutingKey());
-            if (sourceSiteId == null) {
-                log.error("Could not extract source site ID from routing key: {}", properties.getReceivedRoutingKey());
-                return;
-            }
+
 
             // Persist the timestamp into the local database's tuple_replication_timestamps table
             // Note: In the forwarding queue, the databaseId is already the LOCAL database id
-            final DatabaseDto database = cacheService.getDatabase(dto.getDatabaseId());
+            final DatabaseDto database = cacheService.getLocalDatabaseByRemoteDatabaseId(dto.getDatabaseId());
             // Ensure the target table exists (idempotent)
             replicationTimestampService.ensureTableExists(database);
             final TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
@@ -69,8 +64,8 @@ public class ReplicationTimestampForwarderListener implements MessageListener {
 
             replicationTimestampService.saveReplicationTimestamp(database, timestamp);
 
-            log.info("Persisted forwarded timestamp: replicationId={}, sourceSiteId={}, siteUrl={}",
-                    dto.getReplicationId(), sourceSiteId, dto.getSiteUrl());
+            log.info("Persisted forwarded timestamp: replicationId={}, siteUrl={}",
+                    dto.getReplicationId(), dto.getSiteUrl());
             
         } catch (Exception e) {
             log.error("timestamp-forwarding: failed to process message routingKey={}: {}", 
