@@ -8,11 +8,7 @@ import java.util.UUID;
 
 public interface ReplicationForwardingService {
 
-    void forwardTimestampToReplicationTimestamps(TupleWithTimestampsDto created,
-                                                 String siteId,
-                                                 UUID remoteDatabaseId,
-                                                 UUID remoteTableId,
-                                                 String replicaUrl);
+
 
     void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto,
                                            String sourceSiteId,

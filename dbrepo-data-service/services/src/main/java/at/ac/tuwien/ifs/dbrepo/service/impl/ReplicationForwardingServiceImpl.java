@@ -35,34 +35,6 @@ public class ReplicationForwardingServiceImpl implements ReplicationForwardingSe
         this.cacheService = cacheService;
     }
 
-    @Override
-    public void forwardTimestampToReplicationTimestamps(TupleWithTimestampsDto created,
-                                                        String siteId,
-                                                        UUID remoteDatabaseId,
-                                                        UUID remoteTableId,
-                                                        String replicaUrl) {
-        try {
-            final TupleReplicationTimestampDto tsDto = TupleReplicationTimestampDto.builder()
-                    .siteUrl(siteId)
-                    .replicationId(created.getReplicationKey())
-                    .databaseId(remoteDatabaseId)
-                    .tableId(remoteTableId)
-                    .rowStart(created.getInsertedAt())
-                    .rowEnd(created.getDeletedAt())
-                    .build();
-
-            final String tsRoutingKey = "dbrepo." + siteId + "." + remoteDatabaseId + "." + remoteTableId;
-            rabbitTemplate.convertAndSend(replicationTimestampsExchangeName, tsRoutingKey, tsDto);
-
-            log.info("Forwarded timestamp to replication-timestamps exchange for replica site={}, routingKey={}, replicationId={}",
-                    siteId, tsRoutingKey, created.getReplicationKey());
-
-            forwardTimestampToForwardingQueue(tsDto, siteId, tsRoutingKey);
-
-        } catch (Exception e) {
-            log.error("Failed to forward timestamp to replication-timestamps exchange for replica {}: {}", replicaUrl, e.getMessage());
-        }
-    }
 
     @Override
     public void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, String sourceSiteId, String originalRoutingKey) {

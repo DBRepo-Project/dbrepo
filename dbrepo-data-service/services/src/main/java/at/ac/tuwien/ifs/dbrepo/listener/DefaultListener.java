@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.listener;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
@@ -42,6 +43,9 @@ public class DefaultListener implements MessageListener {
 
     @Value("${dbrepo.replication.exchangeName:dbrepo-replication}")
     private String replicationExchangeName;
+
+    @Value("${dbrepo.replication.siteId:}")
+    private String localSiteId;
 
     @Autowired
     public DefaultListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService, RabbitTemplate rabbitTemplate, ReplicationForwardingService replicationForwardingService) {
@@ -109,7 +113,15 @@ public class DefaultListener implements MessageListener {
                         
                         // Send timestamp information to replication-timestamps exchange
                         if (created != null) {
-                            replicationForwardingService.forwardTimestampToReplicationTimestamps(created, siteId, remoteDatabaseId, remoteTableId, replicaUrl);
+                            final at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto dto = TupleReplicationTimestampDto.builder()
+                                    .siteUrl(localSiteId)
+                                    .replicationId(created.getReplicationKey())
+                                    .databaseId(databaseId)
+                                    .tableId(tableId)
+                                    .rowStart(created.getInsertedAt())
+                                    .rowEnd(created.getDeletedAt())
+                                    .build();
+                            replicationForwardingService.forwardTimestampToForwardingQueue(dto, database);
                         }
                     } catch (Exception ex) {
                         log.warn("Failed to publish replicated message to {}: {}", replicaUrl, ex.getMessage());
