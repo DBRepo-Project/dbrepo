@@ -70,13 +70,9 @@ public class ReplicationMasterTimestampListener implements MessageListener {
             log.info("Successfully processed replication timestamp for databaseId={}, tableId={}, replicationId={}", 
                     dto.getDatabaseId(), dto.getTableId(), dto.getReplicationId());
             
-            // Forward timestamp to other replicas via forwarding queue using shared service
-            final String sourceSiteId = replicationForwardingService.extractSourceSiteId(dto.getSiteUrl());
-            if (sourceSiteId == null) {
-                log.warn("Could not extract source site ID from siteUrl: {}, skipping forwarding", dto.getSiteUrl());
-            } else {
-                replicationForwardingService.forwardTimestampToForwardingQueue(dto, database, sourceSiteId);
-            }
+
+            replicationForwardingService.forwardTimestampToForwardingQueue(dto, database);
+
             
         } catch (DatabaseNotFoundException e) {
             log.error("Database not found for replication timestamp databaseId={}: {}", 

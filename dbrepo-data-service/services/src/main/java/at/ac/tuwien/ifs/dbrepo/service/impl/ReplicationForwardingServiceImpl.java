@@ -106,7 +106,7 @@ public class ReplicationForwardingServiceImpl implements ReplicationForwardingSe
     }
 
     @Override
-    public void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, DatabaseDto database, String sourceSiteId) {
+    public void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, DatabaseDto database) {
         try {
             if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
                 log.debug("No replica URLs configured for database {}, skipping timestamp forwarding", database.getInternalName());
@@ -118,8 +118,8 @@ public class ReplicationForwardingServiceImpl implements ReplicationForwardingSe
                 final String replicaUrl = entry.getKey();
                 final String replicaSiteId = extractSiteIdFromUrl(replicaUrl);
 
-                if (replicaSiteId.equals(sourceSiteId) || replicaSiteId.equals(localSiteId)) {
-                    log.debug("Skipping timestamp forwarding to source site {} or local site {}", sourceSiteId, localSiteId);
+                if (replicaSiteId.equals(dto.getSiteUrl()) || replicaSiteId.equals(localSiteId)) {
+                    log.info("Skipping timestamp forwarding to source site {} or local site {}", dto.getSiteUrl(), localSiteId);
                     continue;
                 }
 
