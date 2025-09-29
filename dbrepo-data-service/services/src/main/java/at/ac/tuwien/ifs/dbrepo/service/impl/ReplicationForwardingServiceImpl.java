@@ -36,46 +36,7 @@ public class ReplicationForwardingServiceImpl implements ReplicationForwardingSe
     }
 
 
-    @Override
-    public void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, String sourceSiteId, String originalRoutingKey) {
-        try {
-            final DatabaseDto database = cacheService.getLocalDatabaseByRemoteDatabaseId(dto.getDatabaseId());
 
-            if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
-                log.debug("No replica URLs configured for database with remoteId {}, skipping timestamp forwarding", dto.getDatabaseId());
-                return;
-            }
-
-            int forwardedCount = 0;
-            for (var entry : database.getReplicaUrls().entrySet()) {
-                final String replicaUrl = entry.getKey();
-                final String replicaSiteId = extractSiteIdFromUrl(replicaUrl);
-
-                if (replicaSiteId.equals(sourceSiteId) || replicaSiteId.equals(localSiteId)) {
-                    log.debug("Skipping timestamp forwarding to source site {} or local site {}", sourceSiteId, localSiteId);
-                    continue;
-                }
-
-                try {
-                    final String forwardingRoutingKey = "dbrepo.timestamp-forwarding." + replicaSiteId + "." + dto.getDatabaseId() + "." + dto.getTableId();
-                    rabbitTemplate.convertAndSend(replicationTimestampForwardingExchangeName, forwardingRoutingKey, dto);
-
-                    log.info("Forwarded timestamp to forwarding queue for replica site={}, routingKey={}, replicationId={}",
-                            replicaSiteId, forwardingRoutingKey, dto.getReplicationId());
-                    forwardedCount++;
-
-                } catch (Exception e) {
-                    log.error("Failed to forward timestamp to replica site {}: {}", replicaSiteId, e.getMessage());
-                }
-            }
-
-            log.info("Timestamp forwarding completed: forwarded {} out of {} replicas",
-                    forwardedCount, database.getReplicaUrls().size());
-
-        } catch (Exception e) {
-            log.error("Failed to forward timestamp to forwarding queue: {}", e.getMessage());
-        }
-    }
 
     @Override
     public void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto, DatabaseDto database) {

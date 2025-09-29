@@ -11,10 +11,6 @@ public interface ReplicationForwardingService {
 
 
     void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto,
-                                           String sourceSiteId,
-                                           String originalRoutingKey);
-
-    void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto,
                                            DatabaseDto database);
 
     String extractSourceSiteId(String value);
