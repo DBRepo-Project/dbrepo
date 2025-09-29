@@ -54,7 +54,8 @@ public class ReplicationTimestampForwarderListener implements MessageListener {
             }
 
             // Persist the timestamp into the local database's tuple_replication_timestamps table
-            final DatabaseDto database = cacheService.getLocalDatabaseByRemoteDatabaseId(dto.getDatabaseId());
+            // Note: In the forwarding queue, the databaseId is already the LOCAL database id
+            final DatabaseDto database = cacheService.getDatabase(dto.getDatabaseId());
             final TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
                     .siteUrl(dto.getSiteUrl())
                     .replicationId(dto.getReplicationId())
