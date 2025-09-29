@@ -20,12 +20,10 @@ RUN mvn -q clean package -DskipTests
 FROM --platform=$BUILDPLATFORM eclipse-temurin:17-jre AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apt-get update && \
-    apt-get install -y \
+RUN apk --no-cache add \
     bash \
     curl \
-    jq && \
-    apt-get clean
+    jq
 
 WORKDIR /app
 
