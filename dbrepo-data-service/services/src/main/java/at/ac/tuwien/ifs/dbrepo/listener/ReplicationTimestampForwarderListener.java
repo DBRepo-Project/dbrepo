@@ -1,6 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.listener;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp;
+import at.ac.tuwien.ifs.dbrepo.service.CacheService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,15 +15,21 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+
 @Slf4j
 @Component
 public class ReplicationTimestampForwarderListener implements MessageListener {
 
     private final ObjectMapper objectMapper;
+    private final CacheService cacheService;
+    private final ReplicationTimestampService replicationTimestampService;
 
     @Autowired
-    public ReplicationTimestampForwarderListener(ObjectMapper objectMapper) {
+    public ReplicationTimestampForwarderListener(ObjectMapper objectMapper, CacheService cacheService, ReplicationTimestampService replicationTimestampService) {
         this.objectMapper = objectMapper;
+        this.cacheService = cacheService;
+        this.replicationTimestampService = replicationTimestampService;
     }
 
     @Override
@@ -36,16 +46,28 @@ public class ReplicationTimestampForwarderListener implements MessageListener {
                     dto.getDatabaseId(),
                     dto.getTableId());
             
-            // Extract source site ID from the routing key
+            // Extract source site ID from the routing key (dbrepo.timestamp-forwarding.{sourceSiteId}.{dbId}.{tableId})
             final String sourceSiteId = extractSourceSiteId(properties.getReceivedRoutingKey());
             if (sourceSiteId == null) {
                 log.error("Could not extract source site ID from routing key: {}", properties.getReceivedRoutingKey());
                 return;
             }
-            
-            // Process the timestamp (no forwarding to other replicas)
-            log.info("Processed timestamp from forwarding queue: replicationId={}, sourceSiteId={}", 
-                    dto.getReplicationId(), sourceSiteId);
+
+            // Persist the timestamp into the local database's tuple_replication_timestamps table
+            final DatabaseDto database = cacheService.getLocalDatabaseByRemoteDatabaseId(dto.getDatabaseId());
+            final TupleReplicationTimestamp timestamp = TupleReplicationTimestamp.builder()
+                    .siteUrl(dto.getSiteUrl())
+                    .replicationId(dto.getReplicationId())
+                    .databaseId(dto.getDatabaseId())
+                    .tableId(dto.getTableId())
+                    .rowStart(dto.getRowStart() != null ? Timestamp.from(dto.getRowStart()) : null)
+                    .rowEnd(dto.getRowEnd() != null ? Timestamp.from(dto.getRowEnd()) : null)
+                    .build();
+
+            replicationTimestampService.saveReplicationTimestamp(database, timestamp);
+
+            log.info("Persisted forwarded timestamp: replicationId={}, sourceSiteId={}, siteUrl={}",
+                    dto.getReplicationId(), sourceSiteId, dto.getSiteUrl());
             
         } catch (Exception e) {
             log.error("timestamp-forwarding: failed to process message routingKey={}: {}", 

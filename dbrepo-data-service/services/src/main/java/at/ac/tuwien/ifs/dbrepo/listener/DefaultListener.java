@@ -2,12 +2,14 @@ package at.ac.tuwien.ifs.dbrepo.listener;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.QueueService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationForwardingService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.annotation.Observed;
@@ -36,16 +38,18 @@ public class DefaultListener implements MessageListener {
     private final ObjectMapper objectMapper;
     private final QueueService queueService;
     private final RabbitTemplate rabbitTemplate;
+    private final ReplicationForwardingService replicationForwardingService;
 
     @Value("${dbrepo.replication.exchangeName:dbrepo-replication}")
     private String replicationExchangeName;
 
     @Autowired
-    public DefaultListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService, RabbitTemplate rabbitTemplate) {
+    public DefaultListener(CacheService cacheService, ObjectMapper objectMapper, QueueService queueService, RabbitTemplate rabbitTemplate, ReplicationForwardingService replicationForwardingService) {
         this.cacheService = cacheService;
         this.objectMapper = objectMapper;
         this.queueService = queueService;
         this.rabbitTemplate = rabbitTemplate;
+        this.replicationForwardingService = replicationForwardingService;
     }
 
     @Override
@@ -79,7 +83,8 @@ public class DefaultListener implements MessageListener {
                 body.put("replication_key", replicationKey);
                 log.debug("generated replication_key on ingest: {}", replicationKey);
             }
-            queueService.insert(database, table, body);
+            // Use insertWithTimestamps to get timestamp information for replication
+            final TupleWithTimestampsDto created = queueService.insertWithTimestamps(database, table, body);
 
             // Fan-out to replication exchange for each replica (routing key: dbrepo.<siteId>.<remoteDatabaseId>.<remoteTableId>)
             if (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty() && table.getReplicaUrls() != null) {
@@ -95,12 +100,17 @@ public class DefaultListener implements MessageListener {
                         final String host = new URI(replicaUrl).getHost();
                         final String siteId = host != null && host.contains(".") ? host.substring(0, host.indexOf('.')) : host;
                         final String routingKey = "dbrepo." + siteId + "." + remoteDatabaseId + "." + remoteTableId;
-                        log.info("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
+                        log.info("replicated message published to exchange={}, routingkey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
                         // Log full payload and identifiers before sending to replication exchange
                         log.info("replication payload before send: id={}, replication_key={}, body={}",
                                 body.get("id"), body.get("replication_key"), objectMapper.writeValueAsString(body));
                         rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, body);
-                        log.debug("replicated message published to exchange={}, routingKey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
+                        log.debug("replicated message published to exchange={}, routingkey={} (to replica {})", replicationExchangeName, routingKey, replicaUrl);
+                        
+                        // Send timestamp information to replication-timestamps exchange
+                        if (created != null) {
+                            replicationForwardingService.forwardTimestampToReplicationTimestamps(created, siteId, remoteDatabaseId, remoteTableId, replicaUrl);
+                        }
                     } catch (Exception ex) {
                         log.warn("Failed to publish replicated message to {}: {}", replicaUrl, ex.getMessage());
                     }
