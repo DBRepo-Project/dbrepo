@@ -17,13 +17,15 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM amazoncorretto:17-alpine3.21 AS runtime
+FROM --platform=$BUILDPLATFORM eclipse-temurin:17-jre AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk --no-cache add \
+RUN apt-get update && \
+    apt-get install -y \
     bash \
     curl \
-    jq
+    jq && \
+    apt-get clean
 
 WORKDIR /app
 
