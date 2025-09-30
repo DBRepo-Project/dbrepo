@@ -121,7 +121,8 @@ public class DefaultListener implements MessageListener {
                                     .rowStart(created.getInsertedAt())
                                     .rowEnd(created.getDeletedAt())
                                     .build();
-                            replicationForwardingService.forwardTimestampToForwardingQueue(dto, database);
+                            // send only to this replica to avoid double iteration
+                            replicationForwardingService.forwardTimestampToReplica(dto, database, replicaUrl);
                         }
                     } catch (Exception ex) {
                         log.warn("Failed to publish replicated message to {}: {}", replicaUrl, ex.getMessage());

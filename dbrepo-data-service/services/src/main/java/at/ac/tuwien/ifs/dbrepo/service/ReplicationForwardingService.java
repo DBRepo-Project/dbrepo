@@ -13,6 +13,14 @@ public interface ReplicationForwardingService {
     void forwardTimestampToForwardingQueue(TupleReplicationTimestampDto dto,
                                            DatabaseDto database);
 
+    /**
+     * Forward a replication timestamp only to the specified replica URL.
+     * Skips when the replica is the source site or the local site.
+     */
+    void forwardTimestampToReplica(TupleReplicationTimestampDto dto,
+                                   DatabaseDto database,
+                                   String replicaUrl);
+
     String extractSourceSiteId(String value);
 
     String extractSiteIdFromUrl(String replicaUrl);

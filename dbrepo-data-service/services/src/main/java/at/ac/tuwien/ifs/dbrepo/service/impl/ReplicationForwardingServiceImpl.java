@@ -77,6 +77,30 @@ public class ReplicationForwardingServiceImpl implements ReplicationForwardingSe
         }
     }
 
+    /**
+     * Forward a replication timestamp only to a single replica URL.
+     */
+    @Override
+    public void forwardTimestampToReplica(TupleReplicationTimestampDto dto, DatabaseDto database, String replicaUrl) {
+        try {
+            if (replicaUrl == null || replicaUrl.isEmpty()) {
+                log.debug("No replicaUrl provided, skipping timestamp forwarding");
+                return;
+            }
+            final String replicaSiteId = extractSiteIdFromUrl(replicaUrl);
+            if (replicaSiteId.equals(dto.getSiteUrl()) || replicaSiteId.equals(localSiteId)) {
+                log.info("Skipping timestamp forwarding to source site {} or local site {}", dto.getSiteUrl(), localSiteId);
+                return;
+            }
+            final String forwardingRoutingKey = "dbrepo.timestamp-forwarding." + replicaSiteId + "." + dto.getDatabaseId() + "." + dto.getTableId();
+            rabbitTemplate.convertAndSend(replicationTimestampForwardingExchangeName, forwardingRoutingKey, dto);
+            log.info("Forwarded timestamp to forwarding queue for replica site={}, routingKey={}, replicationId={}",
+                    replicaSiteId, forwardingRoutingKey, dto.getReplicationId());
+        } catch (Exception e) {
+            log.error("Failed to forward timestamp to replica {}: {}", replicaUrl, e.getMessage());
+        }
+    }
+
     @Override
     public String extractSourceSiteId(String value) {
         if (value == null || value.isEmpty()) {
