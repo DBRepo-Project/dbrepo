@@ -113,3 +113,5 @@ dbrepo:
     queueNames: "${REPLICATION_QUEUE_NAMES:}"
     isMaster: "${REPLICATION_IS_MASTER}"
     siteId: "${REPLICATION_SITE_ID:}"
+    timestampForwarding:
+      queueName: "${REPLICATION_TIMESTAMP_FORWARDING_QUEUE_NAME}"
