@@ -524,6 +524,26 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple with timestamps: {}", data);
 
+        // Ensure replication_key is present when table has the column
+        final boolean hasReplicationKeyColumn = table.getColumns().stream()
+                .anyMatch(c -> "replication_key".equalsIgnoreCase(c.getInternalName()));
+        if (hasReplicationKeyColumn) {
+            try {
+                if (data.getData() != null && !data.getData().containsKey("replication_key")) {
+                    final String generatedKey = java.util.UUID.randomUUID().toString();
+                    data.getData().put("replication_key", generatedKey);
+                    log.debug("Generated replication_key for insert with timestamps: {}", generatedKey);
+                } else if (data.getData() != null && data.getData().get("replication_key") == null) {
+                    final String generatedKey = java.util.UUID.randomUUID().toString();
+                    data.getData().put("replication_key", generatedKey);
+                    log.debug("Filled missing replication_key for insert with timestamps: {}", generatedKey);
+                }
+            } catch (Exception e) {
+                log.error("Failed to generate replication_key for insert with timestamps: {}", e.getMessage());
+                throw new QueryMalformedException("Failed to generate replication_key for insert with timestamps: " + e.getMessage(), e);
+            }
+        }
+
         /* for each LOB-like data-column, retrieve the bytes and replace the value */
         for (String key : data.getData().keySet()) {
             final boolean found = table.getColumns()
