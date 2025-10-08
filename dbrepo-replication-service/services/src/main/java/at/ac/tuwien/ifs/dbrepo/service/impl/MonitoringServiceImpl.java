@@ -28,7 +28,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
     @Override
     @Observed(name = "replication_monitoring_status")
-    public ReplicationMonitoringDatabaseDto status(UUID databaseId) throws RemoteUnavailableException, MetadataServiceException {
+    public ReplicationMonitoringDatabaseDto status(UUID databaseId) throws RemoteUnavailableException, MetadataServiceException, at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException {
         log.info("Starting monitoring status check for database {}", databaseId);
 
         final DatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
@@ -71,6 +71,8 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                 }
                 tableSummaries.add(tableBuilder.build());
             }
+        } catch (java.sql.SQLException e) {
+            throw new RuntimeException("Failed to query database counts: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
