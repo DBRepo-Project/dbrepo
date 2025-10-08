@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 
 public interface MetadataServiceGateway {
 
@@ -166,6 +167,16 @@ public interface MetadataServiceGateway {
      * @throws MetadataServiceException The remote service returned invalid data
      */
     List<DatabaseBriefDto> getAllDatabases() throws RemoteUnavailableException, MetadataServiceException;
+
+    /**
+     * Get all tables for a database from the metadata service.
+     *
+     * @param databaseId The database id.
+     * @return List of all tables (brief information)
+     * @throws RemoteUnavailableException The remote service is not available
+     * @throws MetadataServiceException The remote service returned invalid data
+     */
+    List<TableBriefDto> getTablesByDatabaseId(UUID databaseId) throws RemoteUnavailableException, MetadataServiceException;
 
     /**
      * Resolve local table ID by replica table ID via metadata service.

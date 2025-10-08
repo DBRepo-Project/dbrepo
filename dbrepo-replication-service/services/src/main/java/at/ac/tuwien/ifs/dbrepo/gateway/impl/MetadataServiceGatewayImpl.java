@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
@@ -402,6 +403,33 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new MetadataServiceException("Failed to get all databases: body is null");
         }
         log.info("Retrieved {} databases from metadata service", response.getBody().length);
+        return List.of(response.getBody());
+    }
+
+    @Override
+    public List<TableBriefDto> getTablesByDatabaseId(UUID databaseId) throws RemoteUnavailableException, MetadataServiceException {
+        final ResponseEntity<TableBriefDto[]> response;
+        final String url = "/api/v1/database/" + databaseId + "/table";
+        log.debug("get all tables for database from metadata service: {}", url);
+        internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
+        try {
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableBriefDto[].class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to get all tables for database {}: {}", databaseId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to get all tables: " + e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            log.error("Failed to get all tables for database {}: {}", databaseId, e.getMessage());
+            throw new MetadataServiceException("Failed to get all tables: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get all tables for database {}: service responded unsuccessful: {}", databaseId, response.getStatusCode());
+            throw new MetadataServiceException("Failed to get all tables: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to get all tables for database {}: body is null", databaseId);
+            throw new MetadataServiceException("Failed to get all tables: body is null");
+        }
+        log.info("Retrieved {} tables for database {} from metadata service", response.getBody().length, databaseId);
         return List.of(response.getBody());
     }
 
