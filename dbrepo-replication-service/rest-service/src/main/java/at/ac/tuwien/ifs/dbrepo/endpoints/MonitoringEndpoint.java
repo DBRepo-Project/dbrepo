@@ -7,9 +7,11 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.service.MonitoringService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +29,10 @@ public class MonitoringEndpoint {
     private final MonitoringService monitoringService;
 
     @GetMapping("/{databaseId}/status")
-    @Operation(summary = "Replication status", description = "Performs a status check for a database: loads the database and its tables from metadata service and returns counts")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Replication status",
+            description = "Performs a status check for a database: loads the database and its tables from metadata service and returns counts",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ReplicationMonitoringDatabaseDto> status(@PathVariable UUID databaseId) {
         try {
             final ReplicationMonitoringDatabaseDto result = monitoringService.status(databaseId);
