@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -49,15 +50,18 @@ public class ViewEndpoint extends AbstractEndpoint {
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final DashboardService dashboardService;
+    private final ReplicationService replicationService;
 
     @Autowired
     public ViewEndpoint(UserService userService, ViewService viewService, MetadataMapper metadataMapper,
-                        DatabaseService databaseService, DashboardService dashboardService) {
+                        DatabaseService databaseService, DashboardService dashboardService,
+                        ReplicationService replicationService) {
         this.userService = userService;
         this.viewService = viewService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.dashboardService = dashboardService;
+        this.replicationService = replicationService;
     }
 
     @GetMapping
@@ -140,6 +144,14 @@ public class ViewEndpoint extends AbstractEndpoint {
         }
         final View view = viewService.create(database, userService.findByUsername(getUsername(principal)), data);
         dashboardService.update(view.getDatabase());
+
+        // Notify replication service asynchronously similar to database/table flows
+        try {
+            replicationService.replicateView(view);
+        } catch (Exception e) {
+            log.warn("Failed to notify replication service for view {}: {}", view.getId(), e.getMessage());
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.viewToViewBriefDto(view));
     }

@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 
 import java.util.List;
 import java.util.Map;
@@ -57,4 +58,6 @@ public interface ReplicationService {
      * This method is automatically invoked by Spring Boot when the application context is ready.
      */
     void onApplicationStartup();
+
+    void sendViewReplicationToInstances(ViewNotificationDto viewNotificationDto);
 } 

@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
@@ -189,50 +188,6 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
 
-    @Override
-    public void replicateView(DatabaseDto database, ViewDto view) {
-        try {
-            log.info("Sending view replication to replication service for database: {}, view: {}",
-                    database.getInternalName(), view.getId());
-
-            // Check if database has replica URLs configured
-            if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
-                log.debug("No replica URLs configured for database: {}, skipping view replication", database.getInternalName());
-                return;
-            }
-
-            // Iterate over each replica URL and call the view endpoint
-            for (Map.Entry<String, UUID> replicaEntry : database.getReplicaUrls().entrySet()) {
-                String replicaUrl = replicaEntry.getKey();
-                UUID remoteDatabaseId = replicaEntry.getValue();
-
-                try {
-                    // Construct the full URL for the view replication endpoint
-                    String viewEndpointUrl = replicaUrl + "/api/replication/replicate/view?databaseId=" + remoteDatabaseId;
-
-                    log.debug("Replicating view to replica: {} at URL: {} with remote database ID: {}",
-                            replicaUrl, viewEndpointUrl, remoteDatabaseId);
-
-                    // Send POST request to the replica's view endpoint
-                    ResponseEntity<Map> response = externalReplicationRestTemplate.exchange(
-                            viewEndpointUrl,
-                            HttpMethod.POST,
-                            new HttpEntity<>(view),
-                            Map.class
-                    );
-
-                    log.info("Successfully replicated view to replica: {}. Response status: {}",
-                            replicaUrl, response.getStatusCode());
-
-                } catch (Exception e) {
-                    log.warn("Failed to replicate view to replica: {}. Error: {}", replicaUrl, e.getMessage(), e);
-                    // Continue with other replicas even if one fails
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to replicate view: {}", e.getMessage(), e);
-        }
-    }
+    // replicateView removed per updated design (handled from metadata-service)
 
 }

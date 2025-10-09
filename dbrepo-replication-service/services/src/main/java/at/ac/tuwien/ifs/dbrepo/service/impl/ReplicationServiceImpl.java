@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -413,6 +414,27 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.error("❌ Error during replication service startup: {}", e.getMessage(), e);
             // You can choose to throw the exception to prevent the application from starting
             // or handle it gracefully depending on your requirements
+        }
+    }
+
+    @Override
+    public void sendViewReplicationToInstances(ViewNotificationDto viewNotificationDto) {
+        if (viewNotificationDto == null || viewNotificationDto.getReplicas() == null || viewNotificationDto.getReplicas().isEmpty()) {
+            log.info("No replica URLs provided, skipping view replication to other instances");
+            return;
+        }
+        for (ReplicaLocation replica : viewNotificationDto.getReplicas()) {
+            try {
+                // Build the full URL for the view replicate endpoint at the remote replication service
+                String replicationUrl = replica.getUrl() + "/api/replication/replicate/view";
+
+                // POST ViewNotificationDto to the remote instance
+                ResponseEntity<String> response = externalReplicationRestTemplate.postForEntity(
+                        replicationUrl, viewNotificationDto, String.class);
+                log.info("View replication sent successfully to {} with status: {}", replica.getUrl(), response.getStatusCode());
+            } catch (Exception e) {
+                log.error("Failed to send view replication to instance {}: {}", replica.getUrl(), e.getMessage());
+            }
         }
     }
 

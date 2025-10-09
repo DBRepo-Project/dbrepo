@@ -55,13 +55,11 @@ public class ViewEndpoint extends RestEndpoint {
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
-    private final ReplicationService replicationService;
 
     @Autowired
     public ViewEndpoint(DSLContext context, ViewService viewService, CacheService cacheService,
                         MariaDbMapper mariaDbMapper, SubsetService subsetService, StorageService storageService,
-                        DatabaseService databaseService, EndpointValidator endpointValidator,
-                        ReplicationService replicationService) {
+                        DatabaseService databaseService, EndpointValidator endpointValidator) {
         this.context = context;
         this.viewService = viewService;
         this.cacheService = cacheService;
@@ -70,7 +68,6 @@ public class ViewEndpoint extends RestEndpoint {
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
-        this.replicationService = replicationService;
     }
 
     @GetMapping
@@ -148,24 +145,9 @@ public class ViewEndpoint extends RestEndpoint {
         /* create */
         final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
-            final ViewDto createdView = databaseService.createView(
-                    database,
-                    mariaDbMapper.nameToInternalName(data.getName()),
-                    mariaDbMapper.subsetDtoToRawQuery(context, database, data.getQuery())
-            );
-
-            if (database.getReplicaUrls() != null && database.getReplicaUrls().size() > 0) {
-                try {
-                    replicationService.replicateView(database, createdView);
-                    log.debug("Successfully initiated replication for view: {}", createdView.getId());
-                } catch (Exception e) {
-                    log.warn("Failed to replicate view: {}", e.getMessage(), e);
-                    // Do not fail creation if replication fails
-                }
-            }
-
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(createdView);
+                    .body(databaseService.createView(database, mariaDbMapper.nameToInternalName(data.getName()),
+                            mariaDbMapper.subsetDtoToRawQuery(context, database, data.getQuery())));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

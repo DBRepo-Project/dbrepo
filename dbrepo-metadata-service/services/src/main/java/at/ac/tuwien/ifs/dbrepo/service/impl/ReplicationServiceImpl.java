@@ -5,6 +5,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
@@ -30,15 +32,18 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     private final RestTemplate replicationRestTemplate;
     private final DatabaseService databaseService;
+    private final MetadataMapper metadataMapper;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String baseUrl;
 
     @Autowired
     public ReplicationServiceImpl(@Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate,
-                                @Lazy DatabaseService databaseService) {
+                                @Lazy DatabaseService databaseService,
+                                MetadataMapper metadataMapper) {
         this.replicationRestTemplate = replicationRestTemplate;
         this.databaseService = databaseService;
+        this.metadataMapper = metadataMapper;
     }
 
     @Override
@@ -111,5 +116,30 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
     }
     
+    @Override
+    @Async
+    public void replicateView(View view) {
+        try {
+            // Small delay to ensure transaction commit
+            Thread.sleep(1000);
 
+            log.info("Sending view replication notification to replication service for database: {} and view: {}",
+                    view.getDatabase().getId(), view.getInternalName());
+
+            // Build a minimal payload: we can reuse the existing replication service endpoint for views
+            // The replication service expects the remote to POST to /api/replication/replicate/view?databaseId=...
+
+            ResponseEntity<Void> response = replicationRestTemplate.exchange(
+                    "api/replication/replicate/view?databaseId=" + view.getDatabase().getId(),
+                    HttpMethod.POST,
+                    new HttpEntity<>(metadataMapper.viewToViewDto(view)),
+                    Void.class
+            );
+
+            log.info("View replication notification sent successfully. Response status: {}", response.getStatusCode());
+
+        } catch (Exception e) {
+            log.error("Failed to send view replication notification: {}", e.getMessage(), e);
+        }
+    }
 }
