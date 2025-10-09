@@ -462,7 +462,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/bitnami/seaweedfs:${SEAWEEDFS_VERSION}
+    image: chrislusf/seaweedfs:latest
     command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
