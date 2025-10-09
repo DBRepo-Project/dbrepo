@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
@@ -126,13 +127,20 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.info("Sending view replication notification to replication service for database: {} and view: {}",
                     view.getDatabase().getId(), view.getInternalName());
 
-            // Build a minimal payload: we can reuse the existing replication service endpoint for views
-            // The replication service expects the remote to POST to /api/replication/replicate/view?databaseId=...
+            // Build the notification DTO for the replication service
+            List<ReplicaLocation> replicas = view.getDatabase().getReplicaUrls();
+            ViewNotificationDto notificationDto = ViewNotificationDto.builder()
+                    .databaseId(view.getDatabase().getId())
+                    .creationId(view.getId())
+                    .viewDto(metadataMapper.viewToViewDto(view))
+                    .replicas(replicas)
+                    .build();
 
+            // Send POST request to replication service
             ResponseEntity<Void> response = replicationRestTemplate.exchange(
-                    "api/replication/replicate/view?databaseId=" + view.getDatabase().getId(),
+                    "api/replication/view",
                     HttpMethod.POST,
-                    new HttpEntity<>(metadataMapper.viewToViewDto(view)),
+                    new HttpEntity<>(notificationDto),
                     Void.class
             );
 
