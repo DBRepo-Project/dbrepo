@@ -428,9 +428,17 @@ public class ReplicationServiceImpl implements ReplicationService {
                 // Build the full URL for the view replicate endpoint at the remote replication service
                 String replicationUrl = replica.getUrl() + "/api/replication/replicate/view";
 
+                // Build payload: use replica-specific databaseId if provided, else fallback to global one
+                ViewNotificationDto payload = ViewNotificationDto.builder()
+                        .databaseId(replica.getReplicaDatabaseId() != null ? replica.getReplicaDatabaseId() : viewNotificationDto.getDatabaseId())
+                        .creationId(viewNotificationDto.getCreationId())
+                        .viewDto(viewNotificationDto.getViewDto())
+                        .replicas(null)
+                        .build();
+
                 // POST ViewNotificationDto to the remote instance
                 ResponseEntity<String> response = externalReplicationRestTemplate.postForEntity(
-                        replicationUrl, viewNotificationDto, String.class);
+                        replicationUrl, payload, String.class);
                 log.info("View replication sent successfully to {} with status: {}", replica.getUrl(), response.getStatusCode());
             } catch (Exception e) {
                 log.error("Failed to send view replication to instance {}: {}", replica.getUrl(), e.getMessage());

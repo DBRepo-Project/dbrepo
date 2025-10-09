@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
@@ -246,11 +247,11 @@ public class ReplicateEndpoint {
 
     @PostMapping("/view")
     @Operation(summary = "Receive view replication", description = "Receives view replication notification from other instances")
-    public ResponseEntity<Map<String, Object>> receiveViewReplication(@RequestParam UUID databaseId, @RequestBody ViewDto viewDto) {
+    public ResponseEntity<Map<String, Object>> receiveViewReplication(@RequestBody ViewNotificationDto viewNotificationDto) {
         System.out.println("=== Received View Replication ===");
-        System.out.println("Database ID: " + databaseId);
-        System.out.println("View ID: " + viewDto.getId());
-        System.out.println("View Internal Name: " + viewDto.getInternalName());
+        System.out.println("Database ID: " + viewNotificationDto.getDatabaseId());
+        System.out.println("View ID: " + (viewNotificationDto.getViewDto() != null ? viewNotificationDto.getViewDto().getId() : null));
+        System.out.println("View Internal Name: " + (viewNotificationDto.getViewDto() != null ? viewNotificationDto.getViewDto().getInternalName() : null));
         System.out.println("===================================");
 
         try {
@@ -264,8 +265,8 @@ public class ReplicateEndpoint {
             Map<String, Object> response = Map.of(
                 "status", "success",
                 "message", "View replication received",
-                "databaseId", databaseId.toString(),
-                "viewId", viewDto.getId().toString()
+                "databaseId", viewNotificationDto.getDatabaseId() != null ? viewNotificationDto.getDatabaseId().toString() : "null",
+                "viewId", (viewNotificationDto.getViewDto() != null && viewNotificationDto.getViewDto().getId() != null) ? viewNotificationDto.getViewDto().getId().toString() : "null"
             );
 
             return ResponseEntity.ok(response);
@@ -276,8 +277,8 @@ public class ReplicateEndpoint {
             Map<String, Object> errorResponse = Map.of(
                 "status", "error",
                 "message", "Failed to handle view replication: " + e.getMessage(),
-                "databaseId", databaseId.toString(),
-                "viewId", viewDto.getId() != null ? viewDto.getId().toString() : "null"
+                "databaseId", viewNotificationDto.getDatabaseId() != null ? viewNotificationDto.getDatabaseId().toString() : "null",
+                "viewId", (viewNotificationDto.getViewDto() != null && viewNotificationDto.getViewDto().getId() != null) ? viewNotificationDto.getViewDto().getId().toString() : "null"
             );
 
             return ResponseEntity.status(500).body(errorResponse);
