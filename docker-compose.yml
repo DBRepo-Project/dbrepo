@@ -378,8 +378,8 @@ services:
         condition: service_healthy
       dbrepo-dashboard-service:
         condition: service_healthy
-      dbrepo-dashboard-ui:
-        condition: service_healthy
+      # dbrepo-dashboard-ui:
+      #   condition: service_healthy
       dbrepo-ui:
         condition: service_healthy
     logging:
@@ -451,8 +451,8 @@ services:
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     depends_on:
-      dbrepo-dashboard-ui:
-        condition: service_healthy
+      # dbrepo-dashboard-ui:
+      #   condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
     logging:
@@ -565,40 +565,40 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-dashboard-ui:
-    restart: "no"
-    container_name: dbrepo-dashboard-ui
-    hostname: dashboard-ui
-    image: docker.io/bitnami/grafana:${GRAFANA_VERSION}
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
-      - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
-      - ./dbrepo-dashboard-ui/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
-      - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
-    environment:
-      BASE_URL: "${BASE_URL:-http://localhost}"
-      # do not attempt to set it in the grafana.ini, hours wasted here: 7
-      DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
-      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
-      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
-      GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
-      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
-    healthcheck:
-      test: curl -fsSL --head 127.0.0.1:3000
-      <<: *healthcheck-params
-    extra_hosts:
-      - "localhost:host-gateway"
-    logging:
-      driver: json-file
+  # dbrepo-dashboard-ui:
+  #   restart: "no"
+  #   container_name: dbrepo-dashboard-ui
+  #   hostname: dashboard-ui
+  #   image: docker.io/bitnami/grafana:${GRAFANA_VERSION}
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
+  #     - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
+  #     - ./dbrepo-dashboard-ui/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
+  #     - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
+  #     - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
+  #     - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
+  #     - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
+  #   environment:
+  #     BASE_URL: "${BASE_URL:-http://localhost}"
+  #     # do not attempt to set it in the grafana.ini, hours wasted here: 7
+  #     DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
+  #     DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
+  #     DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+  #     GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
+  #     GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
+  #     GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+  #     LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+  #     LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+  #     LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+  #   healthcheck:
+  #     test: curl -fsSL --head 127.0.0.1:3000
+  #     <<: *healthcheck-params
+  #   extra_hosts:
+  #     - "localhost:host-gateway"
+  #   logging:
+  #     driver: json-file
 
   dbrepo-dashboard-service:
     restart: "no"
@@ -617,9 +617,9 @@ services:
     healthcheck:
       test: curl -fsSL --head 127.0.0.1:8080/health
       <<: *healthcheck-params
-    depends_on:
-      dbrepo-dashboard-ui:
-        condition: service_healthy
+    # depends_on:
+    #   dbrepo-dashboard-ui:
+    #     condition: service_healthy
     logging:
       driver: json-file
 
