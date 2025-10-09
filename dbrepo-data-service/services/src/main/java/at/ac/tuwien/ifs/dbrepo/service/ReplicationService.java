@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 
 import java.util.Map;
 
@@ -19,4 +20,6 @@ public interface ReplicationService {
     void replicateTupleUpdate(TupleWithTimestampsDto tupleWithTimestamps, DatabaseDto database, TableDto table);
     
     void replicateQuery(DatabaseDto database, QueryDto query);
+
+    void replicateView(DatabaseDto database, ViewDto view);
 }
