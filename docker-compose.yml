@@ -19,7 +19,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -43,7 +43,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db-metrics
     hostname: metadata-db-metrics
-    image: docker.io/bitnami/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
     command:
       - --mysqld.address=metadata-db:3306
       - --config.my-cnf=/.my.cnf
@@ -62,7 +62,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - data-db-data:/bitnami/mariadb
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
@@ -84,7 +84,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-metrics
     hostname: data-db-metrics
-    image: docker.io/bitnami/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
     command:
       - --mysqld.address=data-db:3306
       - --config.my-cnf=/.my.cnf
@@ -105,7 +105,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/postgresql:${POSTGRES_VERSION}
     volumes:
       - auth-db-data:/bitnami/postgresql
     environment:
@@ -123,7 +123,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-db
     hostname: dashboard-db
-    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/postgresql:${POSTGRES_VERSION}
     volumes:
       - dashboard-db-data:/bitnami/postgresql
     environment:
@@ -140,7 +140,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: docker.io/bitnami/keycloak:${KEYCLOAK_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/keycloak:${KEYCLOAK_VERSION}
     volumes:
       - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
@@ -246,7 +246,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:${RABBITMQ_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/rabbitmq:${RABBITMQ_VERSION}
     ports:
       - 15672:15672
       - 5672:5672
@@ -285,7 +285,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/bitnami/opensearch:${OPENSEARCH_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/opensearch:${OPENSEARCH_VERSION}
     volumes:
       - search-db-data:/bitnami/opensearch/data
     ports:
@@ -360,7 +360,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/bitnami/nginx:${NGINX_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/nginx:${NGINX_VERSION}
     ports:
       - "80:8080"
       - "443:443"
@@ -378,8 +378,8 @@ services:
         condition: service_healthy
       dbrepo-dashboard-service:
         condition: service_healthy
-      # dbrepo-dashboard-ui:
-      #   condition: service_healthy
+      dbrepo-dashboard-ui:
+        condition: service_healthy
       dbrepo-ui:
         condition: service_healthy
     logging:
@@ -389,7 +389,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: docker.io/bitnami/openldap:${OPENLDAP_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/openldap:${OPENLDAP_VERSION}
     ports:
       - '1389:1389'
       - '1636:1636'
@@ -451,8 +451,8 @@ services:
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     depends_on:
-      # dbrepo-dashboard-ui:
-      #   condition: service_healthy
+      dbrepo-dashboard-ui:
+        condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
     logging:
@@ -479,7 +479,7 @@ services:
     restart: "no"
     container_name: dbrepo-metric-db
     hostname: metric-db
-    image: docker.io/bitnami/prometheus:${PROMETHEUS_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/prometheus:${PROMETHEUS_VERSION}
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
@@ -565,40 +565,40 @@ services:
     logging:
       driver: json-file
 
-  # dbrepo-dashboard-ui:
-  #   restart: "no"
-  #   container_name: dbrepo-dashboard-ui
-  #   hostname: dashboard-ui
-  #   image: docker.io/bitnami/grafana:${GRAFANA_VERSION}
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
-  #     - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
-  #     - ./dbrepo-dashboard-ui/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
-  #     - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
-  #     - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
-  #     - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
-  #     - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
-  #   environment:
-  #     BASE_URL: "${BASE_URL:-http://localhost}"
-  #     # do not attempt to set it in the grafana.ini, hours wasted here: 7
-  #     DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
-  #     DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
-  #     DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
-  #     GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
-  #     GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
-  #     GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-  #     LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
-  #     LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-  #     LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
-  #   healthcheck:
-  #     test: curl -fsSL --head 127.0.0.1:3000
-  #     <<: *healthcheck-params
-  #   extra_hosts:
-  #     - "localhost:host-gateway"
-  #   logging:
-  #     driver: json-file
+  dbrepo-dashboard-ui:
+    restart: "no"
+    container_name: dbrepo-dashboard-ui
+    hostname: dashboard-ui
+    image: registry.datalab.tuwien.ac.at/bitnami/openldap/grafana:${GRAFANA_VERSION}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
+      - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
+      - ./dbrepo-dashboard-ui/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
+      - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
+    environment:
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      # do not attempt to set it in the grafana.ini, hours wasted here: 7
+      DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
+      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
+      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+      GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+    healthcheck:
+      test: curl -fsSL --head 127.0.0.1:3000
+      <<: *healthcheck-params
+    extra_hosts:
+      - "localhost:host-gateway"
+    logging:
+      driver: json-file
 
   dbrepo-dashboard-service:
     restart: "no"
@@ -617,9 +617,9 @@ services:
     healthcheck:
       test: curl -fsSL --head 127.0.0.1:8080/health
       <<: *healthcheck-params
-    # depends_on:
-    #   dbrepo-dashboard-ui:
-    #     condition: service_healthy
+    depends_on:
+      dbrepo-dashboard-ui:
+        condition: service_healthy
     logging:
       driver: json-file
 
