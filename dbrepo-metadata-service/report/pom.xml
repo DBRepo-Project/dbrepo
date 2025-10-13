@@ -6,23 +6,23 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>metadata-service</artifactId>
-        <version>1.11.0</version>
+        <version>1.11.1</version>
     </parent>
 
     <name>report</name>
     <artifactId>report</artifactId>
-    <version>1.11.0</version>
+    <version>1.11.1</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>rest-service</artifactId>
-            <version>1.11.0</version>
+            <version>1.11.1</version>
         </dependency>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>services</artifactId>
-            <version>1.11.0</version>
+            <version>1.11.1</version>
         </dependency>
     </dependencies>
 

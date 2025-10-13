@@ -16,13 +16,15 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM bitnami/java:21 AS runtime
+FROM --platform=$BUILDPLATFORM docker.io/debian:13 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ARG DUCKDB_VERSION="v1.2.2"
 
 RUN apt-get update && \
     apt-get install -y \
+    --no-install-recommends \
+    openjdk-21-jre \
     curl \
     jq && \
     apt-get clean
@@ -38,7 +40,7 @@ RUN gunzip -r /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64 && \
 
 WORKDIR /app
 
-RUN adduser dbrepo --uid 1001 && \
+RUN useradd dbrepo --uid 1001 && \
     chown -R 1001:1001 /app
 
 USER 1001

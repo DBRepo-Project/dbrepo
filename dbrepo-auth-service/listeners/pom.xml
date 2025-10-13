@@ -13,11 +13,11 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>create-event-listener</artifactId>
     <name>dbrepo-auth-service</name>
-    <version>24.0.5</version>
+    <version>1.11.1</version>
 
     <description>Create event listener</description>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.11/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>

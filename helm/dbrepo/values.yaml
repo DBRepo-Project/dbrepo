@@ -10,6 +10,9 @@ global:
     openshift:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       adaptSecurityContext: auto
+  security:
+    ## @param global.security.allowInsecureImages Temporary fix until stable alternatives are found to allow mirrored Bitnami images from our own registry.
+    allowInsecureImages: true
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
 
@@ -214,6 +217,13 @@ searchdb:
   image:
     ## @param searchdb.image.registry Hotfix until a stable image is found from another registry.
     registry: registry.datalab.tuwien.ac.at
+  volumePermissions:
+    image:
+      ## @param searchdb.volumePermissions.image.registry Hotfix until a stable image is found from another registry.
+      registry: registry.datalab.tuwien.ac.at
+  sysctlImage:
+    ## @param searchdb.sysctlImage.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @skip searchdb.servicenameOverride
   servicenameOverride: search-db
   ## @param searchdb.host The hostname for the microservices.
@@ -241,6 +251,7 @@ brokerservice:
     debug: true
     ## @param brokerservice.image.registry Hotfix until a stable image is found from another registry.
     registry: registry.datalab.tuwien.ac.at
+    tag: 3.13.1-debian-12-r0
   metrics:
     ## @skip brokerservice.metrics.enabled
     enabled: true
@@ -339,7 +350,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.11.1
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -439,7 +450,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.11.1
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -528,7 +539,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.11.1
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -584,7 +595,7 @@ searchservice:
     limit: { }
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.11.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.11.1
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -650,7 +661,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.11.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.11.1
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -787,7 +798,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.11.1
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -917,7 +928,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.11.1
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -972,7 +983,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.11.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.11.1
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)

@@ -28,6 +28,7 @@ build-ui: ## Build the UI.
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
 	rm -rf ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock
+	PIPENV_PIPFILE=./lib/python/Pipfile pipenv lock
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib

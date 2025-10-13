@@ -28,12 +28,12 @@ public class CreateEventListenerProvider implements EventListenerProvider {
     @Override
     public void onEvent(Event event) {
         log.atDebug()
-                .setMessage("received " + event.getType().toString() + " event")
+                .setMessage("received event: " + event.getType())
                 .addKeyValue("event.type", event.getType())
                 .addKeyValue("event.realm_id", event.getRealmId())
                 .addKeyValue("event.user_id", event.getUserId())
                 .log();
-        if (EventType.REGISTER.equals(event.getType()) || EventType.IDENTITY_PROVIDER_FIRST_LOGIN.equals(event.getType())) {
+        if (EventType.REGISTER.equals(event.getType()) || EventType.IDENTITY_PROVIDER_LOGIN.equals(event.getType())) {
             final RealmModel realm = this.model.getRealm(event.getRealmId());
             sendUserData(this.session.users().getUserById(realm, event.getUserId()));
         }
@@ -42,7 +42,7 @@ public class CreateEventListenerProvider implements EventListenerProvider {
     @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
         log.atDebug()
-                .setMessage("received admin event")
+                .setMessage("received admin event: " + adminEvent.getResourceType())
                 .addKeyValue("event.realm_id", adminEvent.getRealmId())
                 .addKeyValue("event.operation_type", adminEvent.getOperationType())
                 .addKeyValue("event.resource_type", adminEvent.getResourceType())
