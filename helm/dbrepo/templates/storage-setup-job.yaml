@@ -7,6 +7,7 @@ metadata:
   namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   backoffLimit: {{ .Values.storageservice.setupJob.backoffLimit | default "10" }}
+  ttlSecondsAfterFinished: {{ .Values.storageservice.setupJob.ttlSecondsAfterFinished | default "100" }}
   template:
     metadata:
       name: storage-service-setup-job
