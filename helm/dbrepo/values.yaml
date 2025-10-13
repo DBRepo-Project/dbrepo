@@ -31,6 +31,9 @@ metadatadb:
   enabled: true
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
+  image:
+    ## @param metadatadb.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
   ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -78,6 +81,9 @@ dashboarddb:
   enabled: true
   ## @skip dashboarddb.fullnameOverride
   fullnameOverride: dashboard-db
+  image:
+    ## @param dashboarddb.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @param dashboarddb.host The hostname for the microservices.
   host: dashboard-db:5432
   metrics:
@@ -101,6 +107,8 @@ authservice:
   image:
     ## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+    ## @param authservice.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
   ## @skip authservice.proxyHeaders
@@ -154,6 +162,9 @@ datadb:
   enabled: true
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
+  image:
+    ## @param datadb.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @param datadb.host The hostname for the microservices.
   host: data-db
   ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -200,6 +211,9 @@ searchdb:
   enabled: true
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
+  image:
+    ## @param searchdb.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @skip searchdb.servicenameOverride
   servicenameOverride: search-db
   ## @param searchdb.host The hostname for the microservices.
@@ -225,6 +239,8 @@ brokerservice:
   image:
     ## @param brokerservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: true
+    ## @param brokerservice.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   metrics:
     ## @skip brokerservice.metrics.enabled
     enabled: true
@@ -589,6 +605,9 @@ storageservice:
   enabled: true
   ## @skip storageservice.fullnameOverride
   fullnameOverride: storage-service
+  image:
+    ## @param storageservice.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   mariadb:
     ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
     enabled: true
@@ -676,7 +695,7 @@ identityservice:
   enabled: true
   image:
     ## @skip identityservice.image.name
-    name: docker.io/bitnami/openldap:2.6.8-debian-12-r1
+    name: registry.datalab.tuwien.ac.at/bitnami/openldap:2.6.8-debian-12-r1
   global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
     ldapDomain: dc=dbrepo,dc=at
@@ -1013,6 +1032,9 @@ metricdb:
   enabled: true
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
+  image:
+    ## @param metricdb.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   ## @param metricdb.endpoint The endpoint for microservices.
   endpoint: http://metric-db-server
   alertmanager:
@@ -1066,6 +1088,9 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
+  image:
+    ## @param gatewayservice.image.registry Hotfix until a stable image is found from another registry.
+    registry: registry.datalab.tuwien.ac.at
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP
