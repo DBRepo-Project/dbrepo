@@ -257,6 +257,15 @@ public class ReplicateEndpoint {
         System.out.println("===================================");
 
         try {
+            // Rewrite the view query using service method before forwarding to metadata-service
+            if (viewNotificationDto.getViewDto() != null) {
+                String rewritten = viewService.rewriteViewQueryWithReplicationTimestamps(viewNotificationDto.getViewDto());
+                if (rewritten != null) {
+                    viewNotificationDto.getViewDto().setQuery(rewritten);
+                }
+            }
+
+            System.out.println("Rewritten view query: " + viewNotificationDto.getViewDto().getQuery());
             // Call the local data service to create or update the view
             // For now, simply forward to local data-service endpoint that can handle view replication
             // We use the data RestTemplate via the viewService if needed later; kept simple here.
@@ -288,5 +297,7 @@ public class ReplicateEndpoint {
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
+
+    
 
 } 
