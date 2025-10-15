@@ -15,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.google.common.hash.Hashing;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,9 @@ public class ViewServiceImpl implements ViewService {
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
+
+    @Value("${BASE_URL:http://localhost:8080}")
+    private String baseUrl;
 
     @Autowired
     public ViewServiceImpl(MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
@@ -87,6 +91,7 @@ public class ViewServiceImpl implements ViewService {
                 .isInitialView(false)
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isPublic(data.getIsPublic())
+                .creationLocation(baseUrl)
                 .build();
         /* create in data service */
         data.setName(view.getInternalName());

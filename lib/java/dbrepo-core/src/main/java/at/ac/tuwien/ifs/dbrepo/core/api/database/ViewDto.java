@@ -69,6 +69,8 @@ public class ViewDto extends CacheableDto {
     @Schema(description = "The sha256-hash of the query", example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
 
+    private String creationLocation;
+
     @NotNull
     private UserBriefDto owner;
 

@@ -426,11 +426,13 @@ public class ReplicationServiceImpl implements ReplicationService {
         for (ReplicaLocation replica : viewNotificationDto.getReplicas()) {
             try {
                 // Build the full URL for the view replicate endpoint at the remote replication service
-                String replicationUrl = replica.getUrl() + "/api/replication/replicate/view";
-
-                // Build payload: use replica-specific databaseId if provided, else fallback to global one
+                String replicationUrl = replica.getUrl() + 
+                        "/api/replication/replicate/view?databaseId=" + 
+                        (replica.getReplicaDatabaseId() != null ? replica.getReplicaDatabaseId() : viewNotificationDto.getDatabaseId());
+                //todo: we need to target the correct remote database!
                 ViewNotificationDto payload = ViewNotificationDto.builder()
-                        .databaseId(replica.getReplicaDatabaseId() != null ? replica.getReplicaDatabaseId() : viewNotificationDto.getDatabaseId())
+                        // DTO holds origin database; do not override with target here
+                        .databaseId(viewNotificationDto.getDatabaseId())
                         .creationId(viewNotificationDto.getCreationId())
                         .viewDto(viewNotificationDto.getViewDto())
                         .replicas(null)
