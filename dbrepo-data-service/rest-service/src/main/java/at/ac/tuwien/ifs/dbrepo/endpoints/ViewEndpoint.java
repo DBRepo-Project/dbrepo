@@ -174,7 +174,7 @@ public class ViewEndpoint extends RestEndpoint {
     })
     public ResponseEntity<ViewDto> createReplicated(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                     @RequestBody Map<String, String> payload) throws DatabaseUnavailableException,
-            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException {
+            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
         log.debug("endpoint create replicated view, databaseId={}, internalName={}", databaseId, payload.get("internalName"));
         final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
