@@ -139,7 +139,7 @@ public class ViewServiceImpl implements ViewService {
     @Override
     @Transactional
     public View createReplicated(Database database, User creator, ViewDto replicated) throws DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+            SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException, DataServiceException {
         /* create replicated view in metadata database preserving original id */
         final View view = View.builder()
                 .id(replicated.getId())

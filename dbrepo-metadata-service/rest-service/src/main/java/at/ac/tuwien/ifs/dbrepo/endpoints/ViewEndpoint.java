@@ -110,7 +110,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<ViewBriefDto> createReplicated(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                          @NotNull @Valid @RequestBody ViewNotificationDto data,
-                                                         Principal principal) throws DatabaseNotFoundException, UserNotFoundException, DashboardServiceException, DashboardServiceConnectionException {
+                                                         Principal principal) throws DatabaseNotFoundException, UserNotFoundException, DashboardServiceException, DashboardServiceConnectionException, DataServiceConnectionException, DataServiceException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint create replicated view, databaseId={}, creationId={}", databaseId, data.getCreationId());
         final Database database = databaseService.findById(databaseId);
 

@@ -60,7 +60,7 @@ public interface ViewService {
      * (including query, columns, and id) instead of generating from a subset specification.
      */
     View createReplicated(Database database, User user, ViewDto viewDto) throws DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException;
+            SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException, DataServiceException;
 
     /**
      * Updates the view in the metadata database and search service.
