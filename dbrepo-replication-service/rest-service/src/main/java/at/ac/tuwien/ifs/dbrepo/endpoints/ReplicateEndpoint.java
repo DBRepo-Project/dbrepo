@@ -39,6 +39,7 @@ public class ReplicateEndpoint {
     private final ReplicationService replicationService;
     private final SubsetService subsetService;
     private final at.ac.tuwien.ifs.dbrepo.service.ViewService viewService;
+    private final at.ac.tuwien.ifs.dbrepo.service.ViewService viewReplicationService;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String baseUrl;
@@ -257,29 +258,22 @@ public class ReplicateEndpoint {
         System.out.println("===================================");
 
         try {
-            // Rewrite the view query using service method before forwarding to metadata-service
-            if (viewNotificationDto.getViewDto() != null) {
-                String rewritten = viewService.rewriteViewQueryWithReplicationTimestamps(viewNotificationDto.getViewDto());
-                if (rewritten != null) {
-                    viewNotificationDto.getViewDto().setQuery(rewritten);
-                }
-            }
-
-            System.out.println("Rewritten view query: " + viewNotificationDto.getViewDto().getQuery());
+            // No rewriting necessary; forward as-is
             // Call the local data service to create or update the view
             // For now, simply forward to local data-service endpoint that can handle view replication
             // We use the data RestTemplate via the viewService if needed later; kept simple here.
 
-            // Reuse the existing ViewService if we later add a dedicated replicate method; placeholder behavior for now
-            // No direct creation here since replication path may call metadata/data services internally
-
-            Map<String, Object> response = Map.of(
+            // Forward to metadata-service via replication view service to persist with original ID
+            Map<String, Object> response = viewReplicationService.createReplicatedViewLocally(databaseId, viewNotificationDto);
+            if (response == null) {
+                response = Map.of(
                 "status", "success",
                 "message", "View replication received",
                 "targetDatabaseId", databaseId != null ? databaseId.toString() : "null",
                 "originDatabaseId", viewNotificationDto.getDatabaseId() != null ? viewNotificationDto.getDatabaseId().toString() : "null",
                 "viewId", (viewNotificationDto.getViewDto() != null && viewNotificationDto.getViewDto().getId() != null) ? viewNotificationDto.getViewDto().getId().toString() : "null"
-            );
+                );
+            }
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

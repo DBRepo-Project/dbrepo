@@ -122,6 +122,12 @@ public interface DataServiceGateway {
             ColumnNotFoundException;
 
     /**
+     * Creates a view in the given database using a raw SQL query and the provided internal name.
+     */
+    ViewDto createViewRaw(UUID databaseId, String internalName, String query) throws DataServiceConnectionException,
+            DataServiceException;
+
+    /**
      * Deletes a given view in the given database.
      *
      * @param databaseId The database id.

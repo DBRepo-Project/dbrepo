@@ -136,4 +136,43 @@ public class ViewServiceImpl implements ViewService {
         return view;
     }
 
+    @Override
+    @Transactional
+    public View createReplicated(Database database, User creator, ViewDto replicated) throws DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        /* create replicated view in metadata database preserving original id */
+        final View view = View.builder()
+                .id(replicated.getId())
+                .database(database)
+                .name(replicated.getName())
+                .internalName(replicated.getInternalName())
+                .ownedBy(creator.getId())
+                .owner(creator)
+                .identifiers(new LinkedList<>())
+                .isInitialView(Boolean.TRUE.equals(replicated.getIsInitialView()))
+                .isSchemaPublic(replicated.getIsSchemaPublic())
+                .isPublic(replicated.getIsPublic())
+                .creationLocation(replicated.getCreationLocation())
+                .build();
+        /* create in data service using provided internal name and raw query */
+        final ViewDto rawView = dataServiceGateway.createViewRaw(database.getId(), view.getInternalName(), replicated.getQuery());
+        view.setColumns(rawView.getColumns()
+                .stream()
+                .map(metadataMapper::viewColumnDtoToViewColumn)
+                .toList());
+        view.getColumns().forEach(c -> c.setView(view));
+        view.setQuery(rawView.getQuery());
+        view.setQueryHash(com.google.common.hash.Hashing.sha256()
+                .hashString(rawView.getQuery(), java.nio.charset.StandardCharsets.UTF_8)
+                .toString());
+
+        database.getViews().add(view);
+        final Database saved = databaseRepository.save(database);
+
+        /* update in search service */
+        searchServiceGateway.update(saved);
+        log.info("Created replicated view with id {}", view.getId());
+        return view;
+    }
+
 }

@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
@@ -89,6 +90,36 @@ public class ViewEndpoint extends AbstractEndpoint {
                 .stream()
                 .map(metadataMapper::viewToViewBriefDto)
                 .collect(Collectors.toList()));
+    }
+
+    @PostMapping("/replicated")
+    @Transactional
+    @Observed(name = "dbrepo_view_create_replicated")
+    @Operation(summary = "Create replicated view",
+            description = "Creates a view received via replication. Preserves original view ID and metadata.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Create replicated view successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ViewBriefDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/user in metadata database.",
+                    content = {@Content}),
+    })
+    public ResponseEntity<ViewBriefDto> createReplicated(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                         @NotNull @Valid @RequestBody ViewNotificationDto data,
+                                                         Principal principal) throws DatabaseNotFoundException, UserNotFoundException, DashboardServiceException, DashboardServiceConnectionException {
+        log.debug("endpoint create replicated view, databaseId={}, creationId={}", databaseId, data.getCreationId());
+        final Database database = databaseService.findById(databaseId);
+
+        // For replicated creation, use internal service account if present, else fallback to principal
+        final String username = principal != null ? getUsername(principal) : database.getOwner().getUsername();
+        final View view = viewService.createReplicated(database, userService.findByUsername(username), data.getViewDto());
+        dashboardService.update(view.getDatabase());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(metadataMapper.viewToViewBriefDto(view));
     }
 
     @PostMapping

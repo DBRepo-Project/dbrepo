@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
@@ -52,6 +53,14 @@ public interface ViewService {
     View create(Database database, User user, CreateViewDto data) throws MalformedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, ColumnNotFoundException;
+
+    /**
+     * Creates a replicated view that preserves the original view ID and metadata received from another instance.
+     * This mirrors {@link #create(Database, User, CreateViewDto)} but uses the provided {@link ViewDto} content
+     * (including query, columns, and id) instead of generating from a subset specification.
+     */
+    View createReplicated(Database database, User user, ViewDto viewDto) throws DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Updates the view in the metadata database and search service.
