@@ -5,7 +5,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -72,7 +71,7 @@ public class ViewServiceImpl implements ViewService {
 
     @Override
     @Transactional
-    public View create(Database database, User creator, CreateViewDto data) throws MalformedException,
+    public View create(Database database, String ownedBy, CreateViewDto data) throws MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, ColumnNotFoundException {
         /* create in metadata database */
@@ -80,8 +79,7 @@ public class ViewServiceImpl implements ViewService {
                 .database(database)
                 .name(data.getName())
                 .internalName(metadataMapper.nameToInternalName(data.getName()))
-                .ownedBy(creator.getId())
-                .owner(creator)
+                .ownedBy(ownedBy)
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
                 .isInitialView(false)

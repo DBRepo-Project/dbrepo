@@ -36,25 +36,18 @@ import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.OrcidActivitiesSummaryDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.OrcidEmploymentsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.OrcidAffiliationGroupDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.OrcidEmploymentSummaryDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.summary.OrcidSummaryDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.summary.organization.OrcidOrganizationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.summary.organization.disambiguated.OrcidDisambiguatedDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.summary.organization.disambiguated.OrcidDisambiguatedSourceTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.OrcidPersonDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.name.OrcidNameDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.name.OrcidValueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.EntityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalResultType;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.affiliation.ExternalAffiliationDto;
@@ -76,7 +69,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessageType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mapstruct.*;
@@ -107,13 +100,11 @@ public interface MetadataMapper {
 
     default DatabaseGrantsDto grantsToDatabaseGrantDto(Set<String> grants, String grantDefaultRead,
                                                        String grantDefaultWrite) {
-        final Set<String> read = Arrays.asList(grantDefaultRead.split(","))
-                .stream()
+        final Set<String> read = Arrays.stream(grantDefaultRead.split(","))
                 .map(String::trim)
                 .map(String::toUpperCase)
                 .collect(Collectors.toSet());
-        final Set<String> write = Arrays.asList(grantDefaultWrite.split(","))
-                .stream()
+        final Set<String> write = Arrays.stream(grantDefaultWrite.split(","))
                 .map(String::trim)
                 .map(String::toUpperCase)
                 .collect(Collectors.toSet());
@@ -138,7 +129,7 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "databaseName", source = "internalName"),
-            @Mapping(target = "ownerUsername", source = "owner.username")
+            @Mapping(target = "ownerUsername", source = "ownedBy")
     })
     CreateDashboardDto databaseToCreateDashboardDto(Database database);
 
@@ -147,6 +138,30 @@ public interface MetadataMapper {
             @Mapping(target = "attributes", ignore = true)
     })
     UserRepresentation userCreateDtoToUserRepresentation(UserCreateDto data);
+
+    UserBriefDto userDtoToUserBriefDto(UserDto data);
+
+    default UserDto userRepresentationToUserDto(UserRepresentation data) {
+        return UserDto.builder()
+                .id(UUID.fromString(data.getId()))
+                .username(data.getUsername())
+                .firstname(data.getFirstName())
+                .lastname(data.getLastName())
+                .attributes(UserAttributesDto.builder()
+                        .theme(data.getAttributes().get("theme").getFirst())
+                        .affiliation(data.getAttributes().get("affiliation").getFirst())
+                        .orcid(data.getAttributes().get("orcid").getFirst())
+                        .language(data.getAttributes().get("language").getFirst())
+                        .mariadbPassword(data.getAttributes().get("mariadb_password").getFirst())
+                        .build())
+                .build();
+    }
+
+    default String databaseSuffix() {
+        return "_" + RandomStringUtils.secure()
+                .nextAlphanumeric(4)
+                .toLowerCase();
+    }
 
     @Mappings({
             @Mapping(target = "accessToken", source = "token")
@@ -168,8 +183,6 @@ public interface MetadataMapper {
     })
     Container containerCreateRequestDtoToContainer(CreateContainerDto data);
 
-    UserUpdateDto userToUserUpdateDto(User data);
-
     default List<String> optionalValueToMap(String value) {
         final List<String> attr = new LinkedList<>();
         if (value != null) {
@@ -188,7 +201,7 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/v1/database/\" + database.getId() + \"/image\" : null)"),
-            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().filter(a -> !a.getUser().getIsInternal()).map(a -> databaseAccessToDatabaseAccessDto(a)).toList())")
+            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().map(a -> databaseAccessToDatabaseAccessDto(a)).toList())")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 
@@ -297,38 +310,6 @@ public interface MetadataMapper {
     })
     ExternalMetadataDto orcidDtoToExternalMetadataDto(OrcidDto data);
 
-    default OrcidDto userToOrcidDto(User data) {
-        return OrcidDto.builder()
-                .person(OrcidPersonDto.builder()
-                        .name(OrcidNameDto.builder()
-                                .givenNames(OrcidValueDto.builder()
-                                        .value(data.getFirstname())
-                                        .build())
-                                .familyName(OrcidValueDto.builder()
-                                        .value(data.getLastname())
-                                        .build())
-                                .build())
-                        .build())
-                .activitiesSummary(OrcidActivitiesSummaryDto.builder()
-                        .employments(OrcidEmploymentsDto.builder()
-                                .affiliationGroup(new OrcidAffiliationGroupDto[]{
-                                        OrcidAffiliationGroupDto.builder()
-                                                .summaries(new OrcidEmploymentSummaryDto[]{
-                                                        OrcidEmploymentSummaryDto.builder()
-                                                                .employmentSummary(OrcidSummaryDto.builder()
-                                                                        .organization(OrcidOrganizationDto.builder()
-                                                                                .name(data.getAffiliation())
-                                                                                .build())
-                                                                        .build())
-                                                                .build()
-                                                })
-                                                .build()
-                                })
-                                .build())
-                        .build())
-                .build();
-    }
-
     @Mappings({
             @Mapping(target = "organizationName", source = "employmentSummary.organization.name"),
             @Mapping(target = "ringgoldId", expression = "java(disambiguatedOrganizationToRinggoldId(data.getEmploymentSummary().getOrganization().getDisambiguatedOrganization()))"),
@@ -416,7 +397,7 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "databaseId", source = "database.id"),
-            @Mapping(target = "ownedBy", source = "owner.id")
+            @Mapping(target = "ownedBy", source = "ownedBy")
     })
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
@@ -791,22 +772,11 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default DatabaseAccess userToWriteAllAccess(Database database, User user) {
-        return DatabaseAccess.builder()
-                .type(AccessType.WRITE_ALL)
-                .hdbid(database.getId())
-                .database(database)
-                .huserid(user.getId())
-                .user(user)
-                .build();
-    }
-
     default TableDto tableToTableDto(Table data) {
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
                 .internalName(data.getInternalName())
-                .owner(userToUserBriefDto(data.getOwner()))
                 .databaseId(data.getTdbid())
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -891,7 +861,6 @@ public interface MetadataMapper {
     Unique uniqueDtoToUnique(UniqueDto data);
 
     @Mappings({
-            @Mapping(target = "ownedBy", source = "owner.id"),
             @Mapping(target = "tdbid", source = "databaseId"),
             @Mapping(target = "database", ignore = true)
     })
@@ -1013,57 +982,6 @@ public interface MetadataMapper {
     })
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
-    /* keep */
-    @Mappings({
-            @Mapping(target = "name", expression = "java(userToFullName(data))"),
-            @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
-    })
-    UserBriefDto userToUserBriefDto(User data);
-
-    /* keep */
-    @Mappings({
-            @Mapping(target = "attributes.language", source = "language"),
-            @Mapping(target = "attributes.orcid", source = "orcid"),
-            @Mapping(target = "attributes.affiliation", source = "affiliation"),
-            @Mapping(target = "attributes.theme", source = "theme"),
-            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword"),
-            @Mapping(target = "name", expression = "java(userToFullName(data))"),
-            @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
-    })
-    UserDto userToUserDto(User data);
-
-    /* keep */
-    @Named("userToFullName")
-    default String userToFullName(User data) {
-        final StringBuilder name = new StringBuilder();
-        if (data.getFirstname() != null) {
-            name.append(data.getFirstname());
-        }
-        if (data.getLastname() != null) {
-            name.append(!name.isEmpty() ? " " : null)
-                    .append(data.getLastname());
-        }
-        return name.isEmpty() ? null : name.toString()
-                .trim();
-    }
-
-    /* keep */
-    @Named("userToQualifiedName")
-    default String userToQualifiedName(User data) {
-        final String fullname = userToFullName(data);
-        final StringBuilder name = new StringBuilder();
-        if (fullname != null) {
-            name.append(fullname);
-        }
-        if (!name.isEmpty()) {
-            name.append(" — ");
-        }
-        name.append("@")
-                .append(data.getUsername());
-        return name.toString()
-                .trim();
-    }
-
     @Mappings({
             @Mapping(target = "databaseId", source = "database.id")
     })
@@ -1081,7 +999,6 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "database", ignore = true),
-            @Mapping(target = "ownedBy", source = "owner.id"),
     })
     View viewDtoToView(ViewDto data);
 
@@ -1104,9 +1021,6 @@ public interface MetadataMapper {
 
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 
-    @Mappings({
-            @Mapping(target = "ownerId", source = "owner.id")
-    })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);

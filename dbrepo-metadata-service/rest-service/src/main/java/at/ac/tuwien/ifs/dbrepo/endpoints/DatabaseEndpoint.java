@@ -1,11 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
@@ -159,8 +158,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
-        final User caller = userService.findByUsername(getUsername(principal));
-        final Database database = databaseService.create(container, data, caller, userService.findAllInternalUsers());
+        final UserDto owner = userService.findByUsername(getUsername(principal));
+        final Database database = databaseService.create(container, data, owner);
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
@@ -203,7 +202,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             SearchServiceConnectionException, NotAllowedException, MalformedException, TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
@@ -243,7 +242,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             SearchServiceConnectionException, NotAllowedException, ViewNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
@@ -287,7 +286,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
@@ -334,14 +333,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
         final Database database = databaseService.findById(databaseId);
-        final User newOwner = userService.findByUsername(data.getUsername());
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
         return ResponseEntity.accepted()
                 .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyOwner(database, newOwner))));
+                        databaseService.modifyOwner(database, data.getUsername()))));
     }
 
     @PutMapping("/{databaseId}/image")
@@ -380,7 +378,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
         }

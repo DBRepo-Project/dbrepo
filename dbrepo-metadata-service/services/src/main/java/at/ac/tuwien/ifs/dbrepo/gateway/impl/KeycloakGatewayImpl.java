@@ -40,6 +40,13 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
+    public List<UserRepresentation> findAll() {
+        return keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .list();
+    }
+
+    @Override
     public TokenDto obtainUserToken(String username, String password) throws BadCredentialsException {
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
@@ -67,7 +74,19 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             log.error("Failed to find user with username {}", username);
             throw new UserNotFoundException("Failed to find user");
         }
-        return users.get(0);
+        return users.getFirst();
+    }
+
+    @Override
+    public UserRepresentation findById(UUID id) throws UserNotFoundException {
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .search(String.valueOf(id));
+        if (users.isEmpty()) {
+            log.error("Failed to find user with id {}", id);
+            throw new UserNotFoundException("Failed to find user");
+        }
+        return users.getFirst();
     }
 
     @Override

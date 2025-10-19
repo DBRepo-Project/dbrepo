@@ -2,6 +2,11 @@
 author: Martin Weise
 ---
 
+!!! warning "Deprecated from v2+"
+
+    Starting v2 we will no longer support Docker Compose as deployment option. Instead, a lightweight cluster deployment
+    based on the CNCF-sandboxed [K3S](https://k3s.io/) project will be used.
+
 !!! danger "Security Disclaimer"
 
     This quick default installation should **not be considered secure**. It is intended for local testing and

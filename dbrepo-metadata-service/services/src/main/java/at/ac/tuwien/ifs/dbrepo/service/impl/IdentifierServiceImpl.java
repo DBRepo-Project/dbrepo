@@ -13,7 +13,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierTitle;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -160,22 +159,21 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier save(Database database, User user, IdentifierSaveDto data) throws SearchServiceException,
+    public Identifier save(Database database, String ownedBy, IdentifierSaveDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(data);
-        setAdditionalMetadata(database, identifier, user);
+        setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
         searchServiceGateway.update(identifier.getDatabase());
         return entity;
     }
 
-    private void setAdditionalMetadata(Database database, Identifier identifier, User user) throws DataServiceException,
+    private void setAdditionalMetadata(Database database, Identifier identifier, String ownedBy) throws DataServiceException,
             QueryNotFoundException, DataServiceConnectionException, ViewNotFoundException {
         identifier.setDatabase(database);
-        identifier.setOwnedBy(user.getId());
-        identifier.setOwner(user);
+        identifier.setOwnedBy(ownedBy);
         identifier.setStatus(IdentifierStatusType.DRAFT);
         if (identifier.getType().equals(IdentifierType.SUBSET)) {
             log.debug("set additional metadata for subset: {}", identifier.getQueryId());
@@ -199,11 +197,11 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(Database database, User user, CreateIdentifierDto data) throws SearchServiceException,
+    public Identifier create(Database database, String ownedBy, CreateIdentifierDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(metadataMapper.createIdentifierDtoToIdentifierSaveDto(data));
-        setAdditionalMetadata(database, identifier, user);
+        setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
         /* update in search database */

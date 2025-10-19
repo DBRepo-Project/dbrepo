@@ -3,7 +3,6 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.LanguageType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.License;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -152,19 +151,8 @@ public class Identifier implements Serializable {
     @Column
     private String doi;
 
-    @Column(name = "owned_by", nullable = false)
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    private UUID ownedBy;
-
-    /**
-     * Users are never created/updated/deleted by the Identifier entity.
-     */
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User owner;
+    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
+    private String ownedBy;
 
     @EqualsAndHashCode.Exclude
     @CreatedDate

@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.core.entity.database;
 
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -25,18 +24,8 @@ import java.util.UUID;
 public class DatabaseAccess {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
-    private UUID huserid;
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User user;
+    @Column(columnDefinition = "VARCHAR(36)", updatable = false, nullable = false)
+    private String username;
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)

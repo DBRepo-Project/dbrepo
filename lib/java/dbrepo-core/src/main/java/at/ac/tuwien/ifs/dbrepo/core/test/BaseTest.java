@@ -67,7 +67,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessageType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.test.utils.ArrayUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -445,13 +444,9 @@ public class BaseTest {
             .authorities(AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES)
             .build();
 
-    public final User USER_LOCAL = User.builder()
+    public final UserDto USER_LOCAL_DTO = UserDto.builder()
             .id(USER_LOCAL_ADMIN_ID)
-            .keycloakId(USER_LOCAL_ADMIN_KEYCLOAK_ID)
             .username(USER_LOCAL_ADMIN_USERNAME)
-            .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
-            .theme(USER_LOCAL_ADMIN_THEME)
-            .isInternal(USER_LOCAL_ADMIN_IS_INTERNAL)
             .build();
 
     public final Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(
@@ -518,21 +513,6 @@ public class BaseTest {
             .attributes(UserCreateAttributesDto.builder()
                     .ldapId(String.valueOf(USER_LOCAL_ADMIN_ID))
                     .build())
-            .build();
-
-    public final User USER_1 = User.builder()
-            .id(USER_1_ID)
-            .keycloakId(USER_1_KEYCLOAK_ID)
-            .username(USER_1_USERNAME)
-            .firstname(USER_1_FIRSTNAME)
-            .lastname(USER_1_LASTNAME)
-            .affiliation(USER_1_AFFILIATION)
-            .orcid(USER_1_ORCID_URL)
-            .theme(USER_1_THEME)
-            .mariadbPassword(USER_1_DATABASE_PASSWORD)
-            .language(USER_1_LANGUAGE)
-            .isInternal(USER_1_IS_INTERNAL)
-            .accesses(new LinkedList<>())
             .build();
 
     public final UserDto USER_1_DTO = UserDto.builder()
@@ -612,21 +592,6 @@ public class BaseTest {
             .language(USER_2_LANGUAGE)
             .build();
 
-    public final User USER_2 = User.builder()
-            .id(USER_2_ID)
-            .keycloakId(USER_2_KEYCLOAK_ID)
-            .username(USER_2_USERNAME)
-            .firstname(USER_2_FIRSTNAME)
-            .lastname(USER_2_LASTNAME)
-            .affiliation(USER_2_AFFILIATION)
-            .orcid(USER_2_ORCID_URL)
-            .theme(USER_2_THEME)
-            .mariadbPassword(USER_2_DATABASE_PASSWORD)
-            .language(USER_2_LANGUAGE)
-            .isInternal(USER_2_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
@@ -687,20 +652,6 @@ public class BaseTest {
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
-    public final User USER_3 = User.builder()
-            .id(USER_3_ID)
-            .keycloakId(USER_3_KEYCLOAK_ID)
-            .username(USER_3_USERNAME)
-            .firstname(USER_3_FIRSTNAME)
-            .lastname(USER_3_LASTNAME)
-            .affiliation(USER_3_AFFILIATION)
-            .orcid(USER_3_ORCID_URL)
-            .theme(USER_3_THEME)
-            .mariadbPassword(USER_3_DATABASE_PASSWORD)
-            .isInternal(USER_3_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final UserDto USER_3_DTO = UserDto.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
@@ -758,20 +709,6 @@ public class BaseTest {
             .orcid(USER_4_ORCID_URL)
             .affiliation(USER_4_AFFILIATION)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
-            .build();
-
-    public final User USER_4 = User.builder()
-            .id(USER_4_ID)
-            .keycloakId(USER_4_KEYCLOAK_ID)
-            .username(USER_4_USERNAME)
-            .firstname(USER_4_FIRSTNAME)
-            .lastname(USER_4_LASTNAME)
-            .affiliation(USER_4_AFFILIATION)
-            .orcid(USER_4_ORCID_URL)
-            .theme(USER_4_THEME)
-            .mariadbPassword(USER_4_DATABASE_PASSWORD)
-            .isInternal(USER_4_IS_INTERNAL)
-            .accesses(new LinkedList<>())
             .build();
 
     public final UserDto USER_4_DTO = UserDto.builder()
@@ -854,19 +791,6 @@ public class BaseTest {
     public final Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
-    public final User USER_5 = User.builder()
-            .id(USER_5_ID)
-            .keycloakId(USER_5_KEYCLOAK_ID)
-            .username(USER_5_USERNAME)
-            .firstname(USER_5_FIRSTNAME)
-            .lastname(USER_5_LASTNAME)
-            .affiliation(USER_5_AFFILIATION)
-            .theme(USER_5_THEME)
-            .mariadbPassword(USER_5_DATABASE_PASSWORD)
-            .isInternal(USER_5_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static UUID USER_6_KEYCLOAK_ID = UUID.fromString("0fddf102-8958-4223-8653-5d4dc51b3a18");
     public final static String USER_6_USERNAME = "system";
@@ -884,19 +808,6 @@ public class BaseTest {
     public final static Boolean USER_6_IS_INTERNAL = false;
     public final static String USER_6_THEME = "light";
     public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
-
-    public final User USER_6 = User.builder()
-            .id(USER_6_ID)
-            .keycloakId(USER_6_KEYCLOAK_ID)
-            .username(USER_6_USERNAME)
-            .firstname(USER_6_FIRSTNAME)
-            .lastname(USER_6_LASTNAME)
-            .affiliation(USER_6_AFFILIATION)
-            .theme(USER_6_THEME)
-            .mariadbPassword(USER_6_DATABASE_PASSWORD)
-            .isInternal(USER_6_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
 
     public final UserDto USER_6_DTO = UserDto.builder()
             .id(USER_6_ID)
@@ -1640,8 +1551,7 @@ public class BaseTest {
             .identifiers(new LinkedList<>())
             .columns(new LinkedList<>()) /* TABLE_1_COLUMNS */
             .constraints(null) /* TABLE_1_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
             .numRows(TABLE_1_NUM_ROWS)
@@ -1761,7 +1671,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_1_SCHEMA_PUBLIC)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static Long TABLE_1_DATA_COUNT = 3L;
@@ -1822,8 +1732,7 @@ public class BaseTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_2_COLUMNS */
             .constraints(null) /* TABLE_2_CONSTRAINTS */
-            .owner(USER_2)
-            .ownedBy(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
             .numRows(TABLE_2_NUM_ROWS)
             .dataLength(TABLE_2_DATA_LENGTH)
@@ -1839,7 +1748,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_2_SCHEMA_PUBLIC)
             .description(TABLE_2_DESCRIPTION)
             .name(TABLE_2_NAME)
-            .ownedBy(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .build();
 
     public final static UUID COLUMN_2_1_ID = UUID.fromString("795faa78-7ebb-4dd5-9eb1-e54a9192d0b5");
@@ -2010,8 +1919,7 @@ public class BaseTest {
             .queueName(TABLE_3_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_3_COLUMNS */
             .constraints(null) /* TABLE_3_CONSTRAINTS */
-            .owner(USER_3)
-            .ownedBy(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .avgRowLength(TABLE_3_AVG_ROW_LENGTH)
             .numRows(TABLE_3_NUM_ROWS)
             .dataLength(TABLE_3_DATA_LENGTH)
@@ -2047,7 +1955,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_3_SCHEMA_PUBLIC)
             .description(TABLE_3_DESCRIPTION)
             .name(TABLE_3_NAME)
-            .ownedBy(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .build();
 
     public final CreateTableConstraintsDto TABLE_3_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
@@ -2112,8 +2020,7 @@ public class BaseTest {
             .queueName(TABLE_5_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_5_COLUMNS */
             .constraints(null) /* TABLE_5_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final TableDto TABLE_5_DTO = TableDto.builder()
@@ -2141,7 +2048,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_5_SCHEMA_PUBLIC)
             .description(TABLE_5_DESCRIPTION)
             .name(TABLE_5_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_6_ID = UUID.fromString("ae84d169-d36c-4f5a-a390-153d090f9574");
@@ -2170,8 +2077,7 @@ public class BaseTest {
             .queueName(TABLE_6_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_6_COLUMNS */
             .constraints(null) /* TABLE_6_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_6_CREATED)
             .build();
 
@@ -2200,7 +2106,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_6_SCHEMA_PUBLIC)
             .description(TABLE_6_DESCRIPTION)
             .name(TABLE_6_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_7_ID = UUID.fromString("e5d10200-3e4f-45f4-9f36-ff3ca39c6c29");
@@ -2229,8 +2135,7 @@ public class BaseTest {
             .queueName(TABLE_7_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_7_COLUMNS */
             .constraints(null) /* TABLE_7_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_7_CREATED)
             .build();
 
@@ -2259,7 +2164,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_7_SCHEMA_PUBLIC)
             .description(TABLE_7_DESCRIPTION)
             .name(TABLE_7_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_4_ID = UUID.fromString("6c87cbcf-5043-404f-9bf1-b09ddbac25a2");
@@ -2291,8 +2196,7 @@ public class BaseTest {
             .isVersioned(TABLE_4_VERSIONED)
             .isPublic(TABLE_4_IS_PUBLIC)
             .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_4_CREATED)
             .lastModified(TABLE_4_LAST_MODIFIED)
             .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
@@ -2330,7 +2234,7 @@ public class BaseTest {
             .isVersioned(TABLE_4_VERSIONED)
             .isPublic(TABLE_4_IS_PUBLIC)
             .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final ColumnBriefDto TABLE_4_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
@@ -2437,8 +2341,7 @@ public class BaseTest {
             .queueName(TABLE_8_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_8_COLUMNS */
             .constraints(null) /* TABLE_8_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
@@ -2473,7 +2376,7 @@ public class BaseTest {
             .isPublic(TABLE_8_IS_PUBLIC)
             .isSchemaPublic(TABLE_8_SCHEMA_PUBLIC)
             .name(TABLE_8_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_9_ID = UUID.fromString("9314294f-04fc-4354-8b1f-2a8aeb566453");
@@ -2501,8 +2404,7 @@ public class BaseTest {
             .queueName(TABLE_9_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_9_COLUMNS */
             .constraints(null) /* TABLE_9_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_9_CREATED)
             .lastModified(TABLE_9_LAST_MODIFIED)
             .build();
@@ -2531,7 +2433,7 @@ public class BaseTest {
             .isPublic(TABLE_9_IS_PUBLIC)
             .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
             .name(TABLE_9_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID COLUMN_9_1_ID = UUID.fromString("e03c7578-2d1a-4599-9b11-7174f40efc0a");
@@ -5162,8 +5064,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .identifiers(new LinkedList<>()) /* IDENTIFIER_3 */
             .columns(null) /* VIEW_1_COLUMNS */
             .database(null) /* DATABASE_1 */
@@ -5245,7 +5146,7 @@ public class BaseTest {
             .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_1_PUBLIC)
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .build();
@@ -5322,8 +5223,7 @@ public class BaseTest {
             .columns(null)  /* VIEW_2_COLUMNS */
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .database(null) /* DATABASE_1 */
             .build();
 
@@ -5395,7 +5295,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID VIEW_3_ID = UUID.fromString("88940939-d456-4aae-88a6-f2b6b343c614");
@@ -5465,8 +5365,7 @@ public class BaseTest {
             .columns(null)  /* VIEW_3_COLUMNS */
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .database(null) /* DATABASE_1 */
             .build();
 
@@ -5538,7 +5437,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID VIEW_4_ID = UUID.fromString("13b36fa0-a65a-4ccf-80b1-5b3a2444a41a");
@@ -5714,8 +5613,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .columns(null) /* VIEW_4_COLUMNS */
             .build();
 
@@ -5744,7 +5642,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final List<ViewColumn> VIEW_4_COLUMNS = List.of(
@@ -5920,8 +5818,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_5_SCHEMA_PUBLIC)
             .query(VIEW_5_QUERY)
             .queryHash(VIEW_5_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .columns(null)
             .build();
 
@@ -6421,8 +6318,7 @@ public class BaseTest {
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1)))
@@ -6744,8 +6640,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE)
-            .owner(USER_2)
-            .ownedBy(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1, IDENTIFIER_5_CREATOR_2)))
             .status(IDENTIFIER_5_STATUS_TYPE)
             .funders(new LinkedList<>())
@@ -7098,8 +6993,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE)
-            .owner(USER_3)
-            .ownedBy(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1, IDENTIFIER_6_CREATOR_2, IDENTIFIER_6_CREATOR_3)))
             .status(IDENTIFIER_6_STATUS_TYPE)
@@ -7473,8 +7367,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_2_CREATOR_1)))
             .status(IDENTIFIER_2_STATUS_TYPE)
@@ -7700,8 +7593,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_3_CREATOR_1)))
             .funders(new LinkedList<>())
@@ -7875,8 +7767,7 @@ public class BaseTest {
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_4_CREATOR_1)))
             .status(IDENTIFIER_4_STATUS_TYPE)
@@ -8044,13 +7935,9 @@ public class BaseTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .image(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-            .contactPerson(USER_1_ID)
-            .contact(USER_1)
+            .contactPerson(USER_1_USERNAME)
             .subsets(new LinkedList<>())
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
@@ -8103,14 +7990,13 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
             .build();
 
@@ -8132,30 +8018,27 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8163,14 +8046,13 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8178,14 +8060,13 @@ public class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8193,30 +8074,27 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8224,14 +8102,13 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_4_ID)
-            .user(USER_4)
+            .username(USER_4_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_4_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_4_ID)
+            .username(USER_4_USERNAME)
             .user(USER_4_BRIEF_DTO)
             .build();
 
@@ -8264,10 +8141,8 @@ public class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .created(DATABASE_2_CREATED)
             .lastModified(DATABASE_2_LAST_MODIFIED)
-            .ownedBy(USER_2_ID)
-            .owner(USER_2)
-            .contactPerson(USER_2_ID)
-            .contact(USER_2)
+            .ownedBy(USER_2_USERNAME)
+            .contactPerson(USER_2_USERNAME)
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .accesses(new LinkedList<>())
@@ -8328,60 +8203,54 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_2_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8389,14 +8258,13 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_2_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_2_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8404,16 +8272,14 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final CreateDashboardResponseDto DATABASE_2_CREATE_DASHBOARD_RESPONSE_DTO =
@@ -8445,10 +8311,8 @@ public class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
-            .ownedBy(USER_3_ID)
-            .owner(USER_3)
-            .contactPerson(USER_3_ID)
-            .contact(USER_3)
+            .ownedBy(USER_3_USERNAME)
+            .contactPerson(USER_3_USERNAME)
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .accesses(new LinkedList<>()) /* DATABASE_3_USER_1_WRITE_ALL_ACCESS */
@@ -8459,14 +8323,13 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
             .build();
 
@@ -8474,14 +8337,13 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
             .build();
 
@@ -8489,14 +8351,13 @@ public class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
             .build();
 
@@ -8504,38 +8365,34 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8543,14 +8400,13 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8558,14 +8414,13 @@ public class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8594,8 +8449,7 @@ public class BaseTest {
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE)
-            .owner(USER_4)
-            .ownedBy(USER_4_ID)
+            .ownedBy(USER_4_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1)))
             .relatedIdentifiers(new LinkedList<>())
@@ -8619,10 +8473,8 @@ public class BaseTest {
             .exchangeName(DATABASE_4_EXCHANGE)
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
-            .ownedBy(USER_4_ID)
-            .owner(USER_4)
-            .contactPerson(USER_4_ID)
-            .contact(USER_4)
+            .ownedBy(USER_4_USERNAME)
+            .contactPerson(USER_4_USERNAME)
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .identifiers(new LinkedList<>())
@@ -8632,63 +8484,63 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .build();
 
     public final CreateDashboardResponseDto DATABASE_4_CREATE_DASHBOARD_RESPONSE_DTO =
@@ -9080,7 +8932,6 @@ public class BaseTest {
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
         CONTAINER_4.setDatabases(new LinkedList<>(List.of(DATABASE_4)));
         /* DATABASE 1 */
-        DATABASE_1.setOwner(USER_1);
         DATABASE_1.setSubsets(new LinkedList<>());
         DATABASE_1.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_1_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_DTO, DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO, DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO)));

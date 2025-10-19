@@ -8,9 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataCiteGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
@@ -73,22 +71,22 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier save(Database database, User user, IdentifierSaveDto data) throws DataServiceException,
+    public Identifier save(Database database, String ownedBy, IdentifierSaveDto data) throws DataServiceException,
             DataServiceConnectionException, MalformedException, DatabaseNotFoundException, IdentifierNotFoundException,
             ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ExternalServiceException {
-        final Identifier entity = identifierService.save(database, user, data);
+        final Identifier entity = identifierService.save(database, ownedBy, data);
         dataCiteGateway.save(entity, null);
         return entity;
     }
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(Database database, User user, CreateIdentifierDto data) throws DataServiceException,
+    public Identifier create(Database database, String ownedBy, CreateIdentifierDto data) throws DataServiceException,
             DataServiceConnectionException, MalformedException, ViewNotFoundException, DatabaseNotFoundException,
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException,
             IdentifierNotFoundException {
-        final Identifier entity = identifierService.create(database, user, data);
+        final Identifier entity = identifierService.create(database, ownedBy, data);
         entity.setDoi(dataCiteGateway.create());
         final Identifier identifier = identifierRepository.save(entity);
         dataCiteGateway.save(identifier, null);

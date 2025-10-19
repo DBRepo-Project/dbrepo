@@ -10,7 +10,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSe
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.*;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -92,8 +91,6 @@ public class TableServiceImpl implements TableService {
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException {
-        final User owner = userService.findByUsername(principal.getName());
-        /* map table */
         final Table table = Table.builder()
                 .isVersioned(true)
                 .name(data.getName())
@@ -102,8 +99,7 @@ public class TableServiceImpl implements TableService {
                 .queueName(rabbitConfig.getQueueName())
                 .tdbid(database.getId())
                 .database(database)
-                .ownedBy(owner.getId())
-                .owner(owner)
+                .ownedBy(principal.getName())
                 .numRows(0L)
                 .dataLength(0L)
                 .isPublic(data.getIsPublic())

@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -13,7 +14,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.primaryKey.PrimaryKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -92,7 +92,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(Container container, CreateDatabaseDto data, User user, List<User> internalUsers)
+    public Database create(Container container, CreateDatabaseDto data, UserDto owner)
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
@@ -101,13 +101,11 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isDashboardEnabled(true)
                 .name(data.getName())
-                .internalName(metadataMapper.nameToInternalName(data.getName()) + "_" + RandomStringUtils.randomAlphabetic(4).toLowerCase())
+                .internalName(metadataMapper.nameToInternalName(data.getName()) + metadataMapper.databaseSuffix())
                 .cid(data.getCid())
                 .container(container)
-                .ownedBy(user.getId())
-                .owner(user)
-                .contactPerson(user.getId())
-                .contact(user)
+                .ownedBy(owner.getUsername())
+                .contactPerson(owner.getUsername())
                 .tables(new LinkedList<>())
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
@@ -116,9 +114,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* create in data database */
         final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
-                .userId(user.getId())
-                .username(user.getUsername())
-                .password(user.getMariadbPassword())
+                .userId(owner.getId())
+                .username(owner.getUsername())
+                .password(owner.getAttributes().getMariadbPassword())
                 .privilegedUsername(container.getPrivilegedUsername())
                 .privilegedPassword(container.getPrivilegedPassword())
                 .readonlyUsername(container.getReadonlyUsername())
@@ -129,8 +127,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         entity.setExchangeName(dto.getExchangeName());
         /* create in metadata database */
         final Database entity1 = databaseRepository.save(entity);
-        entity1.getAccesses()
-                .add(metadataMapper.userToWriteAllAccess(entity1, user));
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);
@@ -140,7 +136,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional(readOnly = true)
-    public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
+    public void updatePassword(Database database, UserDto user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
         final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getUsername())
                 .stream()
@@ -149,7 +145,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         log.debug("found {} distinct databases where access for user with id {} is present", databases.size(), user.getId());
         final UpdateUserPasswordDto payload = UpdateUserPasswordDto.builder()
                 .username(user.getUsername())
-                .password(user.getMariadbPassword())
+                .password(user.getAttributes().getMariadbPassword())
                 .build();
         dataServiceGateway.updateDatabase(database.getId(), payload);
         log.info("Updated user password in database with id {}", database.getId());
@@ -175,13 +171,11 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database modifyOwner(Database database, User user) throws DatabaseNotFoundException, SearchServiceException,
+    public Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in metadata database */
-        database.setOwner(user);
-        database.setOwnedBy(user.getId());
-        database.setContact(user);
-        database.setContactPerson(user.getId());
+        database.setOwnedBy(username);
+        database.setContactPerson(username);
         database = databaseRepository.save(database);
         /* save in search service */
         searchServiceGateway.update(database);

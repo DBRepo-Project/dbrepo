@@ -5,7 +5,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;

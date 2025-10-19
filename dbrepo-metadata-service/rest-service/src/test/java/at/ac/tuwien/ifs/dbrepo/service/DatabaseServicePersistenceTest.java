@@ -5,7 +5,6 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;

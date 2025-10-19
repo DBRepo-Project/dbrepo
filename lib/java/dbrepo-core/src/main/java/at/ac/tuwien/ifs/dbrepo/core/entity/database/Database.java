@@ -2,7 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.database;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,17 +47,10 @@ public class Database implements Serializable {
     @Column(name = "grafana_dashboard_uid")
     private String dashboardUid;
 
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
-    private UUID ownedBy;
+    @Column(name = "owned_by", columnDefinition = "VARCHAR(255)", nullable = false)
+    private String ownedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User owner;
-
-    @Column(nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)", nullable = false)
     private UUID cid;
 
     @ToString.Exclude
@@ -80,15 +72,8 @@ public class Database implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "contact_person", columnDefinition = "VARCHAR(36)")
-    private UUID contactPerson;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
-    })
-    private User contact;
+    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
+    private String contactPerson;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='DATABASE'")

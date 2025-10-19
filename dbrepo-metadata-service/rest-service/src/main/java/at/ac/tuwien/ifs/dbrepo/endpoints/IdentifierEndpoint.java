@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.config.EndpointConfig;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.ld.LdDatasetDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
@@ -9,7 +8,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
@@ -108,7 +106,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                 .filter(i -> !Objects.nonNull(qid) || qid.equals(i.getQueryId()))
                 .filter(i -> !Objects.nonNull(vid) || vid.equals(i.getViewId()))
                 .filter(i -> !Objects.nonNull(tid) || tid.equals(i.getTableId()))
-                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwner().getUsername().equals(getUsername(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
+                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwnedBy().equals(getUsername(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
                 .sorted((a, b) -> b.getCreated().compareTo(a.getCreated()))
                 .toList();
         if (identifiers.isEmpty()) {
@@ -185,7 +183,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             if (principal == null) {
                 throw new NotAllowedException("Draft identifier: authentication required");
             }
-            if (!identifier.getOwner().getUsername().equals(getUsername(principal))) {
+            if (!identifier.getOwnedBy().equals(getUsername(principal))) {
                 throw new NotAllowedException("Draft identifier: not authorized");
             }
         }
@@ -341,10 +339,9 @@ public class IdentifierEndpoint extends AbstractEndpoint {
         log.debug("endpoint save identifier, identifierId={}, data.id={}", identifierId,
                 data.getId());
         final Database database = databaseService.findById(data.getDatabaseId());
-        final User caller = userService.findByUsername(getUsername(principal));
         final Identifier identifier = identifierService.find(identifierId);
         /* check owner */
-        if (!identifier.getOwner().getUsername().equals(getUsername(principal)) && !hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
+        if (!identifier.getOwnedBy().equals(getUsername(principal)) && !hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
             log.error("Failed to save identifier: foreign user");
             throw new NotAllowedException("Failed to save identifier: foreign user");
         }
@@ -355,7 +352,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
         }
         /* check access */
         try {
-            final DatabaseAccess access = accessService.find(database, caller);
+            final DatabaseAccess access = accessService.find(database, getUsername(principal));
             log.trace("found access: {}", access);
         } catch (AccessNotFoundException e) {
             if (!hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
@@ -392,7 +389,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
         }
 
         return ResponseEntity.accepted()
-                .body(metadataMapper.identifierToIdentifierDto(identifierService.save(database, caller, data)));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.save(database, getUsername(principal), data)));
     }
 
     @PostMapping
@@ -431,10 +428,9 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
         log.debug("endpoint create identifier, data.databaseId={}", data.getDatabaseId());
         final Database database = databaseService.findById(data.getDatabaseId());
-        final User caller = userService.findByUsername(getUsername(principal));
         /* check access */
         try {
-            accessService.find(database, caller);
+            accessService.find(database, getUsername(principal));
         } catch (AccessNotFoundException e) {
             if (!hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
                 log.error("Failed to create identifier: insufficient role");
@@ -442,7 +438,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
             }
         }
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.identifierToIdentifierDto(identifierService.create(database, caller, data)));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.create(database, getUsername(principal), data)));
     }
 
     @GetMapping("/retrieve")

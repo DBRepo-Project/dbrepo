@@ -1,11 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.auth.CreateUserDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @CrossOrigin(origins = "*")
@@ -66,17 +63,12 @@ public class UserEndpoint extends AbstractEndpoint {
         if (username == null) {
             return ResponseEntity.ok(userService.findAll()
                     .stream()
-                    .filter(user -> !user.getIsInternal())
-                    .map(metadataMapper::userToUserBriefDto)
+                    .map(metadataMapper::userDtoToUserBriefDto)
                     .toList());
         }
         log.trace("filter by username: {}", username);
         try {
-            final User user = userService.findByUsername(username);
-            if (user.getIsInternal()) {
-                return ResponseEntity.ok(List.of());
-            }
-            return ResponseEntity.ok(List.of(metadataMapper.userToUserBriefDto(user)));
+            return ResponseEntity.ok(List.of(userService.findByUsername(username)));
         } catch (UserNotFoundException e) {
             log.trace("filter by username {} failed: return empty list", username);
             return ResponseEntity.ok(List.of());
