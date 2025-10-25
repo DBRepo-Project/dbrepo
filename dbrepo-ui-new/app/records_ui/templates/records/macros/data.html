@@ -1,5 +1,5 @@
 {%- macro preview_info(table, table_data) %}
-    <table id="preview_table">
+    <table class="ui striped table files fluid open">
     <thead>
             <tr>
                 {% for column in table_data[0].keys() %}
@@ -25,13 +25,13 @@
         <span id="preview_name" class="box-title"> {{ table.name }} </span>
         <i class="angle right icon" aria-hidden="true"></i>
     </div>
-    <div class="panel">
+    <div class="active content pt-0">
         {{ preview_info(table, table_data) }}
     </div>
 {%- endmacro %}
 
 {% macro dataset_list(subsets) %}
-    <table id="dataset_list">
+    <table class="ui striped table files fluid open">
     <thead>
         <tr>
             <th>Name</th>
@@ -67,7 +67,7 @@
 {%- endmacro %}
 
 {% macro datasource_list(views) %}
-    <table id="dataset_list">
+    <table class="ui striped table files fluid open">
     <thead>
         <tr>
             <th>Name</th>
@@ -107,7 +107,7 @@
             <span class="box-title"> Data Sets </span>
             <i class="angle right icon" aria-hidden="true"></i>
         </div>
-        <div class="panel">
+        <div class="active content pt-0">
             {{ dataset_list(subsets) }}
         </div>
 {%- endmacro %}
@@ -117,7 +117,7 @@
             <span class="box-title"> Data Sources </span>
             <i class="angle right icon" aria-hidden="true"></i>
         </div>
-        <div class="panel">
+        <div class="active content pt-0">
             {{ datasource_list(views) }}
         </div>
 {%- endmacro %}

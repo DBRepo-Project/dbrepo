@@ -149,14 +149,7 @@ p {
 }
 
 
-.panel {
-  padding: 0 15px;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 0 0 5px 5px;
-  height: 50%;
-  overflow: auto;
-}
+
 
 
 #preview_table {
@@ -230,4 +223,14 @@ font-size: 1em;
 
 #identifier_header {
   margin: 20px;
+}
+
+/*additional css (not present in invenios stylesheet)*/
+
+.active.content {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0 0 5px 5px;
+  height: 50%;
+  overflow: auto;
 }

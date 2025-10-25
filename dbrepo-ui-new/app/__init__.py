@@ -1,7 +1,7 @@
 from flask import Flask, session, request, redirect, url_for, current_app
 from .records_ui import records_bp
 from flask_assets import Environment, Bundle
-from flask_babel import Babel, gettext as _, get_locale
+from flask_babelex import Babel, gettext, lazy_gettext
 import os
 
 
@@ -11,7 +11,7 @@ def create_app():
     app.config.from_pyfile("config.py")
     def get_locale():
         return 'de'
-    babel = Babel(app, locale_selector=get_locale)
+    babel = Babel(app)
 
     app.secret_key = 'super secret key'
     base_dir = os.path.abspath(os.path.dirname(__file__))

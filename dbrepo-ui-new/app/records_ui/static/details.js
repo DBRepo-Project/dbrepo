@@ -1,13 +1,13 @@
 
 $('.accordion').on('click', function() {
 
-        if ($(this).next('.panel').is(':visible')) {
-            $(this).next('.panel').slideUp(
+        if ($(this).next('.active').is(':visible')) {
+            $(this).next('.active').slideUp(
                 function() {$(this).prev().css("border-radius", "5px");
             })
 
         } else {
-            $(this).next('.panel').slideDown();
+            $(this).next('.active').slideDown();
             $(this).css("border-radius", "5px 5px 0 0");
         }
 
