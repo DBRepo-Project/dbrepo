@@ -4,7 +4,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnami/opensearch:2.10.0`](https://hub.docker.com/r/bitnami/opensearch)
+    Image: [`docker.io/bitnamilegacy/opensearch:2.10.0`](https://hub.docker.com/r/bitnami/opensearch)
 
     * Ports: 9200/tcp
 

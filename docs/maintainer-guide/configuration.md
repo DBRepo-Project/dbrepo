@@ -7,7 +7,7 @@ author: Martin Weise
 Execute the installation script to download only the environment and save it to `dist`.
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/install.sh | DOWNLOAD_ONLY=1 bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.11/install.sh | DOWNLOAD_ONLY=1 bash
 ```
 
 ### Static Configuration
@@ -52,7 +52,7 @@ the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 Update the client secret of the `dbrepo-client`:
 
 ```bash
-curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/.scripts/reg-client-secret.sh" | bash
+curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.11/.scripts/reg-client-secret.sh" | bash
 ```
 
 ### Gateway Service

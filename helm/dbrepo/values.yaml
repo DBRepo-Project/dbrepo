@@ -676,7 +676,7 @@ identityservice:
   enabled: true
   image:
     ## @skip identityservice.image.name
-    name: docker.io/bitnami/openldap:2.6.8-debian-12-r1
+    name: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
   global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
     ldapDomain: dc=dbrepo,dc=at

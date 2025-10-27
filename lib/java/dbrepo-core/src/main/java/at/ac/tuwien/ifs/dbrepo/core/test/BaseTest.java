@@ -137,7 +137,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 public class BaseTest {
 
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
-    public final static String MARIADB_IMAGE = "bitnami/mariadb:11.3.2";
+    public final static String MARIADB_IMAGE = "bitnamilegacy/mariadb:11.3.2";
     public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
     public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0.4";
 
