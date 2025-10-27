@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnami/openldap:2.6.8`](https://hub.docker.com/r/openldap)
+    Image: [`docker.io/bitnamilegacy/openldap:2.6.8`](https://hub.docker.com/r/openldap)
 
     * Ports: 1389/tcp, 1636/tcp
 

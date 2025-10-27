@@ -19,7 +19,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
+    image: docker.io/bitnamilegacy/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -43,7 +43,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db-metrics
     hostname: metadata-db-metrics
-    image: docker.io/bitnami/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
+    image: docker.io/bitnamilegacy/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
     command:
       - --mysqld.address=metadata-db:3306
       - --config.my-cnf=/.my.cnf
@@ -62,7 +62,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:${MARIADB_VERSION}
+    image: docker.io/bitnamilegacy/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - data-db-data:/bitnami/mariadb
       - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
@@ -84,7 +84,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-metrics
     hostname: data-db-metrics
-    image: docker.io/bitnami/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
+    image: docker.io/bitnamilegacy/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
     command:
       - --mysqld.address=data-db:3306
       - --config.my-cnf=/.my.cnf
@@ -103,7 +103,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
+    image: docker.io/bitnamilegacy/postgresql:${POSTGRES_VERSION}
     volumes:
       - auth-db-data:/bitnami/postgresql
     environment:
@@ -121,7 +121,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-db
     hostname: dashboard-db
-    image: docker.io/bitnami/postgresql:${POSTGRES_VERSION}
+    image: docker.io/bitnamilegacy/postgresql:${POSTGRES_VERSION}
     volumes:
       - dashboard-db-data:/bitnami/postgresql
     environment:
@@ -138,7 +138,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: docker.io/bitnami/keycloak:${KEYCLOAK_VERSION}
+    image: docker.io/bitnamilegacy/keycloak:${KEYCLOAK_VERSION}
     volumes:
       - ./config/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./config/master-realm.json:/opt/keycloak/data/import/master-realm.json
@@ -239,7 +239,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:${RABBITMQ_VERSION}
+    image: docker.io/bitnamilegacy/rabbitmq:${RABBITMQ_VERSION}
     ports:
       - 5672:5672
       - 1883:1883
@@ -264,7 +264,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/bitnami/opensearch:${OPENSEARCH_VERSION}
+    image: docker.io/bitnamilegacy/opensearch:${OPENSEARCH_VERSION}
     volumes:
       - search-db-data:/bitnami/opensearch/data
     ports:
@@ -330,7 +330,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/bitnami/nginx:${NGINX_VERSION}
+    image: docker.io/bitnamilegacy/nginx:${NGINX_VERSION}
     ports:
       - "80:8080"
     volumes:
@@ -355,7 +355,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: docker.io/bitnami/openldap:${OPENLDAP_VERSION}
+    image: docker.io/bitnamilegacy/openldap:${OPENLDAP_VERSION}
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -417,7 +417,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/bitnami/seaweedfs:${SEAWEEDFS_VERSION}
+    image: docker.io/bitnamilegacy/seaweedfs:${SEAWEEDFS_VERSION}
     command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./config/s3_config.json:/app/s3_config.json
@@ -434,7 +434,7 @@ services:
     restart: "no"
     container_name: dbrepo-metric-db
     hostname: metric-db
-    image: docker.io/bitnami/prometheus:${PROMETHEUS_VERSION}
+    image: docker.io/bitnamilegacy/prometheus:${PROMETHEUS_VERSION}
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
@@ -510,7 +510,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: docker.io/bitnami/grafana:${GRAFANA_VERSION}
+    image: docker.io/bitnamilegacy/grafana:${GRAFANA_VERSION}
     ports:
       - "3000:3000"
     volumes:

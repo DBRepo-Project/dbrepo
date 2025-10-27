@@ -6,7 +6,7 @@ from testcontainers.core.waiting_utils import wait_for_logs, wait_container_is_r
 class GrafanaContainer(DockerContainer):
     MGMT_PORT = 3000
 
-    def __init__(self, image: str = "bitnami/grafana:11", **kwargs) -> None:
+    def __init__(self, image: str = "bitnamilegacy/grafana:11", **kwargs) -> None:
         super().__init__(image=image, **kwargs)
         self.with_exposed_ports(self.MGMT_PORT)
 
