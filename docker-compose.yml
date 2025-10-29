@@ -62,22 +62,21 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: registry.datalab.tuwien.ac.at/bitnami/mariadb-galera:${MARIADB_VERSION}
+    image: mariadb:10.11
     volumes:
-      - data-db-data:/bitnami/mariadb
+      - data-db-data:/var/lib/mysql
       - ./dbrepo-data-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
-      - ./dbrepo-data-db/${DATA_DB_ROLE:-primary}.cnf:/opt/bitnami/mariadb/conf/zz-replication.cnf:ro
+      - ./dbrepo-data-db/${DATA_DB_ROLE:-primary}.cnf:/etc/mysql/mariadb.conf.d/zz-replication.cnf:ro
     ports:
       - "3307:3306"
     environment:
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepo}"
-      MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
-      MARIADB_SKIP_TEST_DB: "yes"
+      MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
+      MARIADB_DATABASE: ""
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
+      test: mysqladmin ping -h localhost --silent
       <<: *healthcheck-params
     logging:
       driver: json-file
