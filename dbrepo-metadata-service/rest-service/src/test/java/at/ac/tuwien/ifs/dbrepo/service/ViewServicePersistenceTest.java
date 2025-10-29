@@ -3,12 +3,12 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -36,9 +36,6 @@ import static org.mockito.Mockito.when;
 public class ViewServicePersistenceTest extends BaseTest {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private LicenseRepository licenseRepository;
 
     @Autowired
@@ -50,17 +47,16 @@ public class ViewServicePersistenceTest extends BaseTest {
     @Autowired
     private ViewService viewService;
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
     @BeforeEach
     public void beforeEach() {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1);
         databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3));
     }

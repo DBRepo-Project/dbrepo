@@ -383,12 +383,11 @@ export default {
         .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
-          if (typeof code !== 'string' || typeof message !== 'string') {
-            /* fallback */
-            toast.error(`${this.$t('error.table.create')}: ${message}`)
+          if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(`${this.$t(code)}: ${message}`)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false

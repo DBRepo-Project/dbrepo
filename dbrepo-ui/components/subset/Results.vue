@@ -96,11 +96,8 @@ export default {
           .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
-            if (message) {
-              toast.error(message)
-              return
-            }
             if (typeof code !== 'string') {
+              toast.error(message)
               return
             }
             toast.error(this.$t(code))
@@ -119,11 +116,8 @@ export default {
           .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
-            if (message) {
-              toast.error(message)
-              return
-            }
             if (typeof code !== 'string') {
+              toast.error(message)
               return
             }
             toast.error(this.$t(code))
@@ -142,11 +136,8 @@ export default {
           .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
-            if (message) {
-              toast.error(message)
-              return
-            }
             if (typeof code !== 'string') {
+              toast.error(message)
               return
             }
             toast.error(this.$t(code))
@@ -168,10 +159,11 @@ export default {
             this.total = count
             this.loadingCount = false
           })
-          .catch(({code}) => {
+          .catch(({code, message}) => {
             this.loadingCount = false
             const toast = useToastInstance()
             if (typeof code !== 'string') {
+              toast.error(message)
               return
             }
             toast.error(this.$t(code))
@@ -186,10 +178,11 @@ export default {
             this.total = count
             this.loadingCount = false
           })
-          .catch(({code}) => {
+          .catch(({code, message}) => {
             this.loadingCount = false
             const toast = useToastInstance()
             if (typeof code !== 'string') {
+              toast.error(message)
               return
             }
             toast.error(this.$t(code))
@@ -204,10 +197,11 @@ export default {
             this.total = count
             this.loadingCount = false
           })
-          .catch(({code}) => {
+          .catch(({code, message}) => {
             this.loadingCount = false
             const toast = useToastInstance()
             if (typeof code !== 'string') {
+              toast.error(message)
               return
             }
             toast.error(this.$t(code))

@@ -203,7 +203,7 @@ public class CredentialServiceUnitTest extends BaseTest {
         final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(DATABASE_1_ID, response.getHdbid());
-        assertEquals(USER_1_ID, response.getHuserid());
+        assertEquals(USER_1_USERNAME, response.getUsername());
     }
 
     @Test
@@ -219,7 +219,7 @@ public class CredentialServiceUnitTest extends BaseTest {
         final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(DATABASE_1_ID, response.getHdbid());
-        assertEquals(USER_1_ID, response.getHuserid());
+        assertEquals(USER_1_USERNAME, response.getUsername());
     }
 
     @Test
@@ -234,14 +234,14 @@ public class CredentialServiceUnitTest extends BaseTest {
         /* pre-condition */
         final DatabaseAccessDto tmp = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotEquals(DATABASE_1_ID, tmp.getHdbid());
-        assertNotEquals(USER_1_ID, tmp.getHuserid());
+        assertEquals(USER_2_USERNAME, tmp.getUsername());
         Thread.sleep(5000);
 
         /* test */
         final DatabaseAccessDto response = credentialService.getAccess(DATABASE_1_ID, USER_1_USERNAME);
         assertNotNull(response);
         assertEquals(DATABASE_1_ID, response.getHdbid());
-        assertEquals(USER_1_ID, response.getHuserid());
+        assertEquals(USER_1_USERNAME, response.getUsername());
     }
 
     @Test

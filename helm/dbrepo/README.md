@@ -57,6 +57,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value  |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto` |
+| `global.security.allowInsecureImages`                 | Temporary fix until stable alternatives are found to allow mirrored Bitnami images from our own registry.                                                                                                                                                                                                                                                           | `true` |
 | `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`   |
 
 ### Common parameters
@@ -73,6 +74,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                     | Description                                                                                                                            | Value                                                                  |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `metadatadb.enabled`                     | Enable the Metadata Database.                                                                                                          | `true`                                                                 |
+| `metadatadb.image.registry`              | Hotfix until a stable image is found from another registry.                                                                            | `registry.datalab.tuwien.ac.at`                                        |
 | `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
 | `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `metadatadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
@@ -88,13 +90,14 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Dashboard Database Enable the Dashboard Database.
 
-| Name                        | Description                           | Value               |
-| --------------------------- | ------------------------------------- | ------------------- |
-| `dashboarddb.enabled`       |                                       | `true`              |
-| `dashboarddb.host`          | The hostname for the microservices.   | `dashboard-db:5432` |
-| `dashboarddb.auth.database` | The dashboard database name.          | `grafana`           |
-| `dashboarddb.auth.username` | The dashboard database username.      | `grafana`           |
-| `dashboarddb.auth.password` | The dashboard database user password. | `dbrepo`            |
+| Name                         | Description                                                 | Value                           |
+| ---------------------------- | ----------------------------------------------------------- | ------------------------------- |
+| `dashboarddb.enabled`        |                                                             | `true`                          |
+| `dashboarddb.image.registry` | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at` |
+| `dashboarddb.host`           | The hostname for the microservices.                         | `dashboard-db:5432`             |
+| `dashboarddb.auth.database`  | The dashboard database name.                                | `grafana`                       |
+| `dashboarddb.auth.username`  | The dashboard database username.                            | `grafana`                       |
+| `dashboarddb.auth.password`  | The dashboard database user password.                       | `dbrepo`                        |
 
 ### Auth Service
 
@@ -102,6 +105,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ----------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `authservice.enabled`         | Enable the Auth Service.                                    | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.image.debug`     | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `authservice.image.registry`  | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at`                                                                                                                                                                                                                                                                                                                                                                            |
 | `authservice.endpoint`        | The hostname for the microservices.                         | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
 | `authservice.resourcesPreset` | The container resource presets                              | `small`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.jwt.pubkey`      | The JWT public key from the `dbrepo-client`.                | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
@@ -113,6 +117,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                 | Description                                                                                                                            | Value                                                                  |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `datadb.enabled`                     | Enable the Auth Service.                                                                                                               | `true`                                                                 |
+| `datadb.image.registry`              | Hotfix until a stable image is found from another registry.                                                                            | `registry.datalab.tuwien.ac.at`                                        |
 | `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
 | `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
@@ -131,12 +136,15 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Search Database
 
-| Name                   | Description                         | Value       |
-| ---------------------- | ----------------------------------- | ----------- |
-| `searchdb.enabled`     | Enable the Data datadb.             | `true`      |
-| `searchdb.host`        | The hostname for the microservices. | `search-db` |
-| `searchdb.port`        | The port for the microservices.     | `9200`      |
-| `searchdb.clusterName` | The cluster name.                   | `search-db` |
+| Name                                        | Description                                                 | Value                           |
+| ------------------------------------------- | ----------------------------------------------------------- | ------------------------------- |
+| `searchdb.enabled`                          | Enable the Data datadb.                                     | `true`                          |
+| `searchdb.image.registry`                   | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at` |
+| `searchdb.volumePermissions.image.registry` | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at` |
+| `searchdb.sysctlImage.registry`             | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at` |
+| `searchdb.host`                             | The hostname for the microservices.                         | `search-db`                     |
+| `searchdb.port`                             | The port for the microservices.                             | `9200`                          |
+| `searchdb.clusterName`                      | The cluster name.                                           | `search-db`                     |
 
 ### Broker Service
 
@@ -144,6 +152,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `brokerservice.enabled`                          | Enable the Broker Service.                                                                                                       | `true`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `brokerservice.image.debug`                      | Set the logging level to `trace`. Otherwise, set to `info`.                                                                      | `true`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `brokerservice.image.registry`                   | Hotfix until a stable image is found from another registry.                                                                      | `registry.datalab.tuwien.ac.at`                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `brokerservice.endpoint`                         | The management api endpoint for the microservices.                                                                               | `http://broker-service:15672`                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `brokerservice.host`                             | The hostname for the microservices.                                                                                              | `broker-service`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `brokerservice.port`                             | The port for the microservices.                                                                                                  | `5672`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -290,6 +299,7 @@ mqtt.prefetch = 10
 | Name                                                                        | Description                                                                                                       | Value                            |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | `storageservice.enabled`                                                    | Enable the Storage Service.                                                                                       | `true`                           |
+| `storageservice.image.registry`                                             | Hotfix until a stable image is found from another registry.                                                       | `registry.datalab.tuwien.ac.at`  |
 | `storageservice.mariadb.enabled`                                            | Enables the MariaDB database needed for the filer.                                                                | `true`                           |
 | `storageservice.mariadb.auth.rootPassword`                                  | The password for the root user.                                                                                   | `seaweedfsfiler`                 |
 | `storageservice.filer.enabled`                                              | Cannot use the filer in the standard component since it's incompatible with OpenShift                             | `true`                           |
@@ -430,20 +440,22 @@ mqtt.prefetch = 10
 
 ### Metric Service
 
-| Name                | Description                     | Value                     |
-| ------------------- | ------------------------------- | ------------------------- |
-| `metricdb.enabled`  | Enable the Metric Service.      | `true`                    |
-| `metricdb.endpoint` | The endpoint for microservices. | `http://metric-db-server` |
+| Name                      | Description                                                 | Value                           |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------- |
+| `metricdb.enabled`        | Enable the Metric Service.                                  | `true`                          |
+| `metricdb.image.registry` | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at` |
+| `metricdb.endpoint`       | The endpoint for microservices.                             | `http://metric-db-server`       |
 
 ### Gateway Service
 
-| Name                                          | Description                                   | Value                   |
-| --------------------------------------------- | --------------------------------------------- | ----------------------- |
-| `gatewayservice.enabled`                      | Enable the Gateway Service.                   | `true`                  |
-| `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`             |
-| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                 |
-| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-setup` |
-| `gatewayservice.replicaCount`                 | The number of replicas.                       | `3`                     |
+| Name                                          | Description                                                 | Value                           |
+| --------------------------------------------- | ----------------------------------------------------------- | ------------------------------- |
+| `gatewayservice.enabled`                      | Enable the Gateway Service.                                 | `true`                          |
+| `gatewayservice.image.registry`               | Hotfix until a stable image is found from another registry. | `registry.datalab.tuwien.ac.at` |
+| `gatewayservice.service.type`                 | The service type.                                           | `ClusterIP`                     |
+| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.                      | `false`                         |
+| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy               | `gateway-service-setup`         |
+| `gatewayservice.replicaCount`                 | The number of replicas.                                     | `3`                             |
 
 ### Analytics Service
 

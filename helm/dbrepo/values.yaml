@@ -251,6 +251,7 @@ brokerservice:
     debug: true
     ## @param brokerservice.image.registry Hotfix until a stable image is found from another registry.
     registry: registry.datalab.tuwien.ac.at
+    ## @skip brokerservice.image.tag
     tag: 3.13.1-debian-12-r0
   metrics:
     ## @skip brokerservice.metrics.enabled

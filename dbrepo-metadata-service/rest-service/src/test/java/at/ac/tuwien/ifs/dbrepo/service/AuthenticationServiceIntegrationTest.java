@@ -1,9 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.slf4j.Slf4j;
@@ -54,18 +54,18 @@ public class AuthenticationServiceIntegrationTest extends BaseTest {
 
     @Test
     public void delete_succeeds() throws EmailExistsException, UserExistsException, UserNotFoundException,
-            AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
+            AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException, NotAllowedException {
 
         /* mock */
         keycloakUtils.deleteUser(USER_1_USERNAME);
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
-        final User request = User.builder()
-                .keycloakId(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()))
+        final UserDto request = UserDto.builder()
+                .id(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()))
                 .username(USER_1_USERNAME)
                 .build();
 
         /* test */
-        authenticationService.delete(request);
+        authenticationService.delete(request.getId());
     }
 
 }

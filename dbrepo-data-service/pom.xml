@@ -308,7 +308,6 @@
                 <includes>
                     <include>**/application*.yml</include>
                     <include>**/*.properties</include>
-                    <include>**/jars/*.jar</include>
                 </includes>
             </resource>
         </resources>

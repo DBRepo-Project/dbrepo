@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.11.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.11.1) - 2025-10-30
+
+### Changes
+
+* Refactored the user information out of the Metadata DB into the Auth Service (i.e. Auth DB) to get rid of consistency
+  problems related to SSO-based identity providers.
+* Bumped Keycloak from version `26.2.4` to `26.4.0` to 
+  include [default-values for profile attributes](https://github.com/keycloak/keycloak/issues/36160).
+* Using the Red Hat-based image registry (=`quay.io`) for future updates due to updates to the Bitnami service catalog.
+
 ## [v1.11.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.11.0) - 2025-10-13
 
 ### Changes

@@ -531,8 +531,14 @@ export default {
           toast.success(this.$t('success.database.visibility'))
           this.cacheStore.reloadDatabase()
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -550,8 +556,14 @@ export default {
           access['grants'] = grant
           access['loading'] = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           access['loading'] = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           access['loading'] = false
@@ -597,10 +609,11 @@ export default {
           this.loadingImage = false
           this.file = null;
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingImage = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -619,10 +632,11 @@ export default {
           toast.success(this.$t('success.database.image.remove'))
           this.loadingDeleteImage = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingDeleteImage = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -640,8 +654,14 @@ export default {
           toast.success(this.$t('success.database.transfer'))
           this.$router.push(`/database/${this.$route.params.database_id}/info`)
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -661,19 +681,21 @@ export default {
               this.cacheStore.reloadDatabase()
               this.loadingSchema = false
             })
-            .catch(({code}) => {
+            .catch(({code, message}) => {
               this.loadingSchema = false
               const toast = useToastInstance()
               if (typeof code !== 'string') {
+                toast.error(message)
                 return
               }
               toast.error(this.$t(code))
             })
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingSchema = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -697,8 +719,14 @@ export default {
           this.users = users
           this.loadingUsers = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingUsers = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingUsers = false

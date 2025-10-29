@@ -426,8 +426,14 @@ export default {
           this.concepts = conceptService.mapConcepts(response)
           this.loadingConcepts = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingConcepts = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingConcepts = false
@@ -441,8 +447,14 @@ export default {
           this.units = unitService.mapUnits(response)
           this.loadingUnits = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingUnits = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingUnits = false
@@ -468,7 +480,16 @@ export default {
           })
           this.loadingFields = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
+          this.loadingFields = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
           this.loadingFields = false
         })
     },

@@ -1209,8 +1209,14 @@ export default {
             }
           }
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           creator.success = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           creator.name_loading = false
@@ -1245,8 +1251,14 @@ export default {
           }
           creator.affiliation_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.affiliation_identifier)
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           creator.success = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           creator.affiliation_loading = false
@@ -1266,8 +1278,14 @@ export default {
           }
           funder.funder_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(funder.name_identifier)
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           funder.success = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           funder.loading = false
@@ -1367,11 +1385,11 @@ export default {
           this.identifier = identifier
           this.loadingSave = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingSave = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
-            toast.error(this.$t('error.pid.malformed'))
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -1393,10 +1411,11 @@ export default {
           this.$router.push(this.nextTo)
           this.loadingSave = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingSave = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -1416,8 +1435,14 @@ export default {
           this.cacheStore.reloadDatabase()
           this.loadingPublish = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingPublish = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingPublish = false
@@ -1434,8 +1459,14 @@ export default {
           this.$router.push(this.backTo)
           this.loadingDelete = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingDelete = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingDelete = false
@@ -1449,8 +1480,14 @@ export default {
           this.licenses = licenses
           this.loading = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false

@@ -2,10 +2,12 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
@@ -19,6 +21,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,14 +40,16 @@ public class AccessEndpoint extends AbstractEndpoint {
     private final AccessService accessService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
+    private final KeycloakGateway keycloakGateway;
     private final DashboardService dashboardService;
 
     @Autowired
     public AccessEndpoint(AccessService accessService, MetadataMapper metadataMapper, DatabaseService databaseService,
-                          DashboardService dashboardService) {
+                          KeycloakGateway keycloakGateway, DashboardService dashboardService) {
         this.accessService = accessService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
+        this.keycloakGateway = keycloakGateway;
         this.dashboardService = dashboardService;
     }
 
@@ -222,7 +227,8 @@ public class AccessEndpoint extends AbstractEndpoint {
                                        @PathVariable("username") String username,
                                        Principal principal) throws NotAllowedException, DataServiceException,
             SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException,
-            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException, DataServiceConnectionException {
+            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException, DataServiceConnectionException,
+            UserNotFoundException {
         log.debug("endpoint revoke database access, databaseId={}, username={}", databaseId, username);
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwnedBy().equals(getUsername(principal))) {
@@ -232,6 +238,11 @@ public class AccessEndpoint extends AbstractEndpoint {
         if (database.getOwnedBy().equals(username)) {
             log.error("Failed to revoke access: the owner must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the owner must have write-all access");
+        }
+        final UserRepresentation user = keycloakGateway.findByUsername(username);
+        if (user.getRealmRoles().contains("system")) {
+            log.error("Failed to revoke access: the internal user must have write-all access");
+            throw new NotAllowedException("Failed to revoke access: the internal user must have write-all access");
         }
         accessService.find(database, username);
         accessService.delete(database, username);

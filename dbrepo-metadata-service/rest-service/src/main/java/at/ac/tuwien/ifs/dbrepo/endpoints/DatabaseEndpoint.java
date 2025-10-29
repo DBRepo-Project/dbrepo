@@ -82,14 +82,14 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     log.debug("filter request to contain only databases that match internal name: {}", internalName);
                     databases = databaseService.findByInternalName(internalName);
                 } else {
-                    log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name: {}", getUsername(principal), internalName);
+                    log.debug("filter request to contain only public databases or where user with username {} has at least read access that match internal name: {}", getUsername(principal), internalName);
                     databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getUsername(principal), internalName);
                 }
             } else {
                 if (isSystem(principal)) {
                     databases = databaseService.findAll();
                 } else {
-                    log.debug("filter request to contain only databases where user with id {} has at least read access", getUsername(principal));
+                    log.debug("filter request to contain only databases where user with username {} has at least read access", getUsername(principal));
                     databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getUsername(principal));
                 }
             }
@@ -151,7 +151,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                                    Principal principal) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
-            ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException {
+            ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException, NotAllowedException {
         log.debug("endpoint create database, data.name={}", data.getName());
         final Container container = containerService.find(data.getCid());
         if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
@@ -159,6 +159,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
         final UserDto owner = userService.findByUsername(getUsername(principal));
+        log.debug("found user: {}", owner);
         final Database database = databaseService.create(container, data, owner);
         /* find in dashboard service */
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
@@ -314,7 +315,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Owner payload is malformed",
                     content = {@Content}),
             @ApiResponse(responseCode = "404",
-                    description = "Database or user could not be found",
+                    description = "Database could not be found",
                     content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Transfer of ownership is not permitted",
@@ -329,8 +330,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                      @Valid @RequestBody DatabaseTransferDto data,
                                                      Principal principal) throws NotAllowedException,
-            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwnedBy().equals(getUsername(principal))) {

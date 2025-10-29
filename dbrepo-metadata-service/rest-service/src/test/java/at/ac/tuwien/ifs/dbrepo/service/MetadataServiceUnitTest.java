@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,16 +41,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class MetadataServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private OrcidGateway orcidGateway;
 
-    @MockBean
+    @MockitoBean
     private RorGateway rorGateway;
 
-    @MockBean
+    @MockitoBean
     private CrossRefGateway crossRefGateway;
 
-    @MockBean
+    @MockitoBean
     private IdentifierService identifierService;
 
     @Autowired

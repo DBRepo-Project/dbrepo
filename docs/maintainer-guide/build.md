@@ -15,7 +15,7 @@ Clone the source code repository and build the container images:
 ```shell
 git clone git@gitlab.phaidra.org:fair-data-austria-db-repository/fda-services.git && \
 git checkout release-1.10 && \
-make build-java-lib build-auth-event-listener build-images
+make build-java-lib build-images
 ```
 
 Then start DBRepo and visit [`http://localhost`](http://localhost) in the VM browser:
@@ -59,7 +59,7 @@ git checkout release-1.10
 Build the Docker container images and auxiliary files needed for the Auth Service:
 
 ```shell
-make build-java-lib build-auth-event-listener build-images
+make build-java-lib build-images
 ```
 
 ## Run

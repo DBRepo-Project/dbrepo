@@ -65,14 +65,14 @@ public abstract class AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (!database.getIsPublic() && !database.getIsSchemaPublic() && optional.isEmpty()) {
                 log.error("Failed to find database: not public and no access found");
                 throw new NotAllowedException("Failed to find database: not public and no access found");
             }
             /* reduce metadata */
-            if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+            if (!database.getOwnedBy().equals(getUsername(principal))) {
                 log.trace("authenticated user is not owner: remove access list");
                 database.setAccesses(List.of());
             }
@@ -120,7 +120,7 @@ public abstract class AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (optional.isPresent()) {
                 access = optional.get();

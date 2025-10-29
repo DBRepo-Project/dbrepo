@@ -135,10 +135,11 @@ export default {
           this.$refs.queryResults.reExecuteCount(subset.id)
           this.loadingSubset = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingSubset = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -160,10 +161,11 @@ export default {
           document.body.appendChild(link)
           link.click()
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.downloadLoading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))

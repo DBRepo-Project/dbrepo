@@ -290,10 +290,11 @@ export default {
           this.$emit('close', { success: true })
           this.cacheStore.reloadTable()
         })
-        .catch(({ code }) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -321,6 +322,7 @@ export default {
           this.loadingDelete = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
