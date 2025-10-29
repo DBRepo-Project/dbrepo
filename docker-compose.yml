@@ -365,10 +365,13 @@ services:
     ports:
       - "80:8080"
       - "443:443"
+      - "3307:3307"
     volumes:
       - /home/azimuth/fullchain.pem:/app/fullchain.pem:ro
       - /home/azimuth/privkey.pem:/app/privkey.pem:ro
       - ./dbrepo-gateway-service/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
+      - ./dbrepo-gateway-service/dbrepo-tcp.conf:/opt/bitnami/nginx/conf/stream.conf.d/dbrepo-tcp.conf:ro
+
 
     depends_on:
       dbrepo-broker-service:
