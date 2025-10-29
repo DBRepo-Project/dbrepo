@@ -1,13 +1,11 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantExchangePermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantVirtualHostPermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.TopicPermissionDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.VirtualHostPermissionDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.BrokerServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.BrokerServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -23,7 +21,6 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -35,8 +32,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @Slf4j
 @Testcontainers
@@ -191,7 +186,7 @@ public class BrokerServiceIntegrationTest extends BaseTest {
         AmqpUtils.setVirtualHostPermissions(restTemplate, REALM_DBREPO_NAME, USER_1_USERNAME, permissions);
 
         /* test */
-        brokerService.setVirtualHostPermissions(USER_1);
+        brokerService.setVirtualHostPermissions(USER_1_USERNAME);
         return AmqpUtils.getVirtualHostPermissions(restTemplate, USER_1_USERNAME);
     }
 
@@ -203,18 +198,13 @@ public class BrokerServiceIntegrationTest extends BaseTest {
                 .read("")
                 .write("")
                 .build();
-        final User user = User.builder()
-                .id(USER_1_ID)
-                .username(USER_1_USERNAME)
-                .accesses(accesses)
-                .build();
 
         /* mock */
         AmqpUtils.setVirtualHostPermissions(restTemplate, REALM_DBREPO_NAME, USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
         AmqpUtils.setTopicPermissions(restTemplate, REALM_DBREPO_NAME, USER_1_USERNAME, request);
 
         /* test */
-        brokerService.setTopicExchangePermissions(user);
+        brokerService.setTopicExchangePermissions(USER_1_USERNAME, accesses);
         return AmqpUtils.getTopicPermissions(restTemplate, USER_1_USERNAME);
     }
 

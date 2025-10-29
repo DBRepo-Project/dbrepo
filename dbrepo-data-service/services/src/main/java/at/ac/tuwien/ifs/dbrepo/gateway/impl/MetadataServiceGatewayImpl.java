@@ -134,10 +134,10 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Jdbc-Method", "X-Host", "X-Port");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
-            log.error("Failed to find all  database headers");
+            log.error("Failed to find all database headers");
             log.debug("expected headers: {}", expectedHeaders);
             log.debug("found headers: {}", response.getHeaders().keySet());
-            throw new MetadataServiceException("Failed to find all  database headers");
+            throw new MetadataServiceException("Failed to find all database headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find database with id {}: body is empty", id);
@@ -230,10 +230,10 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         final List<String> expectedHeaders = List.of("X-Username", "X-Password");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
-            log.error("Failed to find all  user headers");
+            log.error("Failed to find all user headers");
             log.debug("expected headers: {}", expectedHeaders);
             log.debug("found headers: {}", response.getHeaders().keySet());
-            throw new MetadataServiceException("Failed to find all  user headers");
+            throw new MetadataServiceException("Failed to find all user headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find user {}: body is empty", username);

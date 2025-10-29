@@ -49,9 +49,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
     private KeycloakUtils keycloakUtils;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private LicenseRepository licenseRepository;
 
     @Autowired
@@ -80,7 +77,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
     public void beforeEach() throws AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_LOCAL));
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         /* keycloak */

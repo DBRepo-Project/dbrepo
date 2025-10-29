@@ -19,7 +19,7 @@ import java.util.UUID;
 @Table(name = "mdb_have_access")
 @NamedQueries({
         @NamedQuery(name = "DatabaseAccess.findByDatabaseId", query = "select a from DatabaseAccess a where a.hdbid = ?1"),
-        @NamedQuery(name = "DatabaseAccess.findByDatabaseIdAndUserId", query = "select a from DatabaseAccess a where a.hdbid = ?1 and a.huserid = ?2")
+        @NamedQuery(name = "DatabaseAccess.findByDatabaseIdAndUserId", query = "select a from DatabaseAccess a where a.hdbid = ?1 and a.username = ?2")
 })
 public class DatabaseAccess {
 

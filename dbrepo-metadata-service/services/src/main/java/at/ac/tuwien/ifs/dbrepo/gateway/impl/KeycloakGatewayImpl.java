@@ -1,9 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
@@ -66,7 +67,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public UserRepresentation findByUsername(String username) throws UserNotFoundException {
+    public UserRepresentation findByUsername(String username) throws UserNotFoundException, NotAllowedException {
         final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
                 .users()
                 .search(username);
@@ -78,7 +79,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public UserRepresentation findById(UUID id) throws UserNotFoundException {
+    public UserRepresentation findById(UUID id) throws UserNotFoundException, NotAllowedException {
         final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
                 .users()
                 .search(String.valueOf(id));
@@ -116,10 +117,10 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         }
         user.setFirstName(data.getFirstname());
         user.setLastName(data.getLastname());
-        user.singleAttribute("THEME", data.getTheme());
-        user.singleAttribute("ORCID", data.getOrcid());
-        user.singleAttribute("LANGUAGE", data.getLanguage());
-        user.singleAttribute("AFFILIATION", data.getAffiliation());
+        user.singleAttribute("theme", data.getTheme());
+        user.singleAttribute("orcid", data.getOrcid());
+        user.singleAttribute("language", data.getLanguage());
+        user.singleAttribute("affiliation", data.getAffiliation());
         log.trace("update user: {}", data);
         try {
             resource.update(user);

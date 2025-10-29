@@ -1,27 +1,27 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.auth.CreateUserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
@@ -36,24 +36,30 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class UserEndpointUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private KeycloakGateway keycloakGateway;
 
     @Autowired
     private UserEndpoint userEndpoint;
 
+    @Autowired
+    private MetadataMapper metadataMapper;
+
     @Test
     @WithAnonymousUser
-    public void findAll_anonymous_succeeds() throws UserNotFoundException {
+    public void findAll_anonymous_succeeds() throws UserNotFoundException, NotAllowedException {
 
         /* test */
         final List<UserBriefDto> response = findAll_generic(null, null);
-        assertEquals(2, response.size());
+        assertEquals(3, response.size());
     }
 
     @Test
     @WithAnonymousUser
-    public void findAll_filterInternalUserEmptyList_succeeds() throws UserNotFoundException {
+    public void findAll_filterInternalUserEmptyList_succeeds() throws UserNotFoundException, NotAllowedException {
 
         /* test */
         final List<UserBriefDto> response = findAll_generic(USER_LOCAL_ADMIN_USERNAME, null);
@@ -62,15 +68,15 @@ public class UserEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findAll_noRole_succeeds() throws UserNotFoundException {
+    public void findAll_noRole_succeeds() throws UserNotFoundException, NotAllowedException {
 
         /* test */
         final List<UserBriefDto> response = findAll_generic(null, null);
-        assertEquals(2, response.size());
+        assertEquals(3, response.size());
     }
 
     @Test
-    public void findAll_filterUsername_succeeds() throws UserNotFoundException {
+    public void findAll_filterUsername_succeeds() throws UserNotFoundException, NotAllowedException {
 
         /* test */
         final List<UserBriefDto> response = findAll_generic(USER_2_USERNAME, USER_2_DTO);
@@ -79,7 +85,7 @@ public class UserEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    public void findAll_filterUsername_fails() throws UserNotFoundException {
+    public void findAll_filterUsername_fails() throws UserNotFoundException, NotAllowedException {
 
         /* test */
         final List<UserBriefDto> response = findAll_generic(USER_5_USERNAME, null);
@@ -137,18 +143,6 @@ public class UserEndpointUnitTest extends BaseTest {
         assertNotNull(response.getHeaders().get("X-Password"));
         assertNotEquals(USER_3_PASSWORD, response.getHeaders().get("X-Password").get(0));
         assertEquals(USER_3_DATABASE_PASSWORD, response.getHeaders().get("X-Password").get(0));
-    }
-
-    @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void find_internalUser_fails() {
-        final Principal principal = new UsernamePasswordAuthenticationToken(USER_LOCAL_ADMIN_DETAILS, USER_LOCAL_ADMIN_PASSWORD, List.of(
-                new SimpleGrantedAuthority("system")));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_DTO, principal);
-        });
     }
 
     @Test
@@ -213,43 +207,12 @@ public class UserEndpointUnitTest extends BaseTest {
         modify_generic(USER_1_USERNAME, USER_1_DTO, USER_1_PRINCIPAL, request);
     }
 
-    @Test
-    @WithAnonymousUser
-    public void create_anonymous_fails() {
-
-        /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            generic_create(USER_1_CREATE_USER_DTO);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME)
-    public void create_notInternalUser_fails() {
-
-        /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            generic_create(USER_1_CREATE_USER_DTO);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void create_succeeds() {
-
-        /* mock */
-        when(userService.create(USER_1_CREATE_USER_DTO))
-                .thenReturn(USER_1_DTO);
-
-        /* test */
-        generic_create(USER_1_CREATE_USER_DTO);
-    }
-
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected List<UserBriefDto> findAll_generic(String username, UserDto user) throws UserNotFoundException {
+    protected List<UserBriefDto> findAll_generic(String username, UserDto user) throws UserNotFoundException,
+            NotAllowedException {
 
         /* mock */
         if (username != null) {
@@ -308,15 +271,6 @@ public class UserEndpointUnitTest extends BaseTest {
         /* test */
         final ResponseEntity<UserBriefDto> response = userEndpoint.modify(username, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final UserBriefDto body = response.getBody();
-        assertNotNull(body);
-    }
-
-    protected void generic_create(CreateUserDto data) {
-
-        /* test */
-        final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         final UserBriefDto body = response.getBody();
         assertNotNull(body);
     }

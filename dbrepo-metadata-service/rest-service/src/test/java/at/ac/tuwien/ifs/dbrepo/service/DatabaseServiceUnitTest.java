@@ -5,18 +5,17 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
@@ -33,13 +32,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class DatabaseServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -95,7 +94,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
                 .updateDatabase(eq(DATABASE_1_ID), any(UpdateUserPasswordDto.class));
 
         /* test */
-        databaseService.updatePassword(DATABASE_1, USER_1);
+        databaseService.updatePassword(DATABASE_1, USER_1_DTO);
     }
 
     @Test
@@ -451,11 +450,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* test */
-        final Database response = generic_modifyOwner(DATABASE_1, USER_2);
-        assertEquals(USER_2, response.getOwner());
-        assertEquals(USER_2_ID, response.getOwnedBy());
-        assertEquals(USER_2, response.getContact());
-        assertEquals(USER_2_ID, response.getContactPerson());
+        final Database response = generic_modifyOwner(DATABASE_1, USER_2_USERNAME);
+        assertEquals(USER_2_USERNAME, response.getOwnedBy());
+        assertEquals(USER_2_USERNAME, response.getContactPerson());
     }
 
     @Test
@@ -469,7 +466,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            generic_modifyOwner(DATABASE_1, USER_2);
+            generic_modifyOwner(DATABASE_1, USER_2_USERNAME);
         });
     }
 
@@ -484,7 +481,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_modifyOwner(DATABASE_1, USER_2);
+            generic_modifyOwner(DATABASE_1, USER_2_USERNAME);
         });
     }
 
@@ -499,7 +496,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            generic_modifyOwner(DATABASE_1, USER_2);
+            generic_modifyOwner(DATABASE_1, USER_2_USERNAME);
         });
     }
 
@@ -508,8 +505,8 @@ public class DatabaseServiceUnitTest extends BaseTest {
     /* ################################################################################################### */
 
     protected Database generic_create() throws DataServiceException, DataServiceConnectionException,
-            UserNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            DashboardServiceException, DashboardServiceConnectionException {
 
         /* mock */
         when(searchServiceGateway.update(any(Database.class)))
@@ -518,7 +515,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1);
 
         /* test */
-        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1, List.of(USER_LOCAL));
+        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1_DTO);
         assertTrue(response.getInternalName().startsWith(DATABASE_1_INTERNAL_NAME));
         assertNotNull(response.getContainer());
         assertNotNull(response.getTables());
@@ -526,15 +523,13 @@ public class DatabaseServiceUnitTest extends BaseTest {
         assertNotNull(response.getAccesses());
         assertNotNull(response.getIdentifiers());
         assertNotNull(response.getOwnedBy());
-        assertNotNull(response.getOwner());
         assertNotNull(response.getContactPerson());
-        assertNotNull(response.getContact());
         assertNotNull(response.getImage());
         assertNotNull(response.getExchangeName());
         return response;
     }
 
-    protected Database generic_modifyOwner(Database database, User newOwner) throws DatabaseNotFoundException,
+    protected Database generic_modifyOwner(Database database, String newOwner) throws DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
 
         /* mock */

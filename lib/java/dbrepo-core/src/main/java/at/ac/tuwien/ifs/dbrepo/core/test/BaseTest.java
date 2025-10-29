@@ -7,7 +7,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantVirtualHostPermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.QueueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.auth.CreateUserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.*;
@@ -138,7 +137,7 @@ public class BaseTest {
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
     public final static String MARIADB_IMAGE = "bitnamilegacy/mariadb:11.3.2";
     public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
-    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0.4";
+    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.4.0";
 
     public final static String REALM_DBREPO_NAME = "dbrepo";
 
@@ -427,15 +426,20 @@ public class BaseTest {
     public final static String USER_BROKER_PASSWORD = "guest";
 
     public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
-    public final static UUID USER_LOCAL_ADMIN_KEYCLOAK_ID = UUID.fromString("703c2ca0-8fc3-4c03-9bc5-4dae6b211e78");
     public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
     public final static String USER_LOCAL_ADMIN_THEME = "dark";
-    public final static Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
+    public final static String USER_LOCAL_ADMIN_LANGUAGE = "en";
     public final static Boolean USER_LOCAL_ADMIN_ENABLED = true;
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
+
+    public final UserAttributesDto USER_LOCAL_ADMIN_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .theme(USER_LOCAL_ADMIN_THEME)
+            .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
+            .language(USER_LOCAL_ADMIN_LANGUAGE)
+            .build();
 
     public final UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
             .id(USER_LOCAL_ADMIN_ID.toString())
@@ -447,13 +451,13 @@ public class BaseTest {
     public final UserDto USER_LOCAL_DTO = UserDto.builder()
             .id(USER_LOCAL_ADMIN_ID)
             .username(USER_LOCAL_ADMIN_USERNAME)
+            .attributes(USER_LOCAL_ADMIN_ATTRIBUTES_DTO)
             .build();
 
     public final Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(
             USER_LOCAL_ADMIN_DETAILS, USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static UUID USER_1_KEYCLOAK_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_USERNAME = "junit1";
     @SuppressWarnings("java:S2068")
     public final static String USER_1_PASSWORD = "junit1";
@@ -526,14 +530,6 @@ public class BaseTest {
             .password(USER_1_DATABASE_PASSWORD)
             .build();
 
-    public final CreateUserDto USER_1_CREATE_USER_DTO = CreateUserDto.builder()
-            .id(USER_1_KEYCLOAK_ID)
-            .ldapId(USER_1_ID)
-            .givenName(USER_1_FIRSTNAME)
-            .familyName(USER_1_LASTNAME)
-            .username(USER_1_USERNAME)
-            .build();
-
     public final UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
@@ -557,6 +553,10 @@ public class BaseTest {
             .orcid(USER_1_ORCID_URL)
             .build();
 
+    public final UserBriefDto USER_1_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_1_USERNAME)
+            .build();
+
     public final UserDetails USER_1_DETAILS = UserDetailsDto.builder()
             .id(USER_1_ID.toString())
             .username(USER_1_USERNAME)
@@ -568,7 +568,6 @@ public class BaseTest {
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
     public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
-    public final static UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
@@ -613,6 +612,10 @@ public class BaseTest {
             .qualifiedName(USER_2_QUALIFIED_NAME)
             .build();
 
+    public final UserBriefDto USER_2_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_2_USERNAME)
+            .build();
+
     public final UserDetails USER_2_DETAILS = UserDetailsDto.builder()
             .id(USER_2_ID.toString())
             .username(USER_2_USERNAME)
@@ -630,7 +633,6 @@ public class BaseTest {
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static UUID USER_3_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
-    public final static UUID USER_3_KEYCLOAK_ID = UUID.fromString("b0108bc3-95aa-4a3f-8868-dc301286aeca");
     public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
@@ -672,6 +674,10 @@ public class BaseTest {
             .qualifiedName(USER_3_QUALIFIED_NAME)
             .build();
 
+    public final UserBriefDto USER_3_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_3_USERNAME)
+            .build();
+
     public final UserDetails USER_3_DETAILS = UserDetailsDto.builder()
             .id(USER_3_ID.toString())
             .username(USER_3_USERNAME)
@@ -689,7 +695,6 @@ public class BaseTest {
                     .build();
 
     public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
-    public final static UUID USER_4_KEYCLOAK_ID = UUID.fromString("25040ad3-6d57-4052-b357-6b4c8a6e7f4d");
     public final static String USER_4_USERNAME = "junit4";
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
@@ -731,6 +736,10 @@ public class BaseTest {
             .qualifiedName(USER_4_QUALIFIED_NAME)
             .build();
 
+    public final UserBriefDto USER_4_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_4_USERNAME)
+            .build();
+
     public final UserDetails USER_4_DETAILS = UserDetailsDto.builder()
             .id(USER_4_ID.toString())
             .username(USER_4_USERNAME)
@@ -742,7 +751,6 @@ public class BaseTest {
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static UUID USER_5_KEYCLOAK_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_5_USERNAME = "nobody";
     public final static String USER_5_FIRSTNAME = "No";
     public final static String USER_5_LASTNAME = "Body";
@@ -781,6 +789,10 @@ public class BaseTest {
             .qualifiedName(USER_5_QUALIFIED_NAME)
             .build();
 
+    public final UserBriefDto USER_5_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_5_USERNAME)
+            .build();
+
     public final UserDetails USER_5_DETAILS = UserDetailsDto.builder()
             .id(USER_5_ID.toString())
             .username(USER_5_USERNAME)
@@ -792,7 +804,6 @@ public class BaseTest {
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
     public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static UUID USER_6_KEYCLOAK_ID = UUID.fromString("0fddf102-8958-4223-8653-5d4dc51b3a18");
     public final static String USER_6_USERNAME = "system";
     public final static String USER_6_FIRSTNAME = "System";
     public final static String USER_6_LASTNAME = "System";
@@ -809,12 +820,19 @@ public class BaseTest {
     public final static String USER_6_THEME = "light";
     public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
 
+    public final UserAttributesDto USER_6_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .theme(USER_6_THEME)
+            .affiliation(USER_6_AFFILIATION)
+            .mariadbPassword(USER_6_DATABASE_PASSWORD)
+            .build();
+
     public final UserDto USER_6_DTO = UserDto.builder()
             .id(USER_6_ID)
             .username(USER_6_USERNAME)
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
             .password(USER_6_DATABASE_PASSWORD)
+            .attributes(USER_6_ATTRIBUTES_DTO)
             .build();
 
     public final UserDetails USER_6_DETAILS = UserDetailsDto.builder()
@@ -1275,7 +1293,7 @@ public class BaseTest {
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
             .name(DATABASE_3_NAME)
             .internalName(DATABASE_3_INTERNAL_NAME)
-            .ownerId(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
             .build();
 
@@ -1285,7 +1303,7 @@ public class BaseTest {
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
             .name(DATABASE_3_NAME)
             .internalName(DATABASE_3_INTERNAL_NAME)
-            .ownerId(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .identifiers(new LinkedList<>())
             .build();
 
@@ -1314,7 +1332,7 @@ public class BaseTest {
             .name(DATABASE_4_NAME)
             .description(DATABASE_4_DESCRIPTION)
             .internalName(DATABASE_4_INTERNAL_NAME)
-            .ownerId(USER_4_ID)
+            .ownedBy(USER_4_USERNAME)
             .identifiers(new LinkedList<>())
             .build();
 
@@ -7986,6 +8004,13 @@ public class BaseTest {
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO)))
             .build();
 
+    public final DatabaseAccess DATABASE_1_USER_LOCAL_ADMIN_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .username(USER_LOCAL_ADMIN_USERNAME)
+            .build();
+
     public final DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
@@ -8186,7 +8211,7 @@ public class BaseTest {
             .name(DATABASE_2_NAME)
             .internalName(DATABASE_2_INTERNAL_NAME)
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
-            .ownerId(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .build();
 
     public final DatabaseBriefDto DATABASE_2_BRIEF_DTO = DatabaseBriefDto.builder()
@@ -8196,7 +8221,7 @@ public class BaseTest {
             .name(DATABASE_2_NAME)
             .internalName(DATABASE_2_INTERNAL_NAME)
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
-            .ownerId(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()

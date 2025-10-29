@@ -4,7 +4,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
@@ -130,7 +129,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
@@ -138,7 +137,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             log.error("Failed to create view: name exists");
             throw new ViewExistsException("Failed to create view: name exists");
         }
-        final View view = viewService.create(database, userService.findByUsername(getUsername(principal)), data);
+        final View view = viewService.create(database, getUsername(principal), data);
         dashboardService.update(view.getDatabase());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.viewToViewBriefDto(view));
@@ -176,7 +175,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (view.getIsPublic() || view.getIsSchemaPublic() || optional.isPresent()) {
                 return ResponseEntity.ok(metadataMapper.viewToViewDto(view));
@@ -226,9 +225,9 @@ public class ViewEndpoint extends AbstractEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
-            log.error("Failed to delete view: not the database owner {}", database.getOwner().getUsername());
-            throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwner().getUsername());
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
+            log.error("Failed to delete view: not the database owner {}", database.getOwnedBy());
+            throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwnedBy());
         }
         final View view = viewService.findById(database, viewId);
         viewService.delete(view);
@@ -273,7 +272,7 @@ public class ViewEndpoint extends AbstractEndpoint {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal)) && !view.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal)) && !view.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to update view: not the database- or view owner");
             throw new NotAllowedException("Failed to update view: not the database- or view owner");
         }

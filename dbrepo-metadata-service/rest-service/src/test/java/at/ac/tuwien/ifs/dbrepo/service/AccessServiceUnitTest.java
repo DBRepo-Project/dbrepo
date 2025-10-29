@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -35,14 +35,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class AccessServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private DatabaseRepository databaseRepository;
 
-    @MockBean
+    @MockitoBean
     @Qualifier("dataServiceRestTemplate")
     private RestTemplate dataServiceRestTemplate;
 
-    @MockBean
+    @MockitoBean
     @Qualifier("searchServiceRestTemplate")
     private RestTemplate searchServiceRestTemplate;
 
@@ -60,7 +60,7 @@ public class AccessServiceUnitTest extends BaseTest {
     public void find_succeeds() throws AccessNotFoundException {
 
         /* test */
-        final DatabaseAccess response = accessService.find(DATABASE_1, USER_1);
+        final DatabaseAccess response = accessService.find(DATABASE_1, USER_1_USERNAME);
         assertEquals(AccessType.READ, response.getType());
     }
 
@@ -79,7 +79,7 @@ public class AccessServiceUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -106,7 +106,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -120,7 +120,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -134,7 +134,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -153,7 +153,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -172,7 +172,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -191,7 +191,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -210,7 +210,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.create(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -229,7 +229,7 @@ public class AccessServiceUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -256,7 +256,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -276,7 +276,7 @@ public class AccessServiceUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
     }
 
     @Test
@@ -289,7 +289,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -308,7 +308,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -327,7 +327,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -346,7 +346,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -365,7 +365,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -386,7 +386,7 @@ public class AccessServiceUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        accessService.delete(DATABASE_1, USER_1);
+        accessService.delete(DATABASE_1, USER_1_USERNAME);
     }
 
     @Test
@@ -399,7 +399,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
+            accessService.delete(DATABASE_1, USER_1_USERNAME);
         });
     }
 
@@ -421,7 +421,7 @@ public class AccessServiceUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        accessService.delete(DATABASE_1, USER_1);
+        accessService.delete(DATABASE_1, USER_1_USERNAME);
     }
 
     @Test
@@ -434,7 +434,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
+            accessService.delete(DATABASE_1, USER_1_USERNAME);
         });
     }
 
@@ -455,7 +455,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
+            accessService.delete(DATABASE_1, USER_1_USERNAME);
         });
     }
 
@@ -476,7 +476,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
+            accessService.delete(DATABASE_1, USER_1_USERNAME);
         });
     }
 
@@ -497,7 +497,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
+            accessService.delete(DATABASE_1, USER_1_USERNAME);
         });
     }
 
@@ -518,7 +518,7 @@ public class AccessServiceUnitTest extends BaseTest {
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            accessService.delete(DATABASE_1, USER_1);
+            accessService.delete(DATABASE_1, USER_1_USERNAME);
         });
     }
 

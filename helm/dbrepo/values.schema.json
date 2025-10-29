@@ -72,6 +72,9 @@
                     "properties": {
                         "debug": {
                             "type": "boolean"
+                        },
+                        "registry": {
+                            "type": "string"
                         }
                     }
                 },
@@ -197,6 +200,12 @@
                     "properties": {
                         "debug": {
                             "type": "boolean"
+                        },
+                        "registry": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
                         }
                     }
                 },
@@ -340,6 +349,14 @@
                 },
                 "host": {
                     "type": "string"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "metrics": {
                     "type": "object",
@@ -599,6 +616,14 @@
                 "host": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "initdbScriptsConfigMap": {
                     "type": "string"
                 },
@@ -812,6 +837,14 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "metrics": {
                     "type": "object",
                     "properties": {
@@ -846,6 +879,14 @@
                                     "type": "string"
                                 }
                             }
+                        }
+                    }
+                },
+                "security": {
+                    "type": "object",
+                    "properties": {
+                        "allowInsecureImages": {
+                            "type": "boolean"
                         }
                     }
                 },
@@ -1064,6 +1105,14 @@
                 },
                 "host": {
                     "type": "string"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "initdbScriptsConfigMap": {
                     "type": "string"
@@ -1305,6 +1354,14 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "server": {
                     "type": "object",
                     "properties": {
@@ -1387,6 +1444,14 @@
                 "host": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "ingest": {
                     "type": "object",
                     "properties": {
@@ -1408,6 +1473,27 @@
                 },
                 "servicenameOverride": {
                     "type": "string"
+                },
+                "sysctlImage": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "volumePermissions": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "registry": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -1551,6 +1637,14 @@
                 },
                 "fullnameOverride": {
                     "type": "string"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "mariadb": {
                     "type": "object",

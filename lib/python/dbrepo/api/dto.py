@@ -74,8 +74,8 @@ class UpdateUser(BaseModel):
 
 
 class UserBrief(BaseModel):
-    id: str
     username: str
+    id: Optional[str] = None
     name: Optional[str] = None
     orcid: Optional[str] = None
     qualified_name: Optional[str] = None
@@ -131,9 +131,9 @@ class UserAttributes(BaseModel):
 
 
 class User(BaseModel):
-    id: str
     username: str
     attributes: UserAttributes
+    id: Optional[str] = None
     qualified_name: Optional[str] = None
     given_name: Optional[str] = None
     family_name: Optional[str] = None
@@ -1142,14 +1142,14 @@ class DatabaseBrief(BaseModel):
 class Database(BaseModel):
     id: str
     name: str
-    owner: UserBrief
-    contact: UserBrief
     exchange_name: str
     internal_name: str
     is_public: bool
     is_schema_public: bool
     is_dashboard_enabled: bool
     container: ContainerBrief
+    owner: UserBrief
+    contact: UserBrief
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     subsets: Optional[List[Identifier]] = field(default_factory=list)
     tables: Optional[List[Table]] = field(default_factory=list)

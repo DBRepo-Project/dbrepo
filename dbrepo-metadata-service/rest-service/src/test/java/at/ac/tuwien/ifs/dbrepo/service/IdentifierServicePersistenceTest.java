@@ -4,7 +4,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.License;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -19,7 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -39,21 +38,18 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class IdentifierServicePersistenceTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private ViewService viewService;
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
-    @MockBean
+    @MockitoBean
     @Qualifier("restTemplate")
     private RestTemplate restTemplate;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;
@@ -71,7 +67,6 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     public void beforeEach() {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
         containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4));
         databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3, DATABASE_4));
     }
@@ -153,7 +148,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
 
 
         /* test */
-        final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        final Identifier response = identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
         assertIdentifierEquals(IDENTIFIER_1, response);
     }
 
@@ -164,9 +159,9 @@ public class IdentifierServicePersistenceTest extends BaseTest {
 
 
         /* test */
-        final Identifier response0 = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        final Identifier response0 = identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
         assertIdentifierEquals(IDENTIFIER_1, response0);
-        final Identifier response1 = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        final Identifier response1 = identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
         assertIdentifierEquals(IDENTIFIER_1, response1);
     }
 
@@ -182,7 +177,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(DATABASE_2_BRIEF_DTO);
 
         /* test */
-        identifierService.save(DATABASE_2, USER_2, IDENTIFIER_5_SAVE_DTO);
+        identifierService.save(DATABASE_2, USER_2_USERNAME, IDENTIFIER_5_SAVE_DTO);
     }
 
     @Test
@@ -192,7 +187,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             ExternalServiceException {
 
         /* test */
-        identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
     }
 
     @Test
@@ -314,7 +309,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_5, identifierService.save(DATABASE_2, USER_2, IDENTIFIER_5_SAVE_DTO));
+        assertIdentifierEquals(IDENTIFIER_5, identifierService.save(DATABASE_2, USER_2_USERNAME, IDENTIFIER_5_SAVE_DTO));
     }
 
     @Test
@@ -323,7 +318,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_1, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO));
+        assertIdentifierEquals(IDENTIFIER_1, identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO));
     }
 
     @Test
@@ -332,7 +327,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_7, identifierService.save(DATABASE_4, USER_4, IDENTIFIER_7_SAVE_DTO));
+        assertIdentifierEquals(IDENTIFIER_7, identifierService.save(DATABASE_4, USER_4_USERNAME, IDENTIFIER_7_SAVE_DTO));
     }
 
     @Test
@@ -346,7 +341,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(QUERY_1_DTO);
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_2, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_2_SAVE_DTO));
+        assertIdentifierEquals(IDENTIFIER_2, identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_2_SAVE_DTO));
     }
 
     @Test
@@ -360,7 +355,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(VIEW_1);
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_3, identifierService.save(DATABASE_1, USER_1, IDENTIFIER_3_SAVE_DTO));
+        assertIdentifierEquals(IDENTIFIER_3, identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_3_SAVE_DTO));
     }
 
     @Test
@@ -369,7 +364,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO));
+        assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_DTO));
     }
 
     @Test
@@ -379,7 +374,7 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             IdentifierNotFoundException {
 
         /* test */
-        assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO));
+        assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_WITH_DOI_DTO));
     }
 
     @Test
@@ -501,6 +496,5 @@ public class IdentifierServicePersistenceTest extends BaseTest {
         }
         assertEquals(expected.getDoi(), actual.getDoi());
         assertEquals(expected.getOwnedBy(), actual.getOwnedBy());
-        assertNotNull(actual.getOwner());
     }
 }

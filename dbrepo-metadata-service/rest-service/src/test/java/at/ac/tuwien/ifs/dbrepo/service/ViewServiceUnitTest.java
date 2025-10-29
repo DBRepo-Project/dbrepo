@@ -4,16 +4,16 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -30,13 +30,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class ViewServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -61,7 +61,7 @@ public class ViewServiceUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
-        final View response = viewService.create(DATABASE_1, USER_1, request);
+        final View response = viewService.create(DATABASE_1, USER_1_USERNAME, request);
         assertEquals(VIEW_1_NAME, response.getName());
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_1_QUERY, response.getQuery());

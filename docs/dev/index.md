@@ -43,7 +43,7 @@ make build-images
       source ./venv/bin/activate && \
       pip install pipenv && \
       pipenv install --dev
-    make build-java-lib build-python-lib build-auth-event-listener build-images
+    make build-java-lib build-python-lib build-images
     ```
 
 ## Support

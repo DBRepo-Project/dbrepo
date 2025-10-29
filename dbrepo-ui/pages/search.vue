@@ -121,7 +121,16 @@ export default {
           this.results = results
           this.loading = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
+          this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
           this.loading = false
         })
     },
