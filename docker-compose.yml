@@ -65,7 +65,6 @@ services:
     image: mariadb:10.11
     volumes:
       - data-db-data:/var/lib/mysql
-      - ./dbrepo-data-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
       - ./dbrepo-data-db/${DATA_DB_ROLE:-primary}.cnf:/etc/mysql/mariadb.conf.d/zz-replication.cnf:ro
     ports:
