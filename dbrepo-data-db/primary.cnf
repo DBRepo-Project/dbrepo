@@ -1,16 +1,3 @@
-[mysqld]
+[mariadb]
 server_id=1
-
-# binary logging + GTID for replication
-log_bin=mysqld-bin
-binlog_format=MIXED
-gtid_strict_mode=ON
-log_slave_updates=ON
-
-# durability (safe defaults)
-innodb_flush_log_at_trx_commit=1
-sync_binlog=1
-
-# handy
-explicit_defaults_for_timestamp=ON
 

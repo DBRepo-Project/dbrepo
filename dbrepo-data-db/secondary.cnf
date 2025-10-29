@@ -1,12 +1,4 @@
-[mysqld]
+[mariadb]
 server_id=2
 read_only=ON
-relay_log=relay-bin
-log_slave_updates=ON
-gtid_strict_mode=ON
-
-# required for our per-replica event
-event_scheduler=ON
-
-explicit_defaults_for_timestamp=ON
 
