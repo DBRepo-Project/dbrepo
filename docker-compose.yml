@@ -65,7 +65,9 @@ services:
     image: registry.datalab.tuwien.ac.at/bitnami/mariadb-galera:${MARIADB_VERSION}
     volumes:
       - data-db-data:/bitnami/mariadb
+      - ./dbrepo-data-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
+      - ./dbrepo-data-db/${DATA_DB_ROLE:-primary}.cnf:/opt/bitnami/mariadb/conf/zz-replication.cnf:ro
     ports:
       - "3307:3306"
     environment:
@@ -79,6 +81,7 @@ services:
       <<: *healthcheck-params
     logging:
       driver: json-file
+
 
   dbrepo-data-db-metrics:
     restart: "no"
