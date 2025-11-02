@@ -3722,7 +3722,7 @@ volumePermissions:
   ##
   image:
     registry: docker.io
-    repository: bitnami/os-shell
+    repository: bitnamilegacy/os-shell
     tag: 12-debian-12-r43
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
@@ -3806,7 +3806,7 @@ mariadb:
   ##
   image:
     registry: docker.io
-    repository: bitnami/mariadb
+    repository: bitnamilegacy/mariadb
     tag: 11.4.5-debian-12-r12
     digest: ""
     ## Specify a imagePullPolicy
@@ -3905,7 +3905,7 @@ postgresql:
   ##
   image:
     registry: docker.io
-    repository: bitnami/postgresql
+    repository: bitnamilegacy/postgresql
     tag: 17.4.0-debian-12-r19
     digest: ""
     ## Specify a imagePullPolicy

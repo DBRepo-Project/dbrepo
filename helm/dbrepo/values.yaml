@@ -10,6 +10,9 @@ global:
     openshift:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       adaptSecurityContext: auto
+  security:
+    ## @param global.security.allowInsecureImages Allows skipping image verification, needed for bitnamilegacy
+    allowInsecureImages: true
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
 
@@ -31,6 +34,9 @@ metadatadb:
   enabled: true
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
+  image:
+    ## @skip metadatadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
   ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -52,6 +58,9 @@ metadatadb:
   ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    image:
+      ## @skip metadatadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
@@ -78,9 +87,19 @@ dashboarddb:
   enabled: true
   ## @skip dashboarddb.fullnameOverride
   fullnameOverride: dashboard-db
+  image:
+    ## @skip dashboarddb.image.repository
+    repository: bitnamilegacy/postgresql
+  volumePermissions:
+    image:
+      ## @skip dashboarddb.volumePermissions.image.repository
+      repository: bitnamilegacy/os-shell
   ## @param dashboarddb.host The hostname for the microservices.
   host: dashboard-db:5432
   metrics:
+    image:
+      ## @skip dashboarddb.metrics.image.repository
+      repository: bitnamilegacy/postgres-exporter
     ## @skip dashboarddb.metrics.enabled
     enabled: true
   auth:
@@ -99,6 +118,8 @@ authservice:
   ## @skip authservice.fullnameOverride
   fullnameOverride: auth-service
   image:
+    ## @skip authservice.image.repository
+    repository: bitnamilegacy/keycloak
     ## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
   ## @param authservice.endpoint The hostname for the microservices.
@@ -108,6 +129,17 @@ authservice:
   ## @skip authservice.postgresql
   postgresql:
     enabled: true
+    image:
+      ## @skip authservice.postgresql.image.repository
+      repository: bitnamilegacy/postgresql
+    volumePermissions:
+      image:
+        ## @skip authservice.postgresql.volumePermissions.image.repository
+        repository: bitnamilegacy/os-shell
+    metrics:
+      image:
+        ## @skip authservice.postgresql.metrics.image.repository
+        repository: bitnamilegacy/postgres-exporter
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
@@ -126,6 +158,9 @@ authservice:
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   ## @skip authservice.initdbScripts
   keycloakConfigCli:
+    image:
+      ## @skip authservice.keycloakConfigCli.image.repository
+      repository: bitnamilegacy/keycloak-config-cli
     ## @skip authservice.keycloakConfigCli.existingConfigmap
     existingConfigmap: auth-service-config
   ## @skip authservice.extraEnvVarsSecret
@@ -154,6 +189,9 @@ datadb:
   enabled: true
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
+  image:
+    ## @skip datadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
   ## @param datadb.host The hostname for the microservices.
   host: data-db
   ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -179,6 +217,9 @@ datadb:
   ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    image:
+      ## @skip datadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip datadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
@@ -198,6 +239,9 @@ datadb:
 searchdb:
   ## @param searchdb.enabled Enable the Data datadb.
   enabled: true
+  image:
+    ## @skip searchdb.image.repository
+    repository: bitnamilegacy/opensearch
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
   ## @skip searchdb.servicenameOverride
@@ -212,6 +256,17 @@ searchdb:
   security:
     ## @skip searchdb.security.enabled
     enabled: false
+  dashboards:
+    image:
+      ## @skip searchdb.dashboards.image.repository
+      repository: bitnamilegacy/opensearch-dashboards
+  sysctlImage:
+    ## @skip searchdb.sysctlImage.repository
+    repository: bitnamilegacy/os-shell
+  snapshots:
+    image:
+      ## @skip searchdb.snapshots.image.repository
+      repository: bitnamilegacy/os-shell
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
 
@@ -223,6 +278,8 @@ brokerservice:
   ## @skip brokerservice.fullnameOverride
   fullnameOverride: broker-service
   image:
+    ## @skip brokerservice.image.repository
+    repository: bitnamilegacy/rabbitmq
     ## @param brokerservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: true
   metrics:
@@ -974,6 +1031,9 @@ dashboardui:
   enabled: true
   ## @skip dashboardui.fullnameOverride
   fullnameOverride: dashboard-ui
+  image:
+    ## @skip dashboardui.image.repository
+    repository: bitnamilegacy/grafana
   metrics:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
@@ -1019,6 +1079,9 @@ metricdb:
     ## @skip metricdb.alertmanager.enabled
     enabled: false
   server:
+    image:
+      ## @skip metricdb.server.image.repository
+      repository: bitnamilegacy/prometheus
     rbac:
       ## @skip metricdb.server.rbac.create
       create: false
@@ -1066,6 +1129,9 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
+  image:
+    ## @skip gatewayservice.image.repository
+    repository: bitnamilegacy/nginx
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP
@@ -1074,7 +1140,7 @@ gatewayservice:
     enabled: false
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
-  ## @param gatewayservice.replicaCount The number of replicas.
+  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
   replicaCount: 3
 
 ## @section Analytics Service

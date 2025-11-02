@@ -57,6 +57,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value  |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto` |
+| `global.security.allowInsecureImages`                 | Allows skipping image verification, needed for bitnamilegacy                                                                                                                                                                                                                                                                                                        | `true` |
 | `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`   |
 
 ### Common parameters
@@ -443,7 +444,7 @@ mqtt.prefetch = 10
 | `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`             |
 | `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                 |
 | `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-setup` |
-| `gatewayservice.replicaCount`                 | The number of replicas.                       | `3`                     |
+| `gatewayservice.replicaCount`                 | The number of replicas.gatewayservice         | `3`                     |
 
 ### Analytics Service
 

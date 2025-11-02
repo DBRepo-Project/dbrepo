@@ -39,32 +39,32 @@ dependencies:
   - name: opensearch
     alias: searchdb
     version: 1.4.0
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: searchdb.enabled
   - name: keycloak
     alias: authservice
     version: 24.6.6
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: authservice.enabled
   - name: nginx
     alias: gatewayservice
     version: 20.0.2
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: gatewayservice.enabled
   - name: mariadb-galera
     alias: datadb
     version: 13.2.7
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: datadb.enabled
   - name: mariadb-galera
     alias: metadatadb
     version: 13.2.7
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: metadatadb.enabled
   - name: rabbitmq
     alias: brokerservice
     version: 14.7.0
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: brokerservice.enabled
   - name: seaweedfs
     alias: storageservice
@@ -74,15 +74,15 @@ dependencies:
   - name: grafana
     alias: dashboardui
     version: 11.4.2
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: dashboardui.enabled
   - name: prometheus
     alias: metricdb
     version: 1.3.22
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: metricdb.enabled
   - name: postgresql
     alias: dashboarddb
     version: 16.1.0
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: dashboarddb.enabled

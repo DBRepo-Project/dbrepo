@@ -72,6 +72,9 @@
                     "properties": {
                         "debug": {
                             "type": "boolean"
+                        },
+                        "repository": {
+                            "type": "string"
                         }
                     }
                 },
@@ -88,6 +91,14 @@
                     "properties": {
                         "existingConfigmap": {
                             "type": "string"
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 },
@@ -115,6 +126,40 @@
                         },
                         "fullnameOverride": {
                             "type": "string"
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "metrics": {
+                            "type": "object",
+                            "properties": {
+                                "image": {
+                                    "type": "object",
+                                    "properties": {
+                                        "repository": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "volumePermissions": {
+                            "type": "object",
+                            "properties": {
+                                "image": {
+                                    "type": "object",
+                                    "properties": {
+                                        "repository": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -197,6 +242,9 @@
                     "properties": {
                         "debug": {
                             "type": "boolean"
+                        },
+                        "repository": {
+                            "type": "string"
                         }
                     }
                 },
@@ -341,11 +389,40 @@
                 "host": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "metrics": {
                     "type": "object",
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "volumePermissions": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
@@ -519,6 +596,14 @@
                         }
                     }
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "ldap": {
                     "type": "object",
                     "properties": {
@@ -599,6 +684,14 @@
                 "host": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "initdbScriptsConfigMap": {
                     "type": "string"
                 },
@@ -610,6 +703,14 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 },
@@ -812,6 +913,14 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "metrics": {
                     "type": "object",
                     "properties": {
@@ -846,6 +955,14 @@
                                     "type": "string"
                                 }
                             }
+                        }
+                    }
+                },
+                "security": {
+                    "type": "object",
+                    "properties": {
+                        "allowInsecureImages": {
+                            "type": "boolean"
                         }
                     }
                 },
@@ -1065,6 +1182,14 @@
                 "host": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "initdbScriptsConfigMap": {
                     "type": "string"
                 },
@@ -1076,6 +1201,14 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 },
@@ -1336,6 +1469,14 @@
                                 }
                             }
                         },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "persistence": {
                             "type": "object",
                             "properties": {
@@ -1378,6 +1519,19 @@
                 "clusterName": {
                     "type": "string"
                 },
+                "dashboards": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -1386,6 +1540,14 @@
                 },
                 "host": {
                     "type": "string"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "ingest": {
                     "type": "object",
@@ -1408,6 +1570,27 @@
                 },
                 "servicenameOverride": {
                     "type": "string"
+                },
+                "snapshots": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "sysctlImage": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
