@@ -910,6 +910,34 @@
                 "existingServerBlockConfigmap": {
                     "type": "string"
                 },
+                "extraVolumeMounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mountPath": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "extraVolumes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "emptyDir": {
+                                "type": "object"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "fullnameOverride": {
                     "type": "string"
                 },

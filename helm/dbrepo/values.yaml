@@ -1140,6 +1140,14 @@ gatewayservice:
     enabled: false
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
+  ## @skip gatewayservice.extraVolumes
+  extraVolumes:
+    - name: logging
+      emptyDir: { }
+  ## @skip gatewayservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: logging
+      mountPath: /var/log/nginx
   ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
   replicaCount: 3
 
