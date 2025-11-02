@@ -11,7 +11,7 @@ global:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       adaptSecurityContext: auto
   security:
-    ## @param global.security.allowInsecureImages Temporary fix until stable alternatives are found to allow mirrored Bitnami images from our own registry.
+    ## @param global.security.allowInsecureImages Allows skipping image verification, needed for bitnamilegacy
     allowInsecureImages: true
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
@@ -35,8 +35,8 @@ metadatadb:
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
   image:
-    ## @param metadatadb.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
+    ## @skip metadatadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
   ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -58,6 +58,9 @@ metadatadb:
   ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    image:
+      ## @skip metadatadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
@@ -85,11 +88,18 @@ dashboarddb:
   ## @skip dashboarddb.fullnameOverride
   fullnameOverride: dashboard-db
   image:
-    ## @param dashboarddb.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
+    ## @skip dashboarddb.image.repository
+    repository: bitnamilegacy/postgresql
+  volumePermissions:
+    image:
+      ## @skip dashboarddb.volumePermissions.image.repository
+      repository: bitnamilegacy/os-shell
   ## @param dashboarddb.host The hostname for the microservices.
   host: dashboard-db:5432
   metrics:
+    image:
+      ## @skip dashboarddb.metrics.image.repository
+      repository: bitnamilegacy/postgres-exporter
     ## @skip dashboarddb.metrics.enabled
     enabled: true
   auth:
@@ -108,10 +118,10 @@ authservice:
   ## @skip authservice.fullnameOverride
   fullnameOverride: auth-service
   image:
+    ## @skip authservice.image.repository
+    repository: bitnamilegacy/keycloak
     ## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
-    ## @param authservice.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
   ## @skip authservice.proxyHeaders
@@ -119,6 +129,17 @@ authservice:
   ## @skip authservice.postgresql
   postgresql:
     enabled: true
+    image:
+      ## @skip authservice.postgresql.image.repository
+      repository: bitnamilegacy/postgresql
+    volumePermissions:
+      image:
+        ## @skip authservice.postgresql.volumePermissions.image.repository
+        repository: bitnamilegacy/os-shell
+    metrics:
+      image:
+        ## @skip authservice.postgresql.metrics.image.repository
+        repository: bitnamilegacy/postgres-exporter
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
@@ -137,6 +158,9 @@ authservice:
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   ## @skip authservice.initdbScripts
   keycloakConfigCli:
+    image:
+      ## @skip authservice.keycloakConfigCli.image.repository
+      repository: bitnamilegacy/keycloak-config-cli
     ## @skip authservice.keycloakConfigCli.existingConfigmap
     existingConfigmap: auth-service-config
   ## @skip authservice.extraEnvVarsSecret
@@ -166,8 +190,8 @@ datadb:
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
   image:
-    ## @param datadb.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
+    ## @skip datadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
   ## @param datadb.host The hostname for the microservices.
   host: data-db
   ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -193,6 +217,9 @@ datadb:
   ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    image:
+      ## @skip datadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip datadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
@@ -212,18 +239,11 @@ datadb:
 searchdb:
   ## @param searchdb.enabled Enable the Data datadb.
   enabled: true
+  image:
+    ## @skip searchdb.image.repository
+    repository: bitnamilegacy/opensearch
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
-  image:
-    ## @param searchdb.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
-  volumePermissions:
-    image:
-      ## @param searchdb.volumePermissions.image.registry Hotfix until a stable image is found from another registry.
-      registry: registry.datalab.tuwien.ac.at
-  sysctlImage:
-    ## @param searchdb.sysctlImage.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
   ## @skip searchdb.servicenameOverride
   servicenameOverride: search-db
   ## @param searchdb.host The hostname for the microservices.
@@ -236,6 +256,17 @@ searchdb:
   security:
     ## @skip searchdb.security.enabled
     enabled: false
+  dashboards:
+    image:
+      ## @skip searchdb.dashboards.image.repository
+      repository: bitnamilegacy/opensearch-dashboards
+  sysctlImage:
+    ## @skip searchdb.sysctlImage.repository
+    repository: bitnamilegacy/os-shell
+  snapshots:
+    image:
+      ## @skip searchdb.snapshots.image.repository
+      repository: bitnamilegacy/os-shell
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
 
@@ -247,11 +278,10 @@ brokerservice:
   ## @skip brokerservice.fullnameOverride
   fullnameOverride: broker-service
   image:
+    ## @skip brokerservice.image.repository
+    repository: bitnamilegacy/rabbitmq
     ## @param brokerservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: true
-    ## @param brokerservice.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
-    tag: 3.13.1-debian-12-r0
   metrics:
     ## @skip brokerservice.metrics.enabled
     enabled: true
@@ -616,9 +646,6 @@ storageservice:
   enabled: true
   ## @skip storageservice.fullnameOverride
   fullnameOverride: storage-service
-  image:
-    ## @param storageservice.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
   mariadb:
     ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
     enabled: true
@@ -706,7 +733,7 @@ identityservice:
   enabled: true
   image:
     ## @skip identityservice.image.name
-    name: registry.datalab.tuwien.ac.at/bitnami/openldap:2.6.8-debian-12-r1
+    name: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
   global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
     ldapDomain: dc=dbrepo,dc=at
@@ -1004,6 +1031,9 @@ dashboardui:
   enabled: true
   ## @skip dashboardui.fullnameOverride
   fullnameOverride: dashboard-ui
+  image:
+    ## @skip dashboardui.image.repository
+    repository: bitnamilegacy/grafana
   metrics:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
@@ -1043,15 +1073,15 @@ metricdb:
   enabled: true
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
-  image:
-    ## @param metricdb.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
   ## @param metricdb.endpoint The endpoint for microservices.
   endpoint: http://metric-db-server
   alertmanager:
     ## @skip metricdb.alertmanager.enabled
     enabled: false
   server:
+    image:
+      ## @skip metricdb.server.image.repository
+      repository: bitnamilegacy/prometheus
     rbac:
       ## @skip metricdb.server.rbac.create
       create: false
@@ -1100,8 +1130,8 @@ gatewayservice:
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
   image:
-    ## @param gatewayservice.image.registry Hotfix until a stable image is found from another registry.
-    registry: registry.datalab.tuwien.ac.at
+    ## @skip gatewayservice.image.repository
+    repository: bitnamilegacy/nginx
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP
@@ -1110,7 +1140,15 @@ gatewayservice:
     enabled: false
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
-  ## @param gatewayservice.replicaCount The number of replicas.
+  ## @skip gatewayservice.extraVolumes
+  extraVolumes:
+    - name: logging
+      emptyDir: { }
+  ## @skip gatewayservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: logging
+      mountPath: /var/log/nginx
+  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
   replicaCount: 3
 
 ## @section Analytics Service

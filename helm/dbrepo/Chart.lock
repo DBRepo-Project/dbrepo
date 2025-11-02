@@ -1,33 +1,33 @@
 dependencies:
 - name: opensearch
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 1.4.0
 - name: keycloak
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 24.6.6
 - name: nginx
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 20.0.2
 - name: mariadb-galera
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 13.2.7
 - name: mariadb-galera
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 13.2.7
 - name: rabbitmq
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 14.7.0
 - name: seaweedfs
   repository: file://../seaweedfs
   version: 4.8.7
 - name: grafana
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 11.4.2
 - name: prometheus
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 1.3.22
 - name: postgresql
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 16.1.0
-digest: sha256:1b7d0684d35d9193d5b234c2e62805580d2a2e09fe17d5a8a9a563f4a669d134
-generated: "2025-07-25T15:57:41.31506372+02:00"
+digest: sha256:c09ef3e3cc229070fc3658089a67713e2ada69abaea3ed81c57ab2ea7b819b35
+generated: "2025-11-02T19:43:40.658382805+01:00"

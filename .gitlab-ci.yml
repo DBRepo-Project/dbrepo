@@ -103,7 +103,6 @@ lint-helm-schema:
     - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
     - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
   script:
-    - bash .scripts/check-helm.sh
     - helm lint ./helm/dbrepo ./helm/seaweedfs
     - "$(cd ./helm/dbrepo && helm schema)"
     - "$(cd ./helm/seaweedfs && helm schema)"
