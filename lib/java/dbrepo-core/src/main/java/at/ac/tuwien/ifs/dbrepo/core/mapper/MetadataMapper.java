@@ -148,13 +148,54 @@ public interface MetadataMapper {
                 .firstname(data.getFirstName())
                 .lastname(data.getLastName())
                 .attributes(UserAttributesDto.builder()
-                        .theme(data.getAttributes().get("theme").getFirst())
-                        .affiliation(data.getAttributes().get("affiliation").getFirst())
-                        .orcid(data.getAttributes().get("orcid").getFirst())
-                        .language(data.getAttributes().get("language").getFirst())
-                        .mariadbPassword(data.getAttributes().get("mariadb_password").getFirst())
+                        .theme(attributeToValue("theme", data.getAttributes()))
+                        .affiliation(attributeToValue("affiliation", data.getAttributes()))
+                        .orcid(attributeToValue("orcid", data.getAttributes()))
+                        .language(attributeToValue("language", data.getAttributes()))
+                        .mariadbPassword(attributeToValue("mariadb_password", data.getAttributes()))
                         .build())
                 .build();
+    }
+
+    default UserRepresentation userDtoToUserRepresentation(UserDto data) {
+        final UserRepresentation user = new UserRepresentation();
+        user.setId(String.valueOf(data.getId()));
+        user.setUsername(data.getUsername());
+        user.setFirstName(data.getFirstname());
+        user.setLastName(data.getLastname());
+        user.setRealmRoles(new LinkedList<>());
+        user.setAttributes(new HashMap<>() {{
+            if (data.getAttributes().getTheme() != null) {
+                put("theme", new LinkedList<>(List.of(data.getAttributes().getTheme())));
+            }
+            if (data.getAttributes().getAffiliation() != null) {
+                put("affiliation", new LinkedList<>(List.of(data.getAttributes().getAffiliation())));
+            }
+            if (data.getAttributes().getOrcid() != null) {
+                put("orcid", new LinkedList<>(List.of(data.getAttributes().getOrcid())));
+            }
+            if (data.getAttributes().getLanguage() != null) {
+                put("language", new LinkedList<>(List.of(data.getAttributes().getLanguage())));
+            }
+            if (data.getAttributes().getMariadbPassword() != null) {
+                put("mariadb_password", new LinkedList<>(List.of(data.getAttributes().getMariadbPassword())));
+            }
+        }});
+        return user;
+    }
+
+    default String attributeToValue(String key, Map<String, List<String>> attributes) {
+        if (attributes == null || !attributes.containsKey(key)) {
+            return null;
+        }
+        final List<String> values = attributes.get(key);
+        if (values == null || values.isEmpty()) {
+            return null;
+        }
+        if (values.size() == 1) {
+            return values.getFirst();
+        }
+        throw new IllegalArgumentException("Multiple values found for key: " + key);
     }
 
     default String databaseSuffix() {
@@ -201,7 +242,9 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/v1/database/\" + database.getId() + \"/image\" : null)"),
-            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().map(a -> databaseAccessToDatabaseAccessDto(a)).toList())")
+            @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().map(a -> databaseAccessToDatabaseAccessDto(a)).toList())"),
+            @Mapping(target = "contact", expression = "java(UserBriefDto.builder().username(database.getContactPerson()).build())"),
+            @Mapping(target = "owner", expression = "java(UserBriefDto.builder().username(database.getOwnedBy()).build())")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 
@@ -373,6 +416,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "databaseId", source = "database.id"),
             @Mapping(target = "links", expression = "java(identifierToLinksDto(data))"),
+            @Mapping(target = "owner", expression = "java(UserBriefDto.builder().username(data.getOwnedBy()).build())"),
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
@@ -786,6 +830,9 @@ public interface MetadataMapper {
                 .columns(new LinkedList<>())
                 .constraints(constraintsToConstraintsDto(data.getConstraints()))
                 .created(data.getCreated())
+                .owner(UserBriefDto.builder()
+                        .username(data.getOwnedBy())
+                        .build())
                 .build();
         if (data.getIdentifiers() != null) {
             table.setIdentifiers(new LinkedList<>(data.getIdentifiers()
@@ -983,7 +1030,8 @@ public interface MetadataMapper {
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id")
+            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "owner", expression = "java(UserBriefDto.builder().username(data.getOwnedBy()).build())")
     })
     ViewDto viewToViewDto(View data);
 
@@ -1019,6 +1067,9 @@ public interface MetadataMapper {
 
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
+    @Mappings({
+            @Mapping(target = "ownedBy", source = "owner.username")
+    })
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
@@ -1027,6 +1078,9 @@ public interface MetadataMapper {
 
     AccessTypeDto accessTypeToAccessTypeDto(AccessType data);
 
+    @Mappings({
+            @Mapping(target = "user", expression = "java(UserBriefDto.builder().username(data.getUsername()).build())")
+    })
     DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
 
 }

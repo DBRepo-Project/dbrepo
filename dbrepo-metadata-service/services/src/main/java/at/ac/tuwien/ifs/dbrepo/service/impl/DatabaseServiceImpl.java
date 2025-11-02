@@ -1,13 +1,14 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
@@ -21,7 +22,6 @@ import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,7 +112,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .identifiers(new LinkedList<>())
                 .build();
         /* create in data database */
-        final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
+        final DatabaseDto dto = dataServiceGateway.createDatabase(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
                 .userId(owner.getId())
                 .username(owner.getUsername())
@@ -122,11 +122,17 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .readonlyUsername(container.getReadonlyUsername())
                 .readonlyPassword(container.getReadonlyPassword())
                 .internalName(entity.getInternalName())
-                .build();
-        final DatabaseDto dto = dataServiceGateway.createDatabase(payload);
+                .build());
         entity.setExchangeName(dto.getExchangeName());
         /* create in metadata database */
         final Database entity1 = databaseRepository.save(entity);
+        entity1.getAccesses()
+                .add(DatabaseAccess.builder()
+                        .database(entity1)
+                        .hdbid(entity1.getId())
+                        .username(owner.getUsername())
+                        .type(AccessType.WRITE_ALL)
+                        .build());
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);

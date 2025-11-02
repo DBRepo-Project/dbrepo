@@ -418,10 +418,11 @@ export default {
           this.databases = count
           this.loadingDatabases = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingDatabases = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))

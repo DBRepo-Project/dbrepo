@@ -285,9 +285,10 @@ export default {
         .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.recommendation = null
@@ -306,9 +307,10 @@ export default {
         .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingSemantics = false

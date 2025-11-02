@@ -30,8 +30,8 @@ nav:
     - maintainer-guide/index.md
     - maintainer-guide/configuration.md
     - Deployments:
-      - Install on Docker: maintainer-guide/docker.md
       - Install on Kubernetes: maintainer-guide/kubernetes.md
+      - Install on Docker: maintainer-guide/docker.md
       - Install on VM: maintainer-guide/vm.md
       - Build from Sourcecode: maintainer-guide/build.md
     - Management:

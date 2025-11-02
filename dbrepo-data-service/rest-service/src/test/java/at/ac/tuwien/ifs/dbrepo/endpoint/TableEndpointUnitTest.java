@@ -444,7 +444,7 @@ public class TableEndpointUnitTest extends BaseTest {
         when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DatabaseAccessDto.builder()
                         .user(USER_2_BRIEF_DTO)
-                        .huserid(USER_2_ID)
+                        .username(USER_2_USERNAME)
                         .hdbid(DATABASE_1_ID)
                         .type(type)
                         .build());
@@ -1363,7 +1363,7 @@ public class TableEndpointUnitTest extends BaseTest {
         when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(DatabaseAccessDto.builder()
                         .user(USER_2_BRIEF_DTO)
-                        .huserid(USER_2_ID)
+                        .username(USER_2_USERNAME)
                         .hdbid(DATABASE_1_ID)
                         .type(type)
                         .build());

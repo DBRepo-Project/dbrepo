@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
 import at.ac.tuwien.ifs.dbrepo.core.exception.FilterBadRequestException;

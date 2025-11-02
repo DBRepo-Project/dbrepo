@@ -15,7 +15,10 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.ConceptService;
+import at.ac.tuwien.ifs.dbrepo.service.EntityService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.UnitService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +34,6 @@ import java.util.UUID;
 @Service
 public class TableServiceImpl implements TableService {
 
-    private final UserService userService;
     private final UnitService unitService;
     private final RabbitConfig rabbitConfig;
     private final EntityService entityService;
@@ -42,11 +44,10 @@ public class TableServiceImpl implements TableService {
     private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public TableServiceImpl(UserService userService, UnitService unitService, RabbitConfig rabbitConfig,
+    public TableServiceImpl(UnitService unitService, RabbitConfig rabbitConfig,
                             EntityService entityService, ConceptService conceptService, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
                             SearchServiceGateway searchServiceGateway) {
-        this.userService = userService;
         this.unitService = unitService;
         this.rabbitConfig = rabbitConfig;
         this.entityService = entityService;

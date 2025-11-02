@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnamilegacy/keycloak:26.0.4`](https://hub.docker.com/r/bitnami/keycloak)
+    Image: [`quay.io/keycloak/keycloak:26.4.0`](https://hub.docker.com/r/bitnami/keycloak)
 
     * Ports: 8080/tcp
     * UI: `http://<hostname>:8080/`

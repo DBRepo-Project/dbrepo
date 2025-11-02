@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.gateway.impl.KeycloakGatewayImpl;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -75,7 +76,7 @@ public class KeycloakGatewayIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void findByUsername_succeeds() throws UserNotFoundException {
+    public void findByUsername_succeeds() throws UserNotFoundException, NotAllowedException {
 
         /* mock */
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
@@ -105,10 +106,10 @@ public class KeycloakGatewayIntegrationTest extends BaseTest {
         assertNotNull(user.getId());
         assertEquals(USER_1_FIRSTNAME, user.getFirstName());
         assertEquals(USER_1_LASTNAME, user.getLastName());
-        assertEquals(USER_1_THEME, user.firstAttribute("THEME"));
-        assertEquals(USER_1_ORCID_URL, user.firstAttribute("ORCID"));
-        assertEquals(USER_1_LANGUAGE, user.firstAttribute("LANGUAGE"));
-        assertEquals(USER_1_AFFILIATION, user.firstAttribute("AFFILIATION"));
+        assertEquals(USER_1_THEME, user.firstAttribute("theme"));
+        assertEquals(USER_1_ORCID_URL, user.firstAttribute("orcid"));
+        assertEquals(USER_1_LANGUAGE, user.firstAttribute("language"));
+        assertEquals(USER_1_AFFILIATION, user.firstAttribute("affiliation"));
     }
 
 }

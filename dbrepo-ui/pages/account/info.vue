@@ -69,8 +69,7 @@
                     persistent-hint
                     :variant="inputVariant"
                     :label="$t('pages.user.subpages.info.orcid.label')"
-                    :hint="$t('pages.user.subpages.info.orcid.hint')"
-                    @focusout="retrieve" />
+                    :hint="$t('pages.user.subpages.info.orcid.hint')" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -267,9 +266,10 @@ export default {
         .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingUpdate = false
@@ -289,28 +289,6 @@ export default {
         theme: this.cacheUser.theme ? this.cacheUser.theme : 'light',
         language: this.cacheUser.language ? this.cacheUser.language : 'en'
       }
-    },
-    retrieve () {
-      if (!this.model.orcid) {
-        return
-      }
-      this.orcidLoading = true
-      const identifierService = useIdentifierService()
-      identifierService.suggest(this.model.orcid)
-        .then((metadata) => {
-          this.model.firstname = metadata?.given_names
-          this.model.lastname = metadata?.family_name
-            if (metadata.affiliations.length > 0) {
-              this.model.affiliation = metadata.affiliations[0].organization_name
-          }
-          this.orcidLoading = false
-        })
-        .catch(() => {
-          this.orcidLoading = false
-        })
-        .finally(() => {
-          this.orcidLoading = false
-        })
     }
   }
 }
