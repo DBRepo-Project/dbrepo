@@ -51,8 +51,8 @@ public class QueueServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
     }
 
     @Test
@@ -68,12 +68,12 @@ public class QueueServiceIntegrationTest extends BaseTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_CACHE);
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+                .thenReturn(TABLE_1_CACHE);
 
         /* test */
-        queueService.insert(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
+        queueService.insert(DATABASE_1_CACHE, TABLE_1_CACHE, request);
     }
 
     @Test
@@ -86,12 +86,12 @@ public class QueueServiceIntegrationTest extends BaseTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_CACHE);
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+                .thenReturn(TABLE_1_CACHE);
 
         /* test */
-        queueService.insert(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
+        queueService.insert(DATABASE_1_CACHE, TABLE_1_CACHE, request);
     }
 
 }

@@ -25,7 +25,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/unit")
-public class UnitEndpoint extends AbstractEndpoint {
+public class UnitEndpoint extends RestEndpoint {
 
     private final UnitService unitService;
     private final MetadataMapper metadataMapper;

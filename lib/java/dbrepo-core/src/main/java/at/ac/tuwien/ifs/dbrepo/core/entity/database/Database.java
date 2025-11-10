@@ -2,7 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.database;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,10 +31,10 @@ import java.util.UUID;
 @NamedQueries({
         @NamedQuery(name = "Database.findAllDesc", query = "select distinct d from Database d order by d.created desc"),
         @NamedQuery(name = "Database.findAllByInternalNameDesc", query = "select distinct d from Database d where d.internalName = ?1 order by d.created desc"),
-        @NamedQuery(name = "Database.findAllAtLestReadAccessDesc", query = "select distinct d from Database d where exists(select a.hdbid from DatabaseAccess a join User u on u.id = a.huserid where u.username = ?1 and a.hdbid = d.id) order by d.created desc"),
+        @NamedQuery(name = "Database.findAllAtLestReadAccessDesc", query = "select distinct d from Database d where exists(select 1 from DatabaseAccess a where a.username = ?1 and a.hdbid = d.id) order by d.created desc"),
         @NamedQuery(name = "Database.findAllPublicOrSchemaPublicDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true order by d.created desc"),
-        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true or exists(select a.hdbid from DatabaseAccess a join User u on u.id = a.huserid and u.username = ?1 and a.hdbid = d.id) order by d.created desc"),
-        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc", query = "select distinct d from Database d where (d.isPublic = true or d.isSchemaPublic = true) and d.internalName = ?2 or exists(select a.hdbid from DatabaseAccess a join User u on u.id = a.huserid and u.username = ?1 and a.hdbid = d.id) order by d.created desc"),
+        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessDesc", query = "select distinct d from Database d where d.isPublic = true or d.isSchemaPublic = true or exists(select 1 from DatabaseAccess a where a.username = ?1 and a.hdbid = d.id) order by d.created desc"),
+        @NamedQuery(name = "Database.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc", query = "select distinct d from Database d where (d.isPublic = true or d.isSchemaPublic = true) and d.internalName = ?2 or exists(select 1 from DatabaseAccess a where a.username = ?1 and a.hdbid = d.id) order by d.created desc"),
         @NamedQuery(name = "Database.findAllPublicOrSchemaPublicByInternalNameDesc", query = "select distinct d from Database d where (d.isPublic = true or d.isSchemaPublic = true) and d.internalName = ?1 order by d.created desc"),
 })
 public class Database implements Serializable {
@@ -48,17 +47,10 @@ public class Database implements Serializable {
     @Column(name = "grafana_dashboard_uid")
     private String dashboardUid;
 
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
-    private UUID ownedBy;
+    @Column(name = "owned_by", columnDefinition = "VARCHAR(255)", nullable = false)
+    private String ownedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User owner;
-
-    @Column(nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)", nullable = false)
     private UUID cid;
 
     @ToString.Exclude
@@ -80,15 +72,8 @@ public class Database implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "contact_person", columnDefinition = "VARCHAR(36)")
-    private UUID contactPerson;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
-    })
-    private User contact;
+    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
+    private String contactPerson;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='DATABASE'")

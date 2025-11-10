@@ -21,7 +21,15 @@
   ],
   "global_parameters": [],
   "parameters": [],
-  "permissions": [],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "dbrepo",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    }
+  ],
   "policies": [],
   "queues": [
     {
@@ -38,7 +46,15 @@
   "rabbit_version": "3.10.25",
   "rabbitmq_version": "3.10.25",
   "topic_permissions": [],
-  "users": [],
+  "users": [
+    {
+      "name": "admin",
+      "password_hash": "dI+aj+LWJNHsKvowmxgHKBJhkXgZ67SX1XRPOBGjl5fnwbZB",
+      "tags": [
+        "administrator"
+      ]
+    }
+  ],
   "vhosts": [
     {
       "limits": [],

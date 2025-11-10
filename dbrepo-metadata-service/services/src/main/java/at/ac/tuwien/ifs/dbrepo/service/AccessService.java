@@ -3,7 +3,6 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
 import java.security.Principal;
@@ -23,18 +22,18 @@ public interface AccessService {
      * Finds database access by given database and user, where the access is determined by the username (needed since {@link Principal#getName()} embeds the username).
      *
      * @param database The database.
-     * @param user     The user.
+     * @param username The username.
      * @return The database access, if successful.
      * @throws AccessNotFoundException The access was not found in the metadata database.
      */
-    DatabaseAccess find(Database database, User user) throws AccessNotFoundException;
+    DatabaseAccess find(Database database, String username) throws AccessNotFoundException;
 
     /**
      * Give somebody access to a database of container.
      *
      * @param database The database.
      * @param access   The access.
-     * @param user     The user.
+     * @param username The username.
      * @return The database access, if successful.
      * @throws DataServiceException             The data service responded with an unexpected error code.
      * @throws DataServiceConnectionException   The connection with the data service could not be established.
@@ -42,7 +41,7 @@ public interface AccessService {
      * @throws SearchServiceException           The search service responded with an unexpected error code.
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
-    DatabaseAccess create(Database database, User user, AccessTypeDto access) throws DataServiceException,
+    DatabaseAccess create(Database database, String username, AccessTypeDto access) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;
 
@@ -50,7 +49,7 @@ public interface AccessService {
      * Update access to a database.
      *
      * @param database The database.
-     * @param user     The user.
+     * @param username The username.
      * @param access   The updated access.
      * @throws DataServiceException             The data service responded with unexpected behavior.
      * @throws DataServiceConnectionException   The connection with the data service could not be established.
@@ -59,7 +58,7 @@ public interface AccessService {
      * @throws SearchServiceException           The search service responded with an unexpected error code.
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
-    void update(Database database, User user, AccessTypeDto access) throws DataServiceException,
+    void update(Database database, String username, AccessTypeDto access) throws DataServiceException,
             DataServiceConnectionException, AccessNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;
 
@@ -67,7 +66,7 @@ public interface AccessService {
      * Revokes access to a database of container.
      *
      * @param database The database.
-     * @param user     The user.
+     * @param username The username.
      * @throws AccessNotFoundException          The access was not found.
      * @throws DataServiceException             The data service responded with unexpected behavior.
      * @throws DataServiceConnectionException   The connection with the data service could not be established.
@@ -75,7 +74,7 @@ public interface AccessService {
      * @throws SearchServiceException           The search service responded with an unexpected error code.
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
-    void delete(Database database, User user) throws AccessNotFoundException, DataServiceException,
+    void delete(Database database, String username) throws AccessNotFoundException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;
 }

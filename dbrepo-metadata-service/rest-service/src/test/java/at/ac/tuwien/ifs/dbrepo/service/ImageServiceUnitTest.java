@@ -4,16 +4,15 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageChangeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.ContainerImage;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageAlreadyExistsException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.ImageRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ImageRepository;
 import at.ac.tuwien.ifs.dbrepo.service.impl.ImageServiceImpl;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class ImageServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private ImageRepository imageRepository;
 
     @Autowired

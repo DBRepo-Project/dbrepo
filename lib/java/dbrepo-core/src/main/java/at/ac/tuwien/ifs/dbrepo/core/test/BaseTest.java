@@ -7,7 +7,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantVirtualHostPermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.QueueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.auth.CreateUserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.*;
@@ -47,11 +46,17 @@ import at.ac.tuwien.ifs.dbrepo.core.api.semantics.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.ContainerImage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.DataType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.Operator;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnConcept;
@@ -67,7 +72,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessageType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.test.utils.ArrayUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -80,6 +84,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -89,7 +94,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
- * Database 1 (Private Data, Private Schema, User 1) -> Container 1
+ * Database 1 "weather" (Private Data, Private Schema, User 1) -> Container 1
  * <ul>
  * <li>Table 1 (Private Data, Private Schema)</li>
  * <li>Table 2 (Private Data, Public Schema)</li>
@@ -105,7 +110,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Identifier 4 (Title=en, Description=en, type=table, tableId=1)</li>
  * </ul>
  * <p>
- * Database 2 (Private Data, Public Schema, User 2) -> Container 1
+ * Database 2 "zoo" (Private Data, Public Schema, User 2) -> Container 1
  * <ul>
  * <li>Table 5 (Public Data, Public Schema)</li>
  * <li>Table 6 (Public Data, Private Schema)</li>
@@ -136,10 +141,13 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 @TestPropertySource(locations = "classpath:application.properties")
 public class BaseTest {
 
+    public final static SimpleDateFormat MARIADB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
-    public final static String MARIADB_IMAGE = "bitnami/mariadb:11.3.2";
+    public final static String MARIADB_IMAGE = "bitnamilegacy/mariadb:11.3.2";
     public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
-    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0.4";
+    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.4.4";
+    public final static String REDIS_IMAGE = "docker.io/redis:5.0.3-alpine";
 
     public final static String REALM_DBREPO_NAME = "dbrepo";
 
@@ -273,6 +281,11 @@ public class BaseTest {
     public final TokenDto TOKEN_DTO = TokenDto.builder()
             .accessToken(TOKEN_ACCESS_TOKEN)
             .scope(TOKEN_ACCESS_SCOPE)
+            .build();
+
+    public final Token TOKEN_LOCAL_ADMIN_CACHE = Token.builder()
+            .token(TOKEN_ACCESS_TOKEN)
+            .username(USER_LOCAL_ADMIN_USERNAME)
             .build();
 
     public final static UUID CONCEPT_1_ID = UUID.fromString("8cabc011-4bdf-44d4-9d33-b2648e2ddbf1");
@@ -428,40 +441,40 @@ public class BaseTest {
     public final static String USER_BROKER_PASSWORD = "guest";
 
     public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
-    public final static UUID USER_LOCAL_ADMIN_KEYCLOAK_ID = UUID.fromString("703c2ca0-8fc3-4c03-9bc5-4dae6b211e78");
     public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
     public final static String USER_LOCAL_ADMIN_THEME = "dark";
-    public final static Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
+    public final static String USER_LOCAL_ADMIN_LANGUAGE = "en";
     public final static Boolean USER_LOCAL_ADMIN_ENABLED = true;
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
 
-    public final UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
-            .id(USER_LOCAL_ADMIN_ID.toString())
+    public final UserAttributesDto USER_LOCAL_ADMIN_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .theme(USER_LOCAL_ADMIN_THEME)
+            .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
+            .language(USER_LOCAL_ADMIN_LANGUAGE)
+            .build();
+
+    public final UserDetails USER_LOCAL_ADMIN_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_LOCAL_ADMIN_USERNAME)
             .password(USER_LOCAL_ADMIN_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES)
             .build();
 
-    public final User USER_LOCAL = User.builder()
+    public final UserDto USER_LOCAL_DTO = UserDto.builder()
             .id(USER_LOCAL_ADMIN_ID)
-            .keycloakId(USER_LOCAL_ADMIN_KEYCLOAK_ID)
             .username(USER_LOCAL_ADMIN_USERNAME)
-            .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
-            .theme(USER_LOCAL_ADMIN_THEME)
-            .isInternal(USER_LOCAL_ADMIN_IS_INTERNAL)
+            .attributes(USER_LOCAL_ADMIN_ATTRIBUTES_DTO)
             .build();
 
     public final Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(
             USER_LOCAL_ADMIN_DETAILS, USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static UUID USER_1_KEYCLOAK_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_USERNAME = "junit1";
     @SuppressWarnings("java:S2068")
-    public final static String USER_1_PASSWORD = "junit1";
+    public final static String USER_1_PASSWORD = "712!1e7021c4d077662543620bbC5";
     @SuppressWarnings("java:S2068")
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
@@ -520,21 +533,6 @@ public class BaseTest {
                     .build())
             .build();
 
-    public final User USER_1 = User.builder()
-            .id(USER_1_ID)
-            .keycloakId(USER_1_KEYCLOAK_ID)
-            .username(USER_1_USERNAME)
-            .firstname(USER_1_FIRSTNAME)
-            .lastname(USER_1_LASTNAME)
-            .affiliation(USER_1_AFFILIATION)
-            .orcid(USER_1_ORCID_URL)
-            .theme(USER_1_THEME)
-            .mariadbPassword(USER_1_DATABASE_PASSWORD)
-            .language(USER_1_LANGUAGE)
-            .isInternal(USER_1_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -546,12 +544,10 @@ public class BaseTest {
             .password(USER_1_DATABASE_PASSWORD)
             .build();
 
-    public final CreateUserDto USER_1_CREATE_USER_DTO = CreateUserDto.builder()
-            .id(USER_1_KEYCLOAK_ID)
-            .ldapId(USER_1_ID)
-            .givenName(USER_1_FIRSTNAME)
-            .familyName(USER_1_LASTNAME)
+    public final User USER_1_CACHE = User.builder()
+            .id(USER_1_ID)
             .username(USER_1_USERNAME)
+            .password(USER_1_DATABASE_PASSWORD)
             .build();
 
     public final UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
@@ -577,8 +573,11 @@ public class BaseTest {
             .orcid(USER_1_ORCID_URL)
             .build();
 
-    public final UserDetails USER_1_DETAILS = UserDetailsDto.builder()
-            .id(USER_1_ID.toString())
+    public final UserBriefDto USER_1_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_1_USERNAME)
+            .build();
+
+    public final UserDetails USER_1_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
@@ -588,7 +587,6 @@ public class BaseTest {
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
     public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
-    public final static UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
@@ -596,7 +594,7 @@ public class BaseTest {
     public final static String USER_2_AFFILIATION = "TU Wien";
     public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
     @SuppressWarnings("java:S2068")
-    public final static String USER_2_PASSWORD = "junit2";
+    public final static String USER_2_PASSWORD = "3B4^30099d6e27b4715ba003a9d3b";
     @SuppressWarnings("java:S2068")
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static String USER_2_QUALIFIED_NAME = USER_2_FIRSTNAME + " " + USER_2_LASTNAME + " — @" + USER_2_USERNAME;
@@ -612,21 +610,6 @@ public class BaseTest {
             .language(USER_2_LANGUAGE)
             .build();
 
-    public final User USER_2 = User.builder()
-            .id(USER_2_ID)
-            .keycloakId(USER_2_KEYCLOAK_ID)
-            .username(USER_2_USERNAME)
-            .firstname(USER_2_FIRSTNAME)
-            .lastname(USER_2_LASTNAME)
-            .affiliation(USER_2_AFFILIATION)
-            .orcid(USER_2_ORCID_URL)
-            .theme(USER_2_THEME)
-            .mariadbPassword(USER_2_DATABASE_PASSWORD)
-            .language(USER_2_LANGUAGE)
-            .isInternal(USER_2_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
@@ -635,6 +618,12 @@ public class BaseTest {
             .name(USER_2_NAME)
             .qualifiedName(USER_2_QUALIFIED_NAME)
             .attributes(USER_2_ATTRIBUTES_DTO)
+            .password(USER_2_DATABASE_PASSWORD)
+            .build();
+
+    public final User USER_2_CACHE = User.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
             .password(USER_2_DATABASE_PASSWORD)
             .build();
 
@@ -648,24 +637,20 @@ public class BaseTest {
             .qualifiedName(USER_2_QUALIFIED_NAME)
             .build();
 
-    public final UserDetails USER_2_DETAILS = UserDetailsDto.builder()
-            .id(USER_2_ID.toString())
+    public final UserBriefDto USER_2_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_2_USERNAME)
+            .build();
+
+    public final UserDetails USER_2_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
-    public final at.ac.tuwien.ifs.dbrepo.core.api.amqp.UserDetailsDto USER_2_DETAILS_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.amqp.UserDetailsDto.builder()
-                    .name(USER_2_USERNAME)
-                    .tags(new String[]{})
-                    .build();
-
     public final Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static UUID USER_3_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
-    public final static UUID USER_3_KEYCLOAK_ID = UUID.fromString("b0108bc3-95aa-4a3f-8868-dc301286aeca");
     public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
@@ -673,7 +658,7 @@ public class BaseTest {
     public final static String USER_3_AFFILIATION = "TU Wien";
     public final static String USER_3_ORCID_URL = null;
     @SuppressWarnings("java:S2068")
-    public final static String USER_3_PASSWORD = "password";
+    public final static String USER_3_PASSWORD = "c6b@74Ea27a52820570c739e3c022";
     @SuppressWarnings("java:S2068")
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static String USER_3_QUALIFIED_NAME = USER_3_FIRSTNAME + " " + USER_3_LASTNAME + " — @" + USER_3_USERNAME;
@@ -687,20 +672,6 @@ public class BaseTest {
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
-    public final User USER_3 = User.builder()
-            .id(USER_3_ID)
-            .keycloakId(USER_3_KEYCLOAK_ID)
-            .username(USER_3_USERNAME)
-            .firstname(USER_3_FIRSTNAME)
-            .lastname(USER_3_LASTNAME)
-            .affiliation(USER_3_AFFILIATION)
-            .orcid(USER_3_ORCID_URL)
-            .theme(USER_3_THEME)
-            .mariadbPassword(USER_3_DATABASE_PASSWORD)
-            .isInternal(USER_3_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final UserDto USER_3_DTO = UserDto.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
@@ -709,6 +680,12 @@ public class BaseTest {
             .name(USER_3_NAME)
             .qualifiedName(USER_3_QUALIFIED_NAME)
             .attributes(USER_3_ATTRIBUTES_DTO)
+            .password(USER_3_DATABASE_PASSWORD)
+            .build();
+
+    public final User USER_3_CACHE = User.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
             .password(USER_3_DATABASE_PASSWORD)
             .build();
 
@@ -721,8 +698,11 @@ public class BaseTest {
             .qualifiedName(USER_3_QUALIFIED_NAME)
             .build();
 
-    public final UserDetails USER_3_DETAILS = UserDetailsDto.builder()
-            .id(USER_3_ID.toString())
+    public final UserBriefDto USER_3_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_3_USERNAME)
+            .build();
+
+    public final UserDetails USER_3_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_3_USERNAME)
             .password(USER_3_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
@@ -731,14 +711,7 @@ public class BaseTest {
     public final Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
-    public final at.ac.tuwien.ifs.dbrepo.core.api.amqp.UserDetailsDto USER_3_DETAILS_DTO =
-            at.ac.tuwien.ifs.dbrepo.core.api.amqp.UserDetailsDto.builder()
-                    .name(USER_3_USERNAME)
-                    .tags(new String[]{})
-                    .build();
-
     public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
-    public final static UUID USER_4_KEYCLOAK_ID = UUID.fromString("25040ad3-6d57-4052-b357-6b4c8a6e7f4d");
     public final static String USER_4_USERNAME = "junit4";
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
@@ -746,7 +719,7 @@ public class BaseTest {
     public final static String USER_4_AFFILIATION = "TU Wien";
     public final static String USER_4_ORCID_URL = null;
     @SuppressWarnings("java:S2068")
-    public final static String USER_4_PASSWORD = "junit4";
+    public final static String USER_4_PASSWORD = "deb&6E361784ae1cbebbc3bf5fd50";
     @SuppressWarnings("java:S2068")
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
@@ -760,20 +733,6 @@ public class BaseTest {
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
-    public final User USER_4 = User.builder()
-            .id(USER_4_ID)
-            .keycloakId(USER_4_KEYCLOAK_ID)
-            .username(USER_4_USERNAME)
-            .firstname(USER_4_FIRSTNAME)
-            .lastname(USER_4_LASTNAME)
-            .affiliation(USER_4_AFFILIATION)
-            .orcid(USER_4_ORCID_URL)
-            .theme(USER_4_THEME)
-            .mariadbPassword(USER_4_DATABASE_PASSWORD)
-            .isInternal(USER_4_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final UserDto USER_4_DTO = UserDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
@@ -782,6 +741,12 @@ public class BaseTest {
             .name(USER_4_NAME)
             .attributes(USER_4_ATTRIBUTES_DTO)
             .qualifiedName(USER_4_QUALIFIED_NAME)
+            .password(USER_4_DATABASE_PASSWORD)
+            .build();
+
+    public final User USER_4_CACHE = User.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
             .password(USER_4_DATABASE_PASSWORD)
             .build();
 
@@ -794,25 +759,26 @@ public class BaseTest {
             .qualifiedName(USER_4_QUALIFIED_NAME)
             .build();
 
-    public final UserDetails USER_4_DETAILS = UserDetailsDto.builder()
-            .id(USER_4_ID.toString())
+    public final UserBriefDto USER_4_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_4_USERNAME)
+            .build();
+
+    public final UserDetails USER_4_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_4_USERNAME)
             .password(USER_4_PASSWORD)
-            .authorities(new LinkedList<>())
             .build();
 
     public final Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static UUID USER_5_KEYCLOAK_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_5_USERNAME = "nobody";
     public final static String USER_5_FIRSTNAME = "No";
     public final static String USER_5_LASTNAME = "Body";
     public final static String USER_5_NAME = "No Body";
     public final static String USER_5_AFFILIATION = "TU Wien";
     @SuppressWarnings("java:S2068")
-    public final static String USER_5_PASSWORD = "junit5";
+    public final static String USER_5_PASSWORD = "24d$fec836B956ada9c722f3cd403";
     @SuppressWarnings("java:S2068")
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
@@ -836,6 +802,12 @@ public class BaseTest {
             .password(USER_5_DATABASE_PASSWORD)
             .build();
 
+    public final User USER_5_CACHE = User.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .password(USER_5_DATABASE_PASSWORD)
+            .build();
+
     public final UserBriefDto USER_5_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
@@ -844,8 +816,11 @@ public class BaseTest {
             .qualifiedName(USER_5_QUALIFIED_NAME)
             .build();
 
-    public final UserDetails USER_5_DETAILS = UserDetailsDto.builder()
-            .id(USER_5_ID.toString())
+    public final UserBriefDto USER_5_MINIMAL_DTO = UserBriefDto.builder()
+            .username(USER_5_USERNAME)
+            .build();
+
+    public final UserDetails USER_5_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_5_USERNAME)
             .password(USER_5_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
@@ -854,21 +829,7 @@ public class BaseTest {
     public final Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
-    public final User USER_5 = User.builder()
-            .id(USER_5_ID)
-            .keycloakId(USER_5_KEYCLOAK_ID)
-            .username(USER_5_USERNAME)
-            .firstname(USER_5_FIRSTNAME)
-            .lastname(USER_5_LASTNAME)
-            .affiliation(USER_5_AFFILIATION)
-            .theme(USER_5_THEME)
-            .mariadbPassword(USER_5_DATABASE_PASSWORD)
-            .isInternal(USER_5_IS_INTERNAL)
-            .accesses(new LinkedList<>())
-            .build();
-
     public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static UUID USER_6_KEYCLOAK_ID = UUID.fromString("0fddf102-8958-4223-8653-5d4dc51b3a18");
     public final static String USER_6_USERNAME = "system";
     public final static String USER_6_FIRSTNAME = "System";
     public final static String USER_6_LASTNAME = "System";
@@ -876,7 +837,7 @@ public class BaseTest {
     public final static String USER_6_AFFILIATION = "TU Wien";
     public final static String USER_6_ORCID = null;
     @SuppressWarnings("java:S2068")
-    public final static String USER_6_PASSWORD = "junit5";
+    public final static String USER_6_PASSWORD = "006%381aBa58e072ef21244c0e3d9";
     @SuppressWarnings("java:S2068")
     public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static Boolean USER_6_VERIFIED = true;
@@ -885,17 +846,10 @@ public class BaseTest {
     public final static String USER_6_THEME = "light";
     public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
 
-    public final User USER_6 = User.builder()
-            .id(USER_6_ID)
-            .keycloakId(USER_6_KEYCLOAK_ID)
-            .username(USER_6_USERNAME)
-            .firstname(USER_6_FIRSTNAME)
-            .lastname(USER_6_LASTNAME)
-            .affiliation(USER_6_AFFILIATION)
+    public final UserAttributesDto USER_6_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_6_THEME)
+            .affiliation(USER_6_AFFILIATION)
             .mariadbPassword(USER_6_DATABASE_PASSWORD)
-            .isInternal(USER_6_IS_INTERNAL)
-            .accesses(new LinkedList<>())
             .build();
 
     public final UserDto USER_6_DTO = UserDto.builder()
@@ -904,10 +858,10 @@ public class BaseTest {
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
             .password(USER_6_DATABASE_PASSWORD)
+            .attributes(USER_6_ATTRIBUTES_DTO)
             .build();
 
-    public final UserDetails USER_6_DETAILS = UserDetailsDto.builder()
-            .id(USER_6_ID.toString())
+    public final UserDetails USER_6_DETAILS = org.springframework.security.core.userdetails.User.builder()
             .username(USER_6_USERNAME)
             .password(USER_6_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
@@ -972,6 +926,13 @@ public class BaseTest {
             .dataTypes(null /* IMAGE_1_DATA_TYPES_DTO */)
             .build();
 
+    public final Image IMAGE_1_CACHE = Image.builder()
+            .id(IMAGE_1_ID)
+            .jdbcMethod(IMAGE_1_JDBC_METHOD)
+            .operators(null /* IMAGE_1_OPERATORS_CACHE */)
+            .dataTypes(null /* IMAGE_1_DATA_TYPES_CACHE */)
+            .build();
+
     public final ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
@@ -1018,6 +979,16 @@ public class BaseTest {
                     .documentation(IMAGE_1_OPERATORS_2_DOCUMENTATION)
                     .build()));
 
+    public final List<at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator> IMAGE_1_OPERATORS_CACHE = new LinkedList<>(List.of(
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator.builder()
+                    .id(IMAGE_1_OPERATORS_1_ID)
+                    .value(IMAGE_1_OPERATORS_1_VALUE)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator.builder()
+                    .id(IMAGE_1_OPERATORS_2_ID)
+                    .value(IMAGE_1_OPERATORS_2_VALUE)
+                    .build()));
+
     public final static UUID IMAGE_1_DATA_TYPE_1_ID = UUID.fromString("d79cb089-363c-488b-9717-649e44d8fcc5");
     public final static String IMAGE_1_DATA_TYPE_1_DISPLAY_NAME = "BIGINT(size)";
     public final static String IMAGE_1_DATA_TYPE_1_VALUE = "bigint";
@@ -1056,6 +1027,13 @@ public class BaseTest {
                     .documentation(IMAGE_1_DATA_TYPE_1_DOCUMENTATION)
                     .quoted(IMAGE_1_DATA_TYPE_1_IS_QUOTED)
                     .buildable(IMAGE_1_DATA_TYPE_1_IS_BUILDABLE)
+                    .build()
+    ));
+
+    public final List<at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType> IMAGE_1_DATA_TYPES_CACHE = new LinkedList<>(List.of(
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType.builder()
+                    .id(IMAGE_1_DATA_TYPE_1_ID)
+                    .value(IMAGE_1_DATA_TYPE_1_VALUE)
                     .build()
     ));
 
@@ -1100,8 +1078,16 @@ public class BaseTest {
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNAL_NAME)
             .image(IMAGE_1_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container CONTAINER_1_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container.builder()
+            .id(CONTAINER_1_ID)
+            .internalName(CONTAINER_1_INTERNAL_NAME)
+            .image(IMAGE_1_CACHE)
             .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
+            .username(CONTAINER_1_PRIVILEGED_USERNAME)
+            .password(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
     public final ContainerBriefDto CONTAINER_1_BRIEF_DTO = ContainerBriefDto.builder()
@@ -1118,11 +1104,6 @@ public class BaseTest {
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNAL_NAME)
             .image(IMAGE_1_DTO)
-            .host(CONTAINER_1_HOST)
-            .port(CONTAINER_1_PORT)
-            .lastRetrieved(Instant.now())
-            .username(CONTAINER_1_PRIVILEGED_USERNAME)
-            .password(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
     public final static UUID CONTAINER_2_ID = UUID.fromString("c2ec601e-2bfb-4be8-8891-0cb804a08d4a");
@@ -1156,8 +1137,16 @@ public class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNAL_NAME)
             .image(IMAGE_1_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container CONTAINER_2_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container.builder()
+            .id(CONTAINER_2_ID)
+            .internalName(CONTAINER_2_INTERNAL_NAME)
+            .image(IMAGE_1_CACHE)
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
+            .username(CONTAINER_2_PRIVILEGED_USERNAME)
+            .password(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
 
     public final ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
@@ -1172,11 +1161,6 @@ public class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNAL_NAME)
             .image(IMAGE_1_DTO)
-            .host(CONTAINER_2_HOST)
-            .port(CONTAINER_2_PORT)
-            .lastRetrieved(Instant.now())
-            .username(CONTAINER_2_PRIVILEGED_USERNAME)
-            .password(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
 
     public final static UUID CONTAINER_3_ID = UUID.fromString("1731c7d2-8bd1-4392-85bc-18a3be99e01d");
@@ -1234,19 +1218,14 @@ public class BaseTest {
             .name(CONTAINER_4_NAME)
             .internalName(CONTAINER_4_INTERNAL_NAME)
             .image(IMAGE_1_DTO)
-            .host(CONTAINER_4_HOST)
-            .port(CONTAINER_4_PORT)
-            .lastRetrieved(Instant.now())
             .build();
 
-    public final ContainerDto CONTAINER_4_PRIVILEGED_DTO = ContainerDto.builder()
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container CONTAINER_4_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container.builder()
             .id(CONTAINER_4_ID)
-            .name(CONTAINER_4_NAME)
             .internalName(CONTAINER_4_INTERNAL_NAME)
-            .image(IMAGE_1_DTO)
+            .image(IMAGE_1_CACHE)
             .host(CONTAINER_4_HOST)
             .port(CONTAINER_4_PORT)
-            .lastRetrieved(Instant.now())
             .username(CONTAINER_4_PRIVILEGED_USERNAME)
             .password(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
@@ -1343,29 +1322,16 @@ public class BaseTest {
             .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
             .build();
 
-    public final DatabaseDto DATABASE_3_PRIVILEGED_DTO = DatabaseDto.builder()
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database DATABASE_3_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database.builder()
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
-            .name(DATABASE_3_NAME)
+            .isDashboardEnabled(DATABASE_3_DASHBOARD_ENABLED)
             .internalName(DATABASE_3_INTERNAL_NAME)
-            .owner(USER_3_BRIEF_DTO)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
-            .exchangeName(DATABASE_3_EXCHANGE)
-            .tables(new LinkedList<>()) /* TABLE_8_DTO */
-            .views(new LinkedList<>()) /* VIEW_5_DTO */
-            .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
-            .lastRetrieved(Instant.now())
-            .build();
-
-    public final DatabaseBriefDto DATABASE_3_PRIVILEGED_BRIEF_DTO = DatabaseBriefDto.builder()
-            .id(DATABASE_3_ID)
-            .isPublic(DATABASE_3_PUBLIC)
-            .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
-            .name(DATABASE_3_NAME)
-            .internalName(DATABASE_3_INTERNAL_NAME)
-            .ownerId(USER_3_ID)
-            .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
+            .ownedBy(USER_3_USERNAME)
+            .container(CONTAINER_1_CACHE)
+            .tables(new LinkedList<>()) /* TABLE_8_CACHE */
+            .views(new LinkedList<>()) /* VIEW_5_CACHE */
             .build();
 
     public final DatabaseBriefDto DATABASE_3_BRIEF_DTO = DatabaseBriefDto.builder()
@@ -1374,7 +1340,7 @@ public class BaseTest {
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
             .name(DATABASE_3_NAME)
             .internalName(DATABASE_3_INTERNAL_NAME)
-            .ownerId(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .identifiers(new LinkedList<>())
             .build();
 
@@ -1403,7 +1369,7 @@ public class BaseTest {
             .name(DATABASE_4_NAME)
             .description(DATABASE_4_DESCRIPTION)
             .internalName(DATABASE_4_INTERNAL_NAME)
-            .ownerId(USER_4_ID)
+            .ownedBy(USER_4_USERNAME)
             .identifiers(new LinkedList<>())
             .build();
 
@@ -1411,6 +1377,7 @@ public class BaseTest {
             .id(DATABASE_4_ID)
             .isPublic(DATABASE_4_PUBLIC)
             .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
+            .isDashboardEnabled(DATABASE_4_DASHBOARD_ENABLED)
             .name(DATABASE_4_NAME)
             .container(CONTAINER_2_DTO)
             .description(DATABASE_4_DESCRIPTION)
@@ -1422,20 +1389,16 @@ public class BaseTest {
             .identifiers(new LinkedList<>()) /* IDENTIFIER_7_DTO */
             .build();
 
-    public final DatabaseDto DATABASE_4_PRIVILEGED_DTO = DatabaseDto.builder()
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database DATABASE_4_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database.builder()
             .id(DATABASE_4_ID)
             .isPublic(DATABASE_4_PUBLIC)
             .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
-            .name(DATABASE_4_NAME)
-            .container(CONTAINER_2_PRIVILEGED_DTO)
-            .description(DATABASE_4_DESCRIPTION)
+            .isDashboardEnabled(DATABASE_4_DASHBOARD_ENABLED)
+            .container(CONTAINER_2_CACHE)
             .internalName(DATABASE_4_INTERNAL_NAME)
-            .exchangeName(DATABASE_4_EXCHANGE)
-            .owner(USER_4_BRIEF_DTO)
+            .ownedBy(USER_4_USERNAME)
             .tables(new LinkedList<>()) /* TABLE_9_DTO */
             .views(new LinkedList<>())
-            .identifiers(new LinkedList<>()) /* IDENTIFIER_7_DTO */
-            .lastRetrieved(Instant.now())
             .build();
 
     public final CreateTableConstraintsDto TABLE_1_CREATE_CONSTRAINTS_DTO = CreateTableConstraintsDto.builder()
@@ -1640,8 +1603,7 @@ public class BaseTest {
             .identifiers(new LinkedList<>())
             .columns(new LinkedList<>()) /* TABLE_1_COLUMNS */
             .constraints(null) /* TABLE_1_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
             .numRows(TABLE_1_NUM_ROWS)
@@ -1654,6 +1616,32 @@ public class BaseTest {
     public final static UUID COLUMN_1_3_ID = UUID.fromString("8ff0351e-4882-4948-94af-598e4b264b25");
     public final static UUID COLUMN_1_4_ID = UUID.fromString("9ab256eb-3324-4e76-af3b-e3e2a58ce161");
     public final static UUID COLUMN_1_5_ID = UUID.fromString("619e9355-51aa-438f-8579-80cec30f35cb");
+
+    public final List<Column> TABLE_1_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_1_1_ID)
+                    .internalName("id")
+                    .columnType(ColumnType.SERIAL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_1_2_ID)
+                    .internalName("date")
+                    .columnType(ColumnType.DATE)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_1_3_ID)
+                    .internalName("location")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_1_4_ID)
+                    .internalName("mintemp")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_1_5_ID)
+                    .internalName("rainfall")
+                    .columnType(ColumnType.DECIMAL)
+                    .build());
 
     public final List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_1_1_ID)
@@ -1731,6 +1719,19 @@ public class BaseTest {
                     .uniques(new LinkedList<>(List.of(List.of("date"))))
                     .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_1_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_1_ID)
+            .internalName(TABLE_1_INTERNAL_NAME)
+            .isPublic(TABLE_1_IS_PUBLIC)
+            .isSchemaPublic(TABLE_1_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>()) /* TABLE_1_COLUMNS_CACHE */
+            .ownedBy(USER_1_USERNAME)
+            .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
+            .numRows(TABLE_1_NUM_ROWS)
+            .dataLength(TABLE_1_DATA_LENGTH)
+            .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
+            .build();
+
     public final TableDto TABLE_1_DTO = TableDto.builder()
             .id(TABLE_1_ID)
             .databaseId(DATABASE_1_ID)
@@ -1743,7 +1744,7 @@ public class BaseTest {
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
             .identifiers(new LinkedList<>())
-            .columns(new LinkedList<>())
+            .columns(new LinkedList<>()) /* TABLE_1_COLUMNS_DTO */
             .constraints(null)
             .owner(USER_1_BRIEF_DTO)
             .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
@@ -1761,7 +1762,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_1_SCHEMA_PUBLIC)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static Long TABLE_1_DATA_COUNT = 3L;
@@ -1822,8 +1823,7 @@ public class BaseTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_2_COLUMNS */
             .constraints(null) /* TABLE_2_CONSTRAINTS */
-            .owner(USER_2)
-            .ownedBy(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
             .numRows(TABLE_2_NUM_ROWS)
             .dataLength(TABLE_2_DATA_LENGTH)
@@ -1839,7 +1839,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_2_SCHEMA_PUBLIC)
             .description(TABLE_2_DESCRIPTION)
             .name(TABLE_2_NAME)
-            .ownedBy(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .build();
 
     public final static UUID COLUMN_2_1_ID = UUID.fromString("795faa78-7ebb-4dd5-9eb1-e54a9192d0b5");
@@ -1891,6 +1891,22 @@ public class BaseTest {
                     .isNullAllowed(true)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
+                    .build());
+
+    public final List<Column> TABLE_2_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_2_1_ID)
+                    .internalName("location")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_2_2_ID)
+                    .internalName("lat")
+                    .columnType(ColumnType.DOUBLE)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_2_3_ID)
+                    .internalName("lng")
+                    .columnType(ColumnType.DOUBLE)
                     .build());
 
     public final ColumnBriefDto TABLE_2_COLUMNS_BRIEF_2_DTO = ColumnBriefDto.builder()
@@ -1979,6 +1995,19 @@ public class BaseTest {
             .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_2_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_2_ID)
+            .internalName(TABLE_2_INTERNAL_NAME)
+            .isPublic(TABLE_2_IS_PUBLIC)
+            .isSchemaPublic(TABLE_2_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>()) /* TABLE_2_COLUMNS_CACHE */
+            .ownedBy(USER_2_USERNAME)
+            .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
+            .numRows(TABLE_2_NUM_ROWS)
+            .dataLength(TABLE_2_DATA_LENGTH)
+            .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
+            .build();
+
     public final static UUID TABLE_3_ID = UUID.fromString("a94ee518-c235-496b-8613-b0c643bc1b11");
     public final static String TABLE_3_NAME = "Sensor";
     public final static String TABLE_3_INTERNAL_NAME = "sensor";
@@ -2010,8 +2039,7 @@ public class BaseTest {
             .queueName(TABLE_3_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_3_COLUMNS */
             .constraints(null) /* TABLE_3_CONSTRAINTS */
-            .owner(USER_3)
-            .ownedBy(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .avgRowLength(TABLE_3_AVG_ROW_LENGTH)
             .numRows(TABLE_3_NUM_ROWS)
             .dataLength(TABLE_3_DATA_LENGTH)
@@ -2038,6 +2066,19 @@ public class BaseTest {
             .maxDataLength(TABLE_3_MAX_DATA_LENGTH)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_3_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_3_ID)
+            .internalName(TABLE_3_INTERNAL_NAME)
+            .isPublic(TABLE_3_IS_PUBLIC)
+            .isSchemaPublic(TABLE_3_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>() /* TABLE_3_COLUMNS_CACHE */)
+            .ownedBy(USER_3_USERNAME)
+            .avgRowLength(TABLE_3_AVG_ROW_LENGTH)
+            .numRows(TABLE_3_NUM_ROWS)
+            .dataLength(TABLE_3_DATA_LENGTH)
+            .maxDataLength(TABLE_3_MAX_DATA_LENGTH)
+            .build();
+
     public final TableBriefDto TABLE_3_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_3_ID)
             .databaseId(DATABASE_1_ID)
@@ -2047,7 +2088,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_3_SCHEMA_PUBLIC)
             .description(TABLE_3_DESCRIPTION)
             .name(TABLE_3_NAME)
-            .ownedBy(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .build();
 
     public final CreateTableConstraintsDto TABLE_3_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
@@ -2112,8 +2153,7 @@ public class BaseTest {
             .queueName(TABLE_5_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_5_COLUMNS */
             .constraints(null) /* TABLE_5_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final TableDto TABLE_5_DTO = TableDto.builder()
@@ -2132,6 +2172,15 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_5_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_5_ID)
+            .internalName(TABLE_5_INTERNAL_NAME)
+            .isPublic(TABLE_5_IS_PUBLIC)
+            .isSchemaPublic(TABLE_5_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>()) /* TABLE_5_COLUMNS_CACHE */
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final TableBriefDto TABLE_5_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_5_ID)
             .databaseId(DATABASE_2_ID)
@@ -2141,7 +2190,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_5_SCHEMA_PUBLIC)
             .description(TABLE_5_DESCRIPTION)
             .name(TABLE_5_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_6_ID = UUID.fromString("ae84d169-d36c-4f5a-a390-153d090f9574");
@@ -2170,8 +2219,7 @@ public class BaseTest {
             .queueName(TABLE_6_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_6_COLUMNS */
             .constraints(null) /* TABLE_6_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_6_CREATED)
             .build();
 
@@ -2191,6 +2239,15 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_6_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_6_ID)
+            .internalName(TABLE_6_INTERNAL_NAME)
+            .isPublic(TABLE_6_IS_PUBLIC)
+            .isSchemaPublic(TABLE_6_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>()) /* TABLE_6_COLUMNS_CACHE */
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final TableBriefDto TABLE_6_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_6_ID)
             .databaseId(DATABASE_2_ID)
@@ -2200,7 +2257,59 @@ public class BaseTest {
             .isSchemaPublic(TABLE_6_SCHEMA_PUBLIC)
             .description(TABLE_6_DESCRIPTION)
             .name(TABLE_6_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
+    @SuppressWarnings("java:S3599")
+    public final TableStatisticDto TABLE_6_STATISTIC_DTO = TableStatisticDto.builder()
+            .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                            .name("id")
+                            .min(BigDecimal.valueOf(1.0))
+                            .max(BigDecimal.valueOf(5.0))
+                            .mean(BigDecimal.valueOf(3.0))
+                            .median(BigDecimal.valueOf(3.0))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("firstname")
+                            .min(BigDecimal.valueOf(3.0))
+                            .max(BigDecimal.valueOf(8.0))
+                            .mean(BigDecimal.valueOf(5.8))
+                            .median(BigDecimal.valueOf(6))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("lastname")
+                            .min(BigDecimal.valueOf(11.0))
+                            .max(BigDecimal.valueOf(10.0))
+                            .mean(BigDecimal.valueOf(7.8))
+                            .median(BigDecimal.valueOf(8.0))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("birth")
+                            .min(BigDecimal.valueOf(1990.0))
+                            .max(BigDecimal.valueOf(1991.0))
+                            .mean(BigDecimal.valueOf(1990.5))
+                            .median(BigDecimal.valueOf(1990.0))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("reminder")
+                            .min(BigDecimal.valueOf(11.2))
+                            .max(BigDecimal.valueOf(23.1))
+                            .mean(BigDecimal.valueOf(13.5333))
+                            .median(BigDecimal.valueOf(11.4))
+                            .stdDev(BigDecimal.valueOf(4.2952))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("ref_id")
+                            .min(BigDecimal.valueOf(0.0))
+                            .max(BigDecimal.valueOf(0.0))
+                            .mean(BigDecimal.valueOf(0.0))
+                            .median(BigDecimal.valueOf(0.0))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build())))
             .build();
 
     public final static UUID TABLE_7_ID = UUID.fromString("e5d10200-3e4f-45f4-9f36-ff3ca39c6c29");
@@ -2229,8 +2338,7 @@ public class BaseTest {
             .queueName(TABLE_7_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_7_COLUMNS */
             .constraints(null) /* TABLE_7_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_7_CREATED)
             .build();
 
@@ -2250,6 +2358,15 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_7_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_7_ID)
+            .internalName(TABLE_7_INTERNAL_NAME)
+            .isPublic(TABLE_7_IS_PUBLIC)
+            .isSchemaPublic(TABLE_7_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>()) /* TABLE_7_COLUMNS_CACHE */
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final TableBriefDto TABLE_7_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_7_ID)
             .databaseId(DATABASE_2_ID)
@@ -2259,7 +2376,7 @@ public class BaseTest {
             .isSchemaPublic(TABLE_7_SCHEMA_PUBLIC)
             .description(TABLE_7_DESCRIPTION)
             .name(TABLE_7_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_4_ID = UUID.fromString("6c87cbcf-5043-404f-9bf1-b09ddbac25a2");
@@ -2291,8 +2408,7 @@ public class BaseTest {
             .isVersioned(TABLE_4_VERSIONED)
             .isPublic(TABLE_4_IS_PUBLIC)
             .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_4_CREATED)
             .lastModified(TABLE_4_LAST_MODIFIED)
             .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
@@ -2321,6 +2437,19 @@ public class BaseTest {
             .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_4_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_4_ID)
+            .internalName(TABLE_4_INTERNAL_NAME)
+            .columns(new LinkedList<>()) /* TABLE_4_COLUMNS_CACHE */
+            .isPublic(TABLE_4_IS_PUBLIC)
+            .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
+            .ownedBy(USER_1_USERNAME)
+            .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
+            .numRows(TABLE_4_NUM_ROWS)
+            .dataLength(TABLE_4_DATA_LENGTH)
+            .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
+            .build();
+
     public final TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_4_ID)
             .databaseId(DATABASE_1_ID)
@@ -2330,7 +2459,7 @@ public class BaseTest {
             .isVersioned(TABLE_4_VERSIONED)
             .isPublic(TABLE_4_IS_PUBLIC)
             .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final ColumnBriefDto TABLE_4_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
@@ -2412,6 +2541,17 @@ public class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
+    public final List<Column> TABLE_4_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_4_1_ID)
+                    .internalName("timestamp")
+                    .columnType(ColumnType.TIMESTAMP)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_4_2_ID)
+                    .internalName("value")
+                    .columnType(ColumnType.DECIMAL)
+                    .build());
+
     public final static UUID TABLE_8_ID = UUID.fromString("2e039d0d-3257-4083-8b32-76d7cfa1f7fd");
     public final static String TABLE_8_NAME = "location";
     public final static String TABLE_8_INTERNAL_NAME = "mfcc";
@@ -2437,8 +2577,7 @@ public class BaseTest {
             .queueName(TABLE_8_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_8_COLUMNS */
             .constraints(null) /* TABLE_8_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
@@ -2458,6 +2597,15 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_8_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+            .id(TABLE_8_ID)
+            .internalName(TABLE_8_INTERNAL_NAME)
+            .isPublic(TABLE_8_IS_PUBLIC)
+            .isSchemaPublic(TABLE_8_SCHEMA_PUBLIC)
+            .columns(new LinkedList<>()) /* TABLE_8_COLUMNS_CACHE */
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final TableUpdateDto TABLE_8_UPDATE_DTO = TableUpdateDto.builder()
             .description(null)
             .isPublic(true)
@@ -2473,7 +2621,7 @@ public class BaseTest {
             .isPublic(TABLE_8_IS_PUBLIC)
             .isSchemaPublic(TABLE_8_SCHEMA_PUBLIC)
             .name(TABLE_8_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID TABLE_9_ID = UUID.fromString("9314294f-04fc-4354-8b1f-2a8aeb566453");
@@ -2501,8 +2649,7 @@ public class BaseTest {
             .queueName(TABLE_9_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_9_COLUMNS */
             .constraints(null) /* TABLE_9_CONSTRAINTS */
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .created(TABLE_9_CREATED)
             .lastModified(TABLE_9_LAST_MODIFIED)
             .build();
@@ -2531,7 +2678,7 @@ public class BaseTest {
             .isPublic(TABLE_9_IS_PUBLIC)
             .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
             .name(TABLE_9_NAME)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID COLUMN_9_1_ID = UUID.fromString("e03c7578-2d1a-4599-9b11-7174f40efc0a");
@@ -2649,9 +2796,8 @@ public class BaseTest {
     public final static String QUERY_9_STATEMENT = "SELECT `lat`, `lng` FROM `mfcc` WHERE `location` = 'Fuji'";
     public final static String QUERY_9_QUERY_HASH = "dfcdec827b2ea74d89415f8d1ce39354f59ef304444ba4e12e4f3d9d3f35abe3";
     public final static String QUERY_9_RESULT_HASH = "f0aba070a1fd29e96230d12d7c0b4d08b89820b3cc2dda0575680492010016e7";
-    public final static Instant QUERY_9_CREATED = Instant.now().minus(5, MINUTES);
     public final static Instant QUERY_9_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_9_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
+    public final static String QUERY_9_STATEMENT_NORMALIZED = "SELECT `lat`, `lng` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_9_EXECUTION)) + "' WHERE `location` = 'Fuji'";
     public final static Long QUERY_9_RESULT_NUMBER = 6L;
     public final static Boolean QUERY_9_PERSISTED = true;
 
@@ -2659,13 +2805,26 @@ public class BaseTest {
             .id(QUERY_9_ID)
             .databaseId(DATABASE_3_ID)
             .query(QUERY_9_STATEMENT)
-            .queryNormalized(QUERY_9_STATEMENT)
+            .queryNormalized(QUERY_9_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_9_RESULT_NUMBER)
             .resultHash(QUERY_9_RESULT_HASH)
             .queryHash(QUERY_9_QUERY_HASH)
             .execution(QUERY_9_EXECUTION)
             .isPersisted(QUERY_9_PERSISTED)
             .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public final Subset QUERY_9_CACHE = Subset.builder()
+            .id(QUERY_9_ID)
+            .databaseId(DATABASE_3_ID)
+            .query(QUERY_9_STATEMENT)
+            .queryNormalized(QUERY_9_STATEMENT_NORMALIZED)
+            .resultNumber(QUERY_9_RESULT_NUMBER)
+            .resultHash(QUERY_9_RESULT_HASH)
+            .queryHash(QUERY_9_QUERY_HASH)
+            .execution(QUERY_9_EXECUTION)
+            .isPersisted(QUERY_9_PERSISTED)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final SubsetDto QUERY_9_SUBSET_DTO = SubsetDto.builder()
@@ -2685,11 +2844,27 @@ public class BaseTest {
             .queryHash(QUERY_9_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
             .columns(new LinkedList<>(List.of(ViewColumnDto.builder()
+                            .id(UUID.fromString("ff179632-0249-4e4c-9167-23c9d89e8b05"))
                             .name("lat")
                             .internalName("lat")
                             .build(),
                     ViewColumnDto.builder()
+                            .id(UUID.fromString("40d1b8e5-0a67-4edd-851a-b1a44393e6a4"))
                             .name("lng")
+                            .internalName("lng")
+                            .build())))
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View QUERY_9_VIEW_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
+            .query(QUERY_9_STATEMENT)
+            .queryHash(QUERY_9_QUERY_HASH)
+            .ownedBy(USER_1_USERNAME)
+            .columns(new LinkedList<>(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                            .id(UUID.fromString("ff179632-0249-4e4c-9167-23c9d89e8b05"))
+                            .internalName("lat")
+                            .build(),
+                    at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                            .id(UUID.fromString("40d1b8e5-0a67-4edd-851a-b1a44393e6a4"))
                             .internalName("lng")
                             .build())))
             .build();
@@ -2848,16 +3023,12 @@ public class BaseTest {
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
     public final static String COLUMN_8_1_NAME = "ID";
     public final static String COLUMN_8_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
-    public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Boolean COLUMN_8_1_NULL = false;
 
     public final static UUID COLUMN_8_2_ID = UUID.fromString("7ada597b-0766-4612-9ace-67eeee94e2da");
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
     public final static String COLUMN_8_2_NAME = "Value";
     public final static String COLUMN_8_2_INTERNAL_NAME = "value";
-    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.DECIMAL;
-    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_8_2_SIZE = 10L;
     public final static Long COLUMN_8_2_D = 10L;
     public final static Boolean COLUMN_8_2_NULL = true;
@@ -2866,8 +3037,6 @@ public class BaseTest {
     public final static Integer COLUMN_8_3_ORDINALPOS = 2;
     public final static String COLUMN_8_3_NAME = "raw";
     public final static String COLUMN_8_3_INTERNAL_NAME = "raw";
-    public final static TableColumnType COLUMN_8_3_TYPE = TableColumnType.LONGBLOB;
-    public final static ColumnTypeDto COLUMN_8_3_TYPE_DTO = ColumnTypeDto.LONGBLOB;
     public final static Boolean COLUMN_8_3_NULL = true;
 
     public final ColumnBriefDto TABLE_8_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
@@ -2883,7 +3052,7 @@ public class BaseTest {
                     .table(TABLE_8)
                     .name(COLUMN_8_1_NAME)
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
-                    .columnType(COLUMN_8_1_TYPE)
+                    .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(COLUMN_8_1_NULL)
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
@@ -2894,7 +3063,7 @@ public class BaseTest {
                     .table(TABLE_8)
                     .name(COLUMN_8_2_NAME)
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
-                    .columnType(COLUMN_8_2_TYPE)
+                    .columnType(TableColumnType.DECIMAL)
                     .size(COLUMN_8_2_SIZE)
                     .d(COLUMN_8_2_D)
                     .isNullAllowed(COLUMN_8_2_NULL)
@@ -2907,7 +3076,7 @@ public class BaseTest {
                     .table(TABLE_8)
                     .name(COLUMN_8_3_NAME)
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
-                    .columnType(COLUMN_8_3_TYPE)
+                    .columnType(TableColumnType.LONGBLOB)
                     .isNullAllowed(COLUMN_8_3_NULL)
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
@@ -2918,7 +3087,7 @@ public class BaseTest {
                     .ordinalPosition(COLUMN_8_1_ORDINALPOS)
                     .name(COLUMN_8_1_NAME)
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
-                    .columnType(COLUMN_8_1_TYPE_DTO)
+                    .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(COLUMN_8_1_NULL)
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
@@ -2928,7 +3097,7 @@ public class BaseTest {
                     .ordinalPosition(COLUMN_8_2_ORDINALPOS)
                     .name(COLUMN_8_2_NAME)
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
-                    .columnType(COLUMN_8_2_TYPE_DTO)
+                    .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
@@ -2938,10 +3107,26 @@ public class BaseTest {
                     .ordinalPosition(COLUMN_8_3_ORDINALPOS)
                     .name(COLUMN_8_3_NAME)
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
-                    .columnType(COLUMN_8_3_TYPE_DTO)
+                    .columnType(ColumnTypeDto.LONGBLOB)
                     .isNullAllowed(COLUMN_8_3_NULL)
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
+                    .build());
+
+    public final List<Column> TABLE_8_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_8_1_ID)
+                    .internalName(COLUMN_8_1_INTERNAL_NAME)
+                    .columnType(ColumnType.BIGINT)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_8_2_ID)
+                    .internalName(COLUMN_8_2_INTERNAL_NAME)
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_8_3_ID)
+                    .internalName(COLUMN_8_3_INTERNAL_NAME)
+                    .columnType(ColumnType.LONGBLOB)
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
@@ -2993,12 +3178,11 @@ public class BaseTest {
 
     public final static UUID QUERY_1_ID = UUID.fromString("60494137-f000-459e-acd3-4fcadbdf14ca");
     public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` ORDER BY id ASC";
-    public final static String QUERY_1_STATEMENT_NORMALIZED = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-03-07 11:58:07' ORDER BY id ASC";
     public final static Long QUERY_1_RESULT_NUMBER = 3L;
     public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
-    public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
-    public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L) /* 2025-03-07 11:58:07 */;
+    public final static String QUERY_1_RESULT_HASH = "c640a88c5646fdad11f94675b4735b09004a034a316c4780a93a53b10f22809c";
     public final static Instant QUERY_1_EXECUTION = Instant.ofEpochSecond(1677648377L) /* 2025-03-07 11:58:07 */;
+    public final static String QUERY_1_STATEMENT_NORMALIZED = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_1_EXECUTION)) + "' ORDER BY id ASC";
     public final static Boolean QUERY_1_PERSISTED = true;
 
     public final SubsetDto QUERY_1_SUBSET_DTO = SubsetDto.builder()
@@ -3052,28 +3236,28 @@ public class BaseTest {
 
     public final static UUID QUERY_2_ID = UUID.fromString("4e0ac92a-7cb3-4222-9b85-0498c73e0afd");
     public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
-    public final static String QUERY_2_STATEMENT_NORMALIZED = "SELECT `location` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12'";
     public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
     public final static Long QUERY_2_RESULT_NUMBER = 3L;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
     public final static Instant QUERY_2_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
+    public final static String QUERY_2_STATEMENT_NORMALIZED = "SELECT `location` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_2_EXECUTION)) + "'";
     public final static Boolean QUERY_2_PERSISTED = false;
 
     public final static UUID QUERY_3_ID = UUID.fromString("a9849020-45a7-40a8-9a19-d4ae2b28dd46");
     public final static String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
-    public final static String QUERY_3_STATEMENT_NORMALIZED = "SELECT `location`, `mintemp` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12' WHERE `mintemp` > 10";
     public final static String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
     public final static String QUERY_3_RESULT_HASH = "ff3f7cbe1b96d396957f6e39e55b8b1b577fa3d305d4795af99594cfd30cb80d";
     public final static Instant QUERY_3_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
+    public final static String QUERY_3_STATEMENT_NORMALIZED = "SELECT `location`, `mintemp` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_3_EXECUTION)) + "' WHERE `mintemp` > 10";
     public final static Long QUERY_3_RESULT_NUMBER = 2L;
     public final static Boolean QUERY_3_PERSISTED = true;
 
     public final static UUID QUERY_4_ID = UUID.fromString("18a98197-51ff-4011-9f40-914a11675a6d");
     public final static String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
-    public final static String QUERY_4_STATEMENT_NORMALIZED = "SELECT `id`, `value` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12'";
     public final static String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
     public final static String QUERY_4_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
     public final static Instant QUERY_4_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
+    public final static String QUERY_4_STATEMENT_NORMALIZED = "SELECT `id`, `value` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_4_EXECUTION)) + "'";
     public final static Long QUERY_4_RESULT_NUMBER = 6L;
     public final static Long QUERY_4_RESULT_ID = 4L;
     public final static Boolean QUERY_4_PERSISTED = false;
@@ -3112,12 +3296,25 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final Subset QUERY_4_CACHE = Subset.builder()
+            .id(QUERY_4_ID)
+            .databaseId(DATABASE_3_ID)
+            .query(QUERY_4_STATEMENT)
+            .queryNormalized(QUERY_4_STATEMENT_NORMALIZED)
+            .resultNumber(QUERY_4_RESULT_NUMBER)
+            .resultHash(QUERY_4_RESULT_HASH)
+            .queryHash(QUERY_4_QUERY_HASH)
+            .execution(QUERY_4_EXECUTION)
+            .isPersisted(QUERY_4_PERSISTED)
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final static UUID QUERY_5_ID = UUID.fromString("1a39f775-e3d5-4865-b4f5-dbbb5693b637");
     public final static String QUERY_5_STATEMENT = "SELECT `id`, `value` FROM `mfcc` WHERE `value` > 0";
-    public final static String QUERY_5_STATEMENT_NORMALIZED = "SELECT `id`, `value` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12' WHERE `value` > 0";
     public final static String QUERY_5_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
     public final static String QUERY_5_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
     public final static Instant QUERY_5_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
+    public final static String QUERY_5_STATEMENT_NORMALIZED = "SELECT `id`, `value` FROM `mfcc` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_5_EXECUTION)) + "' WHERE `value` > 0";
     public final static Long QUERY_5_RESULT_NUMBER = 6L;
     public final static Boolean QUERY_5_PERSISTED = true;
 
@@ -3132,6 +3329,19 @@ public class BaseTest {
             .execution(QUERY_5_EXECUTION)
             .isPersisted(QUERY_5_PERSISTED)
             .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public final Subset QUERY_5_CACHE = Subset.builder()
+            .id(QUERY_5_ID)
+            .databaseId(DATABASE_3_ID)
+            .query(QUERY_5_STATEMENT)
+            .queryNormalized(QUERY_5_STATEMENT_NORMALIZED)
+            .resultNumber(QUERY_5_RESULT_NUMBER)
+            .resultHash(QUERY_5_RESULT_HASH)
+            .queryHash(QUERY_5_QUERY_HASH)
+            .execution(QUERY_5_EXECUTION)
+            .isPersisted(QUERY_5_PERSISTED)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final Map<String, ColumnAnalysisResultDto> QUERY_5_ANALYSIS_MAP_DTO = new HashMap<>() {{
@@ -3185,6 +3395,7 @@ public class BaseTest {
     public final static String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
     public final static String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
     public final static Instant QUERY_6_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
+    public final static String QUERY_6_STATEMENT_NORMALIZED = "SELECT `location` FROM `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_6_EXECUTION)) + "' WHERE `id` = 1";
     public final static Long QUERY_6_RESULT_NUMBER = 1L;
     public final static Boolean QUERY_6_PERSISTED = true;
 
@@ -3299,10 +3510,10 @@ public class BaseTest {
 
     public final static UUID QUERY_7_ID = UUID.fromString("fe73a325-30a0-444c-b74f-23ce1533e55f");
     public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
-    public final static String QUERY_7_STATEMENT_NORMALIZED = "SELECT id, date, weather_aus.location, lat, lng FROM weather_aus FOR SYSTEM_TIME AS OF TIMESTAMP '2018-11-07 10:59:12' JOIN weather_location on weather_aus.location = weather_location.location WHERE date = '2008-12-01'";
     public final static String QUERY_7_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
     public final static String QUERY_7_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
     public final static Instant QUERY_7_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2018-11-07 10:59:12 */;
+    public final static String QUERY_7_STATEMENT_NORMALIZED = "SELECT id, date, weather_aus.location, lat, lng FROM weather_aus FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_7_EXECUTION)) + "' JOIN weather_location on weather_aus.location = weather_location.location WHERE date = '2008-12-01'";
     public final static Long QUERY_7_RESULT_NUMBER = 6L;
     public final static Long QUERY_7_RESULT_ID = 4L;
     public final static Boolean QUERY_7_PERSISTED = false;
@@ -4210,6 +4421,182 @@ public class BaseTest {
                     .sets(new LinkedList<>())
                     .build());
 
+    public final List<Column> TABLE_3_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_3_1_ID)
+                    .columnType(ColumnType.BIGINT)
+                    .internalName("id")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_2_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("linie")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_3_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("richtung")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_4_ID)
+                    .columnType(ColumnType.DATE)
+                    .internalName("betriebsdatum")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_5_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fahrzeug")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_6_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("kurs")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_7_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("seq_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_8_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_diva_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_9_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_punkt_diva_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_10_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_kurz_von1")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_11_ID)
+                    .columnType(ColumnType.DATE)
+                    .internalName("datum_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_12_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("soll_an_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_13_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("ist_an_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_14_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("soll_ab_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_15_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("ist_ab_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_16_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("seq_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_17_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_diva_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_18_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_punkt_diva_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_19_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_kurz_nach1")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_20_ID)
+                    .columnType(ColumnType.DATE)
+                    .internalName("datum_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_21_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("soll_an_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_22_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("ist_an_nach1")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_23_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("soll_ab_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_24_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("ist_ab_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_25_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fahrt_id")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_26_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fahrweg_id")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_27_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fw_no")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_28_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fw_typ")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_29_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fw_kurz")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_30_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("fw_lang")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_31_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("umlauf_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_32_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_id_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_33_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_id_nach")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_34_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_punkt_id_von")
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_3_35_ID)
+                    .columnType(ColumnType.INT)
+                    .internalName("halt_punkt_id_nach")
+                    .build());
+
     public final static UUID COLUMN_5_1_ID = UUID.fromString("4efd4cbb-ca2e-48e2-8f40-37514956aa67");
     public final static UUID COLUMN_5_2_ID = UUID.fromString("53061685-c1db-4df6-ad4e-8f384a200104");
     public final static UUID COLUMN_5_3_ID = UUID.fromString("643f9cda-8db1-47a4-bb08-c10e78e54c10");
@@ -4468,6 +4855,113 @@ public class BaseTest {
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
                     .build());
+
+    public final List<Column> TABLE_5_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_5_1_ID)
+                    .internalName("id")
+                    .columnType(ColumnType.BIGINT)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_2_ID)
+                    .internalName("animal_name")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_3_ID)
+                    .internalName("hair")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_4_ID)
+                    .internalName("feathers")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_5_ID)
+                    .internalName("bread")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_6_ID)
+                    .internalName("eggs")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_7_ID)
+                    .internalName("milk")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_8_ID)
+                    .internalName("water")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_9_ID)
+                    .internalName("airborne")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_10_ID)
+                    .internalName("waterborne")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_11_ID)
+                    .internalName("aquantic")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_12_ID)
+                    .internalName("predator")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_13_ID)
+                    .internalName("backbone")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_14_ID)
+                    .internalName("breathes")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_15_ID)
+                    .internalName("venomous")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_16_ID)
+                    .internalName("fin")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_17_ID)
+                    .internalName("legs")
+                    .columnType(ColumnType.INT)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_18_ID)
+                    .internalName("tail")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_19_ID)
+                    .internalName("domestic")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_20_ID)
+                    .internalName("catsize")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_5_21_ID)
+                    .internalName("class_type")
+                    .columnType(ColumnType.DECIMAL)
+                    .build());
+
     public final List<ColumnDto> TABLE_5_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(0)
@@ -4843,6 +5337,7 @@ public class BaseTest {
     public final static Long QUERY_8_RESULT_NUMBER = 5L;
     public final static String QUERY_8_RESULT_HASH = "b5f9cae916d32deff81c5f2e9f8ff43904034bc084b12320730953d120698bed";
     public final static Instant QUERY_8_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static String QUERY_8_STATEMENT_NORMALIZED = "SELECT `id`, `animal_name` FROM `zoo` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_8_EXECUTION)) + "' WHERE `hair` = TRUE AND `feathers` = false;";
     public final static Boolean QUERY_8_PERSISTED = true;
 
     public final SubsetDto QUERY_8_SUBSET_DTO = SubsetDto.builder()
@@ -4946,6 +5441,37 @@ public class BaseTest {
             .internalName("id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
+
+    public final List<Column> TABLE_6_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_6_1_ID)
+                    .internalName("id")
+                    .columnType(ColumnType.BIGINT)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_6_2_ID)
+                    .internalName("firstname")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_6_3_ID)
+                    .internalName("lastname")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_6_4_ID)
+                    .internalName("birth")
+                    .columnType(ColumnType.YEAR)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_6_5_ID)
+                    .internalName("reminder")
+                    .columnType(ColumnType.TIME)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_6_6_ID)
+                    .internalName("ref_id")
+                    .columnType(ColumnType.BIGINT)
+                    .build());
 
     public final List<ColumnDto> TABLE_6_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_6_1_ID)
@@ -5101,6 +5627,17 @@ public class BaseTest {
                     .enums(new LinkedList<>())
                     .build());
 
+    public final List<Column> TABLE_7_COLUMNS_CACHE = List.of(Column.builder()
+                    .id(COLUMN_7_1_ID)
+                    .internalName("name_id")
+                    .columnType(ColumnType.BIGINT)
+                    .build(),
+            Column.builder()
+                    .id(COLUMN_7_2_ID)
+                    .internalName("zoo_id")
+                    .columnType(ColumnType.BIGINT)
+                    .build());
+
     public final static UUID VIEW_1_ID = UUID.fromString("7d712cf7-78c7-4a47-90b0-d6b9f7f19b70");
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
     public final static String VIEW_1_NAME = "JUnit";
@@ -5153,6 +5690,23 @@ public class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
+    public final List<at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn> VIEW_1_COLUMNS_CACHE = List.of(
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_1_1_ID)
+                    .internalName("location")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_1_2_ID)
+                    .internalName("lat")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_1_3_ID)
+                    .internalName("lng")
+                    .columnType(ColumnType.DECIMAL)
+                    .build());
+
     public final View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
@@ -5162,8 +5716,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .identifiers(new LinkedList<>()) /* IDENTIFIER_3 */
             .columns(null) /* VIEW_1_COLUMNS */
             .database(null) /* DATABASE_1 */
@@ -5237,6 +5790,17 @@ public class BaseTest {
             .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_1_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
+            .id(VIEW_1_ID)
+            .internalName(VIEW_1_INTERNAL_NAME)
+            .isPublic(VIEW_1_PUBLIC)
+            .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
+            .ownedBy(USER_1_USERNAME)
+            .query(VIEW_1_QUERY)
+            .queryHash(VIEW_1_QUERY_HASH)
+            .columns(VIEW_1_COLUMNS_CACHE)
+            .build();
+
     public final ViewBriefDto VIEW_1_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
@@ -5245,7 +5809,7 @@ public class BaseTest {
             .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_1_PUBLIC)
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .build();
@@ -5254,6 +5818,34 @@ public class BaseTest {
             .isPublic(VIEW_1_PUBLIC)
             .name(VIEW_1_NAME)
             .query(VIEW_1_SUBSET_DTO)
+            .build();
+
+    @SuppressWarnings("java:S3599")
+    public final TableStatisticDto VIEW_1_STATISTIC_DTO = TableStatisticDto.builder()
+            .columns(new LinkedList<>(List.of(ColumnStatisticDto.builder()
+                            .name("location")
+                            .min(BigDecimal.valueOf(6.0))
+                            .max(BigDecimal.valueOf(6.0))
+                            .mean(BigDecimal.valueOf(6.0))
+                            .median(BigDecimal.valueOf(6.0))
+                            .stdDev(BigDecimal.valueOf(0.0))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("lat")
+                            .min(BigDecimal.valueOf(-33.847927))
+                            .max(BigDecimal.valueOf(-36.0653583))
+                            .mean(BigDecimal.valueOf(-34.95664265))
+                            .median(BigDecimal.valueOf(-33.847927))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build(),
+                    ColumnStatisticDto.builder()
+                            .name("lng")
+                            .min(BigDecimal.valueOf(146.9112214))
+                            .max(BigDecimal.valueOf(150.6517942))
+                            .mean(BigDecimal.valueOf(148.7815078))
+                            .median(BigDecimal.valueOf(146.9112214))
+                            .stdDev(BigDecimal.valueOf(1.0))
+                            .build())))
             .build();
 
     public final static UUID VIEW_2_ID = UUID.fromString("1921a0a0-e4b0-4d12-a05f-be920af9b5ce");
@@ -5312,6 +5904,28 @@ public class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
+    public final List<at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn> VIEW_2_COLUMNS_CACHE = List.of(
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_2_1_ID)
+                    .internalName("date")
+                    .columnType(ColumnType.DATE)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_2_2_ID)
+                    .internalName("loc")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_2_3_ID)
+                    .internalName("rainfall")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_2_4_ID)
+                    .internalName("mintemp")
+                    .columnType(ColumnType.DECIMAL)
+                    .build());
+
     public final View VIEW_2 = View.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
@@ -5322,8 +5936,7 @@ public class BaseTest {
             .columns(null)  /* VIEW_2_COLUMNS */
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .database(null) /* DATABASE_1 */
             .build();
 
@@ -5385,6 +5998,17 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_2_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
+            .id(VIEW_2_ID)
+            .internalName(VIEW_2_INTERNAL_NAME)
+            .isPublic(VIEW_2_PUBLIC)
+            .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
+            .columns(VIEW_2_COLUMNS_CACHE)
+            .query(VIEW_2_QUERY)
+            .queryHash(VIEW_2_QUERY_HASH)
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final ViewBriefDto VIEW_2_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
@@ -5395,7 +6019,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID VIEW_3_ID = UUID.fromString("88940939-d456-4aae-88a6-f2b6b343c614");
@@ -5455,6 +6079,28 @@ public class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
+    public final List<at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn> VIEW_3_COLUMNS_CACHE = List.of(
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_3_1_ID)
+                    .internalName("mintemp")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_3_2_ID)
+                    .internalName("rainfall")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_3_3_ID)
+                    .internalName("location")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(VIEW_COLUMN_3_4_ID)
+                    .internalName("date")
+                    .columnType(ColumnType.DATE)
+                    .build());
+
     public final View VIEW_3 = View.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
@@ -5465,8 +6111,7 @@ public class BaseTest {
             .columns(null)  /* VIEW_3_COLUMNS */
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .database(null) /* DATABASE_1 */
             .build();
 
@@ -5528,6 +6173,17 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_3_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
+            .id(VIEW_3_ID)
+            .internalName(VIEW_3_INTERNAL_NAME)
+            .isPublic(VIEW_3_PUBLIC)
+            .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
+            .columns(VIEW_3_COLUMNS_CACHE)
+            .query(VIEW_3_QUERY)
+            .queryHash(VIEW_3_QUERY_HASH)
+            .ownedBy(USER_1_USERNAME)
+            .build();
+
     public final ViewBriefDto VIEW_3_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
@@ -5538,7 +6194,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final static UUID VIEW_4_ID = UUID.fromString("13b36fa0-a65a-4ccf-80b1-5b3a2444a41a");
@@ -5550,6 +6206,94 @@ public class BaseTest {
     public final static Boolean VIEW_4_SCHEMA_PUBLIC = false;
     public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
     public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
+
+    public final List<at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn> VIEW_4_COLUMNS_CACHE = List.of(
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_1_ID)
+                    .internalName("animal_name")
+                    .columnType(ColumnType.VARCHAR)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_2_ID)
+                    .internalName("hair")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_3_ID)
+                    .internalName("feathers")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_4_ID)
+                    .internalName("eggs")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_5_ID)
+                    .internalName("milk")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_6_ID)
+                    .internalName("airborne")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_7_ID)
+                    .internalName("aquantic")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_8_ID)
+                    .internalName("predator")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_9_ID)
+                    .internalName("backbone")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_10_ID)
+                    .internalName("breathes")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_11_ID)
+                    .internalName("venomous")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_12_ID)
+                    .internalName("fin")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_13_ID)
+                    .internalName("legs")
+                    .columnType(ColumnType.INT)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_14_ID)
+                    .internalName("tail")
+                    .columnType(ColumnType.DECIMAL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_15_ID)
+                    .internalName("domestic")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_16_ID)
+                    .internalName("catsize")
+                    .columnType(ColumnType.BOOL)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn.builder()
+                    .id(COLUMN_5_17_ID)
+                    .internalName("class_type")
+                    .columnType(ColumnType.DECIMAL)
+                    .build());
+
     public final List<ViewColumnDto> VIEW_4_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(COLUMN_5_1_ID)
@@ -5714,8 +6458,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .columns(null) /* VIEW_4_COLUMNS */
             .build();
 
@@ -5734,6 +6477,17 @@ public class BaseTest {
             .columns(VIEW_4_COLUMNS_DTO)
             .build();
 
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_4_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
+            .id(VIEW_4_ID)
+            .internalName(VIEW_4_INTERNAL_NAME)
+            .isPublic(VIEW_4_PUBLIC)
+            .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
+            .query(VIEW_4_QUERY)
+            .queryHash(VIEW_4_QUERY_HASH)
+            .ownedBy(USER_1_USERNAME)
+            .columns(VIEW_4_COLUMNS_CACHE)
+            .build();
+
     public final ViewBriefDto VIEW_4_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_4_ID)
             .isInitialView(VIEW_4_INITIAL_VIEW)
@@ -5744,7 +6498,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final List<ViewColumn> VIEW_4_COLUMNS = List.of(
@@ -5920,8 +6674,7 @@ public class BaseTest {
             .isSchemaPublic(VIEW_5_SCHEMA_PUBLIC)
             .query(VIEW_5_QUERY)
             .queryHash(VIEW_5_QUERY_HASH)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .columns(null)
             .build();
 
@@ -6421,8 +7174,7 @@ public class BaseTest {
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1)))
@@ -6744,8 +7496,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE)
-            .owner(USER_2)
-            .ownedBy(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1, IDENTIFIER_5_CREATOR_2)))
             .status(IDENTIFIER_5_STATUS_TYPE)
             .funders(new LinkedList<>())
@@ -6871,7 +7622,7 @@ public class BaseTest {
     public final static String IDENTIFIER_6_QUERY_HASH = QUERY_3_QUERY_HASH;
     public final static String IDENTIFIER_6_RESULT_HASH = QUERY_3_RESULT_HASH;
     public final static String IDENTIFIER_6_QUERY = QUERY_3_STATEMENT;
-    public final static String IDENTIFIER_6_NORMALIZED = QUERY_3_STATEMENT;
+    public final static String IDENTIFIER_6_NORMALIZED = QUERY_3_STATEMENT_NORMALIZED;
     public final static Long IDENTIFIER_6_RESULT_NUMBER = QUERY_3_RESULT_NUMBER;
     public final static String IDENTIFIER_6_PUBLISHER = "Norwegian Government";
     public final static IdentifierType IDENTIFIER_6_TYPE = IdentifierType.SUBSET;
@@ -7085,6 +7836,7 @@ public class BaseTest {
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_6_DESCRIPTION_1)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_6_TITLE_1)))
             .doi(IDENTIFIER_6_DOI)
+            .database(null) /* DATABASE_3 */
             .created(IDENTIFIER_6_CREATED)
             .lastModified(IDENTIFIER_6_MODIFIED)
             .execution(IDENTIFIER_6_EXECUTION)
@@ -7098,8 +7850,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE)
-            .owner(USER_3)
-            .ownedBy(USER_3_ID)
+            .ownedBy(USER_3_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1, IDENTIFIER_6_CREATOR_2, IDENTIFIER_6_CREATOR_3)))
             .status(IDENTIFIER_6_STATUS_TYPE)
@@ -7363,7 +8114,7 @@ public class BaseTest {
     public final static String IDENTIFIER_2_QUERY_HASH = QUERY_1_QUERY_HASH;
     public final static String IDENTIFIER_2_RESULT_HASH = QUERY_1_RESULT_HASH;
     public final static String IDENTIFIER_2_QUERY = QUERY_1_STATEMENT;
-    public final static String IDENTIFIER_2_NORMALIZED = QUERY_1_STATEMENT;
+    public final static String IDENTIFIER_2_NORMALIZED = QUERY_1_STATEMENT_NORMALIZED;
     public final static Long IDENTIFIER_2_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
     public final static String IDENTIFIER_2_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
@@ -7473,8 +8224,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_2_CREATOR_1)))
             .status(IDENTIFIER_2_STATUS_TYPE)
@@ -7700,8 +8450,7 @@ public class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_3_CREATOR_1)))
             .funders(new LinkedList<>())
@@ -7875,8 +8624,7 @@ public class BaseTest {
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
+            .ownedBy(USER_1_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_4_CREATOR_1)))
             .status(IDENTIFIER_4_STATUS_TYPE)
@@ -8044,13 +8792,9 @@ public class BaseTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
-            .ownedBy(USER_1_ID)
-            .owner(USER_1)
+            .ownedBy(USER_1_USERNAME)
             .image(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-            .contactPerson(USER_1_ID)
-            .contact(USER_1)
+            .contactPerson(USER_1_USERNAME)
             .subsets(new LinkedList<>())
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
@@ -8074,20 +8818,17 @@ public class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final DatabaseDto DATABASE_1_PRIVILEGED_DTO = DatabaseDto.builder()
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database DATABASE_1_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database.builder()
             .id(DATABASE_1_ID)
             .isPublic(DATABASE_1_PUBLIC)
             .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
-            .name(DATABASE_1_NAME)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .isDashboardEnabled(DATABASE_1_DASHBOARD_ENABLED)
+            .container(CONTAINER_1_CACHE)
             .internalName(DATABASE_1_INTERNAL_NAME)
-            .exchangeName(DATABASE_1_EXCHANGE)
-            .accesses(new LinkedList<>(List.of())) /* DATABASE_1_USER_1_READ_ACCESS_DTO */
-            .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)))
-            .tables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)))
-            .views(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)))
-            .owner(USER_1_BRIEF_DTO)
-            .lastRetrieved(Instant.now())
+            .accesses(new LinkedList<>(List.of())) /* DATABASE_1_USER_1_READ_ACCESS_CACHE */
+            .tables(new LinkedList<>(List.of(TABLE_1_CACHE, TABLE_2_CACHE, TABLE_3_CACHE, TABLE_4_CACHE)))
+            .views(new LinkedList<>(List.of(VIEW_1_CACHE, VIEW_2_CACHE, VIEW_3_CACHE)))
+            .ownedBy(USER_1_USERNAME)
             .build();
 
     public final DatabaseBriefDto DATABASE_1_BRIEF_DTO = DatabaseBriefDto.builder()
@@ -8099,19 +8840,30 @@ public class BaseTest {
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO)))
             .build();
 
+    public final DatabaseAccess DATABASE_1_USER_LOCAL_ADMIN_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .username(USER_LOCAL_ADMIN_USERNAME)
+            .build();
+
     public final DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_1_USER_1_READ_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.READ)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseGrantsDto READ_GRANT_DTO = DatabaseGrantsDto.builder()
@@ -8132,30 +8884,27 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8163,29 +8912,32 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_OWN)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8193,45 +8945,46 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_1_USER_4_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
-            .huserid(USER_4_ID)
-            .user(USER_4)
+            .username(USER_4_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_1_USER_4_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
-            .huserid(USER_4_ID)
+            .username(USER_4_USERNAME)
             .user(USER_4_BRIEF_DTO)
             .build();
 
@@ -8264,10 +9017,8 @@ public class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .created(DATABASE_2_CREATED)
             .lastModified(DATABASE_2_LAST_MODIFIED)
-            .ownedBy(USER_2_ID)
-            .owner(USER_2)
-            .contactPerson(USER_2_ID)
-            .contact(USER_2)
+            .ownedBy(USER_2_USERNAME)
+            .contactPerson(USER_2_USERNAME)
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .accesses(new LinkedList<>())
@@ -8278,6 +9029,7 @@ public class BaseTest {
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
+            .isDashboardEnabled(DATABASE_2_DASHBOARD_ENABLED)
             .name(DATABASE_2_NAME)
             .container(CONTAINER_1_DTO)
             .internalName(DATABASE_2_INTERNAL_NAME)
@@ -8286,32 +9038,18 @@ public class BaseTest {
             .tables(new LinkedList<>(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO)))
             .views(new LinkedList<>(List.of(VIEW_4_DTO)))
             .owner(USER_2_BRIEF_DTO)
-            .lastRetrieved(Instant.now())
             .build();
 
-    public final DatabaseDto DATABASE_2_PRIVILEGED_DTO = DatabaseDto.builder()
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database DATABASE_2_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
-            .name(DATABASE_2_NAME)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .isDashboardEnabled(DATABASE_2_DASHBOARD_ENABLED)
+            .container(CONTAINER_1_CACHE)
             .internalName(DATABASE_2_INTERNAL_NAME)
-            .exchangeName(DATABASE_2_EXCHANGE)
-            .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_DTO)))
-            .tables(new LinkedList<>(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO)))
-            .views(new LinkedList<>(List.of(VIEW_4_DTO)))
-            .owner(USER_2_BRIEF_DTO)
-            .lastRetrieved(Instant.now())
-            .build();
-
-    public final DatabaseBriefDto DATABASE_2_PRIVILEGED_BRIEF_DTO = DatabaseBriefDto.builder()
-            .id(DATABASE_2_ID)
-            .isPublic(DATABASE_2_PUBLIC)
-            .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
-            .name(DATABASE_2_NAME)
-            .internalName(DATABASE_2_INTERNAL_NAME)
-            .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
-            .ownerId(USER_2_ID)
+            .tables(new LinkedList<>(List.of(TABLE_5_CACHE, TABLE_6_CACHE, TABLE_7_CACHE)))
+            .views(new LinkedList<>(List.of(VIEW_4_CACHE)))
+            .ownedBy(USER_2_USERNAME)
             .build();
 
     public final DatabaseBriefDto DATABASE_2_BRIEF_DTO = DatabaseBriefDto.builder()
@@ -8321,67 +9059,66 @@ public class BaseTest {
             .name(DATABASE_2_NAME)
             .internalName(DATABASE_2_INTERNAL_NAME)
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
-            .ownerId(USER_2_ID)
+            .ownedBy(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_2_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .user(USER_2_BRIEF_DTO)
             .build();
 
@@ -8389,31 +9126,33 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_2_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_2_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_2_USER_3_READ_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.READ)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final CreateDashboardResponseDto DATABASE_2_CREATE_DASHBOARD_RESPONSE_DTO =
@@ -8445,10 +9184,8 @@ public class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
-            .ownedBy(USER_3_ID)
-            .owner(USER_3)
-            .contactPerson(USER_3_ID)
-            .contact(USER_3)
+            .ownedBy(USER_3_USERNAME)
+            .contactPerson(USER_3_USERNAME)
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .accesses(new LinkedList<>()) /* DATABASE_3_USER_1_WRITE_ALL_ACCESS */
@@ -8459,14 +9196,13 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
             .build();
 
@@ -8474,14 +9210,13 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
             .build();
 
@@ -8489,53 +9224,53 @@ public class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_1_ID)
-            .user(USER_1)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .user(USER_1_BRIEF_DTO)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_2_ID)
-            .user(USER_2)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8543,14 +9278,13 @@ public class BaseTest {
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8558,14 +9292,13 @@ public class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
-            .huserid(USER_3_ID)
-            .user(USER_3)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccessDto DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .user(USER_3_BRIEF_DTO)
             .build();
 
@@ -8587,6 +9320,7 @@ public class BaseTest {
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_7_DESCRIPTION_1)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_7_TITLE_1)))
             .doi(IDENTIFIER_7_DOI)
+            .database(null) /* DATABASE_4 */
             .created(IDENTIFIER_7_CREATED)
             .lastModified(IDENTIFIER_7_MODIFIED)
             .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
@@ -8594,8 +9328,7 @@ public class BaseTest {
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE)
-            .owner(USER_4)
-            .ownedBy(USER_4_ID)
+            .ownedBy(USER_4_USERNAME)
             .licenses(new LinkedList<>(List.of(LICENSE_1)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1)))
             .relatedIdentifiers(new LinkedList<>())
@@ -8619,10 +9352,8 @@ public class BaseTest {
             .exchangeName(DATABASE_4_EXCHANGE)
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
-            .ownedBy(USER_4_ID)
-            .owner(USER_4)
-            .contactPerson(USER_4_ID)
-            .contact(USER_4)
+            .ownedBy(USER_4_USERNAME)
+            .contactPerson(USER_4_USERNAME)
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .identifiers(new LinkedList<>())
@@ -8632,63 +9363,78 @@ public class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_4_USER_1_READ_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.READ)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_1_ID)
+            .username(USER_1_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_OWN)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_2_ID)
+            .username(USER_2_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
             .build();
 
     public final DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
-            .huserid(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .build();
+
+    public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+            .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL)
+            .username(USER_3_USERNAME)
             .build();
 
     public final CreateDashboardResponseDto DATABASE_4_CREATE_DASHBOARD_RESPONSE_DTO =
@@ -9002,6 +9748,19 @@ public class BaseTest {
             .resultNumber(3L)
             .build();
 
+    public final Subset QUERY_1_CACHE = Subset.builder()
+            .id(QUERY_1_ID)
+            .databaseId(DATABASE_1_ID)
+            .query(QUERY_1_STATEMENT)
+            .queryNormalized(QUERY_1_STATEMENT_NORMALIZED)
+            .queryHash(QUERY_1_QUERY_HASH)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .execution(QUERY_1_EXECUTION)
+            .ownedBy(USER_1_USERNAME)
+            .isPersisted(QUERY_1_PERSISTED)
+            .resultNumber(3L)
+            .build();
+
     public final QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
             .databaseId(DATABASE_1_ID)
@@ -9030,6 +9789,20 @@ public class BaseTest {
             .resultNumber(2L)
             .build();
 
+    public final Subset QUERY_3_CACHE = Subset.builder()
+            .id(QUERY_3_ID)
+            .databaseId(DATABASE_1_ID)
+            .query(QUERY_3_STATEMENT)
+            .queryNormalized(QUERY_3_STATEMENT_NORMALIZED)
+            .resultNumber(QUERY_3_RESULT_NUMBER)
+            .resultHash(QUERY_3_RESULT_HASH)
+            .ownedBy(USER_1_USERNAME)
+            .queryHash(QUERY_3_QUERY_HASH)
+            .execution(QUERY_3_EXECUTION)
+            .isPersisted(QUERY_3_PERSISTED)
+            .resultNumber(2L)
+            .build();
+
     public final QueryDto QUERY_7_DTO = QueryDto.builder()
             .id(QUERY_7_ID)
             .databaseId(DATABASE_4_ID)
@@ -9048,7 +9821,7 @@ public class BaseTest {
             .id(QUERY_6_ID)
             .databaseId(DATABASE_1_ID)
             .query(QUERY_6_STATEMENT)
-            .queryNormalized(QUERY_6_STATEMENT)
+            .queryNormalized(QUERY_6_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_6_RESULT_NUMBER)
             .resultHash(QUERY_6_RESULT_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -9061,7 +9834,7 @@ public class BaseTest {
             .id(QUERY_8_ID)
             .databaseId(DATABASE_2_ID)
             .query(QUERY_8_STATEMENT)
-            .queryNormalized(QUERY_8_STATEMENT)
+            .queryNormalized(QUERY_8_STATEMENT_NORMALIZED)
             .resultNumber(QUERY_8_RESULT_NUMBER)
             .resultHash(QUERY_8_RESULT_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -9071,24 +9844,41 @@ public class BaseTest {
             .resultNumber(3L)
             .build();
 
+    public final Subset QUERY_8_CACHE = Subset.builder()
+            .id(QUERY_8_ID)
+            .databaseId(DATABASE_2_ID)
+            .query(QUERY_8_STATEMENT)
+            .queryNormalized(QUERY_8_STATEMENT_NORMALIZED)
+            .resultNumber(QUERY_8_RESULT_NUMBER)
+            .resultHash(QUERY_8_RESULT_HASH)
+            .ownedBy(USER_1_USERNAME)
+            .queryHash(QUERY_8_QUERY_HASH)
+            .execution(QUERY_8_EXECUTION)
+            .isPersisted(QUERY_8_PERSISTED)
+            .resultNumber(3L)
+            .build();
+
     public BaseTest() {
-        IMAGE_1_DTO.setOperators(IMAGE_1_OPERATORS_DTO);
-        IMAGE_1_DTO.setDataTypes(IMAGE_1_DATA_TYPES_DTO);
-        CONTAINER_1_DTO.setImage(IMAGE_1_DTO);
         IMAGE_1.setOperators(new LinkedList<>(IMAGE_1_OPERATORS));
         IMAGE_1.setDataTypes(new LinkedList<>(IMAGE_1_DATA_TYPES));
+        IMAGE_1_DTO.setOperators(IMAGE_1_OPERATORS_DTO);
+        IMAGE_1_DTO.setDataTypes(IMAGE_1_DATA_TYPES_DTO);
+        IMAGE_1_CACHE.setOperators(IMAGE_1_OPERATORS_CACHE);
+        IMAGE_1_CACHE.setDataTypes(IMAGE_1_DATA_TYPES_CACHE);
+        CONTAINER_1.setImage(IMAGE_1);
+        CONTAINER_1_DTO.setImage(IMAGE_1_DTO);
+        CONTAINER_1_CACHE.setImage(IMAGE_1_CACHE);
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
         CONTAINER_4.setDatabases(new LinkedList<>(List.of(DATABASE_4)));
         /* DATABASE 1 */
-        DATABASE_1.setOwner(USER_1);
         DATABASE_1.setSubsets(new LinkedList<>());
         DATABASE_1.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_1_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_DTO, DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO, DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO)));
-        DATABASE_1_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_DTO, DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO, DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO)));
+        DATABASE_1_CACHE.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_CACHE, DATABASE_1_USER_2_WRITE_OWN_ACCESS_CACHE, DATABASE_1_USER_3_WRITE_ALL_ACCESS_CACHE)));
         TABLE_1.setDatabase(DATABASE_1);
         TABLE_1.setColumns(new LinkedList<>(TABLE_1_COLUMNS));
         TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
-        VIEW_1_DTO.setIdentifiers(VIEW_1_DTO_IDENTIFIERS);
+        TABLE_1_CACHE.setColumns(TABLE_1_COLUMNS_CACHE);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
         IDENTIFIER_1.setDatabase(DATABASE_1);
         IDENTIFIER_2.setDatabase(DATABASE_1);
@@ -9100,31 +9890,38 @@ public class BaseTest {
         DATABASE_1_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)));
         DATABASE_1_DTO.setTables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)));
         DATABASE_1_DTO.setViews(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)));
-        TABLE_1_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
         TABLE_1_DTO.setConstraints(TABLE_1_CONSTRAINTS_DTO);
+        TABLE_1_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
         TABLE_2.setDatabase(DATABASE_1);
         TABLE_2.setColumns(new LinkedList<>(TABLE_2_COLUMNS));
-        TABLE_2_CONSTRAINTS.getForeignKeys().get(0).getReferences().get(0).setForeignKey(TABLE_2_CONSTRAINTS.getForeignKeys().get(0));
         TABLE_2.setConstraints(TABLE_2_CONSTRAINTS);
+        TABLE_2_CACHE.setColumns(TABLE_2_COLUMNS_CACHE);
+        TABLE_2_CONSTRAINTS.getForeignKeys().get(0).getReferences().get(0).setForeignKey(TABLE_2_CONSTRAINTS.getForeignKeys().get(0));
         TABLE_2_DTO.setColumns(new LinkedList<>(TABLE_2_COLUMNS_DTO));
         TABLE_2_DTO.setConstraints(TABLE_2_CONSTRAINTS_DTO);
         TABLE_3.setDatabase(DATABASE_1);
         TABLE_3.setColumns(new LinkedList<>(TABLE_3_COLUMNS));
         TABLE_3.setConstraints(TABLE_3_CONSTRAINTS);
+        TABLE_3_CACHE.setColumns(TABLE_3_COLUMNS_CACHE);
         TABLE_3_DTO.setColumns(new LinkedList<>(TABLE_3_COLUMNS_DTO));
         TABLE_3_DTO.setConstraints(TABLE_3_CONSTRAINTS_DTO);
         TABLE_4.setDatabase(DATABASE_1);
         TABLE_4.setColumns(new LinkedList<>(TABLE_4_COLUMNS));
         TABLE_4.setConstraints(TABLE_4_CONSTRAINTS);
+        TABLE_4_CACHE.setColumns(TABLE_4_COLUMNS_CACHE);
         TABLE_4_DTO.setColumns(TABLE_4_COLUMNS_DTO);
         TABLE_4_DTO.setConstraints(TABLE_4_CONSTRAINTS_DTO);
         VIEW_1.setDatabase(DATABASE_1);
         VIEW_1.setColumns(new LinkedList<>(VIEW_1_COLUMNS));
         VIEW_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_3)));
+        VIEW_1_DTO.setIdentifiers(VIEW_1_DTO_IDENTIFIERS);
+        VIEW_1_CACHE.setColumns(VIEW_1_COLUMNS_CACHE);
         VIEW_2.setDatabase(DATABASE_1);
         VIEW_2.setColumns(new LinkedList<>(VIEW_2_COLUMNS));
+        VIEW_2_CACHE.setColumns(new LinkedList<>(VIEW_2_COLUMNS_CACHE));
         VIEW_3.setDatabase(DATABASE_1);
         VIEW_3.setColumns(new LinkedList<>(VIEW_3_COLUMNS));
+        VIEW_3_CACHE.setColumns(new LinkedList<>(VIEW_3_COLUMNS_CACHE));
         IDENTIFIER_1.setDatabase(DATABASE_1);
         IDENTIFIER_1_CREATOR_1.setIdentifier(IDENTIFIER_1);
         IDENTIFIER_1_TITLE_1.setIdentifier(IDENTIFIER_1);
@@ -9144,27 +9941,28 @@ public class BaseTest {
         IDENTIFIER_4_TITLE_1.setIdentifier(IDENTIFIER_4);
         IDENTIFIER_4_DESCRIPTION_1.setIdentifier(IDENTIFIER_4);
         /* DATABASE 2 */
+        VIEW_4.setDatabase(DATABASE_2);
+        VIEW_4.setColumns(new LinkedList<>(VIEW_4_COLUMNS));
+        VIEW_4_CACHE.setColumns(new LinkedList<>(VIEW_4_COLUMNS_CACHE));
         DATABASE_2.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS, DATABASE_2_USER_3_READ_ACCESS)));
         DATABASE_2.setTables(new LinkedList<>(List.of(TABLE_5, TABLE_6, TABLE_7)));
-        VIEW_4.setColumns(new LinkedList<>(VIEW_4_COLUMNS));
         DATABASE_2.setViews(new LinkedList<>(List.of(VIEW_4)));
         DATABASE_2.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_5)));
         DATABASE_2_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO, DATABASE_2_USER_3_READ_ACCESS_DTO)));
         DATABASE_2_DTO.setTables(new LinkedList<>(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO)));
         DATABASE_2_DTO.setViews(new LinkedList<>(List.of(VIEW_4_DTO)));
         DATABASE_2_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_5_DTO)));
-        DATABASE_2_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO, DATABASE_2_USER_3_READ_ACCESS_DTO)));
-        DATABASE_2_PRIVILEGED_DTO.setTables(new LinkedList<>(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO)));
-        DATABASE_2_PRIVILEGED_DTO.setViews(new LinkedList<>(List.of(VIEW_4_DTO)));
-        DATABASE_2_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_5_DTO)));
+        DATABASE_2_CACHE.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS_CACHE, DATABASE_2_USER_3_READ_ACCESS_CACHE)));
         TABLE_5.setDatabase(DATABASE_2);
         TABLE_5.setColumns(new LinkedList<>(TABLE_5_COLUMNS));
         TABLE_5.setConstraints(TABLE_5_CONSTRAINTS);
         TABLE_5_DTO.setColumns(new LinkedList<>(TABLE_5_COLUMNS_DTO));
         TABLE_5_DTO.setConstraints(TABLE_5_CONSTRAINTS_DTO);
+        TABLE_5_CACHE.setColumns(TABLE_5_COLUMNS_CACHE);
         TABLE_6.setDatabase(DATABASE_2);
         TABLE_6.setColumns(new LinkedList<>(TABLE_6_COLUMNS));
         TABLE_6.setConstraints(TABLE_6_CONSTRAINTS);
+        TABLE_6_CACHE.setColumns(new LinkedList<>(TABLE_6_COLUMNS_CACHE));
         TABLE_7.setDatabase(DATABASE_2);
         TABLE_7.setColumns(new LinkedList<>(TABLE_7_COLUMNS));
         TABLE_7.setConstraints(TABLE_7_CONSTRAINTS);
@@ -9172,9 +9970,9 @@ public class BaseTest {
         TABLE_7_CONSTRAINTS.getForeignKeys().get(1).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS.getForeignKeys().get(1));
         TABLE_7_DTO.setColumns(TABLE_7_COLUMNS_DTO);
         TABLE_7_DTO.setConstraints(TABLE_7_CONSTRAINTS_DTO);
+        TABLE_7_CACHE.setColumns(new LinkedList<>(TABLE_7_COLUMNS_CACHE));
         TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(0).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_0_DTO);
         TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(1).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_1_DTO);
-        VIEW_4.setDatabase(DATABASE_2);
         IDENTIFIER_5.setDatabase(DATABASE_2);
         IDENTIFIER_5_CREATOR_1.setIdentifier(IDENTIFIER_5);
         IDENTIFIER_5_CREATOR_2.setIdentifier(IDENTIFIER_5);
@@ -9189,15 +9987,13 @@ public class BaseTest {
         DATABASE_3_DTO.setViews(new LinkedList<>(List.of(VIEW_5_DTO)));
         DATABASE_3_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_6_DTO)));
         DATABASE_3_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO)));
-        DATABASE_3_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO)));
-        DATABASE_3_PRIVILEGED_DTO.setTables(new LinkedList<>(List.of(TABLE_8_DTO)));
-        DATABASE_3_PRIVILEGED_DTO.setViews(new LinkedList<>(List.of(VIEW_5_DTO)));
-        DATABASE_3_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_6_DTO)));
+        DATABASE_3_CACHE.setAccesses(new LinkedList<>(List.of(DATABASE_3_USER_1_WRITE_ALL_ACCESS_CACHE)));
         TABLE_8.setDatabase(DATABASE_3);
         TABLE_8.setColumns(new LinkedList<>(TABLE_8_COLUMNS));
         TABLE_8.setConstraints(TABLE_8_CONSTRAINTS);
         TABLE_8_DTO.setColumns(new LinkedList<>(TABLE_8_COLUMNS_DTO));
         TABLE_8_DTO.setConstraints(TABLE_8_CONSTRAINTS_DTO);
+        TABLE_8_CACHE.setColumns(new LinkedList<>(TABLE_8_COLUMNS_CACHE));
         VIEW_5.setDatabase(DATABASE_3);
         VIEW_5.setColumns(VIEW_5_COLUMNS);
         VIEW_5_DTO.setColumns(VIEW_5_COLUMNS_DTO);
@@ -9211,8 +10007,7 @@ public class BaseTest {
         DATABASE_4.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7)));
         DATABASE_4_DTO.setTables(new LinkedList<>(List.of(TABLE_9_DTO)));
         DATABASE_4_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7_DTO)));
-        DATABASE_4_PRIVILEGED_DTO.setTables(new LinkedList<>(List.of(TABLE_9_DTO)));
-        DATABASE_4_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7_DTO)));
+        DATABASE_4_CACHE.setAccesses(new LinkedList<>(List.of(DATABASE_4_USER_1_READ_ACCESS_CACHE, DATABASE_4_USER_2_WRITE_OWN_ACCESS_CACHE, DATABASE_4_USER_3_WRITE_ALL_ACCESS_CACHE)));
         TABLE_9.setDatabase(DATABASE_4);
         TABLE_9.setColumns(TABLE_9_COLUMNS);
         TABLE_9.setConstraints(TABLE_9_CONSTRAINTS);

@@ -450,7 +450,7 @@ export default {
           this.$emit('close', { success: true })
           this.loading = false
         })
-        .catch(({message}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
@@ -487,9 +487,10 @@ export default {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -515,9 +516,10 @@ export default {
           this.loadContainer = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadContainer = false

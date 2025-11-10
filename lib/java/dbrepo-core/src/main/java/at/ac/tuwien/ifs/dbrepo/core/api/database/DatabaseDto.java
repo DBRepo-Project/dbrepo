@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.CacheableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
@@ -19,13 +18,13 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
-@EqualsAndHashCode(callSuper = true)
+@Builder(toBuilder = true)
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class DatabaseDto extends CacheableDto {
+public class DatabaseDto {
 
     @NotNull
     @Schema(description = "The id", example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
@@ -77,6 +76,7 @@ public class DatabaseDto extends CacheableDto {
     @Schema(description = "If true, the dashboard will be managed", example = "true")
     private Boolean isDashboardEnabled;
 
+    @NotNull
     private ContainerDto container;
 
     @NotNull
@@ -104,11 +104,5 @@ public class DatabaseDto extends CacheableDto {
     @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
-
-    /* lombok limitations prevent from convenient builder functions */
-
-    @JsonProperty("last_retrieved")
-    @Schema(description = "The timestamp The was last retrieved from the cache", example = "2025-01-23T12:09:01")
-    private Instant lastRetrieved;
 
 }

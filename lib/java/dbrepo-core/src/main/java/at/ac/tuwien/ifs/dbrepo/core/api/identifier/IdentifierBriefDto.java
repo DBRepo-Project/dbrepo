@@ -75,8 +75,8 @@ public class IdentifierBriefDto {
 
     @NotNull
     @JsonProperty("owned_by")
-    @Schema(example = "2f45ef7a-7f9b-4667-9156-152c87fe1ca5")
-    private UUID ownedBy;
+    @Schema(description = "The owner username", example = "foobar")
+    private String ownedBy;
 
     @EqualsAndHashCode.Exclude
     @LastModifiedDate

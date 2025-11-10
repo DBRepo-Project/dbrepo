@@ -3,11 +3,11 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.config.EndpointConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.ld.LdDatasetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,25 +51,25 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class IdentifierEndpointUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private IdentifierService identifierService;
 
-    @MockBean
+    @MockitoBean
     private DatabaseService databaseService;
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private AccessService accessService;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private ViewService viewService;
 
-    @MockBean
+    @MockitoBean
     private TableService tableService;
 
     @Autowired
@@ -1083,7 +1083,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL, USER_1);
+        generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL, USER_1_DTO);
     }
 
     @Test
@@ -1096,7 +1096,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1, IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1, IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1114,7 +1114,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
-        generic_save(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_5, IDENTIFIER_5_SAVE_DTO, USER_2_PRINCIPAL, USER_2);
+        generic_save(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_5, IDENTIFIER_5_SAVE_DTO, USER_2_PRINCIPAL, USER_2_DTO);
     }
 
     @ParameterizedTest
@@ -1146,7 +1146,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1179,7 +1179,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1212,7 +1212,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1245,7 +1245,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1274,7 +1274,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1303,7 +1303,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1311,11 +1311,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @MethodSource("save_foreign_parameters")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void save_foreign_fails(String name, Integer idx)
-            throws UserNotFoundException, IdentifierNotFoundException {
+            throws UserNotFoundException, IdentifierNotFoundException, NotAllowedException {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1);
         final Identifier identifier;
@@ -1344,7 +1344,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, null, identifier, identifierSave, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, null, identifier, identifierSave, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1374,7 +1374,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1);
+            generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, request, USER_1_PRINCIPAL, USER_1_DTO);
         });
     }
 
@@ -1422,10 +1422,10 @@ public class IdentifierEndpointUnitTest extends BaseTest {
             }
         };
         final Principal principal;
-        final User user = switch (uIdx) {
+        final UserDto user = switch (uIdx) {
             case 1 -> {
                 principal = USER_1_PRINCIPAL;
-                yield USER_1;
+                yield USER_1_DTO;
             }
             default -> {
                 principal = null;
@@ -1474,10 +1474,10 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
-        when(accessService.find(DATABASE_1, USER_1))
+                .thenReturn(USER_1_DTO);
+        when(accessService.find(DATABASE_1, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
-        when(identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO))
+        when(identifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_DTO))
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
@@ -1491,16 +1491,16 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_noAccess_fails() throws DatabaseNotFoundException, UserNotFoundException,
-            AccessNotFoundException {
+            AccessNotFoundException, NotAllowedException {
 
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
-                .find(DATABASE_1, USER_1);
+                .find(DATABASE_1, USER_1_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1602,10 +1602,10 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(userService.findByUsername(USER_2_USERNAME))
-                .thenReturn(USER_2);
+                .thenReturn(USER_2_DTO);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
-                .find(DATABASE_1, USER_2);
+                .find(DATABASE_1, USER_2_USERNAME);
 
         /* test */
         identifierEndpoint.create(IDENTIFIER_1_CREATE_DTO, principal);
@@ -1631,7 +1631,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     /* ################################################################################################### */
 
     protected void generic_save(UUID databaseId, Database database, DatabaseAccess access, Identifier identifier,
-                                IdentifierSaveDto data, Principal principal, User user) throws MalformedException,
+                                IdentifierSaveDto data, Principal principal, UserDto user) throws MalformedException,
             NotAllowedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, QueryNotFoundException,
             IdentifierNotFoundException, ViewNotFoundException, SearchServiceException,
@@ -1648,13 +1648,13 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         }
         if (access != null) {
             log.trace("mock access: {}", access);
-            when(accessService.find(any(Database.class), any(User.class)))
+            when(accessService.find(any(Database.class), anyString()))
                     .thenReturn(access);
         } else {
             log.trace("mock no access");
             doThrow(AccessNotFoundException.class)
                     .when(accessService)
-                    .find(database, user);
+                    .find(database, user.getUsername());
         }
         if (identifier.getType().equals(IdentifierType.SUBSET)) {
             when(dataServiceGateway.findQuery(databaseId, QUERY_2_ID))
@@ -1664,7 +1664,7 @@ public class IdentifierEndpointUnitTest extends BaseTest {
                 .thenReturn(user);
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
-        when(identifierService.save(eq(database), eq(user), any(IdentifierSaveDto.class)))
+        when(identifierService.save(eq(database), eq(user.getUsername()), any(IdentifierSaveDto.class)))
                 .thenReturn(identifier);
 
         /* test */
@@ -1680,9 +1680,9 @@ public class IdentifierEndpointUnitTest extends BaseTest {
     }
 
     protected ResponseEntity<?> generic_find(String accept, InputStreamResource resource)
-            throws MalformedException, DataServiceException, DataServiceConnectionException, FormatNotAvailableException,
-            QueryNotFoundException, IdentifierNotFoundException, NotAllowedException, TableNotFoundException,
-            ViewNotFoundException {
+            throws MalformedException, DataServiceException, DataServiceConnectionException,
+            FormatNotAvailableException, QueryNotFoundException, IdentifierNotFoundException, NotAllowedException,
+            TableNotFoundException, ViewNotFoundException {
 
         /* mock */
         when(identifierService.find(IDENTIFIER_4_ID))

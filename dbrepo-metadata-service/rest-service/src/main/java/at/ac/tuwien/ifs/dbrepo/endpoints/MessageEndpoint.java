@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageDto;

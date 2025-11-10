@@ -1,5 +1,5 @@
 site_name: Database Repository
-site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.11/
+site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/
 repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 repo_name: fda-services
 site_author: TU Wien &amp; the DBRepo developers
@@ -30,8 +30,8 @@ nav:
     - maintainer-guide/index.md
     - maintainer-guide/configuration.md
     - Deployments:
-      - Install on Docker: maintainer-guide/docker.md
       - Install on Kubernetes: maintainer-guide/kubernetes.md
+      - Install on Docker: maintainer-guide/docker.md
       - Install on VM: maintainer-guide/vm.md
       - Build from Sourcecode: maintainer-guide/build.md
     - Management:
@@ -62,6 +62,7 @@ nav:
   - Development:
     - Overview: dev/index.md
     - Databases:
+        - Cache Database: dev/services/cache-db.md
         - Data Database: dev/services/data-db.md
         - Metadata Database: dev/services/metadata-db.md
         - Metric Database: dev/services/metric-db.md
@@ -91,13 +92,14 @@ theme:
     text: Roboto
     code: Roboto Mono
   features:
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.instant
     - navigation.sections
-    - content.code.annotate
-    - content.code.copy
-    - content.tooltips
+    - search.suggest
   icon:
     logo: material/database-search
     repo: fontawesome/brands/git-alt
@@ -146,14 +148,15 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 plugins:
+  - search
   - mike:
       alias_type: redirect
       deploy_prefix: infrastructures/dbrepo
       canonical_version: latest
 extra:
-  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.11/
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/
   version:
-    default: 1.11
+    default: 1.12
     provider: mike
   social:
     - icon: simple/artifacthub

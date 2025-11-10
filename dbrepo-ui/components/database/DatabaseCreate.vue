@@ -151,10 +151,11 @@ export default {
           }
           this.loadingContainers = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingContainers = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -168,10 +169,11 @@ export default {
           await this.$router.push(`/database/${database.id}/info`)
           this.loading = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))

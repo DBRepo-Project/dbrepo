@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
@@ -12,20 +13,19 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.primaryKey.PrimaryKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.metadata.ContainerRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,17 +44,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class TableServicePersistenceTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
-    @MockBean
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
+
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;
@@ -72,7 +72,6 @@ public class TableServicePersistenceTest extends BaseTest {
     public void beforeEach() {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1);
         databaseRepository.saveAll(List.of(DATABASE_1));
     }
@@ -82,7 +81,7 @@ public class TableServicePersistenceTest extends BaseTest {
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
             SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
-            SemanticEntityNotFoundException {
+            SemanticEntityNotFoundException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
@@ -108,10 +107,13 @@ public class TableServicePersistenceTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, request);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 

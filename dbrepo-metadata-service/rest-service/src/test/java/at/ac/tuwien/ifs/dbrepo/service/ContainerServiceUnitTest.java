@@ -5,15 +5,15 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ContainerAlreadyExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ContainerNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.ImageRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ContainerRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ImageRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,10 +33,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class ContainerServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private ContainerRepository containerRepository;
 
-    @MockBean
+    @MockitoBean
     private ImageRepository imageRepository;
 
     @Autowired

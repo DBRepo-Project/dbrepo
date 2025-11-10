@@ -9,6 +9,7 @@ RUN mvn -fn dependency:go-offline
 COPY ./lib ./lib
 COPY ./querystore ./querystore
 COPY ./report ./report
+COPY ./repositories ./repositories
 COPY ./rest-service ./rest-service
 COPY ./services ./services
 
@@ -16,29 +17,23 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM bitnami/java:21 AS runtime
+FROM --platform=$BUILDPLATFORM docker.io/bitnamilegacy/java:21 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-ARG DUCKDB_VERSION="v1.2.2"
+ENV DUCKDB_VERSION="1.2.2"
 
-RUN apt-get update && \
-    apt-get install -y \
-    curl \
-    jq && \
-    apt-get clean
+WORKDIR /home/dbrepo/.duckdb/extensions/v${DUCKDB_VERSION}/linux_amd64
 
-WORKDIR /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+COPY ./lib/httpfs.duckdb_extension.gz ./httpfs.duckdb_extension.gz
+COPY ./lib/mysql_scanner.duckdb_extension.gz ./mysql_scanner.duckdb_extension.gz
 
-COPY ./lib/httpfs.duckdb_extension.gz /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/httpfs.duckdb_extension.gz
-COPY ./lib/mysql_scanner.duckdb_extension.gz /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64/mysql_scanner.duckdb_extension.gz
-
-RUN gunzip -r /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64 && \
+RUN gunzip -r . && \
     mkdir -p /var/log/app/service/data && \
     chown -R 1001:1001 /var/log/app/service/data /home/dbrepo/.duckdb
 
 WORKDIR /app
 
-RUN adduser dbrepo --uid 1001 && \
+RUN useradd dbrepo --uid 1001 && \
     chown -R 1001:1001 /app
 
 USER 1001

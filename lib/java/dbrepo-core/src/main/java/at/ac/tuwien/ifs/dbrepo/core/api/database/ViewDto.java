@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.CacheableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -17,13 +16,13 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
-@EqualsAndHashCode(callSuper = true)
+@Builder(toBuilder = true)
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ViewDto extends CacheableDto {
+public class ViewDto {
 
     @NotNull
     @Schema(description = "The id", example = "787439d0-e85e-400c-a7e6-996a023bfad9")
@@ -79,11 +78,5 @@ public class ViewDto extends CacheableDto {
     @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
-
-    /* lombok limitations prevent from convenient builder functions */
-
-    @JsonProperty("last_retrieved")
-    @Schema(description = "The timestamp The was last retrieved from the cache", example = "2025-01-23T12:09:01")
-    private Instant lastRetrieved;
 
 }

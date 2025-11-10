@@ -1,9 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDetailsDto;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.security.Principal;
 import java.util.LinkedHashMap;
@@ -37,11 +38,18 @@ public abstract class RestEndpoint {
             return null;
         }
         final Authentication authentication = (Authentication) principal;
-        final UserDetailsDto user = (UserDetailsDto) authentication.getPrincipal();
-        if (user.getId() == null) {
-            return null;
+        if (authentication.getPrincipal() instanceof Jwt user) {
+            if (user.getClaimAsString("preferred_username") == null) {
+                throw new IllegalArgumentException("Principal has no username");
+            }
+            return user.getClaimAsString("preferred_username");
+        } else if (authentication.getPrincipal() instanceof User user) {
+            if (user.getUsername() == null) {
+                throw new IllegalArgumentException("Principal has no username");
+            }
+            return user.getUsername();
         }
-        return user.getUsername();
+        throw new IllegalArgumentException("Unknown principal instance: " + authentication.getPrincipal().getClass());
     }
 
     public List<Map<String, Object>> transform(Dataset<Row> dataset) {

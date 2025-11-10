@@ -40,7 +40,7 @@ public class MariaDbContainerConfig extends BaseTest {
         public static synchronized CustomMariaDBContainer getInstance() {
             if (instance == null) {
                 instance = new CustomMariaDBContainer(MARIADB_IMAGE);
-                instance.withImagePullPolicy(PullPolicy.alwaysPull());
+                instance.withImagePullPolicy(PullPolicy.defaultPolicy());
                 instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, IMAGE_1_DEFAULT_PORT);
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);
                 instance.withPassword(BaseTest.CONTAINER_1_PRIVILEGED_PASSWORD);
@@ -72,7 +72,6 @@ public class MariaDbContainerConfig extends BaseTest {
         @Override
         public synchronized void start() {
             if (!started) {
-                super.stop();
                 super.start();
                 started = true;
             }

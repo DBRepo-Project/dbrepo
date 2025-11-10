@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database.table;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.CacheableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
@@ -21,12 +20,12 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class TableDto extends CacheableDto {
+public class TableDto {
 
     @NotNull
     @Schema(description = "The id", example = "41ed10e0-687b-4e18-8521-810f5cffbce1")
@@ -114,11 +113,5 @@ public class TableDto extends CacheableDto {
     @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
-
-    /* lombok limitations prevent from convenient builder functions */
-
-    @JsonProperty("last_retrieved")
-    @Schema(description = "The timestamp The was last retrieved from the cache", example = "2025-01-23T12:09:01")
-    private Instant lastRetrieved;
 
 }

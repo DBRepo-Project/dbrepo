@@ -1,8 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ public interface AccessService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void create(DatabaseDto database, UserDto user, AccessTypeDto access) throws SQLException,
+    void create(Database database, User user, AccessTypeDto access) throws SQLException,
             DatabaseMalformedException;
 
     /**
@@ -30,7 +30,7 @@ public interface AccessService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void update(DatabaseDto database, UserDto user, AccessTypeDto access) throws SQLException,
+    void update(Database database, User user, AccessTypeDto access) throws SQLException,
             DatabaseMalformedException;
 
     /**
@@ -41,5 +41,5 @@ public interface AccessService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void delete(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException;
+    void delete(Database database, User user) throws SQLException, DatabaseMalformedException;
 }

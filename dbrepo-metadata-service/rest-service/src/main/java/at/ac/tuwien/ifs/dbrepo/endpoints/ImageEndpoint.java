@@ -4,7 +4,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageChangeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.ContainerImage;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageAlreadyExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
@@ -38,7 +37,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @ControllerAdvice
 @RequestMapping(path = "/api/v1/image")
-public class ImageEndpoint extends AbstractEndpoint {
+public class ImageEndpoint extends RestEndpoint {
 
     private final ImageService imageService;
     private final MetadataMapper metadataMapper;

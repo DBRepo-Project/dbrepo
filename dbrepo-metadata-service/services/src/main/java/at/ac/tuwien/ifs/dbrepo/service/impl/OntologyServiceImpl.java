@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyModifyDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
 import at.ac.tuwien.ifs.dbrepo.core.exception.OntologyNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.repository.OntologyRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.OntologyRepository;
 import at.ac.tuwien.ifs.dbrepo.service.OntologyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

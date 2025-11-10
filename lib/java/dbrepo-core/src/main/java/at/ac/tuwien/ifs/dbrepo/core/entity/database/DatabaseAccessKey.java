@@ -8,7 +8,7 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class DatabaseAccessKey implements Serializable {
 
-    private UUID huserid;
+    private String username;
 
     private UUID hdbid;
 }

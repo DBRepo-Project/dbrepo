@@ -297,10 +297,11 @@ export default {
           }
           this.loadingColumnTypes = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingColumnTypes = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))

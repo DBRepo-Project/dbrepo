@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierSaveDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
@@ -91,12 +90,12 @@ public interface IdentifierService {
      *
      * @param identifier The identifier.
      * @return The resulting identifier.
-     * @throws SearchServiceException            The search service responded with an unexpected error code.
-     * @throws DatabaseNotFoundException         The created database was not found in the metadata database.
-     * @throws SearchServiceConnectionException  The connection with the search service could not be established.
-     * @throws MalformedException                The table is malformed, e.g. a column of a primary key constraint could not be found.
-     * @throws DataServiceConnectionException    The connection with the data service could not be established.
-     * @throws ExternalServiceException          The DataCite system rejected the publish-request.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws DatabaseNotFoundException        The created database was not found in the metadata database.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
+     * @throws MalformedException               The table is malformed, e.g. a column of a primary key constraint could not be found.
+     * @throws DataServiceConnectionException   The connection with the data service could not be established.
+     * @throws ExternalServiceException         The DataCite system rejected the publish-request.
      */
     Identifier publish(Identifier identifier) throws SearchServiceException, DatabaseNotFoundException,
             SearchServiceConnectionException, MalformedException, DataServiceConnectionException,
@@ -106,20 +105,20 @@ public interface IdentifierService {
      * Creates a new identifier in the metadata database for a query or database.
      *
      * @param database The database.
-     * @param user     The user.
+     * @param ownedBy  The owner username.
      * @param data     The data.
      * @return The created identifier from the metadata database if successful.
-     * @throws DataServiceException              The data service responded with unexpected behavior.
-     * @throws DataServiceConnectionException    The connection with the data service could not be established.
-     * @throws IdentifierNotFoundException       The identifier was not found in the metadata service.
-     * @throws MalformedException                The table is malformed, e.g. a column of a primary key constraint could not be found.
-     * @throws ViewNotFoundException             The view was not found in the metadata service.
-     * @throws DatabaseNotFoundException         The created database was not found in the metadata database.
-     * @throws QueryNotFoundException            The subset was not found in the data service.
-     * @throws SearchServiceException            The search service responded with an unexpected error code.
-     * @throws SearchServiceConnectionException  The connection with the search service could not be established.
+     * @throws DataServiceException             The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException   The connection with the data service could not be established.
+     * @throws IdentifierNotFoundException      The identifier was not found in the metadata service.
+     * @throws MalformedException               The table is malformed, e.g. a column of a primary key constraint could not be found.
+     * @throws ViewNotFoundException            The view was not found in the metadata service.
+     * @throws DatabaseNotFoundException        The created database was not found in the metadata database.
+     * @throws QueryNotFoundException           The subset was not found in the data service.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
-    Identifier save(Database database, User user, IdentifierSaveDto data)
+    Identifier save(Database database, String ownedBy, IdentifierSaveDto data)
             throws DataServiceException, DataServiceConnectionException, IdentifierNotFoundException,
             MalformedException, ViewNotFoundException, DatabaseNotFoundException, QueryNotFoundException,
             SearchServiceException, SearchServiceConnectionException, ExternalServiceException;
@@ -128,19 +127,19 @@ public interface IdentifierService {
      * Creates a new identifier in the metadata database for a query or database.
      *
      * @param database The database.
-     * @param user     The user.
+     * @param ownedBy  The owner username.
      * @param data     The data.
      * @return The created identifier from the metadata database if successful.
-     * @throws DataServiceException              The data service responded with unexpected behavior.
-     * @throws DataServiceConnectionException    The connection with the data service could not be established.
-     * @throws MalformedException                The table is malformed, e.g. a column of a primary key constraint could not be found.
-     * @throws ViewNotFoundException             The view was not found in the metadata service.
-     * @throws DatabaseNotFoundException         The created database was not found in the metadata database.
-     * @throws QueryNotFoundException            The subset was not found in the data service.
-     * @throws SearchServiceException            The search service responded with an unexpected error code.
-     * @throws SearchServiceConnectionException  The connection with the search service could not be established.
+     * @throws DataServiceException             The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException   The connection with the data service could not be established.
+     * @throws MalformedException               The table is malformed, e.g. a column of a primary key constraint could not be found.
+     * @throws ViewNotFoundException            The view was not found in the metadata service.
+     * @throws DatabaseNotFoundException        The created database was not found in the metadata database.
+     * @throws QueryNotFoundException           The subset was not found in the data service.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
-    Identifier create(Database database, User user, CreateIdentifierDto data) throws DataServiceException,
+    Identifier create(Database database, String ownedBy, CreateIdentifierDto data) throws DataServiceException,
             DataServiceConnectionException, MalformedException, ViewNotFoundException, DatabaseNotFoundException,
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException, IdentifierNotFoundException;
 
@@ -167,9 +166,9 @@ public interface IdentifierService {
      * database, but sets it as deleted.
      *
      * @param identifier The identifier.
-     * @throws DatabaseNotFoundException         The created database was not found in the metadata database.
-     * @throws SearchServiceException            The search service responded with an unexpected error code.
-     * @throws SearchServiceConnectionException  The connection with the search service could not be established.
+     * @throws DatabaseNotFoundException        The created database was not found in the metadata database.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
     void delete(Identifier identifier) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;

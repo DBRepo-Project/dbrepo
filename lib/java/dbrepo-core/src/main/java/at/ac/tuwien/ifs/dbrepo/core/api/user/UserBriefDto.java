@@ -18,7 +18,6 @@ import java.util.UUID;
 @ToString
 public class UserBriefDto {
 
-    @NotNull
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID id;
 

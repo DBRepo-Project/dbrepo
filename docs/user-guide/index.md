@@ -4,7 +4,7 @@ author: Martin Weise
 
 Operational user-guide describing the graphical deposit, review and management of records.
 
-- [Quick start](/infrastructures/dbrepo/1.10/user-guide/quickstart)
+- [Quick start](/infrastructures/dbrepo/1.12/user-guide/quickstart)
 
 Jump right into and use our pre-configured starter resources:
 

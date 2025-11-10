@@ -2,6 +2,11 @@
 author: Martin Weise
 ---
 
+!!! warning "Deprecated from v2+"
+
+    Starting v2 we will no longer support Docker Compose as deployment option. Instead, a lightweight cluster deployment
+    based on the CNCF-sandboxed [K3S](https://k3s.io/) project will be used.
+
 !!! danger "Security Disclaimer"
 
     This quick default installation should **not be considered secure**. It is intended for local testing and
@@ -13,7 +18,7 @@ author: Martin Weise
 Install DBRepo in one line:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.11/install.sh | bash
 ```
 
 Then start DBRepo and visit [`http://localhost`](http://localhost) in your browser:
@@ -36,5 +41,5 @@ SSL/TLS certificate is recommended. Follow the [Secure Installation](#secure-ins
 
     See "Security Disclaimer" above, this quick &amp; non-secure installation needs to be configured further to achieve
     basic security guarantees. Please visit 
-    the [configuration](/infrastructures/dbrepo/1.10/maintainer-guide/configuration/) page in the next step to complete
+    the [configuration](/infrastructures/dbrepo/1.12/maintainer-guide/configuration/) page in the next step to complete
     the installation.

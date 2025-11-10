@@ -5,6 +5,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 
 public interface KeycloakGateway {
 
-    TokenDto obtainUserToken(String username, String password) throws BadCredentialsException;
+    TokenDto getUserToken(String username, String password, String realm, String clientId, String clientSecret)
+            throws BadCredentialsException;
 
 }

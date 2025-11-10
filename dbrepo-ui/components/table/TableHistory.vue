@@ -172,13 +172,16 @@ export default {
             ]
           }
         })
-        .catch(({message}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
             return
           }
           toast.error(message)
+        })
+        .finally(() => {
+          this.loading = false
         })
     }
   }

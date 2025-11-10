@@ -1,16 +1,18 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
@@ -28,10 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -40,20 +39,17 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
     private final StorageService storageService;
-    private final DatabaseService databaseService;
 
     @Autowired
-    public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, StorageService storageService,
-                                   DatabaseService databaseService) {
+    public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, StorageService storageService) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.storageService = storageService;
-        this.databaseService = databaseService;
     }
 
     @Override
     @Timed(value = "dbrepo_data_get_statistics", description = "Time spent obtaining simple table statistics", histogram = true)
-    public TableStatisticDto getStatistics(DatabaseDto database, String tableName) throws SQLException,
+    public TableStatisticDto getStatistics(Database database, UUID id, String tableName) throws SQLException,
             TableMalformedException, TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -61,7 +57,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try {
             /* obtain statistic */
             final long start = System.currentTimeMillis();
-            final TableDto tmpTable = databaseService.inspectTable(database, tableName);
+            final TableDto tmpTable = inspect(database, tableName);
             final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(tmpTable.getColumns(), tableName);
             if (query == null) {
                 log.debug("table {}.{} does not have columns that can be analysed for statistical properties", database.getInternalName(), tableName);
@@ -100,8 +96,41 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    public TableDto create(Database database, CreateTableDto data) throws SQLException,
+            TableMalformedException, TableExistsException, TableNotFoundException {
+        final String tableName = mariaDbMapper.nameToInternalName(data.getName());
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            /* create table if not exists */
+            final long start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(database.getInternalName(),
+                            data))
+                    .execute();
+            log.atDebug()
+                    .setMessage("created table: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "create_table")
+                    .log();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            if (e.getMessage().contains("already exists")) {
+                log.error("Failed to create table: already exists");
+                throw new TableExistsException("Failed to create table: already exists", e);
+            }
+            log.error("Failed to create table: {}", e.getMessage());
+            throw new TableMalformedException("Failed to create table: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Created table with name {}.{}", database.getInternalName(), tableName);
+        return inspect(database, tableName);
+    }
+
+    @Override
     @Timed(value = "dbrepo_data_update_table_comment", description = "Time spent updating the table comment", histogram = true)
-    public void updateTable(DatabaseDto database, TableDto table, TableUpdateDto data) throws SQLException,
+    public void update(Database database, Table table, TableUpdateDto data) throws SQLException,
             TableMalformedException, TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -138,7 +167,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public void delete(DatabaseDto database, TableDto table) throws SQLException, QueryMalformedException,
+    public void delete(Database database, Table table) throws SQLException, QueryMalformedException,
             TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -169,7 +198,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public List<TableHistoryDto> history(DatabaseDto database, TableDto table, Long size) throws SQLException,
+    public List<TableHistoryDto> history(Database database, Table table, Long size) throws SQLException,
             TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -200,7 +229,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     @Timed(value = "dbrepo_data_count_table_data", description = "Time spent counting the table data", histogram = true)
-    public Long getCount(DatabaseDto database, String tableName, Instant timestamp) throws SQLException,
+    public Long getCount(Database database, String tableName, Instant timestamp) throws SQLException,
             QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -231,12 +260,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
-    public void importDataset(DatabaseDto database, TableDto table, ImportDto data) throws MalformedException,
+    public void importDataset(Database database, Table table, ImportDto data) throws MalformedException,
             StorageNotFoundException, StorageUnavailableException, SQLException, QueryMalformedException,
             TableMalformedException {
         final List<String> columns = table.getColumns()
                 .stream()
-                .map(ColumnDto::getInternalName)
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
                 .toList();
         final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(),
                 String.valueOf(data.getSeparator()), data.getHeader());
@@ -288,7 +317,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             /* import tuple */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.temporaryTableToRawMergeQuery(temporaryTable,
-                            table.getInternalName(), table.getColumns().stream().map(ColumnDto::getInternalName).toList()))
+                            table.getInternalName(), table.getColumns().stream().map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName).toList()))
                     .execute();
             connection.commit();
             log.atDebug()
@@ -324,9 +353,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     @Timed(value = "dbrepo_data_delete_tuple", description = "Time spent deleting a table tuple", histogram = true)
-    public void deleteTuple(DatabaseDto database, TableDto table, TupleDeleteDto data) throws SQLException,
-            TableMalformedException, QueryMalformedException {
-        log.trace("delete tuple: {}", data);
+    public void deleteTuple(Database database, Table table, TupleDeleteDto data) throws SQLException,
+            TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -336,7 +364,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
                     database.getInternalName(), table, data));
             for (String column : data.getKeys().keySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(statement,
+                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
                 idx[0]++;
             }
@@ -360,7 +388,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     @Timed(value = "dbrepo_data_create_tuple", description = "Time spent creating a table tuple", histogram = true)
-    public void createTuple(DatabaseDto database, TableDto table, TupleDto data) throws SQLException,
+    public void createTuple(Database database, Table table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple: {}", data);
         /* for each LOB-like data-column, retrieve the bytes and replace the value */
@@ -386,7 +414,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
                     database.getInternalName(), table, data));
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(statement,
+                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -410,8 +438,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     @Override
     @Timed(value = "dbrepo_data_update_tuple", description = "Time spent updating a table tuple", histogram = true)
-    public void updateTuple(DatabaseDto database, TableDto table, TupleUpdateDto data) throws SQLException,
-            QueryMalformedException, TableMalformedException {
+    public void updateTuple(Database database, Table table, TupleUpdateDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("update tuple: {}", data);
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -422,13 +450,13 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     database.getInternalName(), table, data));
             /* set data */
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(statement,
+                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
             /* set key(s) */
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(statement,
+                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -450,8 +478,148 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         log.info("Updated tuple(s) from table: {}.{}", database.getInternalName(), table.getInternalName());
     }
 
-    public ColumnTypeDto getColumnType(List<ColumnDto> columns, String name) throws QueryMalformedException {
-        final Optional<ColumnDto> optional = columns.stream()
+    @Override
+    public List<TableDto> explore(Database database) throws SQLException, TableNotFoundException,
+            DatabaseMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        final List<TableDto> tables = new LinkedList<>();
+        try {
+            /* inspect tables before views */
+            final long start = System.currentTimeMillis();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
+            statement.setString(1, database.getInternalName());
+            final ResultSet resultSet1 = statement.executeQuery();
+            log.atDebug()
+                    .setMessage("explored tables in database: " + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_tables")
+                    .log();
+            while (resultSet1.next()) {
+                final String tableName = resultSet1.getString(1);
+                if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
+                    log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), tableName);
+                    continue;
+                }
+                final TableDto table = inspect(database, tableName);
+                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(tableName))) {
+                    tables.add(table);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get table schemas: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to get table schemas: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Found {} table schema(s)", tables.size());
+        return tables;
+    }
+
+    @Override
+    public TableDto inspect(Database database, String tableName) throws SQLException, TableNotFoundException {
+        log.trace("inspecting table: {}.{}", database.getInternalName(), tableName);
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            /* obtain only table metadata */
+            long start = System.currentTimeMillis();
+            final PreparedStatement statement0 = connection.prepareStatement(mariaDbMapper.analyseTableRawQuery());
+            statement0.setString(1, database.getInternalName());
+            statement0.setString(2, tableName);
+            log.trace("1={}, 2={}", database.getInternalName(), tableName);
+            statement0.execute();
+            log.atDebug()
+                    .setMessage("analysed table: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_table_schema")
+                    .log();
+            /* obtain only table metadata */
+            start = System.currentTimeMillis();
+            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
+            statement1.setString(1, database.getInternalName());
+            statement1.setString(2, tableName);
+            log.trace("1={}, 2={}", database.getInternalName(), tableName);
+            TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
+            log.atDebug()
+                    .setMessage("inspected table: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_table_schema")
+                    .log();
+            /* obtain columns metadata */
+            start = System.currentTimeMillis();
+            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            statement2.setString(1, database.getInternalName());
+            statement2.setString(2, tableName);
+            log.trace("1={}, 2={}", database.getInternalName(), tableName);
+            final ResultSet resultSet2 = statement2.executeQuery();
+            log.atDebug()
+                    .setMessage("inspect table columns: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_table_columns")
+                    .log();
+            while (resultSet2.next()) {
+                table = dataMapper.resultSetToTable(resultSet2, table);
+            }
+            /* obtain check constraints metadata */
+            start = System.currentTimeMillis();
+            final PreparedStatement statement3 = connection.prepareStatement(mariaDbMapper.columnsCheckConstraintSelectRawQuery());
+            statement3.setString(1, database.getInternalName());
+            statement3.setString(2, tableName);
+            log.trace("1={}, 2={}", database.getInternalName(), tableName);
+            final ResultSet resultSet3 = statement3.executeQuery();
+            log.atDebug()
+                    .setMessage("inspect table check constraints: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_table_constraints_check")
+                    .log();
+            while (resultSet3.next()) {
+                final String clause = resultSet3.getString(1);
+                table.getConstraints()
+                        .getChecks()
+                        .add(clause);
+                log.trace("found check clause: {}", clause);
+            }
+            /* obtain column constraints metadata */
+            start = System.currentTimeMillis();
+            final PreparedStatement statement4 = connection.prepareStatement(mariaDbMapper.databaseTableConstraintsSelectRawQuery());
+            statement4.setString(1, database.getInternalName());
+            statement4.setString(2, tableName);
+            log.trace("1={}, 2={}", database.getInternalName(), tableName);
+            final ResultSet resultSet4 = statement4.executeQuery();
+            log.atDebug()
+                    .setMessage("inspect table constraints: " + database.getInternalName() + "." + tableName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "select_table_constraints")
+                    .log();
+            while (resultSet4.next()) {
+                table = dataMapper.resultSetToConstraint(resultSet4, table);
+                for (UniqueDto uk : table.getConstraints().getUniques()) {
+                    uk.setTable(dataMapper.tableDtoToTableBriefDto(table));
+                    final TableDto tmpTable = table;
+                    uk.getColumns()
+                            .forEach(column -> {
+                                column.setTableId(tmpTable.getId());
+                                column.setDatabaseId(database.getId());
+                            });
+                }
+            }
+            table.setDatabaseId(database.getId());
+            final TableDto tmpTable = table;
+            tmpTable.getColumns()
+                    .forEach(column -> {
+                        column.setTableId(tmpTable.getId());
+                        column.setDatabaseId(database.getId());
+                    });
+            log.debug("obtained metadata for table {}.{}", database.getInternalName(), tableName);
+            return tmpTable;
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    public ColumnType getColumnType(List<Column> columns, String name) throws QueryMalformedException {
+        final Optional<Column> optional = columns.stream()
                 .filter(c -> c.getInternalName().equals(name)).findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find column with name {}", name);

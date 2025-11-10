@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnUnit;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UnitNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.UnitRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.UnitRepository;
 import at.ac.tuwien.ifs.dbrepo.service.UnitService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

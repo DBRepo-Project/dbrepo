@@ -2,10 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.UserRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ContainerRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +30,6 @@ public class DatabaseServicePersistenceTest extends BaseTest {
     private DatabaseService databaseService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private LicenseRepository licenseRepository;
 
     @Autowired
@@ -46,7 +42,6 @@ public class DatabaseServicePersistenceTest extends BaseTest {
     public void beforeEach() {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
         containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4));
         databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3, DATABASE_4));
     }

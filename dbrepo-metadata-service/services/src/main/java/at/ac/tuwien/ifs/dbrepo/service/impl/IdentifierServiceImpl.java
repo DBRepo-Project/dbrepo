@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
@@ -13,12 +14,11 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierTitle;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,11 +45,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final DataServiceGateway dataServiceGateway;
     private final IdentifierRepository identifierRepository;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
 
     public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine, MetadataMapper metadataMapper,
                                  MetadataConfig metadataConfig, DataServiceGateway dataServiceGateway,
-                                 IdentifierRepository identifierRepository, SearchServiceGateway searchServiceGateway) {
+                                 IdentifierRepository identifierRepository, SearchServiceGateway searchServiceGateway,
+                                 DatabaseCacheRepository databaseCacheRepository) {
         this.viewService = viewService;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
@@ -57,6 +59,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         this.dataServiceGateway = dataServiceGateway;
         this.identifierRepository = identifierRepository;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -149,6 +152,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* publish identifier */
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
         identifier = identifierRepository.save(identifier);
+        /* update cache */
+        databaseCacheRepository.deleteById(identifier.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(identifier.getDatabase());
         log.atInfo()
@@ -160,22 +165,21 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier save(Database database, User user, IdentifierSaveDto data) throws SearchServiceException,
+    public Identifier save(Database database, String ownedBy, IdentifierSaveDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(data);
-        setAdditionalMetadata(database, identifier, user);
+        setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
         searchServiceGateway.update(identifier.getDatabase());
         return entity;
     }
 
-    private void setAdditionalMetadata(Database database, Identifier identifier, User user) throws DataServiceException,
+    private void setAdditionalMetadata(Database database, Identifier identifier, String ownedBy) throws DataServiceException,
             QueryNotFoundException, DataServiceConnectionException, ViewNotFoundException {
         identifier.setDatabase(database);
-        identifier.setOwnedBy(user.getId());
-        identifier.setOwner(user);
+        identifier.setOwnedBy(ownedBy);
         identifier.setStatus(IdentifierStatusType.DRAFT);
         if (identifier.getType().equals(IdentifierType.SUBSET)) {
             log.debug("set additional metadata for subset: {}", identifier.getQueryId());
@@ -199,13 +203,15 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(Database database, User user, CreateIdentifierDto data) throws SearchServiceException,
+    public Identifier create(Database database, String ownedBy, CreateIdentifierDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(metadataMapper.createIdentifierDtoToIdentifierSaveDto(data));
-        setAdditionalMetadata(database, identifier, user);
+        setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
+        /* update cache */
+        databaseCacheRepository.deleteById(identifier.getDatabase().getId());
         /* update in search database */
         searchServiceGateway.update(identifier.getDatabase());
         return entity;
@@ -260,6 +266,9 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.getDatabase()
                 .getIdentifiers()
                 .remove(identifier);
+        /* update cache */
+        databaseCacheRepository.deleteById(identifier.getDatabase().getId());
+        /* update in search database */
         searchServiceGateway.update(identifier.getDatabase());
         log.atInfo()
                 .setMessage("Deleted identifier")

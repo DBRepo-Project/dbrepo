@@ -1,6 +1,7 @@
 import json
 import time
 import unittest
+from typing import List
 
 import jwt
 from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, ConceptBrief, UnitBrief, \
@@ -56,7 +57,7 @@ req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",
 
 class JwtTest(unittest.TestCase):
 
-    def token(self, roles: [str], iat: int = int(time.time())):
+    def token(self, roles: List[str], iat: int = int(time.time())):
         claims = {
             'iat': iat,
             'uid': 'c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502',
@@ -72,7 +73,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # test
             response = test_client.put(f'/api/v1/search/database/{req.id}',
-                                       headers={'Authorization': f'Bearer {self.token(["update-search-index"])}'})
+                                       headers={'Authorization': f'Bearer {self.token(["system"])}'})
             self.assertEqual(415, response.status_code)
 
     def test_health_succeeds(self):
@@ -91,7 +92,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # test
             response = test_client.put(f'/api/v1/search/database/{req.id}',
-                                       headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                                       headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                 'Content-Type': 'application/json'})
             self.assertEqual(400, response.status_code)
 
@@ -99,7 +100,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # test
             response = test_client.put(f'/api/v1/search/database/{req.id}',
-                                       headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                                       headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                 'Content-Type': 'application/json'},
                                        data={})
             self.assertEqual(400, response.status_code)
@@ -108,7 +109,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # test
             response = test_client.put(f'/api/v1/search/database/{req.id}',
-                                       headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                                       headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                 'Content-Type': 'application/json'},
                                        data=dict({"id": 1}))
             self.assertEqual(400, response.status_code)
@@ -117,7 +118,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # test
             response = test_client.put(f'/api/v1/search/database/{req.id}',
-                                       headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                                       headers={'Authorization': f'Bearer {self.token(["system"])}',
                                                 'Content-Type': 'application/json'},
                                        data=req.model_dump_json())
             self.assertEqual(202, response.status_code)
@@ -151,7 +152,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -206,7 +207,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -218,7 +219,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -230,7 +231,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -242,7 +243,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -254,7 +255,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -266,7 +267,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test
@@ -278,7 +279,7 @@ class JwtTest(unittest.TestCase):
         with app.test_client() as test_client:
             # mock
             test_client.put(f'/api/v1/search/database/{req.id}',
-                            headers={'Authorization': f'Bearer {self.token(["update-search-index"])}',
+                            headers={'Authorization': f'Bearer {self.token(["system"])}',
                                      'Content-Type': 'application/json'},
                             data=req.model_dump_json())
             # test

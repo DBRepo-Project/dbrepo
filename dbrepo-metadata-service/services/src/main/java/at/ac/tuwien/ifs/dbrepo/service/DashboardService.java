@@ -2,8 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceException;
 
@@ -34,11 +34,11 @@ public interface DashboardService {
      * Updates the access on the dashboard in the dashboard service.
      *
      * @param database The database.
-     * @param user The user whose access is updated.
+     * @param username The username.
      * @param access The access type.
      * @throws DashboardServiceException            The dashboard service responded with an unexpected error code.
      * @throws DashboardServiceConnectionException  The connection to the dashboard service could not be established.
      */
-    void updateAccess(Database database, User user, AccessTypeDto access) throws DashboardServiceException,
+    void updateAccess(Database database, String username, AccessTypeDto access) throws DashboardServiceException,
             DashboardServiceConnectionException;
 }

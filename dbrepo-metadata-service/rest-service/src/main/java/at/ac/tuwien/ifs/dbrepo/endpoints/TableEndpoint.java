@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.EntityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.TableColumnEntityDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -14,7 +13,10 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.EntityService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,9 +46,8 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
-public class TableEndpoint extends AbstractEndpoint {
+public class TableEndpoint extends RestEndpoint {
 
-    private final UserService userService;
     private final TableService tableService;
     private final EntityService entityService;
     private final MetadataMapper metadataMapper;
@@ -55,10 +56,9 @@ public class TableEndpoint extends AbstractEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(UserService userService, TableService tableService, EntityService entityService,
-                         MetadataMapper metadataMapper, DatabaseService databaseService,
-                         DashboardService dashboardService, EndpointValidator endpointValidator) {
-        this.userService = userService;
+    public TableEndpoint(TableService tableService, EntityService entityService, MetadataMapper metadataMapper,
+                         DatabaseService databaseService, DashboardService dashboardService,
+                         EndpointValidator endpointValidator) {
         this.tableService = tableService;
         this.entityService = entityService;
         this.metadataMapper = metadataMapper;
@@ -108,7 +108,7 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (optional.isPresent()) {
                 access = optional.get();
@@ -156,7 +156,7 @@ public class TableEndpoint extends AbstractEndpoint {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!table.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to analyse table semantics: not owner");
             throw new NotAllowedException("Failed to analyse table semantics: not owner");
         }
@@ -166,7 +166,7 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{tableId}/statistic")
     @Transactional
-    @PreAuthorize("hasAuthority('update-table-statistic')")
+    @PreAuthorize("hasAuthority('update-table-statistic') or hasAnyAuthority('system')")
     @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update statistics",
             description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. This action can only be performed by the table owner. Requires role `update-table-statistic`.",
@@ -198,7 +198,7 @@ public class TableEndpoint extends AbstractEndpoint {
         log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getUsername().equals(getUsername(principal)) && !isSystem(principal)) {
+        if (!table.getOwnedBy().equals(getUsername(principal)) && !isSystem(principal)) {
             log.error("Failed to update table statistics: not owner");
             throw new NotAllowedException("Failed to update table statistics: not owner");
         }
@@ -241,16 +241,16 @@ public class TableEndpoint extends AbstractEndpoint {
                                                   @NotNull @PathVariable("columnId") UUID columnId,
                                                   @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
                                                   Principal principal) throws NotAllowedException,
-            MalformedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
+            MalformedException, DataServiceException, DataServiceConnectionException, TableNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException, OntologyNotFoundException,
+            SearchServiceConnectionException, SemanticEntityNotFoundException {
         log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}", databaseId,
                 tableId, columnId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         if (!hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(database, principal, true);
-            endpointValidator.validateOnlyOwnerOrWriteAll(table, userService.findByUsername(getUsername(principal)));
+            endpointValidator.validateOnlyOwnerOrWriteAll(table, getUsername(principal));
         }
         return ResponseEntity.accepted()
                 .body(metadataMapper.tableColumnToColumnDto(tableService.update(
@@ -343,10 +343,10 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("hasAuthority('update-table')")
+    @PreAuthorize("hasAuthority('update-table') or hasAuthority('system')")
     @Observed(name = "dbrepo_table_update")
     @Operation(summary = "Update table",
-            description = "Updates a table in the database with id. Requires role `update-table`.",
+            description = "Updates a table in the database with id. Requires role `update-table` or `system`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -381,7 +381,7 @@ public class TableEndpoint extends AbstractEndpoint {
                 databaseId, data.getIsPublic(), data.getIsSchemaPublic());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!table.getOwnedBy().equals(getUsername(principal)) && !isSystem(principal)) {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
@@ -423,7 +423,7 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUser().getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(getUsername(principal)))
                     .findFirst();
             if (table.getIsPublic() || table.getIsSchemaPublic() || optional.isPresent()) {
                 return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
@@ -472,7 +472,7 @@ public class TableEndpoint extends AbstractEndpoint {
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */
-        if (!table.getOwner().getUsername().equals(getUsername(principal)) && !hasRole(principal, "delete-foreign-table")) {
+        if (!table.getOwnedBy().equals(getUsername(principal)) && !hasRole(principal, "delete-foreign-table")) {
             log.error("Failed to delete table: not owned by current user");
             throw new NotAllowedException("Failed to delete table: not owned by current user");
         }

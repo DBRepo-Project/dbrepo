@@ -1,13 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,13 +32,13 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/grant")
 public class GrantEndpoint extends RestEndpoint {
 
-    private final CacheService cacheService;
     private final GrantService grantService;
+    private final MetadataService metadataService;
 
     @Autowired
-    public GrantEndpoint(CacheService cacheService, GrantService grantService) {
-        this.cacheService = cacheService;
+    public GrantEndpoint(GrantService grantService, MetadataService metadataService) {
         this.grantService = grantService;
+        this.metadataService = metadataService;
     }
 
     @RequestMapping(path = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -73,9 +72,9 @@ public class GrantEndpoint extends RestEndpoint {
             RemoteUnavailableException, MetadataServiceException, DatabaseMalformedException,
             DatabaseUnavailableException, UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint check access to database, databaseId={}", databaseId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
-        final UserDto user = cacheService.getUser(username);
-        if (!database.getOwner().getUsername().equals(getUsername(principal)) && !user.getUsername().equals(getUsername(principal))) {
+        final Database database = metadataService.getDatabase(databaseId);
+        final User user = metadataService.getUser(username);
+        if (!database.getOwnedBy().equals(getUsername(principal)) && !user.getUsername().equals(getUsername(principal))) {
             log.error("Failed to find access: not owner or foreign user");
             throw new NotAllowedException("Failed to find access: not owner or foreign user");
         }

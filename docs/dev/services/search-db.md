@@ -4,7 +4,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnami/opensearch:2.10.0`](https://hub.docker.com/r/bitnami/opensearch)
+    Image: [`docker.io/bitnamilegacy/opensearch:2.10.0`](https://hub.docker.com/r/bitnamilegacy/opensearch)
 
     * Ports: 9200/tcp
 
@@ -29,10 +29,10 @@ This section will be expanded in the future.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.10/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security
 
-* By default, the security plugin is not used in the [Docker](/infrastructures/dbrepo/1.10/maintainer-guide/docker/)
+* By default, the security plugin is not used in the [Docker](/infrastructures/dbrepo/1.12/maintainer-guide/docker/)
   installation. This allows anyone to read/write and is considered not secure.

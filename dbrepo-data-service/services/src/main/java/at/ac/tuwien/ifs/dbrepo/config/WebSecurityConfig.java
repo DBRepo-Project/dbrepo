@@ -1,20 +1,25 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.auth.AuthTokenFilter;
-import at.ac.tuwien.ifs.dbrepo.auth.BasicAuthenticationProvider;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.ExpressionJwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -37,9 +42,13 @@ import org.springframework.web.filter.CorsFilter;
 )
 public class WebSecurityConfig {
 
-    @Bean
-    public AuthTokenFilter authTokenFilter() {
-        return new AuthTokenFilter();
+    private final GatewayConfig gatewayConfig;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public WebSecurityConfig(GatewayConfig gatewayConfig, PasswordEncoder passwordEncoder) {
+        this.gatewayConfig = gatewayConfig;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -75,22 +84,38 @@ public class WebSecurityConfig {
                         }
                 ).and();
         /* set permissions on endpoints */
-        http.authorizeHttpRequests()
+        http.authorizeHttpRequests(rmr -> rmr
                 /* our internal endpoints */
                 .requestMatchers(internalEndpoints).permitAll()
                 /* our public endpoints */
                 .requestMatchers(publicEndpoints).permitAll()
                 /* our private endpoints */
-                .anyRequest().authenticated();
+                .anyRequest().authenticated());
         /* add JWT token filter */
-        http.addFilterBefore(authTokenFilter(),
-                UsernamePasswordAuthenticationFilter.class
-        );
-        http.addFilterBefore(new BasicAuthenticationFilter(new BasicAuthenticationProvider(credentialService,
-                        authTokenFilter())),
-                UsernamePasswordAuthenticationFilter.class
-        );
+        http.httpBasic(Customizer.withDefaults())
+                .oauth2ResourceServer((oauth2) -> oauth2
+                        .jwt(configurer -> configurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        final AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder.inMemoryAuthentication()
+                .withUser(gatewayConfig.getSystemUsername())
+                .password(passwordEncoder.encode(gatewayConfig.getSystemPassword()))
+                .authorities("system");
+        return builder.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        final ExpressionJwtGrantedAuthoritiesConverter converter = new ExpressionJwtGrantedAuthoritiesConverter(
+                new SpelExpressionParser().parseRaw("[realm_access][roles]"));
+        converter.setAuthorityPrefix("");
+        final JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(converter);
+        return jwtAuthenticationConverter;
     }
 
     @Bean

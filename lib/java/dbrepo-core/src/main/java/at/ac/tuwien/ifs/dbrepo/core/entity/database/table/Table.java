@@ -4,7 +4,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,18 +43,10 @@ public class Table {
     @Column(updatable = false, nullable = false)
     private UUID tdbid;
 
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
-    private UUID ownedBy;
+    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
+    private String ownedBy;
 
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User owner;
-
-    @Column(name = "tname", nullable = false, columnDefinition = "VARCHAR(64)")
+    @Column(name = "tname", columnDefinition = "VARCHAR(64)", nullable = false)
     private String name;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(64)")

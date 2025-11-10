@@ -1,10 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
-import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
+import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,25 +26,13 @@ public class GatewayConfig {
     @Value("${dbrepo.system.password}")
     private String systemPassword;
 
-    private final CredentialService credentialService;
-
-    @Autowired
-    public GatewayConfig(CredentialService credentialService) {
-        this.credentialService = credentialService;
-    }
-
-    @Bean
-    public RestTemplate internalRestTemplate() {
+    @Bean("metadataServiceRestTemplate")
+    public RestTemplate metadataServiceRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(credentialService, this));
+                .add(new BasicRequestInterceptor(this));
         return restTemplate;
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
     }
 
 }
