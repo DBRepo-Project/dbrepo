@@ -1,8 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
@@ -42,7 +42,7 @@ public class GrantServiceMariaDbImpl extends DataConnector implements GrantServi
     }
 
     @Override
-    public DatabaseGrantsDto find(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException,
+    public DatabaseGrantsDto find(Database database, User user) throws SQLException, DatabaseMalformedException,
             AccessNotFoundException {
         final Map<String, DatabaseGrantsDto> grants = findAll(database, user);
         String key = database.getInternalName();
@@ -64,7 +64,8 @@ public class GrantServiceMariaDbImpl extends DataConnector implements GrantServi
     }
 
     @Override
-    public Map<String, DatabaseGrantsDto> findAll(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException {
+    public Map<String, DatabaseGrantsDto> findAll(Database database, User user) throws SQLException,
+            DatabaseMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         final Map<String, DatabaseGrantsDto> grants = new HashMap<>();

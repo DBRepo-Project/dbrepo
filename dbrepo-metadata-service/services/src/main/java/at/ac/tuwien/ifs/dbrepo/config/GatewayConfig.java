@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.auth.InternalRequestInterceptor;
+import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +64,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(brokerEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(credentialService, this));
+                .add(new BasicRequestInterceptor(this));
         return restTemplate;
     }
 
@@ -73,7 +73,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(credentialService, this));
+                .add(new BasicRequestInterceptor(this));
         return restTemplate;
     }
 
@@ -82,7 +82,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(analyseEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(credentialService, this));
+                .add(new BasicRequestInterceptor(this));
         return restTemplate;
     }
 
@@ -91,7 +91,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(searchEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(credentialService, this));
+                .add(new BasicRequestInterceptor(this));
         return restTemplate;
     }
 
@@ -100,7 +100,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dashboardEndpoint));
         restTemplate.getInterceptors()
-                .add(new InternalRequestInterceptor(credentialService, this));
+                .add(new BasicRequestInterceptor(this));
         return restTemplate;
     }
 

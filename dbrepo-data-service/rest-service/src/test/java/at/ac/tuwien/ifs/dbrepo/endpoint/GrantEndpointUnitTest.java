@@ -5,8 +5,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.GrantTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.GrantEndpoint;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class GrantEndpointUnitTest extends BaseTest {
     private HttpServletRequest httpServletRequest;
 
     @MockitoBean
-    private CacheService cacheService;
+    private MetadataService metadataService;
 
     @MockitoBean
     private GrantService grantService;
@@ -50,11 +50,11 @@ public class GrantEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
-        when(grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO))
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(metadataService.getUser(USER_1_USERNAME))
+                .thenReturn(USER_1_CACHE);
+        when(grantService.find(DATABASE_1_CACHE, USER_1_CACHE))
                 .thenReturn(READ_GRANT_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -75,11 +75,11 @@ public class GrantEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_2_ID))
-                .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
-        when(grantService.find(DATABASE_2_PRIVILEGED_DTO, USER_1_DTO))
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
+        when(metadataService.getUser(USER_1_USERNAME))
+                .thenReturn(USER_1_CACHE);
+        when(grantService.find(DATABASE_2_CACHE, USER_1_CACHE))
                 .thenReturn(READ_GRANT_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -100,11 +100,11 @@ public class GrantEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
-        when(grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO))
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(metadataService.getUser(USER_1_USERNAME))
+                .thenReturn(USER_1_CACHE);
+        when(grantService.find(DATABASE_1_CACHE, USER_1_CACHE))
                 .thenReturn(READ_GRANT_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -120,12 +120,12 @@ public class GrantEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(any(UUID.class)))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_2_USERNAME))
-                .thenReturn(USER_2_DTO);
-        when(cacheService.getUser(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+        when(metadataService.getDatabase(any(UUID.class)))
+                .thenReturn(DATABASE_1_CACHE);
+        when(metadataService.getUser(USER_2_USERNAME))
+                .thenReturn(USER_2_CACHE);
+        when(metadataService.getUser(USER_1_USERNAME))
+                .thenReturn(USER_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -139,12 +139,12 @@ public class GrantEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(any(UUID.class)))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getUser(USER_4_USERNAME))
-                .thenReturn(USER_4_DTO);
-        when(cacheService.getUser(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+        when(metadataService.getDatabase(any(UUID.class)))
+                .thenReturn(DATABASE_1_CACHE);
+        when(metadataService.getUser(USER_4_USERNAME))
+                .thenReturn(USER_4_CACHE);
+        when(metadataService.getUser(USER_1_USERNAME))
+                .thenReturn(USER_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {

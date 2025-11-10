@@ -9,6 +9,8 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

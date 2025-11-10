@@ -2,6 +2,15 @@ application:
   title: DBRepo
   version: '@project.version@'
 spring:
+  data:
+    redis:
+      provider: "${CACHE_DB_PROVIDER:valkey}"
+      host: "${CACHE_DB_HOST:cache-db}"
+      port: "${CACHE_DB_PORT:6379}"
+      timeout: 3000
+      connectTimeout: 10000
+      clientName: dbrepo
+      password: "${CACHE_DB_PASSWORD:valkey}"
   datasource:
     url: "jdbc:mariadb://${METADATA_HOST:localhost}:${METADATA_PORT:3306}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS:}"
     driver-class-name: org.mariadb.jdbc.Driver
@@ -15,6 +24,12 @@ spring:
         default_schema: "${METADATA_DB:dbrepo}"
         jdbc:
           time_zone: UTC
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "${OAUTH_ISSUER_URI:http://localhost/realms/dbrepo}"
+          jwk-set-uri: "${OAUTH_JWK_SET_URI:http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
   application:
     name: metadata-service
   rabbitmq:
@@ -54,6 +69,8 @@ logging:
     format:
       file: ecs
 dbrepo:
+  cache:
+    ttl: "${CACHE_TTL:60}"
   datacite:
     url: "${DATACITE_URL:https://api.datacite.org}"
     prefix: "${DATACITE_PREFIX}"
@@ -79,19 +96,18 @@ dbrepo:
     password: "${SYSTEM_PASSWORD:admin}"
   pid:
     base: "${BASE_URL:http://localhost}/pid/"
-  jwt:
-    public_key: "${JWT_PUBKEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
   keycloak:
-    username: "${SYSTEM_USERNAME:admin}"
-    password: "${SYSTEM_PASSWORD:admin}"
+    realm: "${REALM_NAME:dbrepo}"
+    username: "${AUTH_SERVICE_ADMIN:admin}"
+    password: "${AUTH_SERVICE_ADMIN_PASSWORD:admin}"
     client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
     clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
   credentialCacheTimeout: "${CREDENTIAL_CACHE_TIMEOUT:60}"
   website: "${BASE_URL:http://localhost}"
-  repository-name: "${REPOSITORY_NAME:Database Repository}"
-  base-url: "${BASE_URL:http://localhost}"
-  admin-email: "${ADMIN_EMAIL:noreply@example.com}"
-  deleted-record: "${DELETED_RECORD:persistent}"
+  repositoryName: "${REPOSITORY_NAME:Database Repository}"
+  baseUrl: "${BASE_URL:http://localhost}"
+  adminEmail: "${ADMIN_EMAIL:noreply@example.com}"
+  deletedRecord: "${DELETED_RECORD:persistent}"
   granularity: "${GRANULARITY:YYYY-MM-DDThh:mm:ssZ}"
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   queueName: "${BROKER_QUEUE_NAME:dbrepo}"

@@ -11,7 +11,6 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
-import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,18 +40,16 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/database/{databaseId}/view")
-public class ViewEndpoint extends AbstractEndpoint {
+public class ViewEndpoint extends RestEndpoint {
 
-    private final UserService userService;
     private final ViewService viewService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final DashboardService dashboardService;
 
     @Autowired
-    public ViewEndpoint(UserService userService, ViewService viewService, MetadataMapper metadataMapper,
-                        DatabaseService databaseService, DashboardService dashboardService) {
-        this.userService = userService;
+    public ViewEndpoint(ViewService viewService, MetadataMapper metadataMapper, DatabaseService databaseService,
+                        DashboardService dashboardService) {
         this.viewService = viewService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;

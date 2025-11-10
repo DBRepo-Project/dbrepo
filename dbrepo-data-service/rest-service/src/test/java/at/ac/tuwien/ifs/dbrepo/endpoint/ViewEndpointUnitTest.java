@@ -1,14 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.ViewEndpoint;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
-import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
-import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
-import at.ac.tuwien.ifs.dbrepo.service.ViewService;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
@@ -18,11 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
@@ -42,10 +40,13 @@ public class ViewEndpointUnitTest extends BaseTest {
     private ViewService viewService;
 
     @MockitoBean
+    private TableService tableService;
+
+    @MockitoBean
     private DatabaseService databaseService;
 
     @MockitoBean
-    private CacheService cacheService;
+    private MetadataService metadataService;
 
     @MockitoBean
     private HttpServletRequest httpServletRequest;
@@ -66,9 +67,9 @@ public class ViewEndpointUnitTest extends BaseTest {
             ImageNotFoundException, QueryMalformedException, ViewNotFoundException, ColumnNotFoundException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_DTO);
-        when(databaseService.createView(any(DatabaseDto.class), anyString(), anyString()))
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(viewService.create(any(Database.class), anyString(), anyString()))
                 .thenReturn(VIEW_1_DTO);
 
         /* test */
@@ -82,11 +83,11 @@ public class ViewEndpointUnitTest extends BaseTest {
             ViewMalformedException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(SQLException.class)
-                .when(databaseService)
-                .createView(any(DatabaseDto.class), anyString(), anyString());
+                .when(viewService)
+                .create(any(Database.class), anyString(), anyString());
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -100,9 +101,9 @@ public class ViewEndpointUnitTest extends BaseTest {
             SQLException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_DTO);
-        when(databaseService.createView(DATABASE_1_DTO, VIEW_1_NAME, VIEW_1_QUERY))
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(viewService.create(DATABASE_1_CACHE, VIEW_1_NAME, VIEW_1_QUERY))
                 .thenReturn(VIEW_1_DTO);
 
         /* test */
@@ -118,8 +119,8 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(cacheService)
-                .getDatabase(DATABASE_1_ID, true);
+                .when(metadataService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -129,61 +130,61 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void getSchema_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
+    public void findAll_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
             DatabaseMalformedException, DatabaseUnavailableException, ViewNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
-        when(databaseService.exploreViews(DATABASE_1_DTO))
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(viewService.explore(DATABASE_1_CACHE))
                 .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO));
 
         /* test */
-        final ResponseEntity<List<ViewDto>> response = viewEndpoint.getSchema(DATABASE_1_ID);
+        final ResponseEntity<List<ViewDto>> response = viewEndpoint.findAll(DATABASE_1_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     @WithAnonymousUser
-    public void getSchema_anonymous_fails() {
+    public void findAll_anonymous_fails() {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            viewEndpoint.getSchema(DATABASE_1_ID);
+            viewEndpoint.findAll(DATABASE_1_ID);
         });
     }
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void getSchema_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+    public void findAll_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(cacheService)
-                .getDatabase(DATABASE_1_ID, true);
+                .when(metadataService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            viewEndpoint.getSchema(DATABASE_1_ID);
+            viewEndpoint.findAll(DATABASE_1_ID);
         });
     }
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void getSchema_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+    public void findAll_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, DatabaseMalformedException, ViewNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(SQLException.class)
-                .when(databaseService)
-                .exploreViews(DATABASE_1_DTO);
+                .when(viewService)
+                .explore(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            viewEndpoint.getSchema(DATABASE_1_ID);
+            viewEndpoint.findAll(DATABASE_1_ID);
         });
     }
 
@@ -203,13 +204,13 @@ public class ViewEndpointUnitTest extends BaseTest {
             SQLException, DatabaseUnavailableException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doNothing()
                 .when(viewService)
-                .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
+                .delete(DATABASE_1_CACHE, VIEW_1_CACHE);
 
         /* test */
         final ResponseEntity<Void> response = viewEndpoint.delete(DATABASE_1_ID, VIEW_1_ID);
@@ -222,13 +223,13 @@ public class ViewEndpointUnitTest extends BaseTest {
             MetadataServiceException, ViewNotFoundException, DatabaseNotFoundException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
         doThrow(SQLException.class)
                 .when(viewService)
-                .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
+                .delete(DATABASE_1_CACHE, VIEW_1_CACHE);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -242,11 +243,11 @@ public class ViewEndpointUnitTest extends BaseTest {
             SQLException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doNothing()
                 .when(viewService)
-                .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
+                .delete(DATABASE_1_CACHE, VIEW_1_CACHE);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -261,7 +262,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
-                .when(cacheService)
+                .when(metadataService)
                 .getView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
@@ -278,13 +279,11 @@ public class ViewEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_DTO);
-        when(cacheService.getAccess(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -303,13 +302,11 @@ public class ViewEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getAccess(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -327,15 +324,13 @@ public class ViewEndpointUnitTest extends BaseTest {
             NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException, FormatNotAvailableException {
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_DTO);
-        when(cacheService.getDatabase(DATABASE_1_ID, true))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(cacheService.getAccess(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
+        when(metadataService.getView(DATABASE_1_ID, VIEW_3_ID))
+                .thenReturn(VIEW_3_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
-        when(viewService.count(any(DatabaseDto.class), eq(VIEW_3_DTO), any(Instant.class)))
+        when(viewService.count(any(Database.class), eq(VIEW_3_CACHE), any(Instant.class)))
                 .thenReturn(VIEW_3_DATA_COUNT);
 
         /* test */
@@ -353,16 +348,15 @@ public class ViewEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateNoAccess_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
-            NotAllowedException, MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        doThrow(NotAllowedException.class)
-                .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -377,7 +371,7 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
-                .when(cacheService)
+                .when(metadataService)
                 .getView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
@@ -389,14 +383,13 @@ public class ViewEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateNoAccess_fails() throws RemoteUnavailableException, ViewNotFoundException,
-            NotAllowedException, MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
-        doThrow(NotAllowedException.class)
-                .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -407,14 +400,13 @@ public class ViewEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateNoAccessTextCsv_fails() throws RemoteUnavailableException, ViewNotFoundException,
-            NotAllowedException, MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(cacheService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_DTO);
-        doThrow(NotAllowedException.class)
-                .when(cacheService)
-                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -429,13 +421,32 @@ public class ViewEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
-                .when(cacheService)
+                .when(metadataService)
                 .getView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
             viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, "application/json", USER_4_PRINCIPAL);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
+    public void getStatistic_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
+            MetadataServiceException, DatabaseUnavailableException, TableNotFoundException, TableMalformedException,
+            NotAllowedException, DatabaseNotFoundException, SQLException {
+
+        /* mock */
+        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(tableService.getStatistics(DATABASE_1_CACHE, VIEW_1_ID, VIEW_1_INTERNAL_NAME))
+                .thenReturn(VIEW_1_STATISTIC_DTO);
+
+        /* test */
+        final ResponseEntity<TableStatisticDto> response = viewEndpoint.getStatistic(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
 }

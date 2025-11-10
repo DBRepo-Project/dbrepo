@@ -13,7 +13,7 @@ end. Tuples in system-versioned tables are not *actually* modified, they are mar
 
 <figure id="fig1" markdown>
 <<<<<<<< HEAD:docs/dev/old/data-versioning.md
-![](/infrastructures/dbrepo/1.10/images/data-versioning.png)
+![](/infrastructures/dbrepo/1.12/images/data-versioning.png)
 ========
 ![](../../images/data-versioning.png)
 <figcaption>Fig. 1: Data versioning in MariaDB system-versioned tables.</figcaption>

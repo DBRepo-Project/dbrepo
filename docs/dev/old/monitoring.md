@@ -15,15 +15,15 @@ a [Docker container](https://prometheus.io/docs/prometheus/latest/installation/)
 
 <figure markdown>
 <<<<<<<< HEAD:docs/dev/old/monitoring.md
-![DBRepo Dashboard](/infrastructures/dbrepo/1.10/images/screenshots/grafana4.png)
+![DBRepo Dashboard](/infrastructures/dbrepo/1.12/images/screenshots/grafana4.png)
 </figure>
 
 <figure markdown>
-![MariaDB Galera Dashboard](/infrastructures/dbrepo/1.10/images/screenshots/grafana3.png)
+![MariaDB Galera Dashboard](/infrastructures/dbrepo/1.12/images/screenshots/grafana3.png)
 </figure>
 
 <figure markdown>
-![RabbitMQ Dashboard](/infrastructures/dbrepo/1.10/images/screenshots/grafana5.png)
+![RabbitMQ Dashboard](/infrastructures/dbrepo/1.12/images/screenshots/grafana5.png)
 ========
 ![DBRepo Dashboard](../../images/screenshots/grafana4.png)
 <figcaption>Figure 1: DBRepo Dashboard</figcaption>

@@ -45,13 +45,13 @@ A datasource therefore can have four possible visibility states:
 
     When set to hidden Transparency and hidden Insights, this affects data sources, everything is hidden to anyone (even
     the existence). Only the owner and selected user accounts that have at least `read` access can see the datasource.
-    No [database dashboard](/infrastructures/dbrepo/1.10/database-dashboard) is visible to anyone.
+    No [database dashboard](/infrastructures/dbrepo/1.12/database-dashboard) is visible to anyone.
 
 ### UI
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.10/videos/update-visibility.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.10/videos/update-visibility.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.12/videos/update-visibility.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.12/videos/update-visibility.mp4" type="video/mp4" />
 </video>
 
 ### Python

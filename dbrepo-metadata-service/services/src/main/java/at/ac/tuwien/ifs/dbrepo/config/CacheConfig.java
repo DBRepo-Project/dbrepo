@@ -1,33 +1,22 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.concurrent.TimeUnit;
-
+@Getter
+@Setter
 @Configuration
 public class CacheConfig {
 
-    @Value("${dbrepo.credentialCacheTimeout}")
-    private Integer credentialCacheTimeout;
+    @Value("${spring.data.redis.host}")
+    private String host;
 
-    @Bean
-    public Cache<String, TokenDto> tokenCache() {
-        return new ExpiryCache<String, TokenDto>().build();
-    }
+    @Value("${spring.data.redis.port}")
+    private Integer port;
 
-    class ExpiryCache<K, T> {
-
-        Cache<K, T> build() {
-            return Caffeine.newBuilder()
-                    .expireAfterWrite(credentialCacheTimeout, TimeUnit.SECONDS)
-                    .build();
-        }
-
-    }
+    @Value("${dbrepo.cache.ttl}")
+    private Long ttl;
 
 }

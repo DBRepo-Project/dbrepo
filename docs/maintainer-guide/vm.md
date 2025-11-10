@@ -13,7 +13,7 @@ author: Martin Weise
 Download the KVM configuration and virtual disk:
 
 ```shell
-wget https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.10/dbrepo.qcow2.gz
+wget https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/dbrepo.qcow2.gz
 gunzip dbrepo.qcow2.gz
 ```
 

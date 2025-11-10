@@ -45,9 +45,8 @@ import java.util.regex.Pattern;
 @RestController
 @Validated
 @RequestMapping(path = "/api/v1/identifier")
-public class IdentifierEndpoint extends AbstractEndpoint {
+public class IdentifierEndpoint extends RestEndpoint {
 
-    private final UserService userService;
     private final AccessService accessService;
     private final EndpointConfig endpointConfig;
     private final MetadataMapper metadataMapper;
@@ -59,11 +58,9 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     private static final String CREATE_FOREIGN_IDENTIFIER_ROLE = "create-foreign-identifier";
 
     @Autowired
-    public IdentifierEndpoint(UserService userService, AccessService accessService, EndpointConfig endpointConfig,
-                              MetadataMapper metadataMapper, DatabaseService databaseService,
-                              MetadataService metadataService, EndpointValidator endpointValidator,
-                              IdentifierService identifierService) {
-        this.userService = userService;
+    public IdentifierEndpoint(AccessService accessService, EndpointConfig endpointConfig, MetadataMapper metadataMapper,
+                              DatabaseService databaseService, MetadataService metadataService,
+                              EndpointValidator endpointValidator, IdentifierService identifierService) {
         this.accessService = accessService;
         this.endpointConfig = endpointConfig;
         this.metadataMapper = metadataMapper;

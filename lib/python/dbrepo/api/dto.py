@@ -1130,7 +1130,7 @@ class DatabaseBrief(BaseModel):
     id: str
     name: str
     contact: UserBrief
-    owner_id: str
+    owned_by: str
     internal_name: str
     is_public: bool
     is_schema_public: bool

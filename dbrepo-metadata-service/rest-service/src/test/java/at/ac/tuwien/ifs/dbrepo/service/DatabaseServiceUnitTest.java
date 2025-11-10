@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
@@ -9,7 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private SearchServiceGateway searchServiceGateway;
+
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
 
     @MockitoBean
     private DataServiceGateway dataServiceGateway;
@@ -106,6 +110,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
 
         /* test */
         final Database response = databaseService.modifyImage(DATABASE_1, image);
@@ -120,6 +127,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
         /* mock */
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(DatabaseNotFoundException.class)
                 .when(searchServiceGateway)
                 .update(any(Database.class));
@@ -138,6 +148,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
         /* mock */
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(SearchServiceConnectionException.class)
                 .when(searchServiceGateway)
                 .update(any(Database.class));
@@ -355,8 +368,12 @@ public class DatabaseServiceUnitTest extends BaseTest {
     public void create_succeeds() throws Exception {
 
         /* mock */
-        when(dataServiceGateway.createDatabase(any(CreateDatabaseDto.class)))
-                .thenReturn(DATABASE_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
+                .when(dataServiceGateway)
+                .createDatabase(any(CreateDatabaseDto.class));
 
         /* test */
         generic_create();
@@ -396,8 +413,13 @@ public class DatabaseServiceUnitTest extends BaseTest {
     public void visibility_succeeds() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
+        /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+
         /* test */
-        generic_modifyVisibility(DATABASE_1, true, true);
+        generic_modifyVisibility(DATABASE_1);
     }
 
     @Test
@@ -405,13 +427,16 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(SearchServiceException.class)
                 .when(searchServiceGateway)
                 .update(DATABASE_1);
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            generic_modifyVisibility(DATABASE_1, true, true);
+            generic_modifyVisibility(DATABASE_1);
         });
     }
 
@@ -420,13 +445,16 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(DatabaseNotFoundException.class)
                 .when(searchServiceGateway)
                 .update(DATABASE_1);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_modifyVisibility(DATABASE_1, true, true);
+            generic_modifyVisibility(DATABASE_1);
         });
     }
 
@@ -435,19 +463,26 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(SearchServiceConnectionException.class)
                 .when(searchServiceGateway)
                 .update(DATABASE_1);
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            generic_modifyVisibility(DATABASE_1, true, true);
+            generic_modifyVisibility(DATABASE_1);
         });
     }
 
     @Test
     public void modifyOwner_succeeds() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
+
+        /* mock */
+        when(databaseCacheRepository.save(any(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database.class)))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         final Database response = generic_modifyOwner(DATABASE_1, USER_2_USERNAME);
@@ -460,6 +495,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(SearchServiceException.class)
                 .when(searchServiceGateway)
                 .update(DATABASE_1);
@@ -475,6 +513,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(DatabaseNotFoundException.class)
                 .when(searchServiceGateway)
                 .update(DATABASE_1);
@@ -490,6 +531,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(SearchServiceConnectionException.class)
                 .when(searchServiceGateway)
                 .update(DATABASE_1);
@@ -542,7 +586,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
         return response;
     }
 
-    protected Database generic_modifyVisibility(Database database, Boolean isPublic, Boolean isSchemaPublic)
+    protected Database generic_modifyVisibility(Database database)
             throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -551,8 +595,9 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
         /* test */
         final Database response = databaseService.modifyVisibility(database, DatabaseModifyVisibilityDto.builder()
-                .isPublic(isPublic)
-                .isSchemaPublic(isSchemaPublic)
+                .isPublic(true)
+                .isSchemaPublic(true)
+                .isDashboardEnabled(true)
                 .build());
         assertNotNull(response);
         return response;

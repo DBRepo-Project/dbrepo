@@ -4,12 +4,13 @@ import at.ac.tuwien.ifs.dbrepo.config.DuckDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.DataTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.DuckDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
@@ -31,45 +32,55 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     private final DataMapper dataMapper;
     private final DuckDbConfig duckDbConfig;
     private final DuckDbMapper duckDbMapper;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
     public AnalyseServiceDuckDbImpl(S3Config s3Config, DataMapper dataMapper, DuckDbConfig duckDbConfig,
-                                    DuckDbMapper duckDbMapper) {
+                                    DuckDbMapper duckDbMapper, MetadataMapper metadataMapper) {
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.duckDbConfig = duckDbConfig;
         this.duckDbMapper = duckDbMapper;
+        this.metadataMapper = metadataMapper;
     }
 
-    @Override
-    public void setupS3(Connection connection) throws SQLException {
+    public void setup(Connection connection) throws SQLException {
+        connection.prepareStatement("SET extension_directory = '" + duckDbConfig.getExtensionDirectory() + "';")
+                .execute();
+        log.debug("configure duckdb: extension_directory={}", duckDbConfig.getExtensionDirectory());
+        log.debug("from extension_directory load duckdb extension: httpfs");
         connection.prepareStatement("LOAD 'httpfs';")
                 .execute();
-        connection.prepareStatement("SET s3_endpoint = '" + s3Config.getS3Endpoint().replaceAll("https?://", "") + "';")
+        log.debug("from extension_directory load duckdb extension: mysql");
+        connection.prepareStatement("LOAD 'mysql';")
                 .execute();
+        log.debug("from extension_directory load duckdb extension: mysql_scanner");
+        connection.prepareStatement("LOAD 'mysql_scanner';")
+                .execute();
+        final String s3Endpoint = s3Config.getS3Endpoint().replaceAll("https?://", "");
+        connection.prepareStatement("SET s3_endpoint = '" + s3Endpoint + "';")
+                .execute();
+        log.debug("configure duckdb: s3_endpoint={}", s3Endpoint);
         connection.prepareStatement("SET s3_use_ssl = " + s3Config.getS3UseSsl() + ";")
                 .execute();
+        log.debug("configure duckdb: s3_use_ssl={}", s3Config.getS3UseSsl());
         connection.prepareStatement("SET s3_url_style = '" + s3Config.getS3UrlStyle() + "';")
                 .execute();
+        log.debug("configure duckdb: s3_url_style={}", s3Config.getS3UrlStyle());
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
-        connection.prepareStatement("SET temp_directory = '" + duckDbConfig + "';")
+        connection.prepareStatement("SET temp_directory = '" + duckDbConfig.getTmpDirectory() + "';")
                 .execute();
+        log.debug("configure duckdb: temp_directory={}", duckDbConfig.getTmpDirectory());
         connection.prepareStatement("CREATE SECRET (TYPE s3, KEY_ID '" + s3Config.getS3AccessKeyId() + "', SECRET '" + s3Config.getS3SecretAccessKey() + "');")
                 .execute();
     }
 
     @Override
-    public void setupMySql(Connection connection) throws SQLException {
-        connection.prepareStatement("LOAD 'mysql';")
-                .execute();
-    }
-
-    @Override
-    public SchemaAnalysisResultDto determineDataTypes(ImageDto image, String key) throws AnalyseDataTypesException,
+    public SchemaAnalysisResultDto determineDataTypes(Image image, String key) throws AnalyseDataTypesException,
             DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException {
         /* download sample from storage service */
         try (Connection connection = getDuckDbConnection()) {
-            setupS3(connection);
+            setup(connection);
             long start = System.currentTimeMillis();
             final PreparedStatement statement1 = connection.prepareStatement("FROM sniff_csv('s3://" + s3Config.getS3Bucket() + "/" + key + "');");
             final DuckDBResultSet resultSet1 = (DuckDBResultSet) statement1.executeQuery();
@@ -91,7 +102,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
                 final ColumnAnalysisResultDto analysis = constraints.get(column.getName());
                 column.setPrimaryKey(analysis.getPrimaryKey());
                 column.setNullAllowed(analysis.getNullAllowed());
-                final DataTypeDto dataType = dataMapper.imageDtoTypeNameToDataTypeDto(image, column.getDatatype());
+                final DataType dataType = metadataMapper.imageDtoTypeNameToDataTypeDto(image, column.getDatatype().getType().toLowerCase());
                 column.setD(dataType.getDDefault());
                 column.setSize(dataType.getSizeDefault());
             }
@@ -111,15 +122,15 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     }
 
     @Override
-    public Map<String, ColumnAnalysisResultDto> determineDataTypes(DatabaseDto database, QueryDto subset)
+    public Map<String, ColumnAnalysisResultDto> determineDataTypes(Database database, QueryDto subset)
             throws ColumnNotFoundException, DatabaseUnavailableException {
         return determineDataTypes(database, duckDbMapper.queryToRawDescribeQuery(subset.getQuery()));
     }
 
-    public Map<String, ColumnAnalysisResultDto> determineDataTypes(DatabaseDto database, String statement)
+    public Map<String, ColumnAnalysisResultDto> determineDataTypes(Database database, String statement)
             throws ColumnNotFoundException, DatabaseUnavailableException {
         try (Connection connection = getDuckDbConnection()) {
-            setupMySql(connection);
+            setup(connection);
             /* attach to mariadb in duckdb */
             final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
             statement1.executeUpdate();

@@ -2,6 +2,7 @@
 
 .PHONY: tag-images
 tag-images: build-images ## Tag the docker images.
+	docker tag dbrepo-consumer-service:latest "${REPOSITORY_URL}/consumer-service:${APP_VERSION}${BUILD_VERSION}"
 	docker tag dbrepo-dashboard-service:latest "${REPOSITORY_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
 	docker tag dbrepo-dashboard-service-init:latest "${REPOSITORY_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
 	docker tag dbrepo-data-service:latest "${REPOSITORY_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
@@ -17,6 +18,7 @@ tag-jupyter-image: build-jupyter-image
 
 .PHONY: release-images
 release-images: tag-images ## Release the docker images.
+	docker push "${REPOSITORY_URL}/consumer-service:${APP_VERSION}${BUILD_VERSION}"
 	docker push "${REPOSITORY_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
 	docker push "${REPOSITORY_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
 	docker push "${REPOSITORY_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"

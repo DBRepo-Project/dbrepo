@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.ImageAlreadyExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.repository.ImageRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ImageRepository;
 import at.ac.tuwien.ifs.dbrepo.service.ImageService;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

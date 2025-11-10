@@ -2,7 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -35,7 +34,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/access")
-public class AccessEndpoint extends AbstractEndpoint {
+public class AccessEndpoint extends RestEndpoint {
 
     private final AccessService accessService;
     private final MetadataMapper metadataMapper;
@@ -163,7 +162,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     @RequestMapping(value = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_access_get")
-    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('check-foreign-database-access')")
+    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('check-foreign-database-access') or hasAuthority('system')")
     @Operation(summary = "Find/Check access",
             description = "Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
@@ -186,7 +185,7 @@ public class AccessEndpoint extends AbstractEndpoint {
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, username={}", databaseId, username);
         if (!username.equals(getUsername(principal))) {
-            if (!hasRole(principal, "check-foreign-database-access")) {
+            if (!hasRole(principal, "check-foreign-database-access") && !isSystem(principal)) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
             }

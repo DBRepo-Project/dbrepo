@@ -25,7 +25,7 @@ Only set the `BASE_URL` environment variable in `.env` when your hostname is **n
 
 ### Auth Service
 
-The [Auth Service](/infrastructures/dbrepo/1.10/api/auth-service/) can be configured easily when DBRepo is running. Start 
+The [Auth Service](/infrastructures/dbrepo/1.12/api/auth-service/) can be configured easily when DBRepo is running. Start 
 DBRepo temporarily:
 
 ```shell
@@ -38,7 +38,7 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 :material-numeric-3-circle-outline:.
 
 <figure markdown>
-![Keycloak identitiy provider list](/infrastructures/dbrepo/1.10/images/screenshots/auth-service-ldap-1.png){ .img-border }
+![Keycloak identitiy provider list](/infrastructures/dbrepo/1.12/images/screenshots/auth-service-ldap-1.png){ .img-border }
 </figure>
 
 If you plan to change the default admin username (c.f. Figure 2), modify the Bind DN :material-numeric-1-circle-outline:
@@ -46,7 +46,7 @@ but this is optional. Change the Bind credentials to the desired password :mater
 the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
 <figure markdown>
-![Keycloak identity provider settings](/infrastructures/dbrepo/1.10/images/screenshots/auth-service-ldap-2.png){ .img-border }
+![Keycloak identity provider settings](/infrastructures/dbrepo/1.12/images/screenshots/auth-service-ldap-2.png){ .img-border }
 </figure>
 
 Update the client secret of the `dbrepo-client`:
@@ -109,6 +109,6 @@ Please be warned that the default configuration is not intended for public deplo
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
 
-Next, create a [user account](/infrastructures/dbrepo/1.10/api/#create-user-account) and 
-then [create a database](/infrastructures/dbrepo/1.10/api/#create-database) to [import a dataset](/infrastructures/dbrepo/1.10/api/#import-dataset).
+Next, create a [user account](/infrastructures/dbrepo/1.12/api/#create-user-account) and 
+then [create a database](/infrastructures/dbrepo/1.12/api/#create-database) to [import a dataset](/infrastructures/dbrepo/1.12/api/#import-dataset).
 

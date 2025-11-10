@@ -26,7 +26,8 @@ public class KeycloakConfig {
     @Value("${dbrepo.keycloak.clientSecret}")
     private String keycloakClientSecret;
 
-    private final String realm = "dbrepo";
+    @Value("${dbrepo.keycloak.realm}")
+    private String keycloakRealm;
 
     @Bean
     public RestTemplate restTemplate() {

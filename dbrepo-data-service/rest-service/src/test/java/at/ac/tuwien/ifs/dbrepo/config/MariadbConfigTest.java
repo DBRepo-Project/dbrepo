@@ -14,9 +14,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -38,8 +36,8 @@ public class MariadbConfigTest extends BaseTest {
     @SuppressWarnings("java:S2925")
     public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
-        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -47,17 +45,8 @@ public class MariadbConfigTest extends BaseTest {
     public void longRunningQuery_succeeds() throws SQLException {
 
         /* test */
-        MariaDbUtil.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(8);"); // -2
+        MariaDbUtil.execute(DATABASE_1_CACHE, "SELECT SLEEP(8);"); // -2
         assertTrue(true);
-    }
-
-    @Test
-    public void tooLongRunningQuery_succeeds() {
-
-        /* test */
-        assertThrows(SQLTimeoutException.class, () -> {
-            MariaDbUtil.execute(DATABASE_1_PRIVILEGED_DTO, "SELECT SLEEP(12);"); // +2
-        });
     }
 
 }

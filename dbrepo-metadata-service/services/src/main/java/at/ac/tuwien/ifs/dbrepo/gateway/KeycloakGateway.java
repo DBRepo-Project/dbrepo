@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +15,8 @@ public interface KeycloakGateway {
 
     List<UserRepresentation> findAll();
 
-    TokenDto obtainUserToken(String username, String password);
+    TokenDto getUserToken(String username, String password, String realm, String clientId, String clientSecret)
+            throws BadCredentialsException;
 
     UserRepresentation findByUsername(String username) throws UserNotFoundException, NotAllowedException;
 

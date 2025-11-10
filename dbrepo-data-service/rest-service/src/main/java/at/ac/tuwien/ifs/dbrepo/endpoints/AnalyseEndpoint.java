@@ -1,12 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,13 +25,13 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/image")
 public class AnalyseEndpoint extends RestEndpoint {
 
-    private final CacheService cacheService;
     private final AnalyseService analyseService;
+    private final MetadataService metadataService;
 
     @Autowired
-    public AnalyseEndpoint(CacheService cacheService, AnalyseService analyseService) {
-        this.cacheService = cacheService;
+    public AnalyseEndpoint(AnalyseService analyseService, MetadataService metadataService) {
         this.analyseService = analyseService;
+        this.metadataService = metadataService;
     }
 
     @GetMapping("/{imageId}/analyse/schema/{key}")
@@ -63,7 +61,7 @@ public class AnalyseEndpoint extends RestEndpoint {
             RemoteUnavailableException, MetadataServiceException, ImageNotFoundException,
             ColumnNotFoundException, ImageInvalidException {
         log.debug("endpoint analyse datatypes, imageId={}, key={}", imageId, key);
-        final ImageDto image = cacheService.getImage(imageId);
+        final Image image = metadataService.getImage(imageId);
         return ResponseEntity.ok()
                 .body(analyseService.determineDataTypes(image, key));
     }

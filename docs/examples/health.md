@@ -15,7 +15,7 @@ pressure. The original dataset is available on [Kaggle](https://doi.org/10.34740
 ## Solution
 
 Importing the original dataset from Kaggle into DBRepo allows for exploratory analysis and increased value for secondary
-use, e.g. with our [`pandas`](https://pypi.org/project/pandas/)-compatible [Python Library](/infrastructures/dbrepo/1.10/api/python).
+use, e.g. with our [`pandas`](https://pypi.org/project/pandas/)-compatible [Python Library](/infrastructures/dbrepo/1.12/api/python).
 
 ## DBRepo Features
 

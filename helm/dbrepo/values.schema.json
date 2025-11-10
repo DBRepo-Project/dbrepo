@@ -5,6 +5,17 @@
         "authservice": {
             "type": "object",
             "properties": {
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "adminPassword": {
+                            "type": "string"
+                        },
+                        "adminUser": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "client": {
                     "type": "object",
                     "properties": {
@@ -25,6 +36,9 @@
                 "extraEnvVarsSecret": {
                     "type": "string"
                 },
+                "extraStartupArgs": {
+                    "type": "string"
+                },
                 "extraVolumeMounts": {
                     "type": "array",
                     "items": {
@@ -34,9 +48,6 @@
                                 "type": "string"
                             },
                             "name": {
-                                "type": "string"
-                            },
-                            "subPath": {
                                 "type": "string"
                             }
                         }
@@ -70,13 +81,22 @@
                 "image": {
                     "type": "object",
                     "properties": {
-                        "debug": {
-                            "type": "boolean"
+                        "registry": {
+                            "type": "string"
                         },
                         "repository": {
                             "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
                         }
                     }
+                },
+                "issuerUri": {
+                    "type": "string"
+                },
+                "jwkUri": {
+                    "type": "string"
                 },
                 "jwt": {
                     "type": "object",
@@ -183,6 +203,12 @@
                 "auth": {
                     "type": "object",
                     "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "passwordHash": {
+                            "type": "string"
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -196,6 +222,9 @@
                                     "type": "boolean"
                                 }
                             }
+                        },
+                        "username": {
+                            "type": "string"
                         }
                     }
                 },
@@ -240,9 +269,6 @@
                 "image": {
                     "type": "object",
                     "properties": {
-                        "debug": {
-                            "type": "boolean"
-                        },
                         "repository": {
                             "type": "string"
                         }
@@ -352,6 +378,42 @@
                 }
             }
         },
+        "cachedb": {
+            "type": "object",
+            "properties": {
+                "architecture": {
+                    "type": "string"
+                },
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string"
+                },
+                "flavor": {
+                    "type": "string"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "clusterDomain": {
             "type": "string"
         },
@@ -359,6 +421,99 @@
             "type": "object",
             "properties": {
                 "endpoint": {
+                    "type": "string"
+                }
+            }
+        },
+        "consumerservice": {
+            "type": "object",
+            "properties": {
+                "containerSecurityContext": {
+                    "type": "object",
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "type": "object",
+                            "properties": {
+                                "drop": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "type": "object"
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "podAnnotations": {
+                    "type": "object"
+                },
+                "podSecurityContext": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "replicaCount": {
+                    "type": "integer"
+                },
+                "resources": {
+                    "type": "object"
+                },
+                "resourcesPreset": {
                     "type": "string"
                 }
             }
@@ -549,6 +704,17 @@
         "dashboardui": {
             "type": "object",
             "properties": {
+                "admin": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "dashboardsProvider": {
                     "type": "object",
                     "properties": {
@@ -600,20 +766,6 @@
                     "type": "object",
                     "properties": {
                         "repository": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "ldap": {
-                    "type": "object",
-                    "properties": {
-                        "allowSignUp": {
-                            "type": "boolean"
-                        },
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "secretName": {
                             "type": "string"
                         }
                     }
@@ -1087,9 +1239,6 @@
                         }
                     }
                 },
-                "group": {
-                    "type": "string"
-                },
                 "image": {
                     "type": "object",
                     "properties": {
@@ -1133,12 +1282,6 @@
                     "type": "object"
                 },
                 "resourcesPreset": {
-                    "type": "string"
-                },
-                "userPasswords": {
-                    "type": "string"
-                },
-                "users": {
                     "type": "string"
                 }
             }
@@ -1540,6 +1683,9 @@
                     }
                 }
             }
+        },
+        "password": {
+            "type": "string"
         },
         "searchdb": {
             "type": "object",
@@ -2168,6 +2314,9 @@
                     "type": "string"
                 }
             }
+        },
+        "username": {
+            "type": "string"
         }
     }
 }

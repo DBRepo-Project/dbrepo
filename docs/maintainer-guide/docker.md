@@ -41,5 +41,5 @@ SSL/TLS certificate is recommended. Follow the [Secure Installation](#secure-ins
 
     See "Security Disclaimer" above, this quick &amp; non-secure installation needs to be configured further to achieve
     basic security guarantees. Please visit 
-    the [configuration](/infrastructures/dbrepo/1.10/maintainer-guide/configuration/) page in the next step to complete
+    the [configuration](/infrastructures/dbrepo/1.12/maintainer-guide/configuration/) page in the next step to complete
     the installation.

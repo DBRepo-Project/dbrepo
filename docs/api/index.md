@@ -12,7 +12,7 @@ The API guide describes entry points that can be used to interact with the repos
 
     This API is a convenience wrapper for data scientists and cover most of the REST API.
 
-    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.10/api/python)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.12/api/python)
 
 -   :material-api:{ .lg .middle } **REST API**
 
@@ -20,7 +20,7 @@ The API guide describes entry points that can be used to interact with the repos
 
     This API manages the entire system. Every component can be manged using this API.
 
-    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.10/api/rest)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.12/api/rest)
 
 -   :material-queue-first-in-last-out:{ .lg .middle } **AMQP / MQTT API**
 
@@ -28,7 +28,7 @@ The API guide describes entry points that can be used to interact with the repos
 
     This API can be used to ingest data from IoT sensors.
 
-    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.10/api/broker)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.12/api/broker)
 
 -   :material-archive-arrow-down-outline:{ .lg .middle } **OAI-PMH API**
 
@@ -36,7 +36,7 @@ The API guide describes entry points that can be used to interact with the repos
 
     This API lets agents of metadata aggregators index datasets.
 
-    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.10/api/oai-pmh)
+    [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.12/api/oai-pmh)
 
 -   :material-database-outline:{ .lg .middle } **JDBC API**
 

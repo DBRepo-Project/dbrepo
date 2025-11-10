@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.LicenseDto;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;

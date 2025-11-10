@@ -1,0 +1,72 @@
+{{- if .Values.consumerservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: consumer-service
+    service: consumer-service
+spec:
+  replicas: {{ .Values.consumerservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: consumer-service
+      service: consumer-service
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.consumerservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.consumerservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+      labels:
+        app: consumer-service
+        service: consumer-service
+    spec:
+      {{- if .Values.consumerservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.consumerservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: consumer-service
+          image: {{ .Values.consumerservice.image.name }}
+          imagePullPolicy: {{ .Values.consumerservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.consumerservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.consumerservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/consumer
+          envFrom:
+            - secretRef:
+                name: consumer-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/actuator/health/readiness | grep 'UP' || exit 1"
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.consumerservice.resources }}
+          resources: {{- toYaml .Values.consumerservice.resources | nindent 12 }}
+          {{- else if ne .Values.consumerservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.consumerservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
+{{- end }}

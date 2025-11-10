@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
@@ -9,7 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.google.common.hash.Hashing;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +31,17 @@ public class ViewServiceImpl implements ViewService {
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
     public ViewServiceImpl(MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
-                           DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway) {
+                           DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway,
+                           DatabaseCacheRepository databaseCacheRepository) {
         this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -64,6 +68,8 @@ public class ViewServiceImpl implements ViewService {
                 .getViews()
                 .remove(view);
         final Database database = databaseRepository.save(view.getDatabase());
+        /* update cache */
+        databaseCacheRepository.deleteById(view.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Deleted view with id {}", view.getId());
@@ -110,6 +116,8 @@ public class ViewServiceImpl implements ViewService {
             log.error("Failed to find created view");
             throw new MalformedException("Failed to find created view");
         }
+        /* update cache */
+        databaseCacheRepository.deleteById(view.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Created view with id {}", optional.get().getId());
@@ -123,6 +131,8 @@ public class ViewServiceImpl implements ViewService {
         view.setIsPublic(data.getIsPublic());
         view.setIsSchemaPublic(data.getIsSchemaPublic());
         final Database database = databaseRepository.save(view.getDatabase());
+        /* update cache */
+        databaseCacheRepository.deleteById(view.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Updated view with id {}", view.getId());

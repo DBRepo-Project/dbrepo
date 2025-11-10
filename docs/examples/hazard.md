@@ -49,4 +49,4 @@ simple query to the `information_schema` that is maintained by the database engi
 
 This work was part of a cooperation with the [Institute of Water Quality and Resource Management](https://www.tuwien.at/cee/iwr).
 
-<img src="/infrastructures/dbrepo/1.10/images/logos/iwr.png" width=100 />
+<img src="/infrastructures/dbrepo/1.12/images/logos/iwr.png" width=100 />

@@ -9,6 +9,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.crossref.CrossRefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnBriefDto;
@@ -51,10 +53,16 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalResultType;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.affiliation.ExternalAffiliationDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.ContainerImage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.image.DataType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnConcept;
@@ -69,6 +77,9 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessageType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ColumnNotFoundException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -139,7 +150,95 @@ public interface MetadataMapper {
     })
     UserRepresentation userCreateDtoToUserRepresentation(UserCreateDto data);
 
+    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
+            .withZone(ZoneId.of("UTC"));
+
+    @Mappings({
+            @Mapping(target = "id", source = "userId"),
+            @Mapping(target = "username", source = "privilegedUsername"),
+            @Mapping(target = "password", source = "privilegedPassword"),
+    })
+    User createDatabaseDtoToPrivilegedUser(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto data);
+
+    @Mappings({
+            @Mapping(target = "id", source = "userId"),
+    })
+    User createDatabaseDtoToUser(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto data);
+
+    @Mappings({
+            @Mapping(target = "username", source = "readonlyUsername"),
+            @Mapping(target = "password", source = "readonlyPassword"),
+    })
+    User createDatabaseDtoToReadonlyUser(CreateDatabaseDto data);
+
+    @Mappings({
+            @Mapping(target = "ownedBy", source = "owner.username")
+    })
+    Subset queryDtoToSubset(QueryDto data);
+
+    UserBriefDto userToUserBriefDto(User data);
+
+    at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container containerDtoToContainer(ContainerDto data);
+
+    Image imageDtoToImage(ImageDto data);
+
+    @Mappings({
+            @Mapping(target = "subsets", ignore = true),
+            @Mapping(target = "ownedBy", source = "owner.username")
+    })
+    at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database databaseDtoToDatabase(DatabaseDto data);
+
+    QueryDto subsetToQueryDto(Subset data);
+
+    ColumnDto viewColumnDtoToColumnDto(ViewColumnDto data);
+
+    ViewColumnDto columnDtoToViewColumnDto(ColumnDto data);
+
+    User userDtoToUser(UserDto data);
+
+    @Mappings({
+            @Mapping(target = "accessToken", source = "token")
+    })
+    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
+
     UserBriefDto userDtoToUserBriefDto(UserDto data);
+
+    TableBriefDto tableDtoToTableBriefDto(TableDto data);
+
+    IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
+
+    default String metricToUri(String baseUrl, UUID databaseId, UUID tableId, UUID subsetId, UUID viewId) {
+        final StringBuilder uri = new StringBuilder(baseUrl)
+                .append("/database/")
+                .append(databaseId);
+        if (tableId != null) {
+            uri.append("/table/")
+                    .append(tableId);
+        } else if (subsetId != null) {
+            uri.append("/subset/")
+                    .append(subsetId);
+        } else if (viewId != null) {
+            uri.append("/view/")
+                    .append(viewId);
+        }
+        log.trace("count uri: {}", uri);
+        return uri.toString();
+    }
+
+    ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
+
+    default at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType imageDtoTypeNameToDataTypeDto(Image image, String columnType) throws ImageInvalidException {
+        final Optional<at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType> optional = image.getDataTypes()
+                .stream()
+                .filter(t -> t.getValue().toLowerCase().equals(columnType))
+                .findFirst();
+        if (optional.isEmpty()) {
+            final List<String> dataTypes = image.getDataTypes().stream().map(t -> t.getValue().toLowerCase()).toList();
+            log.error("Failed to find data type {} in image datatypes: {}", columnType, dataTypes);
+            throw new ImageInvalidException("Failed to find data type " + columnType + " in image datatypes: " + Arrays.toString(dataTypes.toArray()));
+        }
+        return optional.get();
+    }
 
     default UserDto userRepresentationToUserDto(UserRepresentation data) {
         return UserDto.builder()
@@ -203,11 +302,6 @@ public interface MetadataMapper {
                 .nextAlphanumeric(4)
                 .toLowerCase();
     }
-
-    @Mappings({
-            @Mapping(target = "accessToken", source = "token")
-    })
-    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
 
     BannerMessageDto bannerMessageToBannerMessageDto(BannerMessage data);
 
@@ -913,6 +1007,24 @@ public interface MetadataMapper {
     })
     Table tableDtoToTable(TableDto data);
 
+    @Mappings({
+            @Mapping(target = "subsets", ignore = true)
+    })
+    at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database databaseToDatabaseCache(Database data);
+
+    @Mappings({
+            @Mapping(target = "host", source = "host"),
+            @Mapping(target = "port", source = "port"),
+            @Mapping(target = "username", source = "privilegedUsername"),
+            @Mapping(target = "password", source = "privilegedPassword")
+    })
+    at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container containerToContainerCache(Container data);
+
+    @Mappings({
+            @Mapping(target = "ownedBy", source = "owner.username")
+    })
+    at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table tableDtoToTableCache(TableDto data);
+
     PrimaryKeyDto primaryKeyToPrimaryKeyDto(PrimaryKey data);
 
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto data);
@@ -1050,6 +1162,11 @@ public interface MetadataMapper {
     })
     View viewDtoToView(ViewDto data);
 
+    @Mappings({
+            @Mapping(target = "ownedBy", source = "owner.username")
+    })
+    at.ac.tuwien.ifs.dbrepo.core.entity.cache.View viewDtoToViewCache(ViewDto data);
+
     /* keep */
     @Named("internalMapping")
     default String nameToInternalName(String data) {
@@ -1072,6 +1189,9 @@ public interface MetadataMapper {
     })
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 
+    @Mappings({
+            @Mapping(target = "contactPerson", expression = "java(UserBriefDto.builder().username(data.getContactPerson()).build())"),
+    })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);
@@ -1082,5 +1202,57 @@ public interface MetadataMapper {
             @Mapping(target = "user", expression = "java(UserBriefDto.builder().username(data.getUsername()).build())")
     })
     DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
+
+    default at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn columnIdToViewColumnDto(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database database, UUID columnId) throws ColumnNotFoundException {
+        if (columnId == null) {
+            return null;
+        }
+        final Optional<at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn> optional = database.getViews()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.View::getColumns)
+                .flatMap(List::stream)
+                .filter(column -> column.getId().equals(columnId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find column: {}", columnId);
+            throw new ColumnNotFoundException("Failed to find column: " + columnId);
+        }
+        final at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn column = optional.get();
+        log.trace("mapped column id {} to view column: {}", columnId, column.getInternalName());
+        return column;
+    }
+
+    default Column columnIdToColumnDto(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database database, UUID columnId) throws ColumnNotFoundException {
+        if (columnId == null) {
+            return null;
+        }
+        final Optional<Column> optional = database.getTables()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table::getColumns)
+                .flatMap(List::stream)
+                .filter(column -> column.getId().equals(columnId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find column: {}", columnId);
+            throw new ColumnNotFoundException("Failed to find column: " + columnId);
+        }
+        final Column column = optional.get();
+        log.trace("mapped column id {} to column: {}", columnId, column.getInternalName());
+        return column;
+    }
+
+    default Operator operatorIdToOperatorDto(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database database, UUID operatorId) throws ImageNotFoundException {
+        final Optional<Operator> optional = database.getContainer()
+                .getImage()
+                .getOperators()
+                .stream()
+                .filter(op -> op.getId().equals(operatorId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find operator: {}", operatorId);
+            throw new ImageNotFoundException("Failed to find operator: " + operatorId);
+        }
+        return optional.get();
+    }
 
 }

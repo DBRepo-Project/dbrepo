@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @ControllerAdvice
 @RequestMapping(path = "/api/v1/container")
-public class ContainerEndpoint extends AbstractEndpoint {
+public class ContainerEndpoint extends RestEndpoint {
 
     private final MetadataMapper metadataMapper;
     private final ContainerService containerService;

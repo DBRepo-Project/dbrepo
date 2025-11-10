@@ -8,7 +8,7 @@ from app import fetch_databases
 exp = DatabaseBrief(
     id="6bd39359-b154-456d-b9c2-caa516a45732",
     name='test',
-    owner_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
+    owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
     contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
     internal_name='test_abcd',
     is_public=True,

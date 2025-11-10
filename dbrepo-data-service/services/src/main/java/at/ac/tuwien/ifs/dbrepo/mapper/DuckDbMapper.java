@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
@@ -8,7 +8,7 @@ public interface DuckDbMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DuckDbMapper.class);
 
-    default String databaseDtoToRawAttachQuery(DatabaseDto data) {
+    default String databaseDtoToRawAttachQuery(Database data) {
         final StringBuilder statement = new StringBuilder("ATTACH 'host=")
                 .append(data.getContainer().getHost())
                 .append(" user=")

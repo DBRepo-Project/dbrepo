@@ -7,15 +7,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.11.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.11.1) - 2025-10-30
+## [v1.12.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.12.0) - 2025-11-10
+
+### Fixes
+
+* Fixed a silent connection issue causing the consumer in the Consumer Service to die silently + having no chance of
+  recovery by configuring the `ConnectionFactory` correctly.
+* Fixed a bug where sometimes DuckDB has issues with loading the extensions. Instead now load them from an offline
+  directory in [#568](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/568).
+
+### Features
+
+* Added an integration test to the CI/CD pipeline that ensures the Broker Service is configured properly (e.g. MQTT is
+  enabled).
+* Re-hash subset results and expose them via `X-Result-Hash` header to enable verification 
+  in [#569](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/569).
 
 ### Changes
 
-* Refactored the user information out of the Metadata DB into the Auth Service (i.e. Auth DB) to get rid of consistency
-  problems related to SSO-based identity providers.
-* Bumped Keycloak from version `26.2.4` to `26.4.0` to 
+* Refactored the user information out of the Metadata Database into the Auth Service (i.e. Auth DB) to get rid of 
+  consistency problems related to SSO-based identity providers.
+* Bumped Keycloak from version `26.2.4` to `26.4.4` to 
   include [default-values for profile attributes](https://github.com/keycloak/keycloak/issues/36160).
-* Using the Red Hat-based image registry (=`quay.io`) for future updates due to updates to the Bitnami service catalog.
+* Changed the Bitnami catalog to the legacy repository `docker.io/bitnamilegacy` where possible instead of our local
+  registry which was meant only as temporary fix.
 
 ## [v1.11.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.11.0) - 2025-10-13
 
@@ -437,7 +452,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Features
 
-* Added [Dashboard Service](/infrastructures/dbrepo/1.10/api/dashboard-service/) and monitoring in default setup.
+* Added [Dashboard Service](/infrastructures/dbrepo/1.12/api/dashboard-service/) and monitoring in default setup.
 
 #### Changes
 

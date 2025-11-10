@@ -22,7 +22,7 @@
 
     <description>Core library for DBRepo</description>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.11/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -75,6 +75,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
         <!-- Mapping -->
         <dependency>

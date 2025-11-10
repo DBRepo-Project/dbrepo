@@ -4,52 +4,19 @@ author: Martin Weise
 
 Development of DBRepo.
 
-## Build from Source
+## Architecture Diagram
 
-Requirements:
+<figure markdown>
+![image](/infrastructures/dbrepo/1.12/images/architecture.svg)
+<figcaption>Figure 1: Microservice architecture of DBRepo.</figcaption>
+</figure>
 
-* [Docker CE](https://docs.docker.com/engine/install/)
-
-=== "Debian 12"
-
-    ```shell
-    apt install make \
-      git \
-      maven \
-      openjdk-17-jdk \
-      python3 \
-      python3-venv
-    ```
-
-Clone the repository and `cd` into it:
-
-```shell
-git clone https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services.git && cd ./fda-services
-```
-
-Build only the images from source:
-
-```shell
-make build-images
-```
-
-!!! example "Build everything from source"
-
-    You can of course build all auxiliary files and the images from source:
-
-    ```bash
-    #!/bin/bash
-    python3 -m venv venv && \
-      source ./venv/bin/activate && \
-      pip install pipenv && \
-      pipenv install --dev
-    make build-java-lib build-python-lib build-images
-    ```
 
 ## Support
 
 | Branch                                                         | Initial Release | End of Life |
 |----------------------------------------------------------------|-----------------|-------------|
+| <span class="support-active">:material-circle:</span> 1.12.x   | 2025-11-09      | 2026-02-09  |
 | <span class="support-active">:material-circle:</span> 1.11.x   | 2025-09-26      | 2025-12-26  |
 | <span class="support-inactive">:material-circle:</span> 1.10.x | 2025-06-27      | 2025-09-27  |
 | <span class="support-inactive">:material-circle:</span> 1.9.x  | 2025-05-30      | 2025-08-30  |

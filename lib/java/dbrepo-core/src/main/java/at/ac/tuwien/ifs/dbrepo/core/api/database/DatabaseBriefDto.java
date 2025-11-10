@@ -52,7 +52,8 @@ public class DatabaseBriefDto {
     private List<IdentifierBriefDto> identifiers;
 
     @NotNull
-    private UserBriefDto contact;
+    @JsonProperty("contact")
+    private UserBriefDto contactPerson;
 
     @NotNull
     @JsonProperty("owned_by")

@@ -47,22 +47,22 @@ public class GrantServiceIntegrationTest extends BaseTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbUtil.dropDatabase(CONTAINER_4_PRIVILEGED_DTO, DATABASE_4_INTERNAL_NAME);
-        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
-        MariaDbUtil.createInitDatabase(DATABASE_4_PRIVILEGED_DTO);
-        MariaDbUtil.revokeAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
-        MariaDbUtil.revokeAccess(DATABASE_4_PRIVILEGED_DTO, USER_4_USERNAME);
+        MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.dropDatabase(CONTAINER_4_CACHE, DATABASE_4_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
+        MariaDbUtil.createInitDatabase(DATABASE_4_CACHE);
+        MariaDbUtil.revokeAccess(DATABASE_1_CACHE, USER_1_USERNAME);
+        MariaDbUtil.revokeAccess(DATABASE_4_CACHE, USER_4_USERNAME);
     }
 
     @Test
     public void find_read_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
-        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_CACHE, grantDefaultRead, USER_1_USERNAME);
 
         /* test */
-        final DatabaseGrantsDto response = grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
+        final DatabaseGrantsDto response = grantService.find(DATABASE_1_CACHE, USER_1_CACHE);
         assertNotNull(response);
         assertEquals(GrantTypeDto.READ, response.getType());
         assertEquals(Arrays.stream(grantDefaultRead.split(",")).map(String::trim).map(String::toUpperCase).collect(Collectors.toSet()), response.getGrants());
@@ -72,10 +72,10 @@ public class GrantServiceIntegrationTest extends BaseTest {
     public void find_read2_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
-        MariaDbUtil.grantAccess(DATABASE_4_PRIVILEGED_DTO, grantDefaultRead, USER_4_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_4_CACHE, grantDefaultRead, USER_4_USERNAME);
 
         /* test */
-        final DatabaseGrantsDto response = grantService.find(DATABASE_4_PRIVILEGED_DTO, USER_4_DTO);
+        final DatabaseGrantsDto response = grantService.find(DATABASE_4_CACHE, USER_4_CACHE);
         assertNotNull(response);
         assertEquals(GrantTypeDto.READ, response.getType());
         assertEquals(Arrays.stream(grantDefaultRead.split(",")).map(String::trim).map(String::toUpperCase).collect(Collectors.toSet()), response.getGrants());
@@ -85,10 +85,10 @@ public class GrantServiceIntegrationTest extends BaseTest {
     public void find_write_succeeds() throws SQLException, DatabaseMalformedException, AccessNotFoundException {
 
         /* mock */
-        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultWrite, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_CACHE, grantDefaultWrite, USER_1_USERNAME);
 
         /* test */
-        final DatabaseGrantsDto response = grantService.find(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
+        final DatabaseGrantsDto response = grantService.find(DATABASE_1_CACHE, USER_1_CACHE);
         assertNotNull(response);
         assertEquals(GrantTypeDto.WRITE, response.getType());
         assertEquals(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).map(String::toUpperCase).collect(Collectors.toSet()), response.getGrants());
@@ -98,10 +98,10 @@ public class GrantServiceIntegrationTest extends BaseTest {
     public void findAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* mock */
-        MariaDbUtil.grantAccess(DATABASE_1_PRIVILEGED_DTO, grantDefaultRead, USER_1_USERNAME);
+        MariaDbUtil.grantAccess(DATABASE_1_CACHE, grantDefaultRead, USER_1_USERNAME);
 
         /* test */
-        final Map<String, DatabaseGrantsDto> response = grantService.findAll(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
+        final Map<String, DatabaseGrantsDto> response = grantService.findAll(DATABASE_1_CACHE, USER_1_CACHE);
         assertNotNull(response);
         assertEquals(2, response.size());
         final DatabaseGrantsDto grants0 = response.get("*");

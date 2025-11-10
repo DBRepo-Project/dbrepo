@@ -8,16 +8,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MetadataConfig {
 
-    @Value("${dbrepo.repository-name}")
+    @Value("${dbrepo.repositoryName}")
     private String repositoryName;
 
-    @Value("${dbrepo.base-url}")
+    @Value("${dbrepo.baseUrl}")
     private String baseUrl;
 
-    @Value("${dbrepo.admin-email}")
+    @Value("${dbrepo.adminEmail}")
     private String adminEmail;
 
-    @Value("${dbrepo.deleted-record}")
+    @Value("${dbrepo.deletedRecord}")
     private String deletedRecord;
 
     @Value("${dbrepo.granularity}")

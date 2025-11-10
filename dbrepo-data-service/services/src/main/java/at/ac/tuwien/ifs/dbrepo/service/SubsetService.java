@@ -1,8 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -18,37 +19,53 @@ public interface SubsetService {
      * Creates a subset from the given statement at given time in the given database.
      *
      * @param database  The database.
-     * @param subset The subset information.
+     * @param subset    The subset information.
      * @param timestamp The timestamp as of which the data is queried. If smaller than <now>, historic data is queried.
-     * @param username    The username of the creating user.
+     * @param username  The username of the creating user.
      * @return The query id.
      * @throws QueryStoreInsertException The query store refused to insert the query.
      * @throws SQLException              The connection to the database could not be established.
+     * @throws QueryMalformedException   The query to create the subset is malformed or contains illegal keywords such as <code>DROP</code>.
+     * @throws TableNotFoundException    The referenced table source was not found.
+     * @throws ViewNotFoundException     The referenced view source was not found.
+     * @throws ColumnNotFoundException   The referenced column was not found.
      */
-    UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, String username)
-            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException, ViewNotFoundException, ColumnNotFoundException;
+    UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
+            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
+            ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException;
 
     /**
      * Counts the subset row count of a query of a given subset in the given database.
      *
-     * @param database The database.
-     * @param query    The subset.
+     * @param database  The database.
+     * @param statement The normalized subset query.
      * @return The row count.
      * @throws QueryMalformedException The query is malformed.
      * @throws SQLException            The connection to the database could not be established.
      */
-    Long reExecuteCount(DatabaseDto database, QueryDto query) throws SQLException, QueryMalformedException;
+    Long reExecuteCount(Database database, String statement) throws SQLException, QueryMalformedException;
 
     /**
      * Retrieve data from a subset in a database and optionally paginate with number of page and size of results.
      *
      * @param database The database.
-     * @param query   The query statements.
+     * @param query    The query statements.
      * @return The data.
      * @throws QueryMalformedException The mapped query produced a database error.
      * @throws TableNotFoundException  The database table is malformed.
      */
-    Dataset<Row> getData(DatabaseDto database, String query) throws QueryMalformedException, TableNotFoundException;
+    Dataset<Row> getData(Database database, String query) throws QueryMalformedException, TableNotFoundException;
+
+    /**
+     * Retrieve the result set hash for a given query statement in a given database.
+     *
+     * @param database  The database.
+     * @param statement The query statement.
+     * @return The result set hash using sha256.
+     * @throws SQLException            The connection to the database could not be established.
+     * @throws QueryMalformedException The mapped hash is
+     */
+    String reExecuteHash(Database database, String statement) throws SQLException, QueryMalformedException;
 
     /**
      * Finds all queries in the query store of the given database id and query id.
@@ -61,28 +78,28 @@ public interface SubsetService {
      * @throws RemoteUnavailableException The  database information could not be found in the Metadata Service.
      * @throws DatabaseNotFoundException  The database was not found in the Metadata Service.
      * @throws MetadataServiceException   The Metadata Service responded unexpected.
+     * @throws UserNotFoundException      The user that created the query was not found in the Metadata Service.
      */
-    List<QueryDto> findAll(DatabaseDto database, Boolean filterPersisted) throws SQLException,
-            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException, UserNotFoundException;
+    List<QueryDto> findAll(Database database, Boolean filterPersisted) throws SQLException,
+            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException,
+            UserNotFoundException;
 
     /**
      * Executes a subset query without saving it.
      *
      * @param database  The database.
      * @param statement The subset query.
-     * @param timestamp The timestamp.
      * @return The row count.
      * @throws SQLException            The connection to the database could not be established.
      * @throws QueryMalformedException The mapped query produced a database error.
      */
-    Long executeCountNonPersistent(DatabaseDto database, String statement, Instant timestamp)
-            throws SQLException, QueryMalformedException;
+    Long executeCountNonPersistent(Database database, String statement) throws SQLException, QueryMalformedException;
 
     /**
      * Finds a query in the query store of the given database id and query id.
      *
      * @param database The database.
-     * @param queryId  The query id.
+     * @param id       The subset id.
      * @return The query.
      * @throws QueryNotFoundException     The query store did not return a query.
      * @throws SQLException               The connection to the database could not be established.
@@ -91,21 +108,22 @@ public interface SubsetService {
      * @throws DatabaseNotFoundException  The database metadata was not found in the Metadata Service.
      * @throws MetadataServiceException   Communication with the Metadata Service failed.
      */
-    QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException, SQLException,
+    Subset findById(Database database, UUID id) throws QueryNotFoundException, SQLException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, MetadataServiceException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id.
      *
-     * @param database The database.
-     * @param statement    The query statement.
-     * @param username   The username.
+     * @param database  The database.
+     * @param statement The query statement.
+     * @param username  The username.
      * @return The stored query id on success.
      * @throws SQLException              The connection to the database could not be established.
      * @throws QueryStoreInsertException The query store failed to insert the query.
+     * @throws QueryMalformedException   The query to create the subset is malformed or contains illegal keywords such as <code>DROP</code>.
      */
-    UUID storeQuery(DatabaseDto database, String statement, Instant timestamp, String username) throws SQLException,
-            QueryStoreInsertException, ViewMalformedException, QueryMalformedException;
+    UUID storeQuery(Database database, String statement, Instant timestamp, String username) throws SQLException,
+            QueryStoreInsertException, QueryMalformedException;
 
     /**
      * Persists a query to be displayed in the frontend.
@@ -116,15 +134,6 @@ public interface SubsetService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws QueryStorePersistException The query store failed to persist/unpersist the query.
      */
-    void persist(DatabaseDto database, UUID queryId, Boolean persist) throws SQLException,
+    void persist(Database database, UUID queryId, Boolean persist) throws SQLException,
             QueryStorePersistException;
-
-    /**
-     * Deletes the stale queries that have not been persisted within 24 hours.
-     *
-     * @param database The database.
-     * @throws SQLException          The connection to the database could not be established.
-     * @throws QueryStoreGCException The query store failed to delete stale queries.
-     */
-    void deleteStaleQueries(DatabaseDto database) throws SQLException, QueryStoreGCException;
 }

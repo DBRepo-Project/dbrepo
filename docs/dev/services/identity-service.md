@@ -19,7 +19,7 @@ author: Martin Weise
 ## Overview
 
 This optional service holds the user identities which we simply call identities in the following. It is integrated into
-the [Auth Service](/infrastructures/dbrepo/1.10/dev/services/auth-service) through an LDAP federation, allowing any identity
+the [Auth Service](/infrastructures/dbrepo/1.12/dev/services/auth-service) through an LDAP federation, allowing any identity
 to authenticate through the Auth Service. The LDAP protocol is not used for authentication. 
 
 The Identity Service can be optionally replaced with your existing LDAP solution. Your LDAP solution should store
@@ -45,7 +45,7 @@ Auth Service and can be empty `""`.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.10/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

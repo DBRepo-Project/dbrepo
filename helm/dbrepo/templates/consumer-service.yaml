@@ -1,0 +1,19 @@
+{{- if .Values.consumerservice.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    service: consumer-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "consumer-service"
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    service: consumer-service
+{{- end }}

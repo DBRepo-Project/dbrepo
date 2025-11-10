@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.tools.jdbc.MockConnection;
@@ -90,7 +91,7 @@ public class DataMapperUnitTest extends BaseTest {
         final PreparedStatement preparedStatement = new MockStatement(new MockConnection(database), database);
 
         /* test */
-        dataMapper.prepareStatementWithColumnTypeObject(preparedStatement, ColumnTypeDto.DECIMAL, 1, data);
+        dataMapper.prepareStatementWithColumnTypeObject(preparedStatement, ColumnType.DECIMAL, 1, data);
     }
 
 }

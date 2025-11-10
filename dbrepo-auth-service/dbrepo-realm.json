@@ -2437,7 +2437,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     }, {
       "id" : "1849e52a-b8c9-44a8-af3d-ee19376a1ed1",
@@ -2463,7 +2463,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     } ],
     "org.keycloak.userprofile.UserProfileProvider" : [ {
@@ -2511,8 +2511,8 @@
           "config" : {
             "ldap.attribute" : [ "cn" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "false" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "firstName" ]
           }
         }, {
@@ -2537,15 +2537,15 @@
             "membership.attribute.type" : [ "DN" ],
             "user.roles.retrieve.strategy" : [ "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE" ],
             "group.name.ldap.attribute" : [ "cn" ],
-            "ignore.missing.groups" : [ "false" ],
-            "membership.user.ldap.attribute" : [ "uid" ],
-            "membership.ldap.attribute" : [ "member" ],
             "preserve.group.inheritance" : [ "false" ],
-            "memberof.ldap.attribute" : [ "memberOf" ],
+            "membership.user.ldap.attribute" : [ "uid" ],
+            "ignore.missing.groups" : [ "false" ],
+            "membership.ldap.attribute" : [ "member" ],
             "groups.dn" : [ "ou=users,dc=dbrepo,dc=at" ],
+            "memberof.ldap.attribute" : [ "memberOf" ],
             "group.object.classes" : [ "groupOfNames" ],
-            "drop.non.existing.groups.during.sync" : [ "false" ],
-            "groups.path" : [ "/" ]
+            "groups.path" : [ "/" ],
+            "drop.non.existing.groups.during.sync" : [ "false" ]
           }
         }, {
           "id" : "b6ff3285-35af-4e86-8bb4-d94b8e0d70bb",
@@ -2555,8 +2555,8 @@
           "config" : {
             "ldap.attribute" : [ "modifyTimestamp" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "true" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "modifyTimestamp" ]
           }
         }, {
@@ -2566,8 +2566,8 @@
           "subComponents" : { },
           "config" : {
             "ldap.attribute" : [ "uid" ],
-            "is.mandatory.in.ldap" : [ "true" ],
             "attribute.force.default" : [ "false" ],
+            "is.mandatory.in.ldap" : [ "true" ],
             "is.binary.attribute" : [ "false" ],
             "read.only" : [ "false" ],
             "always.read.value.from.ldap" : [ "false" ],
@@ -2576,8 +2576,8 @@
         } ]
       },
       "config" : {
-        "fullSyncPeriod" : [ "-1" ],
         "pagination" : [ "false" ],
+        "fullSyncPeriod" : [ "-1" ],
         "startTls" : [ "false" ],
         "connectionPooling" : [ "true" ],
         "usersDn" : [ "ou=users,dc=dbrepo,dc=at" ],
@@ -2585,8 +2585,8 @@
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
-        "bindCredential" : [ "admin" ],
         "bindDn" : [ "cn=admin,dc=dbrepo,dc=at" ],
+        "bindCredential" : [ "admin" ],
         "changedSyncPeriod" : [ "-1" ],
         "usernameLDAPAttribute" : [ "uid" ],
         "lastSync" : [ "1719252666" ],

@@ -35,7 +35,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/user")
-public class UserEndpoint extends AbstractEndpoint {
+public class UserEndpoint extends RestEndpoint {
 
     private final UserService userService;
     private final MetadataMapper metadataMapper;
@@ -106,7 +106,7 @@ public class UserEndpoint extends AbstractEndpoint {
         log.debug("endpoint find a user, username={}", username);
         /* check */
         final UserDto user = userService.findByUsername(username);
-        if (!user.getUsername().equals(getUsername(principal)) && !hasRole(principal, "find-foreign-user")) {
+        if (!user.getUsername().equals(getUsername(principal)) && !hasRole(principal, "find-foreign-user") && !isSystem(principal)) {
             log.error("Failed to find user: foreign user");
             throw new NotAllowedException("Failed to find user: foreign user");
         }

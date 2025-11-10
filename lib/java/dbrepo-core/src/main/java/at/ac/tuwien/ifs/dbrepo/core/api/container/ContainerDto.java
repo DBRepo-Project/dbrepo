@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.container;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.CacheableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,18 +9,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ContainerDto extends CacheableDto {
+public class ContainerDto {
 
     @NotNull
     @Schema(description = "The container id", example = "7ddb7e87-b965-43a2-9a24-4fa406d998f4")
@@ -41,14 +39,6 @@ public class ContainerDto extends CacheableDto {
     @Schema(description = "The machine-friendly container name", example = "air-quality")
     private String internalName;
 
-    @JsonIgnore
-    @Schema(description = "The container hostname", example = "data-db")
-    private String host;
-
-    @JsonIgnore
-    @Schema(description = "The container port", example = "3306")
-    private Integer port;
-
     @NotNull
     private ImageDto image;
 
@@ -59,19 +49,5 @@ public class ContainerDto extends CacheableDto {
     @NotNull
     @Schema(description = "The number of databases currently in the container", example = "10")
     private Integer count;
-
-    @ToString.Exclude
-    @Schema(description = "The username of the privileged user", example = "root")
-    private String username;
-
-    @ToString.Exclude
-    @Schema(description = "The password of the privileged user", example = "dbrepo")
-    private String password;
-
-    /* lombok limitations prevent from convenient builder functions */
-
-    @JsonProperty("last_retrieved")
-    @Schema(example = "2025-01-23T12:09:01")
-    private Instant lastRetrieved;
 
 }

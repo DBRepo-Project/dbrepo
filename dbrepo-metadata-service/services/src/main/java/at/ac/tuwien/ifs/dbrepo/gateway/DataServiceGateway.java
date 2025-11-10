@@ -2,7 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.gateway;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
@@ -60,12 +59,11 @@ public interface DataServiceGateway {
      * Creates a database in the data service.
      *
      * @param data The data.
-     * @return The created database, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
      * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
-    DatabaseDto createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException, DataServiceException,
+    void createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException;
 
     /**

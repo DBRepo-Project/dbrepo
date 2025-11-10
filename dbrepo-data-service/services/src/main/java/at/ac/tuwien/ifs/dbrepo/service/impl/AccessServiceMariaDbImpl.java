@@ -1,8 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -35,7 +35,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     }
 
     @Override
-    public void create(DatabaseDto database, UserDto user, AccessTypeDto access)
+    public void create(Database database, User user, AccessTypeDto access)
             throws SQLException, DatabaseMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -99,7 +99,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     }
 
     @Override
-    public void update(DatabaseDto database, UserDto user, AccessTypeDto access) throws DatabaseMalformedException,
+    public void update(Database database, User user, AccessTypeDto access) throws DatabaseMalformedException,
             SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -128,7 +128,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     }
 
     @Override
-    public void delete(DatabaseDto database, UserDto user) throws DatabaseMalformedException,
+    public void delete(Database database, User user) throws DatabaseMalformedException,
             SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();

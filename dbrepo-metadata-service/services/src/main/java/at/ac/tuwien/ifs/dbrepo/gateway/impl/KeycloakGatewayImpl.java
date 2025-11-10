@@ -17,6 +17,7 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,19 +43,21 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public List<UserRepresentation> findAll() {
-        return keycloak.realm(keycloakConfig.getRealm())
+        log.debug("find all users in auth service");
+        return keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .list();
     }
 
     @Override
-    public TokenDto obtainUserToken(String username, String password) throws BadCredentialsException {
+    public TokenDto getUserToken(String username, String password, String realm, String clientId, String clientSecret)
+            throws BadCredentialsException {
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
-                .realm(keycloakConfig.getRealm())
+                .realm(realm)
                 .grantType(OAuth2Constants.PASSWORD)
-                .clientId(keycloakConfig.getKeycloakClient())
-                .clientSecret(keycloakConfig.getKeycloakClientSecret())
+                .clientId(clientId)
+                .clientSecret(clientSecret)
                 .username(username)
                 .password(password)
                 .build()) {
@@ -68,31 +71,49 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public UserRepresentation findByUsername(String username) throws UserNotFoundException, NotAllowedException {
-        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+        log.debug("find user in auth service by username: {}", username);
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(username);
         if (users.isEmpty()) {
             log.error("Failed to find user with username {}", username);
             throw new UserNotFoundException("Failed to find user");
         }
-        return users.getFirst();
+        return mapRoles(users.getFirst());
+    }
+
+    private UserRepresentation mapRoles(UserRepresentation user) {
+        final List<String> roles = keycloak.realm(keycloakConfig.getKeycloakRealm())
+                .users()
+                .get(user.getId())
+                .roles()
+                .realmLevel()
+                .listEffective()
+                .stream()
+                .map(RoleRepresentation::getName)
+                .toList();
+        log.trace("mapped found roles: {}", roles);
+        user.setRealmRoles(roles);
+        return user;
     }
 
     @Override
     public UserRepresentation findById(UUID id) throws UserNotFoundException, NotAllowedException {
-        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+        log.debug("find user in auth service by id: {}", id);
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(String.valueOf(id));
         if (users.isEmpty()) {
             log.error("Failed to find user with id {}", id);
             throw new UserNotFoundException("Failed to find user");
         }
-        return users.getFirst();
+        return mapRoles(users.getFirst());
     }
 
     @Override
     public void deleteUser(UUID id) throws UserNotFoundException {
-        try (Response response = keycloak.realm(keycloakConfig.getRealm())
+        log.debug("delete user in auth service by id: {}", id);
+        try (Response response = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .delete(String.valueOf(id))) {
             if (response.getStatus() == 404) {
@@ -105,7 +126,8 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public void updateUser(UUID id, UserUpdateDto data) throws AuthServiceException, UserNotFoundException {
-        final UserResource resource = keycloak.realm(keycloakConfig.getRealm())
+        log.debug("update user in auth service by id: {}", id);
+        final UserResource resource = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .get(String.valueOf(id));
         final UserRepresentation user;
