@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -48,27 +48,25 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint extends RestEndpoint {
 
-    private final CacheService cacheService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final StorageService storageService;
-    private final DatabaseService databaseService;
+    private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
-    public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
-                         SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
+    public TableEndpoint(TableService tableService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
+                         StorageService storageService, MetadataService metadataService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
-        this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.storageService = storageService;
-        this.databaseService = databaseService;
+        this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -108,10 +106,10 @@ public class TableEndpoint extends RestEndpoint {
             throw new TableMalformedException("Table must have a primary key");
         }
         /* create */
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(databaseService.createTable(database, data));
+                    .body(tableService.create(database, data));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -146,10 +144,10 @@ public class TableEndpoint extends RestEndpoint {
             DatabaseNotFoundException {
         log.debug("endpoint update table, databaseId={}, data.description={}", databaseId, data.getDescription());
         /* create */
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
-            tableService.updateTable(database, table, data);
+            tableService.update(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -184,8 +182,8 @@ public class TableEndpoint extends RestEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
             tableService.delete(database, table);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -253,17 +251,17 @@ public class TableEndpoint extends RestEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final TableDto table = cacheService.getTable(databaseId, tableId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
         if (!table.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
             }
             if (!isSystem(principal)) {
-                cacheService.getAccess(databaseId, getUsername(principal));
+                endpointValidator.validateOnlyAccess(database, principal);
             }
         }
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
@@ -274,7 +272,7 @@ public class TableEndpoint extends RestEndpoint {
                         .build();
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
-            headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
+            headers.set("X-Headers", String.join(",", table.getColumns().stream().map(Column::getInternalName).toList()));
             final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                     table.getInternalName(), timestamp,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
@@ -332,16 +330,14 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDto data,
-                                               Principal principal,
-                                               @RequestHeader("Authorization") String authorization)
+                                               Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
             StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        endpointValidator.validateOnlyWriteAccess(database, table, principal);
         try {
             tableService.createTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -377,17 +373,15 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> updateRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleUpdateDto data,
-                                               Principal principal,
-                                               @RequestHeader("Authorization") String authorization)
+                                               Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        endpointValidator.validateOnlyWriteAccess(database, table, principal);
         try {
             tableService.updateTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -423,17 +417,15 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<Void> deleteRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDeleteDto data,
-                                               Principal principal,
-                                               @RequestHeader("Authorization") String authorization)
+                                               Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        endpointValidator.validateOnlyWriteAccess(database, table, principal);
         try {
             tableService.deleteTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -482,15 +474,15 @@ public class TableEndpoint extends RestEndpoint {
             log.debug("size not set: default to 100L");
             size = 100L;
         }
-        final TableDto table = cacheService.getTable(databaseId, tableId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
         if (!table.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to find table history: no authentication found");
                 throw new NotAllowedException("Failed to find table history: no authentication found");
             }
-            cacheService.getAccess(databaseId, getUsername(principal));
+            endpointValidator.validateOnlyAccess(database, principal);
         }
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             final List<TableHistoryDto> dto = tableService.history(database, table, size);
             return ResponseEntity.status(HttpStatus.OK)
@@ -528,13 +520,13 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content}),
     })
-    public ResponseEntity<List<TableDto>> getSchema(@NotNull @PathVariable("databaseId") UUID databaseId)
+    public ResponseEntity<List<TableDto>> findAll(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint inspect table schemas, databaseId={}", databaseId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
-            return ResponseEntity.ok(databaseService.exploreTables(database));
+            return ResponseEntity.ok(tableService.explore(database));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -577,14 +569,13 @@ public class TableEndpoint extends RestEndpoint {
                 .addKeyValue("table_id", tableId)
                 .addKeyValue("data", data)
                 .log();
-        final TableDto table = cacheService.getTable(databaseId, tableId);
-        final DatabaseAccessDto access = cacheService.getAccess(databaseId, getUsername(principal));
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getUsername(), getUsername(principal));
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        endpointValidator.validateOnlyWriteAccess(database, table, principal);
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());
         }
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             tableService.importDataset(database, table, data);
         } catch (SQLException | TableMalformedException e) {
@@ -610,6 +601,9 @@ public class TableEndpoint extends RestEndpoint {
             @ApiResponse(responseCode = "400",
                     description = "Failed to obtain column statistic",
                     content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to get statistic",
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find table or database in metadata database",
                     content = {@Content}),
@@ -617,15 +611,25 @@ public class TableEndpoint extends RestEndpoint {
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content}),
     })
-    public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                       @NotNull @PathVariable("tableId") UUID tableId)
+    public ResponseEntity<TableStatisticDto> getStatistic(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                          @NotNull @PathVariable("tableId") UUID tableId,
+                                                          Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            MetadataServiceException, TableMalformedException, DatabaseNotFoundException {
+            MetadataServiceException, TableMalformedException, DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
-        final TableDto table = cacheService.getTable(databaseId, tableId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        if (!table.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to get statistic from table: unauthorized");
+                throw new NotAllowedException("Failed to get statistic from table: unauthorized");
+            }
+            if (!isSystem(principal)) {
+                endpointValidator.validateOnlyAccess(database, principal);
+            }
+        }
         try {
-            return ResponseEntity.ok(tableService.getStatistics(database, table.getInternalName()));
+            return ResponseEntity.ok(tableService.getStatistics(database, table.getId(), table.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

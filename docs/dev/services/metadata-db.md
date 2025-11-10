@@ -4,7 +4,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnamilegacy/mariadb:11.3.2`](https://hub.docker.com/r/bitnami/mariadb-galera)
+    Image: [`docker.io/bitnamilegacy/mariadb:11.3.2`](https://hub.docker.com/r/bitnamilegacy/mariadb-galera)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
@@ -62,5 +62,5 @@ the `setup-schema.sql` into the container. This can be done more transparently t
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.10/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!

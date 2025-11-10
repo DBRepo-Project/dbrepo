@@ -10,7 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataCiteGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;

@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MessageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.repository.BannerMessageRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.BannerMessageRepository;
 import at.ac.tuwien.ifs.dbrepo.service.BannerMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

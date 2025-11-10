@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
@@ -20,7 +21,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,9 @@ public class TableServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private SearchServiceGateway searchServiceGateway;
+
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
 
     @MockitoBean
     private UserService userService;
@@ -434,6 +438,9 @@ public class TableServiceUnitTest extends BaseTest {
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
         doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
         when(databaseRepository.save(any(Database.class)))
@@ -470,6 +477,9 @@ public class TableServiceUnitTest extends BaseTest {
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
@@ -529,6 +539,9 @@ public class TableServiceUnitTest extends BaseTest {
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
@@ -611,6 +624,9 @@ public class TableServiceUnitTest extends BaseTest {
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doNothing()
@@ -733,6 +749,9 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
@@ -748,6 +767,9 @@ public class TableServiceUnitTest extends BaseTest {
             DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
@@ -777,6 +799,9 @@ public class TableServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(TableNotFoundException.class)
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);

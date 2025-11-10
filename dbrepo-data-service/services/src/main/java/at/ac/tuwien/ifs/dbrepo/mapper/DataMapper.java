@@ -2,14 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.mapper;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.DataTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
@@ -20,23 +14,19 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.Forei
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AnalyseDataTypesException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
 import org.duckdb.DuckDBResultSet;
 import org.jetbrains.annotations.NotNull;
-import org.keycloak.representations.AccessTokenResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,77 +56,12 @@ public interface DataMapper {
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
             .withZone(ZoneId.of("UTC"));
 
-    ContainerDto containerDtoToContainerDto(ContainerDto data);
-
-    @Mappings({
-            @Mapping(target = "id", source = "userId"),
-            @Mapping(target = "username", source = "privilegedUsername"),
-            @Mapping(target = "password", source = "privilegedPassword"),
-    })
-    UserDto createDatabaseDtoToPrivilegedUserDto(CreateDatabaseDto data);
-
-    @Mappings({
-            @Mapping(target = "id", source = "userId"),
-    })
-    UserDto createDatabaseDtoToUserDto(CreateDatabaseDto data);
-
-    @Mappings({
-            @Mapping(target = "username", source = "readonlyUsername"),
-            @Mapping(target = "password", source = "readonlyPassword"),
-    })
-    UserDto createDatabaseDtoToReadonlyUserDto(CreateDatabaseDto data);
-
-    DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
-
-    ColumnDto viewColumnDtoToColumnDto(ViewColumnDto data);
-
-    ViewColumnDto columnDtoToViewColumnDto(ColumnDto data);
-
-    TableDto tableDtoToTableDto(TableDto data);
-
-    ViewDto viewDtoToViewDto(ViewDto data);
-
-    UserDto userDtoToUserDto(UserDto data);
-
-    @Mappings({
-            @Mapping(target = "accessToken", source = "token")
-    })
-    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
-
-    UserBriefDto userDtoToUserBriefDto(UserDto data);
-
-    TableBriefDto tableDtoToTableBriefDto(TableDto data);
-
-    IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
-
-    default String metricToUri(String baseUrl, UUID databaseId, UUID tableId, UUID subsetId, UUID viewId) {
-        final StringBuilder uri = new StringBuilder(baseUrl)
-                .append("/database/")
-                .append(databaseId);
-        if (tableId != null) {
-            uri.append("/table/")
-                    .append(tableId);
-        } else if (subsetId != null) {
-            uri.append("/subset/")
-                    .append(subsetId);
-        } else if (viewId != null) {
-            uri.append("/view/")
-                    .append(viewId);
-        }
-        log.trace("count uri: {}", uri);
-        return uri.toString();
-    }
-
-    ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
-
-    ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
-
-    default String rabbitMqTupleToInsertOrUpdateQuery(String databaseName, TableDto table, Map<String, Object> data) {
+    default String rabbitMqTupleToInsertOrUpdateQuery(String databaseName, String tableName, Map<String, Object> data) {
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(databaseName)
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(tableName)
                 .append("` (")
                 .append(data.keySet()
                         .stream()
@@ -160,7 +85,7 @@ public interface DataMapper {
      * @return The database containing the updated view/table.
      * @throws SQLException If the result set does not contain the requested parameter.
      */
-    default ViewDto schemaResultSetToView(DatabaseDto database, ResultSet resultSet) throws SQLException {
+    default ViewDto schemaResultSetToView(Database database, ResultSet resultSet) throws SQLException {
         return ViewDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
@@ -174,7 +99,6 @@ public interface DataMapper {
                         .toString())
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
-                .owner(database.getOwner())
                 .build();
     }
 
@@ -196,6 +120,10 @@ public interface DataMapper {
         }
         return statistic;
     }
+
+    TableBriefDto tableDtoToTableBriefDto(TableDto data);
+
+    ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
 
     default TableDto resultSetToTable(ResultSet resultSet, TableDto table) throws SQLException {
         final ColumnDto column = ColumnDto.builder()
@@ -235,13 +163,6 @@ public interface DataMapper {
             column.setSize(resultSet.getLong(5));
         } else if (resultSet.getString(6) != null) {
             column.setSize(resultSet.getLong(6));
-        }
-        /* constraints */
-        if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
-            table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()
-                    .table(tableDtoToTableBriefDto(table))
-                    .column(columnDtoToColumnBriefDto(column))
-                    .build());
         }
         table.getColumns()
                 .add(column);
@@ -341,21 +262,6 @@ public interface DataMapper {
         return constraints;
     }
 
-    default DataTypeDto imageDtoTypeNameToDataTypeDto(ImageDto image, ColumnTypeDto columnType) throws ImageInvalidException {
-        final String type = columnType.toString()
-                .toLowerCase(Locale.ENGLISH);
-        final Optional<DataTypeDto> optional = image.getDataTypes()
-                .stream()
-                .filter(t -> t.getValue().toLowerCase().equals(type))
-                .findFirst();
-        if (optional.isEmpty()) {
-            final List<String> dataTypes = image.getDataTypes().stream().map(t -> t.getValue().toLowerCase()).toList();
-            log.error("Failed to find data type {} in image datatypes: {}", type, dataTypes);
-            throw new ImageInvalidException("Failed to find data type " + type + " in image datatypes: " + Arrays.toString(dataTypes.toArray()));
-        }
-        return optional.get();
-    }
-
     default List<ColumnAnalysisResultDto> structListToColumnAnalysisResultDtoList(String data)
             throws JsonProcessingException {
         log.trace("raw columns: {}", data);
@@ -400,9 +306,25 @@ public interface DataMapper {
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
                 .owner(UserBriefDto.builder()
-                        .id(UUID.randomUUID())
                         .username(data.getString(2))
                         .build())
+                .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
+                        .atZone(ZoneId.of("UTC"))
+                        .toInstant())
+                .build();
+    }
+
+    default Subset resultSetToSubset(@NotNull ResultSet data) throws SQLException {
+        /* note that next() is called outside this mapping function */
+        return Subset.builder()
+                .id(UUID.fromString(data.getString(1)))
+                .query(data.getString(3))
+                .queryNormalized(data.getString(4))
+                .queryHash(data.getString(5))
+                .resultHash(data.getString(6))
+                .resultNumber(data.getLong(7))
+                .isPersisted(data.getBoolean(8))
+                .ownedBy(data.getString(2))
                 .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
@@ -425,6 +347,8 @@ public interface DataMapper {
         return history;
     }
 
+    ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
+
     default TableDto resultSetToConstraint(ResultSet resultSet, TableDto table) throws SQLException {
         final String type = resultSet.getString(2);
         final String name = resultSet.getString(3);
@@ -441,8 +365,20 @@ public interface DataMapper {
             throw new IllegalArgumentException("Failed to find table column");
         }
         final ColumnDto column = optional.get();
-        if (type.equals("FOREIGN KEY") || type.equals("UNIQUE")) {
-            final Optional<UniqueDto> optional2 = table.getConstraints().getUniques().stream().filter(u -> u.getName().equals(name)).findFirst();
+        if (type.equals("PRIMARY KEY")) {
+            /* we can assume that there is only 1 primary key and skip finding it */
+            table.getConstraints()
+                    .getPrimaryKey()
+                    .add(PrimaryKeyDto.builder()
+                            .column(columnDtoToColumnBriefDto(column))
+                            .table(tableDtoToTableBriefDto(table))
+                            .build());
+        } else if (type.equals("FOREIGN KEY") || type.equals("UNIQUE")) {
+            final Optional<UniqueDto> optional2 = table.getConstraints()
+                    .getUniques()
+                    .stream()
+                    .filter(u -> u.getName().equals(name))
+                    .findFirst();
             if (optional2.isPresent()) {
                 optional2.get()
                         .getColumns()
@@ -506,7 +442,9 @@ public interface DataMapper {
         return table;
     }
 
-    default TableDto schemaResultSetToTable(DatabaseDto database, ResultSet resultSet) throws SQLException,
+    UserBriefDto userToUserBriefDto(User data);
+
+    default TableDto schemaResultSetToTable(Database database, ResultSet resultSet) throws SQLException,
             TableNotFoundException {
         if (!resultSet.next()) {
             throw new TableNotFoundException("Failed to find table in the information schema");
@@ -525,7 +463,9 @@ public interface DataMapper {
                 .description(resultSet.getString(10))
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
-                .owner(database.getOwner())
+                .owner(UserBriefDto.builder()
+                        .username(database.getOwnedBy())
+                        .build())
                 .constraints(ConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
                         .primaryKey(new LinkedHashSet<>())
@@ -536,7 +476,7 @@ public interface DataMapper {
                 .build();
     }
 
-    default int columnTypeDtoToTypes(ColumnTypeDto data) {
+    default int columnTypeDtoToTypes(ColumnType data) {
         return switch (data) {
             case CHAR -> VARCHAR;
             case VARCHAR -> VARCHAR;
@@ -571,7 +511,7 @@ public interface DataMapper {
         };
     }
 
-    default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnTypeDto columnType, int idx, Object value) throws SQLException {
+    default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnType columnType, int idx, Object value) throws SQLException {
         if (value == null) {
             ps.setNull(idx, columnTypeDtoToTypes(columnType));
         }

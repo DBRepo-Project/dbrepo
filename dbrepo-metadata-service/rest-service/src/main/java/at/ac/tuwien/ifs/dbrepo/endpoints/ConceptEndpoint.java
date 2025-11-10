@@ -25,7 +25,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/concept")
-public class ConceptEndpoint extends AbstractEndpoint {
+public class ConceptEndpoint extends RestEndpoint {
 
     private final ConceptService conceptService;
     private final MetadataMapper metadataMapper;

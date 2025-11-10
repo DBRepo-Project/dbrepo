@@ -1,369 +1,123 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
-import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
 
 @Slf4j
 @Service
 public class DatabaseServiceMariaDbImpl extends DataConnector implements DatabaseService {
 
-    private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper) {
-        this.dataMapper = dataMapper;
+    public DatabaseServiceMariaDbImpl(MariaDbMapper mariaDbMapper) {
         this.mariaDbMapper = mariaDbMapper;
     }
 
     @Override
-    public ViewDto inspectView(DatabaseDto database, String viewName) throws SQLException, ViewNotFoundException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
+    public Database create(Container container, CreateDatabaseDto data) throws DatabaseMalformedException,
+            SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(container);
         final Connection connection = dataSource.getConnection();
         try {
-            /* obtain only view metadata */
-            long start = System.currentTimeMillis();
-            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
-            statement1.setString(1, database.getInternalName());
-            statement1.setString(2, viewName);
-            log.trace("1={}, 2={}", database.getInternalName(), viewName);
-            final ResultSet resultSet1 = statement1.executeQuery();
-            log.atDebug()
-                    .setMessage("inspected view: " + viewName + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_view_schema")
-                    .log();
-            if (!resultSet1.next()) {
-                throw new ViewNotFoundException("Failed to find view in the information schema");
-            }
-            final ViewDto view = dataMapper.schemaResultSetToView(database, resultSet1);
-            view.setDatabaseId(database.getId());
-            view.setOwner(database.getOwner());
-            /* obtain view columns */
-            start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
-            statement2.setString(1, database.getInternalName());
-            statement2.setString(2, view.getInternalName());
-            log.trace("1={}, 2={}", database.getInternalName(), view.getInternalName());
-            final ResultSet resultSet2 = statement2.executeQuery();
-            log.atDebug()
-                    .setMessage("inspect view columns: " + viewName + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_view_columns")
-                    .log();
-            TableDto tmp = TableDto.builder()
-                    .columns(new LinkedList<>())
-                    .build();
-            while (resultSet2.next()) {
-                tmp = dataMapper.resultSetToTable(resultSet2, tmp);
-            }
-            view.setColumns(tmp.getColumns()
-                    .stream()
-                    .map(dataMapper::columnDtoToViewColumnDto)
-                    .toList());
-            view.getColumns()
-                    .forEach(column -> column.setDatabaseId(database.getId()));
-            log.debug("obtained metadata for view {}.{}", database.getInternalName(), view.getInternalName());
-            return view;
-        } finally {
-            dataSource.close();
-        }
-    }
-
-    @Override
-    public TableDto createTable(DatabaseDto database, CreateTableDto data) throws SQLException,
-            TableMalformedException, TableExistsException, TableNotFoundException {
-        final String tableName = mariaDbMapper.nameToInternalName(data.getName());
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* create table if not exists */
+            /* create database if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(database.getInternalName(),
-                            data))
+            connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
                     .execute();
-            log.atDebug()
-                    .setMessage("created table: " + database.getInternalName() + "." + tableName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_table")
-                    .log();
             connection.commit();
+            log.atDebug()
+                    .setMessage("created database: " + data.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "create_database")
+                    .log();
         } catch (SQLException e) {
             connection.rollback();
-            if (e.getMessage().contains("already exists")) {
-                log.error("Failed to create table: already exists");
-                throw new TableExistsException("Failed to create table: already exists", e);
-            }
-            log.error("Failed to create table: {}", e.getMessage());
-            throw new TableMalformedException("Failed to create table: " + e.getMessage(), e);
+            log.error("Failed to create database access: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to create database access: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        log.info("Created table with name {}.{}", database.getInternalName(), tableName);
-        return inspectTable(database, tableName);
-    }
-
-    @Override
-    public ViewDto createView(DatabaseDto database, String viewName, String query) throws SQLException,
-            ViewMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        ViewDto view = ViewDto.builder()
-                .name(viewName)
-                .internalName(mariaDbMapper.nameToInternalName(viewName))
-                .query(query)
-                .queryHash(Hashing.sha256()
-                        .hashString(query, StandardCharsets.UTF_8)
-                        .toString())
-                .isPublic(database.getIsPublic())
-                .owner(database.getOwner())
-                .identifiers(new LinkedList<>())
-                .isInitialView(false)
-                .databaseId(database.getId())
-                .columns(new LinkedList<>())
+        log.info("Created database with name {}", data.getInternalName());
+        return Database.builder()
+                .internalName(data.getInternalName())
+                .container(container)
                 .build();
+    }
+
+    @Override
+    public void createQueryStore(Container container, String databaseName) throws SQLException,
+            QueryStoreCreateException {
+        final ComboPooledDataSource dataSource = getDataSource(container, databaseName);
+        final Connection connection = dataSource.getConnection();
         try {
-            /* create view if not exists */
+            /* create query store */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), query))
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
                     .execute();
             log.atDebug()
-                    .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
+                    .setMessage("created query store in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_view")
+                    .addKeyValue(Constants.ACTION, "create_query_store")
                     .log();
-            /* select view columns */
             start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
-            statement2.setString(1, database.getInternalName());
-            statement2.setString(2, view.getInternalName());
-            final ResultSet resultSet2 = statement2.executeQuery();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery())
+                    .execute();
             log.atDebug()
-                    .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
+                    .setMessage("created query store hash table procedure in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_view_columns")
+                    .addKeyValue(Constants.ACTION, "create_procedure_hash_table")
                     .log();
-            while (resultSet2.next()) {
-                view = dataMapper.resultSetToTable(resultSet2, view);
-            }
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery())
+                    .execute();
+            log.atDebug()
+                    .setMessage("created query store procedure in database: " + databaseName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "create_procedure_store_query")
+                    .log();
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery())
+                    .execute();
+            log.atDebug()
+                    .setMessage("created internal query store procedure in database: " + databaseName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "create_procedure_internal_store_query")
+                    .log();
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalHashQueryProcedureRawQuery())
+                    .execute();
+            log.atDebug()
+                    .setMessage("created query hash procedure in database: " + databaseName)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "create_procedure_hash_query")
+                    .log();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to create view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to create view: " + e.getMessage(), e);
+            log.error("Failed to create query store: {}", e.getMessage());
+            throw new QueryStoreCreateException("Failed to create query store: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        log.info("Created view with name {}", view.getName());
-        return view;
+        log.info("Created query store in database with name {}", databaseName);
     }
 
     @Override
-    public List<ViewDto> exploreViews(DatabaseDto database) throws SQLException, DatabaseMalformedException,
-            ViewNotFoundException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final List<ViewDto> views = new LinkedList<>();
-        try {
-            /* inspect tables before views */
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseViewsSelectRawQuery());
-            statement.setString(1, database.getInternalName());
-            final long start = System.currentTimeMillis();
-            final ResultSet resultSet1 = statement.executeQuery();
-            log.atDebug()
-                    .setMessage("explored views in database: " + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_views")
-                    .log();
-            while (resultSet1.next()) {
-                final String viewName = resultSet1.getString(1);
-                if (viewName.length() == 64) {
-                    log.trace("view {}.{} seems to be a subset view (name length = 64), skip.", database.getInternalName(), viewName);
-                    continue;
-                }
-                if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(viewName))) {
-                    log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), viewName);
-                    continue;
-                }
-                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(viewName))) {
-                    views.add(inspectView(database, viewName));
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Failed to get view schemas: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to get view schemas: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        log.info("Found {} view schema(s)", views.size());
-        return views;
-    }
-
-    @Override
-    public List<TableDto> exploreTables(DatabaseDto database) throws SQLException, TableNotFoundException,
-            DatabaseMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final List<TableDto> tables = new LinkedList<>();
-        try {
-            /* inspect tables before views */
-            final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
-            statement.setString(1, database.getInternalName());
-            final ResultSet resultSet1 = statement.executeQuery();
-            log.atDebug()
-                    .setMessage("explored tables in database: " + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_tables")
-                    .log();
-            while (resultSet1.next()) {
-                final String tableName = resultSet1.getString(1);
-                if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
-                    log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), tableName);
-                    continue;
-                }
-                final TableDto table = inspectTable(database, tableName);
-                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(tableName))) {
-                    tables.add(table);
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Failed to get table schemas: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to get table schemas: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        log.info("Found {} table schema(s)", tables.size());
-        return tables;
-    }
-
-    @Override
-    public TableDto inspectTable(DatabaseDto database, String tableName) throws SQLException, TableNotFoundException {
-        log.trace("inspecting table: {}.{}", database.getInternalName(), tableName);
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* obtain only table metadata */
-            long start = System.currentTimeMillis();
-            final PreparedStatement statement0 = connection.prepareStatement(mariaDbMapper.analyseTableRawQuery());
-            statement0.setString(1, database.getInternalName());
-            statement0.setString(2, tableName);
-            log.trace("1={}, 2={}", database.getInternalName(), tableName);
-            statement0.execute();
-            log.atDebug()
-                    .setMessage("analysed table: " + database.getInternalName() + "." + tableName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_table_schema")
-                    .log();
-            /* obtain only table metadata */
-            start = System.currentTimeMillis();
-            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
-            statement1.setString(1, database.getInternalName());
-            statement1.setString(2, tableName);
-            log.trace("1={}, 2={}", database.getInternalName(), tableName);
-            TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
-            log.atDebug()
-                    .setMessage("inspected table: " + database.getInternalName() + "." + tableName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_table_schema")
-                    .log();
-            /* obtain columns metadata */
-            start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
-            statement2.setString(1, database.getInternalName());
-            statement2.setString(2, tableName);
-            log.trace("1={}, 2={}", database.getInternalName(), tableName);
-            final ResultSet resultSet2 = statement2.executeQuery();
-            log.atDebug()
-                    .setMessage("inspect table columns: " + database.getInternalName() + "." + tableName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_table_columns")
-                    .log();
-            while (resultSet2.next()) {
-                table = dataMapper.resultSetToTable(resultSet2, table);
-            }
-            /* obtain check constraints metadata */
-            start = System.currentTimeMillis();
-            final PreparedStatement statement3 = connection.prepareStatement(mariaDbMapper.columnsCheckConstraintSelectRawQuery());
-            statement3.setString(1, database.getInternalName());
-            statement3.setString(2, tableName);
-            log.trace("1={}, 2={}", database.getInternalName(), tableName);
-            final ResultSet resultSet3 = statement3.executeQuery();
-            log.atDebug()
-                    .setMessage("inspect table check constraints: " + database.getInternalName() + "." + tableName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_table_constraints_check")
-                    .log();
-            while (resultSet3.next()) {
-                final String clause = resultSet3.getString(1);
-                table.getConstraints()
-                        .getChecks()
-                        .add(clause);
-                log.trace("found check clause: {}", clause);
-            }
-            /* obtain column constraints metadata */
-            start = System.currentTimeMillis();
-            final PreparedStatement statement4 = connection.prepareStatement(mariaDbMapper.databaseTableConstraintsSelectRawQuery());
-            statement4.setString(1, database.getInternalName());
-            statement4.setString(2, tableName);
-            log.trace("1={}, 2={}", database.getInternalName(), tableName);
-            final ResultSet resultSet4 = statement4.executeQuery();
-            log.atDebug()
-                    .setMessage("inspect table constraints: " + database.getInternalName() + "." + tableName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "select_table_constraints")
-                    .log();
-            while (resultSet4.next()) {
-                table = dataMapper.resultSetToConstraint(resultSet4, table);
-                for (UniqueDto uk : table.getConstraints().getUniques()) {
-                    uk.setTable(dataMapper.tableDtoToTableBriefDto(table));
-                    final TableDto tmpTable = table;
-                    uk.getColumns()
-                            .forEach(column -> {
-                                column.setTableId(tmpTable.getId());
-                                column.setDatabaseId(database.getId());
-                            });
-                }
-            }
-            table.setDatabaseId(database.getId());
-            table.setOwner(database.getOwner());
-            final TableDto tmpTable = table;
-            tmpTable.getColumns()
-                    .forEach(column -> {
-                        column.setTableId(tmpTable.getId());
-                        column.setDatabaseId(database.getId());
-                    });
-            log.debug("obtained metadata for table {}.{}", database.getInternalName(), tableName);
-            return tmpTable;
-        } finally {
-            dataSource.close();
-        }
-    }
-
-    @Override
-    public void update(DatabaseDto database, UpdateUserPasswordDto data) throws SQLException,
+    public void update(Database database, UpdateUserPasswordDto data) throws SQLException,
             DatabaseMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();

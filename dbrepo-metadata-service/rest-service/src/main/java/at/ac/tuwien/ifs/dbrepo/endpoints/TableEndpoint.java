@@ -13,7 +13,10 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.EntityService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,9 +46,8 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
-public class TableEndpoint extends AbstractEndpoint {
+public class TableEndpoint extends RestEndpoint {
 
-    private final UserService userService;
     private final TableService tableService;
     private final EntityService entityService;
     private final MetadataMapper metadataMapper;
@@ -54,10 +56,9 @@ public class TableEndpoint extends AbstractEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(UserService userService, TableService tableService, EntityService entityService,
-                         MetadataMapper metadataMapper, DatabaseService databaseService,
-                         DashboardService dashboardService, EndpointValidator endpointValidator) {
-        this.userService = userService;
+    public TableEndpoint(TableService tableService, EntityService entityService, MetadataMapper metadataMapper,
+                         DatabaseService databaseService, DashboardService dashboardService,
+                         EndpointValidator endpointValidator) {
         this.tableService = tableService;
         this.entityService = entityService;
         this.metadataMapper = metadataMapper;
@@ -165,7 +166,7 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{tableId}/statistic")
     @Transactional
-    @PreAuthorize("hasAuthority('update-table-statistic')")
+    @PreAuthorize("hasAuthority('update-table-statistic') or hasAnyAuthority('system')")
     @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update statistics",
             description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. This action can only be performed by the table owner. Requires role `update-table-statistic`.",
@@ -342,10 +343,10 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("hasAuthority('update-table')")
+    @PreAuthorize("hasAuthority('update-table') or hasAuthority('system')")
     @Observed(name = "dbrepo_table_update")
     @Operation(summary = "Update table",
-            description = "Updates a table in the database with id. Requires role `update-table`.",
+            description = "Updates a table in the database with id. Requires role `update-table` or `system`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -380,7 +381,7 @@ public class TableEndpoint extends AbstractEndpoint {
                 databaseId, data.getIsPublic(), data.getIsSchemaPublic());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwnedBy().equals(getUsername(principal))) {
+        if (!table.getOwnedBy().equals(getUsername(principal)) && !isSystem(principal)) {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }

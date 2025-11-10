@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
@@ -8,7 +9,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
-import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import lombok.extern.slf4j.Slf4j;
@@ -114,7 +114,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public DatabaseDto createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException,
+    public void createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<DatabaseDto> response;
         final String path = "/api/v1/database";
@@ -135,7 +135,6 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             log.error("Failed to create database: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to create database: wrong http code: " + response.getStatusCode());
         }
-        return response.getBody();
     }
 
     @Override

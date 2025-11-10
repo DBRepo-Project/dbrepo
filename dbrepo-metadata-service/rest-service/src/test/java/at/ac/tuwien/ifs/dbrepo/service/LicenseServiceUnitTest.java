@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.License;
 import at.ac.tuwien.ifs.dbrepo.core.exception.LicenseNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;

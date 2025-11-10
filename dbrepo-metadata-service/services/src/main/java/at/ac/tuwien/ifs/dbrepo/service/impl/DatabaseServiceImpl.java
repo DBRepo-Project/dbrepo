@@ -1,7 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
@@ -19,7 +20,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,18 +36,23 @@ import java.util.UUID;
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
 
+    private final RabbitConfig rabbitConfig;
     private final MetadataMapper metadataMapper;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
-    public DatabaseServiceImpl(MetadataMapper metadataMapper, DatabaseRepository databaseRepository,
-                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway) {
+    public DatabaseServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
+                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
+                               SearchServiceGateway searchServiceGateway, DatabaseCacheRepository databaseCacheRepository) {
+        this.rabbitConfig = rabbitConfig;
         this.metadataMapper = metadataMapper;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -112,7 +118,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .identifiers(new LinkedList<>())
                 .build();
         /* create in data database */
-        final DatabaseDto dto = dataServiceGateway.createDatabase(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
+        dataServiceGateway.createDatabase(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
                 .userId(owner.getId())
                 .username(owner.getUsername())
@@ -123,7 +129,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .readonlyPassword(container.getReadonlyPassword())
                 .internalName(entity.getInternalName())
                 .build());
-        entity.setExchangeName(dto.getExchangeName());
+        entity.setExchangeName(rabbitConfig.getExchangeName());
         /* create in metadata database */
         final Database entity1 = databaseRepository.save(entity);
         entity1.getAccesses()
@@ -169,6 +175,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         database.getTables()
                 .forEach(table -> table.setIsSchemaPublic(data.getIsSchemaPublic()));
         database = databaseRepository.save(database);
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated database visibility of database with id {}", database.getId());
@@ -183,6 +191,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         database.setOwnedBy(username);
         database.setContactPerson(username);
         database = databaseRepository.save(database);
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* save in search service */
         searchServiceGateway.update(database);
         log.info("Updated database owner of database with id {}", database);
@@ -196,6 +206,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* update in metadata database */
         database.setImage(image);
         database = databaseRepository.save(database);
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* save in search service */
         searchServiceGateway.update(database);
         log.info("Updated database owner of database with id {} & search database", database.getId());

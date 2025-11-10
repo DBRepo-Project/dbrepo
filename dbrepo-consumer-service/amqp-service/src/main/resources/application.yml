@@ -1,0 +1,83 @@
+application:
+  title: DBRepo
+  version: '@project.version@'
+spring:
+  data:
+    redis:
+      provider: "${CACHE_DB_PROVIDER:valkey}"
+      host: "${CACHE_DB_HOST:cache-db}"
+      port: "${CACHE_DB_PORT:6379}"
+      timeout: 3000
+      connectTimeout: 10000
+      clientName: dbrepo
+      password: "${CACHE_DB_PASSWORD:valkey}"
+  datasource:
+    url: "jdbc:h2:mem:dbrepo;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS dbrepo;NON_KEYWORDS=value"
+    driver-class-name: org.h2.Driver
+    username: "${H2_USERNAME:sa}"
+    password: "${H2_PASSWORD:sa}"
+  application:
+    name: consumer-service
+  rabbitmq:
+    host: "${BROKER_HOST:broker-service}"
+    virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
+    username: "${BROKER_USERNAME:admin}"
+    password: "${BROKER_PASSWORD:admin}"
+    port: ${BROKER_PORT:5672}
+  main:
+    banner-mode: off
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: -1
+duckdb:
+  spilling:
+    path: /tmp/duckdb.tmp/
+logging:
+  file:
+    name: /var/log/app/service/data/app.log
+  level:
+    root: warn
+    at.ac.tuwien.ifs.dbrepo.: "${LOG_LEVEL:info}"
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+  pattern:
+    console: "%d %highlight(%-5level) %msg%n"
+  structured:
+    format:
+      file: ecs
+dbrepo:
+  cache:
+    ttl: "${CACHE_TTL:60}"
+  endpoints:
+    dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
+    authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
+  system:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
+  keycloak:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
+    client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
+    clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+  routingKey: ${ROUTING_KEY:dbrepo.#}
+  queueName: ${BROKER_QUEUE_NAME:dbrepo}
+  baseUrl: "${BASE_URL:http://localhost}"
+  minConcurrent: "${MIN_CONCURRENT_CONSUMERS:2}"
+  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS:6}"
+  requeueRejected: ${REQUEUE_REJECTED:false}
+  exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
+  connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"

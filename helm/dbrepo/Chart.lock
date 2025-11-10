@@ -4,7 +4,7 @@ dependencies:
   version: 1.4.0
 - name: keycloak
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 24.6.6
+  version: 25.2.0
 - name: nginx
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 20.0.2
@@ -29,5 +29,8 @@ dependencies:
 - name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 16.1.0
-digest: sha256:c09ef3e3cc229070fc3658089a67713e2ada69abaea3ed81c57ab2ea7b819b35
-generated: "2025-11-02T19:43:40.658382805+01:00"
+- name: valkey
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 5.0.6
+digest: sha256:c242d9a70351f71a3adcbbbcdbadbed6bda3719a9442b255d703710411978f5b
+generated: "2025-11-10T08:59:27.685993972+01:00"

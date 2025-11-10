@@ -5,8 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.SortType;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierSaveDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
-import at.ac.tuwien.ifs.dbrepo.endpoints.AbstractEndpoint;
+import at.ac.tuwien.ifs.dbrepo.endpoints.RestEndpoint;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
@@ -27,7 +26,7 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class EndpointValidator extends AbstractEndpoint {
+public class EndpointValidator extends RestEndpoint {
 
     public static final List<ColumnTypeDto> NEED_NOTHING = List.of(ColumnTypeDto.BOOL, ColumnTypeDto.SERIAL);
     public static final List<ColumnTypeDto> NEED_SIZE = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);

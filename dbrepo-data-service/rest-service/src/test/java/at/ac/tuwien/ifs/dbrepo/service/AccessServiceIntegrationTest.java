@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -42,18 +43,21 @@ public class AccessServiceIntegrationTest extends BaseTest {
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
+    @Container
+    private static RedisContainerConfig.CustomRedisContainer redisContainer = RedisContainerConfig.getContainer();
+
     @BeforeEach
     public void beforeEach() throws SQLException {
-        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
     }
 
     @Test
     public void create_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
@@ -61,8 +65,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void create_writeOwn_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_OWN);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
@@ -70,8 +74,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void create_writeAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_ALL);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
@@ -79,8 +83,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void update_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
@@ -88,8 +92,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void update_writeOwn_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_OWN);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
@@ -97,8 +101,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void update_writeAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_ALL);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
 
@@ -107,7 +111,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_5_DTO, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1_CACHE, USER_5_CACHE, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -115,8 +119,8 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void delete_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.delete(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
-        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
+        accessService.delete(DATABASE_1_CACHE, USER_1_CACHE);
+        final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(new String[]{"USAGE"}, privileges.toArray());
     }
 
@@ -125,7 +129,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.delete(DATABASE_1_PRIVILEGED_DTO, USER_5_DTO);
+            accessService.delete(DATABASE_1_CACHE, USER_5_CACHE);
         });
     }
 

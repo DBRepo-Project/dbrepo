@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
@@ -7,7 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.UUID;
@@ -39,6 +42,9 @@ public class ViewServiceUnitTest extends BaseTest {
     @MockitoBean
     private DatabaseRepository databaseRepository;
 
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
+
     @Autowired
     private ViewService viewService;
 
@@ -57,6 +63,9 @@ public class ViewServiceUnitTest extends BaseTest {
                 .thenReturn(VIEW_1_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
@@ -93,6 +102,9 @@ public class ViewServiceUnitTest extends BaseTest {
             DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
@@ -141,6 +153,9 @@ public class ViewServiceUnitTest extends BaseTest {
 
         /* mock */
         doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
         when(databaseRepository.save(any(Database.class)))
@@ -161,6 +176,9 @@ public class ViewServiceUnitTest extends BaseTest {
 
         /* mock */
         doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
         when(databaseRepository.save(any(Database.class)))
@@ -180,6 +198,9 @@ public class ViewServiceUnitTest extends BaseTest {
             ViewNotFoundException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);

@@ -1,13 +1,13 @@
 {{- if .Values.authservice.enabled }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: auth-service-config
   namespace: {{ include "common.names.namespace" . | quote }}
-binaryData:
-  create-event-listener.jar: |-
-    {{ .Files.Get "files/create-event-listener.jar" | b64enc }}
 data:
-  {{ (.Files.Glob "files/dbrepo-realm.json").AsConfig | nindent 2 }}
-  {{ (.Files.Glob "files/master-realm.json").AsConfig | nindent 2 }}
+  dbrepo-realm.json: |-
+    {{ .Files.Get "files/dbrepo-realm.json" | nindent 4 }}
+  master-realm.json: |-
+    {{ .Files.Get "files/master-realm.json" | nindent 4 }}
 {{- end }}

@@ -9,6 +9,7 @@ RUN mvn -fn dependency:go-offline
 COPY ./lib ./lib
 COPY ./querystore ./querystore
 COPY ./report ./report
+COPY ./repositories ./repositories
 COPY ./rest-service ./rest-service
 COPY ./services ./services
 
@@ -16,20 +17,12 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM docker.io/debian:13 AS runtime
+FROM --platform=$BUILDPLATFORM docker.io/bitnamilegacy/java:21 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-ARG DUCKDB_VERSION="v1.2.2"
+ENV DUCKDB_VERSION="1.2.2"
 
-RUN apt-get update && \
-    apt-get install -y \
-    --no-install-recommends \
-    openjdk-21-jre \
-    curl \
-    jq && \
-    apt-get clean
-
-WORKDIR /home/dbrepo/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+WORKDIR /home/dbrepo/.duckdb/extensions/v${DUCKDB_VERSION}/linux_amd64
 
 COPY ./lib/httpfs.duckdb_extension.gz ./httpfs.duckdb_extension.gz
 COPY ./lib/mysql_scanner.duckdb_extension.gz ./mysql_scanner.duckdb_extension.gz

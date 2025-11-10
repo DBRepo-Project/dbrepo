@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
@@ -15,9 +16,9 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ContainerRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,9 @@ public class TableServicePersistenceTest extends BaseTest {
 
     @MockitoBean
     private SearchServiceGateway searchServiceGateway;
+
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
 
     @MockitoBean
     private UserService userService;
@@ -107,6 +111,9 @@ public class TableServicePersistenceTest extends BaseTest {
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, request);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 

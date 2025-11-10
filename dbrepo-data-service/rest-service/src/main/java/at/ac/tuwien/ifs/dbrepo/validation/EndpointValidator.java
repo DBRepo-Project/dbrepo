@@ -1,16 +1,16 @@
 package at.ac.tuwien.ifs.dbrepo.validation;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.FilterTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
+import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.PaginationException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
 import at.ac.tuwien.ifs.dbrepo.endpoints.RestEndpoint;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
@@ -19,13 +19,6 @@ import java.util.List;
 @Slf4j
 @Component
 public class EndpointValidator extends RestEndpoint {
-
-    private final CacheService credentialService;
-
-    @Autowired
-    public EndpointValidator(CacheService credentialService) {
-        this.credentialService = credentialService;
-    }
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
         log.trace("validate data params, page={}, size={}", page, size);
@@ -59,33 +52,39 @@ public class EndpointValidator extends RestEndpoint {
         }
     }
 
-    public void validateOnlyAccess(DatabaseDto database, Principal principal, boolean writeAccessOnly)
-            throws NotAllowedException, RemoteUnavailableException, MetadataServiceException {
+    public void validateOnlyAccess(Database database, Principal principal) throws NotAllowedException {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
         if (isSystem(principal)) {
+            log.trace("user {} is internal: no access needed", getUsername(principal));
             return;
         }
-        final DatabaseAccessDto access = credentialService.getAccess(database.getId(), getUsername(principal));
-        log.trace("found access: {}", access);
-        if (writeAccessOnly && !(access.getType().equals(AccessTypeDto.WRITE_OWN) || access.getType().equals(AccessTypeDto.WRITE_ALL))) {
-            log.error("Access not allowed: no write access");
-            throw new NotAllowedException("Access not allowed: no write access");
+        if (database.getAccesses()
+                .stream()
+                .noneMatch(a -> a.getUsername().equals(getUsername(principal)))) {
+            log.error("No access found for user {} to database: {}", getUsername(principal), database.getInternalName());
+            throw new NotAllowedException("No access found");
         }
     }
 
-    public void validateOnlyWriteOwnOrWriteAllAccess(AccessTypeDto access, String owner, String username)
+    public void validateOnlyWriteAccess(Database database, Table table, Principal principal)
             throws NotAllowedException {
-        if (access.equals(AccessTypeDto.READ)) {
-            log.error("Failed to create table data: no write access");
-            throw new NotAllowedException("Failed to create table data: no write access");
+        validateOnlyAccess(database, principal);
+        if (database.getAccesses()
+                .stream()
+                .anyMatch(a -> a.getType().equals(AccessType.WRITE_OWN) &&
+                        table.getOwnedBy().equals(getUsername(principal)) &&
+                        a.getUsername().equals(getUsername(principal)))) {
+            return;
         }
-        if (access.equals(AccessTypeDto.WRITE_OWN) && !owner.equals(username)) {
-            log.error("Failed to create table data: insufficient table write access");
-            throw new NotAllowedException("Failed to create table data: insufficient table write access");
+        if (database.getAccesses()
+                .stream()
+                .noneMatch(a -> a.getType().equals(AccessType.WRITE_ALL) &&
+                        a.getUsername().equals(getUsername(principal)))) {
+            log.error("No write access found for user {} to database: {}", getUsername(principal), database.getInternalName());
+            throw new NotAllowedException("No write access found");
         }
-        log.trace("sufficient write access {} for username {} and owner {}", access, username, owner);
     }
 
 

@@ -138,33 +138,33 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
-    command:
-      - "start-dev"
-      - "--import-realm"
+    image: registry.datalab.tuwien.ac.at/bitnami/keycloak:${KEYCLOAK_VERSION}
     volumes:
-      - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
-      - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
-      - ./dbrepo-auth-service/dbrepo-realm.json:/opt/keycloak/data/import/dbrepo-realm.json
+      - ./dbrepo-auth-service/master-realm.json:/opt/bitnami/keycloak/data/import/master-realm.json
+      - ./dbrepo-auth-service/dbrepo-realm.json:/opt/bitnami/keycloak/data/import/dbrepo-realm.json
     ports:
       - "8080:8080"
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: "${SYSTEM_USERNAME:-admin}"
       KC_BOOTSTRAP_ADMIN_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
-      KC_DB: "postgres"
-      KC_DB_URL_HOST: "auth-db"
-      KC_DB_USERNAME: "${AUTH_DB_USERNAME:-keycloak}"
-      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      KC_HEALTH_ENABLED: "true"
-      KC_PROXY_HEADERS: "xforwarded"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
       LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
+      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"
+      KEYCLOAK_ENABLE_HTTPS: "false"
+      KEYCLOAK_ENABLE_STATISTICS: "true"
+      KEYCLOAK_EXTRA_ARGS: "--import-realm"
+      KEYCLOAK_DATABASE_HOST: "auth-db"
+      KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
+      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
+      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost}"
+      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost}"
+      KEYCLOAK_PROXY_HEADERS: "xforwarded"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+      test: curl -fsS localhost:8080/realms/master
       <<: *healthcheck-params
     depends_on:
       dbrepo-identity-service:
@@ -186,6 +186,8 @@ services:
       network: host
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
@@ -198,6 +200,9 @@ services:
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
       BROKER_USERNAME: ${SYSTEM_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
+      CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
+      CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
+      CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-http://data.crossref.org}"
       DASHBOARD_SERVICE_ENDPOINT: "${DASHBOARD_SERVICE_ENDPOINT:-http://dashboard-service:8080}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
@@ -237,6 +242,62 @@ services:
         condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
+      dbrepo-cache-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-consumer-service:
+    restart: "no"
+    container_name: dbrepo-consumer-service
+    hostname: consumer-service
+    image: dbrepo-consumer-service:latest
+    build:
+      context: ./dbrepo-consumer-service
+      network: host
+    environment:
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
+      BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
+      BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
+      BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
+      BROKER_PASSWORD: ${SYSTEM_PASSWORD:-admin}
+      BROKER_PORT: ${BROKER_PORT:-5672}
+      BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
+      BROKER_USERNAME: ${SYSTEM_USERNAME:-admin}
+      BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
+      CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
+      CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
+      CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
+      DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    healthcheck:
+      test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
+      <<: *healthcheck-params
+    depends_on:
+      dbrepo-broker-service:
+        condition: service_healthy
+      dbrepo-data-service:
+        condition: service_healthy
+      dbrepo-cache-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-cache-db:
+    restart: "no"
+    container_name: dbrepo-cache-db
+    hostname: cache-db
+    image: docker.io/bitnamilegacy/valkey:${VALKEY_VERSION}
+    environment:
+      VALKEY_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: "redis-cli -a ${CACHE_DB_PASSWORD:-valkey} ping | grep PONG"
+      <<: *healthcheck-params
     logging:
       driver: json-file
 
@@ -256,7 +317,7 @@ services:
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
     environment:
-      RABBITMQ_FEATURE_FLAGS: mqtt_v5
+      RABBITMQ_ERL_COOKIE: "${BROKER_SERVICE_ERL_COOKIE:-dbrepo}"
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -377,8 +438,8 @@ services:
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_USERS: "${SYSTEM_USERNAME:-admin},${READONLY_USERNAME:-readonly}"
-      LDAP_PASSWORDS: "${SYSTEM_PASSWORD:-admin},${READONLY_PASSWORD:-readonly}"
+      LDAP_USERS: "${READONLY_USERNAME:-readonly}"
+      LDAP_PASSWORDS: "${READONLY_PASSWORD:-readonly}"
       LDAP_GROUP: "${ADMIN_GROUP:-system}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
       LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
@@ -498,6 +559,8 @@ services:
       context: ./dbrepo-data-service
       network: host
     environment:
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
@@ -505,11 +568,14 @@ services:
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+      BROKER_PASSWORD: "${BROKER_SERVICE_PASSWORD:-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
-      BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      BROKER_USERNAME: "${BROKER_SERVICE_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
+      CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
+      CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
+      CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[*]}"
       EXCHANGE_NAME: "${EXCHANGE_NAME:-dbrepo}"
@@ -547,23 +613,17 @@ services:
     volumes:
       - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
       - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
-      - ./dbrepo-dashboard-ui/ldap.toml:/opt/bitnami/grafana/conf/ldap.toml
       - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
       - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
       - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
       - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
-      # do not attempt to set it in the grafana.ini, hours wasted here: 7
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
       DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
-      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
     healthcheck:
       test: curl -fsSL --head 127.0.0.1:3000
       <<: *healthcheck-params
@@ -584,6 +644,8 @@ services:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      DASHBOARD_UI_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
+      DASHBOARD_UI_USERNAME: "${DASHBOARD_UI_USERNAME:-admin}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:

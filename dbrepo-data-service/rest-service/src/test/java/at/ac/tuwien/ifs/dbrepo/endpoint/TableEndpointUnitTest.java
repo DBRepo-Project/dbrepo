@@ -1,16 +1,16 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.TableEndpoint;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -66,7 +67,7 @@ public class TableEndpointUnitTest extends BaseTest {
     private DatabaseService databaseService;
 
     @MockitoBean
-    private CacheService credentialService;
+    private MetadataService metadataService;
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
@@ -89,17 +90,17 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void create_succeeds() throws DatabaseUnavailableException, TableMalformedException, ViewNotFoundException,
-            DatabaseNotFoundException, TableExistsException, RemoteUnavailableException, SQLException,
-            TableNotFoundException, QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
+    public void create_succeeds() throws DatabaseUnavailableException, TableMalformedException, TableExistsException,
+            RemoteUnavailableException, SQLException, DatabaseNotFoundException, TableNotFoundException,
+            QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(databaseService.createTable(any(DatabaseDto.class), any(CreateTableDto.class)))
-                .thenReturn(TABLE_4_DTO);
-        when(databaseService.inspectTable(any(DatabaseDto.class), anyString()))
-                .thenReturn(TABLE_4_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(tableService.create(any(Database.class), any(CreateTableDto.class)))
+                .thenReturn(TABLE_3_DTO);
+        when(tableService.inspect(any(Database.class), anyString()))
+                .thenReturn(TABLE_3_DTO);
 
         /* test */
         final ResponseEntity<TableDto> response = tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_DTO);
@@ -123,7 +124,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getDatabase(DATABASE_1_ID);
 
         /* test */
@@ -138,11 +139,11 @@ public class TableEndpointUnitTest extends BaseTest {
             TableExistsException, RemoteUnavailableException, TableNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(SQLException.class)
-                .when(databaseService)
-                .createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_DTO);
+                .when(tableService)
+                .create(DATABASE_1_CACHE, TABLE_4_CREATE_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -168,20 +169,38 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void statistic_succeeds() throws DatabaseUnavailableException, TableNotFoundException, SQLException,
-            TableMalformedException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+    public void statistic_publicData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, SQLException,
+            TableMalformedException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
+            NotAllowedException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(tableService.getStatistics(any(DatabaseDto.class), anyString()))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
+                .thenReturn(TABLE_6_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
+        when(tableService.getStatistics(any(Database.class), any(UUID.class), anyString()))
+                .thenReturn(TABLE_6_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<TableStatisticDto> response = tableEndpoint.statistic(DATABASE_3_ID, TABLE_8_ID);
+        final ResponseEntity<TableStatisticDto> response = tableEndpoint.getStatistic(DATABASE_2_ID, TABLE_6_ID, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void statistic_privateDataNotAllowed_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException {
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.getStatistic(DATABASE_3_ID, TABLE_8_ID, null);
+        });
     }
 
     @Test
@@ -190,17 +209,17 @@ public class TableEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException, SQLException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_7_ID))
+                .thenReturn(TABLE_7_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .getStatistics(any(DatabaseDto.class), anyString());
+                .getStatistics(any(Database.class), any(UUID.class), anyString());
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.statistic(DATABASE_3_ID, TABLE_8_ID);
+            tableEndpoint.getStatistic(DATABASE_2_ID, TABLE_7_ID, null);
         });
     }
 
@@ -211,12 +230,12 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.statistic(DATABASE_1_ID, TABLE_1_ID);
+            tableEndpoint.getStatistic(DATABASE_1_ID, TABLE_1_ID, null);
         });
     }
 
@@ -227,13 +246,13 @@ public class TableEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doNothing()
                 .when(tableService)
-                .delete(DATABASE_1_DTO, TABLE_1_DTO);
+                .delete(DATABASE_1_CACHE, TABLE_1_CACHE);
 
         /* test */
         final ResponseEntity<Void> response = tableEndpoint.delete(DATABASE_1_ID, TABLE_1_ID);
@@ -257,7 +276,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
@@ -272,13 +291,13 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .delete(any(DatabaseDto.class), any(TableDto.class));
+                .delete(any(Database.class), any(Table.class));
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -294,17 +313,17 @@ public class TableEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_4_ID))
-                .thenReturn(TABLE_4_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
+                .thenReturn(TABLE_6_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
+        when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_4_ID, null, null, null, "application/json", httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, "application/json", httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
     }
@@ -317,13 +336,13 @@ public class TableEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_DTO);
-        when(credentialService.getDatabase(DATABASE_2_ID))
-                .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(tableService.getCount(any(DatabaseDto.class), anyString(), any(Instant.class)))
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
+                .thenReturn(TABLE_5_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
+        when(tableService.getCount(any(Database.class), anyString(), any(Instant.class)))
                 .thenReturn(3L);
-        when(subsetService.getData(eq(DATABASE_2_DTO), anyString()))
+        when(subsetService.getData(eq(DATABASE_2_CACHE), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -344,8 +363,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -354,20 +373,19 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void getData_privateNoAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, NotAllowedException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        doThrow(NotAllowedException.class)
-                .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_2_USERNAME);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, USER_2_PRINCIPAL);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, USER_4_PRINCIPAL);
         });
     }
 
@@ -377,8 +395,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -394,13 +412,13 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_DTO);
-        when(credentialService.getDatabase(DATABASE_2_ID))
-                .thenReturn(DATABASE_2_DTO);
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
+                .thenReturn(TABLE_5_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
         doThrow(QueryMalformedException.class)
                 .when(subsetService)
-                .getData(any(DatabaseDto.class), anyString());
+                .getData(any(Database.class), anyString());
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -413,14 +431,16 @@ public class TableEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME)
     public void getData_privateAccessUnavailable_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, NotAllowedException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
         doThrow(RemoteUnavailableException.class)
-                .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_2_USERNAME);
+                .when(metadataService)
+                .getDatabase(DATABASE_1_ID);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
@@ -437,18 +457,11 @@ public class TableEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DatabaseAccessDto.builder()
-                        .user(USER_2_BRIEF_DTO)
-                        .username(USER_2_USERNAME)
-                        .hdbid(DATABASE_1_ID)
-                        .type(type)
-                        .build());
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -465,7 +478,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
@@ -487,21 +500,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .createTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .createTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
@@ -517,12 +528,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -538,15 +549,15 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -562,16 +573,14 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -588,19 +597,17 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .createTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .createTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         });
     }
 
@@ -617,15 +624,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
-        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -640,21 +645,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insertRawTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, DatabaseUnavailableException, TableMalformedException,
             QueryMalformedException, StorageUnavailableException, StorageNotFoundException, MetadataServiceException,
@@ -667,22 +670,20 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
-        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
-            SQLException, MetadataServiceException, DatabaseNotFoundException {
+            SQLException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -694,21 +695,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .updateTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .updateTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -727,12 +726,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -751,15 +750,15 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -778,24 +777,22 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_unavailable_fails() throws TableNotFoundException, RemoteUnavailableException, SQLException,
-            NotAllowedException, MetadataServiceException, TableMalformedException, QueryMalformedException,
-            DatabaseNotFoundException {
+            MetadataServiceException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -807,19 +804,17 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .updateTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .updateTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         });
     }
 
@@ -827,7 +822,7 @@ public class TableEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_writeOwnAccess_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
-            SQLException, MetadataServiceException, DatabaseNotFoundException {
+            SQLException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -839,21 +834,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .updateTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .updateTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -864,13 +857,13 @@ public class TableEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .updateTable(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, TABLE_8_UPDATE_DTO);
+                .update(DATABASE_3_CACHE, TABLE_8_CACHE, TABLE_8_UPDATE_DTO);
 
         /* test */
         final ResponseEntity<TableDto> response = tableEndpoint.update(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
@@ -883,10 +876,10 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
@@ -901,10 +894,10 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(RemoteUnavailableException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
@@ -919,10 +912,10 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(MetadataServiceException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
@@ -946,24 +939,22 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            SQLException, MetadataServiceException, DatabaseNotFoundException {
+            SQLException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -975,21 +966,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .updateTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .updateTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -997,7 +986,7 @@ public class TableEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
-            SQLException, MetadataServiceException, DatabaseNotFoundException {
+            SQLException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -1005,21 +994,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .deleteTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .deleteTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -1034,12 +1021,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -1054,22 +1041,22 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, MetadataServiceException, DatabaseNotFoundException {
+            MetadataServiceException, DatabaseNotFoundException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -1077,23 +1064,21 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_unavailable_fails() throws TableNotFoundException, RemoteUnavailableException, SQLException,
-            NotAllowedException, MetadataServiceException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException {
+            MetadataServiceException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -1101,19 +1086,17 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .deleteTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .deleteTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         });
     }
 
@@ -1121,7 +1104,7 @@ public class TableEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, TableMalformedException, SQLException, QueryMalformedException,
-            DatabaseUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+            DatabaseUnavailableException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -1129,28 +1112,26 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .deleteTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .deleteTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_writeOwnAccessForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, MetadataServiceException, DatabaseNotFoundException {
+            MetadataServiceException, DatabaseNotFoundException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -1158,24 +1139,22 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table-data"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            SQLException, MetadataServiceException, DatabaseNotFoundException {
+            SQLException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -1183,21 +1162,19 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .deleteTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .deleteTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -1207,11 +1184,11 @@ public class TableEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, SQLException, NotAllowedException, MetadataServiceException, PaginationException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_DTO);
-        when(credentialService.getDatabase(DATABASE_2_ID))
-                .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(tableService.history(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO, null))
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
+                .thenReturn(TABLE_5_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
+        when(tableService.history(DATABASE_2_CACHE, TABLE_5_CACHE, null))
                 .thenReturn(List.of());
 
         /* test */
@@ -1225,10 +1202,10 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1253,13 +1230,10 @@ public class TableEndpointUnitTest extends BaseTest {
             TableNotFoundException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        doThrow(NotAllowedException.class)
-                .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1274,11 +1248,11 @@ public class TableEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DATABASE_1_USER_2_READ_ACCESS_DTO);
-        when(tableService.history(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, 10L))
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(tableService.history(DATABASE_1_CACHE, TABLE_1_CACHE, 10L))
                 .thenReturn(List.of());
 
         /* test */
@@ -1292,13 +1266,13 @@ public class TableEndpointUnitTest extends BaseTest {
             TableNotFoundException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_DTO);
-        when(credentialService.getDatabase(DATABASE_2_ID))
-                .thenReturn(DATABASE_2_PRIVILEGED_DTO);
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
+                .thenReturn(TABLE_5_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .history(any(DatabaseDto.class), any(TableDto.class), anyLong());
+                .history(any(Database.class), any(Table.class), anyLong());
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -1312,10 +1286,10 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
@@ -1332,17 +1306,17 @@ public class TableEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_4_ID))
-                .thenReturn(TABLE_4_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+        when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
+                .thenReturn(TABLE_6_CACHE);
+        when(metadataService.getDatabase(DATABASE_2_ID))
+                .thenReturn(DATABASE_2_CACHE);
+        when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_4_ID, null, null, null, "text/csv", httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, "text/csv", httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -1356,20 +1330,13 @@ public class TableEndpointUnitTest extends BaseTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DatabaseAccessDto.builder()
-                        .user(USER_2_BRIEF_DTO)
-                        .username(USER_2_USERNAME)
-                        .hdbid(DATABASE_1_ID)
-                        .type(type)
-                        .build());
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -1381,17 +1348,14 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void exportData_privateNoAccess_fails() throws TableNotFoundException, NotAllowedException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+    public void exportData_privateNoAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        doThrow(NotAllowedException.class)
-                .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_4_USERNAME);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1401,56 +1365,56 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"system"})
-    public void getSchema_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
+    public void findAll_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             RemoteUnavailableException, SQLException, MetadataServiceException, DatabaseNotFoundException,
             DatabaseMalformedException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_DTO);
-        when(databaseService.exploreTables(DATABASE_3_DTO))
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
+        when(tableService.explore(DATABASE_3_CACHE))
                 .thenReturn(List.of(TABLE_8_DTO));
 
         /* test */
-        final ResponseEntity<List<TableDto>> response = tableEndpoint.getSchema(DATABASE_3_ID);
+        final ResponseEntity<List<TableDto>> response = tableEndpoint.findAll(DATABASE_3_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     @WithAnonymousUser
-    public void getSchema_anonymous_succeeds() {
+    public void findAll_anonymous_succeeds() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            tableEndpoint.getSchema(DATABASE_3_ID);
+            tableEndpoint.findAll(DATABASE_3_ID);
         });
     }
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void getSchema_noRole_succeeds() {
+    public void findAll_noRole_succeeds() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            tableEndpoint.getSchema(DATABASE_3_ID);
+            tableEndpoint.findAll(DATABASE_3_ID);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"system"})
-    public void getSchema_unavailable_fails() throws TableNotFoundException, RemoteUnavailableException, SQLException,
+    public void findAll_unavailable_fails() throws TableNotFoundException, RemoteUnavailableException, SQLException,
             MetadataServiceException, DatabaseNotFoundException, DatabaseMalformedException {
 
         /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_DTO);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
-                .when(databaseService)
-                .exploreTables(DATABASE_3_DTO);
+                .when(tableService)
+                .explore(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.getSchema(DATABASE_3_ID);
+            tableEndpoint.findAll(DATABASE_3_ID);
         });
     }
 
@@ -1467,15 +1431,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
-                .importDataset(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
+                .importDataset(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         doNothing()
                 .when(metadataServiceGateway)
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
@@ -1512,7 +1474,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(credentialService)
+                .when(metadataService)
                 .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
@@ -1522,10 +1484,10 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_unavailable_fails() throws RemoteUnavailableException, TableNotFoundException,
-            MetadataServiceException, NotAllowedException, StorageNotFoundException, MalformedException,
-            StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException, DatabaseNotFoundException {
+            MetadataServiceException, StorageNotFoundException, MalformedException, StorageUnavailableException,
+            SQLException, QueryMalformedException, TableMalformedException, DatabaseNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1533,28 +1495,25 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .importDataset(any(DatabaseDto.class), any(TableDto.class), eq(request));
+                .importDataset(any(Database.class), any(Table.class), eq(request));
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_writeOwnAccess_fails() throws RemoteUnavailableException, TableNotFoundException,
-            MetadataServiceException, NotAllowedException, StorageNotFoundException, MalformedException,
-            StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException,
-            DatabaseNotFoundException {
+            MetadataServiceException, StorageNotFoundException, MalformedException, StorageUnavailableException,
+            SQLException, QueryMalformedException, TableMalformedException, DatabaseNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1562,15 +1521,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
-                .importDataset(any(DatabaseDto.class), any(TableDto.class), eq(request));
+                .importDataset(any(Database.class), any(Table.class), eq(request));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1581,7 +1538,7 @@ public class TableEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, MetadataServiceException, DatabaseNotFoundException {
+            MetadataServiceException, DatabaseNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1589,12 +1546,10 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1615,12 +1570,10 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
@@ -1637,12 +1590,10 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_3_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1663,20 +1614,18 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_3_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"insert-table-data"})
-    public void importDataset_privateForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
+    public void importDataset_privateWriteAllForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
             StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
             DatabaseNotFoundException {
@@ -1687,15 +1636,36 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"insert-table-data"})
+    public void importDataset_privateWriteOwnForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException {
+        final ImportDto request = ImportDto.builder()
+                .header(true)
+                .lineTermination("\\n")
+                .location("deadbeef")
+                .build();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        });
     }
 
     @Test
@@ -1711,12 +1681,10 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_2_ID))
-                .thenReturn(TABLE_2_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_2_ID))
+                .thenReturn(TABLE_2_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
@@ -1733,12 +1701,10 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -1747,9 +1713,9 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"insert-table-data"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_privateReadAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, MetadataServiceException, DatabaseNotFoundException {
+            MetadataServiceException, DatabaseNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1757,16 +1723,14 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(credentialService.getTable(DATABASE_1_ID, TABLE_2_ID))
-                .thenReturn(TABLE_2_DTO);
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(credentialService.getAccess(DATABASE_1_ID, USER_2_USERNAME))
-                .thenReturn(DATABASE_1_USER_2_READ_ACCESS_DTO);
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_2_ID))
+                .thenReturn(TABLE_2_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         });
     }
 

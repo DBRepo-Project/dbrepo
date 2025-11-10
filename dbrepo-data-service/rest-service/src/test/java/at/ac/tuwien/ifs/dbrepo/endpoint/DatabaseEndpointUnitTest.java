@@ -1,15 +1,17 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.DatabaseEndpoint;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.AccessService;
+import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,16 +39,13 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     private DatabaseEndpoint databaseEndpoint;
 
     @MockitoBean
-    private ContainerService containerService;
-
-    @MockitoBean
     private AccessService accessService;
 
     @MockitoBean
     private DatabaseService databaseService;
 
     @MockitoBean
-    private CacheService cacheService;
+    private MetadataService metadataService;
 
     @MockitoBean
     private AnalyseService analyseService;
@@ -58,38 +57,35 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             MetadataServiceException, SQLException, MalformedException {
 
         /* mock */
-        when(cacheService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getContainer(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_CACHE);
+        when(databaseService.create(CONTAINER_1_CACHE, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_CACHE);
         doNothing()
-                .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
+                .when(databaseService)
+                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_CACHE), any(User.class), any(AccessTypeDto.class));
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
+        final ResponseEntity<Void> response = databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
     public void create_noRole_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            SQLException, QueryStoreCreateException, DatabaseMalformedException, MetadataServiceException {
+            SQLException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        doNothing()
-                .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
+        when(metadataService.getContainer(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_CACHE);
+        when(databaseService.create(CONTAINER_1_CACHE, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_CACHE);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_CACHE), any(User.class), any(AccessTypeDto.class));
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -114,16 +110,16 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(cacheService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(containerService.createDatabase(CONTAINER_1_DTO, request))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getContainer(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_CACHE);
+        when(databaseService.create(CONTAINER_1_CACHE, request))
+                .thenReturn(DATABASE_1_CACHE);
         doNothing()
-                .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
+                .when(databaseService)
+                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_CACHE), any(User.class), any(AccessTypeDto.class));
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -134,17 +130,17 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_unavailable_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            SQLException, DatabaseMalformedException, MetadataServiceException {
+            MetadataServiceException, SQLException, QueryStoreCreateException {
 
         /* mock */
-        when(cacheService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        doThrow(SQLException.class)
-                .when(containerService)
-                .createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL);
+        when(metadataService.getContainer(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_CACHE);
+        doThrow(QueryStoreCreateException.class)
+                .when(databaseService)
+                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
 
         /* test */
-        assertThrows(DatabaseUnavailableException.class, () -> {
+        assertThrows(QueryStoreCreateException.class, () -> {
             databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
         });
     }
@@ -156,7 +152,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
-                .when(cacheService)
+                .when(metadataService)
                 .getContainer(CONTAINER_1_ID);
 
         /* test */
@@ -172,13 +168,13 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
-                .when(cacheService)
+                .when(metadataService)
                 .getContainer(CONTAINER_1_ID);
-        when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(databaseService.create(CONTAINER_1_CACHE, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(QueryStoreCreateException.class)
-                .when(containerService)
-                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNAL_NAME);
+                .when(databaseService)
+                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -192,11 +188,13 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
-        databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
+        final ResponseEntity<Void> response = databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
     @Test
@@ -205,11 +203,11 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException, MetadataServiceException, SQLException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(SQLException.class)
                 .when(databaseService)
-                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
+                .update(DATABASE_1_CACHE, USER_1_UPDATE_PASSWORD_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -222,8 +220,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -238,7 +236,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(cacheService)
+                .when(metadataService)
                 .getDatabase(DATABASE_1_ID);
 
         /* test */
@@ -253,11 +251,11 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
         doThrow(DatabaseMalformedException.class)
                 .when(databaseService)
-                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
+                .update(DATABASE_1_CACHE, USER_1_UPDATE_PASSWORD_DTO);
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
@@ -272,9 +270,9 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException, ColumnNotFoundException {
 
         /* mock */
-        when(cacheService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
-        when(analyseService.determineDataTypes(any(ImageDto.class), anyString()))
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(analyseService.determineDataTypes(any(Image.class), anyString()))
                 .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
 
         /* test */

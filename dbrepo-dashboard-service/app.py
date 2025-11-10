@@ -1,20 +1,19 @@
 import logging
 import os
-from http import HTTPStatus
-from json import dumps
-from typing import List, Any
-
-from dbrepo.api.dto import ApiError, Database, User
+from dbrepo.api.dto import ApiError, Database
 from dbrepo.core.api.exceptions import DashboardNotFound
-from dbrepo.core.client.auth import AuthServiceClient
+from dbrepo.core.client.auth import User, AuthServiceClient
 from dbrepo.core.client.dashboard import DashboardServiceClient
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request, Response
 from flask_cors import CORS
 from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
 from grafana_client.client import GrafanaClientError
+from http import HTTPStatus
+from json import dumps
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
+from typing import List, Any
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -161,6 +160,8 @@ app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKE
                                                                       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
 app.config["READONLY_USERNAME"] = os.getenv('READONLY_USERNAME', 'user')
 app.config["READONLY_PASSWORD"] = os.getenv('READONLY_PASSWORD', 'user')
+app.config["SYSTEM_USERNAME"] = os.getenv('SYSTEM_USERNAME', 'admin')
+app.config["SYSTEM_PASSWORD"] = os.getenv('SYSTEM_PASSWORD', 'admin')
 
 app.json_encoder = LazyJSONEncoder
 
@@ -169,8 +170,8 @@ headers = {'Content-Type': 'application/json'}
 
 def dashboard_client():
     return DashboardServiceClient(endpoint=os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
-                                  username=os.getenv('SYSTEM_USERNAME', 'admin'),
-                                  password=os.getenv('SYSTEM_PASSWORD', 'admin'))
+                                  username=os.getenv('DASHBOARD_UI_USERNAME', 'admin'),
+                                  password=os.getenv('DASHBOARD_UI_PASSWORD', 'admin'))
 
 
 def auth_client():
@@ -185,6 +186,8 @@ def verify_token(token: str) -> bool | User:
 
 @basic_auth.verify_password
 def verify_password(username: str, password: str) -> Any:
+    if username == app.config["SYSTEM_USERNAME"] and password == app.config["SYSTEM_PASSWORD"]:
+        return User(id='internal', username=app.config["SYSTEM_USERNAME"], roles=["system"])
     return auth_client().is_valid_password(username, password)
 
 
@@ -253,7 +256,8 @@ def update_dashboard(uid: str):
     return Response(), 202, headers
 
 
-@app.route("/api/v1/dashboard/<string:uid>/access/<string:username>", methods=["PUT"], endpoint="update_dashboard_access")
+@app.route("/api/v1/dashboard/<string:uid>/access/<string:username>", methods=["PUT"],
+           endpoint="update_dashboard_access")
 @metrics.gauge(name='dbrepo_update_dashboard_access', description='Time needed to update dashboard access')
 @swag_from("/app/ds-yml/update_dashboard_access.yml")
 @auth.login_required(role=['system'])

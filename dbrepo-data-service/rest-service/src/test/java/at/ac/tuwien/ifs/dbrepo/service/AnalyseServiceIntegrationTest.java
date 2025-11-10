@@ -87,8 +87,8 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
         /* metadata database */
-        MariaDbUtil.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNAL_NAME);
-        MariaDbUtil.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
+        MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -96,7 +96,7 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
     public void determineDataTypes_succeeds() throws DatabaseUnavailableException, ColumnNotFoundException {
 
         /* test */
-        final Map<String, ColumnAnalysisResultDto> response = analyseService.determineDataTypes(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO);
+        final Map<String, ColumnAnalysisResultDto> response = analyseService.determineDataTypes(DATABASE_1_CACHE, QUERY_1_DTO);
         assertEquals(5, response.size());
         final ColumnAnalysisResultDto id = response.get("id");
         assertEquals("id", id.getName());
@@ -122,7 +122,7 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
             throws DatabaseUnavailableException, ColumnNotFoundException {
 
         /* test */
-        final Map<String, ColumnAnalysisResultDto> response = analyseService.determineDataTypes(DATABASE_1_PRIVILEGED_DTO, duckDbMapper.queryToRawDescribeQuery(statement));
+        final Map<String, ColumnAnalysisResultDto> response = analyseService.determineDataTypes(DATABASE_1_CACHE, duckDbMapper.queryToRawDescribeQuery(statement));
         assertEquals(expectedRows, response.size());
         for (Map.Entry<String, ColumnTypeDto> row : expectedAnalysis.entrySet()) {
             final ColumnAnalysisResultDto column = response.get(row.getKey());

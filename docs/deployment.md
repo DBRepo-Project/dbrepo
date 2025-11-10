@@ -66,7 +66,7 @@ a DOI is minted for persistent identification of databases or subsets. Using the
 should not be done for test-deployments.
 
 <figure markdown>
-![](/infrastructures/dbrepo/1.10/images/identifier-doi.png)
+![](/infrastructures/dbrepo/1.12/images/identifier-doi.png)
 </figure>
 
 ## Gateway Service

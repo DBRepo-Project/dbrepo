@@ -37,7 +37,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database")
-public class DatabaseEndpoint extends AbstractEndpoint {
+public class DatabaseEndpoint extends RestEndpoint {
 
     private final UserService userService;
     private final MetadataMapper metadataMapper;
@@ -450,8 +450,6 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
             headers.set("X-Jdbc-Method", database.getContainer().getImage().getJdbcMethod());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
-        } else {
-            removeInternalData(dto.getContainer());
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)

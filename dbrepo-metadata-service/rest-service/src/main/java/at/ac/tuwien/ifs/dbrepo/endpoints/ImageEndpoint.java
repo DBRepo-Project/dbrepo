@@ -37,7 +37,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @ControllerAdvice
 @RequestMapping(path = "/api/v1/image")
-public class ImageEndpoint extends AbstractEndpoint {
+public class ImageEndpoint extends RestEndpoint {
 
     private final ImageService imageService;
     private final MetadataMapper metadataMapper;

@@ -1,18 +1,19 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.service.AccessService;
+import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,23 +35,20 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database")
 public class DatabaseEndpoint extends RestEndpoint {
 
-    private final DataMapper dataMapper;
-    private final CacheService cacheService;
     private final AccessService accessService;
     private final AnalyseService analyseService;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
-    private final ContainerService containerService;
+    private final MetadataService metadataService;
 
     @Autowired
-    public DatabaseEndpoint(DataMapper dataMapper, CacheService cacheService, AccessService accessService,
-                            AnalyseService analyseService, DatabaseService databaseService,
-                            ContainerService containerService) {
-        this.dataMapper = dataMapper;
-        this.cacheService = cacheService;
+    public DatabaseEndpoint(AccessService accessService, AnalyseService analyseService, MetadataMapper metadataMapper,
+                            DatabaseService databaseService, MetadataService metadataService) {
         this.accessService = accessService;
         this.analyseService = analyseService;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
-        this.containerService = containerService;
+        this.metadataService = metadataService;
     }
 
     @PostMapping
@@ -60,10 +58,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
-                    description = "Created a database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                    description = "Created a database"),
             @ApiResponse(responseCode = "400",
                     description = "Database create query is malformed or readonly password is hashed",
                     content = {@Content}),
@@ -77,24 +72,24 @@ public class DatabaseEndpoint extends RestEndpoint {
                     description = "Failed to communicate with database",
                     content = {@Content}),
     })
-    public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data)
+    public ResponseEntity<Void> create(@Valid @RequestBody CreateDatabaseDto data)
             throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
             DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException, MalformedException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
-        final ContainerDto container = cacheService.getContainer(data.getContainerId());
+        final Container container = metadataService.getContainer(data.getContainerId());
         try {
-            final DatabaseDto database = containerService.createDatabase(container, data);
-            containerService.createQueryStore(container, data.getInternalName());
-            accessService.create(database, dataMapper.createDatabaseDtoToUserDto(data), AccessTypeDto.WRITE_ALL);
-            accessService.create(database, dataMapper.createDatabaseDtoToPrivilegedUserDto(data), AccessTypeDto.WRITE_ALL);
+            final Database database = databaseService.create(container, data);
+            databaseService.createQueryStore(container, data.getInternalName());
+            accessService.create(database, metadataMapper.createDatabaseDtoToUser(data), AccessTypeDto.WRITE_ALL);
+            accessService.create(database, metadataMapper.createDatabaseDtoToPrivilegedUser(data), AccessTypeDto.WRITE_ALL);
             if (data.getReadonlyPassword().startsWith("*")) {
                 log.error("Failed to give readonly user read-access: password is hashed");
                 throw new MalformedException("Failed to give readonly user read-access: password is hashed");
             }
-            accessService.create(database, dataMapper.createDatabaseDtoToReadonlyUserDto(data), AccessTypeDto.READ);
+            accessService.create(database, metadataMapper.createDatabaseDtoToReadonlyUser(data), AccessTypeDto.READ);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(database);
+                    .build();
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -125,7 +120,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint update user password in database, databaseId={}, data.username={}", databaseId,
                 data.getUsername());
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
             databaseService.update(database, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -160,7 +155,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             RemoteUnavailableException, MetadataServiceException, ImageInvalidException, DatabaseNotFoundException,
             ColumnNotFoundException {
         log.debug("endpoint analyse datatypes, databaseId={}, key={}", databaseId, key);
-        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final Database database = metadataService.getDatabase(databaseId);
         return ResponseEntity.ok()
                 .body(analyseService.determineDataTypes(database.getContainer().getImage(), key));
     }

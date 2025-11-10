@@ -10,7 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DuckDbConfig {
 
-    @Value("${duckdb.spilling.path}")
-    private String spillingPath;
+    @Value("${duckdb.extension.directory}")
+    private String extensionDirectory;
+
+    @Value("${duckdb.tmp.directory}")
+    private String tmpDirectory;
 
 }

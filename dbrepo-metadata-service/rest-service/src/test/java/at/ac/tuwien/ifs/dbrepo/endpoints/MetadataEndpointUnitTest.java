@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
-import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.utils.XmlUtils;
 import lombok.extern.slf4j.Slf4j;

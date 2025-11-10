@@ -34,7 +34,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/ontology")
-public class OntologyEndpoint extends AbstractEndpoint {
+public class OntologyEndpoint extends RestEndpoint {
 
     private final EntityService entityService;
     private final MetadataMapper metadataMapper;

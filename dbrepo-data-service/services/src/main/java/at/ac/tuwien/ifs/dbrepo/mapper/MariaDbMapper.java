@@ -1,15 +1,18 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.OperatorDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import org.jooq.*;
 import org.jooq.Record;
@@ -185,7 +188,13 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateInternalStoreQueryProcedureRawQuery() {
-        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
+        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(normalized_query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
+        log.trace("mapped create query store _store_query procedure statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreCreateInternalHashQueryProcedureRawQuery() {
+        final String statement = "CREATE DEFINER = 'root' PROCEDURE hash_query(IN normalized_query TEXT, OUT queryHash VARCHAR(64)) BEGIN DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; SET queryHash = (SELECT @hash); END;";
         log.trace("mapped create query store _store_query procedure statement: {}", statement);
         return statement;
     }
@@ -193,6 +202,12 @@ public interface MariaDbMapper {
     default String queryStoreStoreQueryRawQuery() {
         final String statement = "{call _store_query(?, ?, ?, ?, ?)}";
         log.trace("mapped store query statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreHashQueryRawQuery() {
+        final String statement = "{call hash_query(?, ?)}";
+        log.trace("mapped hash query statement: {}", statement);
         return statement;
     }
 
@@ -250,7 +265,7 @@ public interface MariaDbMapper {
     }
 
     default String databaseTableColumnsSelectRawQuery() {
-        final String statement = "SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME`, IF(`COLUMN_COMMENT`='',NULL,`COLUMN_COMMENT`) AS `COLUMN_COMMENT` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?;";
+        final String statement = "SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME`, IF(`COLUMN_COMMENT`='',NULL,`COLUMN_COMMENT`) AS `COLUMN_COMMENT` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ? ORDER BY `ORDINAL_POSITION` ASC;";
         log.trace("mapped select columns statement: {}", statement);
         return statement;
     }
@@ -621,7 +636,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawDeleteQuery(String databaseName, TableDto table, TupleDeleteDto data) throws TableMalformedException {
+    default String tupleToRawDeleteQuery(String databaseName, Table table, TupleDeleteDto data) throws TableMalformedException {
         log.trace("table csv to delete query, table.id={}, data.keys={}", table.getId(), data.getKeys());
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
@@ -644,7 +659,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawUpdateQuery(String databaseName, TableDto table, TupleUpdateDto data)
+    default String tupleToRawUpdateQuery(String databaseName, Table table, TupleUpdateDto data)
             throws TableMalformedException {
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
@@ -683,7 +698,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawCreateQuery(String databaseName, TableDto table, TupleDto data) throws TableMalformedException {
+    default String tupleToRawCreateQuery(String databaseName, Table table, TupleDto data) throws TableMalformedException {
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
         }
@@ -696,7 +711,7 @@ public interface MariaDbMapper {
         final int[] idx = new int[]{0};
         data.getData()
                 .forEach((key, value) -> {
-                    final Optional<ColumnDto> optional = table.getColumns().stream()
+                    final Optional<Column> optional = table.getColumns().stream()
                             .filter(c -> c.getInternalName().equals(key))
                             .findFirst();
                     if (optional.isEmpty()) {
@@ -712,7 +727,7 @@ public interface MariaDbMapper {
         final int[] jdx = new int[]{0};
         data.getData()
                 .forEach((key, value) -> {
-                    final Optional<ColumnDto> optional = table.getColumns().stream()
+                    final Optional<Column> optional = table.getColumns().stream()
                             .filter(c -> c.getInternalName().equals(key))
                             .findFirst();
                     if (optional.isEmpty()) {
@@ -727,15 +742,16 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default void prepareStatementWithColumnTypeObject(PreparedStatement statement, ColumnTypeDto columnType, int idx,
-                                                      String columnName, Object value) throws SQLException {
+    default void prepareStatementWithColumnTypeObject(StorageService storageService, PreparedStatement statement,
+                                                      ColumnType columnType, int idx, String columnName, Object value)
+            throws SQLException, StorageUnavailableException, StorageNotFoundException {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 if (value == null) {
                     statement.setNull(idx, Types.BLOB);
                     break;
                 }
-                final byte[] data = (byte[]) value;
+                final byte[] data = storageService.getBytes(String.valueOf(value));
                 statement.setBlob(idx, new ByteArrayInputStream(data));
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
@@ -933,7 +949,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String countRawSelectQuery(String query, Instant timestamp) {
+    default String countRawSelectQuery(String query) {
         query = query.toLowerCase(Locale.ROOT)
                 .trim();
         if (query.matches(";$")) {
@@ -943,14 +959,12 @@ public interface MariaDbMapper {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder("SELECT COUNT(1) FROM (")
                 .append(query)
-                .append(") FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                .append(mariaDbFormatter.format(timestamp))
-                .append("' as tbl;");
+                .append(") as tbl");
         log.trace("mapped count query: {}", statement);
         return statement.toString();
     }
 
-    default SelectConditionStep<Record> subsetDtoToSelectConditions(SelectJoinStep<Record> step, DatabaseDto database,
+    default SelectConditionStep<Record> subsetDtoToSelectConditions(SelectJoinStep<Record> step, Database database,
                                                                     SubsetDto data) throws ColumnNotFoundException,
             ImageNotFoundException {
         if (data.getFilter() == null || data.getFilter().isEmpty()) {
@@ -975,7 +989,7 @@ public interface MariaDbMapper {
         return conditions;
     }
 
-    default String columnIdToColumnName(DatabaseDto database, DatasourceType type, UUID columnId) throws ColumnNotFoundException {
+    default String columnIdToColumnName(Database database, DatasourceType type, UUID columnId) throws ColumnNotFoundException {
         return switch (type) {
             case VIEW -> columnIdToViewColumnDto(database, columnId)
                     .getInternalName();
@@ -984,7 +998,7 @@ public interface MariaDbMapper {
         };
     }
 
-    default Condition filterDtoToCondition(DatabaseDto database, String columnName, FilterDto data)
+    default Condition filterDtoToCondition(Database database, String columnName, FilterDto data)
             throws ImageNotFoundException {
         final String operator = operatorIdToOperatorDto(database, data.getOperatorId()).getValue();
         switch (operator) {
@@ -1022,8 +1036,8 @@ public interface MariaDbMapper {
         throw new IllegalArgumentException("Failed to map operator: " + operator);
     }
 
-    default SelectSeekStepN<Record> subsetDtoToSelectOrder(SelectConditionStep<Record> step, DatabaseDto database,
-                                                           SubsetDto data) throws ColumnNotFoundException {
+    default SelectSeekStepN<Record> SubsetToSelectOrder(SelectConditionStep<Record> step, Database database,
+                                                        SubsetDto data) throws ColumnNotFoundException {
         final List<OrderField<Object>> sort = new LinkedList<>();
         for (OrderDto order : data.getOrder()) {
             final String columnName = columnIdToColumnName(database, data.getDatasourceType(), order.getColumnId());
@@ -1039,23 +1053,40 @@ public interface MariaDbMapper {
         return step.orderBy(sort);
     }
 
-    default String subsetDtoToRawQuery(DSLContext context, DatabaseDto database, SubsetDto data)
+    default String subsetDtoToRawQuery(DSLContext context, Database database, SubsetDto data)
             throws TableNotFoundException, ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
         final String datasourceName;
         final List<Field<Object>> columns = switch (data.getDatasourceType()) {
             case TABLE -> {
-                final TableDto table = tableIdToTableDto(database, data.getDatasourceId());
-                datasourceName = table.getInternalName();
-                yield table.getColumns()
+                final Optional<at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table> optional = database.getTables()
+                        .stream()
+                        .filter(t -> t.getId().equals(data.getDatasourceId()))
+                        .findFirst();
+                if (optional.isEmpty()) {
+                    log.error("Failed to find table: {}", data.getDatasourceId());
+                    throw new TableNotFoundException("Failed to find table: " + data.getDatasourceId());
+                }
+                datasourceName = optional.get()
+                        .getInternalName();
+                yield optional.get().getColumns()
                         .stream()
                         .filter(c -> data.getColumns().contains(c.getId()))
                         .map(c -> field(name(c.getInternalName())))
                         .toList();
             }
             case VIEW -> {
-                final ViewDto view = viewIdToViewDto(database, data.getDatasourceId());
-                datasourceName = view.getInternalName();
-                yield view.getColumns()
+                final Optional<View> optional = database.getViews()
+                        .stream()
+                        .filter(v -> v.getId().equals(data.getDatasourceId()))
+                        .findFirst();
+                if (optional.isEmpty()) {
+                    log.error("Failed to find view: {}", data.getDatasourceId());
+                    throw new ViewNotFoundException("Failed to find view: " + data.getDatasourceId());
+                }
+                datasourceName = optional.get()
+                        .getInternalName();
+                yield optional.get()
+                        .getColumns()
                         .stream()
                         .filter(c -> data.getColumns().contains(c.getId()))
                         .map(c -> field(name(c.getInternalName())))
@@ -1070,20 +1101,20 @@ public interface MariaDbMapper {
         if (data.getOrder() == null) {
             sql = where.getSQL(ParamType.INLINED);
         } else {
-            sql = subsetDtoToSelectOrder(where, database, data)
+            sql = SubsetToSelectOrder(where, database, data)
                     .getSQL(ParamType.INLINED);
         }
         log.trace("mapped prepared query: {}", sql);
         return sql;
     }
 
-    default ViewColumnDto columnIdToViewColumnDto(DatabaseDto database, UUID columnId) throws ColumnNotFoundException {
+    default ViewColumn columnIdToViewColumnDto(Database database, UUID columnId) throws ColumnNotFoundException {
         if (columnId == null) {
             return null;
         }
-        final Optional<ViewColumnDto> optional = database.getViews()
+        final Optional<ViewColumn> optional = database.getViews()
                 .stream()
-                .map(ViewDto::getColumns)
+                .map(View::getColumns)
                 .flatMap(List::stream)
                 .filter(column -> column.getId().equals(columnId))
                 .findFirst();
@@ -1091,18 +1122,18 @@ public interface MariaDbMapper {
             log.error("Failed to find column: {}", columnId);
             throw new ColumnNotFoundException("Failed to find column: " + columnId);
         }
-        final ViewColumnDto column = optional.get();
+        final ViewColumn column = optional.get();
         log.trace("mapped column id {} to view column: {}", columnId, column.getInternalName());
         return column;
     }
 
-    default ColumnDto columnIdToColumnDto(DatabaseDto database, UUID columnId) throws ColumnNotFoundException {
+    default Column columnIdToColumnDto(Database database, UUID columnId) throws ColumnNotFoundException {
         if (columnId == null) {
             return null;
         }
-        final Optional<ColumnDto> optional = database.getTables()
+        final Optional<Column> optional = database.getTables()
                 .stream()
-                .map(TableDto::getColumns)
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table::getColumns)
                 .flatMap(List::stream)
                 .filter(column -> column.getId().equals(columnId))
                 .findFirst();
@@ -1110,13 +1141,13 @@ public interface MariaDbMapper {
             log.error("Failed to find column: {}", columnId);
             throw new ColumnNotFoundException("Failed to find column: " + columnId);
         }
-        final ColumnDto column = optional.get();
+        final Column column = optional.get();
         log.trace("mapped column id {} to column: {}", columnId, column.getInternalName());
         return column;
     }
 
-    default OperatorDto operatorIdToOperatorDto(DatabaseDto database, UUID operatorId) throws ImageNotFoundException {
-        final Optional<OperatorDto> optional = database.getContainer()
+    default Operator operatorIdToOperatorDto(Database database, UUID operatorId) throws ImageNotFoundException {
+        final Optional<Operator> optional = database.getContainer()
                 .getImage()
                 .getOperators()
                 .stream()
@@ -1125,32 +1156,6 @@ public interface MariaDbMapper {
         if (optional.isEmpty()) {
             log.error("Failed to find operator: {}", operatorId);
             throw new ImageNotFoundException("Failed to find operator: " + operatorId);
-        }
-        return optional.get();
-    }
-
-    default TableDto tableIdToTableDto(DatabaseDto database, UUID tableId) throws TableNotFoundException {
-        final Optional<TableDto> optional = database.getTables()
-                .stream()
-                .filter(t -> t.getId().equals(tableId))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find table: {}", tableId);
-            log.trace("known table ids: {}", database.getTables().stream().map(TableDto::getId).collect(Collectors.toList()));
-            throw new TableNotFoundException("Failed to find table: " + tableId);
-        }
-        return optional.get();
-    }
-
-    default ViewDto viewIdToViewDto(DatabaseDto database, UUID viewId) throws ViewNotFoundException {
-        final Optional<ViewDto> optional = database.getViews()
-                .stream()
-                .filter(v -> v.getId().equals(viewId))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find view: {}", viewId);
-            log.trace("known view ids: {}", database.getViews().stream().map(ViewDto::getId).collect(Collectors.toList()));
-            throw new ViewNotFoundException("Failed to find view: " + viewId);
         }
         return optional.get();
     }

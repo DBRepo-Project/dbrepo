@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnConcept;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ConceptNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.ConceptRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ConceptRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;

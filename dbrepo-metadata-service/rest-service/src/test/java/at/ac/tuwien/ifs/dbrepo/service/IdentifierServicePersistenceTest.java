@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.License;
@@ -8,9 +9,9 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.ContainerRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.LicenseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ContainerRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -46,6 +48,9 @@ public class IdentifierServicePersistenceTest extends BaseTest {
 
     @MockitoBean
     private SearchServiceGateway searchServiceGateway;
+
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
 
     @MockitoBean
     @Qualifier("restTemplate")
@@ -283,6 +288,9 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
@@ -363,6 +371,11 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             DataServiceException, QueryNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
 
+        /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+
         /* test */
         assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_DTO));
     }
@@ -373,6 +386,11 @@ public class IdentifierServicePersistenceTest extends BaseTest {
             SearchServiceConnectionException, ViewNotFoundException, ExternalServiceException,
             IdentifierNotFoundException {
 
+        /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+
         /* test */
         assertIdentifierEquals(IDENTIFIER_1, identifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_WITH_DOI_DTO));
     }
@@ -380,6 +398,11 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
             DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
+
+        /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
 
         /* test */
         assertIdentifierEquals(IDENTIFIER_7, identifierService.publish(IDENTIFIER_7));

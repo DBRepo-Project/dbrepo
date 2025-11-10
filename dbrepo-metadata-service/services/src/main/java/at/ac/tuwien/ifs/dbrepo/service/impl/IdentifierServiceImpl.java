@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
@@ -17,7 +18,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
@@ -44,11 +45,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final DataServiceGateway dataServiceGateway;
     private final IdentifierRepository identifierRepository;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
 
     public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine, MetadataMapper metadataMapper,
                                  MetadataConfig metadataConfig, DataServiceGateway dataServiceGateway,
-                                 IdentifierRepository identifierRepository, SearchServiceGateway searchServiceGateway) {
+                                 IdentifierRepository identifierRepository, SearchServiceGateway searchServiceGateway,
+                                 DatabaseCacheRepository databaseCacheRepository) {
         this.viewService = viewService;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
@@ -56,6 +59,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         this.dataServiceGateway = dataServiceGateway;
         this.identifierRepository = identifierRepository;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -148,6 +152,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* publish identifier */
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
         identifier = identifierRepository.save(identifier);
+        /* update cache */
+        databaseCacheRepository.deleteById(identifier.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(identifier.getDatabase());
         log.atInfo()
@@ -204,6 +210,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
+        /* update cache */
+        databaseCacheRepository.deleteById(identifier.getDatabase().getId());
         /* update in search database */
         searchServiceGateway.update(identifier.getDatabase());
         return entity;
@@ -258,6 +266,9 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.getDatabase()
                 .getIdentifiers()
                 .remove(identifier);
+        /* update cache */
+        databaseCacheRepository.deleteById(identifier.getDatabase().getId());
+        /* update in search database */
         searchServiceGateway.update(identifier.getDatabase());
         log.atInfo()
                 .setMessage("Deleted identifier")

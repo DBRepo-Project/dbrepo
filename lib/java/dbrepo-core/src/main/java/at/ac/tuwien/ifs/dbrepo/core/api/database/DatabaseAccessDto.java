@@ -21,7 +21,6 @@ import java.util.UUID;
 public class DatabaseAccessDto {
 
     @NotNull
-    @JsonIgnore
     @Schema(description = "The user name", example = "foobar")
     private String username;
 

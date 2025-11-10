@@ -1,0 +1,15 @@
+server:
+  port: 18080
+spring:
+  data:
+    redis:
+      host: localhost
+  rabbitmq:
+    host: localhost
+dbrepo:
+  endpoints:
+    dataService: http://localhost:9099
+    authService: http://localhost:8080
+logging:
+  level:
+    at.ac.tuwien.ifs.dbrepo.: trace

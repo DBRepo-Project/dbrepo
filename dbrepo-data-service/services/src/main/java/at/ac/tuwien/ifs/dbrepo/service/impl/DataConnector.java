@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.duckdb.DuckDBConnection;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 @Service
 public abstract class DataConnector {
 
-    public ComboPooledDataSource getDataSource(ContainerDto container, String databaseName) {
+    public ComboPooledDataSource getDataSource(Container container, String databaseName) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(getJdbcUrl(container, databaseName));
         dataSource.setUser(container.getUsername());
@@ -27,26 +27,26 @@ public abstract class DataConnector {
         return dataSource;
     }
 
-    public ComboPooledDataSource getDataSource(ContainerDto container) {
+    public ComboPooledDataSource getDataSource(Container container) {
         return getDataSource(container, null);
     }
 
-    public ComboPooledDataSource getDataSource(DatabaseDto database) {
+    public ComboPooledDataSource getDataSource(Database database) {
         return getDataSource(database.getContainer(), database.getInternalName());
     }
 
-    public String getSparkUrl(ContainerDto container, String databaseName) {
+    public String getSparkUrl(Container container, String databaseName) {
         final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
                 .append("?sessionVariables=sql_mode='ANSI_QUOTES'");
-        log.trace("mapped container to spark url: {}", sb.toString());
+        log.trace("mapped container to spark url: {}", sb);
         return sb.toString();
     }
 
-    public String getSparkUrl(DatabaseDto databaseDto) {
+    public String getSparkUrl(Database databaseDto) {
         return getSparkUrl(databaseDto.getContainer(), databaseDto.getInternalName());
     }
 
-    public String getJdbcUrl(ContainerDto container, String databaseName) {
+    public String getJdbcUrl(Container container, String databaseName) {
         final StringBuilder stringBuilder = new StringBuilder("jdbc:")
                 .append(container.getImage().getJdbcMethod())
                 .append("://")
@@ -57,6 +57,7 @@ public abstract class DataConnector {
             stringBuilder.append("/")
                     .append(databaseName);
         }
+        log.trace("mapped container to jdbc url: {}", stringBuilder);
         return stringBuilder.toString();
     }
 

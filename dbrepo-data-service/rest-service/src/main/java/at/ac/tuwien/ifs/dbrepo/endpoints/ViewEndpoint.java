@@ -2,11 +2,11 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
@@ -49,24 +49,27 @@ public class ViewEndpoint extends RestEndpoint {
 
     private final DSLContext context;
     private final ViewService viewService;
-    private final CacheService cacheService;
+    private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
+    private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(DSLContext context, ViewService viewService, CacheService cacheService,
+    public ViewEndpoint(DSLContext context, ViewService viewService, TableService tableService,
                         MariaDbMapper mariaDbMapper, SubsetService subsetService, StorageService storageService,
-                        DatabaseService databaseService, EndpointValidator endpointValidator) {
+                        DatabaseService databaseService, MetadataService metadataService,
+                        EndpointValidator endpointValidator) {
         this.context = context;
         this.viewService = viewService;
-        this.cacheService = cacheService;
+        this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.storageService = storageService;
         this.databaseService = databaseService;
+        this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
     }
 
@@ -97,13 +100,13 @@ public class ViewEndpoint extends RestEndpoint {
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content}),
     })
-    public ResponseEntity<List<ViewDto>> getSchema(@NotNull @PathVariable("databaseId") UUID databaseId)
+    public ResponseEntity<List<ViewDto>> findAll(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, MetadataServiceException, ViewNotFoundException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
-            return ResponseEntity.ok(databaseService.exploreViews(database));
+            return ResponseEntity.ok(viewService.explore(database));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -143,10 +146,10 @@ public class ViewEndpoint extends RestEndpoint {
         /* check */
         endpointValidator.validateSubsetParams(data.getQuery());
         /* create */
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(databaseService.createView(database, mariaDbMapper.nameToInternalName(data.getName()),
+                    .body(viewService.create(database, mariaDbMapper.nameToInternalName(data.getName()),
                             mariaDbMapper.subsetDtoToRawQuery(context, database, data.getQuery())));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -180,8 +183,8 @@ public class ViewEndpoint extends RestEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             ViewMalformedException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
-        final ViewDto view = cacheService.getView(databaseId, viewId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
+        final View view = metadataService.getView(databaseId, viewId);
+        final Database database = metadataService.getDatabase(databaseId);
         try {
             viewService.delete(database, view);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -253,17 +256,17 @@ public class ViewEndpoint extends RestEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final ViewDto view = cacheService.getView(databaseId, viewId);
+        final View view = metadataService.getView(databaseId, viewId);
+        final Database database = metadataService.getDatabase(databaseId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
             if (!isSystem(principal)) {
-                cacheService.getAccess(databaseId, getUsername(principal));
+                endpointValidator.validateOnlyAccess(database, principal);
             }
         }
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
         try {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
@@ -274,13 +277,13 @@ public class ViewEndpoint extends RestEndpoint {
                         .build();
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
-            headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
+            headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumn::getInternalName).toList()));
             final String query = mariaDbMapper.rawSelectQuery(view.getQuery(), timestamp,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             final Dataset<Row> dataset = subsetService.getData(database, query);
             final String viewName = view.getQueryHash();
-            databaseService.createView(database, viewName, view.getQuery());
+            viewService.create(database, viewName, view.getQuery());
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     log.trace("accept header matches json");
@@ -317,6 +320,9 @@ public class ViewEndpoint extends RestEndpoint {
             @ApiResponse(responseCode = "400",
                     description = "Failed to obtain column statistic",
                     content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to get statistic",
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find view or database in metadata database",
                     content = {@Content}),
@@ -324,16 +330,26 @@ public class ViewEndpoint extends RestEndpoint {
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content}),
     })
-    public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                       @NotNull @PathVariable("viewId") UUID viewId)
+    public ResponseEntity<TableStatisticDto> getStatistic(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                          @NotNull @PathVariable("viewId") UUID viewId,
+                                                          Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException, ViewNotFoundException,
-            QueryMalformedException {
+            NotAllowedException {
         log.debug("endpoint generate view statistic, databaseId={}, viewId={}", databaseId, viewId);
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final ViewDto view = cacheService.getView(databaseId, viewId);
+        final View view = metadataService.getView(databaseId, viewId);
+        final Database database = metadataService.getDatabase(databaseId);
+        if (!view.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to get statistic from view: unauthorized");
+                throw new NotAllowedException("Failed to get statistic from view: unauthorized");
+            }
+            if (!isSystem(principal)) {
+                endpointValidator.validateOnlyAccess(database, principal);
+            }
+        }
         try {
-            return ResponseEntity.ok(cacheService.getStatistic(database, view));
+            return ResponseEntity.ok(tableService.getStatistics(database, view.getId(), view.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
