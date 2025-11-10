@@ -1,15 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,13 +29,13 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/access")
 public class AccessEndpoint extends RestEndpoint {
 
-    private final CacheService cacheService;
     private final AccessService accessService;
+    private final MetadataService metadataService;
 
     @Autowired
-    public AccessEndpoint(CacheService cacheService, AccessService accessService) {
-        this.cacheService = cacheService;
+    public AccessEndpoint(AccessService accessService, MetadataService metadataService) {
         this.accessService = accessService;
+        this.metadataService = metadataService;
     }
 
     @PostMapping("/{username}")
@@ -71,9 +69,9 @@ public class AccessEndpoint extends RestEndpoint {
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException,
             AccessNotFoundException {
         log.debug("endpoint give access to database, databaseId={}, username={}", databaseId, username);
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final UserDto user = cacheService.getUser(username);
-        if (database.getAccesses().stream().anyMatch(a -> a.getUser().getUsername().equals(username))) {
+        final Database database = metadataService.getDatabase(databaseId);
+        final User user = metadataService.getUser(username);
+        if (database.getAccesses().stream().anyMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to create access to user {}: already has access", username);
             throw new AccessNotFoundException("Failed to create access to user " + username + ": already has access");
         }
@@ -118,9 +116,9 @@ public class AccessEndpoint extends RestEndpoint {
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint modify access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 access.getType());
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final UserDto user = cacheService.getUser(username);
-        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getUsername().equals(username))) {
+        final Database database = metadataService.getDatabase(databaseId);
+        final User user = metadataService.getUser(username);
+        if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to update access to user {}: no access", username);
             throw new AccessNotFoundException("Failed to update access to user " + username + ": no access");
         }
@@ -163,9 +161,9 @@ public class AccessEndpoint extends RestEndpoint {
             DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint revoke access to database, databaseId={}, username={}", databaseId, username);
-        final DatabaseDto database = cacheService.getDatabase(databaseId, true);
-        final UserDto user = cacheService.getUser(username);
-        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getUsername().equals(username))) {
+        final Database database = metadataService.getDatabase(databaseId);
+        final User user = metadataService.getUser(username);
+        if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to delete access to user {}: no access", username);
             throw new AccessNotFoundException("Failed to delete access to user " + username + ": no access");
         }

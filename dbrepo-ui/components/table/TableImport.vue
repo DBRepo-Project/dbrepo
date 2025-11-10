@@ -447,9 +447,10 @@ export default {
           this.loadingImport = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(`${this.$t(code)}: ${message}`)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingImport = false
@@ -526,11 +527,10 @@ export default {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
-            /* fallback default error message */
-            toast.error(this.$t('error.analyse.invalid'))
+            toast.error(message)
             return
           }
-          toast.error(`${this.$t(code)}: ${message}`)
+          toast.error(this.$t(code))
         })
     }
   }

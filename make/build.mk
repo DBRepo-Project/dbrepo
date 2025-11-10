@@ -12,14 +12,9 @@ build-jupyter-image:
 build-java-lib: ## Build the Java Library.
 	APP_VERSION=$(APP_VERSION) mvn -f ./lib/java/dbrepo-core/pom.xml -q clean package install -DskipTests
 	rm -rf ./dbrepo-data-service/lib/at/ ./dbrepo-metadata-service/lib/at/
+	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-consumer-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
-
-.PHONY: build-auth-event-listener
-build-auth-event-listener: ## Build the Auth Service Event Listener.
-	mvn -f ./dbrepo-auth-service/listeners/pom.xml -q clean package -DskipTests
-	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./dbrepo-auth-service/listeners/create-event-listener.jar
-	cp ./dbrepo-auth-service/listeners/create-event-listener.jar ./helm/dbrepo/files/create-event-listener.jar
 
 .PHONY: build-ui
 build-ui: ## Build the UI.
@@ -28,6 +23,7 @@ build-ui: ## Build the UI.
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
 	rm -rf ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock
+	PIPENV_PIPFILE=./lib/python/Pipfile pipenv lock
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib

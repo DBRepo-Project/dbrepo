@@ -1,9 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
 import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
-import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.OAuth2Constants;
@@ -17,30 +17,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class KeycloakGatewayImpl implements KeycloakGateway {
 
-    private final DataMapper dataMapper;
     private final KeycloakConfig keycloakConfig;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public KeycloakGatewayImpl(DataMapper dataMapper, KeycloakConfig keycloakConfig) {
-        this.dataMapper = dataMapper;
+    public KeycloakGatewayImpl(KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
         this.keycloakConfig = keycloakConfig;
+        this.metadataMapper = metadataMapper;
     }
 
     @Override
-    public TokenDto obtainUserToken(String username, String password) throws BadCredentialsException {
-        log.trace("obtain user token from endpoint={}, realm={}, clientId={}, username={}",
-                keycloakConfig.getKeycloakEndpoint(), keycloakConfig.getRealm(), keycloakConfig.getKeycloakClient(),
-                username);
+    public TokenDto getUserToken(String username, String password, String realm, String clientId, String clientSecret)
+            throws BadCredentialsException {
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
-                .realm(keycloakConfig.getRealm())
+                .realm(realm)
                 .grantType(OAuth2Constants.PASSWORD)
-                .clientId(keycloakConfig.getKeycloakClient())
-                .clientSecret(keycloakConfig.getKeycloakClientSecret())
+                .clientId(clientId)
+                .clientSecret(clientSecret)
                 .username(username)
                 .password(password)
                 .build()) {
-            return dataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
+            return metadataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
                     .getAccessToken());
         } catch (NotAuthorizedException e) {
             log.error("Failed to obtain user token: {}", e.getMessage());

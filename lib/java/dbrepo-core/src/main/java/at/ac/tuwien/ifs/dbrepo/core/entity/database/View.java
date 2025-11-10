@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.core.entity.database;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,15 +42,8 @@ public class View {
     private UUID id;
 
     @ToString.Exclude
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
-    private UUID ownedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User owner;
+    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
+    private String ownedBy;
 
     @Column(name = "vname", nullable = false, columnDefinition = "VARCHAR(64)")
     private String name;

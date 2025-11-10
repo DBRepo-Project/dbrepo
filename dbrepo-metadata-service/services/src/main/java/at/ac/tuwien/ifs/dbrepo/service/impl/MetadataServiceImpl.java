@@ -15,7 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListRecordsParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
-import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import lombok.extern.slf4j.Slf4j;

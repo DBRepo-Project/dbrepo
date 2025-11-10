@@ -174,8 +174,14 @@ export default {
           cacheStore.reloadSubset()
           this.loadingSave = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingSave = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingSave = false
@@ -190,8 +196,14 @@ export default {
           cacheStore.reloadSubset()
           this.loadingSave = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           this.loadingSave = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingSave = false

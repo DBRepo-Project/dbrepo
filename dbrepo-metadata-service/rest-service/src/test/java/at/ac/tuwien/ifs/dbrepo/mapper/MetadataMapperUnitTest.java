@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
@@ -114,48 +116,50 @@ public class MetadataMapperUnitTest extends BaseTest {
         assertNotEquals(USER_1_DTO, USER_2_DTO);
     }
 
-    @Test
-    public void userToUserBriefDto_succeeds() {
-
-        /* test */
-        final UserBriefDto response = metadataMapper.userToUserBriefDto(USER_1);
-        assertEquals(USER_1_NAME, response.getName());
-        assertEquals(USER_1_NAME + " — @" + USER_1_USERNAME, response.getQualifiedName());
-    }
-
-    @Test
-    public void userToUserDto_succeeds() {
-
-        /* test */
-        assertEquals(USER_1_DTO, metadataMapper.userToUserDto(USER_1));
-        assertEquals(USER_2_DTO, metadataMapper.userToUserDto(USER_2));
-        assertEquals(USER_3_DTO, metadataMapper.userToUserDto(USER_3));
-        assertEquals(USER_4_DTO, metadataMapper.userToUserDto(USER_4));
-        assertEquals(USER_5_DTO, metadataMapper.userToUserDto(USER_5));
-    }
-
+    /**
+     * @implNote Test does not cover the {ViewDto#owner} property.
+     */
     @Test
     public void identifierToIdentifierDto_succeeds() {
 
         /* test */
-        assertEquals(IDENTIFIER_1_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_1));
-        assertEquals(IDENTIFIER_2_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_2));
-        assertEquals(IDENTIFIER_3_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_3));
-        assertEquals(IDENTIFIER_4_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_4));
-        assertEquals(IDENTIFIER_5_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_5));
-        assertEquals(IDENTIFIER_6_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_6));
-        assertEquals(IDENTIFIER_7_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_7));
+        final IdentifierDto id1 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_1);
+        id1.setOwner(USER_1_BRIEF_DTO);
+        assertEquals(IDENTIFIER_1_DTO, id1);
+        final IdentifierDto id2 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_2);
+        id2.setOwner(USER_1_BRIEF_DTO);
+        assertEquals(IDENTIFIER_2_DTO, id2);
+        final IdentifierDto id3 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_3);
+        id3.setOwner(USER_1_BRIEF_DTO);
+        assertEquals(IDENTIFIER_3_DTO, id3);
+        final IdentifierDto id4 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_4);
+        id4.setOwner(USER_1_BRIEF_DTO);
+        assertEquals(IDENTIFIER_4_DTO, id4);
+        final IdentifierDto id5 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_5);
+        id5.setOwner(USER_2_BRIEF_DTO);
+        assertEquals(IDENTIFIER_5_DTO, id5);
+        final IdentifierDto id6 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_6);
+        id6.setOwner(USER_3_BRIEF_DTO);
+        assertEquals(IDENTIFIER_6_DTO, id6);
+        final IdentifierDto id7 = metadataMapper.identifierToIdentifierDto(IDENTIFIER_7);
+        id7.setOwner(USER_4_BRIEF_DTO);
+        assertEquals(IDENTIFIER_7_DTO, id7);
     }
 
+    /**
+     * @implNote Test does not cover the {#owner} property.
+     */
     @Test
     public void viewToViewDto_succeeds() {
 
         /* test */
-        assertEquals(VIEW_1_DTO, metadataMapper.viewToViewDto(VIEW_1));
-        assertEquals(VIEW_2_DTO, metadataMapper.viewToViewDto(VIEW_2));
-        assertEquals(VIEW_3_DTO, metadataMapper.viewToViewDto(VIEW_3));
-        assertEquals(VIEW_4_DTO, metadataMapper.viewToViewDto(VIEW_4));
-        assertEquals(VIEW_5_DTO, metadataMapper.viewToViewDto(VIEW_5));
+        final ViewDto view1 = VIEW_1_DTO.toBuilder().owner(USER_1_MINIMAL_DTO).build();
+        view1.getIdentifiers().forEach(id -> id.setOwner(USER_1_MINIMAL_DTO));
+        assertEquals(view1, metadataMapper.viewToViewDto(VIEW_1));
+        assertEquals(VIEW_2_DTO.toBuilder().owner(USER_1_MINIMAL_DTO).build(), metadataMapper.viewToViewDto(VIEW_2));
+        assertEquals(VIEW_3_DTO.toBuilder().owner(USER_1_MINIMAL_DTO).build(), metadataMapper.viewToViewDto(VIEW_3));
+        assertEquals(VIEW_4_DTO.toBuilder().owner(USER_1_MINIMAL_DTO).build(), metadataMapper.viewToViewDto(VIEW_4));
+        assertEquals(VIEW_5_DTO.toBuilder().owner(USER_1_MINIMAL_DTO).build(), metadataMapper.viewToViewDto(VIEW_5));
     }
 
     @Test

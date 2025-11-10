@@ -1,90 +1,36 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public interface DatabaseService {
 
     /**
-     * Inspects the schema (columns with names, data types) of a view with given name in the given database.
+     * Creates a database in the given container.
      *
-     * @param database The database.
-     * @param viewName The view name.
-     * @return The inspected view if successful.
-     * @throws SQLException          The connection to the database could not be established.
-     * @throws ViewNotFoundException The view was not found in the given database.
+     * @param container The container.
+     * @param data      The database metadata.
+     * @throws SQLException               The connection to the database could not be established.
+     * @throws DatabaseMalformedException The database schema is malformed.
      */
-    ViewDto inspectView(DatabaseDto database, String viewName) throws SQLException, ViewNotFoundException;
+    Database create(Container container, CreateDatabaseDto data) throws SQLException, DatabaseMalformedException;
 
     /**
-     * Creates a table in given data database with table definition.
+     * Creates the query store in the container and database.
      *
-     * @param database The data database object.
-     * @param data     The table definition.
-     * @return The generated table.
-     * @throws SQLException            Query statement is malformed.
-     * @throws TableMalformedException The table schema is malformed.
-     * @throws TableExistsException    The table name already exists in the information_schema.
-     * @throws TableNotFoundException  The table could not be inspected in the metadata database.
+     * @param container    The container.
+     * @param databaseName The database name.
+     * @throws SQLException              The connection to the database could not be established.
+     * @throws QueryStoreCreateException The query store could not be created.
      */
-    TableDto createTable(DatabaseDto database, CreateTableDto data) throws SQLException,
-            TableMalformedException, TableExistsException, TableNotFoundException;
-
-    /**
-     * Creates a view in given data database with view definition.
-     *
-     * @param database The data database object.
-     * @param viewName The view name.
-     * @param query    The view query.
-     * @return The generated view.
-     * @throws SQLException
-     * @throws ViewMalformedException
-     */
-    ViewDto createView(DatabaseDto database, String viewName, String query) throws SQLException,
-            ViewMalformedException;
-
-    /**
-     * Gets the metadata schema for a given database.
-     *
-     * @param database The database.
-     * @return The list of view metadata.
-     * @throws SQLException               The connection to the data database was unsuccessful.
-     * @throws DatabaseMalformedException The columns that are referenced in the views are unknown to the Metadata Database. Call {@link TableService#getSchemas(DatabaseDto)} beforehand.
-     * @throws ViewNotFoundException      The view with given name was not found.
-     */
-    List<ViewDto> exploreViews(DatabaseDto database) throws SQLException, DatabaseMalformedException,
-            ViewNotFoundException;
-
-    /**
-     * Get table schemas from the information_schema in the data database.
-     *
-     * @param database The data database  object.
-     * @return List of tables, if successful.
-     * @throws SQLException               Failed to parse SQL query, contains invalid syntax.
-     * @throws TableNotFoundException     The table could not be inspected in the data database.
-     * @throws DatabaseMalformedException The database inspection was unsuccessful, likely due to a bug in the mapping.
-     */
-    List<TableDto> exploreTables(DatabaseDto database) throws SQLException, TableNotFoundException,
-            DatabaseMalformedException;
-
-    /**
-     * Inspects the schema (columns with names, data types, unique-, check-, primary- and foreign key constraints) of
-     * a table with given name in the given database.
-     *
-     * @param database  The database.
-     * @param tableName The table name.
-     * @return The inspected table if successful.
-     * @throws SQLException           The connection to the database could not be established.
-     * @throws TableNotFoundException The table was not found in the given database.
-     */
-    TableDto inspectTable(DatabaseDto database, String tableName) throws SQLException, TableNotFoundException;
+    void createQueryStore(Container container, String databaseName) throws SQLException,
+            QueryStoreCreateException;
 
     /**
      * Updates a user's password in a given database.
@@ -94,6 +40,5 @@ public interface DatabaseService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void update(DatabaseDto database, UpdateUserPasswordDto data) throws SQLException,
-            DatabaseMalformedException;
+    void update(Database database, UpdateUserPasswordDto data) throws SQLException, DatabaseMalformedException;
 }

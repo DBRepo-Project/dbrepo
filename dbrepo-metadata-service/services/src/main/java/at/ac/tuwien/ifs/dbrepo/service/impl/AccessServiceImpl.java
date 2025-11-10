@@ -3,12 +3,11 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -48,10 +47,10 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional(readOnly = true)
-    public DatabaseAccess find(Database database, User user) throws AccessNotFoundException {
+    public DatabaseAccess find(Database database, String username) throws AccessNotFoundException {
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getUser().getUsername().equals(user.getUsername()))
+                .filter(a -> a.getUsername().equals(username))
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find database access for database with id: {}", database.getId());
@@ -62,17 +61,16 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public DatabaseAccess create(Database database, User user, AccessTypeDto type) throws DataServiceException,
+    public DatabaseAccess create(Database database, String username, AccessTypeDto type) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* create in data database */
-        dataServiceGateway.createAccess(database.getId(), user.getUsername(), type);
+        dataServiceGateway.createAccess(database.getId(), username, type);
         /* create in metadata database */
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())
                 .database(database)
-                .huserid(user.getId())
-                .user(user)
+                .username(username)
                 .type(metadataMapper.accessTypeDtoToAccessType(type))
                 .build();
         database.getAccesses()
@@ -86,23 +84,23 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public void update(Database database, User user, AccessTypeDto access) throws DataServiceException,
+    public void update(Database database, String username, AccessTypeDto access) throws DataServiceException,
             DataServiceConnectionException, AccessNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in data database */
         try {
-            dataServiceGateway.updateAccess(database.getId(), user.getUsername(), access);
+            dataServiceGateway.updateAccess(database.getId(), username, access);
         } catch (AccessNotFoundException e) {
             /* ignore */
         }
         /* update in metadata database */
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getUser().getUsername().equals(user.getUsername()))
+                .filter(a -> a.getUsername().equals(username))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to update access for user: {}", user.getUsername());
-            throw new AccessNotFoundException("Failed to find update access for user: " + user.getUsername());
+            log.error("Failed to update access for user: {}", username);
+            throw new AccessNotFoundException("Failed to find update access for user: " + username);
         }
         optional.get()
                 .setType(metadataMapper.accessTypeDtoToAccessType(access));
@@ -114,18 +112,18 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public void delete(Database database, User user) throws AccessNotFoundException, DataServiceException,
+    public void delete(Database database, String username) throws AccessNotFoundException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* delete in data database */
         try {
-            dataServiceGateway.deleteAccess(database.getId(), user.getUsername());
+            dataServiceGateway.deleteAccess(database.getId(), username);
         } catch (AccessNotFoundException e) {
             /* ignore */
         }
         /* delete in metadata database */
         database.getAccesses()
-                .remove(find(database, user));
+                .remove(find(database, username));
         databaseRepository.save(database);
         /* update in search service */
         searchServiceGateway.update(databaseService.findById(database.getId()));

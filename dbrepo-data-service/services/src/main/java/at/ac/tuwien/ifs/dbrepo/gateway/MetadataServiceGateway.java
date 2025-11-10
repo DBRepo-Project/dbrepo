@@ -1,13 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -25,7 +19,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ContainerDto getContainerById(UUID containerId) throws RemoteUnavailableException,
+    Container getContainerById(UUID containerId) throws RemoteUnavailableException,
             ContainerNotFoundException, MetadataServiceException;
 
     /**
@@ -37,7 +31,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ImageDto getImageById(UUID imageId) throws RemoteUnavailableException,
+    Image getImageById(UUID imageId) throws RemoteUnavailableException,
             ImageNotFoundException, MetadataServiceException;
 
     /**
@@ -49,7 +43,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseDto getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    Database getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -62,7 +56,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    TableDto getTableById(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
+    Table getTableById(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -75,7 +69,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ViewDto getViewById(UUID databaseId, UUID id) throws RemoteUnavailableException, ViewNotFoundException,
+    View getViewById(UUID databaseId, UUID id) throws RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException;
 
     /**
@@ -87,20 +81,7 @@ public interface MetadataServiceGateway {
      * @throws UserNotFoundException      The user was not found in the metadata service.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    UserDto getUserByUsername(String username) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
-
-    /**
-     * Get database access for a given user and database id from the metadata service.
-     *
-     * @param databaseId The database id.
-     * @param username     The username.
-     * @return The database access, if successful.
-     * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
-     * @throws NotAllowedException        The access to this database is denied for the given user.
-     * @throws MetadataServiceException   The remote service returned invalid data.
-     */
-    DatabaseAccessDto getAccess(UUID databaseId, String username) throws RemoteUnavailableException, NotAllowedException,
-            MetadataServiceException;
+    User getUserByUsername(String username) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
 
     /**
      * Get a list of identifiers for a given database id and optional subset id.

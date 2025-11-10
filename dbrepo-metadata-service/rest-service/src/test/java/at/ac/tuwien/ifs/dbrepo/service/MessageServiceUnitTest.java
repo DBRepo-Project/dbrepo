@@ -4,14 +4,14 @@ import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageCreateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MessageNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.BannerMessageRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.BannerMessageRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class MessageServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private BannerMessageRepository bannerMessageRepository;
 
     @Autowired

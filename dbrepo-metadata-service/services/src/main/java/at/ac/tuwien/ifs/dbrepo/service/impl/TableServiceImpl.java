@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
@@ -10,13 +11,15 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSe
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.*;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.service.ConceptService;
+import at.ac.tuwien.ifs.dbrepo.service.EntityService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.UnitService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +35,6 @@ import java.util.UUID;
 @Service
 public class TableServiceImpl implements TableService {
 
-    private final UserService userService;
     private final UnitService unitService;
     private final RabbitConfig rabbitConfig;
     private final EntityService entityService;
@@ -41,13 +43,14 @@ public class TableServiceImpl implements TableService {
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
-    public TableServiceImpl(UserService userService, UnitService unitService, RabbitConfig rabbitConfig,
+    public TableServiceImpl(UnitService unitService, RabbitConfig rabbitConfig,
                             EntityService entityService, ConceptService conceptService, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
-                            SearchServiceGateway searchServiceGateway) {
-        this.userService = userService;
+                            SearchServiceGateway searchServiceGateway,
+                            DatabaseCacheRepository databaseCacheRepository) {
         this.unitService = unitService;
         this.rabbitConfig = rabbitConfig;
         this.entityService = entityService;
@@ -56,6 +59,7 @@ public class TableServiceImpl implements TableService {
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -89,11 +93,9 @@ public class TableServiceImpl implements TableService {
     @Override
     @Transactional
     public Table createTable(Database database, CreateTableDto data, Principal principal) throws DataServiceException,
-            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException {
-        final User owner = userService.findByUsername(principal.getName());
-        /* map table */
         final Table table = Table.builder()
                 .isVersioned(true)
                 .name(data.getName())
@@ -102,8 +104,7 @@ public class TableServiceImpl implements TableService {
                 .queueName(rabbitConfig.getQueueName())
                 .tdbid(database.getId())
                 .database(database)
-                .ownedBy(owner.getId())
-                .owner(owner)
+                .ownedBy(principal.getName())
                 .numRows(0L)
                 .dataLength(0L)
                 .isPublic(data.getIsPublic())
@@ -188,6 +189,8 @@ public class TableServiceImpl implements TableService {
             log.error("Failed to find created table");
             throw new TableNotFoundException("Failed to find created table");
         }
+        /* update cache */
+        databaseCacheRepository.deleteById(table.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(entity);
         log.info("Created table with id {}", optional.get().getId());
@@ -209,6 +212,8 @@ public class TableServiceImpl implements TableService {
                 .getTables()
                 .remove(table);
         final Database database = databaseRepository.save(table.getDatabase());
+        /* update cache */
+        databaseCacheRepository.deleteById(table.getDatabase().getId());
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Deleted table with id {}", table.getId());

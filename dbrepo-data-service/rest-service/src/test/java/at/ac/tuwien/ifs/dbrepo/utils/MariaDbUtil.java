@@ -1,22 +1,30 @@
 package at.ac.tuwien.ifs.dbrepo.utils;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
 @Configuration
 public class MariaDbUtil {
+
+    final public static String replaceExecutionTimestamp(String statement, Instant execution, Instant replacement) {
+        return statement.replace(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date.from(execution)),
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date.from(replacement)));
+    }
 
     /**
      * https://mariadb.com/kb/en/string-data-types/
@@ -65,8 +73,7 @@ public class MariaDbUtil {
         return stringDataTypes.contains(columnType) || dateDataTypes.contains(columnType);
     }
 
-
-    public static void createDatabase(ContainerDto container, String database) throws SQLException {
+    public static void createDatabase(Container container, String database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
@@ -79,7 +86,7 @@ public class MariaDbUtil {
         log.debug("created database {}", database);
     }
 
-    public static void revokeAccess(DatabaseDto database, String username) throws SQLException {
+    public static void revokeAccess(Database database, String username) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -94,7 +101,7 @@ public class MariaDbUtil {
         log.debug("revoked access from user {} in database {}", username, database.getInternalName());
     }
 
-    public static void createInitDatabase(DatabaseDto database) throws SQLException {
+    public static void createInitDatabase(Database database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -105,7 +112,7 @@ public class MariaDbUtil {
         log.debug("created init database {}", database.getInternalName());
     }
 
-    public static void grantAccess(DatabaseDto database, String grants, String username) {
+    public static void grantAccess(Database database, String grants, String username) {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -119,33 +126,7 @@ public class MariaDbUtil {
         log.debug("granted read access to user {} in database {}", username, database.getInternalName());
     }
 
-    public static void dropAllDatabases(ContainerDto container) {
-        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
-        log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
-            final String sql = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'mysql', 'performance_schema');";
-            log.trace("prepare statement '{}'", sql);
-            final PreparedStatement statement = connection.prepareStatement(sql);
-            final ResultSet resultSet = statement.executeQuery();
-            final List<String> databases = new LinkedList<>();
-            while (resultSet.next()) {
-                databases.add(resultSet.getString(1));
-            }
-            resultSet.close();
-            statement.close();
-            for (String database : databases) {
-                final String drop = "DROP DATABASE IF EXISTS `" + database + "`;";
-                final PreparedStatement dropStatement = connection.prepareStatement(drop);
-                dropStatement.executeUpdate();
-                dropStatement.close();
-            }
-        } catch (SQLException e) {
-            log.error("could not drop all databases", e);
-        }
-        log.debug("dropped all databases");
-    }
-
-    public static void dropDatabase(ContainerDto container, String database)
+    public static void dropDatabase(Container container, String database)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
@@ -159,7 +140,7 @@ public class MariaDbUtil {
         log.debug("dropped database {}", database);
     }
 
-    public static Set<String> getPrivileges(DatabaseDto database, String username) throws SQLException {
+    public static Set<String> getPrivileges(Database database, String username) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -182,7 +163,7 @@ public class MariaDbUtil {
         }
     }
 
-    public static void dropTable(DatabaseDto database, String table) throws SQLException {
+    public static void dropTable(Database database, String table) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -195,7 +176,7 @@ public class MariaDbUtil {
         log.debug("dropped table {}", table);
     }
 
-    public static boolean tableExists(DatabaseDto database, String table) throws SQLException {
+    public static boolean tableExists(Database database, String table) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -212,7 +193,7 @@ public class MariaDbUtil {
         return false;
     }
 
-    public static String tableDescription(DatabaseDto database, String table) throws SQLException {
+    public static String tableDescription(Database database, String table) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -241,7 +222,7 @@ public class MariaDbUtil {
         }
     }
 
-    public static UUID insertQueryStore(DatabaseDto database, QueryDto query, String username) throws SQLException {
+    public static UUID insertQueryStore(Database database, QueryDto query, String username) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -268,7 +249,7 @@ public class MariaDbUtil {
         }
     }
 
-    public static List<Map<String, Object>> listQueryStore(DatabaseDto database) throws SQLException {
+    public static List<Map<String, Object>> listQueryStore(Database database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -293,7 +274,7 @@ public class MariaDbUtil {
         }
     }
 
-    public static List<Map<String, String>> selectQuery(DatabaseDto database, String query, Set<String> columns)
+    public static List<Map<String, String>> selectQuery(Database database, String query, Set<String> columns)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -314,7 +295,7 @@ public class MariaDbUtil {
         return rows;
     }
 
-    public static List<Map<String, byte[]>> selectQueryByteArr(DatabaseDto database, String query, Set<String> columns)
+    public static List<Map<String, byte[]>> selectQueryByteArr(Database database, String query, Set<String> columns)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -335,7 +316,7 @@ public class MariaDbUtil {
         return rows;
     }
 
-    public static void execute(DatabaseDto database, String query)
+    public static void execute(Database database, String query)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -345,7 +326,7 @@ public class MariaDbUtil {
         }
     }
 
-    public static void dropQueryStore(DatabaseDto database)
+    public static void dropQueryStore(Database database)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database: {}", jdbc);
@@ -356,6 +337,7 @@ public class MariaDbUtil {
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `hash_table`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `store_query`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `_store_query`;");
+            statement.executeUpdate("DROP PROCEDURE IF EXISTS `hash_query`;");
         }
     }
 

@@ -1,9 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
@@ -16,6 +17,7 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,13 +42,22 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public TokenDto obtainUserToken(String username, String password) throws BadCredentialsException {
+    public List<UserRepresentation> findAll() {
+        log.debug("find all users in auth service");
+        return keycloak.realm(keycloakConfig.getKeycloakRealm())
+                .users()
+                .list();
+    }
+
+    @Override
+    public TokenDto getUserToken(String username, String password, String realm, String clientId, String clientSecret)
+            throws BadCredentialsException {
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
-                .realm(keycloakConfig.getRealm())
+                .realm(realm)
                 .grantType(OAuth2Constants.PASSWORD)
-                .clientId(keycloakConfig.getKeycloakClient())
-                .clientSecret(keycloakConfig.getKeycloakClientSecret())
+                .clientId(clientId)
+                .clientSecret(clientSecret)
                 .username(username)
                 .password(password)
                 .build()) {
@@ -59,20 +70,50 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public UserRepresentation findByUsername(String username) throws UserNotFoundException {
-        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+    public UserRepresentation findByUsername(String username) throws UserNotFoundException, NotAllowedException {
+        log.debug("find user in auth service by username: {}", username);
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(username);
         if (users.isEmpty()) {
             log.error("Failed to find user with username {}", username);
             throw new UserNotFoundException("Failed to find user");
         }
-        return users.get(0);
+        return mapRoles(users.getFirst());
+    }
+
+    private UserRepresentation mapRoles(UserRepresentation user) {
+        final List<String> roles = keycloak.realm(keycloakConfig.getKeycloakRealm())
+                .users()
+                .get(user.getId())
+                .roles()
+                .realmLevel()
+                .listEffective()
+                .stream()
+                .map(RoleRepresentation::getName)
+                .toList();
+        log.trace("mapped found roles: {}", roles);
+        user.setRealmRoles(roles);
+        return user;
+    }
+
+    @Override
+    public UserRepresentation findById(UUID id) throws UserNotFoundException, NotAllowedException {
+        log.debug("find user in auth service by id: {}", id);
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
+                .users()
+                .search(String.valueOf(id));
+        if (users.isEmpty()) {
+            log.error("Failed to find user with id {}", id);
+            throw new UserNotFoundException("Failed to find user");
+        }
+        return mapRoles(users.getFirst());
     }
 
     @Override
     public void deleteUser(UUID id) throws UserNotFoundException {
-        try (Response response = keycloak.realm(keycloakConfig.getRealm())
+        log.debug("delete user in auth service by id: {}", id);
+        try (Response response = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .delete(String.valueOf(id))) {
             if (response.getStatus() == 404) {
@@ -85,7 +126,8 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public void updateUser(UUID id, UserUpdateDto data) throws AuthServiceException, UserNotFoundException {
-        final UserResource resource = keycloak.realm(keycloakConfig.getRealm())
+        log.debug("update user in auth service by id: {}", id);
+        final UserResource resource = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .get(String.valueOf(id));
         final UserRepresentation user;
@@ -97,10 +139,10 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         }
         user.setFirstName(data.getFirstname());
         user.setLastName(data.getLastname());
-        user.singleAttribute("THEME", data.getTheme());
-        user.singleAttribute("ORCID", data.getOrcid());
-        user.singleAttribute("LANGUAGE", data.getLanguage());
-        user.singleAttribute("AFFILIATION", data.getAffiliation());
+        user.singleAttribute("theme", data.getTheme());
+        user.singleAttribute("orcid", data.getOrcid());
+        user.singleAttribute("language", data.getLanguage());
+        user.singleAttribute("affiliation", data.getAffiliation());
         log.trace("update user: {}", data);
         try {
             resource.update(user);

@@ -1,13 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.semantics.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.service.EntityService;
 import at.ac.tuwien.ifs.dbrepo.service.OntologyService;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.sys.JenaSystem;
 import org.hibernate.HibernateException;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -35,13 +35,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class OntologyEndpointUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private OntologyService ontologyService;
 
-    @MockBean
+    @MockitoBean
     private EntityService entityService;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
     @Autowired
@@ -131,16 +131,16 @@ public class OntologyEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4, ONTOLOGY_1);
+            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4_DTO, ONTOLOGY_1);
         });
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"create-ontology"})
-    public void create_hasRole_succeeds() throws UserNotFoundException {
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-ontology"})
+    public void create_hasRole_succeeds() throws UserNotFoundException, NotAllowedException {
 
         /* test */
-        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3.getUsername(), USER_3, ONTOLOGY_1);
+        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3_DTO, ONTOLOGY_1);
     }
 
     @Test
@@ -164,7 +164,7 @@ public class OntologyEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"update-ontology"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"update-ontology"})
     public void update_hasRole_succeeds() throws OntologyNotFoundException {
 
         /* test */
@@ -192,7 +192,7 @@ public class OntologyEndpointUnitTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username =USER_3_USERNAME, authorities = {"delete-ontology"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-ontology"})
     public void delete_hasRole_succeeds() throws OntologyNotFoundException {
 
         /* test */
@@ -308,8 +308,8 @@ public class OntologyEndpointUnitTest extends BaseTest {
         assertNotNull(body);
     }
 
-    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user,
-                               Ontology ontology) throws UserNotFoundException {
+    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, UserDto user,
+                               Ontology ontology) throws UserNotFoundException, NotAllowedException {
 
         /* mock */
         if (ontology != null) {

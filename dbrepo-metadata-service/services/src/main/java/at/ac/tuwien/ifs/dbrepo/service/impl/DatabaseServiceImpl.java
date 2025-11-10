@@ -1,27 +1,28 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.primaryKey.PrimaryKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,18 +36,23 @@ import java.util.UUID;
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
 
+    private final RabbitConfig rabbitConfig;
     private final MetadataMapper metadataMapper;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
-    public DatabaseServiceImpl(MetadataMapper metadataMapper, DatabaseRepository databaseRepository,
-                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway) {
+    public DatabaseServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
+                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
+                               SearchServiceGateway searchServiceGateway, DatabaseCacheRepository databaseCacheRepository) {
+        this.rabbitConfig = rabbitConfig;
         this.metadataMapper = metadataMapper;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -92,7 +98,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(Container container, CreateDatabaseDto data, User user, List<User> internalUsers)
+    public Database create(Container container, CreateDatabaseDto data, UserDto owner)
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
@@ -101,36 +107,38 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isDashboardEnabled(true)
                 .name(data.getName())
-                .internalName(metadataMapper.nameToInternalName(data.getName()) + "_" + RandomStringUtils.randomAlphabetic(4).toLowerCase())
+                .internalName(metadataMapper.nameToInternalName(data.getName()) + metadataMapper.databaseSuffix())
                 .cid(data.getCid())
                 .container(container)
-                .ownedBy(user.getId())
-                .owner(user)
-                .contactPerson(user.getId())
-                .contact(user)
+                .ownedBy(owner.getUsername())
+                .contactPerson(owner.getUsername())
                 .tables(new LinkedList<>())
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
                 .identifiers(new LinkedList<>())
                 .build();
         /* create in data database */
-        final at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto payload = at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
+        dataServiceGateway.createDatabase(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
-                .userId(user.getId())
-                .username(user.getUsername())
-                .password(user.getMariadbPassword())
+                .userId(owner.getId())
+                .username(owner.getUsername())
+                .password(owner.getAttributes().getMariadbPassword())
                 .privilegedUsername(container.getPrivilegedUsername())
                 .privilegedPassword(container.getPrivilegedPassword())
                 .readonlyUsername(container.getReadonlyUsername())
                 .readonlyPassword(container.getReadonlyPassword())
                 .internalName(entity.getInternalName())
-                .build();
-        final DatabaseDto dto = dataServiceGateway.createDatabase(payload);
-        entity.setExchangeName(dto.getExchangeName());
+                .build());
+        entity.setExchangeName(rabbitConfig.getExchangeName());
         /* create in metadata database */
         final Database entity1 = databaseRepository.save(entity);
         entity1.getAccesses()
-                .add(metadataMapper.userToWriteAllAccess(entity1, user));
+                .add(DatabaseAccess.builder()
+                        .database(entity1)
+                        .hdbid(entity1.getId())
+                        .username(owner.getUsername())
+                        .type(AccessType.WRITE_ALL)
+                        .build());
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);
@@ -140,7 +148,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional(readOnly = true)
-    public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
+    public void updatePassword(Database database, UserDto user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
         final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getUsername())
                 .stream()
@@ -149,7 +157,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         log.debug("found {} distinct databases where access for user with id {} is present", databases.size(), user.getId());
         final UpdateUserPasswordDto payload = UpdateUserPasswordDto.builder()
                 .username(user.getUsername())
-                .password(user.getMariadbPassword())
+                .password(user.getAttributes().getMariadbPassword())
                 .build();
         dataServiceGateway.updateDatabase(database.getId(), payload);
         log.info("Updated user password in database with id {}", database.getId());
@@ -167,6 +175,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         database.getTables()
                 .forEach(table -> table.setIsSchemaPublic(data.getIsSchemaPublic()));
         database = databaseRepository.save(database);
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated database visibility of database with id {}", database.getId());
@@ -175,14 +185,14 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database modifyOwner(Database database, User user) throws DatabaseNotFoundException, SearchServiceException,
+    public Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in metadata database */
-        database.setOwner(user);
-        database.setOwnedBy(user.getId());
-        database.setContact(user);
-        database.setContactPerson(user.getId());
+        database.setOwnedBy(username);
+        database.setContactPerson(username);
         database = databaseRepository.save(database);
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* save in search service */
         searchServiceGateway.update(database);
         log.info("Updated database owner of database with id {}", database);
@@ -196,6 +206,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* update in metadata database */
         database.setImage(image);
         database = databaseRepository.save(database);
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* save in search service */
         searchServiceGateway.update(database);
         log.info("Updated database owner of database with id {} & search database", database.getId());

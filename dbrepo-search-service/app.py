@@ -1,9 +1,6 @@
 import logging
 import math
 import os
-from json import dumps
-from typing import List, Any
-
 from dbrepo.api.dto import Database, ApiError
 from dbrepo.core.client.auth import User, AuthServiceClient
 from dbrepo.core.client.search import SearchServiceClient, flatten
@@ -11,10 +8,12 @@ from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request, Response
 from flask_cors import CORS
 from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
+from json import dumps
 from opensearchpy import NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
 from pydantic.deprecated.json import pydantic_encoder
+from typing import List, Any
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -183,7 +182,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "1.11.0",
+        "version": "1.12.0",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -221,6 +220,8 @@ app.config["OPENSEARCH_HOST"] = os.getenv('OPENSEARCH_HOST', 'search-db')
 app.config["OPENSEARCH_PORT"] = os.getenv('OPENSEARCH_PORT', '9200')
 app.config["OPENSEARCH_USERNAME"] = os.getenv('OPENSEARCH_USERNAME', 'admin')
 app.config["OPENSEARCH_PASSWORD"] = os.getenv('OPENSEARCH_PASSWORD', 'admin')
+app.config["SYSTEM_USERNAME"] = os.getenv('SYSTEM_USERNAME', 'admin')
+app.config["SYSTEM_PASSWORD"] = os.getenv('SYSTEM_PASSWORD', 'admin')
 
 app.json_encoder = LazyJSONEncoder
 
@@ -235,6 +236,8 @@ def verify_token(token: str) -> bool | User:
 
 @basic_auth.verify_password
 def verify_password(username: str, password: str) -> Any:
+    if username == app.config["SYSTEM_USERNAME"] and password == app.config["SYSTEM_PASSWORD"]:
+        return User(id='internal', username=app.config["SYSTEM_USERNAME"], roles=["system"])
     return auth_client.is_valid_password(username, password)
 
 
@@ -437,7 +440,7 @@ def post_general_search(field_type):
 @app.route("/api/v1/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
 @metrics.gauge(name='dbrepo_search_save_database',
                description='Time needed to update a database in the search database')
-@auth.login_required(role=['update-search-index'])
+@auth.login_required(role=['system'])
 def save_database(database_id: str):
     logging.debug(f"save database with id: {database_id}")
     try:

@@ -1,11 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.auth.CreateUserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
@@ -32,13 +30,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/user")
-public class UserEndpoint extends AbstractEndpoint {
+public class UserEndpoint extends RestEndpoint {
 
     private final UserService userService;
     private final MetadataMapper metadataMapper;
@@ -60,51 +57,27 @@ public class UserEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = UserBriefDto.class)))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Listing not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username) {
+    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username) throws NotAllowedException {
         log.debug("endpoint find all users, username={}", username);
         if (username == null) {
             return ResponseEntity.ok(userService.findAll()
                     .stream()
-                    .filter(user -> !user.getIsInternal())
-                    .map(metadataMapper::userToUserBriefDto)
+                    .map(metadataMapper::userDtoToUserBriefDto)
                     .toList());
         }
         log.trace("filter by username: {}", username);
         try {
-            final User user = userService.findByUsername(username);
-            if (user.getIsInternal()) {
-                return ResponseEntity.ok(List.of());
-            }
-            return ResponseEntity.ok(List.of(metadataMapper.userToUserBriefDto(user)));
+            return ResponseEntity.ok(List.of(metadataMapper.userDtoToUserBriefDto(userService.findByUsername(username))));
         } catch (UserNotFoundException e) {
             log.trace("filter by username {} failed: return empty list", username);
             return ResponseEntity.ok(List.of());
         }
-    }
-
-    @PostMapping
-    @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("hasAuthority('system')")
-    @Observed(name = "dbrepo_user_create")
-    @Operation(summary = "Create user",
-            description = "This webhook is called from the auth service to add a user to the metadata database. Requires role `system`.",
-            hidden = true)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201",
-                    description = "Created user",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Parameters are not well-formed (likely email)",
-                    content = {@Content(mediaType = "application/json")}),
-    })
-    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data) {
-        log.debug("endpoint create user, data.id={}, data.username={}", data.getId(), data.getUsername());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.userToUserBriefDto(
-                        userService.create(data)));
     }
 
     @RequestMapping(value = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -132,24 +105,20 @@ public class UserEndpoint extends AbstractEndpoint {
             UserNotFoundException {
         log.debug("endpoint find a user, username={}", username);
         /* check */
-        final User user = userService.findByUsername(username);
-        if (!user.getUsername().equals(getUsername(principal)) && !hasRole(principal, "find-foreign-user")) {
+        final UserDto user = userService.findByUsername(username);
+        if (!user.getUsername().equals(getUsername(principal)) && !hasRole(principal, "find-foreign-user") && !isSystem(principal)) {
             log.error("Failed to find user: foreign user");
             throw new NotAllowedException("Failed to find user: foreign user");
-        }
-        if (user.getIsInternal()) {
-            log.error("Failed to find user: internal user");
-            throw new NotAllowedException("Failed to find user: internal user");
         }
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             headers.set("X-Username", user.getUsername());
-            headers.set("X-Password", user.getMariadbPassword());
+            headers.set("X-Password", user.getAttributes().getMariadbPassword());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .body(metadataMapper.userToUserDto(user));
+                .body(user);
     }
 
     @PutMapping("/{username}")
@@ -183,13 +152,13 @@ public class UserEndpoint extends AbstractEndpoint {
                                                Principal principal) throws NotAllowedException,
             UserNotFoundException, AuthServiceException {
         log.debug("endpoint modify a user, username={}, data={}", username, data);
-        final User user = userService.findByUsername(username);
+        final UserDto user = userService.findByUsername(username);
         if (!user.getUsername().equals(getUsername(principal))) {
             log.error("Failed to modify user: not current user {}", user.getUsername());
             throw new NotAllowedException("Failed to modify user: not current user " + user.getUsername());
         }
         return ResponseEntity.accepted()
-                .body(metadataMapper.userToUserBriefDto(
+                .body(metadataMapper.userDtoToUserBriefDto(
                         userService.modify(user, data)));
     }
 

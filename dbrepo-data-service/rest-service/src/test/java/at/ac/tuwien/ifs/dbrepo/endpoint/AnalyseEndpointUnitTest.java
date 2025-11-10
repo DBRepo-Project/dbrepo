@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.AnalyseEndpoint;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
-import at.ac.tuwien.ifs.dbrepo.service.CacheService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,7 @@ public class AnalyseEndpointUnitTest extends BaseTest {
     private AnalyseService analyseService;
 
     @MockitoBean
-    private CacheService cacheService;
+    private MetadataService metadataService;
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"analyse-datatypes"})
@@ -42,9 +42,9 @@ public class AnalyseEndpointUnitTest extends BaseTest {
             MetadataServiceException, ImageNotFoundException {
 
         /* mock */
-        when(cacheService.getImage(IMAGE_1_ID))
-                .thenReturn(IMAGE_1_DTO);
-        when(analyseService.determineDataTypes(IMAGE_1_DTO, "s3key"))
+        when(metadataService.getImage(IMAGE_1_ID))
+                .thenReturn(IMAGE_1_CACHE);
+        when(analyseService.determineDataTypes(IMAGE_1_CACHE, "s3key"))
                 .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
 
         /* test */

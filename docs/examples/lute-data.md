@@ -33,4 +33,4 @@ local, downstream database where they can access the database for analysis.
 
 This work was part of a cooperation with the University of Vienna in the context of [E-LAUTE](https://e-laute.info/).
 
-<img src="/infrastructures/dbrepo/1.10/images/logos/univie_small.png" width=100 />
+<img src="/infrastructures/dbrepo/1.12/images/logos/univie_small.png" width=100 />

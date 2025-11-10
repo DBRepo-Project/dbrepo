@@ -178,9 +178,10 @@ export default {
         .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -197,9 +198,10 @@ export default {
         .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -216,9 +218,10 @@ export default {
         .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(message)
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -231,9 +234,10 @@ export default {
         .then((users) => {
           this.users = users.filter(u => u.username !== this.database.owner.username)
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))

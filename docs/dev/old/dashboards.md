@@ -18,7 +18,7 @@ database is provisioned.
 
 <figure id="fig1" markdown>
 <<<<<<<< HEAD:docs/dev/old/dashboards.md
-![Generated dashboard containing managed (green) and unmanaged (yellow) content](/infrastructures/dbrepo/1.10//infrastructures/dbrepo/1.10/images/screenshots/dashboard-managed.png)
+![Generated dashboard containing managed (green) and unmanaged (yellow) content](/infrastructures/dbrepo/1.12//infrastructures/dbrepo/1.12/images/screenshots/dashboard-managed.png)
 ========
 ![Generated dashboard containing managed (green) and unmanaged (yellow) content](../../images/screenshots/dashboard-managed.png)
 <figcaption>Figure 1: Generated dashboard containing unmanaged (yellow) and managed (green) content.</figcaption>

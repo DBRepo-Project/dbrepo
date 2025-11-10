@@ -25,13 +25,19 @@
             v-for="(title, i) in identifier.titles"
             :key="`t-${i}`">
             <v-badge
+              v-if="language(title?.title)"
               inline
               color="secondary"
               :content="language(title?.title)">
-                <span>
+                <span
+                  class="text-subtitle-2">
                   {{ title?.title }}
                 </span>
             </v-badge>
+            <span
+              v-else>
+              {{ title?.title }}
+            </span>
           </p>
         </v-list-item>
         <v-list-item
@@ -43,6 +49,7 @@
             <div
               v-if="description?.type && description?.language">
               <v-badge
+                v-if="language(description?.language)"
                 inline
                 color="secondary"
                 :content="language(description?.language)">
@@ -52,8 +59,14 @@
                 </span>
               </v-badge>
             </div>
-            <vue-markdown-it
-              :source="description.description" />
+            <span
+              v-else
+              class="text-subtitle-2">
+              {{ description?.type }}
+            </span>
+            <p>
+              {{ description?.description }}
+            </p>
           </div>
         </v-list-item>
         <v-list-item
@@ -161,7 +174,6 @@ import Persist from '@/components/identifier/Persist.vue'
 import Creators from '@/components/identifier/Creators.vue'
 import {formatLanguage, languages} from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
-import { VueMarkdownIt } from '@f3ve/vue-markdown-it'
 
 export default {
   components: {
@@ -171,8 +183,7 @@ export default {
     OrcidIcon,
     RorIcon,
     Banner,
-    Creators,
-    VueMarkdownIt
+    Creators
   },
   props: {
     identifier: {

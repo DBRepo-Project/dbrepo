@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteBody;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoi;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
@@ -13,14 +13,16 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.*;
+import at.ac.tuwien.ifs.dbrepo.metadata.ContainerRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.LicenseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
@@ -31,7 +33,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -39,29 +40,28 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(properties = "spring.profiles.active=doi")
 public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
-    @MockBean
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
+
+    @MockitoBean
     @Qualifier("dataCiteRestTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
     private IdentifierService dataCiteIdentifierService;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;
@@ -79,7 +79,6 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
     public void beforeEach() {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
         containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4));
         databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3, DATABASE_4));
     }
@@ -147,7 +146,7 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
-        final Identifier response = dataCiteIdentifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+        final Identifier response = dataCiteIdentifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
         assertEquals(7, dataCiteIdentifierService.findAll().size());
     }
@@ -165,7 +164,7 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            dataCiteIdentifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
+            dataCiteIdentifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
         });
     }
 
@@ -183,7 +182,7 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_2_CREATE_DTO);
+            dataCiteIdentifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_2_CREATE_DTO);
         });
     }
 
@@ -202,10 +201,13 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(createResponse);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
                 .thenReturn(saveResponse);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
 
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
-        final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO);
+        final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_DTO);
         assertNotNull(response.getDoi());
         assertEquals(8, dataCiteIdentifierService.findAll().size());
     }
@@ -225,10 +227,13 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
                 .thenReturn(createResponse);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
                 .thenReturn(saveResponse);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
 
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
-        final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
+        final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
         assertEquals(8, dataCiteIdentifierService.findAll().size());
     }
@@ -351,6 +356,9 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
             IdentifierNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 

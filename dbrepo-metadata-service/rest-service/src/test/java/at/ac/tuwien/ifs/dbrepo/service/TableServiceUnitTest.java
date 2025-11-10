@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
@@ -20,7 +21,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +30,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,25 +48,28 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class TableServiceUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private DatabaseRepository databaseRepository;
 
-    @MockBean
+    @MockitoBean
     private SearchServiceGateway searchServiceGateway;
 
-    @MockBean
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
+
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private UnitService unitService;
 
-    @MockBean
+    @MockitoBean
     private EntityService entityService;
 
-    @MockBean
+    @MockitoBean
     private ConceptService conceptService;
 
-    @MockBean
+    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
     @Autowired
@@ -428,11 +432,14 @@ public class TableServiceUnitTest extends BaseTest {
     public void createTable_succeeds() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
             SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
-            SemanticEntityNotFoundException {
+            SemanticEntityNotFoundException, NotAllowedException {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
@@ -450,7 +457,7 @@ public class TableServiceUnitTest extends BaseTest {
     public void createTable_nonStandardColumnNames_succeeds() throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
-            OntologyNotFoundException, SemanticEntityNotFoundException {
+            OntologyNotFoundException, SemanticEntityNotFoundException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
@@ -469,7 +476,10 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
@@ -504,7 +514,7 @@ public class TableServiceUnitTest extends BaseTest {
     public void createTable_enumsSets_succeeds() throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
-            OntologyNotFoundException, SemanticEntityNotFoundException {
+            OntologyNotFoundException, SemanticEntityNotFoundException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
@@ -528,7 +538,10 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
@@ -551,7 +564,7 @@ public class TableServiceUnitTest extends BaseTest {
     @Test
     public void createTable_dateFormatNotFound_fails() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
@@ -570,7 +583,7 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
@@ -606,11 +619,14 @@ public class TableServiceUnitTest extends BaseTest {
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
             SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
-            SemanticEntityNotFoundException {
+            SemanticEntityNotFoundException, NotAllowedException {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doNothing()
@@ -627,11 +643,11 @@ public class TableServiceUnitTest extends BaseTest {
     @Test
     public void create_dataServiceError_fails() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, NotAllowedException {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(DataServiceException.class)
@@ -647,7 +663,7 @@ public class TableServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void createTable_primaryKeyMalformed_fails() throws UserNotFoundException {
+    public void createTable_primaryKeyMalformed_fails() throws UserNotFoundException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name(TABLE_5_NAME)
                 .description(TABLE_5_DESCRIPTION)
@@ -662,7 +678,7 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -671,7 +687,7 @@ public class TableServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void createTable_uniquesMalformed_fails() throws UserNotFoundException {
+    public void createTable_uniquesMalformed_fails() throws UserNotFoundException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name(TABLE_5_NAME)
                 .description(TABLE_5_DESCRIPTION)
@@ -686,7 +702,7 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
 
@@ -697,7 +713,7 @@ public class TableServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void createTable_foreignKeyMalformed_fails() throws UserNotFoundException {
+    public void createTable_foreignKeyMalformed_fails() throws UserNotFoundException, NotAllowedException {
         final CreateTableDto request = CreateTableDto.builder()
                 .name(TABLE_5_NAME)
                 .description(TABLE_5_DESCRIPTION)
@@ -717,7 +733,7 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -732,6 +748,9 @@ public class TableServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_1_ID);
@@ -748,6 +767,9 @@ public class TableServiceUnitTest extends BaseTest {
             DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
@@ -777,6 +799,9 @@ public class TableServiceUnitTest extends BaseTest {
             SearchServiceConnectionException {
 
         /* mock */
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
         doThrow(TableNotFoundException.class)
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);

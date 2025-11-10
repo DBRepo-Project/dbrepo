@@ -1,10 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
-import at.ac.tuwien.ifs.dbrepo.repository.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.IdentifierRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.TableRepository;
-import at.ac.tuwien.ifs.dbrepo.repository.ViewRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.TableRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ViewRepository;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.observation.ObservationRegistry;

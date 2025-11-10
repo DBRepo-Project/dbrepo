@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnami/keycloak:26.0.4`](https://hub.docker.com/r/bitnami/keycloak)
+    Image: [`quay.io/keycloak/keycloak:26.4.0`](https://hub.docker.com/r/bitnamilegacy/keycloak)
 
     * Ports: 8080/tcp
     * UI: `http://<hostname>:8080/`
@@ -19,17 +19,17 @@ author: Martin Weise
 
 ## Overview
 
-By default, users are created using the [User Interface](/infrastructures/dbrepo/1.10/dev/services/ui) and the sign-up page
+By default, users are created using the [User Interface](/infrastructures/dbrepo/1.12/dev/services/ui) and the sign-up page
 in the User Interface. This creates a new user in Keycloak. The user identity is then managed by the Auth Service. Only
 a very small subset of immutable properties (id, username) is mirrored in
-the [Metadata Database](/infrastructures/dbrepo/1.10/dev/services/metadata-db) for faster access.
+the [Metadata Database](/infrastructures/dbrepo/1.12/dev/services/metadata-db) for faster access.
 
 ## Identities
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.5
 
-Identities are managed via LDAP through the [Identity Service](/infrastructures/dbrepo/1.10/dev/services/identity-service).
-The normal workflow is that the [Metadata Service](/infrastructures/dbrepo/1.10/dev/services/metadata-service) adds
+Identities are managed via LDAP through the [Identity Service](/infrastructures/dbrepo/1.12/dev/services/identity-service).
+The normal workflow is that the [Metadata Service](/infrastructures/dbrepo/1.12/dev/services/metadata-service) adds
 identities when user register. In some cases, where this is not possible (e.g. in workshop-scenarios where accounts are
 created before the workshop starts), identities need to be created manually in Keycloak. The recommended workflow is:
 
@@ -42,7 +42,7 @@ created before the workshop starts), identities need to be created manually in K
     !!! example "Create user with specific id"
 
         The user id is created automatically. In case you need to create a user with specific id such as in migration
-        scenarios, you need to change the `entryUUID` in the [Identity Service](/infrastructures/dbrepo/1.10/dev/services/identity-service) by modifying this
+        scenarios, you need to change the `entryUUID` in the [Identity Service](/infrastructures/dbrepo/1.12/dev/services/identity-service) by modifying this
         protected attribute in `relax` mode:
 
         ```bash
@@ -76,7 +76,7 @@ We organize the roles into default- and escalated composite roles. There are thr
 Each of the composite role has a set of other associated composite roles.
 
 <figure markdown>
-![Grouped Roles](/infrastructures/dbrepo/1.10/images/groups-roles.png)
+![Grouped Roles](/infrastructures/dbrepo/1.12/images/groups-roles.png)
 </figure>
 
 There is one role for one specific action in the services. For example: the `create-database` role authorizes a user to
@@ -91,7 +91,7 @@ which is imported into Keycloak on startup.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.10/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

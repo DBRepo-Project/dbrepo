@@ -59,6 +59,6 @@ public class TableBriefDto {
 
     @NotNull
     @JsonProperty("owned_by")
-    @Schema(description = "The owner id", example = "78337b80-5699-45db-8111-cec86439ab6b")
-    private UUID ownedBy;
+    @Schema(description = "The owner username", example = "foobar")
+    private String ownedBy;
 }

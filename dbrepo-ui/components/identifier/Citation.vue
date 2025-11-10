@@ -70,9 +70,10 @@ export default {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
-          toast.error(this.$t(`${code}: ${message}`))
+          toast.error(this.$t(code))
         })
     }
   }

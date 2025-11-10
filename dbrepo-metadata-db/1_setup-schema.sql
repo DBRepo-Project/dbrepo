@@ -1,23 +1,5 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS `mdb_users`
-(
-    id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
-    keycloak_id      VARCHAR(36)  NOT NULL,
-    username         VARCHAR(255) NOT NULL,
-    firstname        VARCHAR(255),
-    lastname         VARCHAR(255),
-    orcid            VARCHAR(255),
-    affiliation      VARCHAR(255),
-    is_internal      BOOLEAN      NOT NULL DEFAULT FALSE,
-    mariadb_password VARCHAR(255) NOT NULL,
-    theme            VARCHAR(255) NOT NULL DEFAULT ('light'),
-    language         VARCHAR(3)   NOT NULL DEFAULT ('en'),
-    PRIMARY KEY (`id`),
-    UNIQUE (`keycloak_id`),
-    UNIQUE (`username`)
-) WITH SYSTEM VERSIONING;
-
 CREATE TABLE IF NOT EXISTS `mdb_images`
 (
     id            VARCHAR(36)  NOT NULL DEFAULT UUID(),
@@ -81,14 +63,12 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     is_schema_public      BOOLEAN      NOT NULL DEFAULT TRUE,
     is_dashboard_enabled  BOOLEAN      NOT NULL DEFAULT TRUE,
     image                 LONGBLOB,
-    owned_by              VARCHAR(36)  NOT NULL,
-    contact_person        VARCHAR(36)  NOT NULL,
+    owned_by              VARCHAR(255) NOT NULL,
+    contact_person        VARCHAR(255) NOT NULL,
     created               TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified         TIMESTAMP,
     PRIMARY KEY (`id`),
-    FOREIGN KEY (`cid`) REFERENCES mdb_containers (`id`),
-    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`),
-    FOREIGN KEY (`contact_person`) REFERENCES mdb_users (`id`)
+    FOREIGN KEY (`cid`) REFERENCES mdb_containers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
@@ -108,12 +88,11 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     versioned        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_public        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
-    owned_by         VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    owned_by         VARCHAR(255) NOT NULL,
     last_modified    TIMESTAMP,
     PRIMARY KEY (`ID`),
     UNIQUE (`tDBID`, `internal_name`),
-    FOREIGN KEY (`tDBID`) REFERENCES mdb_databases (`id`),
-    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
+    FOREIGN KEY (`tDBID`) REFERENCES mdb_databases (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
@@ -282,11 +261,10 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
     InitialView      BOOLEAN      NOT NULL,
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
-    owned_by         VARCHAR(36)  NOT NULL,
+    owned_by         VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE (`vdbid`, `internal_name`),
-    FOREIGN KEY (`vdbid`) REFERENCES mdb_databases (`id`),
-    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
+    FOREIGN KEY (`vdbid`) REFERENCES mdb_databases (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_messages`
@@ -354,11 +332,10 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     result_number     BIGINT,
     doi               VARCHAR(255),
     created           TIMESTAMP                                    NOT NULL DEFAULT NOW(),
-    owned_by          VARCHAR(36)                                  NOT NULL,
+    owned_by          VARCHAR(255)                                 NOT NULL,
     last_modified     TIMESTAMP,
     PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (`dbid`) REFERENCES mdb_databases (`id`),
-    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`),
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`),
     FOREIGN KEY (`vid`) REFERENCES mdb_view (`id`)
 ) WITH SYSTEM VERSIONING;
@@ -446,25 +423,23 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 
 CREATE TABLE IF NOT EXISTS `mdb_access`
 (
-    aUserID  VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     aDBID    VARCHAR(36)  NOT NULL,
     attime   TIMESTAMP,
     download BOOLEAN,
     created  TIMESTAMP    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (aUserID, aDBID),
-    FOREIGN KEY (`aDBID`) REFERENCES mdb_databases (`id`),
-    FOREIGN KEY (`aUserID`) REFERENCES mdb_users (`id`)
+    PRIMARY KEY (username, aDBID),
+    FOREIGN KEY (`aDBID`) REFERENCES mdb_databases (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
-    user_id     VARCHAR(36)                             NOT NULL,
+    username    VARCHAR(255)                            NOT NULL,
     database_id VARCHAR(36)                             NOT NULL,
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     TIMESTAMP                               NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, database_id),
-    FOREIGN KEY (`database_id`) REFERENCES mdb_databases (`id`),
-    FOREIGN KEY (`user_id`) REFERENCES mdb_users (`id`)
+    PRIMARY KEY (username, database_id),
+    FOREIGN KEY (`database_id`) REFERENCES mdb_databases (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_types`

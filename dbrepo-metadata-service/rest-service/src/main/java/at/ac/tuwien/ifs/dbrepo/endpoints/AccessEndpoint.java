@@ -4,13 +4,12 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
-import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +20,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,21 +34,21 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/access")
-public class AccessEndpoint extends AbstractEndpoint {
+public class AccessEndpoint extends RestEndpoint {
 
-    private final UserService userService;
     private final AccessService accessService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
+    private final KeycloakGateway keycloakGateway;
     private final DashboardService dashboardService;
 
     @Autowired
-    public AccessEndpoint(UserService userService, AccessService accessService, MetadataMapper metadataMapper,
-                          DatabaseService databaseService, DashboardService dashboardService) {
-        this.userService = userService;
+    public AccessEndpoint(AccessService accessService, MetadataMapper metadataMapper, DatabaseService databaseService,
+                          KeycloakGateway keycloakGateway, DashboardService dashboardService) {
         this.accessService = accessService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
+        this.keycloakGateway = keycloakGateway;
         this.dashboardService = dashboardService;
     }
 
@@ -91,20 +91,19 @@ public class AccessEndpoint extends AbstractEndpoint {
         log.debug("endpoint give access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
-        final User user = userService.findByUsername(username);
         try {
-            accessService.find(database, user);
+            accessService.find(database, username);
             log.error("Failed to create access to user {}: already has access", username);
             throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
         } catch (AccessNotFoundException e) {
             /* ignore */
         }
-        accessService.create(database, user, data.getType());
-        dashboardService.updateAccess(database, user, data.getType());
+        accessService.create(database, username, data.getType());
+        dashboardService.updateAccess(database, username, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
@@ -145,22 +144,17 @@ public class AccessEndpoint extends AbstractEndpoint {
         log.debug("endpoint modify database access, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
-        if (database.getOwner().getUsername().equals(username)) {
+        if (database.getOwnedBy().equals(username)) {
             log.error("Failed to update access: the owner must have write-all access");
             throw new NotAllowedException("Failed to update access: the owner must have write-all access");
         }
-        final User user = userService.findByUsername(username);
-        if (user.getIsInternal()) {
-            log.error("Failed to update access: cannot modify access of internal users");
-            throw new NotAllowedException("Failed to update access: cannot modify access of internal users");
-        }
-        accessService.find(database, user);
-        accessService.update(database, user, data.getType());
-        dashboardService.updateAccess(database, user, data.getType());
+        accessService.find(database, username);
+        accessService.update(database, username, data.getType());
+        dashboardService.updateAccess(database, username, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
@@ -168,7 +162,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     @RequestMapping(value = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_access_get")
-    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('check-foreign-database-access')")
+    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('check-foreign-database-access') or hasAuthority('system')")
     @Operation(summary = "Find/Check access",
             description = "Finds or checks access of a user with given username to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
@@ -191,15 +185,14 @@ public class AccessEndpoint extends AbstractEndpoint {
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, username={}", databaseId, username);
         if (!username.equals(getUsername(principal))) {
-            if (!hasRole(principal, "check-foreign-database-access")) {
+            if (!hasRole(principal, "check-foreign-database-access") && !isSystem(principal)) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
             }
             log.trace("principal is allowed to check foreign user access");
         }
         final Database database = databaseService.findById(databaseId);
-        final User user = userService.findByUsername(username);
-        final DatabaseAccess access = accessService.find(database, user);
+        final DatabaseAccess access = accessService.find(database, username);
         return ResponseEntity.ok(metadataMapper.databaseAccessToDatabaseAccessDto(access));
     }
 
@@ -232,27 +225,27 @@ public class AccessEndpoint extends AbstractEndpoint {
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("username") String username,
                                        Principal principal) throws NotAllowedException, DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
-            DashboardServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException,
+            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException, DataServiceConnectionException,
+            UserNotFoundException {
         log.debug("endpoint revoke database access, databaseId={}, username={}", databaseId, username);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(getUsername(principal))) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
         }
-        if (database.getOwner().getUsername().equals(username)) {
+        if (database.getOwnedBy().equals(username)) {
             log.error("Failed to revoke access: the owner must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the owner must have write-all access");
         }
-        final User user = userService.findByUsername(username);
-        if (user.getIsInternal()) {
+        final UserRepresentation user = keycloakGateway.findByUsername(username);
+        if (user.getRealmRoles().contains("system")) {
             log.error("Failed to revoke access: the internal user must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the internal user must have write-all access");
         }
-        accessService.find(database, user);
-        accessService.delete(database, user);
-        dashboardService.updateAccess(database, user, null);
+        accessService.find(database, username);
+        accessService.delete(database, username);
+        dashboardService.updateAccess(database, username, null);
         return ResponseEntity.accepted()
                 .build();
     }

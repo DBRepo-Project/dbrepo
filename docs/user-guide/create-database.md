@@ -7,11 +7,11 @@ A user wants to create a database in DBRepo.
 ### UI
 
 A database can be created by choosing a name (e.g. My Database), selecting an engine (e.g. MariaDB) and defining the
-visibility, this can be [changed later](/infrastructures/dbrepo/1.10/update-visibility).
+visibility, this can be [changed later](/infrastructures/dbrepo/1.12/update-visibility).
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.10/videos/create-database.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.10/videos/create-database.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.12/videos/create-database.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.12/videos/create-database.mp4" type="video/mp4" />
 </video>
 
 ### Python

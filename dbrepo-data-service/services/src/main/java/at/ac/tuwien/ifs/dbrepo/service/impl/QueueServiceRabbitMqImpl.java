@@ -1,8 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.QueueService;
@@ -29,18 +29,18 @@ public class QueueServiceRabbitMqImpl extends DataConnector implements QueueServ
     }
 
     @Override
-    public void insert(DatabaseDto database, TableDto table, Map<String, Object> data) throws SQLException {
+    public void insert(Database database, Table table, Map<String, Object> data) throws SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final int[] idx = new int[]{1};
             final PreparedStatement preparedStatement = connection.prepareStatement(
-                    dataMapper.rabbitMqTupleToInsertOrUpdateQuery(database.getInternalName(),
-                            dataMapper.tableDtoToTableDto(table), data));
+                    dataMapper.rabbitMqTupleToInsertOrUpdateQuery(database.getInternalName(), table.getInternalName(),
+                            data));
             for (Map.Entry<String, Object> entry : data.entrySet()) {
-                final Optional<ColumnDto> optional = table.getColumns().stream().filter(c -> c.getInternalName().equals(entry.getKey())).findFirst();
+                final Optional<Column> optional = table.getColumns().stream().filter(c -> c.getInternalName().equals(entry.getKey())).findFirst();
                 if (optional.isEmpty()) {
-                    log.error("Failed to find column with name {} in table with name {}, available columns are {}", entry.getKey(), table.getInternalName(), table.getColumns().stream().map(ColumnDto::getInternalName).toList());
+                    log.error("Failed to find column with name {} in table with name {}, available columns are {}", entry.getKey(), table.getInternalName(), table.getColumns().stream().map(Column::getInternalName).toList());
                     continue;
                 }
                 dataMapper.prepareStatementWithColumnTypeObject(preparedStatement, optional.get().getColumnType(), idx[0]++,

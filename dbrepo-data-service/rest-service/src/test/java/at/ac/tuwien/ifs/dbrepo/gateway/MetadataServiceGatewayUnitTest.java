@@ -1,12 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.*;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -36,8 +36,8 @@ import static org.mockito.Mockito.when;
 public class MetadataServiceGatewayUnitTest extends BaseTest {
 
     @MockitoBean
-    @Qualifier("internalRestTemplate")
-    private RestTemplate internalRestTemplate;
+    @Qualifier("metadataServiceRestTemplate")
+    private RestTemplate metadataServiceRestTemplate;
 
     @Autowired
     private MetadataServiceGateway metadataServiceGateway;
@@ -47,12 +47,12 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
             MetadataServiceException {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .body(TABLE_1_DTO));
 
         /* test */
-        final TableDto response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
+        final Table response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
         assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
     }
 
@@ -61,7 +61,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class));
 
         /* test */
@@ -75,7 +75,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.ServiceUnavailable.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class));
 
         /* test */
@@ -88,7 +88,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getTableById_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .body(TABLE_1_DTO));
 
@@ -105,7 +105,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .headers(headers)
                         .build());
@@ -128,13 +128,13 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
-                        .body(DATABASE_1_PRIVILEGED_DTO));
+                        .body(DATABASE_1_DTO));
 
         /* test */
-        final DatabaseDto response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
+        final Database response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
         assertEquals(DATABASE_1_ID, response.getId());
     }
 
@@ -143,7 +143,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class));
 
         /* test */
@@ -157,7 +157,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class));
 
         /* test */
@@ -170,7 +170,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getDatabaseById_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -187,7 +187,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .headers(headers)
                         .build());
@@ -208,7 +208,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                 headers.add(customHeaders.get(j), "");
             }
             /* mock */
-            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+            when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                     .thenReturn(ResponseEntity.status(HttpStatus.OK)
                             .headers(headers)
                             .build());
@@ -230,13 +230,13 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port");
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
                         .body(CONTAINER_1_DTO));
 
         /* test */
-        final ContainerDto response = metadataServiceGateway.getContainerById(CONTAINER_1_ID);
+        final Container response = metadataServiceGateway.getContainerById(CONTAINER_1_ID);
         assertEquals(CONTAINER_1_ID, response.getId());
     }
 
@@ -245,7 +245,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class));
 
         /* test */
@@ -259,7 +259,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class));
 
         /* test */
@@ -272,7 +272,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getContainerById_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -292,7 +292,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                 headers.add(customHeaders.get(j), "");
             }
             /* mock */
-            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
+            when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
                     .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                             .build());
 
@@ -310,7 +310,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ContainerDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .headers(headers)
                         .build());
@@ -325,12 +325,12 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getViewById_succeeds() throws RemoteUnavailableException, ViewNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ViewDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ViewDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .body(VIEW_1_DTO));
 
         /* test */
-        final ViewDto response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);
+        final View response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);
         assertEquals(VIEW_1_ID, response.getId());
     }
 
@@ -339,7 +339,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class));
 
         /* test */
@@ -353,7 +353,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class));
 
         /* test */
@@ -366,7 +366,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getViewById_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -386,7 +386,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                 headers.add(customHeaders.get(j), "");
             }
             /* mock */
-            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))
+            when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))
                     .thenReturn(ResponseEntity.status(HttpStatus.OK)
                             .build());
 
@@ -404,7 +404,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
                         .build());
@@ -420,7 +420,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class));
 
         /* test */
@@ -437,13 +437,13 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
                         .body(USER_1_DTO));
 
         /* test */
-        final UserDto response = metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
+        final User response = metadataServiceGateway.getUserByUsername(USER_1_USERNAME);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getUsername());
         assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getPassword());
@@ -454,7 +454,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class));
 
         /* test */
@@ -467,7 +467,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getUserByUsername_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -487,7 +487,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                 headers.add(customHeaders.get(j), "");
             }
             /* mock */
-            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
+            when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
                     .thenReturn(ResponseEntity.status(HttpStatus.OK)
                             .build());
 
@@ -505,7 +505,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
                         .build());
@@ -517,92 +517,10 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     }
 
     @Test
-    public void getAccess_succeeds() throws RemoteUnavailableException, NotAllowedException, MetadataServiceException {
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseAccessDto.class)))
-                .thenReturn(ResponseEntity.ok()
-                        .body(DATABASE_1_USER_1_READ_ACCESS_DTO));
-
-        /* test */
-        final DatabaseAccessDto response = metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
-    }
-
-    @Test
-    public void getAccess_unavailable_fails() {
-
-        /* mock */
-        doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseAccessDto.class));
-
-        /* test */
-        assertThrows(RemoteUnavailableException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void getAccess_forbidden_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.Forbidden.class)
-                .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseAccessDto.class));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void getAccess_notFound_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseAccessDto.class));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void getAccess_statusCode_fails() {
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseAccessDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .build());
-
-        /* test */
-        assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void getAccess_emptyBody_fails() {
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseAccessDto.class)))
-                .thenReturn(ResponseEntity.ok()
-                        .build());
-
-        /* test */
-        assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_USERNAME);
-        });
-    }
-
-    @Test
     public void getIdentifiers_witSubset_succeeds() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.ok()
                         .body(new IdentifierBriefDto[]{IDENTIFIER_1_BRIEF_DTO}));
 
@@ -615,7 +533,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getIdentifiers_succeeds() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.ok()
                         .body(new IdentifierBriefDto[]{IDENTIFIER_1_BRIEF_DTO}));
 
@@ -629,7 +547,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class));
 
         /* test */
@@ -643,7 +561,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class));
 
         /* test */
@@ -656,7 +574,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getIdentifiers_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -670,7 +588,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void getIdentifiers_emptyBody_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.ok()
                         .build());
 
@@ -685,7 +603,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
             TableNotFoundException {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(ResponseEntity.accepted()
                         .build());
 
@@ -698,7 +616,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
@@ -712,7 +630,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
+                .when(metadataServiceRestTemplate)
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
@@ -725,7 +643,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     public void updateTableStatistics_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 

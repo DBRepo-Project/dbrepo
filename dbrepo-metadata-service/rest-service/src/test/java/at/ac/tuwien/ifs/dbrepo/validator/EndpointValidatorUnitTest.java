@@ -6,12 +6,11 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierSaveDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.user.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
-import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
@@ -29,8 +28,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -39,13 +37,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class EndpointValidatorUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     private DatabaseService databaseService;
 
-    @MockBean
+    @MockitoBean
     private AccessService accessService;
 
-    @MockBean
+    @MockitoBean
     private TableService tableService;
 
     @Autowired
@@ -194,7 +192,7 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
-                .find(any(Database.class), any(User.class));
+                .find(any(Database.class), anyString());
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
@@ -209,7 +207,7 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1.getAccesses().get(0));
 
         /* test */
@@ -223,7 +221,7 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
@@ -237,7 +235,7 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
@@ -251,11 +249,11 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1);
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1_USERNAME);
     }
 
     @Test
@@ -265,11 +263,11 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1);
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1_USERNAME);
     }
 
     @Test
@@ -279,12 +277,12 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1.getAccesses().get(0));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1);
+            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1_USERNAME);
         });
     }
 
@@ -295,11 +293,11 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(eq(DATABASE_1), any(User.class)))
+        when(accessService.find(eq(DATABASE_1), anyString()))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1);
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1_USERNAME);
     }
 
     @Test
@@ -367,12 +365,12 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(DATABASE_1, USER_1))
+        when(accessService.find(DATABASE_1, USER_1_USERNAME))
                 .thenReturn(DATABASE_1.getAccesses().get(0));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1);
+            endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1_USERNAME);
         });
     }
 
@@ -383,11 +381,11 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(DATABASE_1, USER_1))
+        when(accessService.find(DATABASE_1, USER_1_USERNAME))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
-        endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1);
+        endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1_USERNAME);
     }
 
     @Test
@@ -397,11 +395,11 @@ public class EndpointValidatorUnitTest extends BaseTest {
         /* mock */
         when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(DATABASE_1, USER_2))
+        when(accessService.find(DATABASE_1, USER_2_USERNAME))
                 .thenReturn(DATABASE_1_USER_2_WRITE_ALL_ACCESS);
 
         /* test */
-        endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_2);
+        endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_2_USERNAME);
     }
 
     @Test
@@ -590,49 +588,49 @@ public class EndpointValidatorUnitTest extends BaseTest {
     public void validateOnlyMineOrWriteAccessOrHasRole_succeeds() {
 
         /* test */
-        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, null, "find-database"));
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_USERNAME, USER_1_PRINCIPAL, null, "find-database"));
     }
 
     @Test
     public void validateOnlyMineOrWriteAccessOrHasRole_noAccess_fails() {
 
         /* test */
-        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, null, "nobody-role"));
+        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_USERNAME, USER_1_PRINCIPAL, null, "nobody-role"));
     }
 
     @Test
     public void validateOnlyMineOrWriteAccessOrHasRole_readAccess_fails() {
 
         /* test */
-        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, DATABASE_1.getAccesses().get(0), "nobody-role"));
+        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1.getAccesses().get(0), "nobody-role"));
     }
 
     @Test
     public void validateOnlyMineOrWriteAccessOrHasRole_ownerOnlyWriteOwn_succeeds() {
 
         /* test */
-        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
     }
 
     @Test
     public void validateOnlyMineOrWriteAccessOrHasRole_ownerOnlyWriteAll_succeeds() {
 
         /* test */
-        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS, "nobody-role"));
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS, "nobody-role"));
     }
 
     @Test
     public void validateOnlyMineOrWriteAccessOrHasRole_notOwnerOnlyWriteOwn_fails() {
 
         /* test */
-        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_2, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
+        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_2_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
     }
 
     @Test
     public void validateOnlyMineOrWriteAccessOrHasRole_notOwnerWriteAll_succeeds() {
 
         /* test */
-        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_2, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS, "nobody-role"));
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_2_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS, "nobody-role"));
     }
 
 }

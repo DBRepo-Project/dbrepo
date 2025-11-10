@@ -32,7 +32,7 @@ public class KeycloakUtils {
     public void createUser(UUID ldapId, UserCreateDto data) {
         final UserRepresentation user = metadataMapper.userCreateDtoToUserRepresentation(data);
         user.singleAttribute("CUSTOM_ID", ldapId.toString());
-        try (Response response = keycloak.realm(keycloakConfig.getRealm())
+        try (Response response = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .create(user)) {
             if (response.getStatus() != 201) {
@@ -43,7 +43,7 @@ public class KeycloakUtils {
     }
 
     public UUID getUserId(String username) throws UserNotFoundException {
-        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(username);
         if (users.isEmpty()) {
@@ -53,7 +53,7 @@ public class KeycloakUtils {
     }
 
     public UserRepresentation getUser(String username) throws UserNotFoundException {
-        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(username);
         if (users.isEmpty()) {
@@ -63,17 +63,17 @@ public class KeycloakUtils {
     }
 
     public void deleteUser(String username) {
-        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(username);
         if (users.isEmpty()) {
-            log.warn("Failed to find user");
+            log.warn("Failed to find user: {}, ignore.", username);
             return;
         }
-        try (Response response = keycloak.realm(keycloakConfig.getRealm())
+        try (Response response = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .delete(users.get(0).getId())) {
-            if (response.getStatus() != 200) {
+            if (response.getStatus() != 200 && response.getStatus() != 204) {
                 log.error("Failed to delete user: {}", response.getStatus());
             }
         }

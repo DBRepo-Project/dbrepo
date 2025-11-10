@@ -545,10 +545,11 @@ export default {
           this.columns = table.columns
           this.loadingColumns = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingColumns = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -562,10 +563,11 @@ export default {
           this.columns = view.columns
           this.loadingColumns = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingColumns = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            toast.error(message)
             return
           }
           toast.error(this.$t(code))
@@ -632,10 +634,10 @@ export default {
           this.loadingQuery = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
-            toast.error(this.$t('error.query.invalid'))
+            toast.error(message)
             return
           }
-          toast.error(`${this.$t(code)}: ${message}`)
+          toast.error(this.$t(code))
         })
     },
     createView () {
@@ -653,16 +655,17 @@ export default {
               await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
               this.loadingQuery = false
             })
-            .catch(({code}) => {
+            .catch(({code, message}) => {
               this.loadingQuery = false
               const toast = useToastInstance()
               if (typeof code !== 'string') {
+                toast.error(message)
                 return
               }
               toast.error(this.$t(code))
             })
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingQuery = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {

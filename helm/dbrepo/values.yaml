@@ -10,6 +10,9 @@ global:
     openshift:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       adaptSecurityContext: auto
+  security:
+    ## @param global.security.allowInsecureImages Allows skipping image verification, needed for bitnamilegacy
+    allowInsecureImages: true
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
   storageClass: ""
 
@@ -23,6 +26,10 @@ gateway: https://example.com
 strategyType: RollingUpdate
 ## @param clusterDomain The cluster domain.
 clusterDomain: cluster.local
+## @param username The internal system username. This user is only used between the microservices.
+username: admin
+## @param password The internal system password. This user is only used between the microservices.
+password: admin
 
 ## @section Metadata Database
 
@@ -31,6 +38,9 @@ metadatadb:
   enabled: true
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
+  image:
+    ## @skip metadatadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
   ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -52,6 +62,9 @@ metadatadb:
   ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    image:
+      ## @skip metadatadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
@@ -78,9 +91,19 @@ dashboarddb:
   enabled: true
   ## @skip dashboarddb.fullnameOverride
   fullnameOverride: dashboard-db
+  image:
+    ## @skip dashboarddb.image.repository
+    repository: bitnamilegacy/postgresql
+  volumePermissions:
+    image:
+      ## @skip dashboarddb.volumePermissions.image.repository
+      repository: bitnamilegacy/os-shell
   ## @param dashboarddb.host The hostname for the microservices.
   host: dashboard-db:5432
   metrics:
+    image:
+      ## @skip dashboarddb.metrics.image.repository
+      repository: bitnamilegacy/postgres-exporter
     ## @skip dashboarddb.metrics.enabled
     enabled: true
   auth:
@@ -99,15 +122,41 @@ authservice:
   ## @skip authservice.fullnameOverride
   fullnameOverride: auth-service
   image:
-    ## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+    ## @skip authservice.image.registry
+    registry: registry.datalab.tuwien.ac.at
+    ## @skip authservice.image.repository
+    repository: bitnami/keycloak
+    ## @skip authservice.image.tag
+    tag: 26.4.4
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
+  ## @skip authservice.extraStartupArgs
+  extraStartupArgs: --import-realm
   ## @skip authservice.proxyHeaders
   proxyHeaders: xforwarded
+  ## @param authservice.issuerUri Custom issuer URI, if empty a combination of `$hostname/realms/dbrepo` is used.
+  issuerUri: ""
+  ## @param authservice.jwkUri Custom JWK URI, if empty a combination of `$hostname/realms/dbrepo/protocol/openid-connect/certs` is used.
+  jwkUri: ""
+  auth:
+    ## @skip authservice.auth.adminUser
+    adminUser: admin
+    ## @skip authservice.auth.adminPassword
+    adminPassword: admin
   ## @skip authservice.postgresql
   postgresql:
     enabled: true
+    image:
+      ## @skip authservice.postgresql.image.repository
+      repository: bitnamilegacy/postgresql
+    volumePermissions:
+      image:
+        ## @skip authservice.postgresql.volumePermissions.image.repository
+        repository: bitnamilegacy/os-shell
+    metrics:
+      image:
+        ## @skip authservice.postgresql.metrics.image.repository
+        repository: bitnamilegacy/postgres-exporter
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
@@ -126,26 +175,54 @@ authservice:
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   ## @skip authservice.initdbScripts
   keycloakConfigCli:
+    image:
+      ## @skip authservice.keycloakConfigCli.image.repository
+      repository: bitnamilegacy/keycloak-config-cli
     ## @skip authservice.keycloakConfigCli.existingConfigmap
     existingConfigmap: auth-service-config
   ## @skip authservice.extraEnvVarsSecret
   extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
   extraVolumes:
-    - name: config
+    - name: import
       configMap:
         name: auth-service-config
     - name: logging
       emptyDir: { }
   ## @skip authservice.extraVolumeMounts
   extraVolumeMounts:
-    - name: config
-      mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
-      subPath: create-event-listener.jar
+    - name: import
+      mountPath: /opt/bitnami/keycloak/data/import
     - name: logging
       mountPath: /var/log/app/service/auth
   ## @skip authservice.replicaCount The number of replicas.
   replicaCount: 2
+
+## @sectionn Cache Database
+
+cachedb:
+  ## @param cachedb.enabled Enable the Cache Database.
+  enabled: true
+  ## @skip cachedb.fullnameOverride
+  fullnameOverride: cache-db
+  ## @skip cachedb.architecture
+  architecture: standalone
+  ## @param cachedb.flavor The provider flavor of the Cache Database for Redisson (as Java library)
+  ## ref https://redisson.pro/docs/configuration/
+  ## one of the following:
+  ##   "redis" for Redis connection
+  ##   "valkey" for Valkey connection
+  ##   "valkeys" for Valkey SSL connection
+  ##   "rediss" for Redis SSL connection
+  flavor: valkey
+  ## @param cachedb.endpoint The endpoint for the microservices
+  endpoint: cache-db-primary
+  image:
+    ## @skip cachedb.image.repository
+    repository: bitnamilegacy/valkey
+  auth:
+    ## @param cachedb.auth.password The Valkey password
+    password: valkey
 
 ## @section Data Database
 
@@ -154,6 +231,9 @@ datadb:
   enabled: true
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
+  image:
+    ## @skip datadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
   ## @param datadb.host The hostname for the microservices.
   host: data-db
   ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
@@ -179,6 +259,9 @@ datadb:
   ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    image:
+      ## @skip datadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip datadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
@@ -198,6 +281,9 @@ datadb:
 searchdb:
   ## @param searchdb.enabled Enable the Data datadb.
   enabled: true
+  image:
+    ## @skip searchdb.image.repository
+    repository: bitnamilegacy/opensearch
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
   ## @skip searchdb.servicenameOverride
@@ -212,6 +298,17 @@ searchdb:
   security:
     ## @skip searchdb.security.enabled
     enabled: false
+  dashboards:
+    image:
+      ## @skip searchdb.dashboards.image.repository
+      repository: bitnamilegacy/opensearch-dashboards
+  sysctlImage:
+    ## @skip searchdb.sysctlImage.repository
+    repository: bitnamilegacy/os-shell
+  snapshots:
+    image:
+      ## @skip searchdb.snapshots.image.repository
+      repository: bitnamilegacy/os-shell
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
 
@@ -223,8 +320,8 @@ brokerservice:
   ## @skip brokerservice.fullnameOverride
   fullnameOverride: broker-service
   image:
-    ## @param brokerservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: true
+    ## @skip brokerservice.image.repository
+    repository: bitnamilegacy/rabbitmq
   metrics:
     ## @skip brokerservice.metrics.enabled
     enabled: true
@@ -265,6 +362,13 @@ brokerservice:
     ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
     userDnPattern: ${username}
   auth:
+    ## @skip brokerservice.auth.username
+    username: admin
+    ## @skip brokerservice.auth.password
+    password: admin
+    ## @param brokerservice.auth.passwordHash
+    ## ref https://www.rabbitmq.com/docs/passwords
+    passwordHash: iKGI3TYZWTFemooqE1zwAu/fkbUB9AgVSiFGt3iwDZRNPpZc
     tls:
       ## @param brokerservice.auth.tls.enabled Enable TLS support
       enabled: false
@@ -300,7 +404,6 @@ brokerservice:
   extraConfiguration: |
     # user
     default_vhost = dbrepo
-    default_user_tags.administrator = false
     log.connection.level = warning
     # https://www.rabbitmq.com/docs/logging#log-message-categories
     log.console = true
@@ -316,6 +419,63 @@ brokerservice:
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 3
 
+## @section Consumer Service
+
+consumerservice:
+  ## @param consumerservice.enabled Enable the Broker Service.
+  enabled: true
+  image:
+    ## @skip consumerservice.image.name
+    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.12.0
+  ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param consumerservice.podSecurityContext.enabled Enable pods' Security Context
+    enabled: true
+    ## @param consumerservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param consumerservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param consumerservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param consumerservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 1001
+  containerSecurityContext:
+    ## @param consumerservice.containerSecurityContext.enabled Enable containers' Security Context
+    enabled: true
+    ## @param consumerservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param consumerservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param consumerservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+    runAsGroup: 1001
+    ## @param consumerservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+    runAsNonRoot: true
+    ## @param consumerservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param consumerservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
+    capabilities:
+      ## @param consumerservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+    seccompProfile:
+      ## @param consumerservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param consumerservice.resourcesPreset The container resource preset
+  resourcesPreset: "small"
+  ## @param consumerservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
+  ## @param consumerservice.replicaCount The number of replicas.
+  replicaCount: 2
+
 ## @section Metadata Service
 
 metadataservice:
@@ -323,7 +483,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.12.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -423,7 +583,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.12.0
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -512,7 +672,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.12.0
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -568,7 +728,7 @@ searchservice:
     limit: { }
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.11.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.12.0
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -631,7 +791,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.11.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.12.0
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -676,7 +836,7 @@ identityservice:
   enabled: true
   image:
     ## @skip identityservice.image.name
-    name: docker.io/bitnami/openldap:2.6.8-debian-12-r1
+    name: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
   global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
     ldapDomain: dc=dbrepo,dc=at
@@ -736,12 +896,6 @@ identityservice:
   ##     memory: 1024Mi
   ## @param identityservice.endpoint The identity service endpoint.
   endpoint: ldap://identity-service:1389
-  ## @param identityservice.users The admin username for internal authentication.
-  users: admin
-  ## @param identityservice.userPasswords The admin user password for internal authentication.
-  userPasswords: admin
-  ## @param identityservice.group The group that contains the administrators for the broker service.
-  group: system
   ## @skip identityservice.customSchemaFiles
   customSchemaFiles:
     00-memberof.ldif: |-
@@ -768,7 +922,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.12.0
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -898,7 +1052,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.11.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.12.0
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -953,7 +1107,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.11.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.12.0
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -974,6 +1128,14 @@ dashboardui:
   enabled: true
   ## @skip dashboardui.fullnameOverride
   fullnameOverride: dashboard-ui
+  image:
+    ## @skip dashboardui.image.repository
+    repository: bitnamilegacy/grafana
+  admin:
+    ## @skip dashboardui.admin.user
+    user: "admin"
+    ## @skip dashboardui.admin.password
+    password: "539a9a9bb28526f340b03c6117f5"
   metrics:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
@@ -985,13 +1147,6 @@ dashboardui:
   dashboardsProvider:
     ## @skip dashboardui.dashboardsProvider.enabled
     enabled: true
-  ldap:
-    ## @skip dashboardui.ldap.enabled
-    enabled: true
-    ## @skip dashboardui.ldap.allowSignUp
-    allowSignUp: true
-    ## @skip dashboardui.ldap.secretName
-    secretName: dashboard-ui-secret
   grafana:
     updateStrategy:
       ## @skip dashboardui.grafana.updateStrategy.type
@@ -1019,6 +1174,9 @@ metricdb:
     ## @skip metricdb.alertmanager.enabled
     enabled: false
   server:
+    image:
+      ## @skip metricdb.server.image.repository
+      repository: bitnamilegacy/prometheus
     rbac:
       ## @skip metricdb.server.rbac.create
       create: false
@@ -1066,6 +1224,9 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
+  image:
+    ## @skip gatewayservice.image.repository
+    repository: bitnamilegacy/nginx
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP
@@ -1074,7 +1235,15 @@ gatewayservice:
     enabled: false
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-setup
-  ## @param gatewayservice.replicaCount The number of replicas.
+  ## @skip gatewayservice.extraVolumes
+  extraVolumes:
+    - name: logging
+      emptyDir: { }
+  ## @skip gatewayservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: logging
+      mountPath: /var/log/nginx
+  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
   replicaCount: 3
 
 ## @section Analytics Service

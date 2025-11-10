@@ -61,7 +61,7 @@ public class ViewBriefDto {
     private String queryHash;
 
     @JsonProperty("owned_by")
-    @Schema(description = "The owner id", example = "ac750fcf-ea02-4fce-85ac-d73857e18b35")
-    private UUID ownedBy;
+    @Schema(description = "The owner username", example = "foobar")
+    private String ownedBy;
 
 }

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class DataServiceGatewayUnitTest extends BaseTest {
 
-    @MockBean
+    @MockitoBean
     @Qualifier("dataServiceRestTemplate")
     private RestTemplate dataServiceRestTemplate;
 

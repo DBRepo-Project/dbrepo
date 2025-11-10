@@ -1,13 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.keycloak;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.CacheableDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-
-import java.time.Instant;
 
 @Getter
 @Setter
@@ -16,7 +12,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class TokenDto extends CacheableDto {
+public class TokenDto {
 
     @NotNull
     @JsonProperty("access_token")
@@ -52,11 +48,5 @@ public class TokenDto extends CacheableDto {
     @NotNull
     @JsonProperty("not-before-policy")
     private Long notBeforePolicy;
-
-    /* lombok limitations prevent from convenient builder functions */
-
-    @JsonProperty("last_retrieved")
-    @Schema(example = "2025-01-23T12:09:01")
-    private Instant lastRetrieved;
 
 }

@@ -16,19 +16,20 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
     <name>data-service</name>
-    <version>1.11.0</version>
+    <version>1.12.0</version>
 
     <description>Service that manages the data</description>
 
     <packaging>pom</packaging>
     <modules>
         <module>querystore</module>
+        <module>report</module>
+        <module>repositories</module>
         <module>rest-service</module>
         <module>services</module>
-        <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -63,6 +64,7 @@
         <scala.version>2.13</scala.version>
         <duckdb.version>1.2.2.0</duckdb.version>
         <micrometer.version>1.10.0</micrometer.version>
+        <redisson.version>3.52.0</redisson.version>
         <!-- hadoop version is defined in the bitnami/spark image -->
         <hadoop.version>3.4.0</hadoop.version>
         <!-- spark needs one major version below spring boot -->
@@ -97,7 +99,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.11.0</version>
+            <version>1.12.0</version>
         </dependency>
         <!-- Spark -->
         <dependency>
@@ -157,6 +159,12 @@
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-c3p0</artifactId>
             <version>${c3p0-hibernate.version}</version>
+        </dependency>
+        <!-- Caching -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>${redisson.version}</version>
         </dependency>
         <!-- Storage -->
         <dependency>
@@ -308,7 +316,6 @@
                 <includes>
                     <include>**/application*.yml</include>
                     <include>**/*.properties</include>
-                    <include>**/jars/*.jar</include>
                 </includes>
             </resource>
         </resources>

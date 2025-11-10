@@ -18,18 +18,18 @@
 
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>metadata-service</artifactId>
-    <version>1.11.0</version>
+    <version>1.12.0</version>
 
     <packaging>pom</packaging>
     <modules>
         <module>oai</module>
-        <module>repositories</module>
-        <module>services</module>
-        <module>rest-service</module>
         <module>report</module>
+        <module>repositories</module>
+        <module>rest-service</module>
+        <module>services</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -58,6 +58,7 @@
         <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
         <minio.version>8.5.7</minio.version>
+        <redisson.version>3.52.0</redisson.version>
         <sonar.coverage.jacoco.xmlReportPaths>
             ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
@@ -69,7 +70,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.11.0</version>
+            <version>1.12.0</version>
         </dependency>
         <!-- API Filters -->
         <dependency>
@@ -169,6 +170,12 @@
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>${rabbitmq.version}</version>
+        </dependency>
+        <!-- Caching -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>${redisson.version}</version>
         </dependency>
         <!-- Api -->
         <dependency>

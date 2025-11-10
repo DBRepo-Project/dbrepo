@@ -2,7 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnConcept;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ConceptNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.repository.ConceptRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ConceptRepository;
 import at.ac.tuwien.ifs.dbrepo.service.ConceptService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
