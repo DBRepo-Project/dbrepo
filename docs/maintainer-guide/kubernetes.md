@@ -45,3 +45,24 @@ limits.memory: 20480Mi
 configmaps: '20'
 services: '40'
 ```
+
+## Uninstall
+
+Remove DBRepo by stopping and removing all pods and persistent volume claims:
+
+```shell
+helm uninstall \
+  dbrepo \
+  -n dbrepo
+kubectl -n dbrepo \
+  delete \
+  pvc \
+  --all
+```
+
+!!! danger "Further configuration is highly recommended"
+
+    See "Security Disclaimer" above, this quick &amp; non-secure installation needs to be configured further to achieve
+    basic security guarantees. Please visit 
+    the [configuration](/infrastructures/dbrepo/1.12/maintainer-guide/configuration/) page in the next step to complete
+    the installation.

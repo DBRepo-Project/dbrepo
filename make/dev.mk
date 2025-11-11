@@ -28,10 +28,8 @@ package-config: ## Package the config files
 	cp -r ./dbrepo-dashboard-ui/dashboards ./.docker/config
 	cp -r ./dbrepo-dashboard-ui/provisioning ./.docker/config
 	cp ./dbrepo-dashboard-ui/grafana.ini ./.docker/config/grafana.ini
-	cp ./dbrepo-dashboard-ui/ldap.toml ./.docker/config/ldap.toml
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
-	cp ./dbrepo-auth-service/listeners/create-event-listener.jar ./.docker/config
 	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config
 
 .PHONY: install-staging
