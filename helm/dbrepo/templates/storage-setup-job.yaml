@@ -3,7 +3,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: storage-service-setup-job
+  name: storage-service-setup-job-{{ .Release.Revision }}
   namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   backoffLimit: {{ .Values.storageservice.setupJob.backoffLimit | default "10" }}
