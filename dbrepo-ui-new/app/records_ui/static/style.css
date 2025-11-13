@@ -14,24 +14,10 @@ body {
     height: 100%;
 }
 
-.container {
-  display: flex;
-  justify-content: space-between;
-  margin-left: 10%;
-  margin-right: 10%;
-  height: 100%;
-  width: 80%;
+.mt-5 {
+    margin-top: 5px !important;
 }
 
-.left-section {
-  width: 67%;
-  padding: 10px;
-}
-
-.right-section {
-  width: 33%;
-  padding: 10px;
-}
 
 .info-box {
   background-color: #F5F5F5;
@@ -151,19 +137,6 @@ p {
 
 
 
-
-#preview_table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  text-align: left;
-}
-
-#preview_table td,th{
-  border-bottom: 1px solid;
-  padding: 8px;
-  }
-
 #dataset_list {
   width: 100%;
   border-collapse: collapse;
@@ -234,3 +207,4 @@ font-size: 1em;
   height: 50%;
   overflow: auto;
 }
+

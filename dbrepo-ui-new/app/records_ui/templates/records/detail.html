@@ -6,10 +6,10 @@
 
 {% block content %}
 
-    <div class="container">
-
-
-        <div class="left-section">
+    <div class="ui container">
+    <div class="ui relaxed grid mt-5">
+    <div class="two column row top-padded">
+        <div class="sixteen wide tablet eleven wide computer column main-record-content">
             <div id="static-header">{{ _('Created') }} {{ database.identifiers[doi_id].publication_day }}.{{ database.identifiers[doi_id].publication_month }}.{{ database.identifiers[doi_id].publication_year }}
                 <div id="access"><i class="lock open icon"></i>Open</div>
             </div>
@@ -21,15 +21,12 @@
             {{ datasource_list_box(database.views) }}
             {{ dataset_list_box(queries) }}
 
-            <div class="ui grid">
-
-            </div>
         </div>
-        <div class="right-section">
+        <div class="sixteen wide tablet five wide computer column sidebar">
             {%- include "/records/details/side_bar.html" %}
-
         </div>
-
+        </div>
+    </div>
     </div>
 
 {% endblock %}
