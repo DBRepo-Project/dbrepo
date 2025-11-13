@@ -3,7 +3,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: dashboard-service-setup-job
+  name: dashboard-service-setup-job-{{ .Release.Revision }}
   namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   backoffLimit: {{ .Values.dashboardservice.setupJob.backoffLimit | default "10" }}
