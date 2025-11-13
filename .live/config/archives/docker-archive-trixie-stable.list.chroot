@@ -1,0 +1,1 @@
+deb [signed-by=/etc/apt/trusted.gpg.d/docker-archive-trixie-stable.gpg.key.chroot.gpg] http://download.docker.com/linux/debian trixie stable
