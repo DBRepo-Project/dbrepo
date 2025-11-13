@@ -1,0 +1,21 @@
+#!/bin/sh
+lb config noauto \
+  --apt-options '--yes -oAcquire::https::download.docker.com::Verify-Peer=false' \
+  --mode debian \
+  --system live \
+  --debian-installer live \
+  --architectures amd64 \
+  --archive-areas 'main contrib non-free non-free-firmware' \
+  --backports true \
+  --updates true \
+  --binary-filesystem ext4 \
+  --binary-images iso-hybrid \
+  --checksums sha256 \
+  --clean \
+  --distribution trixie \
+  --firmware-binary true \
+  --firmware-chroot true \
+  --initramfs live-boot \
+  2>&1 | tee config.log
+
+"${@}"
