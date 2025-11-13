@@ -1,0 +1,5 @@
+#!/bin/sh
+lb clean noauto "$@"
+rm -f build.log \
+  config.log \
+  wget-log*

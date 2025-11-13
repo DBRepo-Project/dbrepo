@@ -1,0 +1,1 @@
+[rabbitmq_prometheus,rabbitmq_auth_backend_ldap,rabbitmq_auth_mechanism_ssl,rabbitmq_management,rabbitmq_mqtt].

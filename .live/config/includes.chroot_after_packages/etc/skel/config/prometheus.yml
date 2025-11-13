@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 1m
+  scrape_timeout: 10s
+
+rule_files: []
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+scrape_configs:
+  - job_name: 'java actuator scrape'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+        - data-service:8080
+        - metadata-service:8080
+  - job_name: 'metrics scrape'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+        - auth-service:9000
+        - broker-service:15692
+        - data-db-metrics:9104
+        - dashboard-service:8080
+        - dashboard-ui:3000
+        - metadata-db-metrics:9104
+        - search-service:8080
+        - storage-service:9090
+        - ui:3000
+  - job_name: 'realm scrape'
+    metrics_path: '/realms/dbrepo/metrics'
+    static_configs:
+      - targets:
+        - auth-service:8080
