@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -36,6 +38,30 @@ public class ReplicationMonitoringReplicaDto {
     @Schema(description = "Count of tuples missing on this replica relative to source", example = "3")
     @JsonProperty("missing_count")
     private Long missingCount;
+
+    @JsonProperty("missing_fraction")
+    @Schema(description = "Missing tuples relative to the source count", example = "0.1")
+    private Double missingFraction;
+
+    @JsonProperty("status")
+    @Schema(description = "Replica health status for this table", example = "healthy")
+    private String status;
+
+    @JsonProperty("lag_seconds")
+    @Schema(description = "Replication lag in seconds relative to the primary", example = "12")
+    private Long lagSeconds;
+
+    @JsonProperty("latest_primary_timestamp")
+    @Schema(description = "Latest known timestamp on the primary used as reference", nullable = true)
+    private Instant latestPrimaryTimestamp;
+
+    @JsonProperty("latest_replica_timestamp")
+    @Schema(description = "Latest known timestamp replicated to this site", nullable = true)
+    private Instant latestReplicaTimestamp;
+
+    @JsonProperty("anomalies")
+    @Schema(description = "Replica-specific anomalies detected for this table", nullable = true)
+    private List<String> anomalies;
 }
 
 

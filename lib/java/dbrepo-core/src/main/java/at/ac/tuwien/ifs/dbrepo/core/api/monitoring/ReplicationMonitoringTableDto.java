@@ -40,6 +40,10 @@ public class ReplicationMonitoringTableDto {
     @JsonProperty("replicas")
     @Schema(description = "Counts per replica")
     private List<ReplicationMonitoringReplicaDto> replicas;
+
+    @JsonProperty("anomalies")
+    @Schema(description = "Detected anomalies for this table", nullable = true)
+    private List<String> anomalies;
 }
 
 

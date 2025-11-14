@@ -45,6 +45,10 @@ public class ReplicationMonitoringDatabaseDto {
     @NotNull
     @Schema(description = "Tables in this database")
     private List<ReplicationMonitoringTableDto> tables;
+
+    @JsonProperty("sites")
+    @Schema(description = "Aggregated site-level monitoring information", nullable = true)
+    private List<ReplicationMonitoringSiteDto> sites;
 }
 
 

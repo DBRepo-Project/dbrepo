@@ -16,9 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
-import java.util.UUID;
 
-import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/replication/monitoring")
@@ -36,7 +35,11 @@ public class MonitoringEndpoint {
     public ResponseEntity<ReplicationMonitoringDatabaseDto> status(@PathVariable UUID databaseId) {
         try {
             final ReplicationMonitoringDatabaseDto result = monitoringService.status(databaseId);
-            return ResponseEntity.ok(result);
+            final String globalStatus = monitoringService.deriveGlobalStatus(result);
+            final HttpStatus httpStatus = monitoringService.mapStatusToHttp(globalStatus);
+            return ResponseEntity.status(httpStatus)
+                    .header("X-Replication-Monitoring-Status", globalStatus)
+                    .body(result);
         } catch (DatabaseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (RemoteUnavailableException e) {
