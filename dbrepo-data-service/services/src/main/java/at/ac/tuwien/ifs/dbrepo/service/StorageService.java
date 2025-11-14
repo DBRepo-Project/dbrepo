@@ -1,10 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
@@ -13,7 +10,14 @@ import java.util.List;
 
 public interface StorageService {
 
-    void putObject(String key, byte[] content);
+    /**
+     * Uploads content of an object to the S3 backend. It can be later retrieved using the given key.
+     *
+     * @param key     The key.
+     * @param content The content.
+     * @throws StorageObjectExistsException The object already exists in the S3 backend with the provided key. It is not necessary to put it again.
+     */
+    void putObject(String key, byte[] content) throws StorageObjectExistsException;
 
     /**
      * Loads an object of a bucket from the storage service into an input stream.
