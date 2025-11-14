@@ -293,11 +293,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -340,11 +335,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -389,11 +379,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -554,11 +539,11 @@ paths:
               schema:
                 type: string
             X-Count:
-              description: Number of rows
+              description: Number of result set rows
               style: simple
               schema:
-                type: string
-                format: uuid
+                type: integer
+                format: int64
             X-Id:
               description: The subset id
               required: true
@@ -568,6 +553,11 @@ paths:
                 format: uuid
             X-Headers:
               description: The list of headers separated by comma
+              style: simple
+              schema:
+                type: string
+            X-Result-Hash:
+              description: Hash of result set
               style: simple
               schema:
                 type: string
@@ -649,11 +639,11 @@ paths:
               schema:
                 type: string
             X-Count:
-              description: Number of rows
+              description: Number of result set rows
               style: simple
               schema:
-                type: string
-                format: uuid
+                type: integer
+                format: int64
             X-Id:
               description: The subset id
               required: true
@@ -663,6 +653,11 @@ paths:
                 format: uuid
             X-Headers:
               description: The list of headers separated by comma
+              style: simple
+              schema:
+                type: string
+            X-Result-Hash:
+              description: Hash of result set
               style: simple
               schema:
                 type: string
@@ -835,10 +830,34 @@ paths:
       responses:
         '201':
           description: Uploaded the file
-          content:
-            application/json:
+          headers:
+            X-S3-Key:
+              description: The S3 filename
+              required: true
+              style: simple
               schema:
-                $ref: '#/components/schemas/ViewDto'
+                type: string
+            Access-Control-Expose-Headers:
+              description: Expose `X-S3-Key` custom header
+              required: true
+              style: simple
+              schema:
+                type: string
+        '204':
+          description: File already present
+          headers:
+            X-S3-Key:
+              description: The S3 filename
+              required: true
+              style: simple
+              schema:
+                type: string
+            Access-Control-Expose-Headers:
+              description: Expose `X-S3-Key` custom header
+              required: true
+              style: simple
+              schema:
+                type: string
         '503':
           description: Failed to establish connection with the storage service
       security:
@@ -2133,7 +2152,9 @@ paths:
       tags:
         - table-endpoint
       summary: Update table
-      description: Updates a table in the database with id. Requires role `update-table`.
+      description: >-
+        Updates a table in the database with id. Requires role `update-table` or
+        `system`.
       operationId: update_5
       parameters:
         - name: databaseId
@@ -2343,7 +2364,7 @@ paths:
         '403':
           description: Transfer of ownership is not permitted
         '404':
-          description: Database or user could not be found
+          description: Database could not be found
         '502':
           description: Connection to search service failed
         '503':
@@ -2961,6 +2982,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserBriefDto'
+        '403':
+          description: Listing not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
   /api/v1/unit:
     get:
       tags:
@@ -3493,6 +3520,10 @@ components:
     DatabaseAccessDto:
       type: object
       properties:
+        username:
+          type: string
+          description: The user name
+          example: foobar
         user:
           $ref: '#/components/schemas/UserBriefDto'
         type:
@@ -3505,6 +3536,7 @@ components:
       required:
         - type
         - user
+        - username
     UserBriefDto:
       type: object
       properties:
@@ -3532,7 +3564,6 @@ components:
           type: string
           example: Carberry
       required:
-        - id
         - username
     TupleUpdateDto:
       type: object
@@ -3670,8 +3701,8 @@ components:
           example: 2022
         owned_by:
           type: string
-          format: uuid
-          example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
+          description: The owner username
+          example: foobar
       required:
         - creators
         - database_id
@@ -4168,746 +4199,6 @@ components:
         - query
         - query_hash
         - query_normalized
-    CreatorDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: e41f94a6-2b94-4a12-ac0e-678684e1c070
-        firstname:
-          type: string
-          example: Josiah
-        lastname:
-          type: string
-          example: Carberry
-        affiliation:
-          type: string
-          example: Brown University
-        creator_name:
-          type: string
-          example: 'Carberry, Josiah'
-        name_type:
-          type: string
-          enum:
-            - Personal
-            - Organizational
-          example: Personal
-        name_identifier:
-          type: string
-          example: 0000-0002-1825-0097
-        name_identifier_scheme:
-          type: string
-          enum:
-            - ORCID
-            - ROR
-            - ISNI
-            - GRID
-          example: ORCID
-        name_identifier_scheme_uri:
-          type: string
-          example: 'https://orcid.org/'
-        affiliation_identifier:
-          type: string
-          example: 'https://ror.org/05gq02987'
-        affiliation_identifier_scheme:
-          type: string
-          enum:
-            - ROR
-            - GRID
-            - ISNI
-          example: ROR
-        affiliation_identifier_scheme_uri:
-          type: string
-          example: 'https://ror.org/'
-      required:
-        - creator_name
-        - id
-    EnumDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The enum id
-          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
-        value:
-          type: string
-          description: The enum value
-          example: 3
-      required:
-        - id
-        - value
-    IdentifierDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
-        links:
-          $ref: '#/components/schemas/LinksDto'
-        type:
-          type: string
-          enum:
-            - database
-            - subset
-            - table
-            - view
-          example: database
-        titles:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierTitleDto'
-        descriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDescriptionDto'
-        funders:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierFunderDto'
-        query:
-          type: string
-          example: >-
-            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
-            = "09:STEF"
-        execution:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21Z'
-        doi:
-          type: string
-          example: 10.1038/nphys1170
-        publisher:
-          type: string
-          example: TU Wien
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        language:
-          type: string
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        licenses:
-          type: array
-          items:
-            $ref: '#/components/schemas/LicenseDto'
-        creators:
-          type: array
-          items:
-            $ref: '#/components/schemas/CreatorDto'
-        status:
-          type: string
-          enum:
-            - draft
-            - published
-          example: draft
-        created:
-          type: string
-          format: date-time
-        database_id:
-          type: string
-          format: uuid
-          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
-        query_id:
-          type: string
-          format: uuid
-          example: 1413e257-f62a-4881-ac38-ae9a76e21b9c
-        table_id:
-          type: string
-          format: uuid
-          example: 67d23209-aec8-489a-8f86-71fd0fe09ce7
-        view_id:
-          type: string
-          format: uuid
-          example: 8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4
-        query_normalized:
-          type: string
-          example: >-
-            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
-            = "09:STEF"
-        related_identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedIdentifierDto'
-        query_hash:
-          type: string
-          description: query hash in sha512
-        result_hash:
-          type: string
-          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
-        result_number:
-          type: integer
-          format: int64
-          example: 1
-        publication_day:
-          type: integer
-          format: int32
-          example: 15
-        publication_month:
-          type: integer
-          format: int32
-          example: 12
-        publication_year:
-          type: integer
-          format: int32
-          example: 2022
-      required:
-        - creators
-        - database_id
-        - descriptions
-        - funders
-        - id
-        - language
-        - licenses
-        - links
-        - owner
-        - publication_year
-        - publisher
-        - query
-        - query_hash
-        - query_normalized
-        - status
-        - titles
-        - type
-    IdentifierFunderDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 39693413-e0ce-46da-ad5e-029c0556d439
-        funder_name:
-          type: string
-          example: European Commission
-        funder_identifier:
-          type: string
-          example: 'http://doi.org/10.13039/501100000780'
-        funder_identifier_type:
-          type: string
-          enum:
-            - Crossref Funder ID
-            - ROR
-            - GND
-            - ISNI
-            - Other
-          example: Crossref Funder ID
-        scheme_uri:
-          type: string
-          example: 'http://doi.org/'
-        award_number:
-          type: string
-          example: 824087
-        award_title:
-          type: string
-          example: EOSC-Life
-      required:
-        - funder_name
-        - id
-    LicenseDto:
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: The id
-          example: MIT
-        uri:
-          type: string
-          description: The link to the license such as an SPDX identifier
-          example: 'https://spdx.org/licenses/MIT.html'
-        description:
-          type: string
-          description: A user-friendly short abstract of key details of the license
-          example: >-
-            A short and simple permissive license with conditions only requiring
-            preservation of copyright and license notices. Licensed works,
-            modifications, and larger works may be distributed under different
-            terms and without source code.
-      required:
-        - identifier
-        - uri
-    LinksDto:
-      type: object
-      properties:
-        self:
-          type: string
-          example: 'http://example.com/api/'
-        data:
-          type: string
-          example: 'http://example.com'
-        self_html:
-          type: string
-          example: 'http://example.com'
-        dashboard_html:
-          type: string
-          example: 'http://example.com/d/defi2baxqawaod'
-      required:
-        - self
-        - self_html
-    RelatedIdentifierDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: ce9d11f0-60a2-448d-a3e4-44719a443e8a
-        value:
-          type: string
-          example: 10.70124/dc4zh-9ce78
-        type:
-          type: string
-          enum:
-            - DOI
-            - URL
-            - URN
-            - ARK
-            - arXiv
-            - bibcode
-            - EAN13
-            - EISSN
-            - Handle
-            - IGSN
-            - ISBN
-            - ISTC
-            - LISSN
-            - LSID
-            - PMID
-            - PURL
-            - UPC
-            - w3id
-          example: DOI
-        relation:
-          type: string
-          enum:
-            - IsCitedBy
-            - Cites
-            - IsSupplementTo
-            - IsSupplementedBy
-            - IsContinuedBy
-            - Continues
-            - IsDescribedBy
-            - Describes
-            - HasMetadata
-            - IsMetadataFor
-            - HasVersion
-            - IsVersionOf
-            - IsNewVersionOf
-            - IsPreviousVersionOf
-            - IsPartOf
-            - HasPart
-            - IsPublishedIn
-            - IsReferencedBy
-            - References
-            - IsDocumentedBy
-            - Documents
-            - IsCompiledBy
-            - Compiles
-            - IsVariantFormOf
-            - IsOriginalFormOf
-            - IsIdenticalTo
-            - IsReviewedBy
-            - Reviews
-            - IsDerivedFrom
-            - IsSourceOf
-            - IsRequiredBy
-            - Requires
-            - IsObsoletedBy
-            - Obsoletes
-          example: Cites
-      required:
-        - id
-        - relation
-        - type
-        - value
-    SetDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The set id
-          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
-        value:
-          type: string
-          description: The set value
-          example: 3
-      required:
-        - id
-        - value
-    ViewColumnDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The id
-          example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
-        name:
-          type: string
-          description: The user-friendly column name
-          example: Given Name
-          maxLength: 64
-          minLength: 0
-        size:
-          type: integer
-          format: int64
-          description: >-
-            The column size, determines the number of digits before the comma as
-            x=size-d where size >= d
-          example: 255
-        d:
-          type: integer
-          format: int64
-          description: The column d
-          example: 0
-        description:
-          type: string
-          example: Column comment
-          maxLength: 2048
-          minLength: 0
-        enums:
-          type: array
-          description: 'enum values, only considered when type = ENUM'
-          items:
-            $ref: '#/components/schemas/EnumDto'
-        sets:
-          type: array
-          description: 'enum values, only considered when type = ENUM'
-          items:
-            $ref: '#/components/schemas/SetDto'
-        database_id:
-          type: string
-          format: uuid
-          description: The database id
-          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
-        ord:
-          type: integer
-          format: int32
-          description: The ordinal position of the colum to order it
-          example: 0
-        internal_name:
-          type: string
-          description: The machine-friendly column name
-          example: given_name
-          maxLength: 64
-          minLength: 0
-        index_length:
-          type: integer
-          format: int64
-          description: The length of the index
-          example: 255
-        length:
-          type: integer
-          format: int64
-          description: The length of the total data in the table (index + data)
-          example: 255
-        type:
-          type: string
-          description: The column type name
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-          example: varchar
-        is_null_allowed:
-          type: boolean
-          example: false
-      required:
-        - database_id
-        - id
-        - internal_name
-        - is_null_allowed
-        - name
-        - ord
-        - type
-    ViewDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The id
-          example: 787439d0-e85e-400c-a7e6-996a023bfad9
-        name:
-          type: string
-          description: The user-friendly name
-          example: Air Quality
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDto'
-        query:
-          type: string
-          description: The SQL statement used to create the view
-          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ViewColumnDto'
-        created:
-          type: string
-          format: date-time
-          description: The created timestamp
-          example: '2022-01-01 08:00:00.000'
-        last_retrieved:
-          type: string
-          format: date-time
-          description: The timestamp The was last retrieved from the cache
-          example: '2025-01-23T12:09:01'
-        database_id:
-          type: string
-          format: uuid
-          description: The database id
-          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
-        internal_name:
-          type: string
-          description: The machine-friendly name
-          example: air_quality
-        is_public:
-          type: boolean
-          description: >-
-            The visibility; if true, The will be displayed publicly and is
-            searchable
-          example: true
-        is_schema_public:
-          type: boolean
-          description: >-
-            The insights; if true, The schema will be displayed publicly and is
-            searchable
-          example: true
-        initial_view:
-          type: boolean
-          description: 'If true, the view is default for the database'
-          example: true
-        query_hash:
-          type: string
-          description: The sha256-hash of the query
-          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-      required:
-        - columns
-        - created
-        - database_id
-        - id
-        - identifiers
-        - internal_name
-        - is_public
-        - is_schema_public
-        - name
-        - owner
-        - query
-        - query_hash
     TupleDto:
       type: object
       properties:
@@ -5232,10 +4523,6 @@ components:
           example: p4ssw0rd
         attributes:
           $ref: '#/components/schemas/UserAttributesDto'
-        last_retrieved:
-          type: string
-          format: date-time
-          example: '2025-01-23T12:09:01'
         qualified_name:
           type: string
           example: Josiah Carberry — @jcarberry
@@ -5247,8 +4534,6 @@ components:
           example: Carberry
       required:
         - attributes
-        - id
-        - password
         - username
     DatabaseBriefDto:
       type: object
@@ -5269,8 +4554,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/IdentifierBriefDto'
-        contact:
-          $ref: '#/components/schemas/UserBriefDto'
         internal_name:
           type: string
           description: The machine-friendly database name
@@ -5287,11 +4570,12 @@ components:
             The insights; if true, The schema will be displayed publicly and is
             searchable
           example: true
-        owner_id:
+        contact:
+          $ref: '#/components/schemas/UserBriefDto'
+        owned_by:
           type: string
-          format: uuid
-          description: The owner id
-          example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
+          description: The owner username
+          example: foobar
         preview_image:
           type: string
           description: The preview image
@@ -5305,7 +4589,7 @@ components:
         - is_public
         - is_schema_public
         - name
-        - owner_id
+        - owned_by
     UserUpdateDto:
       type: object
       properties:
@@ -5880,6 +5164,28 @@ components:
         - related_identifiers
         - titles
         - type
+    LicenseDto:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: The id
+          example: MIT
+        uri:
+          type: string
+          description: The link to the license such as an SPDX identifier
+          example: 'https://spdx.org/licenses/MIT.html'
+        description:
+          type: string
+          description: A user-friendly short abstract of key details of the license
+          example: >-
+            A short and simple permissive license with conditions only requiring
+            preservation of copyright and license notices. Licensed works,
+            modifications, and larger works may be distributed under different
+            terms and without source code.
+      required:
+        - identifier
+        - uri
     SaveIdentifierCreatorDto:
       type: object
       properties:
@@ -6443,6 +5749,503 @@ components:
         - relation
         - type
         - value
+    CreatorDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: e41f94a6-2b94-4a12-ac0e-678684e1c070
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: 'Carberry, Josiah'
+        name_type:
+          type: string
+          enum:
+            - Personal
+            - Organizational
+          example: Personal
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          enum:
+            - ORCID
+            - ROR
+            - ISNI
+            - GRID
+          example: ORCID
+        name_identifier_scheme_uri:
+          type: string
+          example: 'https://orcid.org/'
+        affiliation_identifier:
+          type: string
+          example: 'https://ror.org/05gq02987'
+        affiliation_identifier_scheme:
+          type: string
+          enum:
+            - ROR
+            - GRID
+            - ISNI
+          example: ROR
+        affiliation_identifier_scheme_uri:
+          type: string
+          example: 'https://ror.org/'
+      required:
+        - creator_name
+        - id
+    IdentifierDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: b97cd56b-66ca-4354-9e6c-f47210cfaaec
+        links:
+          $ref: '#/components/schemas/LinksDto'
+        type:
+          type: string
+          enum:
+            - database
+            - subset
+            - table
+            - view
+          example: database
+        titles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierTitleDto'
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDescriptionDto'
+        funders:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierFunderDto'
+        query:
+          type: string
+          example: >-
+            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
+            = "09:STEF"
+        execution:
+          type: string
+          format: date-time
+          example: '2021-03-12T15:26:21Z'
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        language:
+          type: string
+          enum:
+            - ab
+            - aa
+            - af
+            - ak
+            - sq
+            - am
+            - ar
+            - an
+            - hy
+            - as
+            - av
+            - ae
+            - ay
+            - az
+            - bm
+            - ba
+            - eu
+            - be
+            - bn
+            - bh
+            - bi
+            - bs
+            - br
+            - bg
+            - my
+            - ca
+            - km
+            - ch
+            - ce
+            - ny
+            - zh
+            - cu
+            - cv
+            - kw
+            - co
+            - cr
+            - hr
+            - cs
+            - da
+            - dv
+            - nl
+            - dz
+            - en
+            - eo
+            - et
+            - ee
+            - fo
+            - fj
+            - fi
+            - fr
+            - ff
+            - gd
+            - gl
+            - lg
+            - ka
+            - de
+            - ki
+            - el
+            - kl
+            - gn
+            - gu
+            - ht
+            - ha
+            - he
+            - hz
+            - hi
+            - ho
+            - hu
+            - is
+            - io
+            - ig
+            - id
+            - ia
+            - ie
+            - iu
+            - ik
+            - ga
+            - it
+            - ja
+            - jv
+            - kn
+            - kr
+            - ks
+            - kk
+            - rw
+            - kv
+            - kg
+            - ko
+            - kj
+            - ku
+            - ky
+            - lo
+            - la
+            - lv
+            - lb
+            - li
+            - ln
+            - lt
+            - lu
+            - mk
+            - mg
+            - ms
+            - ml
+            - mt
+            - gv
+            - mi
+            - mr
+            - mh
+            - ro
+            - mn
+            - na
+            - nv
+            - nd
+            - ng
+            - ne
+            - se
+            - 'no'
+            - nb
+            - nn
+            - ii
+            - oc
+            - oj
+            - or
+            - om
+            - os
+            - pi
+            - pa
+            - ps
+            - fa
+            - pl
+            - pt
+            - qu
+            - rm
+            - rn
+            - ru
+            - sm
+            - sg
+            - sa
+            - sc
+            - sr
+            - sn
+            - sd
+            - si
+            - sk
+            - sl
+            - so
+            - st
+            - nr
+            - es
+            - su
+            - sw
+            - ss
+            - sv
+            - tl
+            - ty
+            - tg
+            - ta
+            - tt
+            - te
+            - th
+            - bo
+            - ti
+            - to
+            - ts
+            - tn
+            - tr
+            - tk
+            - tw
+            - ug
+            - uk
+            - ur
+            - uz
+            - ve
+            - vi
+            - vo
+            - wa
+            - cy
+            - fy
+            - wo
+            - xh
+            - yi
+            - yo
+            - za
+            - zu
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseDto'
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDto'
+        status:
+          type: string
+          enum:
+            - draft
+            - published
+          example: draft
+        created:
+          type: string
+          format: date-time
+        database_id:
+          type: string
+          format: uuid
+          example: fc29f89c-86a8-4020-9e36-4d954736c6cc
+        query_id:
+          type: string
+          format: uuid
+          example: 1413e257-f62a-4881-ac38-ae9a76e21b9c
+        table_id:
+          type: string
+          format: uuid
+          example: 67d23209-aec8-489a-8f86-71fd0fe09ce7
+        view_id:
+          type: string
+          format: uuid
+          example: 8f860779-3ab1-4f83-ae6c-b89ebbf1dcc4
+        query_normalized:
+          type: string
+          example: >-
+            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
+            = "09:STEF"
+        related_identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedIdentifierDto'
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+      required:
+        - creators
+        - database_id
+        - descriptions
+        - funders
+        - id
+        - language
+        - licenses
+        - links
+        - owner
+        - publication_year
+        - publisher
+        - query
+        - query_hash
+        - query_normalized
+        - status
+        - titles
+        - type
+    IdentifierFunderDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 39693413-e0ce-46da-ad5e-029c0556d439
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: 'http://doi.org/10.13039/501100000780'
+        funder_identifier_type:
+          type: string
+          enum:
+            - Crossref Funder ID
+            - ROR
+            - GND
+            - ISNI
+            - Other
+          example: Crossref Funder ID
+        scheme_uri:
+          type: string
+          example: 'http://doi.org/'
+        award_number:
+          type: string
+          example: 824087
+        award_title:
+          type: string
+          example: EOSC-Life
+      required:
+        - funder_name
+        - id
+    LinksDto:
+      type: object
+      properties:
+        self:
+          type: string
+          example: 'http://example.com/api/'
+        data:
+          type: string
+          example: 'http://example.com'
+        self_html:
+          type: string
+          example: 'http://example.com'
+        dashboard_html:
+          type: string
+          example: 'http://example.com/d/defi2baxqawaod'
+      required:
+        - self
+        - self_html
+    RelatedIdentifierDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ce9d11f0-60a2-448d-a3e4-44719a443e8a
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          enum:
+            - DOI
+            - URL
+            - URN
+            - ARK
+            - arXiv
+            - bibcode
+            - EAN13
+            - EISSN
+            - Handle
+            - IGSN
+            - ISBN
+            - ISTC
+            - LISSN
+            - LSID
+            - PMID
+            - PURL
+            - UPC
+            - w3id
+          example: DOI
+        relation:
+          type: string
+          enum:
+            - IsCitedBy
+            - Cites
+            - IsSupplementTo
+            - IsSupplementedBy
+            - IsContinuedBy
+            - Continues
+            - IsDescribedBy
+            - Describes
+            - HasMetadata
+            - IsMetadataFor
+            - HasVersion
+            - IsVersionOf
+            - IsNewVersionOf
+            - IsPreviousVersionOf
+            - IsPartOf
+            - HasPart
+            - IsPublishedIn
+            - IsReferencedBy
+            - References
+            - IsDocumentedBy
+            - Documents
+            - IsCompiledBy
+            - Compiles
+            - IsVariantFormOf
+            - IsOriginalFormOf
+            - IsIdenticalTo
+            - IsReviewedBy
+            - Reviews
+            - IsDerivedFrom
+            - IsSourceOf
+            - IsRequiredBy
+            - Requires
+            - IsObsoletedBy
+            - Obsoletes
+          example: Cites
+      required:
+        - id
+        - relation
+        - type
+        - value
     DatabaseModifyVisibilityDto:
       type: object
       properties:
@@ -6531,9 +6334,8 @@ components:
           example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
         owned_by:
           type: string
-          format: uuid
-          description: The owner id
-          example: ac750fcf-ea02-4fce-85ac-d73857e18b35
+          description: The owner username
+          example: foobar
       required:
         - database_id
         - id
@@ -6612,9 +6414,8 @@ components:
           example: true
         owned_by:
           type: string
-          format: uuid
-          description: The owner id
-          example: 78337b80-5699-45db-8111-cec86439ab6b
+          description: The owner username
+          example: foobar
       required:
         - database_id
         - id
@@ -6829,6 +6630,36 @@ components:
       required:
         - id
         - uri
+    EnumDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The enum id
+          example: 5343bb3d-14d3-4eb7-a86f-b8fc553cb315
+        value:
+          type: string
+          description: The enum value
+          example: 3
+      required:
+        - id
+        - value
+    SetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The set id
+          example: 7eb4eded-bacc-4a91-84db-a9ae6ddafda7
+        value:
+          type: string
+          description: The set value
+          example: 3
+      required:
+        - id
+        - value
     UnitBriefDto:
       type: object
       properties:
@@ -8141,18 +7972,6 @@ components:
           format: int32
           description: The number of databases currently in the container
           example: 10
-        username:
-          type: string
-          description: The username of the privileged user
-          example: root
-        password:
-          type: string
-          description: The password of the privileged user
-          example: dbrepo
-        last_retrieved:
-          type: string
-          format: date-time
-          example: '2025-01-23T12:09:01'
         internal_name:
           type: string
           description: The machine-friendly container name
@@ -8164,6 +7983,94 @@ components:
         - internal_name
         - name
         - quota
+    ApiErrorDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - 100 CONTINUE
+            - 101 SWITCHING_PROTOCOLS
+            - 102 PROCESSING
+            - 103 EARLY_HINTS
+            - 103 CHECKPOINT
+            - 200 OK
+            - 201 CREATED
+            - 202 ACCEPTED
+            - 203 NON_AUTHORITATIVE_INFORMATION
+            - 204 NO_CONTENT
+            - 205 RESET_CONTENT
+            - 206 PARTIAL_CONTENT
+            - 207 MULTI_STATUS
+            - 208 ALREADY_REPORTED
+            - 226 IM_USED
+            - 300 MULTIPLE_CHOICES
+            - 301 MOVED_PERMANENTLY
+            - 302 FOUND
+            - 302 MOVED_TEMPORARILY
+            - 303 SEE_OTHER
+            - 304 NOT_MODIFIED
+            - 305 USE_PROXY
+            - 307 TEMPORARY_REDIRECT
+            - 308 PERMANENT_REDIRECT
+            - 400 BAD_REQUEST
+            - 401 UNAUTHORIZED
+            - 402 PAYMENT_REQUIRED
+            - 403 FORBIDDEN
+            - 404 NOT_FOUND
+            - 405 METHOD_NOT_ALLOWED
+            - 406 NOT_ACCEPTABLE
+            - 407 PROXY_AUTHENTICATION_REQUIRED
+            - 408 REQUEST_TIMEOUT
+            - 409 CONFLICT
+            - 410 GONE
+            - 411 LENGTH_REQUIRED
+            - 412 PRECONDITION_FAILED
+            - 413 PAYLOAD_TOO_LARGE
+            - 413 REQUEST_ENTITY_TOO_LARGE
+            - 414 URI_TOO_LONG
+            - 414 REQUEST_URI_TOO_LONG
+            - 415 UNSUPPORTED_MEDIA_TYPE
+            - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+            - 417 EXPECTATION_FAILED
+            - 418 I_AM_A_TEAPOT
+            - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+            - 420 METHOD_FAILURE
+            - 421 DESTINATION_LOCKED
+            - 422 UNPROCESSABLE_ENTITY
+            - 423 LOCKED
+            - 424 FAILED_DEPENDENCY
+            - 425 TOO_EARLY
+            - 426 UPGRADE_REQUIRED
+            - 428 PRECONDITION_REQUIRED
+            - 429 TOO_MANY_REQUESTS
+            - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+            - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+            - 500 INTERNAL_SERVER_ERROR
+            - 501 NOT_IMPLEMENTED
+            - 502 BAD_GATEWAY
+            - 503 SERVICE_UNAVAILABLE
+            - 504 GATEWAY_TIMEOUT
+            - 505 HTTP_VERSION_NOT_SUPPORTED
+            - 506 VARIANT_ALSO_NEGOTIATES
+            - 507 INSUFFICIENT_STORAGE
+            - 508 LOOP_DETECTED
+            - 509 BANDWIDTH_LIMIT_EXCEEDED
+            - 510 NOT_EXTENDED
+            - 511 NETWORK_AUTHENTICATION_REQUIRED
+          example: NOT_FOUND
+        message:
+          type: string
+          description: The error message in English
+          example: Error message
+        code:
+          type: string
+          description: The error code used for internationalization of the error messages
+          example: error.service.code
+      required:
+        - code
+        - message
+        - status
     ColumnBriefDto:
       type: object
       properties:
@@ -8484,6 +8391,192 @@ components:
         - temporalCoverage
         - url
         - version
+    ViewColumnDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The id
+          example: 6aec3a91-2e0b-4e92-a16a-9c3c5e892da1
+        name:
+          type: string
+          description: The user-friendly column name
+          example: Given Name
+          maxLength: 64
+          minLength: 0
+        size:
+          type: integer
+          format: int64
+          description: >-
+            The column size, determines the number of digits before the comma as
+            x=size-d where size >= d
+          example: 255
+        d:
+          type: integer
+          format: int64
+          description: The column d
+          example: 0
+        description:
+          type: string
+          example: Column comment
+          maxLength: 2048
+          minLength: 0
+        enums:
+          type: array
+          description: 'enum values, only considered when type = ENUM'
+          items:
+            $ref: '#/components/schemas/EnumDto'
+        sets:
+          type: array
+          description: 'enum values, only considered when type = ENUM'
+          items:
+            $ref: '#/components/schemas/SetDto'
+        database_id:
+          type: string
+          format: uuid
+          description: The database id
+          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
+        ord:
+          type: integer
+          format: int32
+          description: The ordinal position of the colum to order it
+          example: 0
+        internal_name:
+          type: string
+          description: The machine-friendly column name
+          example: given_name
+          maxLength: 64
+          minLength: 0
+        index_length:
+          type: integer
+          format: int64
+          description: The length of the index
+          example: 255
+        length:
+          type: integer
+          format: int64
+          description: The length of the total data in the table (index + data)
+          example: 255
+        type:
+          type: string
+          description: The column type name
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+          example: varchar
+        is_null_allowed:
+          type: boolean
+          example: false
+      required:
+        - database_id
+        - id
+        - internal_name
+        - is_null_allowed
+        - name
+        - ord
+        - type
+    ViewDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The id
+          example: 787439d0-e85e-400c-a7e6-996a023bfad9
+        name:
+          type: string
+          description: The user-friendly name
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        query:
+          type: string
+          description: The SQL statement used to create the view
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewColumnDto'
+        created:
+          type: string
+          format: date-time
+          description: The created timestamp
+          example: '2022-01-01 08:00:00.000'
+        database_id:
+          type: string
+          format: uuid
+          description: The database id
+          example: 2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4
+        internal_name:
+          type: string
+          description: The machine-friendly name
+          example: air_quality
+        is_public:
+          type: boolean
+          description: >-
+            The visibility; if true, The will be displayed publicly and is
+            searchable
+          example: true
+        is_schema_public:
+          type: boolean
+          description: >-
+            The insights; if true, The schema will be displayed publicly and is
+            searchable
+          example: true
+        initial_view:
+          type: boolean
+          description: 'If true, the view is default for the database'
+          example: true
+        query_hash:
+          type: string
+          description: The sha256-hash of the query
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
+      required:
+        - columns
+        - created
+        - database_id
+        - id
+        - identifiers
+        - internal_name
+        - is_public
+        - is_schema_public
+        - name
+        - owner
+        - query
+        - query_hash
     ConstraintsDto:
       type: object
       properties:
@@ -8634,11 +8727,6 @@ components:
           format: date-time
           description: The created timestamp
           example: '2022-01-01 08:00:00.000'
-        last_retrieved:
-          type: string
-          format: date-time
-          description: The timestamp The was last retrieved from the cache
-          example: '2025-01-23T12:09:01'
         database_id:
           type: string
           format: uuid

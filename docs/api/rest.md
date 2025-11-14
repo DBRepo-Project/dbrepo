@@ -120,16 +120,6 @@ that are used between the services themselves.
 | IdentifierDescriptionDto | [#/components/schemas/IdentifierDescriptionDto](#componentsschemasidentifierdescriptiondto) |  |
 | IdentifierTitleDto | [#/components/schemas/IdentifierTitleDto](#componentsschemasidentifiertitledto) |  |
 | QueryDto | [#/components/schemas/QueryDto](#componentsschemasquerydto) |  |
-| CreatorDto | [#/components/schemas/CreatorDto](#componentsschemascreatordto) |  |
-| EnumDto | [#/components/schemas/EnumDto](#componentsschemasenumdto) |  |
-| IdentifierDto | [#/components/schemas/IdentifierDto](#componentsschemasidentifierdto) |  |
-| IdentifierFunderDto | [#/components/schemas/IdentifierFunderDto](#componentsschemasidentifierfunderdto) |  |
-| LicenseDto | [#/components/schemas/LicenseDto](#componentsschemaslicensedto) |  |
-| LinksDto | [#/components/schemas/LinksDto](#componentsschemaslinksdto) |  |
-| RelatedIdentifierDto | [#/components/schemas/RelatedIdentifierDto](#componentsschemasrelatedidentifierdto) |  |
-| SetDto | [#/components/schemas/SetDto](#componentsschemassetdto) |  |
-| ViewColumnDto | [#/components/schemas/ViewColumnDto](#componentsschemasviewcolumndto) |  |
-| ViewDto | [#/components/schemas/ViewDto](#componentsschemasviewdto) |  |
 | TupleDto | [#/components/schemas/TupleDto](#componentsschemastupledto) |  |
 | ImportDto | [#/components/schemas/ImportDto](#componentsschemasimportdto) |  |
 | FilterDto | [#/components/schemas/FilterDto](#componentsschemasfilterdto) |  |
@@ -152,11 +142,17 @@ that are used between the services themselves.
 | ImageDto | [#/components/schemas/ImageDto](#componentsschemasimagedto) |  |
 | OperatorDto | [#/components/schemas/OperatorDto](#componentsschemasoperatordto) |  |
 | IdentifierSaveDto | [#/components/schemas/IdentifierSaveDto](#componentsschemasidentifiersavedto) |  |
+| LicenseDto | [#/components/schemas/LicenseDto](#componentsschemaslicensedto) |  |
 | SaveIdentifierCreatorDto | [#/components/schemas/SaveIdentifierCreatorDto](#componentsschemassaveidentifiercreatordto) |  |
 | SaveIdentifierDescriptionDto | [#/components/schemas/SaveIdentifierDescriptionDto](#componentsschemassaveidentifierdescriptiondto) |  |
 | SaveIdentifierFunderDto | [#/components/schemas/SaveIdentifierFunderDto](#componentsschemassaveidentifierfunderdto) |  |
 | SaveIdentifierTitleDto | [#/components/schemas/SaveIdentifierTitleDto](#componentsschemassaveidentifiertitledto) |  |
 | SaveRelatedIdentifierDto | [#/components/schemas/SaveRelatedIdentifierDto](#componentsschemassaverelatedidentifierdto) |  |
+| CreatorDto | [#/components/schemas/CreatorDto](#componentsschemascreatordto) |  |
+| IdentifierDto | [#/components/schemas/IdentifierDto](#componentsschemasidentifierdto) |  |
+| IdentifierFunderDto | [#/components/schemas/IdentifierFunderDto](#componentsschemasidentifierfunderdto) |  |
+| LinksDto | [#/components/schemas/LinksDto](#componentsschemaslinksdto) |  |
+| RelatedIdentifierDto | [#/components/schemas/RelatedIdentifierDto](#componentsschemasrelatedidentifierdto) |  |
 | DatabaseModifyVisibilityDto | [#/components/schemas/DatabaseModifyVisibilityDto](#componentsschemasdatabasemodifyvisibilitydto) |  |
 | ViewUpdateDto | [#/components/schemas/ViewUpdateDto](#componentsschemasviewupdatedto) |  |
 | ViewBriefDto | [#/components/schemas/ViewBriefDto](#componentsschemasviewbriefdto) |  |
@@ -165,6 +161,8 @@ that are used between the services themselves.
 | ColumnSemanticsUpdateDto | [#/components/schemas/ColumnSemanticsUpdateDto](#componentsschemascolumnsemanticsupdatedto) |  |
 | ColumnDto | [#/components/schemas/ColumnDto](#componentsschemascolumndto) |  |
 | ConceptBriefDto | [#/components/schemas/ConceptBriefDto](#componentsschemasconceptbriefdto) |  |
+| EnumDto | [#/components/schemas/EnumDto](#componentsschemasenumdto) |  |
+| SetDto | [#/components/schemas/SetDto](#componentsschemassetdto) |  |
 | UnitBriefDto | [#/components/schemas/UnitBriefDto](#componentsschemasunitbriefdto) |  |
 | DatabaseTransferDto | [#/components/schemas/DatabaseTransferDto](#componentsschemasdatabasetransferdto) |  |
 | DatabaseModifyImageDto | [#/components/schemas/DatabaseModifyImageDto](#componentsschemasdatabasemodifyimagedto) |  |
@@ -186,6 +184,7 @@ that are used between the services themselves.
 | CreateTableDto | [#/components/schemas/CreateTableDto](#componentsschemascreatetabledto) |  |
 | CreateContainerDto | [#/components/schemas/CreateContainerDto](#componentsschemascreatecontainerdto) |  |
 | ContainerDto | [#/components/schemas/ContainerDto](#componentsschemascontainerdto) |  |
+| ApiErrorDto | [#/components/schemas/ApiErrorDto](#componentsschemasapierrordto) |  |
 | ColumnBriefDto | [#/components/schemas/ColumnBriefDto](#componentsschemascolumnbriefdto) |  |
 | UnitDto | [#/components/schemas/UnitDto](#componentsschemasunitdto) |  |
 | OntologyBriefDto | [#/components/schemas/OntologyBriefDto](#componentsschemasontologybriefdto) |  |
@@ -195,6 +194,8 @@ that are used between the services themselves.
 | ImageBriefDto | [#/components/schemas/ImageBriefDto](#componentsschemasimagebriefdto) |  |
 | LdCreatorDto | [#/components/schemas/LdCreatorDto](#componentsschemasldcreatordto) |  |
 | LdDatasetDto | [#/components/schemas/LdDatasetDto](#componentsschemaslddatasetdto) |  |
+| ViewColumnDto | [#/components/schemas/ViewColumnDto](#componentsschemasviewcolumndto) |  |
+| ViewDto | [#/components/schemas/ViewDto](#componentsschemasviewdto) |  |
 | ConstraintsDto | [#/components/schemas/ConstraintsDto](#componentsschemasconstraintsdto) |  |
 | ForeignKeyBriefDto | [#/components/schemas/ForeignKeyBriefDto](#componentsschemasforeignkeybriefdto) |  |
 | ForeignKeyDto | [#/components/schemas/ForeignKeyDto](#componentsschemasforeignkeydto) |  |
@@ -405,12 +406,6 @@ Updates a data tuple into a table, then the table statistics are updated. The us
 basicAuth  
 bearerAuth  
 
-#### Headers
-
-```ts
-Authorization: string
-```
-
 #### RequestBody
 
 - application/json
@@ -452,12 +447,6 @@ Inserts a data tuple into a table, then the table statistics are updated. The us
 basicAuth  
 bearerAuth  
 
-#### Headers
-
-```ts
-Authorization: string
-```
-
 #### RequestBody
 
 - application/json
@@ -495,12 +484,6 @@ Deletes a data tuple into a table, then the table statistics are updated. The us
 - Security  
 basicAuth  
 bearerAuth  
-
-#### Headers
-
-```ts
-Authorization: string
-```
 
 #### RequestBody
 
@@ -722,8 +705,10 @@ bearerAuth
 
 ```ts
 {
+  // The user name
+  username: string
   user: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -766,8 +751,10 @@ bearerAuth
 
 ```ts
 {
+  // The user name
+  username: string
   user: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -824,7 +811,7 @@ basicAuth
   // The query id
   id: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -873,6 +860,7 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
   // The database id
@@ -928,159 +916,7 @@ bearerAuth
 
 - 201 Uploaded the file
 
-`application/json`
-
-```ts
-{
-  // The id
-  id: string
-  // The user-friendly name
-  name: string
-  identifiers: {
-    id: string
-    links: {
-      self: string
-      data?: string
-      self_html: string
-      dashboard_html?: string
-    }
-    type: enum[database, subset, table, view]
-    titles: {
-      id: string
-      title?: string
-      language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-      type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
-    }[]
-    descriptions: {
-      id: string
-      description?: string
-      language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-      type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
-    }[]
-    funders: {
-      id: string
-      funder_name: string
-      funder_identifier?: string
-      funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
-      scheme_uri?: string
-      award_number?: string
-      award_title?: string
-    }[]
-    query: string
-    execution?: string
-    doi?: string
-    publisher: string
-    owner: {
-      id: string
-      // Only contains lowercase characters
-      username: string
-      name?: string
-      orcid?: string
-      qualified_name?: string
-      given_name?: string
-      family_name?: string
-    }
-    language: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-    licenses: {
-      // The id
-      identifier: string
-      // The link to the license such as an SPDX identifier
-      uri: string
-      // A user-friendly short abstract of key details of the license
-      description?: string
-    }[]
-    creators: {
-      id: string
-      firstname?: string
-      lastname?: string
-      affiliation?: string
-      creator_name: string
-      name_type?: enum[Personal, Organizational]
-      name_identifier?: string
-      name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
-      name_identifier_scheme_uri?: string
-      affiliation_identifier?: string
-      affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
-      affiliation_identifier_scheme_uri?: string
-    }[]
-    status: enum[draft, published]
-    created?: string
-    database_id: string
-    query_id?: string
-    table_id?: string
-    view_id?: string
-    query_normalized: string
-    related_identifiers: {
-      id: string
-      value: string
-      type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
-      relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
-    }[]
-    // query hash in sha512
-    query_hash: string
-    result_hash?: string
-    result_number?: integer
-    publication_day?: integer
-    publication_month?: integer
-    publication_year: integer
-  }[]
-  // The SQL statement used to create the view
-  query: string
-  owner:#/components/schemas/UserBriefDto
-  columns: {
-    // The id
-    id: string
-    // The user-friendly column name
-    name: string
-    // The column size, determines the number of digits before the comma as x=size-d where size >= d
-    size?: integer
-    // The column d
-    d?: integer
-    description?: string
-    enums: {
-      // The enum id
-      id: string
-      // The enum value
-      value: string
-    }[]
-    sets: {
-      // The set id
-      id: string
-      // The set value
-      value: string
-    }[]
-    // The database id
-    database_id: string
-    // The ordinal position of the colum to order it
-    ord: integer
-    // The machine-friendly column name
-    internal_name: string
-    // The length of the index
-    index_length?: integer
-    // The length of the total data in the table (index + data)
-    length?: integer
-    // The column type name
-    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-    is_null_allowed: boolean
-  }[]
-  // The created timestamp
-  created: string
-  // The timestamp The was last retrieved from the cache
-  last_retrieved?: string
-  // The database id
-  database_id: string
-  // The machine-friendly name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // If true, the view is default for the database
-  initial_view?: boolean
-  // The sha256-hash of the query
-  query_hash: string
-}
-```
+- 204 File already present
 
 - 503 Failed to establish connection with the storage service
 
@@ -1166,7 +1002,7 @@ persisted?: boolean
   // The query id
   id: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -1215,6 +1051,7 @@ persisted?: boolean
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
   // The database id
@@ -1461,7 +1298,7 @@ timestamp?: string
   // The query id
   id: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -1510,6 +1347,7 @@ timestamp?: string
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
   // The database id
@@ -1561,17 +1399,16 @@ basicAuth
 
 ```ts
 {
-  id: string
+  id?: string
   name?: string
   username: string
-  password: string
+  password?: string
   attributes: {
     theme: string
     orcid?: string
     affiliation?: string
     language: string
   }
-  last_retrieved?: string
   qualified_name?: string
   given_name?: string
   family_name?: string
@@ -1619,17 +1456,16 @@ basicAuth
 
 ```ts
 {
-  id: string
+  id?: string
   name?: string
   username: string
-  password: string
+  password?: string
   attributes: {
     theme: string
     orcid?: string
     affiliation?: string
     language: string
   }
-  last_retrieved?: string
   qualified_name?: string
   given_name?: string
   family_name?: string
@@ -1666,17 +1502,16 @@ basicAuth
 
 ```ts
 {
-  id: string
+  id?: string
   name?: string
   username: string
-  password: string
+  password?: string
   attributes: {
     theme: string
     orcid?: string
     affiliation?: string
     language: string
   }
-  last_retrieved?: string
   qualified_name?: string
   given_name?: string
   family_name?: string
@@ -1750,10 +1585,17 @@ internal_name?: string
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -1762,14 +1604,8 @@ internal_name?: string
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }[]
@@ -1853,10 +1689,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -1865,14 +1708,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -1955,10 +1792,17 @@ internal_name?: string
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -1967,14 +1811,8 @@ internal_name?: string
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }[]
@@ -2002,8 +1840,10 @@ basicAuth
 
 ```ts
 {
+  // The user name
+  username: string
   user: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -2092,8 +1932,10 @@ basicAuth
 
 ```ts
 {
+  // The user name
+  username: string
   user: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -2166,8 +2008,10 @@ basicAuth
 
 ```ts
 {
+  // The user name
+  username: string
   user: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -2608,7 +2452,7 @@ Accept: string
   doi?: string
   publisher: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -2870,7 +2714,7 @@ basicAuth
   doi?: string
   publisher: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -3017,7 +2861,7 @@ basicAuth
   doi?: string
   publisher: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -3158,10 +3002,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -3170,14 +3021,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -3254,7 +3099,7 @@ basicAuth
     doi?: string
     publisher: string
     owner: {
-      id: string
+      id?: string
       // Only contains lowercase characters
       username: string
       name?: string
@@ -3348,8 +3193,6 @@ basicAuth
   }[]
   // The created timestamp
   created: string
-  // The timestamp The was last retrieved from the cache
-  last_retrieved?: string
   // The database id
   database_id: string
   // The machine-friendly name
@@ -3422,7 +3265,7 @@ basicAuth
   initial_view?: boolean
   // The sha256-hash of the query
   query_hash: string
-  // The owner id
+  // The owner username
   owned_by?: string
 }
 ```
@@ -3532,7 +3375,7 @@ basicAuth
     doi?: string
     publisher: string
     owner: {
-      id: string
+      id?: string
       // Only contains lowercase characters
       username: string
       name?: string
@@ -3685,7 +3528,7 @@ basicAuth
         is_public: boolean
         // The insights; if true, The schema will be displayed publicly and is searchable
         is_schema_public: boolean
-        // The owner id
+        // The owner username
         owned_by: string
       }
       columns: {
@@ -3737,8 +3580,6 @@ basicAuth
   }
   // The created timestamp
   created: string
-  // The timestamp The was last retrieved from the cache
-  last_retrieved?: string
   // The database id
   database_id: string
   // The machine-friendly name
@@ -3778,7 +3619,7 @@ basicAuth
 Update table
 
 - Description  
-Updates a table in the database with id. Requires role `update-table`.
+Updates a table in the database with id. Requires role `update-table` or `system`.
 
 - Security  
 bearerAuth  
@@ -3823,7 +3664,7 @@ basicAuth
   is_public: boolean
   // The insights; if true, The schema will be displayed publicly and is searchable
   is_schema_public: boolean
-  // The owner id
+  // The owner username
   owned_by: string
 }
 ```
@@ -4090,10 +3931,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -4102,14 +3950,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -4119,7 +3961,7 @@ basicAuth
 
 - 403 Transfer of ownership is not permitted
 
-- 404 Database or user could not be found
+- 404 Database could not be found
 
 - 502 Connection to search service failed
 
@@ -4186,10 +4028,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -4198,14 +4047,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -4280,10 +4123,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -4292,14 +4142,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -4416,10 +4260,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -4428,14 +4279,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -4818,6 +4663,7 @@ Accept: string
   table_id?: string
   view_id?: string
   publication_year: integer
+  // The owner username
   owned_by: string
 }[][]
 ```
@@ -5006,7 +4852,7 @@ basicAuth
   doi?: string
   publisher: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -5111,7 +4957,7 @@ basicAuth
   initial_view?: boolean
   // The sha256-hash of the query
   query_hash: string
-  // The owner id
+  // The owner username
   owned_by?: string
 }[]
 ```
@@ -5195,7 +5041,7 @@ basicAuth
   initial_view?: boolean
   // The sha256-hash of the query
   query_hash: string
-  // The owner id
+  // The owner username
   owned_by?: string
 }
 ```
@@ -5252,7 +5098,7 @@ basicAuth
   is_public: boolean
   // The insights; if true, The schema will be displayed publicly and is searchable
   is_schema_public: boolean
-  // The owner id
+  // The owner username
   owned_by: string
 }[]
 ```
@@ -5353,7 +5199,7 @@ basicAuth
   is_public: boolean
   // The insights; if true, The schema will be displayed publicly and is searchable
   is_schema_public: boolean
-  // The owner id
+  // The owner username
   owned_by: string
 }
 ```
@@ -5527,11 +5373,6 @@ basicAuth
   quota: integer
   // The number of databases currently in the container
   count: integer
-  // The username of the privileged user
-  username?: string
-  // The password of the privileged user
-  password?: string
-  last_retrieved?: string
   // The machine-friendly container name
   internal_name: string
 }
@@ -5569,7 +5410,7 @@ username?: string
 
 ```ts
 {
-  id: string
+  id?: string
   // Only contains lowercase characters
   username: string
   name?: string
@@ -5578,6 +5419,20 @@ username?: string
   given_name?: string
   family_name?: string
 }[]
+```
+
+- 403 Listing not allowed
+
+`application/json`
+
+```ts
+{
+  status: enum[100 CONTINUE, 101 SWITCHING_PROTOCOLS, 102 PROCESSING, 103 EARLY_HINTS, 103 CHECKPOINT, 200 OK, 201 CREATED, 202 ACCEPTED, 203 NON_AUTHORITATIVE_INFORMATION, 204 NO_CONTENT, 205 RESET_CONTENT, 206 PARTIAL_CONTENT, 207 MULTI_STATUS, 208 ALREADY_REPORTED, 226 IM_USED, 300 MULTIPLE_CHOICES, 301 MOVED_PERMANENTLY, 302 FOUND, 302 MOVED_TEMPORARILY, 303 SEE_OTHER, 304 NOT_MODIFIED, 305 USE_PROXY, 307 TEMPORARY_REDIRECT, 308 PERMANENT_REDIRECT, 400 BAD_REQUEST, 401 UNAUTHORIZED, 402 PAYMENT_REQUIRED, 403 FORBIDDEN, 404 NOT_FOUND, 405 METHOD_NOT_ALLOWED, 406 NOT_ACCEPTABLE, 407 PROXY_AUTHENTICATION_REQUIRED, 408 REQUEST_TIMEOUT, 409 CONFLICT, 410 GONE, 411 LENGTH_REQUIRED, 412 PRECONDITION_FAILED, 413 PAYLOAD_TOO_LARGE, 413 REQUEST_ENTITY_TOO_LARGE, 414 URI_TOO_LONG, 414 REQUEST_URI_TOO_LONG, 415 UNSUPPORTED_MEDIA_TYPE, 416 REQUESTED_RANGE_NOT_SATISFIABLE, 417 EXPECTATION_FAILED, 418 I_AM_A_TEAPOT, 419 INSUFFICIENT_SPACE_ON_RESOURCE, 420 METHOD_FAILURE, 421 DESTINATION_LOCKED, 422 UNPROCESSABLE_ENTITY, 423 LOCKED, 424 FAILED_DEPENDENCY, 425 TOO_EARLY, 426 UPGRADE_REQUIRED, 428 PRECONDITION_REQUIRED, 429 TOO_MANY_REQUESTS, 431 REQUEST_HEADER_FIELDS_TOO_LARGE, 451 UNAVAILABLE_FOR_LEGAL_REASONS, 500 INTERNAL_SERVER_ERROR, 501 NOT_IMPLEMENTED, 502 BAD_GATEWAY, 503 SERVICE_UNAVAILABLE, 504 GATEWAY_TIMEOUT, 505 HTTP_VERSION_NOT_SUPPORTED, 506 VARIANT_ALSO_NEGOTIATES, 507 INSUFFICIENT_STORAGE, 508 LOOP_DETECTED, 509 BANDWIDTH_LIMIT_EXCEEDED, 510 NOT_EXTENDED, 511 NETWORK_AUTHENTICATION_REQUIRED]
+  // The error message in English
+  message: string
+  // The error code used for internationalization of the error messages
+  code: string
+}
 ```
 
 ***
@@ -5827,7 +5682,7 @@ url: string
   doi?: string
   publisher: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -5945,10 +5800,17 @@ basicAuth
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -5957,14 +5819,8 @@ basicAuth
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -6131,11 +5987,6 @@ Finds a container in the metadata database.
   quota: integer
   // The number of databases currently in the container
   count: integer
-  // The username of the privileged user
-  username?: string
-  // The password of the privileged user
-  password?: string
-  last_retrieved?: string
   // The machine-friendly container name
   internal_name: string
 }
@@ -6395,8 +6246,10 @@ body: {
 
 ```ts
 {
+  // The user name
+  username: string
   user: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -6413,7 +6266,7 @@ body: {
 
 ```ts
 {
-  id: string
+  id?: string
   // Only contains lowercase characters
   username: string
   name?: string
@@ -6498,6 +6351,7 @@ body: {
   table_id?: string
   view_id?: string
   publication_year: integer
+  // The owner username
   owned_by: string
 }
 ```
@@ -6531,7 +6385,7 @@ body: {
   // The query id
   id: string
   owner: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -6580,6 +6434,7 @@ body: {
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
   // The database id
@@ -6594,384 +6449,6 @@ body: {
   result_number?: integer
   // If false, the query is marked for deletion at a later point in time
   is_persisted: boolean
-}
-```
-
-### #/components/schemas/CreatorDto
-
-```ts
-{
-  id: string
-  firstname?: string
-  lastname?: string
-  affiliation?: string
-  creator_name: string
-  name_type?: enum[Personal, Organizational]
-  name_identifier?: string
-  name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
-  name_identifier_scheme_uri?: string
-  affiliation_identifier?: string
-  affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
-  affiliation_identifier_scheme_uri?: string
-}
-```
-
-### #/components/schemas/EnumDto
-
-```ts
-{
-  // The enum id
-  id: string
-  // The enum value
-  value: string
-}
-```
-
-### #/components/schemas/IdentifierDto
-
-```ts
-{
-  id: string
-  links: {
-    self: string
-    data?: string
-    self_html: string
-    dashboard_html?: string
-  }
-  type: enum[database, subset, table, view]
-  titles: {
-    id: string
-    title?: string
-    language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-    type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
-  }[]
-  descriptions: {
-    id: string
-    description?: string
-    language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-    type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
-  }[]
-  funders: {
-    id: string
-    funder_name: string
-    funder_identifier?: string
-    funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
-    scheme_uri?: string
-    award_number?: string
-    award_title?: string
-  }[]
-  query: string
-  execution?: string
-  doi?: string
-  publisher: string
-  owner: {
-    id: string
-    // Only contains lowercase characters
-    username: string
-    name?: string
-    orcid?: string
-    qualified_name?: string
-    given_name?: string
-    family_name?: string
-  }
-  language: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-  licenses: {
-    // The id
-    identifier: string
-    // The link to the license such as an SPDX identifier
-    uri: string
-    // A user-friendly short abstract of key details of the license
-    description?: string
-  }[]
-  creators: {
-    id: string
-    firstname?: string
-    lastname?: string
-    affiliation?: string
-    creator_name: string
-    name_type?: enum[Personal, Organizational]
-    name_identifier?: string
-    name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
-    name_identifier_scheme_uri?: string
-    affiliation_identifier?: string
-    affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
-    affiliation_identifier_scheme_uri?: string
-  }[]
-  status: enum[draft, published]
-  created?: string
-  database_id: string
-  query_id?: string
-  table_id?: string
-  view_id?: string
-  query_normalized: string
-  related_identifiers: {
-    id: string
-    value: string
-    type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
-    relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
-  }[]
-  // query hash in sha512
-  query_hash: string
-  result_hash?: string
-  result_number?: integer
-  publication_day?: integer
-  publication_month?: integer
-  publication_year: integer
-}
-```
-
-### #/components/schemas/IdentifierFunderDto
-
-```ts
-{
-  id: string
-  funder_name: string
-  funder_identifier?: string
-  funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
-  scheme_uri?: string
-  award_number?: string
-  award_title?: string
-}
-```
-
-### #/components/schemas/LicenseDto
-
-```ts
-{
-  // The id
-  identifier: string
-  // The link to the license such as an SPDX identifier
-  uri: string
-  // A user-friendly short abstract of key details of the license
-  description?: string
-}
-```
-
-### #/components/schemas/LinksDto
-
-```ts
-{
-  self: string
-  data?: string
-  self_html: string
-  dashboard_html?: string
-}
-```
-
-### #/components/schemas/RelatedIdentifierDto
-
-```ts
-{
-  id: string
-  value: string
-  type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
-  relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
-}
-```
-
-### #/components/schemas/SetDto
-
-```ts
-{
-  // The set id
-  id: string
-  // The set value
-  value: string
-}
-```
-
-### #/components/schemas/ViewColumnDto
-
-```ts
-{
-  // The id
-  id: string
-  // The user-friendly column name
-  name: string
-  // The column size, determines the number of digits before the comma as x=size-d where size >= d
-  size?: integer
-  // The column d
-  d?: integer
-  description?: string
-  enums: {
-    // The enum id
-    id: string
-    // The enum value
-    value: string
-  }[]
-  sets: {
-    // The set id
-    id: string
-    // The set value
-    value: string
-  }[]
-  // The database id
-  database_id: string
-  // The ordinal position of the colum to order it
-  ord: integer
-  // The machine-friendly column name
-  internal_name: string
-  // The length of the index
-  index_length?: integer
-  // The length of the total data in the table (index + data)
-  length?: integer
-  // The column type name
-  type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-  is_null_allowed: boolean
-}
-```
-
-### #/components/schemas/ViewDto
-
-```ts
-{
-  // The id
-  id: string
-  // The user-friendly name
-  name: string
-  identifiers: {
-    id: string
-    links: {
-      self: string
-      data?: string
-      self_html: string
-      dashboard_html?: string
-    }
-    type: enum[database, subset, table, view]
-    titles: {
-      id: string
-      title?: string
-      language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-      type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
-    }[]
-    descriptions: {
-      id: string
-      description?: string
-      language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-      type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
-    }[]
-    funders: {
-      id: string
-      funder_name: string
-      funder_identifier?: string
-      funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
-      scheme_uri?: string
-      award_number?: string
-      award_title?: string
-    }[]
-    query: string
-    execution?: string
-    doi?: string
-    publisher: string
-    owner: {
-      id: string
-      // Only contains lowercase characters
-      username: string
-      name?: string
-      orcid?: string
-      qualified_name?: string
-      given_name?: string
-      family_name?: string
-    }
-    language: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
-    licenses: {
-      // The id
-      identifier: string
-      // The link to the license such as an SPDX identifier
-      uri: string
-      // A user-friendly short abstract of key details of the license
-      description?: string
-    }[]
-    creators: {
-      id: string
-      firstname?: string
-      lastname?: string
-      affiliation?: string
-      creator_name: string
-      name_type?: enum[Personal, Organizational]
-      name_identifier?: string
-      name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
-      name_identifier_scheme_uri?: string
-      affiliation_identifier?: string
-      affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
-      affiliation_identifier_scheme_uri?: string
-    }[]
-    status: enum[draft, published]
-    created?: string
-    database_id: string
-    query_id?: string
-    table_id?: string
-    view_id?: string
-    query_normalized: string
-    related_identifiers: {
-      id: string
-      value: string
-      type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
-      relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
-    }[]
-    // query hash in sha512
-    query_hash: string
-    result_hash?: string
-    result_number?: integer
-    publication_day?: integer
-    publication_month?: integer
-    publication_year: integer
-  }[]
-  // The SQL statement used to create the view
-  query: string
-  owner:#/components/schemas/UserBriefDto
-  columns: {
-    // The id
-    id: string
-    // The user-friendly column name
-    name: string
-    // The column size, determines the number of digits before the comma as x=size-d where size >= d
-    size?: integer
-    // The column d
-    d?: integer
-    description?: string
-    enums: {
-      // The enum id
-      id: string
-      // The enum value
-      value: string
-    }[]
-    sets: {
-      // The set id
-      id: string
-      // The set value
-      value: string
-    }[]
-    // The database id
-    database_id: string
-    // The ordinal position of the colum to order it
-    ord: integer
-    // The machine-friendly column name
-    internal_name: string
-    // The length of the index
-    index_length?: integer
-    // The length of the total data in the table (index + data)
-    length?: integer
-    // The column type name
-    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-    is_null_allowed: boolean
-  }[]
-  // The created timestamp
-  created: string
-  // The timestamp The was last retrieved from the cache
-  last_retrieved?: string
-  // The database id
-  database_id: string
-  // The machine-friendly name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // If true, the view is default for the database
-  initial_view?: boolean
-  // The sha256-hash of the query
-  query_hash: string
 }
 ```
 
@@ -7155,17 +6632,16 @@ body: {
 
 ```ts
 {
-  id: string
+  id?: string
   name?: string
   username: string
-  password: string
+  password?: string
   attributes: {
     theme: string
     orcid?: string
     affiliation?: string
     language: string
   }
-  last_retrieved?: string
   qualified_name?: string
   given_name?: string
   family_name?: string
@@ -7215,10 +6691,17 @@ body: {
     table_id?: string
     view_id?: string
     publication_year: integer
+    // The owner username
     owned_by: string
   }[]
+  // The machine-friendly database name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
   contact: {
-    id: string
+    id?: string
     // Only contains lowercase characters
     username: string
     name?: string
@@ -7227,14 +6710,8 @@ body: {
     given_name?: string
     family_name?: string
   }
-  // The machine-friendly database name
-  internal_name: string
-  // The visibility; if true, The will be displayed publicly and is searchable
-  is_public: boolean
-  // The insights; if true, The schema will be displayed publicly and is searchable
-  is_schema_public: boolean
-  // The owner id
-  owner_id: string
+  // The owner username
+  owned_by: string
   // The preview image
   preview_image?: string
 }
@@ -7503,6 +6980,19 @@ body: {
 }
 ```
 
+### #/components/schemas/LicenseDto
+
+```ts
+{
+  // The id
+  identifier: string
+  // The link to the license such as an SPDX identifier
+  uri: string
+  // A user-friendly short abstract of key details of the license
+  description?: string
+}
+```
+
 ### #/components/schemas/SaveIdentifierCreatorDto
 
 ```ts
@@ -7565,6 +7055,154 @@ body: {
 }
 ```
 
+### #/components/schemas/CreatorDto
+
+```ts
+{
+  id: string
+  firstname?: string
+  lastname?: string
+  affiliation?: string
+  creator_name: string
+  name_type?: enum[Personal, Organizational]
+  name_identifier?: string
+  name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
+  name_identifier_scheme_uri?: string
+  affiliation_identifier?: string
+  affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
+  affiliation_identifier_scheme_uri?: string
+}
+```
+
+### #/components/schemas/IdentifierDto
+
+```ts
+{
+  id: string
+  links: {
+    self: string
+    data?: string
+    self_html: string
+    dashboard_html?: string
+  }
+  type: enum[database, subset, table, view]
+  titles: {
+    id: string
+    title?: string
+    language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+    type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
+  }[]
+  descriptions: {
+    id: string
+    description?: string
+    language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+    type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
+  }[]
+  funders: {
+    id: string
+    funder_name: string
+    funder_identifier?: string
+    funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
+    scheme_uri?: string
+    award_number?: string
+    award_title?: string
+  }[]
+  query: string
+  execution?: string
+  doi?: string
+  publisher: string
+  owner: {
+    id?: string
+    // Only contains lowercase characters
+    username: string
+    name?: string
+    orcid?: string
+    qualified_name?: string
+    given_name?: string
+    family_name?: string
+  }
+  language: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+  licenses: {
+    // The id
+    identifier: string
+    // The link to the license such as an SPDX identifier
+    uri: string
+    // A user-friendly short abstract of key details of the license
+    description?: string
+  }[]
+  creators: {
+    id: string
+    firstname?: string
+    lastname?: string
+    affiliation?: string
+    creator_name: string
+    name_type?: enum[Personal, Organizational]
+    name_identifier?: string
+    name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
+    name_identifier_scheme_uri?: string
+    affiliation_identifier?: string
+    affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
+    affiliation_identifier_scheme_uri?: string
+  }[]
+  status: enum[draft, published]
+  created?: string
+  database_id: string
+  query_id?: string
+  table_id?: string
+  view_id?: string
+  query_normalized: string
+  related_identifiers: {
+    id: string
+    value: string
+    type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
+    relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
+  }[]
+  // query hash in sha512
+  query_hash: string
+  result_hash?: string
+  result_number?: integer
+  publication_day?: integer
+  publication_month?: integer
+  publication_year: integer
+}
+```
+
+### #/components/schemas/IdentifierFunderDto
+
+```ts
+{
+  id: string
+  funder_name: string
+  funder_identifier?: string
+  funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
+  scheme_uri?: string
+  award_number?: string
+  award_title?: string
+}
+```
+
+### #/components/schemas/LinksDto
+
+```ts
+{
+  self: string
+  data?: string
+  self_html: string
+  dashboard_html?: string
+}
+```
+
+### #/components/schemas/RelatedIdentifierDto
+
+```ts
+{
+  id: string
+  value: string
+  type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
+  relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
+}
+```
+
 ### #/components/schemas/DatabaseModifyVisibilityDto
 
 ```ts
@@ -7611,7 +7249,7 @@ body: {
   initial_view?: boolean
   // The sha256-hash of the query
   query_hash: string
-  // The owner id
+  // The owner username
   owned_by?: string
 }
 ```
@@ -7649,7 +7287,7 @@ body: {
   is_public: boolean
   // The insights; if true, The schema will be displayed publicly and is searchable
   is_schema_public: boolean
-  // The owner id
+  // The owner username
   owned_by: string
 }
 ```
@@ -7760,6 +7398,28 @@ body: {
   name?: string
   // The concept description giving a user-friendly explanation
   description?: string
+}
+```
+
+### #/components/schemas/EnumDto
+
+```ts
+{
+  // The enum id
+  id: string
+  // The enum value
+  value: string
+}
+```
+
+### #/components/schemas/SetDto
+
+```ts
+{
+  // The set id
+  id: string
+  // The set value
+  value: string
 }
 ```
 
@@ -8264,13 +7924,20 @@ body: {
   quota: integer
   // The number of databases currently in the container
   count: integer
-  // The username of the privileged user
-  username?: string
-  // The password of the privileged user
-  password?: string
-  last_retrieved?: string
   // The machine-friendly container name
   internal_name: string
+}
+```
+
+### #/components/schemas/ApiErrorDto
+
+```ts
+{
+  status: enum[100 CONTINUE, 101 SWITCHING_PROTOCOLS, 102 PROCESSING, 103 EARLY_HINTS, 103 CHECKPOINT, 200 OK, 201 CREATED, 202 ACCEPTED, 203 NON_AUTHORITATIVE_INFORMATION, 204 NO_CONTENT, 205 RESET_CONTENT, 206 PARTIAL_CONTENT, 207 MULTI_STATUS, 208 ALREADY_REPORTED, 226 IM_USED, 300 MULTIPLE_CHOICES, 301 MOVED_PERMANENTLY, 302 FOUND, 302 MOVED_TEMPORARILY, 303 SEE_OTHER, 304 NOT_MODIFIED, 305 USE_PROXY, 307 TEMPORARY_REDIRECT, 308 PERMANENT_REDIRECT, 400 BAD_REQUEST, 401 UNAUTHORIZED, 402 PAYMENT_REQUIRED, 403 FORBIDDEN, 404 NOT_FOUND, 405 METHOD_NOT_ALLOWED, 406 NOT_ACCEPTABLE, 407 PROXY_AUTHENTICATION_REQUIRED, 408 REQUEST_TIMEOUT, 409 CONFLICT, 410 GONE, 411 LENGTH_REQUIRED, 412 PRECONDITION_FAILED, 413 PAYLOAD_TOO_LARGE, 413 REQUEST_ENTITY_TOO_LARGE, 414 URI_TOO_LONG, 414 REQUEST_URI_TOO_LONG, 415 UNSUPPORTED_MEDIA_TYPE, 416 REQUESTED_RANGE_NOT_SATISFIABLE, 417 EXPECTATION_FAILED, 418 I_AM_A_TEAPOT, 419 INSUFFICIENT_SPACE_ON_RESOURCE, 420 METHOD_FAILURE, 421 DESTINATION_LOCKED, 422 UNPROCESSABLE_ENTITY, 423 LOCKED, 424 FAILED_DEPENDENCY, 425 TOO_EARLY, 426 UPGRADE_REQUIRED, 428 PRECONDITION_REQUIRED, 429 TOO_MANY_REQUESTS, 431 REQUEST_HEADER_FIELDS_TOO_LARGE, 451 UNAVAILABLE_FOR_LEGAL_REASONS, 500 INTERNAL_SERVER_ERROR, 501 NOT_IMPLEMENTED, 502 BAD_GATEWAY, 503 SERVICE_UNAVAILABLE, 504 GATEWAY_TIMEOUT, 505 HTTP_VERSION_NOT_SUPPORTED, 506 VARIANT_ALSO_NEGOTIATES, 507 INSUFFICIENT_STORAGE, 508 LOOP_DETECTED, 509 BANDWIDTH_LIMIT_EXCEEDED, 510 NOT_EXTENDED, 511 NETWORK_AUTHENTICATION_REQUIRED]
+  // The error message in English
+  message: string
+  // The error code used for internationalization of the error messages
+  code: string
 }
 ```
 
@@ -8469,6 +8136,199 @@ body: {
 }
 ```
 
+### #/components/schemas/ViewColumnDto
+
+```ts
+{
+  // The id
+  id: string
+  // The user-friendly column name
+  name: string
+  // The column size, determines the number of digits before the comma as x=size-d where size >= d
+  size?: integer
+  // The column d
+  d?: integer
+  description?: string
+  enums: {
+    // The enum id
+    id: string
+    // The enum value
+    value: string
+  }[]
+  sets: {
+    // The set id
+    id: string
+    // The set value
+    value: string
+  }[]
+  // The database id
+  database_id: string
+  // The ordinal position of the colum to order it
+  ord: integer
+  // The machine-friendly column name
+  internal_name: string
+  // The length of the index
+  index_length?: integer
+  // The length of the total data in the table (index + data)
+  length?: integer
+  // The column type name
+  type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
+  is_null_allowed: boolean
+}
+```
+
+### #/components/schemas/ViewDto
+
+```ts
+{
+  // The id
+  id: string
+  // The user-friendly name
+  name: string
+  identifiers: {
+    id: string
+    links: {
+      self: string
+      data?: string
+      self_html: string
+      dashboard_html?: string
+    }
+    type: enum[database, subset, table, view]
+    titles: {
+      id: string
+      title?: string
+      language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+      type?: enum[AlternativeTitle, Subtitle, TranslatedTitle, Other]
+    }[]
+    descriptions: {
+      id: string
+      description?: string
+      language?: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+      type?: enum[Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other]
+    }[]
+    funders: {
+      id: string
+      funder_name: string
+      funder_identifier?: string
+      funder_identifier_type?: enum[Crossref Funder ID, ROR, GND, ISNI, Other]
+      scheme_uri?: string
+      award_number?: string
+      award_title?: string
+    }[]
+    query: string
+    execution?: string
+    doi?: string
+    publisher: string
+    owner: {
+      id?: string
+      // Only contains lowercase characters
+      username: string
+      name?: string
+      orcid?: string
+      qualified_name?: string
+      given_name?: string
+      family_name?: string
+    }
+    language: enum[ab, aa, af, ak, sq, am, ar, an, hy, as, av, ae, ay, az, bm, ba, eu, be, bn, bh, bi, bs, br, bg, my, ca, km, ch, ce, ny, zh, cu, cv, kw, co, cr, hr, cs, da, dv, nl, dz, en, eo, et, ee, fo, fj, fi, fr, ff, gd, gl, lg, ka, de, ki, el, kl, gn, gu, ht, ha, he, hz, hi, ho, hu, is, io, ig, id, ia, ie, iu, ik, ga, it, ja, jv, kn, kr, ks, kk, rw, kv, kg, ko, kj, ku, ky, lo, la, lv, lb, li, ln, lt, lu, mk, mg, ms, ml, mt, gv, mi, mr, mh, ro, mn, na, nv, nd, ng, ne, se, no, nb, nn, ii, oc, oj, or, om, os, pi, pa, ps, fa, pl, pt, qu, rm, rn, ru, sm, sg, sa, sc, sr, sn, sd, si, sk, sl, so, st, nr, es, su, sw, ss, sv, tl, ty, tg, ta, tt, te, th, bo, ti, to, ts, tn, tr, tk, tw, ug, uk, ur, uz, ve, vi, vo, wa, cy, fy, wo, xh, yi, yo, za, zu]
+    licenses: {
+      // The id
+      identifier: string
+      // The link to the license such as an SPDX identifier
+      uri: string
+      // A user-friendly short abstract of key details of the license
+      description?: string
+    }[]
+    creators: {
+      id: string
+      firstname?: string
+      lastname?: string
+      affiliation?: string
+      creator_name: string
+      name_type?: enum[Personal, Organizational]
+      name_identifier?: string
+      name_identifier_scheme?: enum[ORCID, ROR, ISNI, GRID]
+      name_identifier_scheme_uri?: string
+      affiliation_identifier?: string
+      affiliation_identifier_scheme?: enum[ROR, GRID, ISNI]
+      affiliation_identifier_scheme_uri?: string
+    }[]
+    status: enum[draft, published]
+    created?: string
+    database_id: string
+    query_id?: string
+    table_id?: string
+    view_id?: string
+    query_normalized: string
+    related_identifiers: {
+      id: string
+      value: string
+      type: enum[DOI, URL, URN, ARK, arXiv, bibcode, EAN13, EISSN, Handle, IGSN, ISBN, ISTC, LISSN, LSID, PMID, PURL, UPC, w3id]
+      relation: enum[IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues, IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf, IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn, IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles, IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews, IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes]
+    }[]
+    // query hash in sha512
+    query_hash: string
+    result_hash?: string
+    result_number?: integer
+    publication_day?: integer
+    publication_month?: integer
+    publication_year: integer
+  }[]
+  // The SQL statement used to create the view
+  query: string
+  owner:#/components/schemas/UserBriefDto
+  columns: {
+    // The id
+    id: string
+    // The user-friendly column name
+    name: string
+    // The column size, determines the number of digits before the comma as x=size-d where size >= d
+    size?: integer
+    // The column d
+    d?: integer
+    description?: string
+    enums: {
+      // The enum id
+      id: string
+      // The enum value
+      value: string
+    }[]
+    sets: {
+      // The set id
+      id: string
+      // The set value
+      value: string
+    }[]
+    // The database id
+    database_id: string
+    // The ordinal position of the colum to order it
+    ord: integer
+    // The machine-friendly column name
+    internal_name: string
+    // The length of the index
+    index_length?: integer
+    // The length of the total data in the table (index + data)
+    length?: integer
+    // The column type name
+    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
+    is_null_allowed: boolean
+  }[]
+  // The created timestamp
+  created: string
+  // The database id
+  database_id: string
+  // The machine-friendly name
+  internal_name: string
+  // The visibility; if true, The will be displayed publicly and is searchable
+  is_public: boolean
+  // The insights; if true, The schema will be displayed publicly and is searchable
+  is_schema_public: boolean
+  // If true, the view is default for the database
+  initial_view?: boolean
+  // The sha256-hash of the query
+  query_hash: string
+}
+```
+
 ### #/components/schemas/ConstraintsDto
 
 ```ts
@@ -8495,7 +8355,7 @@ body: {
       is_public: boolean
       // The insights; if true, The schema will be displayed publicly and is searchable
       is_schema_public: boolean
-      // The owner id
+      // The owner username
       owned_by: string
     }
     columns: {
@@ -8606,7 +8466,7 @@ body: {
     is_public: boolean
     // The insights; if true, The schema will be displayed publicly and is searchable
     is_schema_public: boolean
-    // The owner id
+    // The owner username
     owned_by: string
   }
   referenced_table:#/components/schemas/TableBriefDto
@@ -8670,7 +8530,7 @@ body: {
     is_public: boolean
     // The insights; if true, The schema will be displayed publicly and is searchable
     is_schema_public: boolean
-    // The owner id
+    // The owner username
     owned_by: string
   }
   column: {
@@ -8739,7 +8599,7 @@ body: {
     doi?: string
     publisher: string
     owner: {
-      id: string
+      id?: string
       // Only contains lowercase characters
       username: string
       name?: string
@@ -8892,7 +8752,7 @@ body: {
         is_public: boolean
         // The insights; if true, The schema will be displayed publicly and is searchable
         is_schema_public: boolean
-        // The owner id
+        // The owner username
         owned_by: string
       }
       columns: {
@@ -8944,8 +8804,6 @@ body: {
   }
   // The created timestamp
   created: string
-  // The timestamp The was last retrieved from the cache
-  last_retrieved?: string
   // The database id
   database_id: string
   // The machine-friendly name
@@ -8998,7 +8856,7 @@ body: {
     is_public: boolean
     // The insights; if true, The schema will be displayed publicly and is searchable
     is_schema_public: boolean
-    // The owner id
+    // The owner username
     owned_by: string
   }
   columns: {
