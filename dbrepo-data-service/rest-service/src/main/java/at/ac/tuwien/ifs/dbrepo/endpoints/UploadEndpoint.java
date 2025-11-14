@@ -1,11 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.file.UploadResponseDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,30 +42,42 @@ public class UploadEndpoint extends RestEndpoint {
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
+                    headers = {@Header(name = "X-S3-Key", description = "The S3 filename", schema = @Schema(implementation = String.class), required = true),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-S3-Key` custom header", schema = @Schema(implementation = String.class), required = true)},
                     description = "Uploaded the file",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ViewDto.class))}),
+                    content = {@Content}),
+            @ApiResponse(responseCode = "204",
+                    headers = {@Header(name = "X-S3-Key", description = "The S3 filename", schema = @Schema(implementation = String.class), required = true),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-S3-Key` custom header", schema = @Schema(implementation = String.class), required = true)},
+                    description = "File already present",
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the storage service",
                     content = {@Content}),
     })
-    public ResponseEntity<UploadResponseDto> create(@NotNull @RequestParam("file") MultipartFile file)
-            throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            ViewMalformedException, MetadataServiceException {
+    public ResponseEntity<Void> create(@NotNull @RequestParam("file") MultipartFile file)
+            throws StorageUnavailableException {
         log.atDebug()
                 .setMessage("endpoint upload file")
                 .addKeyValue("file", file)
                 .log();
+        final String s3key = file.getOriginalFilename();
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Access-Control-Expose-Headers", "X-S3-Key");
+        headers.set("X-S3-Key", s3key);
         try {
-            storageService.putObject(file.getOriginalFilename(), file.getBytes());
+            storageService.putObject(s3key, file.getBytes());
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(UploadResponseDto.builder()
-                            .s3Key(file.getOriginalFilename())
-                            .build());
+                    .headers(headers)
+                    .build();
         } catch (IOException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
-            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+            throw new StorageUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        } catch (StorageObjectExistsException e) {
+            log.info("Object with key {} already exists, skip", s3key);
+            return ResponseEntity.noContent()
+                    .headers(headers)
+                    .build();
         }
     }
 
