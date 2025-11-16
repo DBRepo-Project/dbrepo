@@ -128,7 +128,7 @@
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
     "title": "Database Repository Search Service API",
-    "version": "1.11.0"
+    "version": "1.12.1"
   },
   "openapi": "3.0.0",
   "paths": {

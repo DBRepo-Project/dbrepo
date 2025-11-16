@@ -2,11 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.utils.S3Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.Dataset;
@@ -29,8 +27,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.thirdparty.org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -84,15 +84,7 @@ public class StorageServiceIntegrationTest extends BaseTest {
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
         /* s3 */
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
-            log.warn("Bucket {} not found", s3Config.getS3Bucket());
-            s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3Bucket())
-                    .build());
-            log.info("Bucket {} created", s3Config.getS3Bucket());
-        } else {
-            log.trace("bucket {} exists, continue", s3Config.getS3Bucket());
-        }
+        S3Util.cleanBucket(s3Client, s3Config);
     }
 
     @Test
@@ -161,6 +153,35 @@ public class StorageServiceIntegrationTest extends BaseTest {
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
             storageService.getBytes(s3Config.getS3Bucket(), "i_do_not_exist");
+        });
+    }
+
+    @Test
+    public void putObject_succeeds() throws IOException, StorageObjectExistsException {
+        final byte[] request = FileUtils.readFileToByteArray(new File("./src/test/resources/csv/keyboard.csv"));
+
+        /* test */
+        storageService.putObject("keyboard.csv", request);
+        final GetObjectResponse response = s3Client.getObject(GetObjectRequest.builder()
+                        .key("keyboard.csv")
+                        .bucket(s3Config.getS3Bucket())
+                        .build())
+                .response();
+        assertEquals(DigestUtils.sha1Hex(request), response.metadata().get("sha1"));
+        assertEquals(DigestUtils.sha256Hex(request), response.metadata().get("sha256"));
+        assertEquals(DigestUtils.md5Hex(request), response.metadata().get("md5"));
+    }
+
+    @Test
+    public void putObject_duplicateSkip_fails() throws IOException, StorageObjectExistsException {
+        final byte[] request = FileUtils.readFileToByteArray(new File("./src/test/resources/csv/keyboard.csv"));
+
+        /* mock */
+        storageService.putObject("keyboard.csv", request);
+
+        /* test */
+        assertThrows(StorageObjectExistsException.class, () -> {
+            storageService.putObject("keyboard.csv", request);
         });
     }
 
