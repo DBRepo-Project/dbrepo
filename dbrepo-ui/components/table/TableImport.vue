@@ -475,7 +475,7 @@ export default {
       const uploadService = useUploadService()
       return new Promise((resolve, reject) => {
         return uploadService.create(this.file)
-          .then(({s3_key}) => {
+          .then((s3_key) => {
             const toast = useToastInstance()
             toast.success(this.$t('success.upload.dataset'))
             this.loading = false

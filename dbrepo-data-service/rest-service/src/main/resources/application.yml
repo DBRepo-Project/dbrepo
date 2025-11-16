@@ -65,7 +65,7 @@ server:
     max-swallow-size: -1
 duckdb:
   extension:
-    directory: "/home/dbrepo/.duckdb/extensions/v${DUCKDB_VERSION}/linux_amd64"
+    directory: "/home/dbrepo/.duckdb/extensions"
   tmp:
     directory: /tmp/duckdb.tmp/
 logging:
