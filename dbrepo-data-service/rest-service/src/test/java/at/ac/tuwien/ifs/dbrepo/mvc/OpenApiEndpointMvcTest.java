@@ -64,6 +64,11 @@ public class OpenApiEndpointMvcTest extends BaseTest {
         generic_openApiDocs(ViewEndpoint.class);
     }
 
+    @Test
+    public void openApiDocs_uploadEndpointApiResponses_succeeds() {
+        generic_openApiDocs(UploadEndpoint.class);
+    }
+
     private void generic_openApiDocs(Class<?> endpoint) {
         final String packageScope = "at.ac.tuwien.ifs.dbrepo";
         final List<Method> methods = Arrays.stream(endpoint.getMethods())

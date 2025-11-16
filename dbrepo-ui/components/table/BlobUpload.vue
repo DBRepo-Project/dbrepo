@@ -32,7 +32,7 @@ export default {
       console.debug('upload file', this.file)
       const uploadService = useUploadService()
       uploadService.create(this.file)
-        .then(({s3_key}) => {
+        .then((s3_key) => {
           this.filename = s3_key
           this.value = s3_key
           this.$emit('blob', { column: this.column, s3key: s3_key })

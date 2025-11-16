@@ -15,10 +15,13 @@ config/chroot
 config/common
 
 # artifacts
+*.iso
 binary/
 .build/
 binary.*
 live-image-*
 
 # logs
+build.log
+config.log
 *-log*

@@ -276,7 +276,11 @@ public class SubsetEndpoint extends RestEndpoint {
     @RequestMapping(value = "/{subsetId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Observed(name = "dbrepo_subset_data")
     @Operation(summary = "Get subset data",
-            description = "Gets data of subset with id. For private databases, the user needs at least *READ* access to the associated database. Requests with HTTP method **GET** return the subset dataset, requests with HTTP method **HEAD** only the number of rows in the subset dataset in the `X-Count` header",
+            description = "Gets data of subset with id. For private databases, the user needs at least *READ* grant to " +
+                    "the associated database. Requests with HTTP method **GET** return the subset dataset. Requests " +
+                    "with HTTP method **HEAD** only the number of rows in the subset dataset in the `X-Count` header, " +
+                    "the subset id in the `X-Id` header and the `sha256`-result set hash in the `X-Result-Hash` header. " +
+                    "Requests with HTTP method **GET** additionally return the result set in the response body.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

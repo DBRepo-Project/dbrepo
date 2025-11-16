@@ -578,7 +578,7 @@ export default {
       this.loadingUpload = true
       const uploadService = useUploadService()
       uploadService.create(this.file)
-        .then(({s3_key}) => {
+        .then((s3_key) => {
           console.debug('uploaded image', s3_key)
           const cacheStore = useCacheStore()
           cacheStore.setUploadProgress(null)
