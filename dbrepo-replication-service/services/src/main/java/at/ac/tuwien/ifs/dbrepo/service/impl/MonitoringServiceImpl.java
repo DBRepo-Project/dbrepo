@@ -66,7 +66,11 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                 database.getReplicaUrls() != null ? database.getReplicaUrls() : Map.of();
 
         final Map<String, SiteAccumulator> siteAccumulators = initialiseSiteAccumulators(database);
-        final String primarySiteKey = normalizeUrl(database.getCreationLocation());
+
+        final String primarySiteUrl = database.getCreationLocation() != null
+                ? database.getCreationLocation()
+                : localBaseUrl;
+        final String primarySiteKey = normalizeUrl(primarySiteUrl);
 
         final List<ReplicationMonitoringTableDto> tableSummaries = new ArrayList<>();
         long totalLifetimeTuples = 0L;
@@ -84,6 +88,21 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                 );
                 tableSummaries.add(tableResult.tableDto());
                 totalLifetimeTuples += tableResult.tupleCount();
+            }
+
+            // Compute per-site latency (average over the last 10 tuples) while we still have a connection
+            for (SiteAccumulator accumulator : siteAccumulators.values()) {
+                try {
+                    accumulator.latencyMs = computeAverageLatencyMillis(
+                            connection,
+                            database.getId(),
+                            accumulator.siteUrl,
+                            primarySiteUrl
+                    );
+                } catch (SQLException e) {
+                    log.warn("Failed to compute latency for site {} in database {}: {}",
+                            accumulator.siteUrl, database.getId(), e.getMessage());
+                }
             }
         } catch (SQLException e) {
             log.error("Failed to query monitoring data for database {}: {}", databaseId, e.getMessage(), e);
@@ -250,7 +269,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                     .siteUrl(accumulator.siteUrl)
                     .status(status)
                     .replicationServiceReachable(Boolean.TRUE)
-                    .latencyMs(null)
+                    .latencyMs(accumulator.latencyMs)
                     .lastChecked(snapshot)
                     .message(message)
                     .build());
@@ -330,6 +349,69 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                 return 0L;
             }
         }
+    }
+
+    /**
+     * Computes the average replication latency in milliseconds for a site based on the last 10 tuples.
+     * For each replication_id, it compares the primary site's row_start with this site's row_start.
+     */
+    private Long computeAverageLatencyMillis(Connection connection,
+                                             UUID databaseId,
+                                             String siteUrl,
+                                             String primarySiteUrl) throws SQLException {
+        if (siteUrl == null || primarySiteUrl == null) {
+            return null;
+        }
+        final String normalizedSite = normalizeUrl(siteUrl);
+        final String normalizedPrimary = normalizeUrl(primarySiteUrl);
+
+        // For the primary site, latency is effectively 0
+        if (Objects.equals(normalizedSite, normalizedPrimary)) {
+            return 0L;
+        }
+
+        final String sql = """
+                SELECT p.row_start AS primary_start, r.row_start AS replica_start
+                FROM tuple_replication_timestamps r
+                JOIN tuple_replication_timestamps p
+                  ON p.replication_id = r.replication_id
+                 AND p.database_id   = r.database_id
+                 AND p.table_id      = r.table_id
+                WHERE r.database_id = ?
+                  AND r.site_url    = ?
+                  AND p.site_url    = ?
+                ORDER BY r.row_start DESC
+                LIMIT 10
+                """;
+
+        long sumMillis = 0L;
+        int count = 0;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, databaseId.toString());
+            ps.setString(2, siteUrl);
+            ps.setString(3, primarySiteUrl);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    final Timestamp primaryStartTs = rs.getTimestamp("primary_start");
+                    final Timestamp replicaStartTs = rs.getTimestamp("replica_start");
+                    if (primaryStartTs == null || replicaStartTs == null) {
+                        continue;
+                    }
+                    final long diff = replicaStartTs.getTime() - primaryStartTs.getTime();
+                    if (diff >= 0L) {
+                        sumMillis += diff;
+                        count++;
+                    }
+                }
+            }
+        }
+
+        if (count == 0) {
+            return null;
+        }
+        return sumMillis / count;
     }
 
     private Instant fetchMaxRowStartForSite(Connection connection,
@@ -506,6 +588,9 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
         private Instant latestPrimaryTimestamp;
         private Instant latestReplicaTimestamp;
         private final List<String> anomalies = new ArrayList<>();
+
+        // Average latency in ms over the last 10 tuples (computed in status)
+        private Long latencyMs;
 
         private SiteAccumulator(String siteUrl) {
             this.siteUrl = siteUrl;
