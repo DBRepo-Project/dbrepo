@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,6 +68,12 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
         final Map<String, SiteAccumulator> siteAccumulators = initialiseSiteAccumulators(database);
 
+        // Map table IDs to their internal names for later joins when computing latency
+        final Map<UUID, String> tableInternalNames = new HashMap<>();
+        for (TableBriefDto table : tables) {
+            tableInternalNames.put(table.getId(), table.getInternalName());
+        }
+
         final String primarySiteUrl = database.getCreationLocation() != null
                 ? database.getCreationLocation()
                 : localBaseUrl;
@@ -90,12 +97,14 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                 totalLifetimeTuples += tableResult.tupleCount();
             }
 
-            // Compute per-site latency (average over the last 10 tuples) while we still have a connection
+            // Compute per-site latency (average over the last 10 tuples across all tables)
+            // while we still have a connection
             for (SiteAccumulator accumulator : siteAccumulators.values()) {
                 try {
                     accumulator.latencyMs = computeAverageLatencyMillis(
                             connection,
-                            database.getId(),
+                            database,
+                            tableInternalNames,
                             accumulator.siteUrl,
                             primarySiteUrl
                     );
@@ -352,11 +361,12 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
     }
 
     /**
-     * Computes the average replication latency in milliseconds for a site based on the last 10 tuples.
-     * For each replication_id, it compares the primary site's row_start with this site's row_start.
+     * Computes the average replication latency in milliseconds for a site based on the last 10 tuples
+     * across all tables. Latency is defined as (remote replication timestamp - local tuple timestamp).
      */
     private Long computeAverageLatencyMillis(Connection connection,
-                                             UUID databaseId,
+                                             DatabaseDto database,
+                                             Map<UUID, String> tableInternalNames,
                                              String siteUrl,
                                              String primarySiteUrl) throws SQLException {
         if (siteUrl == null || primarySiteUrl == null) {
@@ -370,36 +380,49 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
             return 0L;
         }
 
-        final String sql = """
-                SELECT p.row_start AS primary_start, r.row_start AS replica_start
-                FROM tuple_replication_timestamps r
-                JOIN tuple_replication_timestamps p
-                  ON p.replication_id = r.replication_id
-                 AND p.database_id   = r.database_id
-                 AND p.table_id      = r.table_id
-                WHERE r.database_id = ?
-                  AND r.site_url    = ?
-                  AND p.site_url    = ?
-                ORDER BY r.row_start DESC
+        // Last 10 replication events for this site over all tables in this database
+        final String latestEventsSql = """
+                SELECT table_id, replication_id, row_start AS remote_start
+                FROM tuple_replication_timestamps
+                WHERE database_id = ?
+                  AND site_url    = ?
+                ORDER BY row_start DESC
                 LIMIT 10
                 """;
 
         long sumMillis = 0L;
         int count = 0;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, databaseId.toString());
+        try (PreparedStatement ps = connection.prepareStatement(latestEventsSql)) {
+            ps.setString(1, database.getId().toString());
             ps.setString(2, siteUrl);
-            ps.setString(3, primarySiteUrl);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    final Timestamp primaryStartTs = rs.getTimestamp("primary_start");
-                    final Timestamp replicaStartTs = rs.getTimestamp("replica_start");
-                    if (primaryStartTs == null || replicaStartTs == null) {
+                    final UUID tableId = UUID.fromString(rs.getString("table_id"));
+                    final String replicationId = rs.getString("replication_id");
+                    final Timestamp remoteStartTs = rs.getTimestamp("remote_start");
+                    if (replicationId == null || remoteStartTs == null) {
                         continue;
                     }
-                    final long diff = replicaStartTs.getTime() - primaryStartTs.getTime();
+
+                    final String tableInternalName = tableInternalNames.get(tableId);
+                    if (tableInternalName == null) {
+                        // Unknown table, skip
+                        continue;
+                    }
+
+                    final Timestamp localStartTs = lookupLocalTupleTimestamp(
+                            connection,
+                            database.getInternalName(),
+                            tableInternalName,
+                            replicationId
+                    );
+                    if (localStartTs == null) {
+                        continue;
+                    }
+
+                    final long diff = remoteStartTs.getTime() - localStartTs.getTime();
                     if (diff >= 0L) {
                         sumMillis += diff;
                         count++;
@@ -412,6 +435,31 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
             return null;
         }
         return sumMillis / count;
+    }
+
+    /**
+     * Looks up the local tuple timestamp (row_start) in the base table for a given replication_id.
+     */
+    private Timestamp lookupLocalTupleTimestamp(Connection connection,
+                                                String databaseName,
+                                                String tableInternalName,
+                                                String replicationId) throws SQLException {
+        final StringBuilder sql = new StringBuilder()
+                .append("SELECT MAX(t.row_start) AS local_start FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableInternalName)
+                .append("` t WHERE t.`replication_key` = ?;");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            ps.setString(1, replicationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getTimestamp("local_start");
+                }
+            }
+        }
+        return null;
     }
 
     private Instant fetchMaxRowStartForSite(Connection connection,
