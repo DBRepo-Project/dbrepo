@@ -82,9 +82,14 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
         final List<ReplicationMonitoringTableDto> tableSummaries = new ArrayList<>();
         long totalLifetimeTuples = 0L;
 
+        log.info("Monitoring {} tables and {} replica sites for database {}", tables.size(),
+                replicaUrls.size(), databaseId);
+
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
+            log.info("Opened JDBC connection for monitoring database {}", database.getInternalName());
             for (TableBriefDto table : tables) {
+                log.info("Monitoring table {} ({})", table.getName(), table.getInternalName());
                 final TableMonitoringResult tableResult = monitorTable(
                         connection,
                         database,
@@ -99,6 +104,8 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
             // Compute per-site latency (average over the last 10 tuples across all tables)
             // while we still have a connection
+            log.info("Computing per-site latency for {} sites (primarySiteUrl={})",
+                    siteAccumulators.size(), primarySiteUrl);
             for (SiteAccumulator accumulator : siteAccumulators.values()) {
                 try {
                     accumulator.latencyMs = computeAverageLatencyMillis(
@@ -108,6 +115,8 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                             accumulator.siteUrl,
                             primarySiteUrl
                     );
+                    log.info("Computed latency for site {} in database {}: {} ms (null means no samples)",
+                            accumulator.siteUrl, database.getId(), accumulator.latencyMs);
                 } catch (SQLException e) {
                     log.warn("Failed to compute latency for site {} in database {}: {}",
                             accumulator.siteUrl, database.getId(), e.getMessage());
@@ -377,6 +386,8 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
         // For the primary site, latency is effectively 0
         if (Objects.equals(normalizedSite, normalizedPrimary)) {
+            log.debug("computeAverageLatencyMillis: site {} is primary ({}), returning 0 ms",
+                    siteUrl, primarySiteUrl);
             return 0L;
         }
 
@@ -408,7 +419,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
                     final String tableInternalName = tableInternalNames.get(tableId);
                     if (tableInternalName == null) {
-                        // Unknown table, skip
+                        log.debug("Latency: no internal name for tableId {} at site {}, skipping", tableId, siteUrl);
                         continue;
                     }
 
@@ -419,6 +430,8 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                             replicationId
                     );
                     if (localStartTs == null) {
+                        log.debug("Latency: no local tuple timestamp for table {} / replicationId {} at site {}",
+                                tableInternalName, replicationId, siteUrl);
                         continue;
                     }
 
@@ -426,15 +439,21 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                     if (diff >= 0L) {
                         sumMillis += diff;
                         count++;
+                        log.trace("Latency sample for site {}: table={}, replicationId={}, remoteStart={}, localStart={}, diffMs={}",
+                                siteUrl, tableInternalName, replicationId, remoteStartTs, localStartTs, diff);
                     }
                 }
             }
         }
 
         if (count == 0) {
+            log.info("computeAverageLatencyMillis: no latency samples for site {} in database {}", siteUrl, database.getId());
             return null;
         }
-        return sumMillis / count;
+        final long avg = sumMillis / count;
+        log.info("computeAverageLatencyMillis: site {} in database {} has {} samples, avgLatencyMs={}",
+                siteUrl, database.getId(), count, avg);
+        return avg;
     }
 
     /**
