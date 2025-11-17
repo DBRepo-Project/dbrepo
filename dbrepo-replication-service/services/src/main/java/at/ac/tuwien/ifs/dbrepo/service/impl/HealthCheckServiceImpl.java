@@ -75,7 +75,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             long duration = System.currentTimeMillis() - started;
             HttpStatus status = response.getStatusCode();
 
-            // Try to read Spring Boot actuator's \"status\" field if present
+            // Try to read Spring Boot actuator's "status" field if present
             Object bodyStatus = response.getBody() != null ? response.getBody().get("status") : null;
             String effectiveStatus;
             if (bodyStatus != null) {
@@ -85,7 +85,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             } else {
                 effectiveStatus = "DOWN";
             }
-            log.info(\"Health check for {} returned HTTP {} in {} ms (status={})\",
+            log.info("Health check for {} returned HTTP {} in {} ms (status={})",
                     logicalName, status.value(), duration, effectiveStatus);
             return ReplicationServiceHealthDto.builder()
                     .name(logicalName)
@@ -95,10 +95,10 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                     .build();
         } catch (RestClientException ex) {
             long duration = System.currentTimeMillis() - started;
-            log.warn(\"Health check for {} failed after {} ms: {}\", logicalName, duration, ex.getMessage());
+            log.warn("Health check for {} failed after {} ms: {}", logicalName, duration, ex.getMessage());
             return ReplicationServiceHealthDto.builder()
                     .name(logicalName)
-                    .status(\"DOWN\")
+                    .status("DOWN")
                     .httpStatus(503)
                     .durationMs(duration)
                     .error(ex.getMessage())
