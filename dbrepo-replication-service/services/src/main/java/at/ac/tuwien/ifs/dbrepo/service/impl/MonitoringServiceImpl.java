@@ -420,7 +420,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
                     final String tableInternalName = tableInternalNames.get(tableId);
                     if (tableInternalName == null) {
-                        log.debug("Latency: no internal name for tableId {} at site {}, skipping", tableId, siteUrl);
+                        log.info("Latency: no internal name for tableId {} at site {}, skipping", tableId, siteUrl);
                         continue;
                     }
 
@@ -431,7 +431,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                             replicationId
                     );
                     if (localStartTs == null) {
-                        log.debug("Latency: no local tuple timestamp for table {} / replicationId {} at site {}",
+                        log.info("Latency: no local tuple timestamp for table {} / replicationId {} at site {}",
                                 tableInternalName, replicationId, siteUrl);
                         continue;
                     }
@@ -440,7 +440,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                     if (diff >= 0L) {
                         sumMillis += diff;
                         count++;
-                        log.trace("Latency sample for site {}: table={}, replicationId={}, remoteStart={}, localStart={}, diffMs={}",
+                        log.info("Latency sample for site {}: table={}, replicationId={}, remoteStart={}, localStart={}, diffMs={}",
                                 siteUrl, tableInternalName, replicationId, remoteStartTs, localStartTs, diff);
                     }
                 }
