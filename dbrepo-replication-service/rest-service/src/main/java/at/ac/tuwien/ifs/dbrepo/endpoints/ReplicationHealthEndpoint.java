@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/replication/health")
 @RequiredArgsConstructor
-@Tag(name = "Health", description = "Local health checks for replication-service dependencies")
-public class HealthEndpoint {
+@Tag(name = "Replication Health", description = "Local health checks for replication-service dependencies")
+public class ReplicationHealthEndpoint {
 
     private final HealthCheckService healthCheckService;
 
