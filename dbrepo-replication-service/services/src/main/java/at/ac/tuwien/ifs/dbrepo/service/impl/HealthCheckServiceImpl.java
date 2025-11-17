@@ -7,10 +7,13 @@ import at.ac.tuwien.ifs.dbrepo.service.HealthCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -73,7 +76,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         try {
             ResponseEntity<Map> response = template.getForEntity(path, Map.class);
             long duration = System.currentTimeMillis() - started;
-            HttpStatus status = response.getStatusCode();
+            HttpStatusCode status = response.getStatusCode();
 
             // Try to read Spring Boot actuator's "status" field if present
             Object bodyStatus = response.getBody() != null ? response.getBody().get("status") : null;
