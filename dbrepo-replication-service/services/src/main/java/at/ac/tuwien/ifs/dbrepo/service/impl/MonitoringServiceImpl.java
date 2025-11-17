@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringTableDto
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.service.MonitoringService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.observation.annotation.Observed;
@@ -411,16 +412,25 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    final UUID tableId = UUID.fromString(rs.getString("table_id"));
+                    final UUID remoteTableId = UUID.fromString(rs.getString("table_id"));
                     final String replicationId = rs.getString("replication_id");
                     final Timestamp remoteStartTs = rs.getTimestamp("remote_start");
                     if (replicationId == null || remoteStartTs == null) {
                         continue;
                     }
 
-                    final String tableInternalName = tableInternalNames.get(tableId);
+                    // Resolve remote tableId to local tableId via metadata service (cached there)
+                    final UUID localTableId = resolveLocalTableId(database.getId(), remoteTableId);
+                    if (localTableId == null) {
+                        log.info("Latency: could not resolve local tableId for remoteTableId {} at site {}, skipping",
+                                remoteTableId, siteUrl);
+                        continue;
+                    }
+
+                    final String tableInternalName = tableInternalNames.get(localTableId);
                     if (tableInternalName == null) {
-                        log.info("Latency: no internal name for tableId {} at site {}, skipping", tableId, siteUrl);
+                        log.info("Latency: no internal name for local tableId {} (remoteTableId {}) at site {}, skipping",
+                                localTableId, remoteTableId, siteUrl);
                         continue;
                     }
 
@@ -478,6 +488,23 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
                     return rs.getTimestamp("local_start");
                 }
             }
+        }
+        return null;
+    }
+
+    /**
+     * Resolve a remote (replica) tableId to the local tableId using the metadata service gateway.
+     * The gateway implementation already caches results, so we simply delegate.
+     */
+    private UUID resolveLocalTableId(UUID databaseId, UUID remoteTableId) {
+        try {
+            final LocalTableIdDto dto = metadataServiceGateway.getLocalTableIdByReplicaTableId(databaseId, remoteTableId);
+            if (dto != null && dto.getLocalTableId() != null) {
+                return dto.getLocalTableId();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to resolve local tableId for remoteTableId {} in database {}: {}",
+                    remoteTableId, databaseId, e.getMessage());
         }
         return null;
     }
