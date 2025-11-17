@@ -371,7 +371,10 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
     /**
      * Computes the average replication latency in milliseconds for a site based on the last 10 tuples
-     * across all tables. Latency is defined as (remote replication timestamp - local tuple timestamp).
+     * across all tables for that siteUrl. Latency is defined as (remote replication timestamp - local tuple timestamp).
+     * <p>
+     * NOTE: We deliberately do NOT filter by database_id because the remote site may use a different
+     * databaseId for the same logical database. Instead, we later filter by known table_ids.
      */
     private Long computeAverageLatencyMillis(Connection connection,
                                              DatabaseDto database,
@@ -391,12 +394,11 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
             return 0L;
         }
 
-        // Last 10 replication events for this site over all tables in this database
+        // Last 10 replication events for this site over all tables
         final String latestEventsSql = """
                 SELECT table_id, replication_id, row_start AS remote_start
                 FROM tuple_replication_timestamps
-                WHERE database_id = ?
-                  AND site_url    = ?
+                WHERE site_url = ?
                 ORDER BY row_start DESC
                 LIMIT 10
                 """;
@@ -405,8 +407,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
         int count = 0;
 
         try (PreparedStatement ps = connection.prepareStatement(latestEventsSql)) {
-            ps.setString(1, database.getId().toString());
-            ps.setString(2, siteUrl);
+            ps.setString(1, siteUrl);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
