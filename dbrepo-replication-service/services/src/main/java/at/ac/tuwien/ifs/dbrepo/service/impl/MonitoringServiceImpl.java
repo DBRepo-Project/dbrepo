@@ -2,10 +2,12 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationHealthDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringReplicaDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringSiteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationServiceHealthDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
@@ -15,9 +17,13 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -45,6 +51,7 @@ import java.util.UUID;
 public class MonitoringServiceImpl extends DataConnector implements MonitoringService {
 
     private final MetadataServiceGateway metadataServiceGateway;
+    private final @Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String localBaseUrl;
@@ -278,16 +285,50 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
             final double missingFraction = accumulator.totalExpectedTuples == 0L
                     ? 0D
                     : (double) accumulator.totalMissingTuples / (double) accumulator.totalExpectedTuples;
-            final boolean degraded = missingFraction > missingFractionThreshold
+            final boolean metricsDegraded = missingFraction > missingFractionThreshold
                     || accumulator.maxObservedLagSeconds > lagThresholdSeconds
                     || !accumulator.anomalies.isEmpty();
+
+            // Integrate remote /api/replication/health from each site, if reachable
+            ReplicationHealthDto remoteHealth = null;
+            try {
+                remoteHealth = fetchRemoteHealth(accumulator.siteUrl);
+            } catch (Exception e) {
+                log.warn("Remote health check failed for site {}: {}", accumulator.siteUrl, e.getMessage());
+            }
+
+            final ReplicationServiceHealthDto metadataHealth =
+                    remoteHealth != null ? remoteHealth.getMetadataService() : null;
+            final ReplicationServiceHealthDto dataHealth =
+                    remoteHealth != null ? remoteHealth.getDataService() : null;
+            final ReplicationServiceHealthDto replicationHealth =
+                    remoteHealth != null ? remoteHealth.getReplicationService() : null;
+            final ReplicationServiceHealthDto brokerHealth =
+                    remoteHealth != null ? remoteHealth.getBroker() : null;
+
+            final boolean replicationUp = replicationHealth != null
+                    && "UP".equalsIgnoreCase(String.valueOf(replicationHealth.getStatus()));
+            final boolean metadataUp = metadataHealth != null
+                    && "UP".equalsIgnoreCase(String.valueOf(metadataHealth.getStatus()));
+            final boolean dataUp = dataHealth != null
+                    && "UP".equalsIgnoreCase(String.valueOf(dataHealth.getStatus()));
+            final boolean brokerUp = brokerHealth != null
+                    && "UP".equalsIgnoreCase(String.valueOf(brokerHealth.getStatus()));
+
+            final boolean serviceDegraded = remoteHealth != null
+                    && !"UP".equalsIgnoreCase(String.valueOf(remoteHealth.getStatus()));
+
+            final boolean degraded = metricsDegraded || serviceDegraded;
             final String status = degraded ? "degraded" : "healthy";
             final String message = buildSiteMessage(accumulator, missingFraction);
 
             summaries.add(ReplicationMonitoringSiteDto.builder()
                     .siteUrl(accumulator.siteUrl)
                     .status(status)
-                    .replicationServiceReachable(Boolean.TRUE)
+                    .replicationServiceReachable(replicationUp)
+                    .metadataServiceReachable(metadataUp)
+                    .dataServiceReachable(dataUp)
+                    .brokerReachable(brokerUp)
                     .latencyMs(accumulator.latencyMs)
                     .lastChecked(snapshot)
                     .message(message)
@@ -490,6 +531,28 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
             }
         }
         return null;
+    }
+
+    /**
+     * Calls the remote replication-service health endpoint on a given site and returns the parsed DTO.
+     */
+    private ReplicationHealthDto fetchRemoteHealth(String siteUrl) {
+        if (siteUrl == null || siteUrl.isBlank()) {
+            return null;
+        }
+        final String base = normalizeUrl(siteUrl);
+        final String url = base + "/api/replication/health";
+        try {
+            final ResponseEntity<ReplicationHealthDto> response =
+                    externalReplicationRestTemplate.getForEntity(url, ReplicationHealthDto.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                log.warn("Remote health check for {} returned non-2xx status {}", siteUrl, response.getStatusCode());
+            }
+            return response.getBody();
+        } catch (RestClientException e) {
+            log.warn("Failed to call remote health endpoint {}: {}", url, e.getMessage());
+            return null;
+        }
     }
 
     /**
