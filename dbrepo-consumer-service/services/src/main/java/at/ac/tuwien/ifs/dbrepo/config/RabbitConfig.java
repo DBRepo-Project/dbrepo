@@ -73,6 +73,7 @@ public class RabbitConfig {
         final CachingConnectionFactory factory = new CachingConnectionFactory(host, port);
         factory.setUsername(username);
         factory.setPassword(password);
+        factory.setVirtualHost(virtualHost);
         try {
             factory.createConnection();
         } catch (AmqpException e) {
