@@ -754,6 +754,9 @@ storageservice:
     enabled: true
     ## @skip storageservice.mariadb.fullnameOverride
     fullnameOverride: storage-db
+    image:
+      ## @skip storageservice.mariadb.image.repository
+      repository: bitnamilegacy/mariadb
     auth:
       ## @param storageservice.mariadb.auth.rootPassword The password for the root user.
       rootPassword: seaweedfsfiler
