@@ -19,19 +19,20 @@ author: Martin Weise
 
 ## Overview
 
-By default, users are created using the [User Interface](/infrastructures/dbrepo/1.12/dev/services/ui) and the sign-up page
+By default, users are created using the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui) and the sign-up
+page
 in the User Interface. This creates a new user in Keycloak. The user identity is then managed by the Auth Service. Only
 a very small subset of immutable properties (id, username) is mirrored in
-the [Metadata Database](/infrastructures/dbrepo/1.12/dev/services/metadata-db) for faster access.
+the [Metadata Database](/infrastructures/dbrepo/1.13/dev/services/metadata-db) for faster access.
 
 ## Identities
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.5
 
-Identities are managed via LDAP through the [Identity Service](/infrastructures/dbrepo/1.12/dev/services/identity-service).
-The normal workflow is that the [Metadata Service](/infrastructures/dbrepo/1.12/dev/services/metadata-service) adds
-identities when user register. In some cases, where this is not possible (e.g. in workshop-scenarios where accounts are
-created before the workshop starts), identities need to be created manually in Keycloak. The recommended workflow is:
+Identities are managed via LDAP through
+the [Identity Service](/infrastructures/dbrepo/1.13/dev/services/identity-service).
+Users can register themselves through the [Auth service](/infrastructures/dbrepo/1.13/dev/services/auth-service) or via
+the Auth Service admin user (`admin:admin` by default). The recommended workflow is:
 
 1. Login to the Auth Service as **Admin** and in the dbrepo realm navigate to **Users**
 2. Click the **Add user** button and fill out the Username field and assign the group `researchers` by clicking
@@ -39,24 +40,16 @@ created before the workshop starts), identities need to be created manually in K
 3. Click the **Credentials** tab above and **Set password**. In the popup window assign a secure password to the user
    and set **Temporary** to `Off`.
 
-    !!! example "Create user with specific id"
+The REST API supports three kinds of authentication:
 
-        The user id is created automatically. In case you need to create a user with specific id such as in migration
-        scenarios, you need to change the `entryUUID` in the [Identity Service](/infrastructures/dbrepo/1.12/dev/services/identity-service) by modifying this
-        protected attribute in `relax` mode:
+* OAuth2.0 Bearer Authentication
+* Basic Authentication
+* Internal Authentication: limited to a local system user that is only used between services (i.e. *never* publicly)
 
-        ```bash
-        echo "dn: uid=<username>,ou=users,dc=dbrepo,dc=at
-        changetype: modify
-        replace: entryUUID
-        entryUUID: 506ae590-11a2-4d2d-82b8-45121c6b4dab" | \
-        ldapmodify -h localhost -p 1389 -D cn=admin,dc=dbrepo,dc=at -c -x -e relax \
-        -w<adminpassword> 
-        ```
-
-4. Finally you need to query the user info once by navigating again to **Users**
-   and search for the **Username** and click :arrow_right: to search. Click the username and ensure that the
-   **User metadata** contains the entry **LDAP_ID**.
+<figure markdown>
+![Auth](/infrastructures/dbrepo/1.13/images/authentication.svg)
+<figcaption>Figure 1: Authentication Mechanisms in DBRepo</figcaption>
+</figure>
 
 ## Groups
 
@@ -73,25 +66,16 @@ default, all users are assigned to the `researchers` group.
 ## Roles
 
 We organize the roles into default- and escalated composite roles. There are three composite roles, one for each group.
-Each of the composite role has a set of other associated composite roles.
-
-<figure markdown>
-![Grouped Roles](/infrastructures/dbrepo/1.12/images/groups-roles.png)
-</figure>
-
-There is one role for one specific action in the services. For example: the `create-database` role authorizes a user to
-create a database.
-
-A full list of available roles can be obtained
-from [`dbrepo-realm.json`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/fb8d14ba02ee32b9a69a30905437b5c9e28adc21/dbrepo-auth-service/dbrepo-realm.json#L46)
-which is imported into Keycloak on startup.
+Each of the composite role has a set of other associated composite roles. The roles in Keycloak are mapped to
+authorities in the services and can be used to give fine-grained permissions to users. There is one role for one
+specific action in the services. For example: the `create-database` role authorizes a user to create a database.
 
 ## Limitations
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

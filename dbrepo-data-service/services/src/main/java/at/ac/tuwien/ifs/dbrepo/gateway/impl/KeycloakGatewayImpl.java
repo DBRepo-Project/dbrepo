@@ -46,4 +46,23 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         }
     }
 
+    @Override
+    public TokenDto getUserToken(String username, String password) throws BadCredentialsException {
+        try (Keycloak userKeycloak = KeycloakBuilder.builder()
+                .serverUrl(keycloakConfig.getKeycloakEndpoint())
+                .realm(keycloakConfig.getKeycloakRealm())
+                .grantType(OAuth2Constants.PASSWORD)
+                .clientId(keycloakConfig.getKeycloakClient())
+                .clientSecret(keycloakConfig.getKeycloakClientSecret())
+                .username(username)
+                .password(password)
+                .build()) {
+            return metadataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
+                    .getAccessToken());
+        } catch (NotAuthorizedException e) {
+            log.error("Failed to obtain user token: {}", e.getMessage());
+            throw new BadCredentialsException("Failed to obtain user token", e);
+        }
+    }
+
 }

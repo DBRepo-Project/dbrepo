@@ -39,8 +39,8 @@ If available, provide the PID of your affiliation (e.g. [`https://ror.org/04d836
 increases accuracy of the PID record. If not, optionally provide an affiliation name.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-1.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-1.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-1.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-1.mp4" type="video/mp4" />
 </video>
 
 The PID needs at least one title in the title field and optionally a title type from the selection and optionally a 
@@ -49,8 +49,8 @@ title language from the available list of languages.
 Add additional title(s) where needed, a PID can have multiple titles.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-2.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-2.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-2.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-2.mp4" type="video/mp4" />
 </video>
 
 The PID needs at least one description in the description field and optionally a description type from the selection and
@@ -60,8 +60,8 @@ Optionally provide a text description on the collection method and description o
 enhances (re-)usability of your data. You can remove those sections by clicking "Remove".
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-3.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-3.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-3.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-3.mp4" type="video/mp4" />
 </video>
 
 The dataset publisher in most cases is the organization that operates the DBRepo service.
@@ -70,8 +70,8 @@ Provide a publication year and optionally a publication month and publication da
 corresponds to the *original* publishing date.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-4.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-4.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-4.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-4.mp4" type="video/mp4" />
 </video>
 
 Optionally reference other PIDs, and add a license from the list.
@@ -83,8 +83,8 @@ Optionally add funding information. When you are finished
 
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-5.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/create-pid-5.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-5.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/create-pid-5.mp4" type="video/mp4" />
 </video>
 
 ### Python

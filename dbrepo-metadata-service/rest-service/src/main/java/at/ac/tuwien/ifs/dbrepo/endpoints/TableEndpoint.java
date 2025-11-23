@@ -17,6 +17,7 @@ import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.EntityService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -103,12 +104,12 @@ public class TableEndpoint extends RestEndpoint {
         final List<Table> tables = database.getTables();
         DatabaseAccess access = null;
         if (principal != null) {
-            if (isSystem(principal)) {
+            if (AuthUtil.isSystem(principal)) {
                 return tables;
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (optional.isPresent()) {
                 access = optional.get();
@@ -156,7 +157,7 @@ public class TableEndpoint extends RestEndpoint {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwnedBy().equals(getUsername(principal))) {
+        if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to analyse table semantics: not owner");
             throw new NotAllowedException("Failed to analyse table semantics: not owner");
         }
@@ -198,7 +199,7 @@ public class TableEndpoint extends RestEndpoint {
         log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwnedBy().equals(getUsername(principal)) && !isSystem(principal)) {
+        if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.isSystem(principal)) {
             log.error("Failed to update table statistics: not owner");
             throw new NotAllowedException("Failed to update table statistics: not owner");
         }
@@ -248,9 +249,9 @@ public class TableEndpoint extends RestEndpoint {
                 tableId, columnId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!hasRole(principal, "modify-foreign-table-column-semantics")) {
+        if (!AuthUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(database, principal, true);
-            endpointValidator.validateOnlyOwnerOrWriteAll(table, getUsername(principal));
+            endpointValidator.validateOnlyOwnerOrWriteAll(table, AuthUtil.getUsername(principal));
         }
         return ResponseEntity.accepted()
                 .body(metadataMapper.tableColumnToColumnDto(tableService.update(
@@ -381,7 +382,7 @@ public class TableEndpoint extends RestEndpoint {
                 databaseId, data.getIsPublic(), data.getIsSchemaPublic());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwnedBy().equals(getUsername(principal)) && !isSystem(principal)) {
+        if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.isSystem(principal)) {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
@@ -418,12 +419,12 @@ public class TableEndpoint extends RestEndpoint {
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         if (principal != null) {
-            if (isSystem(principal)) {
+            if (AuthUtil.isSystem(principal)) {
                 return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (table.getIsPublic() || table.getIsSchemaPublic() || optional.isPresent()) {
                 return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
@@ -472,7 +473,7 @@ public class TableEndpoint extends RestEndpoint {
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */
-        if (!table.getOwnedBy().equals(getUsername(principal)) && !hasRole(principal, "delete-foreign-table")) {
+        if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.hasRole(principal, "delete-foreign-table")) {
             log.error("Failed to delete table: not owned by current user");
             throw new NotAllowedException("Failed to delete table: not owned by current user");
         }

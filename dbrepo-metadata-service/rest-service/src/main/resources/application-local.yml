@@ -1,0 +1,9 @@
+spring:
+  data:
+    redis:
+      host: localhost
+server:
+  port: 18080
+logging:
+  level:
+    at.ac.tuwien.ifs.dbrepo.: debug

@@ -25,14 +25,14 @@ tbd
 !!! example "Example"
 
     More info on how to customize database dashboards can be found in
-    the [User Guide](/infrastructures/dbrepo/1.12/user-guide/database-dashboard/).
+    the [User Guide](/infrastructures/dbrepo/1.13/user-guide/database-dashboard/).
 
 ## Limitations
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.12/contact/) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.13/contact/) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

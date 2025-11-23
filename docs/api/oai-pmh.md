@@ -12,10 +12,10 @@ Reference:
 
 Related:
 
-* [Metadata Service](/infrastructures/dbrepo/1.12/dev/services/metadata-service)
+* [Metadata Service](/infrastructures/dbrepo/1.13/dev/services/metadata-service)
 
 ### Harvester
 
 We are OpenAIRE Provide 2.0-compliant:
 
-![OpenAIRE Provide Logo](/infrastructures/dbrepo/1.12/images/logos/openaire-provide.png){ width=200 }
+![OpenAIRE Provide Logo](/infrastructures/dbrepo/1.13/images/logos/openaire-provide.png){ width=200 }

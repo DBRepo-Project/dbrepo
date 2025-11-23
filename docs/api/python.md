@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-The REST API manages all of DBRepo. This documentation is also available as [Sphinx UI](/infrastructures/dbrepo/1.12/python/).
+The REST API manages all of DBRepo. This documentation is also available as [Sphinx UI](/infrastructures/dbrepo/1.13/python/).
 
 Ensure that you use the same Python library version as the target instance. For example: if you see `1.10.0` in the
 bottom left, you need to use the `1.10.0` Python library.

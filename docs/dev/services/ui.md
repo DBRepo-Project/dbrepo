@@ -22,7 +22,7 @@ example, you can configure the logo :material-numeric-1-circle-outline: below. M
 as image as well, in this example we want to mount a custom logo `my_logo.png` into the container and specify the name.
 
 <figure markdown>
-![Architecture of the UI microservice](/infrastructures/dbrepo/1.12/images/screenshots/ui-config-step-1.png)
+![Architecture of the UI microservice](/infrastructures/dbrepo/1.13/images/screenshots/ui-config-step-1.png)
 </figure>
 
 === "Docker Compose"
@@ -52,7 +52,7 @@ as image as well, in this example we want to mount a custom logo `my_logo.png` i
       --from-file=logo.png
     ```
 
-    Then you need to mount the configmap into the [Gateway Service](/infrastructures/dbrepo/1.12/gateway-service) under `/etc/nginx/assets/assets`.
+    Then you need to mount the configmap into the [Gateway Service](/infrastructures/dbrepo/1.13/gateway-service) under `/etc/nginx/assets/assets`.
 
     ```yaml title="dbrepo-ui-custom.yaml"
     gatewayservice:
@@ -83,7 +83,7 @@ The server-client architecture of the User Interface is shown below, it is suppo
 User Interface on development.
 
 <figure markdown>
-![Architecture of the UI microservice](/infrastructures/dbrepo/1.12/images/architecture-ui.svg)
+![Architecture of the UI microservice](/infrastructures/dbrepo/1.13/images/architecture-ui.svg)
 </figure>
 
 * Runtime: Node.js 22 LTS
@@ -113,7 +113,7 @@ rendered.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

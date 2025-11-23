@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -345,7 +346,7 @@ public class AccessEndpointUnitTest extends BaseTest {
                     .find(DATABASE_1, username);
         }
         if (principalUser != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findByUsername(AuthUtil.getUsername(principal)))
                     .thenReturn(principalUser);
         } else {
             doThrow(UserNotFoundException.class)
@@ -376,7 +377,7 @@ public class AccessEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException, AccessNotFoundException, NotAllowedException {
 
         /* mock */
-        when(userService.findByUsername(principal.getName()))
+        when(userService.findByUsername(AuthUtil.getUsername(principal)))
                 .thenReturn(caller);
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
@@ -432,7 +433,7 @@ public class AccessEndpointUnitTest extends BaseTest {
                     .findById(any(UUID.class));
         }
         if (principal != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findByUsername(AuthUtil.getUsername(principal)))
                     .thenReturn(principalUser);
         } else {
             doThrow(UserNotFoundException.class)
@@ -458,7 +459,7 @@ public class AccessEndpointUnitTest extends BaseTest {
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         if (principal != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findByUsername(AuthUtil.getUsername(principal)))
                     .thenReturn(principalUser);
         }
         when(userService.findByUsername(username))

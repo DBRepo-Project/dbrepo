@@ -33,7 +33,7 @@ AMQP tuples and insecure port `15672` for the management UI.
 ## Authentication
 
 The default configuration allows any user in the `cn=system,ou=users,dc=dbrepo,dc=at` from the 
-[Identity Service](/infrastructures/dbrepo/1.12/dev/services/identity-service) to access the Broker Service as user with 
+[Identity Service](/infrastructures/dbrepo/1.13/dev/services/identity-service) to access the Broker Service as user with 
 `administrator` role, i.e. the `cn=admin,dc=dbrepo,dc=at` user that is created by default.
 
 The Broker Service allows two ways of authentication for AMQP tuples:
@@ -48,14 +48,14 @@ quorum queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all t
 to this queue.
 
 <figure markdown>
-   ![Data ingest](/infrastructures/dbrepo/1.12/images/queue-quorum.png)
+   ![Data ingest](/infrastructures/dbrepo/1.13/images/queue-quorum.png)
 </figure>
 
 The consumer takes care of writing it to the correct table in 
-the [Data Service](/infrastructures/dbrepo/1.12/dev/services/data-service).
+the [Data Service](/infrastructures/dbrepo/1.13/dev/services/data-service).
 
 <figure markdown>
-   ![Data ingest](/infrastructures/dbrepo/1.12/images/exchange-binding.png)
+   ![Data ingest](/infrastructures/dbrepo/1.13/images/exchange-binding.png)
 </figure>
 
 ## Limitations
@@ -63,14 +63,14 @@ the [Data Service](/infrastructures/dbrepo/1.12/dev/services/data-service).
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security
 
 For a secure deployment it is necessary to configure the Broker Service as follows:
 
-1. Once you change the admin password of the [Identity Service](/infrastructures/dbrepo/1.12/dev/services/identity-service), 
+1. Once you change the admin password of the [Identity Service](/infrastructures/dbrepo/1.13/dev/services/identity-service), 
    you need to change it in the `rabbitmq.conf` as well: `auth_ldap.dn_lookup_bind.password=newpassword`.
 2. Enable TLS and mount your previously generated certificate and RSA public key pair (PEM-encoded) to `/app/cert.pem` 
    and `/app/pubkey.pem`. Note that these are *not* used for TLS encryption, but only for authentication of users. It

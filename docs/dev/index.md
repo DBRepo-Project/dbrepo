@@ -7,7 +7,7 @@ Development of DBRepo.
 ## Architecture Diagram
 
 <figure markdown>
-![image](/infrastructures/dbrepo/1.12/images/architecture.svg)
+![image](/infrastructures/dbrepo/1.13/images/architecture.svg)
 <figcaption>Figure 1: Microservice architecture of DBRepo.</figcaption>
 </figure>
 
@@ -16,6 +16,7 @@ Development of DBRepo.
 
 | Branch                                                         | Initial Release | End of Life |
 |----------------------------------------------------------------|-----------------|-------------|
+| <span class="support-active">:material-circle:</span> 1.13.x   | 2025-11-09      | 2026-02-09  |
 | <span class="support-active">:material-circle:</span> 1.12.x   | 2025-11-09      | 2026-02-09  |
 | <span class="support-active">:material-circle:</span> 1.11.x   | 2025-09-26      | 2025-12-26  |
 | <span class="support-inactive">:material-circle:</span> 1.10.x | 2025-06-27      | 2025-09-27  |

@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -34,8 +34,7 @@ import org.springframework.web.filter.CorsFilter;
 public class WebSecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CredentialService credentialService)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),
@@ -48,30 +47,23 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/api/**", "HEAD")
         );
         /* enable CORS and disable CSRF */
-        http = http.cors().and().csrf().disable();
+        http.csrf(AbstractHttpConfigurer::disable);
         /* set session management to stateless */
-        http = http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and();
+        http.sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         /* set unauthorized requests exception handler */
-        http = http
-                .exceptionHandling()
-                .authenticationEntryPoint(
-                        (request, response, ex) -> {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                                    ex.getMessage()
-                            );
-                        }
-                ).and();
+        http.exceptionHandling(configurer -> configurer.authenticationEntryPoint((request, response, ex) -> {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    ex.getMessage()
+            );
+        }));
         /* set permissions on endpoints */
-        http.authorizeHttpRequests()
+        http.authorizeHttpRequests(configurer -> configurer
                 /* our internal endpoints */
                 .requestMatchers(internalEndpoints).permitAll()
                 /* our public endpoints */
                 .requestMatchers(publicEndpoints).permitAll()
                 /* our private endpoints */
-                .anyRequest().authenticated();
+                .anyRequest().authenticated());
         return http.build();
     }
 

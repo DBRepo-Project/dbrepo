@@ -196,7 +196,7 @@
             variant="flat"
             size="small"
             :loading="loading"
-            :disabled="disabled || !valid || columns.length === 0"
+            :disabled="disabled || !valid || columns.length === 0 || columns.filter(c => c.primary_key).length === 0"
             :text="submitText"
             @click="submit" />
         </v-col>
@@ -271,10 +271,11 @@ export default {
     }
   },
   watch: {
-    valid: {
-      handler () {
-        this.$emit('schema-valid', { valid: this.valid })
-      }
+    valid () {
+      this.$emit('schema-valid', { valid: this.valid })
+    },
+    columns () {
+        this.$refs.form.validate()
     }
   },
   mounted () {
@@ -415,9 +416,6 @@ export default {
       if (column.type === 'serial') {
         this.setOthers(column)
       }
-    },
-    hasEnumOrSet (column) {
-      return column.type === 'enum' || column.type === 'set'
     },
     sizeErrorMessages (column) {
       if (column.size < column.d) {

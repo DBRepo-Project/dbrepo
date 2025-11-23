@@ -102,7 +102,6 @@ dbrepo:
     password: "${AUTH_SERVICE_ADMIN_PASSWORD:admin}"
     client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
     clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-  credentialCacheTimeout: "${CREDENTIAL_CACHE_TIMEOUT:60}"
   website: "${BASE_URL:http://localhost}"
   repositoryName: "${REPOSITORY_NAME:Database Repository}"
   baseUrl: "${BASE_URL:http://localhost}"

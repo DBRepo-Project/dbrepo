@@ -37,7 +37,7 @@ The storage service comes with a simple UI that can be used to explore the uploa
 Please note that the Filer UI is not intended for production and should be turned off for security purposes.
 
 <figure markdown>
-![Filer UI with a list of uploaded files in the bucket dbrepo](/infrastructures/dbrepo/1.12/images/screenshots/storage-service-filer.png)
+![Filer UI with a list of uploaded files in the bucket dbrepo](/infrastructures/dbrepo/1.13/images/screenshots/storage-service-filer.png)
 </figure>
 
 ## Limitations
@@ -47,7 +47,7 @@ Please note that the Filer UI is not intended for production and should be turne
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

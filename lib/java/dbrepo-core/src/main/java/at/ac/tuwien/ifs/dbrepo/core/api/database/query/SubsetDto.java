@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -20,20 +20,19 @@ import java.util.UUID;
 public class SubsetDto {
 
     @NotNull
-    @JsonProperty("datasource_id")
-    @Schema(description = "The id of the data source", example = "f7df2a7d-4ade-4c78-97b0-7c744d0893c7")
-    private UUID datasourceId;
+    @Schema(description = "The id(s) of the column(s)")
+    private Set<SubsetColumnDto> columns;
 
     @NotNull
-    @JsonProperty("datasource_type")
-    private DatasourceType datasourceType;
+    @JsonProperty("datasource_ids")
+    @Schema(description = "The table(s) that are selected")
+    private Set<UUID> datasourceIds;
 
-    @NotNull
-    @Schema(description = "The id(s) of the column(s)", example = "[\"e891ba86-0258-41a6-a8d9-ff58bc10b618\"]")
-    private List<UUID> columns;
+    @Schema(description = "The join(s) that are applied")
+    private Set<JoinDto> joins;
 
-    private List<FilterDto> filter;
+    private Set<FilterDto> filters;
 
-    private List<OrderDto> order;
+    private Set<OrderDto> orders;
 
 }

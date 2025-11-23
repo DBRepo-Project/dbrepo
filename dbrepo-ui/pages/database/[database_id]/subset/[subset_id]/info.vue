@@ -183,7 +183,7 @@ export default {
       return this.database.subsets.filter(i => i.query_id === this.$route.params.subset_id)
     },
     canViewInfo () {
-      if (!this.database) {
+      if (!this.database || !this.subset) {
         return false
       }
       if (this.database.is_public || this.database.is_schema_public) {

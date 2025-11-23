@@ -26,7 +26,7 @@ import java.io.IOException;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/upload")
-public class UploadEndpoint extends RestEndpoint {
+public class UploadEndpoint {
 
     private final StorageService storageService;
 

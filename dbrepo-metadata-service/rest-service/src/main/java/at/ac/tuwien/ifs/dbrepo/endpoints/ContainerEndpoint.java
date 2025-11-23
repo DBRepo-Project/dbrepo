@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.ContainerNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -125,7 +126,7 @@ public class ContainerEndpoint extends RestEndpoint {
         log.debug("endpoint find container, containerId={}", containerId);
         final Container container = containerService.find(containerId);
         final HttpHeaders headers = new HttpHeaders();
-        if (isSystem(principal)) {
+        if (AuthUtil.isSystem(principal)) {
             log.trace("attach privileged credential information");
             headers.set("X-Host", container.getHost());
             headers.set("X-Port", "" + container.getPort());

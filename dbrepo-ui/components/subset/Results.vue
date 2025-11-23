@@ -96,11 +96,12 @@ export default {
           .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              toast.error(message)
+            /* prefer field `message` and use field `code` only as fallback */
+            if (typeof message !== 'string') {
+              toast.error(this.$t(code))
               return
             }
-            toast.error(this.$t(code))
+            toast.error(message)
           })
           .finally(() => {
             this.loadingExecute = false
@@ -116,11 +117,12 @@ export default {
           .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              toast.error(message)
+            /* prefer field `message` and use field `code` only as fallback */
+            if (typeof message !== 'string') {
+              toast.error(this.$t(code))
               return
             }
-            toast.error(this.$t(code))
+            toast.error(message)
           })
           .finally(() => {
             this.loadingExecute = false

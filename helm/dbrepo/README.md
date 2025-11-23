@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.12.1"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.13.0"
 ```
 
 ## Prerequisites
@@ -34,7 +34,7 @@ variable when you increase the available Pod memory for performance.
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.12.1"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.13.0"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -421,7 +421,7 @@ mqtt.prefetch = 10
 | `ui.public.pid.default.publisher`                      | The default dataset publisher for persisted identifiers.                                                                                                                                                                                                                                                             | `Example University`                                        |
 | `ui.public.doi.enabled`                                | Enable the display that DOIs are minted.                                                                                                                                                                                                                                                                             | `false`                                                     |
 | `ui.public.doi.endpoint`                               | The DOI proxy.                                                                                                                                                                                                                                                                                                       | `https://doi.org`                                           |
-| `ui.replicaCount`                                      | The number of replicas.                                                                                                                                                                                                                                                                                              | `1`                                                         |
+| `ui.replicaCount`                                      | The number of replicas.                                                                                                                                                                                                                                                                                              | `2`                                                         |
 
 ### Dashboard Service
 
