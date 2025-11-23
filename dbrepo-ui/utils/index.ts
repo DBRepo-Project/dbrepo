@@ -1092,26 +1092,27 @@ export function isActiveMessage(message: any) {
   return false
 }
 
-export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
-  if (!error || !('data' in error.response)) {
-    const errorObj: ApiErrorDto = {
+export function axiosErrorToApiError(error: AxiosError) {
+  if (!error || !('response' in error) || !('data' in error.response)) {
+    return {
       status: 'NOT_SET',
       code: 'error.axios.connection',
       message: ''
     }
-    return errorObj
   }
   if (error.code === 'ECONNABORTED') {
     /* timeout */
-    const errorObj: ApiErrorDto = {
+    return {
       status: error.code,
       code: 'error.axios.timeout',
       message: error.message
     }
-    return errorObj
   }
-  const errorObj: ApiErrorDto = (error.response.data as ApiErrorDto)
-  return errorObj
+  return {
+    status: error.response.data.status,
+    code: error.response.data.code,
+    message: error.response.data.message,
+  }
 }
 
 export function timestampToTimeZonedTimestamp(str: string) {

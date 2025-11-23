@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.13.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.13.0) - 2025-11-xx
+
+### Fixes
+
+* Reduce dependencies for Java-based services to resolve a bug where Spring runs into problems with verifying OAuth
+  tokens.
+* Fixed the storage of the [`nuxt-oidc-auth`](https://nuxt.com/modules/nuxt-oidc-auth) module in the UI to share the
+  session secrets in the [Cache Database](/infrastructures/dbrepo/1.13/dev/services/cache-db/).
+
+### Features
+
+* Support `JOIN` queries when generating views and subsets
+  in [#574](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/574).
+
 ## [v1.12.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.12.1) - 2025-11-14
 
 ### Changes
@@ -460,7 +474,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Features
 
-* Added [Dashboard Service](/infrastructures/dbrepo/1.12/api/dashboard-service/) and monitoring in default setup.
+* Added [Dashboard Service](/infrastructures/dbrepo/1.13/api/dashboard-service/) and monitoring in default setup.
 
 #### Changes
 

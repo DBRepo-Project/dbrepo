@@ -87,16 +87,18 @@
             v-model="tabs">
             <v-window-item
               value="0">
-              <v-row dense>
+              <v-row
+                dense>
                 <v-col
                   lg="4">
                   <v-select
-                    v-model="datasource"
+                    v-model="datasources"
                     :disabled="isExecuted"
-                    :items="datasources"
-                    item-title="name"
+                    :items="items"
+                    item-title="qualified_name"
                     return-object
                     persistent-hint
+                    multiple
                     clearable
                     :variant="inputVariant"
                     :label="$t('pages.view.subpages.create.table.label')"
@@ -107,8 +109,8 @@
                   lg="4">
                   <v-select
                     v-model="select"
-                    item-title="internal_name"
-                    :disabled="!datasource || isExecuted"
+                    :item-title="datasources.length > 1 || joins.length > 0 ? 'qualified_name' : 'internal_name'"
+                    :disabled="!datasources || isExecuted"
                     :items="columns"
                     :rules="[v => !!v || $t('validation.required')]"
                     required
@@ -136,6 +138,161 @@
                         class="mt-2" />
                     </template>
                   </v-select>
+                </v-col>
+              </v-row>
+              <div
+                v-if="Object.keys(needAliasColumns).length > 0"
+                class="mt-5 mb-5">
+                <v-row
+                  dense>
+                  <v-col
+                    lg="8"
+                    class="text-center">
+                      <pre
+                        class="text-uppercase">{{ $t('pages.subset.subpages.create.alias.text') }}</pre>
+                  </v-col>
+                </v-row>
+                <div
+                  v-for="(columns, idx) in needAliasColumns"
+                  :key="idx">
+                  <v-row
+                    v-for="(column, jdx) in columns"
+                    :key="jdx"
+                    dense>
+                    <v-col
+                      lg="4"
+                      offset-lg="4">
+                      <v-text-field
+                        v-model="column.alias"
+                        :disabled="clausesDisabled"
+                        :hint="$t('validation.required')"
+                        :rules="[v => !!v || $t('validation.required')]"
+                        required
+                        persistent-hint
+                        :label="$t('pages.subset.subpages.create.alias.label', { column: column.qualified_name })" />
+                    </v-col>
+                  </v-row>
+                </div>
+              </div>
+              <div
+                v-if="joins.length > 0"
+                class="mt-5 mb-5">
+                <div
+                  v-for="(join, idx) in joins"
+                  :key="idx">
+                  <v-row
+                    dense>
+                    <v-col
+                      lg="8"
+                      class="text-center">
+                      <pre
+                        class="text-uppercase"
+                        v-text="$t(`pages.subset.subpages.create.join.${join.type}`)" />
+                    </v-col>
+                  </v-row>
+                  <div
+                    v-for="(conditional, jdx) in join.conditionals"
+                    :key="jdx">
+                    <v-row
+                      v-if="jdx > 0"
+                      dense>
+                      <v-col
+                        lg="8"
+                        class="text-center">
+                      <pre
+                        class="text-uppercase">AND</pre>
+                      </v-col>
+                    </v-row>
+                    <v-row
+                      dense>
+                      <v-col
+                        lg="2">
+                        <v-select
+                          v-if="jdx === 0"
+                          v-model="join.type"
+                          :disabled="clausesDisabled"
+                          item-title="title"
+                          item-value="value"
+                          persistent-hint
+                          :label="$t('pages.subset.subpages.create.join.type.label')"
+                          :items="joinTypes" />
+                      </v-col>
+                      <v-col
+                        lg="2">
+                        <v-select
+                          v-if="jdx === 0"
+                          v-model="join.datasource"
+                          :disabled="clausesDisabled"
+                          item-title="qualified_name"
+                          item-value="id"
+                          return-object
+                          persistent-hint
+                          :label="$t('pages.subset.subpages.create.join.table.label')"
+                          :items="joinItems" />
+                      </v-col>
+                      <v-col
+                        lg="2">
+                        <v-select
+                          v-model="conditional.column_id"
+                          :disabled="clausesDisabled"
+                          item-title="qualified_name"
+                          item-value="id"
+                          clearable
+                          persistent-hint
+                          :label="$t('pages.subset.subpages.create.join.on.label')"
+                          :items="columns" />
+                      </v-col>
+                      <v-col
+                        lg="2">
+                        <v-select
+                          v-model="conditional.foreign_column_id"
+                          :disabled="clausesDisabled"
+                          item-title="qualified_name"
+                          item-value="id"
+                          clearable
+                          persistent-hint
+                          :label="$t('pages.subset.subpages.create.join.value.label')"
+                          :items="join?.datasource?.columns" />
+                      </v-col>
+                      <v-col
+                        lg="1">
+                        <v-btn
+                          :disabled="clausesDisabled"
+                          class="mt-4"
+                          size="small"
+                          color="error"
+                          variant="flat"
+                          :text="$t('pages.subset.subpages.create.join.remove.text')"
+                          @click="removeConditional(idx, join.conditionals, jdx)" />
+                      </v-col>
+                    </v-row>
+                  </div>
+                  <v-row
+                    dense>
+                    <v-col>
+                      <v-btn
+                        :disabled="clausesDisabled"
+                        class="mt-4"
+                        size="small"
+                        color="tertiary"
+                        variant="flat"
+                        :text="$t('pages.subset.subpages.create.conditional.text')"
+                        @click="addConditional(join)" />
+                    </v-col>
+                  </v-row>
+                </div>
+              </div>
+              <v-row
+                v-if="datasources.length > 0">
+                <v-col
+                  lg="8">
+                  <v-btn
+                    size="small"
+                    color="tertiary"
+                    variant="flat"
+                    :text="$t('pages.subset.subpages.create.join.text')"
+                    :disabled="clausesDisabled"
+                    @click="addFirstJoin" />
                 </v-col>
               </v-row>
               <v-row
@@ -179,8 +336,8 @@
                       <v-select
                         v-model="clause.params[0]"
                         :disabled="clausesDisabled"
-                        item-title="internal_name"
-                        item-value="internal_name"
+                        item-title="qualified_name"
+                        item-value="id"
                         variant="underlined"
                         :rules="[v => !!v || $t('validation.required')]"
                         required
@@ -188,7 +345,7 @@
                         persistent-hint
                         :label="$t('pages.subset.subpages.create.filter.column.label')"
                         :hint="$t('pages.subset.subpages.create.filter.column.hint')"
-                        :items="select" />
+                        :items="columns" />
                     </v-col>
                     <v-col
                       lg="2">
@@ -298,7 +455,7 @@
                     <v-select
                       v-model="sort.column_id"
                       :disabled="clausesDisabled"
-                      item-title="internal_name"
+                      item-title="qualified_name"
                       item-value="id"
                       :rules="[v => !!v || $t('validation.required')]"
                       required
@@ -347,6 +504,34 @@
                     @click="addFirstSort" />
                 </v-col>
               </v-row>
+              <v-row
+                v-if="!isView"
+                dense>
+                <v-col
+                  lg="8">
+                  <v-switch
+                    v-model="isHistoric"
+                    :label="timestampLabel" />
+                </v-col>
+              </v-row>
+              <v-row
+                v-if="!isView && isHistoric"
+                dense>
+                <v-col
+                  lg="8">
+                  <div>
+                    <label
+                      for="timestamp"
+                      v-text="$t('pages.subset.subpages.create.timestamp.label')" />
+                  </div>
+                  <input
+                    v-model="timestamp"
+                    id="timestamp"
+                    required
+                    aria-describedby="timestamp"
+                    type="datetime-local" />
+                </v-col>
+              </v-row>
             </v-window-item>
           </v-window>
         </v-form>
@@ -375,11 +560,12 @@ export default {
   },
   data () {
     return {
-      datasource: null,
+      datasources: [],
       views: [],
-      columns: [],
       sorts: [],
+      joins: [],
       timestamp: null,
+      isHistoric: false,
       executeDifferentTimestamp: false,
       dataOptions: [
         { title: this.$t('pages.database.resource.data.enabled'), value: true },
@@ -393,10 +579,11 @@ export default {
       resultId: null,
       errorKeyword: null,
       query: {
-        datasource_id: null,
-        datasource_type: null,
+        datasource_ids: [],
         columns: [],
-        filter: null
+        joins: [],
+        orders: [],
+        filters: []
       },
       view: {
         is_public: true,
@@ -410,29 +597,41 @@ export default {
         { title: 'Ascending ↓', value: 'asc' },
         { title: 'Descening ↑', value: 'desc' },
       ],
+      joinTypes: [
+        { title: this.$t('pages.subset.subpages.create.join.inner'), value: 'inner' },
+        { title: this.$t('pages.subset.subpages.create.join.left'), value: 'left' },
+        { title: this.$t('pages.subset.subpages.create.join.right'), value: 'right' },
+        { title: this.$t('pages.subset.subpages.create.join.cross'), value: 'cross' },
+      ],
       loadingQuery: false,
       loadingColumns: false,
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    columnNames () {
-      return this.columns && this.columns.map(s => s.internal_name)
-    },
     operators () {
       if (!this.database) {
         return []
       }
       return this.database.container.image.operators
     },
-    datasources () {
+    timestampLabel () {
+      if (this.isHistoric) {
+        return this.$t('pages.subset.subpages.create.timestamp.historic.label')
+      }
+      return this.$t('pages.subset.subpages.create.timestamp.current.label')
+    },
+    items () {
       if (!this.database) {
         return []
       }
-      if (this.isView) {
-        return this.database.tables
-      }
-      return this.database.views
+      return this.database.tables.map(t => {
+        t.qualified_name = t.internal_name
+        return t
+      }).concat(this.database.views.map(v => {
+        v.qualified_name = `${v.internal_name} (view)`
+        return v
+      }))
     },
     database () {
       return this.cacheStore.getDatabase
@@ -442,6 +641,24 @@ export default {
         return []
       }
       return this.database.container.image.data_types
+    },
+    needAliasColumns () {
+      if (!this.select || this.select.length === 0) {
+        return {}
+      }
+      const columns = {}
+      this.select.forEach((column) => {
+        if (!columns[column.internal_name]) {
+          columns[column.internal_name] = []
+        }
+        columns[column.internal_name].push(column)
+      })
+      Object.keys(columns).forEach(key => {
+        if (columns[key].length <= 1) {
+          delete columns[key]
+        }
+      })
+      return columns
     },
     viewNames () {
       if (!this.database) {
@@ -470,38 +687,84 @@ export default {
       }
       return this.$config.public.database.unsupported.split(',')
     },
+    columns () {
+      if (!this.datasources) {
+        return []
+      }
+      const columns = []
+      this.datasources.forEach(datasource => {
+        datasource.columns.forEach(column => {
+          column.qualified_name = datasource.internal_name + '.' + column.internal_name
+          columns.push(column)
+        })
+      })
+      this.items.forEach(datasource => {
+        this.joins.forEach(join => {
+          if (join.datasource?.id !== datasource.id) {
+            return
+          }
+          datasource.columns.forEach(column => {
+            column.qualified_name = datasource.internal_name + '.' + column.internal_name
+            columns.push(column)
+          })
+        })
+      })
+      return columns
+    },
+    joinItems () {
+      return this.items.filter(i => !this.datasources.map(d => d.id).includes(i.id))
+    },
     subset () {
-      if (!this.datasource || !this.select) {
+      if (!this.datasources || !this.select) {
         return null
       }
       return {
-        datasource_id: this.datasource.id,
-        datasource_type: this.isView ? 'table' : 'view',
-        columns: this.select.map(column => column.id),
-        filter: this.clauses ? this.clauses.map(clause => {
+        datasource_ids: this.datasources.map(ds => ds.id),
+        columns: this.select.map(column => {
+          const alias = Object.keys(this.needAliasColumns).map(key => this.needAliasColumns[key]).flat().filter(c => c.id === column.id)
+          return {
+            id: column.id,
+            alias: alias.length > 0 ? alias[0].alias : null
+          }
+        }),
+        filters: this.clauses ? this.clauses.map(clause => {
           if (clause.type === 'or' || clause.type === 'and') {
             return {
               type: clause.type
             }
           }
-          const filtered_column = this.datasource.columns.filter(column => column.internal_name === clause.params[0])
+          const filtered_column = this.columns.filter(column => column.id === clause.params[0])
           const filtered_operator = this.database.container.image.operators.filter(operator => operator.value === clause.params[1])
           if (!filtered_column || filtered_column.length === 0 || !filtered_operator || filtered_operator.length === 0) {
             return null
           }
-          const json = {
+          return {
             type: clause.type,
             column_id: filtered_column[0].id,
             operator_id: filtered_operator[0].id,
             value: clause.params[2]
           }
-          return json
         }) : null,
-        order: this.sorts
+        joins: this.joins.map(join => {
+          return {
+            type: join.type,
+            datasource_id: join.datasource?.id,
+            conditionals: join.conditionals.map(conditional => {
+              return {
+                column_id: conditional.column_id,
+                foreign_column_id: conditional.foreign_column_id
+              }
+            }),
+          }
+        }),
+        orders: this.sorts
       }
     },
     canExecute () {
       if (this.subset === null || !this.subset.columns || this.subset.columns.length === 0 || !this.$refs.form.isValid) {
+        return false
+      }
+      if (!this.isView && this.isHistoric && !this.timestamp) {
         return false
       }
       if (!this.isView) {
@@ -518,61 +781,17 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
-  watch: {
-    datasource () {
-      this.select = []
-      if (!this.datasource) {
-        return
-      }
-      if (!this.isView) {
-        this.fetchViewColumns(this.datasource?.id)
-        return
-      }
-      this.fetchTableColumns(this.datasource?.id)
-    }
-  },
   mounted () {
     this.selectTable()
     this.selectView()
     this.initViewVisibility()
   },
+  watch: {
+    needAliasColumns () {
+      this.$refs.form.validate()
+    }
+  },
   methods: {
-    fetchTableColumns (tableId) {
-      this.loadingColumns = true
-      const tableService = useTableService()
-      tableService.findOne(this.$route.params.database_id, tableId)
-        .then((table) => {
-          this.columns = table.columns
-          this.loadingColumns = false
-        })
-        .catch(({code, message}) => {
-          this.loadingColumns = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
-    },
-    fetchViewColumns (viewId) {
-      this.loadingColumns = true
-      const viewService = useViewService()
-      viewService.findOne(this.$route.params.database_id, viewId)
-        .then((view) => {
-          this.columns = view.columns
-          this.loadingColumns = false
-        })
-        .catch(({code, message}) => {
-          this.loadingColumns = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
-    },
     initViewVisibility () {
       if (!this.database) {
         return
@@ -612,18 +831,19 @@ export default {
       this.datasource = selection[0]
       console.info('Preselect view with id', vid)
     },
+    addConditional (join) {
+      join.conditionals.push( { column_id: null, foreign_column_id: null } )
+    },
     execute () {
       if (this.isView) {
         this.createView()
         return
       }
-      if (this.timestamp === '') {
-        this.timestamp = null
-      }
+      const timestamp = !this.timestamp ? null : (this.timestamp + ':00Z')
       /* pre-check */
       this.loadingQuery = true
       const queryService = useQueryService()
-      queryService.execute(this.$route.params.database_id, this.subset, this.timestamp, 0, 1)
+      queryService.execute(this.$route.params.database_id, this.subset, timestamp, 0, 1)
         .then(async (subset) => {
           const toast = useToastInstance()
           toast.success(this.$t('success.subset.create'))
@@ -678,9 +898,12 @@ export default {
     canAdd (idx) {
       return idx === this.clauses.length - 1
     },
+    addFirstJoin () {
+      this.joins.push({ type: 'inner', datasource_id: null, conditionals: [ { column_id: null, foreign_column_id: null } ] })
+      this.$refs.form.validate()
+    },
     addFirstFilter () {
-      const column = (this.columnNames && this.columnNames.length) ? this.columnNames[0] : ''
-      this.clauses.push({ type: 'where', params: [column, '=', ''] })
+      this.clauses.push({ type: 'where', params: [null, '=', ''] })
       this.$refs.form.validate()
     },
     addFirstSort () {
@@ -705,6 +928,14 @@ export default {
       } else {
         // remove current and previous
         this.clauses.splice(idx - 1, 2)
+      }
+    },
+    removeConditional (idx, conditionals, jdx) {
+      if (conditionals.length === 1) {
+        // last one, remove the whole join
+        this.joins.splice(idx, 1)
+      } else {
+        conditionals.splice(jdx, 1)
       }
     },
     removeSort (idx) {
@@ -740,6 +971,10 @@ export default {
 }
 </script>
 <style lang="scss">
+#timestamp {
+  height: 2rem;
+  border-bottom: 1px solid;
+}
 .text-center {
   text-align: center;
 }

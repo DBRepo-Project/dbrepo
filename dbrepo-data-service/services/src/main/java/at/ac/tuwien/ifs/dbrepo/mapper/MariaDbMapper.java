@@ -19,6 +19,8 @@ import org.jooq.Record;
 import org.jooq.conf.ParamType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -35,13 +37,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.*;
 
 @Mapper(componentModel = "spring", uses = {DataMapper.class, DataMapper.class})
 public interface MariaDbMapper {
 
-    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MariaDbMapper.class);
+    Logger log = LoggerFactory.getLogger(MariaDbMapper.class);
 
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
             .withZone(ZoneId.of("UTC"));
@@ -114,12 +115,6 @@ public interface MariaDbMapper {
         final String statement = "CREATE USER IF NOT EXISTS ?@`%` IDENTIFIED BY ?;";
         log.trace("mapped create user raw query: {}", statement);
         return statement;
-    }
-
-    default String databaseAccessRawQuery() {
-        final StringBuilder statement = new StringBuilder(";");
-        log.trace("mapped database access statement: {}", statement);
-        return statement.toString();
     }
 
     default String databaseGrantPrivilegesQuery(String database, String username, String grants) {
@@ -214,12 +209,6 @@ public interface MariaDbMapper {
     default String queryStoreUpdateQueryRawQuery() {
         final String statement = "UPDATE `qs_queries` SET `is_persisted` = ? WHERE `id` = ?";
         log.trace("mapped update query statement: {}", statement);
-        return statement;
-    }
-
-    default String queryStoreDeleteStaleQueriesRawQuery() {
-        final String statement = "DELETE FROM `qs_queries` WHERE `is_persisted` = false AND ABS(DATEDIFF(`created`, NOW())) >= 1";
-        log.trace("mapped delete stale queries statement: {}", statement);
         return statement;
     }
 
@@ -341,7 +330,7 @@ public interface MariaDbMapper {
         return "";
     }
 
-    default String tableColumnStatisticsSelectRawQuery(List<ColumnDto> data, String table) {
+    default String tableColumnStatisticsSelectRawQuery(String databaseName, String table, List<ColumnDto> data) {
         final StringBuilder statement = new StringBuilder();
         final int[] idx = new int[]{0};
         data.stream()
@@ -359,8 +348,11 @@ public interface MariaDbMapper {
                         .append(column.getInternalName())
                         .append("`) as mean, STDDEV(`")
                         .append(column.getInternalName())
-                        .append("`) as std_dev FROM ")
-                        .append(table));
+                        .append("`) as std_dev FROM `")
+                        .append(databaseName)
+                        .append("`.`")
+                        .append(table)
+                        .append("`"));
         data.stream()
                 .filter(column -> MariaDbUtil.stringDataTypes.contains(column.getColumnType()))
                 .forEach(column -> statement.append(idx[0]++ > 0 ? " UNION " : "")
@@ -376,8 +368,11 @@ public interface MariaDbMapper {
                         .append(column.getInternalName())
                         .append("`)) as mean, STDDEV(LENGTH(`")
                         .append(column.getInternalName())
-                        .append("`)) as std_dev FROM ")
-                        .append(table));
+                        .append("`)) as std_dev FROM `")
+                        .append(databaseName)
+                        .append("`.`")
+                        .append(table)
+                        .append("`"));
         if (statement.isEmpty()) {
             return null;
         }
@@ -525,36 +520,11 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String selectExistsTableOrViewRawQuery() {
-        final String statement = "SELECT IF((SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?), 1, 0) AS `exists`";
-        log.trace("mapped select exists table or view statement: {}", statement);
-        return statement;
-    }
-
     default Long resultSetToNumber(ResultSet data) throws QueryMalformedException, SQLException {
         if (!data.next()) {
             throw new QueryMalformedException("Failed to map number");
         }
         return data.getLong(1);
-    }
-
-    default Boolean resultSetToBoolean(ResultSet data) throws QueryMalformedException, SQLException {
-        if (!data.next()) {
-            throw new QueryMalformedException("Failed to map boolean");
-        }
-        return data.getBoolean(1);
-    }
-
-    default List<Map<String, Object>> resultSetToList(ResultSet data, List<String> columns) throws SQLException {
-        final List<Map<String, Object>> list = new LinkedList<>();
-        while (data.next()) {
-            final Map<String, Object> tuple = new HashMap<>();
-            for (String column : columns) {
-                tuple.put(column, data.getString(column));
-            }
-            list.add(tuple);
-        }
-        return list;
     }
 
     /**
@@ -580,7 +550,6 @@ public interface MariaDbMapper {
     default String dropTableRawQuery(String databaseName, String tableName) {
         return dropTableRawQuery(databaseName, tableName, true);
     }
-
 
     /**
      * Map the table delete query as raw query. Currently, preparing statements for database name and table name are not supported by the driver.
@@ -891,36 +860,6 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String normalizeQuery(String query, Instant timestamp) throws QueryMalformedException,
-            QueryStoreInsertException {
-        if (!query.toLowerCase().startsWith("select")) {
-            log.atError()
-                    .setMessage("Not a select query: " + query)
-                    .addKeyValue("query", query)
-                    .log();
-            throw new QueryStoreInsertException("Not a select query: " + query);
-        }
-        /* query check (this is enforced by the db also) */
-        final Pattern pattern = Pattern.compile("[fF][rR][oO][mM] ([^ ]+)");
-        final Matcher matcher = pattern.matcher(query);
-        if (!matcher.find()) {
-            log.atError()
-                    .setMessage("Failed to find from-part of query: " + query)
-                    .addKeyValue("query", query)
-                    .log();
-            throw new QueryMalformedException("Failed to find from-part of query: " + query);
-        }
-        final String group = matcher.group(1);
-        final int idx = query.indexOf(group);
-        final StringBuilder statement = new StringBuilder(query.substring(0, idx + group.length()));
-        statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                .append(mariaDbFormatter.format(timestamp))
-                .append("'")
-                .append(query.substring(idx + group.length()));
-        log.trace("mapped normalized query: {}", statement);
-        return statement.toString();
-    }
-
     default String defaultRawSelectQuery(String databaseName, String tableOrViewName, Instant timestamp, Long page,
                                          Long size) {
         /* query check (this is enforced by the db also) */
@@ -964,24 +903,80 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default Map<UUID, at.ac.tuwien.ifs.dbrepo.api.Column> databaseToColumnsKV(Database database) {
+        final Map<UUID, at.ac.tuwien.ifs.dbrepo.api.Column> columns = new HashMap<>();
+        if (database.getTables() != null) {
+            database.getTables()
+                    .forEach(table -> {
+                        table.getColumns()
+                                .forEach(column -> {
+                                    columns.put(column.getId(), at.ac.tuwien.ifs.dbrepo.api.Column.builder()
+                                            .internalName(column.getInternalName())
+                                            .datasourceName(table.getInternalName())
+                                            .build());
+                                });
+                    });
+        }
+        if (database.getViews() != null) {
+            database.getViews()
+                    .forEach(view -> {
+                        view.getColumns()
+                                .forEach(column -> {
+                                    columns.put(column.getId(), at.ac.tuwien.ifs.dbrepo.api.Column.builder()
+                                            .internalName(column.getInternalName())
+                                            .datasourceName(view.getInternalName())
+                                            .build());
+                                });
+                    });
+        }
+        return columns;
+    }
+
+    default Map<UUID, String> databaseToDatasourceKV(Database database) {
+        final Map<UUID, String> dataSources = new HashMap<>();
+        if (database.getTables() != null) {
+            database.getTables()
+                    .forEach(table -> {
+                        dataSources.put(table.getId(), table.getInternalName());
+                    });
+        }
+        if (database.getViews() != null) {
+            database.getViews()
+                    .forEach(view -> {
+                        dataSources.put(view.getId(), view.getInternalName());
+                    });
+        }
+        return dataSources;
+    }
+
+    default at.ac.tuwien.ifs.dbrepo.api.Column columnIdToColumn(Database database, UUID columnId)
+            throws ColumnNotFoundException {
+        final Map<UUID, at.ac.tuwien.ifs.dbrepo.api.Column> columns = databaseToColumnsKV(database);
+        if (!columns.containsKey(columnId)) {
+            log.error("Failed to find column with id: {}", columnId);
+            throw new ColumnNotFoundException("Failed to find column");
+        }
+        return columns.get(columnId);
+    }
+
     default SelectConditionStep<Record> subsetDtoToSelectConditions(SelectJoinStep<Record> step, Database database,
                                                                     SubsetDto data) throws ColumnNotFoundException,
             ImageNotFoundException {
-        if (data.getFilter() == null || data.getFilter().isEmpty()) {
+        if (data.getFilters() == null || data.getFilters().isEmpty()) {
             return step.where();
         }
         SelectConditionStep<Record> conditions = step.where();
         FilterTypeDto next = null;
-        for (int i = 0; i < data.getFilter().size(); i++) {
-            final FilterDto filter = data.getFilter().get(i);
-            final String columnName = columnIdToColumnName(database, data.getDatasourceType(), filter.getColumnId());
-            if (i == 0) {
-                conditions = step.where(filterDtoToCondition(database, columnName, filter));
+        final int[] idx = new int[]{0};
+        for (FilterDto filter : data.getFilters()) {
+            final at.ac.tuwien.ifs.dbrepo.api.Column column = columnIdToColumn(database, filter.getColumnId());
+            if (idx[0]++ == 0) {
+                conditions = step.where(filterDtoToCondition(database, column, filter));
             } else if (next != null) {
                 if (next.equals(FilterTypeDto.OR)) {
-                    conditions = conditions.or(filterDtoToCondition(database, columnName, filter));
+                    conditions = conditions.or(filterDtoToCondition(database, column, filter));
                 } else if (next.equals(FilterTypeDto.AND)) {
-                    conditions = conditions.and(filterDtoToCondition(database, columnName, filter));
+                    conditions = conditions.and(filterDtoToCondition(database, column, filter));
                 }
             }
             next = filter.getType();
@@ -989,161 +984,143 @@ public interface MariaDbMapper {
         return conditions;
     }
 
-    default String columnIdToColumnName(Database database, DatasourceType type, UUID columnId) throws ColumnNotFoundException {
-        return switch (type) {
-            case VIEW -> columnIdToViewColumnDto(database, columnId)
-                    .getInternalName();
-            case TABLE -> columnIdToColumnDto(database, columnId)
-                    .getInternalName();
-        };
-    }
-
-    default Condition filterDtoToCondition(Database database, String columnName, FilterDto data)
+    default Condition filterDtoToCondition(Database database, at.ac.tuwien.ifs.dbrepo.api.Column column, FilterDto data)
             throws ImageNotFoundException {
         final String operator = operatorIdToOperatorDto(database, data.getOperatorId()).getValue();
         switch (operator) {
             case "=":
             case "<=>":
-                return field(name(columnName)).eq(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).eq(data.getValue());
             case "<":
-                return field(name(columnName)).lt(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).lt(data.getValue());
             case "<=":
-                return field(name(columnName)).le(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).le(data.getValue());
             case ">":
-                return field(name(columnName)).gt(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).gt(data.getValue());
             case ">=":
-                return field(name(columnName)).ge(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).ge(data.getValue());
             case "!=":
-                return field(name(columnName)).ne(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).ne(data.getValue());
             case "LIKE":
-                return field(name(columnName)).like(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).like(data.getValue());
             case "NOT LIKE":
-                return field(name(columnName)).notLike(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).notLike(data.getValue());
             case "IN":
-                return field(name(columnName)).in(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).in(data.getValue());
             case "NOT IN":
-                return field(name(columnName)).notIn(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).notIn(data.getValue());
             case "IS NOT NULL":
-                return field(name(columnName)).isNotNull();
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).isNotNull();
             case "IS NULL":
-                return field(name(columnName)).isNull();
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).isNull();
             case "REGEXP":
-                return field(name(columnName)).likeRegex(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).likeRegex(data.getValue());
             case "NOT REGEXP":
-                return field(name(columnName)).notLikeRegex(data.getValue());
+                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).notLikeRegex(data.getValue());
         }
         log.error("Failed to map operator: {}", operator);
         throw new IllegalArgumentException("Failed to map operator: " + operator);
     }
 
-    default SelectSeekStepN<Record> SubsetToSelectOrder(SelectConditionStep<Record> step, Database database,
+    default SelectSeekStepN<Record> subsetToSelectOrder(SelectConditionStep<Record> step, Database database,
                                                         SubsetDto data) throws ColumnNotFoundException {
         final List<OrderField<Object>> sort = new LinkedList<>();
-        for (OrderDto order : data.getOrder()) {
-            final String columnName = columnIdToColumnName(database, data.getDatasourceType(), order.getColumnId());
+        for (OrderDto order : data.getOrders()) {
+            final at.ac.tuwien.ifs.dbrepo.api.Column column = columnIdToColumn(database, order.getColumnId());
             if (order.getDirection() == null) {
-                sort.add(field(name(columnName)));
+                sort.add(field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())));
                 continue;
             }
             switch (order.getDirection()) {
-                case ASC -> sort.add(field(name(columnName)).asc());
-                case DESC -> sort.add(field(name(columnName)).desc());
+                case ASC ->
+                        sort.add(field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).asc());
+                case DESC ->
+                        sort.add(field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).desc());
             }
         }
         return step.orderBy(sort);
     }
 
-    default String subsetDtoToRawQuery(DSLContext context, Database database, SubsetDto data)
-            throws TableNotFoundException, ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
-        final String datasourceName;
-        final List<Field<Object>> columns = switch (data.getDatasourceType()) {
-            case TABLE -> {
-                final Optional<at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table> optional = database.getTables()
-                        .stream()
-                        .filter(t -> t.getId().equals(data.getDatasourceId()))
-                        .findFirst();
-                if (optional.isEmpty()) {
-                    log.error("Failed to find table: {}", data.getDatasourceId());
-                    throw new TableNotFoundException("Failed to find table: " + data.getDatasourceId());
+    default String subsetDtoToNormalizedQuery(DSLContext context, Database database, SubsetDto data)
+            throws ColumnNotFoundException, ImageNotFoundException {
+        return subsetDtoToNormalizedTimestampedQuery(context, database, data, null);
+    }
+
+    /**
+     * Maps a subset to a normalized query, optionally to a timestamp.
+     *
+     * @param context   The database flavor context.
+     * @param database  The database schema.
+     * @param data      The subset.
+     * @param timestamp The time at which the subset is executed, optional.
+     * @return The normalized query.
+     * @throws ColumnNotFoundException Some referenced column was not found in the database schema.
+     * @throws ImageNotFoundException  Some operation was not found in the database schema.
+     */
+    default String subsetDtoToNormalizedTimestampedQuery(DSLContext context, Database database, SubsetDto data,
+                                                         Instant timestamp) throws ColumnNotFoundException,
+            ImageNotFoundException {
+        final Map<UUID, at.ac.tuwien.ifs.dbrepo.api.Column> columns = databaseToColumnsKV(database);
+        final List<Field<Object>> filteredColumns = columns.entrySet()
+                .stream()
+                .filter(entry -> data.getColumns().stream().anyMatch(column -> column.getId().equals(entry.getKey())))
+                .map(entry -> {
+                    Field<Object> field = field(name(database.getInternalName(), entry.getValue().getDatasourceName(), entry.getValue().getInternalName()));
+                    final Optional<SubsetColumnDto> optional = data.getColumns().stream().filter(column -> entry.getKey().equals(column.getId())).findFirst();
+                    if (optional.isPresent() && optional.get().getAlias() != null) {
+                        log.trace("column `{}`.`{}`.`{}` is aliased: {}", database.getInternalName(), entry.getValue().getDatasourceName(), entry.getValue().getInternalName(), optional.get().getAlias());
+                        field = field.as(name(optional.get().getAlias()));
+                    }
+                    return field;
+                })
+                .toList();
+        final List<Map.Entry<UUID, String>> tables = databaseToDatasourceKV(database)
+                .entrySet()
+                .stream()
+                .filter(entry -> data.getDatasourceIds().contains(entry.getKey()))
+                .toList();
+        log.debug("subset selects from table(s): {}", tables.stream().map(Map.Entry::getValue).toList());
+        final int[] idx = new int[]{1};
+        SelectJoinStep<Record> query = context.select(filteredColumns)
+                .from(tables.stream()
+                        .map(entry -> table("`" + entry.getValue() + "`" + (idx[0]++ == tables.size() ? "/*dbrepo:temporal_tables*/" : "")))
+                        .toList());
+        final Map<UUID, String> datasources = databaseToDatasourceKV(database);
+        if (data.getJoins() != null) {
+            log.debug("subset joins: {}", data.getJoins().stream().map(j -> datasources.get(j.getDatasourceId())).toList());
+            for (JoinDto join : data.getJoins()) {
+                for (ConditionalDto conditional : join.getConditionals()) {
+                    query = query.join(table("`" + datasources.get(join.getDatasourceId()) + "`"), joinTypeDtoToJoinType(join.getType()))
+                            .on(field(name(database.getInternalName(), columns.get(conditional.getColumnId()).getDatasourceName(), columns.get(conditional.getColumnId()).getInternalName())).eq(
+                                    field(name(database.getInternalName(), columns.get(conditional.getForeignColumnId()).getDatasourceName(), columns.get(conditional.getForeignColumnId()).getInternalName()))));
                 }
-                datasourceName = optional.get()
-                        .getInternalName();
-                yield optional.get().getColumns()
-                        .stream()
-                        .filter(c -> data.getColumns().contains(c.getId()))
-                        .map(c -> field(name(c.getInternalName())))
-                        .toList();
             }
-            case VIEW -> {
-                final Optional<View> optional = database.getViews()
-                        .stream()
-                        .filter(v -> v.getId().equals(data.getDatasourceId()))
-                        .findFirst();
-                if (optional.isEmpty()) {
-                    log.error("Failed to find view: {}", data.getDatasourceId());
-                    throw new ViewNotFoundException("Failed to find view: " + data.getDatasourceId());
-                }
-                datasourceName = optional.get()
-                        .getInternalName();
-                yield optional.get()
-                        .getColumns()
-                        .stream()
-                        .filter(c -> data.getColumns().contains(c.getId()))
-                        .map(c -> field(name(c.getInternalName())))
-                        .toList();
-            }
-        };
-        log.debug("datasource is of type {} and has name: {}", data.getDatasourceType(), datasourceName);
-        final SelectJoinStep<Record> query = context.select(columns)
-                .from(name(datasourceName));
+        }
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
+        final String value = timestamp != null ? " FOR SYSTEM_TIME AS OF TIMESTAMP '" + mariaDbFormatter.format(timestamp) + "'" : "";
         final String sql;
-        if (data.getOrder() == null) {
-            sql = where.getSQL(ParamType.INLINED);
+        if (data.getOrders() == null) {
+            sql = where.getSQL(ParamType.INLINED)
+                    .replace("/*dbrepo:temporal_tables*/", value);
         } else {
-            sql = SubsetToSelectOrder(where, database, data)
-                    .getSQL(ParamType.INLINED);
+            sql = subsetToSelectOrder(where, database, data)
+                    .getSQL(ParamType.INLINED)
+                    .replace("/*dbrepo:temporal_tables*/", value);
         }
         log.trace("mapped prepared query: {}", sql);
         return sql;
     }
 
-    default ViewColumn columnIdToViewColumnDto(Database database, UUID columnId) throws ColumnNotFoundException {
-        if (columnId == null) {
-            return null;
+    default JoinType joinTypeDtoToJoinType(JoinTypeDto data) {
+        if (data == null) {
+            return JoinType.JOIN;
         }
-        final Optional<ViewColumn> optional = database.getViews()
-                .stream()
-                .map(View::getColumns)
-                .flatMap(List::stream)
-                .filter(column -> column.getId().equals(columnId))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find column: {}", columnId);
-            throw new ColumnNotFoundException("Failed to find column: " + columnId);
-        }
-        final ViewColumn column = optional.get();
-        log.trace("mapped column id {} to view column: {}", columnId, column.getInternalName());
-        return column;
-    }
-
-    default Column columnIdToColumnDto(Database database, UUID columnId) throws ColumnNotFoundException {
-        if (columnId == null) {
-            return null;
-        }
-        final Optional<Column> optional = database.getTables()
-                .stream()
-                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table::getColumns)
-                .flatMap(List::stream)
-                .filter(column -> column.getId().equals(columnId))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find column: {}", columnId);
-            throw new ColumnNotFoundException("Failed to find column: " + columnId);
-        }
-        final Column column = optional.get();
-        log.trace("mapped column id {} to column: {}", columnId, column.getInternalName());
-        return column;
+        return switch (data) {
+            case INNER -> JoinType.JOIN;
+            case LEFT -> JoinType.LEFT_OUTER_JOIN;
+            case RIGHT -> JoinType.RIGHT_OUTER_JOIN;
+            case CROSS -> JoinType.CROSS_JOIN;
+        };
     }
 
     default Operator operatorIdToOperatorDto(Database database, UUID operatorId) throws ImageNotFoundException {

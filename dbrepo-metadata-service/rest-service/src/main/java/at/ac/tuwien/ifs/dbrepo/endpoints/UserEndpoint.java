@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -106,12 +107,12 @@ public class UserEndpoint extends RestEndpoint {
         log.debug("endpoint find a user, username={}", username);
         /* check */
         final UserDto user = userService.findByUsername(username);
-        if (!user.getUsername().equals(getUsername(principal)) && !hasRole(principal, "find-foreign-user") && !isSystem(principal)) {
+        if (!user.getUsername().equals(AuthUtil.getUsername(principal)) && !AuthUtil.hasRole(principal, "find-foreign-user") && !AuthUtil.isSystem(principal)) {
             log.error("Failed to find user: foreign user");
             throw new NotAllowedException("Failed to find user: foreign user");
         }
         final HttpHeaders headers = new HttpHeaders();
-        if (isSystem(principal)) {
+        if (AuthUtil.isSystem(principal)) {
             headers.set("X-Username", user.getUsername());
             headers.set("X-Password", user.getAttributes().getMariadbPassword());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
@@ -153,7 +154,7 @@ public class UserEndpoint extends RestEndpoint {
             UserNotFoundException, AuthServiceException {
         log.debug("endpoint modify a user, username={}, data={}", username, data);
         final UserDto user = userService.findByUsername(username);
-        if (!user.getUsername().equals(getUsername(principal))) {
+        if (!user.getUsername().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to modify user: not current user {}", user.getUsername());
             throw new NotAllowedException("Failed to modify user: not current user " + user.getUsername());
         }

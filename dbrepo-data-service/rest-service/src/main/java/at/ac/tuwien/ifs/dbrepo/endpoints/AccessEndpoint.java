@@ -27,7 +27,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/access")
-public class AccessEndpoint extends RestEndpoint {
+public class AccessEndpoint {
 
     private final AccessService accessService;
     private final MetadataService metadataService;

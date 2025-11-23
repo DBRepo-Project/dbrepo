@@ -290,12 +290,12 @@ class ViewUnitTest(unittest.TestCase):
             client = RestClient(username="a", password="b")
             response = client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                           is_public=True, is_schema_public=True,
-                                          query=QueryDefinition(table="some_table",
-                                                                columns=["id"],
-                                                                filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                         column="id",
-                                                                                         operator="IN",
-                                                                                         value="(1,2)")]))
+                                          query=QueryDefinition(datasources=["some_table"],
+                                                                columns=["some_table.id"],
+                                                                filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                          column="some_table.id",
+                                                                                          operator="IN",
+                                                                                          value="(1,2)")]))
             self.assertEqual(exp, response)
 
     def test_create_view_400_fails(self):
@@ -311,12 +311,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
+                                   query=QueryDefinition(datasources=["some_table"],
                                                          columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except MalformedError:
                 pass
 
@@ -333,12 +333,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
-                                                         columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                   query=QueryDefinition(datasources=["some_table"],
+                                                         columns=["some_table.id"],
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="some_table.id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except ForbiddenError:
                 pass
 
@@ -355,12 +355,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
-                                                         columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                   query=QueryDefinition(datasources=["some_table"],
+                                                         columns=["some_table.id"],
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="some_table.id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except NotExistsError:
                 pass
 
@@ -377,12 +377,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
-                                                         columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                   query=QueryDefinition(datasources=["some_table"],
+                                                         columns=["some_table.id"],
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="some_table.id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except ExternalSystemError:
                 pass
 
@@ -399,12 +399,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
-                                                         columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                   query=QueryDefinition(datasources=["some_table"],
+                                                         columns=["some_table.id"],
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="some_table.id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except ServiceConnectionError:
                 pass
 
@@ -421,12 +421,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
-                                                         columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                   query=QueryDefinition(datasources=["some_table"],
+                                                         columns=["some_table.id"],
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="some_table.id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except ServiceError:
                 pass
 
@@ -443,12 +443,12 @@ class ViewUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 client.create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                    is_public=True, is_schema_public=True,
-                                   query=QueryDefinition(table="some_table",
-                                                         columns=["id"],
-                                                         filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                  column="id",
-                                                                                  operator="IN",
-                                                                                  value="(1,2)")]))
+                                   query=QueryDefinition(datasources=["some_table"],
+                                                         columns=["some_table.id"],
+                                                         filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                   column="some_table.id",
+                                                                                   operator="IN",
+                                                                                   value="(1,2)")]))
             except ResponseCodeError:
                 pass
 
@@ -464,11 +464,11 @@ class ViewUnitTest(unittest.TestCase):
             try:
                 RestClient().create_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732", name="Data",
                                          is_public=True, is_schema_public=True,
-                                         query=QueryDefinition(table="some_table",
-                                                               columns=["id"],
-                                                               filter=[
+                                         query=QueryDefinition(datasources=["some_table"],
+                                                               columns=["some_table.id"],
+                                                               filters=[
                                                                    FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
+                                                                                    column="some_table.id",
                                                                                     operator="IN",
                                                                                     value="(1,2)")]))
             except AuthenticationError:
@@ -477,8 +477,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=202)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=202)
             # test
             client = RestClient(username="a", password="b")
             client.delete_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -487,8 +488,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=400)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=400)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -500,8 +502,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=403)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=403)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -513,8 +516,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=404)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -526,8 +530,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_423_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=423)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=423)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -539,8 +544,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=502)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=502)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -552,8 +558,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=503)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=503)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -565,8 +572,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=200)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=200)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -578,8 +586,9 @@ class ViewUnitTest(unittest.TestCase):
     def test_delete_view_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
-                        status_code=403)
+            mock.delete(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/view/1b3449d2-780e-4683-9af0-8733e608a4aa',
+                status_code=403)
             # test
             try:
                 RestClient().delete_view(database_id="6bd39359-b154-456d-b9c2-caa516a45732",

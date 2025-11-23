@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,7 +31,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/grant")
-public class GrantEndpoint extends RestEndpoint {
+public class GrantEndpoint {
 
     private final GrantService grantService;
     private final MetadataService metadataService;
@@ -74,7 +75,7 @@ public class GrantEndpoint extends RestEndpoint {
         log.debug("endpoint check access to database, databaseId={}", databaseId);
         final Database database = metadataService.getDatabase(databaseId);
         final User user = metadataService.getUser(username);
-        if (!database.getOwnedBy().equals(getUsername(principal)) && !user.getUsername().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !user.getUsername().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to find access: not owner or foreign user");
             throw new NotAllowedException("Failed to find access: not owner or foreign user");
         }

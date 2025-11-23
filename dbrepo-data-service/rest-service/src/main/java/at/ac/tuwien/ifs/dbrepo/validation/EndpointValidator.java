@@ -9,16 +9,16 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.PaginationException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
-import at.ac.tuwien.ifs.dbrepo.endpoints.RestEndpoint;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
-public class EndpointValidator extends RestEndpoint {
+public class EndpointValidator {
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
         log.trace("validate data params, page={}, size={}", page, size);
@@ -37,17 +37,18 @@ public class EndpointValidator extends RestEndpoint {
     }
 
     public void validateSubsetParams(SubsetDto subset) throws QueryMalformedException {
-        if (subset.getFilter() != null) {
-            final List<FilterDto> filters = subset.getFilter();
+        if (subset.getFilters() != null) {
+            final Set<FilterDto> filters = subset.getFilters();
             FilterTypeDto previous = null;
-            for (int i = 0; i < filters.size(); i++) {
-                final FilterDto filter = filters.get(i);
-                if ((i == 0 && !filter.getType().equals(FilterTypeDto.WHERE)) ||
-                        (i > 0 && !previous.equals(FilterTypeDto.WHERE) && (filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR)))) {
-                    log.error("Failed to validate subset: invalid specification, must be where-[(and|or)-where]");
+            final int[] idx = new int[]{0};
+            for (FilterDto filter : filters) {
+                if ((idx[0] == 0 && !filter.getType().equals(FilterTypeDto.WHERE)) ||
+                        (idx[0] > 0 && !previous.equals(FilterTypeDto.WHERE) && (filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR)))) {
+                    log.error("Failed to validate subset: invalid specification, must be where-[(and|or)-where] but is: {}-{}", previous, filter);
                     throw new QueryMalformedException("Failed to validate subset: invalid specification, must be where-[(and|or)-where]");
                 }
                 previous = filter.getType();
+                idx[0]++;
             }
         }
     }
@@ -56,14 +57,14 @@ public class EndpointValidator extends RestEndpoint {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
-        if (isSystem(principal)) {
-            log.trace("user {} is internal: no access needed", getUsername(principal));
+        if (AuthUtil.isSystem(principal)) {
+            log.trace("user {} is internal: no access needed", AuthUtil.getUsername(principal));
             return;
         }
         if (database.getAccesses()
                 .stream()
-                .noneMatch(a -> a.getUsername().equals(getUsername(principal)))) {
-            log.error("No access found for user {} to database: {}", getUsername(principal), database.getInternalName());
+                .noneMatch(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))) {
+            log.error("No access found for user {} to database: {}", AuthUtil.getUsername(principal), database.getInternalName());
             throw new NotAllowedException("No access found");
         }
     }
@@ -74,15 +75,15 @@ public class EndpointValidator extends RestEndpoint {
         if (database.getAccesses()
                 .stream()
                 .anyMatch(a -> a.getType().equals(AccessType.WRITE_OWN) &&
-                        table.getOwnedBy().equals(getUsername(principal)) &&
-                        a.getUsername().equals(getUsername(principal)))) {
+                        table.getOwnedBy().equals(AuthUtil.getUsername(principal)) &&
+                        a.getUsername().equals(AuthUtil.getUsername(principal)))) {
             return;
         }
         if (database.getAccesses()
                 .stream()
                 .noneMatch(a -> a.getType().equals(AccessType.WRITE_ALL) &&
-                        a.getUsername().equals(getUsername(principal)))) {
-            log.error("No write access found for user {} to database: {}", getUsername(principal), database.getInternalName());
+                        a.getUsername().equals(AuthUtil.getUsername(principal)))) {
+            log.error("No write access found for user {} to database: {}", AuthUtil.getUsername(principal), database.getInternalName());
             throw new NotAllowedException("No write access found");
         }
     }
