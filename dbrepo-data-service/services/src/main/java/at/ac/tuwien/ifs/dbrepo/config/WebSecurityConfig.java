@@ -1,22 +1,20 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
+import at.ac.tuwien.ifs.dbrepo.auth.BasicAuthenticationProvider;
+import at.ac.tuwien.ifs.dbrepo.auth.BearerAuthenticationProvider;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.ExpressionJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,17 +40,9 @@ import org.springframework.web.filter.CorsFilter;
 )
 public class WebSecurityConfig {
 
-    private final GatewayConfig gatewayConfig;
-    private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public WebSecurityConfig(GatewayConfig gatewayConfig, PasswordEncoder passwordEncoder) {
-        this.gatewayConfig = gatewayConfig;
-        this.passwordEncoder = passwordEncoder;
-    }
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CredentialService credentialService)
+    public SecurityFilterChain filterChain(HttpSecurity http, BasicAuthenticationProvider basicAuthenticationProvider,
+                                           BearerAuthenticationProvider bearerAuthenticationProvider)
             throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
@@ -67,45 +57,38 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/api/database/**/subset", "POST")
         );
         /* enable CORS and disable CSRF */
-        http = http.cors().and().csrf().disable();
+        http.csrf(AbstractHttpConfigurer::disable);
         /* set session management to stateless */
-        http = http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and();
+        http.sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         /* set unauthorized requests exception handler */
-        http = http
-                .exceptionHandling()
-                .authenticationEntryPoint(
-                        (request, response, ex) -> {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                                    ex.getMessage()
-                            );
-                        }
-                ).and();
+        http.exceptionHandling(configurer -> configurer.authenticationEntryPoint((request, response, ex) -> {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    ex.getMessage()
+            );
+        }));
         /* set permissions on endpoints */
-        http.authorizeHttpRequests(rmr -> rmr
+        http.authorizeHttpRequests(configurer -> configurer
                 /* our internal endpoints */
                 .requestMatchers(internalEndpoints).permitAll()
                 /* our public endpoints */
                 .requestMatchers(publicEndpoints).permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated());
-        /* add JWT token filter */
+        /* add basic auth */
         http.httpBasic(Customizer.withDefaults())
-                .oauth2ResourceServer((oauth2) -> oauth2
-                        .jwt(configurer -> configurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                .authenticationManager(authentication -> {
+                    if (bearerAuthenticationProvider.supports(authentication.getClass())) {
+                        return bearerAuthenticationProvider.authenticate(authentication);
+                    }
+                    if (basicAuthenticationProvider.supports(authentication.getClass())) {
+                        return basicAuthenticationProvider.authenticate(authentication);
+                    }
+                    throw new BadCredentialsException("Unsupported authentication type: " + authentication.getClass());
+                });
+        /* add JWT token filter */
+        http.oauth2ResourceServer((oauth2) -> oauth2
+                .jwt(configurer -> configurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        final AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        builder.inMemoryAuthentication()
-                .withUser(gatewayConfig.getSystemUsername())
-                .password(passwordEncoder.encode(gatewayConfig.getSystemPassword()))
-                .authorities("system");
-        return builder.build();
     }
 
     @Bean

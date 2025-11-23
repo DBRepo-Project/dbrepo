@@ -20,6 +20,7 @@ import at.ac.tuwien.ifs.dbrepo.service.ConceptService;
 import at.ac.tuwien.ifs.dbrepo.service.EntityService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.service.UnitService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,7 @@ public class TableServiceImpl implements TableService {
                 .queueName(rabbitConfig.getQueueName())
                 .tdbid(database.getId())
                 .database(database)
-                .ownedBy(principal.getName())
+                .ownedBy(AuthUtil.getUsername(principal))
                 .numRows(0L)
                 .dataLength(0L)
                 .isPublic(data.getIsPublic())

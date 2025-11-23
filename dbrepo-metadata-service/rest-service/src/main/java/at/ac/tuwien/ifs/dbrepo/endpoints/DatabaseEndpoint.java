@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -78,19 +79,19 @@ public class DatabaseEndpoint extends RestEndpoint {
         final List<Database> databases;
         if (principal != null) {
             if (internalName != null) {
-                if (isSystem(principal)) {
+                if (AuthUtil.isSystem(principal)) {
                     log.debug("filter request to contain only databases that match internal name: {}", internalName);
                     databases = databaseService.findByInternalName(internalName);
                 } else {
-                    log.debug("filter request to contain only public databases or where user with username {} has at least read access that match internal name: {}", getUsername(principal), internalName);
-                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getUsername(principal), internalName);
+                    log.debug("filter request to contain only public databases or where user with username {} has at least read access that match internal name: {}", AuthUtil.getUsername(principal), internalName);
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(AuthUtil.getUsername(principal), internalName);
                 }
             } else {
-                if (isSystem(principal)) {
+                if (AuthUtil.isSystem(principal)) {
                     databases = databaseService.findAll();
                 } else {
-                    log.debug("filter request to contain only databases where user with username {} has at least read access", getUsername(principal));
-                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getUsername(principal));
+                    log.debug("filter request to contain only databases where user with username {} has at least read access", AuthUtil.getUsername(principal));
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(AuthUtil.getUsername(principal));
                 }
             }
         } else {
@@ -158,7 +159,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
-        final UserDto owner = userService.findByUsername(getUsername(principal));
+        final UserDto owner = userService.findByUsername(AuthUtil.getUsername(principal));
         log.debug("found user: {}", owner);
         final Database database = databaseService.create(container, data, owner);
         /* find in dashboard service */
@@ -203,7 +204,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             SearchServiceConnectionException, NotAllowedException, MalformedException, TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
@@ -243,7 +244,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             SearchServiceConnectionException, NotAllowedException, ViewNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
@@ -287,7 +288,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
@@ -334,7 +335,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
@@ -379,7 +380,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
         }
@@ -442,7 +443,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         final Database database = filterDatabase(databaseService.findById(databaseId), principal);
         final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
-        if (isSystem(principal)) {
+        if (AuthUtil.isSystem(principal)) {
             log.trace("attach privileged credential information");
             headers.set("X-Host", database.getContainer().getHost());
             headers.set("X-Port", "" + database.getContainer().getPort());

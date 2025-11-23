@@ -33,7 +33,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database")
-public class DatabaseEndpoint extends RestEndpoint {
+public class DatabaseEndpoint {
 
     private final AccessService accessService;
     private final AnalyseService analyseService;

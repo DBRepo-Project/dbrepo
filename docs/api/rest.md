@@ -122,8 +122,11 @@ that are used between the services themselves.
 | QueryDto | [#/components/schemas/QueryDto](#componentsschemasquerydto) |  |
 | TupleDto | [#/components/schemas/TupleDto](#componentsschemastupledto) |  |
 | ImportDto | [#/components/schemas/ImportDto](#componentsschemasimportdto) |  |
+| ConditionalDto | [#/components/schemas/ConditionalDto](#componentsschemasconditionaldto) |  |
 | FilterDto | [#/components/schemas/FilterDto](#componentsschemasfilterdto) |  |
+| JoinDto | [#/components/schemas/JoinDto](#componentsschemasjoindto) |  |
 | OrderDto | [#/components/schemas/OrderDto](#componentsschemasorderdto) |  |
+| SubsetColumnDto | [#/components/schemas/SubsetColumnDto](#componentsschemassubsetcolumndto) |  |
 | SubsetDto | [#/components/schemas/SubsetDto](#componentsschemassubsetdto) |  |
 | ColumnAnalysisResultDto | [#/components/schemas/ColumnAnalysisResultDto](#componentsschemascolumnanalysisresultdto) |  |
 | SchemaAnalysisResultDto | [#/components/schemas/SchemaAnalysisResultDto](#componentsschemasschemaanalysisresultdto) |  |
@@ -623,6 +626,8 @@ Accept: string
 
 - 406 Failed to format data
 
+- 422 Failed to re-execute query
+
 - 503 Failed to communicate with database
 
 ***
@@ -680,6 +685,8 @@ Accept: string
 - 404 Failed to find database in metadata database or query in query store of the data database
 
 - 406 Failed to format data
+
+- 422 Failed to re-execute query
 
 - 503 Failed to communicate with database
 
@@ -1109,8 +1116,25 @@ size?: integer
 
 ```ts
 {
-  columns?: string[]
-  filter: {
+  columns: {
+    // The id of the column
+    id: string
+    // The column alias
+    alias?: string
+  }[]
+  joins: {
+    // The type of join
+    type: enum[inner, left, right, cross]
+    conditionals: {
+      // The id of the column
+      column_id: string
+      // The id of the foreign column
+      foreign_column_id: string
+    }[]
+    // The id of the data source
+    datasource_id: string
+  }[]
+  filters: {
     // The filter type
     type: enum[where, or, and]
     // The filter value
@@ -1120,15 +1144,13 @@ size?: integer
     // The operator id
     operator_id: string
   }[]
-  order: {
+  orders: {
     // The sort direction
     direction?: enum[asc, desc]
     // The column id
     column_id: string
   }[]
-  // The id of the data source
-  datasource_id: string
-  datasource_type: enum[table, view]
+  datasource_ids?: string[]
 }
 ```
 
@@ -1153,6 +1175,8 @@ size?: integer
 - 406 Failed to format data
 
 - 417 Failed to insert query into query store of data database
+
+- 422 Failed to execute query
 
 - 501 Failed to execute query as it contains non-supported keywords
 
@@ -4987,8 +5011,25 @@ basicAuth
   // The name
   name: string
   query: {
-    columns?: string[]
-    filter: {
+    columns: {
+      // The id of the column
+      id: string
+      // The column alias
+      alias?: string
+    }[]
+    joins: {
+      // The type of join
+      type: enum[inner, left, right, cross]
+      conditionals: {
+        // The id of the column
+        column_id: string
+        // The id of the foreign column
+        foreign_column_id: string
+      }[]
+      // The id of the data source
+      datasource_id: string
+    }[]
+    filters: {
       // The filter type
       type: enum[where, or, and]
       // The filter value
@@ -4998,15 +5039,13 @@ basicAuth
       // The operator id
       operator_id: string
     }[]
-    order: {
+    orders: {
       // The sort direction
       direction?: enum[asc, desc]
       // The column id
       column_id: string
     }[]
-    // The id of the data source
-    datasource_id: string
-    datasource_type: enum[table, view]
+    datasource_ids?: string[]
   }
   // The visibility; if true, The will be displayed publicly and is searchable
   is_public: boolean
@@ -5632,7 +5671,7 @@ Lists licenses known to the metadata database.
 Retrieve PID metadata
 
 - Description  
-Retrieves Persistent Identifier (PID) metadata from external endpoints. Supported PIDs are: ORCID, ROR, DOI.
+Retrieves Persistent Identifier (PID) metadata from external endpoints. Requires authentication. Supported PIDs are: ORCID, ROR, DOI.
 
 #### Parameters(Query)
 
@@ -6479,6 +6518,17 @@ body: {
 }
 ```
 
+### #/components/schemas/ConditionalDto
+
+```ts
+{
+  // The id of the column
+  column_id: string
+  // The id of the foreign column
+  foreign_column_id: string
+}
+```
+
 ### #/components/schemas/FilterDto
 
 ```ts
@@ -6494,6 +6544,23 @@ body: {
 }
 ```
 
+### #/components/schemas/JoinDto
+
+```ts
+{
+  // The type of join
+  type: enum[inner, left, right, cross]
+  conditionals: {
+    // The id of the column
+    column_id: string
+    // The id of the foreign column
+    foreign_column_id: string
+  }[]
+  // The id of the data source
+  datasource_id: string
+}
+```
+
 ### #/components/schemas/OrderDto
 
 ```ts
@@ -6505,12 +6572,40 @@ body: {
 }
 ```
 
+### #/components/schemas/SubsetColumnDto
+
+```ts
+{
+  // The id of the column
+  id: string
+  // The column alias
+  alias?: string
+}
+```
+
 ### #/components/schemas/SubsetDto
 
 ```ts
 {
-  columns?: string[]
-  filter: {
+  columns: {
+    // The id of the column
+    id: string
+    // The column alias
+    alias?: string
+  }[]
+  joins: {
+    // The type of join
+    type: enum[inner, left, right, cross]
+    conditionals: {
+      // The id of the column
+      column_id: string
+      // The id of the foreign column
+      foreign_column_id: string
+    }[]
+    // The id of the data source
+    datasource_id: string
+  }[]
+  filters: {
     // The filter type
     type: enum[where, or, and]
     // The filter value
@@ -6520,15 +6615,13 @@ body: {
     // The operator id
     operator_id: string
   }[]
-  order: {
+  orders: {
     // The sort direction
     direction?: enum[asc, desc]
     // The column id
     column_id: string
   }[]
-  // The id of the data source
-  datasource_id: string
-  datasource_type: enum[table, view]
+  datasource_ids?: string[]
 }
 ```
 
@@ -7694,8 +7787,25 @@ body: {
   // The name
   name: string
   query: {
-    columns?: string[]
-    filter: {
+    columns: {
+      // The id of the column
+      id: string
+      // The column alias
+      alias?: string
+    }[]
+    joins: {
+      // The type of join
+      type: enum[inner, left, right, cross]
+      conditionals: {
+        // The id of the column
+        column_id: string
+        // The id of the foreign column
+        foreign_column_id: string
+      }[]
+      // The id of the data source
+      datasource_id: string
+    }[]
+    filters: {
       // The filter type
       type: enum[where, or, and]
       // The filter value
@@ -7705,15 +7815,13 @@ body: {
       // The operator id
       operator_id: string
     }[]
-    order: {
+    orders: {
       // The sort direction
       direction?: enum[asc, desc]
       // The column id
       column_id: string
     }[]
-    // The id of the data source
-    datasource_id: string
-    datasource_type: enum[table, view]
+    datasource_ids?: string[]
   }
   // The visibility; if true, The will be displayed publicly and is searchable
   is_public: boolean

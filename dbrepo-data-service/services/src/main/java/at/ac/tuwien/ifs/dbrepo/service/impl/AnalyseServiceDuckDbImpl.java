@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -106,6 +107,11 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
                 column.setD(dataType.getDDefault());
                 column.setSize(dataType.getSizeDefault());
             }
+            log.atDebug()
+                    .setMessage("determined schema data types for dataset in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "determine_datatypes")
+                    .log();
             return schema;
         } catch (SQLException e) {
             if (e.getMessage().contains("404")) {
@@ -130,6 +136,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     public Map<String, ColumnAnalysisResultDto> determineDataTypes(Database database, String statement)
             throws ColumnNotFoundException, DatabaseUnavailableException {
         try (Connection connection = getDuckDbConnection()) {
+            final long start = System.currentTimeMillis();
             setup(connection);
             /* attach to mariadb in duckdb */
             final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
@@ -139,7 +146,11 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
             final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
             final Map<String, ColumnAnalysisResultDto> schema = dataMapper.resultSetToConstraintResult(resultSet2);
             statement2.close();
-            log.info("Determined schema data types for {} column(s)", schema.size());
+            log.atDebug()
+                    .setMessage("determined schema data types for statement in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "determine_datatypes")
+                    .log();
             return schema;
         } catch (SQLException e) {
             if (e.getMessage().contains("not find column")) {

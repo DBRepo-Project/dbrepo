@@ -6,6 +6,7 @@ COPY ./pom.xml ./
 
 RUN mvn -fn dependency:go-offline
 
+COPY ./api ./api
 COPY ./lib ./lib
 COPY ./querystore ./querystore
 COPY ./report ./report

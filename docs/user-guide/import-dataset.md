@@ -14,7 +14,7 @@ graph LR
 A user wants to import a static dataset (e.g. from a .csv file). In this action, a table will be created in the
 database.
 
-Importing a dataset required at least `write-own` access, see [Database Access](/infrastructures/dbrepo/1.12/database-access). If you are the
+Importing a dataset required at least `write-own` access, see [Database Access](/infrastructures/dbrepo/1.13/database-access). If you are the
 owner of the database, you are good to go by default.
 
 ### UI
@@ -24,8 +24,8 @@ can be added at a later point as well) and set the visibility settings for trans
 the dataset will be fully visible to the world.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-1.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-1.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-1.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-1.mp4" type="video/mp4" />
 </video>
 
 In the next step, provide the dataset structure, the default will be sufficient for most cases.
@@ -35,8 +35,8 @@ table structure including separator (e.g. `,`), newline terminator (e.g. `\n`), 
 headers.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-2.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-2.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-2.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-2.mp4" type="video/mp4" />
 </video>
 
 Next, confirm or correct the dataset schema that has been automatically recommended. For example, change the data type
@@ -44,16 +44,16 @@ if it was incorrectly analysed. You need to select one or more columns to be the
 (combination of) values. Typically, this will be a column named `id` or similar.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-3.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-3.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-3.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-3.mp4" type="video/mp4" />
 </video>
 
 The import settings in the import page already takes over the settings from the previous page. You need to click 
 "Import Data". The table now contains the dataset.
 
 <video autoplay loop>
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-4.webm" type="video/webm" />
-  <source src="/infrastructures/dbrepo/1.12/videos/import-dataset-4.mp4" type="video/mp4" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-4.webm" type="video/webm" />
+  <source src="/infrastructures/dbrepo/1.13/videos/import-dataset-4.mp4" type="video/mp4" />
 </video>
 
 ### Python

@@ -10,6 +10,8 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
+import at.ac.tuwien.ifs.dbrepo.utils.StorageUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +47,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/view")
-public class ViewEndpoint extends RestEndpoint {
+public class ViewEndpoint {
 
     private final DSLContext context;
     private final ViewService viewService;
@@ -53,22 +55,19 @@ public class ViewEndpoint extends RestEndpoint {
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final StorageService storageService;
-    private final DatabaseService databaseService;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public ViewEndpoint(DSLContext context, ViewService viewService, TableService tableService,
                         MariaDbMapper mariaDbMapper, SubsetService subsetService, StorageService storageService,
-                        DatabaseService databaseService, MetadataService metadataService,
-                        EndpointValidator endpointValidator) {
+                        MetadataService metadataService, EndpointValidator endpointValidator) {
         this.context = context;
         this.viewService = viewService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.storageService = storageService;
-        this.databaseService = databaseService;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
     }
@@ -150,7 +149,7 @@ public class ViewEndpoint extends RestEndpoint {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(viewService.create(database, mariaDbMapper.nameToInternalName(data.getName()),
-                            mariaDbMapper.subsetDtoToRawQuery(context, database, data.getQuery())));
+                            mariaDbMapper.subsetDtoToNormalizedQuery(context, database, data.getQuery())));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -263,7 +262,7 @@ public class ViewEndpoint extends RestEndpoint {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
@@ -289,7 +288,7 @@ public class ViewEndpoint extends RestEndpoint {
                     log.trace("accept header matches json");
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(transform(dataset));
+                            .body(StorageUtil.transform(dataset));
                 case "text/csv":
                     log.trace("accept header matches csv");
                     final ExportResourceDto resource = storageService.transformDataset(dataset);
@@ -344,7 +343,7 @@ public class ViewEndpoint extends RestEndpoint {
                 log.error("Failed to get statistic from view: unauthorized");
                 throw new NotAllowedException("Failed to get statistic from view: unauthorized");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }

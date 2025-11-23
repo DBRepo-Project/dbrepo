@@ -58,7 +58,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             /* obtain statistic */
             final long start = System.currentTimeMillis();
             final TableDto tmpTable = inspect(database, tableName);
-            final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(tmpTable.getColumns(), tableName);
+            final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(database.getInternalName(),
+                    tableName, tmpTable.getColumns());
             if (query == null) {
                 log.debug("table {}.{} does not have columns that can be analysed for statistical properties", database.getInternalName(), tableName);
                 return null;

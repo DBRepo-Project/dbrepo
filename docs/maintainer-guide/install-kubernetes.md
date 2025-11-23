@@ -14,7 +14,7 @@ helm upgrade --install dbrepo \
   -n dbrepo \
   "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" \
   --values ./values.yaml \
-  --version "1.12.1" \
+  --version "1.13.0" \
   --create-namespace \
   --cleanup-on-fail
 ```
@@ -64,5 +64,5 @@ kubectl -n dbrepo \
 
     See "Security Disclaimer" above, this quick &amp; non-secure installation needs to be configured further to achieve
     basic security guarantees. Please visit 
-    the [configuration](/infrastructures/dbrepo/1.12/maintainer-guide/configuration/) page in the next step to complete
+    the [configuration](/infrastructures/dbrepo/1.13/maintainer-guide/configuration/) page in the next step to complete
     the installation.

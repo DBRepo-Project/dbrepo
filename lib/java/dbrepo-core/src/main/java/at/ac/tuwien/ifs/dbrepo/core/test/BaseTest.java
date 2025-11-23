@@ -2828,10 +2828,10 @@ public class BaseTest {
             .build();
 
     public final SubsetDto QUERY_9_SUBSET_DTO = SubsetDto.builder()
-            .datasourceId(TABLE_9_ID)
-            .datasourceType(DatasourceType.TABLE)
-            .columns(new LinkedList<>(List.of(COLUMN_9_2_ID, COLUMN_9_3_ID)))
-            .filter(new LinkedList<>(List.of(FilterDto.builder()
+            .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_5_ID)))
+            .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_9_2_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_9_3_ID).build())))
+            .filters(new LinkedHashSet<>(Set.of(FilterDto.builder()
                     .columnId(COLUMN_9_1_ID)
                     .operatorId(IMAGE_1_OPERATORS_2_ID)
                     .value("Fuji")
@@ -3186,10 +3186,13 @@ public class BaseTest {
     public final static Boolean QUERY_1_PERSISTED = true;
 
     public final SubsetDto QUERY_1_SUBSET_DTO = SubsetDto.builder()
-            .datasourceId(TABLE_1_ID)
-            .datasourceType(DatasourceType.TABLE)
-            .columns(new LinkedList<UUID>(List.of(COLUMN_1_1_ID, COLUMN_1_2_ID, COLUMN_1_3_ID, COLUMN_1_4_ID, COLUMN_1_5_ID)))
-            .order(new LinkedList<OrderDto>(List.of(OrderDto.builder()
+            .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_1_ID)))
+            .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_1_1_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_1_2_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_1_3_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_1_4_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_1_5_ID).build())))
+            .orders(new LinkedHashSet<>(Set.of(OrderDto.builder()
                     .columnId(COLUMN_1_1_ID)
                     .direction(OrderTypeDto.ASC)
                     .build())))
@@ -3356,10 +3359,10 @@ public class BaseTest {
     }};
 
     public final SubsetDto QUERY_5_SUBSET_DTO = SubsetDto.builder()
-            .datasourceId(TABLE_8_ID)
-            .datasourceType(DatasourceType.TABLE)
-            .columns(new LinkedList<>(List.of(COLUMN_8_1_ID, COLUMN_8_2_ID)))
-            .filter(new LinkedList<>(List.of(FilterDto.builder()
+            .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_5_ID)))
+            .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_8_1_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_8_2_ID).build())))
+            .filters(new LinkedHashSet<>(Set.of(FilterDto.builder()
                     .columnId(COLUMN_8_2_ID)
                     .operatorId(IMAGE_1_OPERATORS_2_ID)
                     .value("0")
@@ -5340,27 +5343,6 @@ public class BaseTest {
     public final static String QUERY_8_STATEMENT_NORMALIZED = "SELECT `id`, `animal_name` FROM `zoo` FOR SYSTEM_TIME AS OF TIMESTAMP '" + MARIADB_DATE_FORMAT.format(Date.from(QUERY_8_EXECUTION)) + "' WHERE `hair` = TRUE AND `feathers` = false;";
     public final static Boolean QUERY_8_PERSISTED = true;
 
-    public final SubsetDto QUERY_8_SUBSET_DTO = SubsetDto.builder()
-            .datasourceId(TABLE_5_ID)
-            .datasourceType(DatasourceType.TABLE)
-            .columns(new LinkedList<>(List.of(COLUMN_5_1_ID, COLUMN_5_2_ID)))
-            .filter(new LinkedList<>(List.of(FilterDto.builder()
-                            .type(FilterTypeDto.WHERE)
-                            .columnId(COLUMN_5_3_ID)
-                            .operatorId(IMAGE_1_OPERATORS_2_ID)
-                            .value("true")
-                            .build(),
-                    FilterDto.builder()
-                            .type(FilterTypeDto.AND)
-                            .build(),
-                    FilterDto.builder()
-                            .type(FilterTypeDto.WHERE)
-                            .columnId(COLUMN_5_4_ID)
-                            .operatorId(IMAGE_1_OPERATORS_2_ID)
-                            .value("false")
-                            .build())))
-            .build();
-
     public final static UUID COLUMN_6_1_ID = UUID.fromString("27b04a64-2849-4fae-b295-858c3e50361f");
     public final static UUID COLUMN_6_2_ID = UUID.fromString("1ea62e32-5719-4152-94da-45d37eb88b6f");
     public final static UUID COLUMN_6_3_ID = UUID.fromString("f523f9f5-42f7-4695-841e-a5fd30fa6879");
@@ -5651,9 +5633,10 @@ public class BaseTest {
     public final static UUID VIEW_COLUMN_1_3_ID = UUID.fromString("4f189a5f-c9ca-4518-9758-1a0730f6276b");
 
     public final SubsetDto VIEW_1_SUBSET_DTO = SubsetDto.builder()
-            .datasourceId(TABLE_2_ID)
-            .datasourceType(DatasourceType.TABLE)
-            .columns(new LinkedList<>(List.of(COLUMN_2_1_ID, COLUMN_2_2_ID, COLUMN_2_3_ID)))
+            .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_2_ID)))
+            .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_2_1_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_2_2_ID).build(),
+                    SubsetColumnDto.builder().id(COLUMN_2_3_ID).build())))
             .build();
 
     public final List<ViewColumnDto> VIEW_1_COLUMNS_DTO = List.of(

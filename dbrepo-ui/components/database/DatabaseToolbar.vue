@@ -18,43 +18,55 @@
       </v-toolbar-title>
       <v-spacer />
       <v-btn
-        v-if="false"
+        v-if="canViewDashboard"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-chart-timeline-variant-shimmer' : null"
         color="tertiary"
+        class="mr-2"
+        :loading="loading === 0"
         :variant="buttonVariant"
-        :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')" />
+        :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')"
+        :to="`${config.public.dashboard.url}/d/${database.dashboard_uid}`"
+        @click="loading = 0" />
       <v-btn
         v-if="canCreateTable"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-table-large-plus' : null"
         color="secondary"
         variant="flat"
+        :loading="loading === 1"
         :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
         class="mr-2"
-        :to="`/database/${$route.params.database_id}/table/create/dataset`" />
+        :to="`/database/${$route.params.database_id}/table/create/dataset`"
+        @click="loading = 1" />
       <v-btn
         v-if="canCreateSubset"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
+        :loading="loading === 2"
         :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
         class="mr-2 white--text"
-        :to="`/database/${$route.params.database_id}/subset/create`" />
+        :to="`/database/${$route.params.database_id}/subset/create`"
+        @click="loading = 2" />
       <v-btn
         v-if="canCreateView"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-view-carousel-outline' : null"
         color="secondary"
         variant="flat"
+        :loading="loading === 3"
         :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="mr-2 white--text"
-        :to="`/database/${$route.params.database_id}/view/create`" />
+        :to="`/database/${$route.params.database_id}/view/create`"
+        @click="loading = 3" />
       <v-btn
         v-if="canCreateIdentifier"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
+        :loading="loading === 4"
         :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
         class="mr-2"
-        :to="`/database/${$route.params.database_id}/persist`" />
+        :to="`/database/${$route.params.database_id}/persist`"
+        @click="loading = 4" />
       <template v-slot:extension>
         <v-tabs
           v-model="tab"
@@ -82,6 +94,9 @@
   </div>
 </template>
 
+<script setup>
+const config = useRuntimeConfig()
+</script>
 <script>
 import { useCacheStore } from '@/stores/cache.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
@@ -94,6 +109,7 @@ export default {
     return {
       tab: null,
       error: false,
+      loading: -1,
       cacheStore: useCacheStore()
     }
   },
@@ -169,6 +185,15 @@ export default {
         return true
       }
       return this.hasReadAccess
+    },
+    canViewDashboard () {
+      if (!this.database || !this.database.views) {
+        return false
+      }
+      if (!this.database.is_public && !this.database.is_schema_public) {
+        return false
+      }
+      return this.database.dashboard_uid
     },
     isOwner () {
       if (!this.database || !this.cacheUser) {

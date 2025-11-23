@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/'
 paths:
   '/api/v1/database/{databaseId}/view/{viewId}/data':
     get:
@@ -578,6 +578,8 @@ paths:
             of the data database
         '406':
           description: Failed to format data
+        '422':
+          description: Failed to re-execute query
         '503':
           description: Failed to communicate with database
       security:
@@ -680,6 +682,8 @@ paths:
             of the data database
         '406':
           description: Failed to format data
+        '422':
+          description: Failed to re-execute query
         '503':
           description: Failed to communicate with database
       security:
@@ -1020,6 +1024,8 @@ paths:
           description: Failed to format data
         '417':
           description: Failed to insert query into query store of data database
+        '422':
+          description: Failed to execute query
         '501':
           description: Failed to execute query as it contains non-supported keywords
         '503':
@@ -3121,7 +3127,7 @@ paths:
       summary: Retrieve PID metadata
       description: >-
         Retrieves Persistent Identifier (PID) metadata from external endpoints.
-        Supported PIDs are: ORCID, ROR, DOI.
+        Requires authentication. Supported PIDs are: ORCID, ROR, DOI.
       operationId: retrieve
       parameters:
         - name: url
@@ -4244,6 +4250,22 @@ components:
         - header
         - location
         - separator
+    ConditionalDto:
+      type: object
+      properties:
+        column_id:
+          type: string
+          format: uuid
+          description: The id of the column
+          example: f7df2a7d-4ade-4c78-97b0-7c744d0893c7
+        foreign_column_id:
+          type: string
+          format: uuid
+          description: The id of the foreign column
+          example: 2eac80eb-f313-456c-b003-86855d53e080
+      required:
+        - column_id
+        - foreign_column_id
     FilterDto:
       type: object
       properties:
@@ -4273,6 +4295,35 @@ components:
         - column_id
         - operator_id
         - type
+    JoinDto:
+      type: object
+      properties:
+        type:
+          type: string
+          description: The type of join
+          enum:
+            - inner
+            - left
+            - right
+            - cross
+          example: inner
+          externalDocs:
+            url: >-
+              https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/user-guide/create-subset/
+        conditionals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionalDto'
+          uniqueItems: true
+        datasource_id:
+          type: string
+          format: uuid
+          description: The id of the data source
+          example: f7df2a7d-4ade-4c78-97b0-7c744d0893c7
+      required:
+        - conditionals
+        - datasource_id
+        - type
     OrderDto:
       type: object
       properties:
@@ -4290,39 +4341,54 @@ components:
           example: e891ba86-0258-41a6-a8d9-ff58bc10b618
       required:
         - column_id
+    SubsetColumnDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The id of the column
+          example: e891ba86-0258-41a6-a8d9-ff58bc10b618
+        alias:
+          type: string
+          description: The column alias
+      required:
+        - id
     SubsetDto:
       type: object
       properties:
         columns:
           type: array
           description: The id(s) of the column(s)
-          example:
-            - e891ba86-0258-41a6-a8d9-ff58bc10b618
           items:
-            type: string
-            format: uuid
-        filter:
+            $ref: '#/components/schemas/SubsetColumnDto'
+          uniqueItems: true
+        joins:
+          type: array
+          description: The join(s) that are applied
+          items:
+            $ref: '#/components/schemas/JoinDto'
+          uniqueItems: true
+        filters:
           type: array
           items:
             $ref: '#/components/schemas/FilterDto'
-        order:
+          uniqueItems: true
+        orders:
           type: array
           items:
             $ref: '#/components/schemas/OrderDto'
-        datasource_id:
-          type: string
-          format: uuid
-          description: The id of the data source
-          example: f7df2a7d-4ade-4c78-97b0-7c744d0893c7
-        datasource_type:
-          type: string
-          enum:
-            - table
-            - view
+          uniqueItems: true
+        datasource_ids:
+          type: array
+          description: The table(s) that are selected
+          items:
+            type: string
+            format: uuid
+          uniqueItems: true
       required:
         - columns
-        - datasource_id
-        - datasource_type
+        - datasource_ids
     ColumnAnalysisResultDto:
       type: object
       properties:

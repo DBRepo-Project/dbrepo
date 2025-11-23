@@ -21,6 +21,7 @@ import software.amazon.awssdk.thirdparty.org.apache.commons.codec.digest.DigestU
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static scala.collection.JavaConverters.asScalaIteratorConverter;
 
@@ -72,7 +73,7 @@ public class StorageServiceS3Impl implements StorageService {
                 }})
                 .build(), RequestBody.fromBytes(content));
         log.atDebug()
-                .setMessage("put object in bucket with key: " + key)
+                .setMessage("put object in bucket with key " + key + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                 .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                 .addKeyValue(Constants.ACTION, "s3_put_object")
                 .log();
@@ -112,7 +113,7 @@ public class StorageServiceS3Impl implements StorageService {
                     .key(key)
                     .build());
             log.atDebug()
-                    .setMessage("get object from bucket with key: " + key)
+                    .setMessage("get object from bucket with key " + key + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "s3_get_object")
                     .log();
@@ -150,7 +151,7 @@ public class StorageServiceS3Impl implements StorageService {
                 .key(key)
                 .build());
         log.atDebug()
-                .setMessage("delete object from bucket with key: " + key)
+                .setMessage("delete object from bucket with key " + key + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                 .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                 .addKeyValue(Constants.ACTION, "s3_delete_object")
                 .log();
@@ -158,6 +159,7 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public ExportResourceDto transformDataset(Dataset<Row> dataset) throws StorageUnavailableException {
+        log.trace("transforming dataset with {} column(s)", dataset.columns().length);
         long start = System.currentTimeMillis();
         final List<Map<String, String>> inMemory = dataset.collectAsList()
                 .stream()
@@ -170,7 +172,7 @@ public class StorageServiceS3Impl implements StorageService {
                 })
                 .toList();
         log.atDebug()
-                .setMessage("transformed dataset with rows: " + inMemory.size())
+                .setMessage("transformed dataset with " + inMemory.size() + " row(s) in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                 .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                 .addKeyValue(Constants.ACTION, "dataset_transform")
                 .log();
@@ -196,7 +198,7 @@ public class StorageServiceS3Impl implements StorageService {
             }
             final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
             log.atDebug()
-                    .setMessage("transformed dataset to input stream resource")
+                    .setMessage("transformed dataset to input stream resource in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "dataset_export")
                     .log();

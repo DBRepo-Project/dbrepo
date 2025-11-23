@@ -1362,6 +1362,31 @@ class RestClient:
         The result set can be paginated with setting page and size (both). Historic data can be queried by setting
         timestamp.
 
+        The `query` parameter can be difficult to set for complex subsets involving joins. We give a full example:
+
+        ```python
+        from dbrepo.api.dto import QueryDefinition, JoinDefinition, JoinType, ConditionalDefinition, FilterDefinition, \
+            FilterType, OrderDefinition, OrderType
+
+        query = QueryDefinition(datasources=["some_table"],
+                                columns=["some_table.id", "some_table.username", "other_table.city"],
+                                joins=[JoinDefinition(type=JoinType.INNER,
+                                                      datasource="other_table",
+                                                      conditionals=[ConditionalDefinition(
+                                                          column="some_table.username",
+                                                          foreign_column="other_table.username")])],
+                                filters=[FilterDefinition(type=FilterType.WHERE,
+                                                          column="some_table.age",
+                                                          operator=">",
+                                                          value="18"),
+                                         FilterDefinition(type=FilterType.AND),
+                                         FilterDefinition(type=FilterType.WHERE,
+                                                          column="some_table.zip",
+                                                          operator="=",
+                                                          value="1040")],
+                                orders=[OrderDefinition(column="some_table.username", direction=OrderType.ASC)])
+        ```
+
         :param database_id: The database id.
         :param query: The query definition.
         :param page: The result pagination number. Optional. Default: `0`.

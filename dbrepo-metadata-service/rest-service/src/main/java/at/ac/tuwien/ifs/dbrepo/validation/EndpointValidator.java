@@ -13,6 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +62,10 @@ public class EndpointValidator extends RestEndpoint {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
-        if (isSystem(principal)) {
+        if (AuthUtil.isSystem(principal)) {
             return;
         }
-        final DatabaseAccess access = accessService.find(database, getUsername(principal));
+        final DatabaseAccess access = accessService.find(database, AuthUtil.getUsername(principal));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.error("Access not allowed: no write access");
@@ -157,7 +158,7 @@ public class EndpointValidator extends RestEndpoint {
     }
 
     public boolean validateOnlyMineOrWriteAccessOrHasRole(String ownedBy, Principal principal, DatabaseAccess access, String role) {
-        if (hasRole(principal, role)) {
+        if (AuthUtil.hasRole(principal, role)) {
             log.debug("validation passed: role {} present", role);
             return true;
         }
@@ -166,15 +167,15 @@ public class EndpointValidator extends RestEndpoint {
             log.error("validation failed: access is null");
             return false;
         }
-        if (ownedBy.equals(principal.getName()) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
-            log.debug("validation passed: user {} matches owner {} and has write access {}", principal.getName(), ownedBy, access.getType());
+        if (ownedBy.equals(AuthUtil.getUsername(principal)) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
+            log.debug("validation passed: user {} matches owner {} and has write access {}", AuthUtil.getUsername(principal), ownedBy, access.getType());
             return true;
         }
         if (access.getType().equals(AccessType.WRITE_ALL)) {
-            log.debug("validation passed: user {} has write all access", principal.getName());
+            log.debug("validation passed: user {} has write all access", AuthUtil.getUsername(principal));
             return true;
         }
-        log.debug("validation failed: user {} has insufficient access {} or role", principal.getName(), access.getType());
+        log.debug("validation failed: user {} has insufficient access {} or role", AuthUtil.getUsername(principal), access.getType());
         return false;
     }
 
@@ -211,8 +212,7 @@ public class EndpointValidator extends RestEndpoint {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
-        log.trace("principal: {}", principal.getName());
-        if (!hasRole(principal, role)) {
+        if (!AuthUtil.hasRole(principal, role)) {
             log.error("Access not allowed: role {} missing", role);
             throw new NotAllowedException("Access not allowed: role " + role + " missing");
         }
@@ -230,8 +230,7 @@ public class EndpointValidator extends RestEndpoint {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
-        log.trace("principal: {}", principal.getName());
-        if (!hasRole(principal, role)) {
+        if (!AuthUtil.hasRole(principal, role)) {
             log.error("Access not allowed: role {} missing", role);
             throw new NotAllowedException("Access not allowed: role " + role + " missing");
         }
@@ -276,7 +275,7 @@ public class EndpointValidator extends RestEndpoint {
             log.error("Access not allowed: database with id {} is not public and no authorization provided", database.getId());
             throw new NotAllowedException("Access not allowed: database with id " + database.getId() + " is not public and no authorization provided");
         }
-        final DatabaseAccess access = accessService.find(database, principal.getName());
+        final DatabaseAccess access = accessService.find(database, AuthUtil.getUsername(principal));
         log.trace("found access {}", access);
     }
 

@@ -23,7 +23,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/image")
-public class AnalyseEndpoint extends RestEndpoint {
+public class AnalyseEndpoint {
 
     private final AnalyseService analyseService;
     private final MetadataService metadataService;

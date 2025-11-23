@@ -19,7 +19,7 @@ author: Martin Weise
 ## Overview
 
 The Metric Database is responsible for saving time-series data for 
-the [Dashboard Service](/infrastructures/dbrepo/1.12/infrastructures/dbrepo/dev/services/dashboard-service/).
+the [Dashboard Service](/infrastructures/dbrepo/1.13/infrastructures/dbrepo/dev/services/dashboard-service/).
 
 ## Metrics
 
@@ -138,7 +138,7 @@ See [MariaDB Galera documentation](https://galeracluster.com/documentation/html_
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.12/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security
