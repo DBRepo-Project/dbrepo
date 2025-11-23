@@ -11,6 +11,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
+import at.ac.tuwien.ifs.dbrepo.utils.StorageUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +48,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
-public class TableEndpoint extends RestEndpoint {
+public class TableEndpoint {
 
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
@@ -258,7 +260,7 @@ public class TableEndpoint extends RestEndpoint {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
@@ -283,7 +285,7 @@ public class TableEndpoint extends RestEndpoint {
                     log.trace("accept header matches json");
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(transform(dataset));
+                            .body(StorageUtil.transform(dataset));
                 case MEDIA_TYPE_TEXT_CSV:
                     log.trace("accept header matches csv");
                     final ExportResourceDto resource = storageService.transformDataset(dataset);
@@ -624,7 +626,7 @@ public class TableEndpoint extends RestEndpoint {
                 log.error("Failed to get statistic from table: unauthorized");
                 throw new NotAllowedException("Failed to get statistic from table: unauthorized");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }

@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
 import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
@@ -15,6 +16,8 @@ import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
+import at.ac.tuwien.ifs.dbrepo.utils.StorageUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +50,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/v1/database/{databaseId}/subset")
-public class SubsetEndpoint extends RestEndpoint {
+public class SubsetEndpoint {
 
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
@@ -106,7 +109,7 @@ public class SubsetEndpoint extends RestEndpoint {
                 log.error("Failed to list queries: no authentication found");
                 throw new NotAllowedException("Failed to list queries: no authentication found");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
@@ -163,7 +166,7 @@ public class SubsetEndpoint extends RestEndpoint {
                 log.error("Failed to find query: no authentication found");
                 throw new NotAllowedException("Failed to find query: no authentication found");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
@@ -209,6 +212,9 @@ public class SubsetEndpoint extends RestEndpoint {
             @ApiResponse(responseCode = "417",
                     description = "Failed to insert query into query store of data database",
                     content = {@Content}),
+            @ApiResponse(responseCode = "422",
+                    description = "Failed to execute query",
+                    content = {@Content}),
             @ApiResponse(responseCode = "501",
                     description = "Failed to execute query as it contains non-supported keywords",
                     content = {@Content}),
@@ -228,16 +234,16 @@ public class SubsetEndpoint extends RestEndpoint {
             QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
             NotAllowedException, UserNotFoundException, MetadataServiceException, TableNotFoundException,
             ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException,
-            ColumnNotFoundException, AnalyseDataTypesException {
-        log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}, data.datasource_id={}",
-                databaseId, page, size, timestamp, data.getDatasourceId());
+            ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
+        log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}", databaseId, page,
+                size, timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateSubsetParams(data);
         /* parameters */
         final String username;
         if (principal != null) {
-            username = getUsername(principal);
+            username = AuthUtil.getUsername(principal);
         } else {
             username = null;
         }
@@ -255,12 +261,12 @@ public class SubsetEndpoint extends RestEndpoint {
         }
         /* create */
         final Database database = metadataService.getDatabase(databaseId);
-        if (!database.getIsSchemaPublic()) {
+        if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to create subset: no authentication found");
                 throw new NotAllowedException("Failed to create subset: no authentication found");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
@@ -306,6 +312,9 @@ public class SubsetEndpoint extends RestEndpoint {
             @ApiResponse(responseCode = "406",
                     description = "Failed to format data",
                     content = {@Content}),
+            @ApiResponse(responseCode = "422",
+                    description = "Failed to re-execute query",
+                    content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to communicate with database",
                     content = {@Content}),
@@ -321,7 +330,7 @@ public class SubsetEndpoint extends RestEndpoint {
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, QueryMalformedException, UserNotFoundException,
             MetadataServiceException, TableNotFoundException, FormatNotAvailableException, StorageUnavailableException,
-            ColumnNotFoundException, AnalyseDataTypesException {
+            ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, accept={} page={}, size={}", databaseId,
                 subsetId, accept, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -331,7 +340,7 @@ public class SubsetEndpoint extends RestEndpoint {
                 log.error("Failed to re-execute query: no authentication found");
                 throw new NotAllowedException("Failed to re-execute query: no authentication found");
             }
-            if (!isSystem(principal)) {
+            if (!AuthUtil.isSystem(principal)) {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
@@ -357,11 +366,10 @@ public class SubsetEndpoint extends RestEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             headers.set("X-Id", "" + subsetId);
             final Subset subset = subsetService.findById(database, subsetId);
-            final Long count = subsetService.reExecuteCount(database, subset.getQueryNormalized());
-            headers.set("X-Count", "" + count);
-            final String hash = subsetService.reExecuteHash(database, subset.getQueryNormalized());
-            headers.set("X-Result-Hash", hash);
             if (request.getMethod().equals("HEAD")) {
+                final SubsetMetadata metadata = subsetService.getMetadata(database, subset.getQueryNormalized());
+                headers.set("X-Count", "" + metadata.getResultCount());
+                headers.set("X-Result-Hash", metadata.getResultHash());
                 headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id");
                 return ResponseEntity.ok()
                         .headers(headers)
@@ -382,7 +390,7 @@ public class SubsetEndpoint extends RestEndpoint {
                     log.trace("accept header matches json");
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(transform(dataset));
+                            .body(StorageUtil.transform(dataset));
                 case "text/csv":
                     log.trace("accept header matches csv");
                     final ExportResourceDto resource = storageService.transformDataset(dataset);
@@ -436,7 +444,7 @@ public class SubsetEndpoint extends RestEndpoint {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}", databaseId, queryId,
                 data.getPersist());
         final Database database = metadataService.getDatabase(databaseId);
-        if (!isSystem(principal)) {
+        if (!AuthUtil.isSystem(principal)) {
             endpointValidator.validateOnlyAccess(database, principal);
         }
         try {

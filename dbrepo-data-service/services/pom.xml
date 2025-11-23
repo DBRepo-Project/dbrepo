@@ -6,23 +6,28 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>data-service</artifactId>
-        <version>1.12.1</version>
+        <version>1.13.0</version>
     </parent>
 
     <name>services</name>
     <artifactId>services</artifactId>
-    <version>1.12.1</version>
+    <version>1.13.0</version>
 
     <dependencies>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>querystore</artifactId>
-            <version>1.12.1</version>
+            <version>1.13.0</version>
         </dependency>
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>repositories</artifactId>
-            <version>1.12.1</version>
+            <version>1.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
+            <artifactId>api</artifactId>
+            <version>1.13.0</version>
         </dependency>
     </dependencies>
 

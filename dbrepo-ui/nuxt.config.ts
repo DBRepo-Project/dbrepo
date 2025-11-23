@@ -119,6 +119,20 @@ export default defineNuxtConfig({
     port: 3001
   },
 
+  nitro: {
+    preset: 'node-server',
+    storage: {
+      oidc: {
+        driver: 'redis',
+        base: 'oidc',
+        host: 'cache-db',
+        tls: false,
+        port: 6379,
+        password: 'valkey'
+      }
+    }
+  },
+
   oidc: {
     defaultProvider: 'keycloak',
     providers: {

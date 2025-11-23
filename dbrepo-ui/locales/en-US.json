@@ -993,7 +993,7 @@
             "hint": "Required"
           },
           "table": {
-            "label": "Datasource",
+            "label": "Datasource(s)",
             "hint": "Required"
           },
           "columns": {
@@ -1051,6 +1051,44 @@
           },
           "name": {
             "label": ""
+          },
+          "conditional": {
+            "text": "Add Conditional"
+          },
+          "alias": {
+            "text": "Alias",
+            "label": "Alias for column: {column}"
+          },
+          "timestamp": {
+            "label": "Data version (UTC)",
+            "current": {
+              "label": "Execute with current data version"
+            },
+            "historic": {
+              "label": "Execute with specific data version"
+            }
+          },
+          "join": {
+            "text": "Add Join",
+            "inner": "Inner Join",
+            "left": "Left Join",
+            "right": "Right Join",
+            "cross": "Cross Join",
+            "remove": {
+              "text": "Remove"
+            },
+            "type": {
+              "label": "Type"
+            },
+            "table": {
+              "label": "Join"
+            },
+            "value": {
+              "label": "Join Column"
+            },
+            "on": {
+              "label": "Datasource(s) Column"
+            }
           },
           "filter": {
             "text": "Add Filter",

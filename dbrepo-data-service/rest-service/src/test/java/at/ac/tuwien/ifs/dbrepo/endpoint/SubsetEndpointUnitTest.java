@@ -1,8 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -28,7 +27,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -295,7 +296,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException, SQLException,
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
-            ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException {
+            ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -319,7 +320,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_5_ANALYSIS_MAP_DTO);
 
         /* test */
-        subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
+        final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
     }
 
     @Test
@@ -330,7 +331,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, QueryExecutionException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -356,7 +357,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_5_ANALYSIS_MAP_DTO);
 
         /* test */
-        subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+        final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
     }
 
     @Test
@@ -385,7 +386,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
             QueryNotSupportedException, StorageNotFoundException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, QueryExecutionException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -405,7 +406,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_9_ANALYSIS_MAP_DTO);
 
         /* test */
-        subsetEndpoint.create(DATABASE_4_ID, QUERY_9_SUBSET_DTO, null, httpServletRequest, null, null, null);
+        final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_4_ID, QUERY_9_SUBSET_DTO, null, httpServletRequest, null, null, null);
     }
 
     @Test
@@ -415,7 +416,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
             StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
             StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
-            ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException {
+            ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -439,7 +440,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_1_ANALYSIS_MAP_DTO);
 
         /* test */
-        subsetEndpoint.create(DATABASE_1_ID, QUERY_1_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+        final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_1_ID, QUERY_1_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
     }
 
     @Test
@@ -448,6 +449,11 @@ public class SubsetEndpointUnitTest extends BaseTest {
             MetadataServiceException, UserNotFoundException, QueryNotFoundException, QueryMalformedException,
             TableNotFoundException, RemoteUnavailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
+        final SubsetDto request = SubsetDto.builder()
+                .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_5_ID)))
+                .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_5_1_ID).build(),
+                        SubsetColumnDto.builder().id(COLUMN_5_2_ID).build())))
+                .build();
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_2_ID))
@@ -465,7 +471,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            subsetEndpoint.create(DATABASE_2_ID, QUERY_8_SUBSET_DTO, null, httpServletRequest, null, null, null);
+            subsetEndpoint.create(DATABASE_2_ID, request, null, httpServletRequest, null, null, null);
         });
     }
 
@@ -474,7 +480,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             NotAllowedException, SQLException, QueryNotFoundException, QueryMalformedException,
             DatabaseUnavailableException, PaginationException, MetadataServiceException, TableNotFoundException,
             ViewNotFoundException, StorageUnavailableException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, QueryExecutionException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -482,8 +488,10 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
                 .thenReturn(QUERY_5_CACHE);
-        when(subsetService.reExecuteCount(DATABASE_3_CACHE, QUERY_5_STATEMENT_NORMALIZED))
-                .thenReturn(QUERY_5_RESULT_NUMBER);
+        when(subsetService.getMetadata(DATABASE_3_CACHE, QUERY_5_STATEMENT_NORMALIZED))
+                .thenReturn(SubsetMetadata.builder()
+                        .resultCount(QUERY_5_RESULT_NUMBER)
+                        .build());
         when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(viewService.inspect(any(Database.class), anyString()))
@@ -507,15 +515,17 @@ public class SubsetEndpointUnitTest extends BaseTest {
             UserNotFoundException, NotAllowedException, SQLException, QueryNotFoundException, QueryMalformedException,
             DatabaseUnavailableException, PaginationException, MetadataServiceException, TableNotFoundException,
             StorageUnavailableException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, QueryExecutionException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
                 .thenReturn(QUERY_5_CACHE);
-        when(subsetService.reExecuteCount(DATABASE_3_CACHE, QUERY_5_STATEMENT_NORMALIZED))
-                .thenReturn(QUERY_5_RESULT_NUMBER);
+        when(subsetService.getMetadata(DATABASE_3_CACHE, QUERY_5_STATEMENT_NORMALIZED))
+                .thenReturn(SubsetMetadata.builder()
+                        .resultCount(QUERY_5_RESULT_NUMBER)
+                        .build());
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
 
@@ -534,7 +544,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             UserNotFoundException, DatabaseUnavailableException, NotAllowedException, QueryMalformedException,
             QueryNotFoundException, PaginationException, SQLException, MetadataServiceException,
             TableNotFoundException, ViewNotFoundException, StorageUnavailableException, FormatNotAvailableException,
-            ColumnNotFoundException, AnalyseDataTypesException {
+            ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -542,8 +552,10 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
                 .thenReturn(QUERY_1_CACHE);
-        when(subsetService.reExecuteCount(DATABASE_1_CACHE, QUERY_1_STATEMENT_NORMALIZED))
-                .thenReturn(QUERY_1_RESULT_NUMBER);
+        when(subsetService.getMetadata(DATABASE_1_CACHE, QUERY_1_STATEMENT_NORMALIZED))
+                .thenReturn(SubsetMetadata.builder()
+                        .resultCount(QUERY_1_RESULT_NUMBER)
+                        .build());
         when(subsetService.getData(any(Database.class), anyString()))
                 .thenReturn(mock);
         when(viewService.inspect(any(Database.class), anyString()))
@@ -602,15 +614,17 @@ public class SubsetEndpointUnitTest extends BaseTest {
             UserNotFoundException, DatabaseUnavailableException, NotAllowedException, QueryMalformedException,
             QueryNotFoundException, PaginationException, SQLException, MetadataServiceException,
             TableNotFoundException, StorageUnavailableException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, QueryExecutionException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
                 .thenReturn(QUERY_1_CACHE);
-        when(subsetService.reExecuteCount(DATABASE_1_CACHE, QUERY_1_STATEMENT_NORMALIZED))
-                .thenReturn(QUERY_1_RESULT_NUMBER);
+        when(subsetService.getMetadata(DATABASE_1_CACHE, QUERY_1_STATEMENT_NORMALIZED))
+                .thenReturn(SubsetMetadata.builder()
+                        .resultCount(QUERY_1_RESULT_NUMBER)
+                        .build());
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
 

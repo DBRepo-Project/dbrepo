@@ -12,6 +12,12 @@
       <v-toolbar-title
         :text="title" />
     </v-toolbar>
+    <v-progress-circular
+      v-if="!access"
+      color="primary"
+      size="24"
+      class="ml-1"
+      indeterminate />
     <v-card
       v-if="canInsertTableData"
       variant="flat"
@@ -40,7 +46,6 @@ export default {
   },
   data () {
     return {
-      loading: false,
       step: 1,
       ready: false,
       file: {

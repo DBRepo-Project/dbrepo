@@ -815,16 +815,22 @@ class OrderType(str, Enum):
 
 class Filter(BaseModel):
     type: FilterType
-    column_id: str
-    operator_id: str
+    column_id: Optional[str] = None
+    operator_id: Optional[str] = None
     value: Optional[str] = None
 
 
 class FilterDefinition(BaseModel):
     type: FilterType
-    column: str
-    operator: str
+    column: Optional[str] = None
+    operator: Optional[str] = None
     value: Optional[str] = None
+
+
+class JoinDefinition(BaseModel):
+    type: JoinType
+    datasource: str
+    conditionals: List[ConditionalDefinition]
 
 
 class Order(BaseModel):
@@ -837,19 +843,41 @@ class OrderDefinition(BaseModel):
     direction: Optional[OrderType] = None
 
 
-class Subset(BaseModel):
+class ConditionalDefinition(BaseModel):
+    column: str
+    foreign_column: str
+
+
+class SubsetColumn(BaseModel):
+    id: str
+    alias: Optional[str] = None
+
+
+class Conditional(BaseModel):
+    column_id: str
+    foreign_column_id: str
+
+
+class Join(BaseModel):
+    type: JoinType
     datasource_id: str
-    datasource_type: DatasourceType
-    columns: List[str]
-    filter: Optional[List[Filter]] = None
-    order: Optional[List[Order]] = None
+    conditionals: List[Conditional]
+
+
+class Subset(BaseModel):
+    columns: List[SubsetColumn]
+    datasource_ids: List[str]
+    joins: Optional[List[Join]] = None
+    filters: Optional[List[Filter]] = None
+    orders: Optional[List[Order]] = None
 
 
 class QueryDefinition(BaseModel):
-    table: str
     columns: List[str]
-    filter: Optional[List[FilterDefinition]] = None
-    order: Optional[List[OrderDefinition]] = None
+    datasources: List[str]
+    joins: Optional[List[JoinDefinition]] = None
+    filters: Optional[List[FilterDefinition]] = None
+    orders: Optional[List[OrderDefinition]] = None
 
 
 class TitleType(str, Enum):
@@ -860,6 +888,16 @@ class TitleType(str, Enum):
     SUBTITLE = "Subtitle"
     TRANSLATED_TITLE = "TranslatedTitle"
     OTHER = "Other"
+
+
+class JoinType(str, Enum):
+    """
+    Enumeration of join types.
+    """
+    INNER = "inner"
+    LEFT = "left"
+    RIGHT = "right"
+    CROSS = "cross"
 
 
 class HistoryEventType(str, Enum):

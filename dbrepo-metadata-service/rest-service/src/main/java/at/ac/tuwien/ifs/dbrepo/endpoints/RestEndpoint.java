@@ -4,10 +4,8 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.security.Principal;
 import java.util.List;
@@ -16,61 +14,22 @@ import java.util.Optional;
 @Slf4j
 public abstract class RestEndpoint {
 
-    public boolean hasRole(Principal principal, String role) {
-        if (principal == null || role == null) {
-            return false;
-        }
-        final Authentication authentication = (Authentication) principal;
-        return authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals(role));
-    }
-
-    public boolean isSystem(Principal principal) {
-        if (principal == null) {
-            return false;
-        }
-        final Authentication authentication = (Authentication) principal;
-        return authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals("system"));
-    }
-
-    public String getUsername(Principal principal) {
-        if (principal == null) {
-            return null;
-        }
-        final Authentication authentication = (Authentication) principal;
-        if (authentication.getPrincipal() instanceof Jwt user) {
-            if (user.getClaimAsString("preferred_username") == null) {
-                throw new IllegalArgumentException("Principal has no username");
-            }
-            return user.getClaimAsString("preferred_username");
-        } else if (authentication.getPrincipal() instanceof User user) {
-            if (user.getUsername() == null) {
-                throw new IllegalArgumentException("Principal has no username");
-            }
-            return user.getUsername();
-        }
-        throw new IllegalArgumentException("Unknown principal instance: " + authentication.getPrincipal().getClass());
-    }
-
     public Database filterDatabase(Database database, Principal principal) throws NotAllowedException {
         if (principal != null) {
-            if (isSystem(principal)) {
+            if (AuthUtil.isSystem(principal)) {
                 log.trace("filter database: system principal, skip");
                 return database;
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (!database.getIsPublic() && !database.getIsSchemaPublic() && optional.isEmpty()) {
                 log.error("Failed to find database: not public and no access found");
                 throw new NotAllowedException("Failed to find database: not public and no access found");
             }
             /* reduce metadata */
-            if (!database.getOwnedBy().equals(getUsername(principal))) {
+            if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
                 log.trace("authenticated user is not owner: remove access list");
                 database.setAccesses(List.of());
             }
@@ -113,12 +72,12 @@ public abstract class RestEndpoint {
         final List<View> views = database.getViews();
         DatabaseAccess access = null;
         if (principal != null) {
-            if (isSystem(principal)) {
+            if (AuthUtil.isSystem(principal)) {
                 return views;
             }
             final Optional<DatabaseAccess> optional = database.getAccesses()
                     .stream()
-                    .filter(a -> a.getUsername().equals(getUsername(principal)))
+                    .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (optional.isPresent()) {
                 access = optional.get();

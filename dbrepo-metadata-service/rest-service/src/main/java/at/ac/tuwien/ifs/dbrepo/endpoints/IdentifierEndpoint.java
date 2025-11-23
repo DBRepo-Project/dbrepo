@@ -11,6 +11,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -103,7 +104,7 @@ public class IdentifierEndpoint extends RestEndpoint {
                 .filter(i -> !Objects.nonNull(qid) || qid.equals(i.getQueryId()))
                 .filter(i -> !Objects.nonNull(vid) || vid.equals(i.getViewId()))
                 .filter(i -> !Objects.nonNull(tid) || tid.equals(i.getTableId()))
-                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwnedBy().equals(getUsername(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
+                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwnedBy().equals(AuthUtil.getUsername(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
                 .sorted((a, b) -> b.getCreated().compareTo(a.getCreated()))
                 .toList();
         if (identifiers.isEmpty()) {
@@ -180,7 +181,7 @@ public class IdentifierEndpoint extends RestEndpoint {
             if (principal == null) {
                 throw new NotAllowedException("Draft identifier: authentication required");
             }
-            if (!identifier.getOwnedBy().equals(getUsername(principal))) {
+            if (!identifier.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
                 throw new NotAllowedException("Draft identifier: not authorized");
             }
         }
@@ -338,7 +339,7 @@ public class IdentifierEndpoint extends RestEndpoint {
         final Database database = databaseService.findById(data.getDatabaseId());
         final Identifier identifier = identifierService.find(identifierId);
         /* check owner */
-        if (!identifier.getOwnedBy().equals(getUsername(principal)) && !hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
+        if (!identifier.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
             log.error("Failed to save identifier: foreign user");
             throw new NotAllowedException("Failed to save identifier: foreign user");
         }
@@ -349,10 +350,10 @@ public class IdentifierEndpoint extends RestEndpoint {
         }
         /* check access */
         try {
-            final DatabaseAccess access = accessService.find(database, getUsername(principal));
+            final DatabaseAccess access = accessService.find(database, AuthUtil.getUsername(principal));
             log.trace("found access: {}", access);
         } catch (AccessNotFoundException e) {
-            if (!hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
+            if (!AuthUtil.hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
                 log.error("Failed to save identifier: insufficient role");
                 throw new NotAllowedException("Failed to save identifier: insufficient role");
             }
@@ -386,7 +387,7 @@ public class IdentifierEndpoint extends RestEndpoint {
         }
 
         return ResponseEntity.accepted()
-                .body(metadataMapper.identifierToIdentifierDto(identifierService.save(database, getUsername(principal), data)));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.save(database, AuthUtil.getUsername(principal), data)));
     }
 
     @PostMapping
@@ -427,21 +428,22 @@ public class IdentifierEndpoint extends RestEndpoint {
         final Database database = databaseService.findById(data.getDatabaseId());
         /* check access */
         try {
-            accessService.find(database, getUsername(principal));
+            accessService.find(database, AuthUtil.getUsername(principal));
         } catch (AccessNotFoundException e) {
-            if (!hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
+            if (!AuthUtil.hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
                 log.error("Failed to create identifier: insufficient role");
                 throw new NotAllowedException("Failed to create identifier: insufficient role");
             }
         }
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.identifierToIdentifierDto(identifierService.create(database, getUsername(principal), data)));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.create(database, AuthUtil.getUsername(principal), data)));
     }
 
     @GetMapping("/retrieve")
+    @PreAuthorize("isAuthenticated()")
     @Observed(name = "dbrepo_identifier_retrieve")
     @Operation(summary = "Retrieve PID metadata",
-            description = "Retrieves Persistent Identifier (PID) metadata from external endpoints. Supported PIDs are: ORCID, ROR, DOI.")
+            description = "Retrieves Persistent Identifier (PID) metadata from external endpoints. Requires authentication. Supported PIDs are: ORCID, ROR, DOI.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Retrieved metadata from identifier",

@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
 import at.ac.tuwien.ifs.dbrepo.cache.SubsetCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryTypeDto;
@@ -33,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -73,7 +75,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .option("query", query)
                     .load();
             log.atDebug()
-                    .setMessage("get data from url: " + getSparkUrl(database))
+                    .setMessage("get data from url " + getSparkUrl(database))
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "jdbc_get_data")
                     .log();
@@ -97,27 +99,15 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     public UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
-        final String query = mariaDbMapper.subsetDtoToRawQuery(context, database, subset);
-        return storeQuery(database, query, timestamp, username);
-    }
-
-    @Override
-    @Timed(value = "dbrepo_data_count_subset_data", description = "Time spent counting subset data", histogram = true)
-    public Long reExecuteCount(Database database, String statement) throws SQLException, QueryMalformedException {
-        if (!statement.contains("FOR SYSTEM_TIME AS OF TIMESTAMP")) {
-            log.error("Query statement is not normalized: {}", statement);
-            throw new QueryMalformedException("Query statement is not normalized: " + statement);
-        }
-        return executeCountNonPersistent(database, statement);
+        final String query = mariaDbMapper.subsetDtoToNormalizedQuery(context, database, subset);
+        final String normalizedQuery = mariaDbMapper.subsetDtoToNormalizedTimestampedQuery(context, database, subset, timestamp);
+        return storeQuery(database, query, normalizedQuery, timestamp, username);
     }
 
     @Timed(value = "dbrepo_data_hash_subset_data", description = "Time spent hashing subset data", histogram = true)
     @Override
-    public String reExecuteHash(Database database, String statement) throws SQLException, QueryMalformedException {
-        if (!statement.contains("FOR SYSTEM_TIME AS OF TIMESTAMP")) {
-            log.error("Query statement is not normalized: {}", statement);
-            throw new QueryMalformedException("Query statement is not normalized: " + statement);
-        }
+    public SubsetMetadata getMetadata(Database database, String statement) throws SQLException, QueryExecutionException,
+            QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -126,18 +116,30 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             callableStatement.setString(1, statement);
             callableStatement.registerOutParameter(2, Types.VARCHAR);
             log.atDebug()
-                    .setMessage("hash subset in database: " + database.getInternalName())
+                    .setMessage("hash subset in database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "hash_subset")
                     .addKeyValue("query", statement)
                     .log();
             callableStatement.executeUpdate();
-            final String hash = callableStatement.getString(2);
-            log.info("Hashed query statement: {}", hash);
-            return hash;
+            final String resultHash = callableStatement.getString(2);
+            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.countRawSelectQuery(statement))
+                    .executeQuery();
+            log.atDebug()
+                    .setMessage("count subset in database: " + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "count_query")
+                    .addKeyValue("query", statement)
+                    .log();
+            final Long resultCount = mariaDbMapper.resultSetToNumber(resultSet);
+            log.info("Computed result set metadata: count {} and hash: {}", resultCount, resultHash);
+            return SubsetMetadata.builder()
+                    .resultCount(resultCount)
+                    .resultHash(resultHash)
+                    .build();
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to map object: " + e.getMessage(), e);
+            throw new QueryExecutionException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -159,7 +161,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             }
             final ResultSet resultSet = statement.executeQuery();
             log.atDebug()
-                    .setMessage("list subsets in database: " + database.getInternalName())
+                    .setMessage("list subsets in database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "list_queries")
                     .log();
@@ -192,31 +194,6 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    @Timed(value = "dbrepo_data_execute_subset", description = "Time spent executing a specific subset", histogram = true)
-    public Long executeCountNonPersistent(Database database, String statement) throws SQLException,
-            QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        try {
-            final long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.countRawSelectQuery(statement))
-                    .executeQuery();
-            log.atDebug()
-                    .setMessage("count subset in database: " + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "count_query")
-                    .addKeyValue("query", statement)
-                    .log();
-            return mariaDbMapper.resultSetToNumber(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to map object: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to map object: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-    }
-
-    @Override
     @Timed(value = "dbrepo_data_find_subset", description = "Time spent finding a specific subset", histogram = true)
     public Subset findById(Database database, UUID queryId) throws QueryNotFoundException, SQLException {
         final Optional<Subset> optional = subsetRepository.findById(queryId);
@@ -233,7 +210,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             preparedStatement.setString(1, String.valueOf(queryId));
             final ResultSet resultSet = preparedStatement.executeQuery();
             log.atDebug()
-                    .setMessage("find query in query store of database: " + database.getInternalName())
+                    .setMessage("find query in query store of database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "find_query")
                     .log();
@@ -254,8 +231,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     @Timed(value = "dbrepo_data_store_subset_query", description = "Time spent storing a subset query in the query store", histogram = true)
-    public UUID storeQuery(Database database, String query, Instant timestamp, String username) throws SQLException,
-            QueryStoreInsertException, QueryMalformedException {
+    public UUID storeQuery(Database database, String query, String normalizedQuery, Instant timestamp, String username)
+            throws SQLException, QueryStoreInsertException {
         /* save */
         final UUID queryId;
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -270,12 +247,12 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 callableStatement.setNull(1, Types.VARCHAR);
             }
             callableStatement.setString(2, query);
-            callableStatement.setString(3, mariaDbMapper.normalizeQuery(query, timestamp));
-            callableStatement.setTimestamp(4, Timestamp.from(timestamp));
+            callableStatement.setString(3, normalizedQuery);
+            callableStatement.setTimestamp(4, Timestamp.from(Instant.now()));
             callableStatement.registerOutParameter(5, Types.VARCHAR);
             callableStatement.executeUpdate();
             log.atDebug()
-                    .setMessage("store query in query store of database: " + database.getInternalName())
+                    .setMessage("store query in query store of database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "store_query")
                     .addKeyValue("query", query)
@@ -296,7 +273,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     @Timed(value = "dbrepo_data_persist_subset", description = "Time spent persisting a query in the query store", histogram = true)
-    public void persist(Database database, UUID queryId, Boolean persist) throws SQLException,
+    public void persist(Database database, UUID subsetId, Boolean persist) throws SQLException,
             QueryStorePersistException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -305,13 +282,13 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final long start = System.currentTimeMillis();
             final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreUpdateQueryRawQuery());
             preparedStatement.setBoolean(1, persist);
-            preparedStatement.setString(2, String.valueOf(queryId));
+            preparedStatement.setString(2, String.valueOf(subsetId));
             preparedStatement.executeUpdate();
             log.atDebug()
-                    .setMessage("persist query in query store of database: " + database.getInternalName())
+                    .setMessage("persist query in query store of database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "persist_query")
-                    .addKeyValue("query_id", queryId)
+                    .addKeyValue("query_id", subsetId)
                     .log();
         } catch (SQLException e) {
             log.error("Failed to (un-)persist query: {}", e.getMessage());
@@ -319,7 +296,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         } finally {
             dataSource.close();
         }
-        log.info("Performed (un-)persist for query with id {} in database with name {}", queryId, database.getInternalName());
+        subsetRepository.deleteById(subsetId);
+        log.info("Performed (un-)persist for query with id {} in database with name {}", subsetId, database.getInternalName());
     }
 
 }

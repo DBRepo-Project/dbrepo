@@ -263,9 +263,11 @@
               color="secondary"
               :disabled="step !== 3 || disabled"
               size="small"
+              :loading="loadingNavigation"
               variant="flat"
               :text="$t('navigation.data')"
-              :to="`/database/${$route.params.database_id}/table/${tableId}/data`" />
+              :to="`/database/${$route.params.database_id}/table/${tableId}/data`"
+              @click="loadingNavigation = true" />
           </v-col>
         </v-row>
       </v-container>
@@ -303,6 +305,7 @@ export default {
       file: null,
       loading: false,
       loadingImport: false,
+      loadingNavigation: false,
       rowCount: null,
       suggestedAnalyseSeparator: null,
       suggestedAnalyseLineTerminator: null,

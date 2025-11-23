@@ -1,5 +1,4 @@
 import datetime
-import json
 import unittest
 
 import requests_mock
@@ -8,7 +7,7 @@ from pandas import DataFrame
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Query, QueryType, UserBrief, QueryDefinition, FilterDefinition, FilterType, Database, \
     ContainerBrief, ImageBrief, Image, Table, Constraints, PrimaryKey, TableBrief, ColumnBrief, ColumnType, \
-    Column, Operator
+    Column, Operator, JoinType, JoinDefinition, ConditionalDefinition
 from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError, QueryStoreError, FormatNotAvailable, \
     ServiceError, ResponseCodeError, AuthenticationError
 
@@ -31,8 +30,8 @@ class QueryUnitTest(unittest.TestCase):
                       internal_name="some_table",
                       owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                       is_versioned=True,
-                      queue_name='test',
-                      routing_key='dbrepo.test_database_1234.test',
+                      queue_name='dbrepo',
+                      routing_key='dbrepo.test_database_1234.some_table',
                       is_public=True,
                       is_schema_public=True,
                       constraints=Constraints(uniques=[],
@@ -42,9 +41,8 @@ class QueryUnitTest(unittest.TestCase):
                                                                       table=TableBrief(
                                                                           id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
                                                                           database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                                                          name='Other',
-                                                                          internal_name='other',
-                                                                          description=None,
+                                                                          name='Some Table',
+                                                                          internal_name='some_table',
                                                                           is_versioned=True,
                                                                           is_public=True,
                                                                           is_schema_public=True,
@@ -73,7 +71,56 @@ class QueryUnitTest(unittest.TestCase):
                                       internal_name="username",
                                       type=ColumnType.VARCHAR,
                                       is_null_allowed=False)
-                               ])],
+                               ]),
+                Table(id="585d421a-ad1a-4543-b661-5e32a78dd3e1",
+                      name="Other Table",
+                      database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                      internal_name="other_table",
+                      owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+                      is_versioned=True,
+                      queue_name='dbrepo',
+                      routing_key='dbrepo.test_database_1234.other_table',
+                      is_public=True,
+                      is_schema_public=True,
+                      constraints=Constraints(uniques=[],
+                                              foreign_keys=[],
+                                              checks=[],
+                                              primary_key=[PrimaryKey(id="3b060596-38f9-4055-8fb0-5526918f31a0",
+                                                                      table=TableBrief(
+                                                                          id="585d421a-ad1a-4543-b661-5e32a78dd3e1",
+                                                                          database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                                                          name='Other Table',
+                                                                          internal_name='other_table',
+                                                                          is_versioned=True,
+                                                                          is_public=True,
+                                                                          is_schema_public=True,
+                                                                          owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16'),
+                                                                      column=ColumnBrief(
+                                                                          id="4a2f20c3-9efd-4788-a38d-3079d198125c",
+                                                                          table_id="585d421a-ad1a-4543-b661-5e32a78dd3e1",
+                                                                          database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                                                          name='id',
+                                                                          alias=None,
+                                                                          internal_name='id',
+                                                                          type=ColumnType.BIGINT))]),
+                      columns=[Column(id="4a2f20c3-9efd-4788-a38d-3079d198125c",
+                                      name="ID",
+                                      ord=0,
+                                      database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                      table_id="585d421a-ad1a-4543-b661-5e32a78dd3e1",
+                                      internal_name="id",
+                                      type=ColumnType.BIGINT,
+                                      is_null_allowed=False),
+                               Column(id="85de93a8-834c-4cf4-9d34-f80ebd97e606",
+                                      name="City",
+                                      ord=1,
+                                      database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                      table_id="585d421a-ad1a-4543-b661-5e32a78dd3e1",
+                                      internal_name="city",
+                                      type=ColumnType.VARCHAR,
+                                      is_null_allowed=False)
+                               ])
+                ],
         container=ContainerBrief(id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                                  name='MariaDB Galera 11.1.3',
                                  internal_name='mariadb',
@@ -107,12 +154,12 @@ class QueryUnitTest(unittest.TestCase):
             client = RestClient(username="a", password="b")
             response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
                                             timestamp=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                                            query=QueryDefinition(table="some_table",
-                                                                  columns=["id", "username"],
-                                                                  filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                           column="id",
-                                                                                           operator="IN",
-                                                                                           value="(1,2)")]))
+                                            query=QueryDefinition(datasources=["some_table"],
+                                                                  columns=["some_table.id", "some_table.username"],
+                                                                  filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                            column="some_table.id",
+                                                                                            operator="IN",
+                                                                                            value="(1,2)")]))
             self.assertTrue(DataFrame.equals(df, response))
 
     def test_create_subset_400_fails(self):
@@ -127,12 +174,53 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
+            except MalformedError:
+                pass
+
+    def test_create_subset_notion_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/v1/database/{self.database.id}/subset', status_code=400)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["id",  # <<<
+                                                                    "some_table.username"]))
+            except MalformedError:
+                pass
+
+    def test_create_subset_notion_join_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/v1/database/{self.database.id}/subset', status_code=400)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username",
+                                                                    "other_table.city"],
+                                                           joins=[JoinDefinition(type=JoinType.INNER,
+                                                                                 datasource="other_table",
+                                                                                 conditionals=[ConditionalDefinition(
+                                                                                     column="username",  # <<<
+                                                                                     foreign_column="other_table.username")])]))
             except MalformedError:
                 pass
 
@@ -148,12 +236,12 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
             except ForbiddenError:
                 pass
 
@@ -169,12 +257,12 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
             except NotExistsError:
                 pass
 
@@ -190,12 +278,12 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
             except QueryStoreError:
                 pass
 
@@ -211,12 +299,12 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
             except FormatNotAvailable:
                 pass
 
@@ -232,12 +320,12 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
             except ServiceError:
                 pass
 
@@ -253,12 +341,12 @@ class QueryUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query=QueryDefinition(table="some_table",
-                                                           columns=["id", "username"],
-                                                           filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                    column="id",
-                                                                                    operator="IN",
-                                                                                    value="(1,2)")]))
+                                     query=QueryDefinition(datasources=["some_table"],
+                                                           columns=["some_table.id", "some_table.username"],
+                                                           filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                     column="some_table.id",
+                                                                                     operator="IN",
+                                                                                     value="(1,2)")]))
             except ResponseCodeError:
                 pass
 
@@ -278,13 +366,45 @@ class QueryUnitTest(unittest.TestCase):
 
             client = RestClient()
             response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
-                                            query=QueryDefinition(table="some_table",
-                                                                  columns=["id", "username"],
-                                                                  filter=[FilterDefinition(type=FilterType.WHERE,
-                                                                                           column="id",
-                                                                                           operator="IN",
-                                                                                           value="(1,2)")]))
+                                            query=QueryDefinition(datasources=["some_table"],
+                                                                  columns=["some_table.id", "some_table.username"],
+                                                                  filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                            column="some_table.id",
+                                                                                            operator="IN",
+                                                                                            value="(1,2)")]))
             self.assertTrue(DataFrame.equals(df, response))
+
+    def test_create_subset_alias_anonymous_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(exp)
+            # mock
+            mock.get(f'/api/v1/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/v1/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/v1/database/{self.database.id}/subset', json=exp,
+                      headers={'X-Id': '85bc1217-29ab-4c09-9f98-8c019238a9c8', 'X-Headers': 'id,username'},
+                      status_code=201)
+            # test
+            try:
+                client = RestClient()
+                response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
+                                                query=QueryDefinition(datasources=["some_table"],
+                                                                      joins=[JoinDefinition(type=JoinType.INNER,
+                                                                                            datasource="other_table",
+                                                                                            conditionals=[
+                                                                                                ConditionalDefinition(
+                                                                                                    column="username",
+                                                                                                    foreign_column="username")])],
+                                                                      columns=["some_table.id", "some_table.username",
+                                                                               "other_table.city"],
+                                                                      filters=[FilterDefinition(type=FilterType.WHERE,
+                                                                                                column="some_table.id",
+                                                                                                operator="IN",
+                                                                                                value="(1,2)")]))
+            except MalformedError:
+                pass
 
     def test_get_subset_succeeds(self):
         with requests_mock.Mocker() as mock:
@@ -301,8 +421,9 @@ class QueryUnitTest(unittest.TestCase):
                         result_number=None,
                         identifiers=[])
             # mock
-            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     headers={'X-Headers': 'id,username'}, json=exp.model_dump())
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                headers={'X-Headers': 'id,username'}, json=exp.model_dump())
             # test
             response = RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939")
@@ -311,8 +432,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=403)
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=403)
             # test
             try:
                 RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -323,8 +445,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=404)
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=404)
             # test
             try:
                 RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -335,8 +458,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_406_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=406)
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=406)
             # test
             try:
                 RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -347,8 +471,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=503)
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=503)
             # test
             try:
                 RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -359,8 +484,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_subset_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=202)
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=202)
             # test
             try:
                 RestClient().get_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -392,8 +518,9 @@ class QueryUnitTest(unittest.TestCase):
                         result_number=None,
                         identifiers=[])
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     json=exp.model_dump(), headers={'X-Headers': 'id,username'}, status_code=202)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                json=exp.model_dump(), headers={'X-Headers': 'id,username'}, status_code=202)
             # test
             response = RestClient(username='foo', password='bar').update_subset(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732", subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939",
@@ -403,8 +530,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_update_subset_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=400)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=400)
             # test
             try:
                 RestClient(username='foo', password='bar').update_subset(
@@ -416,8 +544,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_update_subset_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=403)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=403)
             # test
             try:
                 RestClient(username='foo', password='bar').update_subset(
@@ -429,8 +558,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_update_subset_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=404)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=404)
             # test
             try:
                 RestClient(username='foo', password='bar').update_subset(
@@ -442,8 +572,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_update_subset_417_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=417)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=417)
             # test
             try:
                 RestClient(username='foo', password='bar').update_subset(
@@ -455,8 +586,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_update_subset_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=503)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=503)
             # test
             try:
                 RestClient(username='foo', password='bar').update_subset(
@@ -468,8 +600,9 @@ class QueryUnitTest(unittest.TestCase):
     def test_update_subset_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                     status_code=200)
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
+                status_code=200)
             # test
             try:
                 RestClient(username='foo', password='bar').update_subset(

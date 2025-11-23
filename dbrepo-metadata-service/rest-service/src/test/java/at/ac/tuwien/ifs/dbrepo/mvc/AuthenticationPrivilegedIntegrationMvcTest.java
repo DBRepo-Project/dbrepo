@@ -1,8 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.mvc;
 
-import at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
-import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.TokenDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AuthServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.CredentialsInvalidException;
@@ -15,12 +13,12 @@ import at.ac.tuwien.ifs.dbrepo.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -32,8 +30,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Slf4j
 @ExtendWith(SpringExtension.class)
@@ -60,14 +57,11 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
     @Autowired
     private KeycloakGateway keycloakGateway;
 
-    @Autowired
-    private KeycloakConfig keycloakConfig;
-
     @Container
     private static final KeycloakContainer keycloakContainer = new KeycloakContainer(KEYCLOAK_IMAGE)
             .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withAdminUsername("admin")
-            .withAdminPassword("admin")
+            .withAdminUsername(USER_LOCAL_ADMIN_USERNAME)
+            .withAdminPassword(USER_LOCAL_ADMIN_PASSWORD)
             .withRealmImportFile("./init/dbrepo-realm.json")
             .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false");
 
@@ -77,6 +71,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
     @DynamicPropertySource
     static void keycloakProperties(DynamicPropertyRegistry registry) {
         registry.add("dbrepo.endpoints.authService", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
+        registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080) + "/realms/dbrepo");
+        registry.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080) + "/realms/dbrepo/protocol/openid-connect/certs");
     }
 
     @BeforeEach
@@ -91,23 +87,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
     }
 
     @Test
-    @Disabled("erroneous test implementation")
-    public void findById_database_basicUser_succeeds() throws Exception {
-
-        /* mock */
-        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
-
-        /* test */
-        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
     public void findById_database_basicAdmin_succeeds() throws Exception {
-
-        /* pre condition */
-        keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
@@ -122,91 +102,38 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
     }
 
     @Test
-    @Disabled("erroneous test implementation")
-    public void findById_database_bearerAdmin_succeeds() throws Exception {
-
-        /* pre condition */
-        keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
-        final TokenDto jwt = keycloakGateway.getUserToken(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD,
-                keycloakConfig.getKeycloakRealm(), keycloakConfig.getKeycloakClient(),
-                keycloakConfig.getKeycloakClientSecret());
-
-        /* test */
-        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
-                .andDo(print())
-                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
-                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
-                .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
-                .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC_METHOD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method X-Host X-Port"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @Disabled("erroneous test implementation")
-    public void findById_table_bearerAdmin_succeeds() throws Exception {
-
-        /* pre condition */
-        keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
-        final TokenDto jwt = keycloakGateway.getUserToken(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD,
-                keycloakConfig.getKeycloakRealm(), keycloakConfig.getKeycloakClient(),
-                keycloakConfig.getKeycloakClientSecret());
-
-
-        /* test */
-        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @Disabled("erroneous test implementation")
-    public void findById_table_basicUser_succeeds() throws Exception {
+    public void findById_database_basic_succeeds() throws Exception {
 
         /* mock */
         keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
-        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void findById_database_oauth_succeeds() throws Exception {
+
+        /* mock */
+        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        final String accessToken = keycloakGateway.getUserToken(USER_1_USERNAME, USER_1_PASSWORD)
+                .getAccessToken();
+
+        /* test */
+        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID).header("Authorization", "Bearer " + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     public void findById_table_basicAdmin_succeeds() throws Exception {
 
-        /* mock */
-        keycloakUtils.createUser(USER_LOCAL_ADMIN_ID, USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
-
         /* test */
         this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @Disabled("erroneous test implementation")
-    public void findById_view_basicUser_succeeds() throws Exception {
-
-        /* mock */
-        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
-
-        /* test */
-        this.mockMvc.perform(get("/api/v1/database/" + DATABASE_1_ID + "/view/" + VIEW_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @Disabled("erroneous test implementation")
-    public void findById_container_basicUser_succeeds() throws Exception {
-
-        /* mock */
-        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
-
-        /* test */
-        this.mockMvc.perform(get("/api/v1/container/" + CONTAINER_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }

@@ -27,25 +27,31 @@
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-cloud-upload' : null"
         color="tertiary"
         :variant="buttonVariant"
+        :loading="loading === 0"
         :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
         class="mr-2"
-        :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
+        :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`"
+        @click="loading = 0" />
       <v-btn
         v-if="canCreateView"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-view-carousel' : null"
         color="secondary"
         variant="flat"
+        :loading="loading === 1"
         :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="mr-2"
-        :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
+        :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`"
+        @click="loading = 1" />
       <v-btn
         v-if="canGetPid"
         :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
+        :loading="loading === 2"
         :text="($vuetify.display.mdAndUp ? 'Get ' : '') + 'PID'"
         class="mr-2"
-        :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`" />
+        :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`"
+        @click="loading = 2" />
       <template v-slot:extension>
         <v-tabs v-model="tab" color="primary">
           <v-tab

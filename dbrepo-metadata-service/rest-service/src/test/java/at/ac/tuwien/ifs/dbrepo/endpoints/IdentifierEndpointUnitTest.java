@@ -4,11 +4,14 @@ import at.ac.tuwien.ifs.dbrepo.config.EndpointConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.ld.LdDatasetDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalResultType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.*;
@@ -23,7 +26,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
@@ -71,6 +74,12 @@ public class IdentifierEndpointUnitTest extends BaseTest {
 
     @MockitoBean
     private TableService tableService;
+
+    @MockitoBean
+    private MetadataService metadataService;
+
+    @Autowired
+    private MetadataMapper metadataMapper;
 
     @Autowired
     private IdentifierEndpoint identifierEndpoint;
@@ -1624,6 +1633,52 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         assertThrows(DatabaseNotFoundException.class, () -> {
             identifierEndpoint.create(IDENTIFIER_1_CREATE_DTO, USER_1_PRINCIPAL);
         });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void retrieve_anonymous_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            identifierEndpoint.retrieve(USER_1_ORCID_URL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void retrieve_orcid_fails() throws IdentifierNotSupportedException, OrcidNotFoundException,
+            RorNotFoundException, DoiNotFoundException {
+
+        /* mock */
+        doThrow(OrcidNotFoundException.class)
+                .when(metadataService)
+                .findByUrl(USER_1_ORCID_URL);
+
+        /* test */
+        assertThrows(OrcidNotFoundException.class, () -> {
+            identifierEndpoint.retrieve(USER_1_ORCID_URL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void retrieve_orcid_succeeds() throws IdentifierNotSupportedException, OrcidNotFoundException,
+            RorNotFoundException, DoiNotFoundException {
+
+        /* mock */
+        when(metadataService.findByUrl(USER_1_ORCID_URL))
+                .thenReturn(metadataMapper.orcidDtoToExternalMetadataDto(ORCID_1_DTO));
+
+        /* test */
+        final ResponseEntity<ExternalMetadataDto> response = identifierEndpoint.retrieve(USER_1_ORCID_URL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final ExternalMetadataDto body = response.getBody();
+        assertNotNull(body);
+        assertEquals(ExternalResultType.PERSONAL, body.getType());
+        assertEquals(USER_1_FIRSTNAME, body.getGivenNames());
+        assertEquals(USER_1_LASTNAME, body.getFamilyName());
+        assertEquals(USER_1_AFFILIATION, body.getAffiliations()[0].getOrganizationName());
     }
 
     /* ################################################################################################### */

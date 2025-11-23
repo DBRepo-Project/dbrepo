@@ -10,6 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -91,7 +92,7 @@ public class AccessEndpoint extends RestEndpoint {
         log.debug("endpoint give access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
@@ -144,7 +145,7 @@ public class AccessEndpoint extends RestEndpoint {
         log.debug("endpoint modify database access, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
@@ -184,8 +185,8 @@ public class AccessEndpoint extends RestEndpoint {
                                                   Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, username={}", databaseId, username);
-        if (!username.equals(getUsername(principal))) {
-            if (!hasRole(principal, "check-foreign-database-access") && !isSystem(principal)) {
+        if (!username.equals(AuthUtil.getUsername(principal))) {
+            if (!AuthUtil.hasRole(principal, "check-foreign-database-access") && !AuthUtil.isSystem(principal)) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
             }
@@ -230,7 +231,7 @@ public class AccessEndpoint extends RestEndpoint {
             UserNotFoundException {
         log.debug("endpoint revoke database access, databaseId={}, username={}", databaseId, username);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwnedBy().equals(getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
         }

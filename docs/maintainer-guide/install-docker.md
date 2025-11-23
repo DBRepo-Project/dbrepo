@@ -46,5 +46,5 @@ docker volume rm $(docker volume ls -f "name=dbrepo_*" -q)
 
     See "Security Disclaimer" above, this quick &amp; non-secure installation needs to be configured further to achieve
     basic security guarantees. Please visit 
-    the [configuration](/infrastructures/dbrepo/1.12/maintainer-guide/configuration/) page in the next step to complete
+    the [configuration](/infrastructures/dbrepo/1.13/maintainer-guide/configuration/) page in the next step to complete
     the installation.

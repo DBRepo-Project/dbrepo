@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
@@ -123,14 +124,14 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             InterruptedException {
 
         /* mock */
-        final UUID queryId2 = MariaDbUtil.insertQueryStore(DATABASE_1_CACHE, QUERY_2_DTO, USER_1_USERNAME);
+        final UUID id = MariaDbUtil.insertQueryStore(DATABASE_1_CACHE, QUERY_2_DTO, USER_1_USERNAME);
         when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
 
         /* test */
-        persist_generic(queryId2, List.of(IDENTIFIER_5_BRIEF_DTO), true);
-        final Subset response = subsetService.findById(DATABASE_1_CACHE, queryId2);
-        assertEquals(queryId2, response.getId());
+        persist_generic(id, List.of(IDENTIFIER_5_BRIEF_DTO), true);
+        final Subset response = subsetService.findById(DATABASE_1_CACHE, id);
+        assertEquals(id, response.getId());
         assertTrue(response.getIsPersisted());
     }
 
@@ -140,14 +141,14 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             InterruptedException {
 
         /* mock */
-        final UUID queryId1 = MariaDbUtil.insertQueryStore(DATABASE_1_CACHE, QUERY_1_DTO, USER_1_USERNAME);
+        final UUID id = MariaDbUtil.insertQueryStore(DATABASE_1_CACHE, QUERY_1_DTO, USER_1_USERNAME);
         when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
 
         /* test */
-        persist_generic(queryId1, List.of(IDENTIFIER_2_BRIEF_DTO), false);
-        final Subset response = subsetService.findById(DATABASE_1_CACHE, queryId1);
-        assertEquals(queryId1, response.getId());
+        persist_generic(id, List.of(IDENTIFIER_2_BRIEF_DTO), false);
+        final Subset response = subsetService.findById(DATABASE_1_CACHE, id);
+        assertEquals(id, response.getId());
         assertFalse(response.getIsPersisted());
     }
 
@@ -185,94 +186,42 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void reExecuteCount_succeeds() throws SQLException, QueryMalformedException {
+    public void getMetadata_malformed_fails() {
 
         /* test */
-        final Long response = subsetService.reExecuteCount(DATABASE_1_CACHE, QUERY_1_STATEMENT_NORMALIZED);
-        assertNotNull(response);
-    }
-
-    @Test
-    public void reExecuteCount_malformed_fails() {
-
-        /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            subsetService.reExecuteCount(DATABASE_1_CACHE, "SELECT");
+        assertThrows(QueryExecutionException.class, () -> {
+            subsetService.getMetadata(DATABASE_1_CACHE, "SELECT");
         });
     }
 
     @Test
-    public void reExecuteCount_notNormalized_fails() {
+    public void storeQuery_succeeds() throws SQLException, QueryStoreInsertException {
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            subsetService.reExecuteCount(DATABASE_1_CACHE, "SELECT 1");
-        });
-    }
-
-    @Test
-    public void executeCountNonPersistent_succeeds() throws SQLException, QueryMalformedException {
-
-        /* test */
-        final Long response = subsetService.executeCountNonPersistent(DATABASE_1_CACHE, QUERY_1_STATEMENT_NORMALIZED);
-        assertNotNull(response);
-    }
-
-    @Test
-    public void executeCountNonPersistent_malformed_fails() {
-
-        /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            subsetService.executeCountNonPersistent(DATABASE_1_CACHE, "SELECT");
-        });
-    }
-
-    @Test
-    public void executeCountNonPersistent_illegalQuery_fails() {
-
-        /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            subsetService.executeCountNonPersistent(DATABASE_1_CACHE, "DROP DATABASE `weather`");
-        });
-    }
-
-    @Test
-    public void storeQuery_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
-            QueryMalformedException {
-
-        /* test */
-        final UUID response = subsetService.storeQuery(DATABASE_1_CACHE, QUERY_1_STATEMENT, QUERY_1_EXECUTION, USER_1_USERNAME);
+        final UUID response = subsetService.storeQuery(DATABASE_1_CACHE, QUERY_1_STATEMENT,
+                QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION, USER_1_USERNAME);
         assertNotNull(response);
         final List<Map<String, Object>> subsets = MariaDbUtil.listQueryStore(DATABASE_1_CACHE);
         assertEquals(1, subsets.size());
         final Map<String, Object> subset0 = subsets.get(0);
         assertEquals(USER_1_USERNAME, subset0.get("created_by"));
         assertEquals(QUERY_1_STATEMENT, subset0.get("query"));
-        assertEquals(mariaDbMapper.normalizeQuery(QUERY_1_STATEMENT, QUERY_1_EXECUTION), subset0.get("query_normalized"));
+        assertEquals(QUERY_1_STATEMENT_NORMALIZED, subset0.get("query_normalized"));
     }
 
     @Test
-    public void reExecuteHash_notNormalized_fails() {
-
+    public void getMetadata_succeeds() throws SQLException, QueryMalformedException, QueryExecutionException {
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            subsetService.reExecuteHash(DATABASE_1_CACHE, QUERY_1_STATEMENT);
-        });
-    }
-
-    @Test
-    public void reExecuteHash_succeeds() throws SQLException, QueryMalformedException {
-        /* test */
-        final String response = subsetService.reExecuteHash(DATABASE_1_CACHE, MariaDbUtil.replaceExecutionTimestamp(
+        final SubsetMetadata response = subsetService.getMetadata(DATABASE_1_CACHE, MariaDbUtil.replaceExecutionTimestamp(
                 QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION, Instant.now().plus(12, ChronoUnit.HOURS)));
         assertNotNull(response);
-        assertEquals(QUERY_1_RESULT_HASH, response);
+        assertEquals(QUERY_1_RESULT_HASH, response.getResultHash());
+        assertEquals(3, response.getResultCount());
     }
 
     @Test
-    public void create_succeeds() throws SQLException, QueryStoreInsertException, ViewMalformedException,
-            TableNotFoundException, QueryMalformedException, ImageNotFoundException, ViewNotFoundException,
-            ColumnNotFoundException {
+    public void create_succeeds() throws SQLException, QueryStoreInsertException, TableNotFoundException,
+            QueryMalformedException, ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
 
         /* test */
         final UUID response = subsetService.create(DATABASE_1_CACHE, QUERY_1_SUBSET_DTO, QUERY_1_EXECUTION, USER_1_USERNAME);
@@ -284,17 +233,22 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(QueryStoreInsertException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_CACHE, "DROP DATABASE `weather`", QUERY_1_EXECUTION, USER_1_USERNAME);
+            subsetService.storeQuery(DATABASE_1_CACHE, "DROP DATABASE `weather`", "", QUERY_1_EXECUTION, USER_1_USERNAME);
         });
     }
 
     @Test
-    public void storeQuery_malformed_fails() {
+    public void storeQuery_simple_succeeds() throws QueryStoreInsertException, SQLException {
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_CACHE, "SELECT 1", QUERY_1_EXECUTION, USER_1_USERNAME);
-        });
+        subsetService.storeQuery(DATABASE_1_CACHE, "SELECT 1", "SELECT 1", QUERY_1_EXECUTION, USER_1_USERNAME);
+    }
+
+    @Test
+    public void storeQuery_simpleRow_succeeds() throws QueryStoreInsertException, SQLException {
+
+        /* test */
+        subsetService.storeQuery(DATABASE_1_CACHE, "VALUES (1, 2, 3)", "VALUES (1, 2, 3)", QUERY_1_EXECUTION, USER_1_USERNAME);
     }
 
     protected void findById_generic(UUID queryId) throws RemoteUnavailableException, SQLException,
@@ -332,7 +286,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         return subsetService.findAll(DATABASE_1_CACHE, filterPersisted);
     }
 
-    protected void persist_generic(UUID queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
+    protected void persist_generic(UUID subsetId, List<IdentifierBriefDto> identifiers, Boolean persist)
             throws RemoteUnavailableException, SQLException, QueryStorePersistException, MetadataServiceException,
             DatabaseNotFoundException, InterruptedException {
 
@@ -340,11 +294,11 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, queryId))
+        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, subsetId))
                 .thenReturn(identifiers);
 
         /* test */
-        subsetService.persist(DATABASE_1_CACHE, queryId, persist);
+        subsetService.persist(DATABASE_1_CACHE, subsetId, persist);
     }
 
 }
