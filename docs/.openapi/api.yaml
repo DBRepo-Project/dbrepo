@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//'
 paths:
   '/api/v1/database/{databaseId}/view/{viewId}/data':
     get:
@@ -8301,14 +8301,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       type: object
       properties:
