@@ -379,7 +379,7 @@ services:
         COMMIT: ${CI_COMMIT_SHORT_SHA:-}
       network: host
     environment:
-      NUXT_NITRO_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
+      NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       NUXT_OIDC_AUTH_SESSION_SECRET: "${OIDC_AUTH_SESSION_SECRET:-d1f_1oEZsiMCEzdt-KqYUQI14WJc4coCw87kwTGS9ZJrWnk_}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
@@ -492,6 +492,8 @@ services:
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
+      DASHBOARD_UI_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
+      DASHBOARD_UI_USERNAME: "${DASHBOARD_UI_USERNAME:-admin}"
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"

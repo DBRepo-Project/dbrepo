@@ -49,7 +49,7 @@ dictConfig({
 
 def dashboard_client():
     return DashboardServiceClient(os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
-                                  os.getenv('SYSTEM_USERNAME', 'admin'), os.getenv('SYSTEM_PASSWORD', 'admin'))
+                                  os.getenv('DASHBOARD_UI_USERNAME', 'admin'), os.getenv('DASHBOARD_UI_PASSWORD', 'admin'))
 
 
 def rest_client():
