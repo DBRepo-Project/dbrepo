@@ -1925,6 +1925,14 @@
                         },
                         "fullnameOverride": {
                             "type": "string"
+                        },
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "repository": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 },

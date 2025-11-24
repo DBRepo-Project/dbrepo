@@ -752,6 +752,9 @@ storageservice:
   mariadb:
     ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
     enabled: true
+    image:
+      ## @skip storageservice.mariadb.image.repository
+      repository: bitnamilegacy/mariadb
     ## @skip storageservice.mariadb.fullnameOverride
     fullnameOverride: storage-db
     auth:
