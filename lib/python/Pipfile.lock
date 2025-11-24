@@ -2421,11 +2421,11 @@
         },
         "minio": {
             "hashes": [
-                "sha256:173402a5716099159c5659f9de75be204ebe248557b9f1cc9cf45aa70e9d3024",
-                "sha256:f23a6edbff8d0bc4b5c1a61b2628a01c5a3342aefc613ff9c276012e6321108f"
+                "sha256:53093c99c8716fdd089aec2e29bff28fe20f962334a096b72c6e6201e32628e0",
+                "sha256:756f97fb3d19d198facd1b6ff44006a58934a5b09d512e343227cdaf92f3da13"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==7.2.18"
+            "version": "==7.2.19"
         },
         "more-itertools": {
             "hashes": [
@@ -2729,11 +2729,11 @@
         },
         "secretstorage": {
             "hashes": [
-                "sha256:a799acf5be9fb93db609ebaa4ab6e8f1f3ed5ae640e0fa732bfea59e9c3b50e8",
-                "sha256:c55d57b4da3de568d8c3af89dad244ab24c35ca1da8625fc1b550edf005ebc41"
+                "sha256:0ce65888c0725fcb2c5bc0fdb8e5438eece02c523557ea40ce0703c266248137",
+                "sha256:f04b8e4689cbce351744d5537bf6b1329c6fc68f91fa666f60a380edddcd11be"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==3.4.1"
+            "version": "==3.5.0"
         },
         "setuptools": {
             "hashes": [
