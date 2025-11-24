@@ -1,7 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -321,6 +324,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test
@@ -358,6 +363,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test
@@ -407,6 +414,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_4_ID, QUERY_9_SUBSET_DTO, null, httpServletRequest, null, null, null);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test
@@ -441,6 +450,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_1_ID, QUERY_1_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test
@@ -662,7 +673,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
         assertNotNull(body);
         assertEquals(QUERY_5_ID, body.getId());
         assertEquals(DATABASE_3_ID, body.getDatabaseId());
-        assertNull(body.getOwner());
+        assertNotNull(body.getOwner());
         assertEquals(QUERY_5_STATEMENT, body.getQuery());
         assertEquals(QUERY_5_STATEMENT_NORMALIZED, body.getQueryNormalized());
         assertEquals(QUERY_5_QUERY_HASH, body.getQueryHash());
@@ -769,7 +780,9 @@ public class SubsetEndpointUnitTest extends BaseTest {
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.findById(databaseId, subsetId, timestamp, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+        final QueryDto body = (QueryDto) response.getBody();
+        assertNotNull(body);
+        assertNotNull(body.getOwner());
     }
 
 }

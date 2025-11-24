@@ -188,6 +188,9 @@ public interface MetadataMapper {
     })
     at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database databaseDtoToDatabase(DatabaseDto data);
 
+    @Mappings({
+            @Mapping(target = "owner.username", source = "ownedBy")
+    })
     QueryDto subsetToQueryDto(Subset data);
 
     ColumnDto viewColumnDtoToColumnDto(ViewColumnDto data);
