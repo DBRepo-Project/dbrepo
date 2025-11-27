@@ -22,47 +22,18 @@ Any number of MariaDB ata databases can be integrated into DBRepo, even non-empt
 registered in the Metadata Database to be visible in the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui) and usable from e.g. the Python
 Library.
 
-## Configuration
-
-By default, the Data Database is configured as a cluster of three nodes where each node has a maximum of 2048 MiB RAM
-available. As recommended by
-[MariaDB](https://mariadb.com/kb/en/mariadb-memory-allocation/#allocating-ram-for-mariadb-the-short-answer), we set
-`innodb_buffer_pool_size=1430M` (70% of the available RAM). If you have more RAM available, you should set the variable
-accordingly to improve the performance.
-
 ## Data
 
-The procedures requires the in parameter of the `hash_table` stored procedure to have the same collation as the
+The procedures require the in parameter of the `hash_table` stored procedure to have the same collation as the
 `information_schema.columns` table. We observed this unexpected behavior for
 the [MariaDB Galera chart](https://artifacthub.io/packages/helm/bitnami/mariadb-galera) powered by Bitnami and had to
 set extra flags.
 
-### Backup
+## Backup & Restore
 
-Export all databases with `--skip-lock-tables` option for MariaDB Galera clusters as it is not supported currently by
-MariaDB Galera.
-
-=== "Terminal"
-
-    ```shell
-    mariadb \
-        -u <privilegedUsername> \
-        -p<privilegedPassword> \
-        --complete-insert \
-        --skip-lock-tables \
-        --skip-add-locks \
-        --all-databases > dump.sql
-    ```
-
-### Restore
-
-=== "Terminal"
-
-    ```shell
-    mariadb \
-        -u <privilegedUsername> \
-        -p<privilegedPassword> < dump.sql
-    ```
+Please refer to our detailed documentation to perform 
+a [full backup](/infrastructures/dbrepo/1.13/maintainer-guide/backup-data/) 
+and [restore](/infrastructures/dbrepo/1.13/maintainer-guide/restore-data/).
 
 ## Limitations
 
