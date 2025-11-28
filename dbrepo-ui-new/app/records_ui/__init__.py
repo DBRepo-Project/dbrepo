@@ -5,7 +5,7 @@ import dbrepo.RestClient
 from flask_babelex import Babel, gettext, lazy_gettext
 
 
-repo = dbrepo.RestClient.RestClient(endpoint='https://dbrepo.datalab.tuwien.ac.at')
+repo = dbrepo.RestClient.RestClient(endpoint='https://dbrepo.datalab.tuwien.ac.at', username='338563')
 
 records_bp = Blueprint('records', __name__, template_folder='templates', static_folder='static',
                        static_url_path='/static/admin')
@@ -17,6 +17,7 @@ def show_record(db_id):
     view = repo.get_view(database_id=db_id, view_id=database.views[0].id)
     view_data = repo.get_view_data(database_id=db_id, view_id=database.views[0].id, page=1, size=10).to_dict(orient='records')
     queries = repo.get_queries(database_id=db_id)
+    queries = []
     return render_template('records/detail.html', database=database, view=view, data=view_data,
                            doi_id=0, queries=queries)
 

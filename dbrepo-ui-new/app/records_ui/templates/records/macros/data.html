@@ -103,13 +103,22 @@
 {%- endmacro %}
 
 {% macro dataset_list_box(subsets) %}
-        <div role="button" class="accordion link-box">
-            <span class="box-title"> Data Sets </span>
-            <i class="angle right icon" aria-hidden="true"></i>
+        <div class="ui accordion">
+            <div class="active title">
+                            <i class="dropdown icon" aria-hidden="true"></i>
+
+<!--                <div role="button" class="trigger">-->
+<!--                Data Sets </div>-->
+                hi
+            </div>
+
+            <div class="active content">
+                {{ dataset_list(subsets) }}
+            </div>
         </div>
-        <div class="active content pt-0">
-            {{ dataset_list(subsets) }}
-        </div>
+
+
+
 {%- endmacro %}
 
 {% macro datasource_list_box(views) %}

@@ -12,12 +12,18 @@ body {
     font-family: Arial, sans-serif;
     background-color: #ffffff;
     height: 100%;
+    font-weight: 300;
 }
 
 .mt-5 {
     margin-top: 5px !important;
 }
 
+.main-record-content {
+  h1{
+    font-size: 2em;
+  }
+}
 
 .info-box {
   background-color: #F5F5F5;

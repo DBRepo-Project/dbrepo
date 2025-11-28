@@ -10,9 +10,9 @@
     <div class="ui relaxed grid mt-5">
     <div class="two column row top-padded">
         <div class="sixteen wide tablet eleven wide computer column main-record-content">
-            <div id="static-header">{{ _('Created') }} {{ database.identifiers[doi_id].publication_day }}.{{ database.identifiers[doi_id].publication_month }}.{{ database.identifiers[doi_id].publication_year }}
+            <span id="static-header" class="ui">{{ _('Created') }} {{ database.identifiers[doi_id].publication_day }}.{{ database.identifiers[doi_id].publication_month }}.{{ database.identifiers[doi_id].publication_year }}
                 <div id="access"><i class="lock open icon"></i>Open</div>
-            </div>
+            </span>
             <h1>{{ database.name }}</h1>
             <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
             <p style="white-space: pre-line;">{{ database.identifiers[0].descriptions[0].description }}</p>
