@@ -126,11 +126,14 @@ p {
   text-align: left;
   cursor: pointer;
   align-items: center;
+  border-radius: .28571429rem!important;
 
-   .title:not(.ui) {
-      padding: 1em;
+   .title {
+      padding: 1em!important;
       font-size: 1rem;
       margin-bottom: 1rem;
+      color: #2f6fa7!important;
+
 
       .icon {
         float: right;
@@ -220,6 +223,9 @@ font-size: 1em;
   margin: 20px;
 }
 
+.angle {
+  float: right !important;
+}
 /*additional css (not present in invenios stylesheet)*/
 
 /*.content.active {*/

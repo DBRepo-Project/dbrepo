@@ -12,6 +12,13 @@
   .generate-relative-margins(@max, @direction, @alias, (@i + 1));
 }
 
+.generate-padding(@max, @direction, @alias, @i: 0) when (@i =< @max) {
+  .p@{alias}-@{i} {
+    padding@{direction}: unit(@i, px) !important;
+  }
+  .generate-padding(@max, @direction, @alias, (@i + 5));
+}
+
 .generate-margins(30, ~'', ~'');
 .generate-margins(30, -right, r);
 .generate-margins(30, -left, l);
@@ -23,3 +30,9 @@
 .generate-relative-margins(10, -left, l);
 .generate-relative-margins(10, -bottom, b);
 .generate-relative-margins(10, -top, t);
+
+.generate-padding(30, ~'', ~'');
+.generate-padding(30, -right, r);
+.generate-padding(30, -left, l);
+.generate-padding(30, -bottom, b);
+.generate-padding(30, -top, t);
