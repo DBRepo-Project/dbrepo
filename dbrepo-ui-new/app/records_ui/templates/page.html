@@ -8,22 +8,19 @@
 <!--          <link rel="stylesheet" href="{{ ASSET_URL }}">-->
 <!--          {% endassets %}-->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-        <link rel="stylesheet" href="{{ url_for('records.static', filename='style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('records.static', filename='css/style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('records.static', filename='css/record_ui.css') }}">
+
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
         <script>
-            const view = {
-            {
-                data | tojson
-            }
-            }
-            ;
+            const view = {{ data | tojson }};
         </script>
-        <script>
-  $(document).ready(function() {
-    $('.ui.accordion').accordion();
-  });
-</script>
+       <script>
+        $(document).ready(function() {
+            $('.ui.accordion').accordion();
+        });
+        </script>
 
     </head>
     <body>

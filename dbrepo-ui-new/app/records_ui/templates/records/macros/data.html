@@ -31,7 +31,7 @@
 {%- endmacro %}
 
 {% macro dataset_list(subsets) %}
-    <table class="ui striped table files fluid open">
+    <table class="ui striped table files open">
     <thead>
         <tr>
             <th>Name</th>
@@ -102,24 +102,6 @@
     </table>
 {%- endmacro %}
 
-{% macro dataset_list_box(subsets) %}
-        <div class="ui accordion">
-            <div class="active title">
-                            <i class="dropdown icon" aria-hidden="true"></i>
-
-<!--                <div role="button" class="trigger">-->
-<!--                Data Sets </div>-->
-                hi
-            </div>
-
-            <div class="active content">
-                {{ dataset_list(subsets) }}
-            </div>
-        </div>
-
-
-
-{%- endmacro %}
 
 {% macro datasource_list_box(views) %}
         <div role="button" class="accordion link-box">
@@ -128,5 +110,15 @@
         </div>
         <div class="active content pt-0">
             {{ datasource_list(views) }}
+        </div>
+{%- endmacro %}
+
+{% macro dataset_list_box(subsets) %}
+        <div class="ui accordion rel-mb-1">
+            <div class="active title">Datasets<i class="dropdown icon" aria-hidden="true"></i></div>
+
+            <div class="active content">
+                {{ dataset_list(subsets) }}
+            </div>
         </div>
 {%- endmacro %}
