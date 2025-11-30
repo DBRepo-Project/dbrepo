@@ -2,11 +2,11 @@ html {
     height: 100%;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/** {*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*    box-sizing: border-box;*/
+/*}*/
 
 body {
     font-family: Arial, sans-serif;
@@ -20,6 +20,7 @@ body {
 }
 
 .main-record-content {
+  padding-bottom: 1em;
   h1{
     font-size: 2em;
   }
@@ -120,12 +121,27 @@ p {
 
 .accordion {
   background-color: #F5F5F5;
-  padding: 15px;
+  padding: 0;
   width: 100%;
   text-align: left;
   cursor: pointer;
-  display: flex;
   align-items: center;
+
+   .title:not(.ui) {
+      padding: 1em;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+
+      .icon {
+        float: right;
+        font-size: 1.5em;
+      }
+    }
+
+  .content{
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .box-title {
@@ -206,11 +222,12 @@ font-size: 1em;
 
 /*additional css (not present in invenios stylesheet)*/
 
-.active.content {
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 0 0 5px 5px;
-  height: 50%;
-  overflow: auto;
-}
+/*.content.active {*/
+/*  background-color: white;*/
+/*  border: 1px solid #ccc;*/
+/*  border-radius: 0 0 5px 5px;*/
+/*  height: 50%;*/
+/*  overflow: auto;*/
+/*  padding: 0;*/
+/*}*/
 

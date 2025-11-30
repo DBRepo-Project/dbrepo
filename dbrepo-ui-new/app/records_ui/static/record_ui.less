@@ -1,0 +1,25 @@
+.generate-margins(@max, @direction, @alias, @i: 0) when (@i =< @max) {
+  .m@{alias}-@{i} {
+    margin@{direction}: unit(@i, px) !important;
+  }
+  .generate-margins(@max, @direction, @alias, (@i + 5));
+}
+
+.generate-relative-margins(@max, @direction, @alias, @i: 1) when (@i =< @max) {
+  .rel-m@{alias}-@{i} {
+    margin@{direction}: unit(@i, em) !important;
+  }
+  .generate-relative-margins(@max, @direction, @alias, (@i + 1));
+}
+
+.generate-margins(30, ~'', ~'');
+.generate-margins(30, -right, r);
+.generate-margins(30, -left, l);
+.generate-margins(30, -bottom, b);
+.generate-margins(30, -top, t);
+
+.generate-relative-margins(10, ~'', ~'');
+.generate-relative-margins(10, -right, r);
+.generate-relative-margins(10, -left, l);
+.generate-relative-margins(10, -bottom, b);
+.generate-relative-margins(10, -top, t);
