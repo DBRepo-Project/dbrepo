@@ -51,7 +51,7 @@ import java.util.UUID;
 public class MonitoringServiceImpl extends DataConnector implements MonitoringService {
 
     private final MetadataServiceGateway metadataServiceGateway;
-    private final @Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate;
+    private final @Qualifier("healthCheckRestTemplate") RestTemplate healthCheckRestTemplate;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String localBaseUrl;
@@ -291,10 +291,16 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
             // Integrate remote /api/replication/health from each site, if reachable
             ReplicationHealthDto remoteHealth = null;
+            boolean siteUnreachable = false;
             try {
                 remoteHealth = fetchRemoteHealth(accumulator.siteUrl);
+                if (remoteHealth == null) {
+                    // fetchRemoteHealth returned null (e.g., empty response or non-2xx status)
+                    siteUnreachable = true;
+                }
             } catch (Exception e) {
                 log.warn("Remote health check failed for site {}: {}", accumulator.siteUrl, e.getMessage());
+                siteUnreachable = true;
             }
 
             final ReplicationServiceHealthDto metadataHealth =
@@ -318,8 +324,15 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
             final boolean serviceDegraded = remoteHealth != null
                     && !"UP".equalsIgnoreCase(String.valueOf(remoteHealth.getStatus()));
 
-            final boolean degraded = metricsDegraded || serviceDegraded;
-            final String status = degraded ? "degraded" : "healthy";
+            // Determine final status: unreachable > degraded > healthy
+            final String status;
+            if (siteUnreachable) {
+                status = "unreachable";
+            } else if (metricsDegraded || serviceDegraded) {
+                status = "degraded";
+            } else {
+                status = "healthy";
+            }
             final String message = buildSiteMessage(accumulator, missingFraction);
 
             summaries.add(ReplicationMonitoringSiteDto.builder()
@@ -535,6 +548,7 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
 
     /**
      * Calls the remote replication-service health endpoint on a given site and returns the parsed DTO.
+     * Uses a short-timeout RestTemplate to fail fast if the site is unreachable.
      */
     private ReplicationHealthDto fetchRemoteHealth(String siteUrl) {
         if (siteUrl == null || siteUrl.isBlank()) {
@@ -544,14 +558,15 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
         final String url = base + "/api/replication/health";
         try {
             final ResponseEntity<ReplicationHealthDto> response =
-                    externalReplicationRestTemplate.getForEntity(url, ReplicationHealthDto.class);
+                    healthCheckRestTemplate.getForEntity(url, ReplicationHealthDto.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
                 log.warn("Remote health check for {} returned non-2xx status {}", siteUrl, response.getStatusCode());
+                return null;
             }
             return response.getBody();
         } catch (RestClientException e) {
             log.warn("Failed to call remote health endpoint {}: {}", url, e.getMessage());
-            return null;
+            throw e;  // Re-throw so caller knows the site is unreachable
         }
     }
 
@@ -716,6 +731,12 @@ public class MonitoringServiceImpl extends DataConnector implements MonitoringSe
     public String deriveGlobalStatus(ReplicationMonitoringDatabaseDto dto) {
         if (dto == null || dto.getSites() == null || dto.getSites().isEmpty()) {
             return "healthy";
+        }
+        // Check for unreachable first (worst status)
+        final boolean hasUnreachable = dto.getSites().stream()
+                .anyMatch(site -> site.getStatus() != null && site.getStatus().equalsIgnoreCase("unreachable"));
+        if (hasUnreachable) {
+            return "unreachable";
         }
         final boolean hasDegraded = dto.getSites().stream()
                 .anyMatch(site -> site.getStatus() != null && site.getStatus().equalsIgnoreCase("degraded"));

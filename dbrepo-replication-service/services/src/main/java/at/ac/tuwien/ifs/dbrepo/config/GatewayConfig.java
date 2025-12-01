@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -69,7 +70,25 @@ public class GatewayConfig {
 
     @Bean
     public RestTemplate externalReplicationRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
+        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(10_000);  // 10 seconds connect timeout
+        factory.setReadTimeout(30_000);     // 30 seconds read timeout
+        final RestTemplate restTemplate = new RestTemplate(factory);
+        restTemplate.getInterceptors()
+                .add(new InternalRequestInterceptor(credentialService, this));
+        return restTemplate;
+    }
+
+    /**
+     * RestTemplate with short timeouts specifically for health checks.
+     * Fails fast (5s) to avoid blocking status calls when remote sites are unreachable.
+     */
+    @Bean
+    public RestTemplate healthCheckRestTemplate() {
+        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5_000);   // 5 seconds connect timeout
+        factory.setReadTimeout(5_000);      // 5 seconds read timeout
+        final RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate.getInterceptors()
                 .add(new InternalRequestInterceptor(credentialService, this));
         return restTemplate;
