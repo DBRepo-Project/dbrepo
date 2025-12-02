@@ -20,7 +20,7 @@ if __name__ == '__main__':
         username = row['username']
         plan.append(f"UPDATE `mdb_databases` SET `owned_by` = '{username}' WHERE `owned_by` = '{user_id}';")
         plan.append(f"UPDATE `mdb_databases` SET `contact_person` = '{username}' WHERE `contact_person` = '{user_id}';")
-        plan.append(f"UPDATE `mdb_have_access` SET `user_id` = '{username}' WHERE `user_id` = '{user_id}';")
+        plan.append(f"UPDATE `mdb_have_access` SET `username` = '{username}' WHERE `username` = '{user_id}';")
         plan.append(f"UPDATE `mdb_identifiers` SET `owned_by` = '{username}' WHERE `owned_by` = '{user_id}';")
     plan.append("COMMIT;")
     plan.append("SET FOREIGN_KEY_CHECKS=1;")

@@ -1144,6 +1144,8 @@ dashboardui:
     enabled: true
   ## @param dashboardui.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-ui:3000
+  ## @skip dashboardui.plugins
+  plugins: yesoreyeram-infinity-datasource,grafana-opensearch-datasource
   datasources:
     ## @skip dashboardui.datasources.secretName
     secretName: dashboard-ui-datasources-secret
