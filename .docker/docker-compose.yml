@@ -140,8 +140,8 @@ services:
     hostname: auth-service
     image: registry.datalab.tuwien.ac.at/bitnami/keycloak:${KEYCLOAK_VERSION}
     volumes:
-      - ./dbrepo-auth-service/master-realm.json:/opt/bitnami/keycloak/data/import/master-realm.json
-      - ./dbrepo-auth-service/dbrepo-realm.json:/opt/bitnami/keycloak/data/import/dbrepo-realm.json
+      - ./config/master-realm.json:/opt/bitnami/keycloak/data/import/master-realm.json
+      - ./config/dbrepo-realm.json:/opt/bitnami/keycloak/data/import/dbrepo-realm.json
     ports:
       - "8080:8080"
     environment:
