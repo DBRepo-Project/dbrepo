@@ -4,20 +4,19 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# generated
+### Generated ###
+.env
 ready
 schema.xsd
 final/
 build/
 *.tar
 tmp.yaml
-.docs/.swagger/api-*
 .scannerwork/
 .docker/config/
 .docker/dist.tar.gz
-docs/.openapi/api.base.yaml
 
-# docs
+#### Docs ###
 .docs/.swagger/dist/
 .docs/.swagger/site/
 site/
@@ -25,11 +24,11 @@ site/
 .$*
 dbrepo-somapper/
 
-# Notebooks
+### Notebooks ###
 .pytest_cache/
 __pycache__/
 
-# Previous directories
+### Previous directories ###
 fda-analyse-service/
 fda-authentication-service/
 fda-broker-service/
@@ -46,34 +45,30 @@ fda-semantics-service/
 fda-table-service/
 fda-ui/
 
-# demo
+### demo ###
 .demo
 
-# Certificates
+### Certificates ###
 *.crt
 *.p12
-
-# X509
 root.crt
 intermediate.crt
 
-# secret
+### Environment ###
+.env
 .s3cfg
+venv/
 
-# scanning
+### scanning ###
 .trivy/trivy-*.json
 
-# Debug
-debug.txt
-
-# macOS
+### macOS ###
 .DS_Store
 
-# IDE
-venv/
+### IDE ###
 .git.bfg-*
 
-# Docs
+### Docs ###
 swagger.json
 container.md
 query.md

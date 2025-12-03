@@ -30,7 +30,8 @@ package-config: ## Package the config files
 	cp ./dbrepo-dashboard-ui/grafana.ini ./.docker/config/grafana.ini
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
-	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config
+	cp ./.scripts/gen-secrets.sh ./.docker/config/gen-secrets.sh
+	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./config
 
 .PHONY: install-staging
 install-staging: build-helm ## Install on staging server

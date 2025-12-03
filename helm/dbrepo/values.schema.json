@@ -1029,24 +1029,10 @@
                 "s3": {
                     "type": "object",
                     "properties": {
-                        "auth": {
-                            "type": "object",
-                            "properties": {
-                                "accessKeyId": {
-                                    "type": "string"
-                                },
-                                "secretAccessKey": {
-                                    "type": "string"
-                                }
-                            }
-                        },
                         "bucket": {
                             "type": "string"
                         },
                         "endpoint": {
-                            "type": "string"
-                        },
-                        "filePath": {
                             "type": "string"
                         }
                     }
@@ -1972,14 +1958,14 @@
                                 "adminSecretAccessKey": {
                                     "type": "string"
                                 },
+                                "defaultAccessKeyId": {
+                                    "type": "string"
+                                },
+                                "defaultSecretAccessKey": {
+                                    "type": "string"
+                                },
                                 "enabled": {
                                     "type": "boolean"
-                                },
-                                "readAccessKeyId": {
-                                    "type": "string"
-                                },
-                                "readSecretAccessKey": {
-                                    "type": "string"
                                 }
                             }
                         },
