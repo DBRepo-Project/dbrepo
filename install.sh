@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # preset
-APP_VERSION="1.13.0"
+APP_VERSION="1.13.1"
 MIN_CPU=8
 MIN_RAM=10
 SKIP_CHECKS=${SKIP_CHECKS:-0}
@@ -57,11 +57,13 @@ fi
 echo "[📦] Pulling images for version ${APP_VERSION} ..."
 docker compose pull
 
+. ./config/gen-secrets.sh
+
 echo "[🎉] Success!"
 echo ""
 echo "You can now:"
 echo ""
-echo "  1) Either start the deployment running on http://localhost, or"
+echo "  1) Either start the deployment running on https://localhost, or"
 echo "  2) Edit the BASE_URL variable in .env to set your hostname"
 echo ""
 echo "Then start the local deployment with:"
