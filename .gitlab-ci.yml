@@ -525,7 +525,6 @@ test-storage-service-init:
     - "docker compose build dbrepo-storage-service-init"
     - "mkdir -p /app/config /var/log/app/service/storage"
     - "echo ${CI_S3_CONFIG} | base64 -d > /app/.s3cfg"
-    - "cp .env.example .env"
   script:
     - "bash ./dbrepo-storage-service/init/tests/test_integration_expire.sh"
 
@@ -537,7 +536,6 @@ test-broker-service:
     - master
   before_script:
     - "apk --no-cache add bash"
-    - "cp .env.example .env"
   script:
     - "bash ./dbrepo-broker-service/tests/test_integration_feature_flags.sh"
 

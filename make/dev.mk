@@ -31,7 +31,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
 	cp ./.scripts/gen-secrets.sh ./.docker/config/gen-secrets.sh
-	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env.example ./config
+	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./config
 
 .PHONY: install-staging
 install-staging: build-helm ## Install on staging server

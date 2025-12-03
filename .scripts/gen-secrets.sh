@@ -38,7 +38,6 @@ S3_SECRET_ACCESS_KEY=$(gen_pw)
 S3_ADMIN_ACCESS_KEY_ID=$(gen_pw)
 S3_ADMIN_SECRET_ACCESS_KEY=$(gen_pw)
 cat <<EOF > .env
-$(cat .env.example)
 #### SECRETS BELOW ARE AUTO-GENERATED ####
 AUTH_DB_PASSWORD=$(gen_pw)
 AUTH_SERVICE_ADMIN_PASSWORD=$(gen_pw)
