@@ -426,7 +426,7 @@ consumerservice:
   enabled: true
   image:
     ## @skip consumerservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.1
   ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -483,7 +483,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.1
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -583,7 +583,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.1
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -600,7 +600,7 @@ dataservice:
     ## @param dataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
-    ## @param dataservice.containerSecurityContext.enabled Enabled containers' Security Context
+    ## @param dataservice.containerSecurityContext.enabled Enable the containers' Security Context
     enabled: true
     ## @param dataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
     seLinuxOptions: { }
@@ -653,13 +653,6 @@ dataservice:
     endpoint: http://storage-service-s3:8333
     ## @param dataservice.s3.bucket The S3 bucket name.
     bucket: dbrepo
-    auth:
-      ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint username (or access key id).
-      accessKeyId: seaweedfsadmin
-      ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint user password (or access key secret).
-      secretAccessKey: seaweedfsadmin
-    ## @param dataservice.s3.filePath The local location to download/upload files from/to S3-capable endpoint.
-    filePath: /s3
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -672,7 +665,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.1
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -689,7 +682,7 @@ searchservice:
     ## @param searchservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
-    ## @param searchservice.containerSecurityContext.enabled Enabled containers' Security Context
+    ## @param searchservice.containerSecurityContext.enabled Enable the containers' Security Context
     enabled: true
     ## @param searchservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
     seLinuxOptions: { }
@@ -728,7 +721,7 @@ searchservice:
     limit: { }
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.1
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -752,6 +745,9 @@ storageservice:
   mariadb:
     ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
     enabled: true
+    image:
+      ## @skip storageservice.mariadb.image.repository
+      repository: bitnamilegacy/mariadb
     ## @skip storageservice.mariadb.fullnameOverride
     fullnameOverride: storage-db
     auth:
@@ -782,21 +778,21 @@ storageservice:
       adminAccessKeyId: seaweedfsadmin
       ## @param storageservice.s3.auth.adminSecretAccessKey The S3 secret access key for the admin user. In some systems this is named `password`.
       adminSecretAccessKey: seaweedfsadmin
-      ## @param storageservice.s3.auth.readAccessKeyId The S3 access key id for the read only user.
-      readAccessKeyId: seaweedfsuser
-      ## @param storageservice.s3.auth.readSecretAccessKey The S3 secret access key for the read only user.
-      readSecretAccessKey: seaweedfsuser
+      ## @param storageservice.s3.auth.defaultAccessKeyId The S3 access key id for the default user that can only read and write.
+      defaultAccessKeyId: seaweedfsuser
+      ## @param storageservice.s3.auth.defaultSecretAccessKey The S3 secret access key for the default user that can only read and write.
+      defaultSecretAccessKey: seaweedfsuser
   setupJob:
     ## @param storageservice.setupJob.enabled Enable the setup job that creates the bucket in the s3 endpoint.
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.1
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
     containerSecurityContext:
-      ## @param storageservice.setupJob.containerSecurityContext.enabled Enabled containers' Security Context
+      ## @param storageservice.setupJob.containerSecurityContext.enabled Enable the containers' Security Context
       enabled: true
       ## @param storageservice.setupJob.containerSecurityContext.seLinuxOptions Set SELinux options in container
       seLinuxOptions: { }
@@ -862,7 +858,7 @@ identityservice:
     ## @param identityservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
-    ## @param identityservice.containerSecurityContext.enabled Enabled containers' Security Context
+    ## @param identityservice.containerSecurityContext.enabled Enable the containers' Security Context
     enabled: true
     ## @param identityservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
     seLinuxOptions: { }
@@ -922,7 +918,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.1
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -947,7 +943,7 @@ ui:
     ## @param ui.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
-    ## @param ui.containerSecurityContext.enabled Enabled containers' Security Context
+    ## @param ui.containerSecurityContext.enabled Enable the containers' Security Context
     enabled: true
     ## @param ui.containerSecurityContext.seLinuxOptions Set SELinux options in container
     seLinuxOptions: { }
@@ -1052,7 +1048,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.1
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1107,7 +1103,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.1
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)

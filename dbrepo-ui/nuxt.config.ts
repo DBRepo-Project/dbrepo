@@ -81,10 +81,10 @@ export default defineNuxtConfig({
         }
       },
       dashboard: {
-        url: 'http://localhost/dashboard'
+        url: 'https://localhost/dashboard'
       },
       api: {
-        client: 'http://localhost',
+        client: 'https://localhost',
         server: 'http://gateway-service',
       },
       database: {
@@ -112,6 +112,22 @@ export default defineNuxtConfig({
         endpoint: 'https://doi.org'
       },
       links: {}
+    },
+    oidc: {
+      session: {
+        automaticRefresh: true
+      }
+    },
+    storage: {
+      oidc: {
+        host: 'cache-db',
+        port: 6379,
+        tls: false,
+        base: 'oidc',
+        username: 'default',
+        password: 'valkey',
+        ttl: null
+      }
     }
   },
 
@@ -120,17 +136,8 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'node-server',
-    storage: {
-      oidc: {
-        driver: 'redis',
-        base: 'oidc',
-        host: 'cache-db',
-        tls: false,
-        port: 6379,
-        password: 'valkey'
-      }
-    }
+    preset: 'node-server'
+    /* rest is defined in modules/storage/runtime/plugin.ts as Nitro plugin to enable env-var configuration */
   },
 
   oidc: {

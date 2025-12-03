@@ -34,14 +34,6 @@ services:
     ...
 ```
 
-## Configuration
-
-By default, the Metadata Database is configured as a cluster of three nodes where each node has a maximum of 2048 MiB
-RAM available. As recommended by
-[MariaDB](https://mariadb.com/kb/en/mariadb-memory-allocation/#allocating-ram-for-mariadb-the-short-answer), we set
-`innodb_buffer_pool_size=1430M` (70% of the available RAM). If you have more RAM available, you should set the variable
-accordingly to improve the performance.
-
 ## Image
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.4
@@ -54,6 +46,11 @@ the `setup-schema.sql` into the container. This can be done more transparently t
     Beware that the init script provided by Bitnami executes files in alphabetic order! For example: the file 
     `setup-schema.sql` is executed **after** the file `setup-data.sql`! Thefore a sorting prefix 1-9 is recommended!
 
+## Backup & Restore
+
+Please refer to our detailed documentation to perform
+a [full backup](/infrastructures/dbrepo/1.13/maintainer-guide/backup-data/)
+and [restore](/infrastructures/dbrepo/1.13/maintainer-guide/restore-data/).
 
 ## Limitations
 
