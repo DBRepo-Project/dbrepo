@@ -13,6 +13,7 @@ The API guide describes entry points that can be used to interact with the repos
     This API is a convenience wrapper for data scientists and cover most of the REST API.
 
     [:octicons-arrow-right-24: Getting started](/infrastructures/dbrepo/1.13/api/python)
+    [:octicons-arrow-right-24: Swagger UI](/infrastructures/dbrepo/1.13/rest/)
 
 -   :material-api:{ .lg .middle } **REST API**
 

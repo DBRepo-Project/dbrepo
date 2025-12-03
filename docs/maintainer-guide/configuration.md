@@ -2,38 +2,47 @@
 author: Martin Weise
 ---
 
-## Prepare
-
-Execute the installation script to download only the environment and save it to `dist`.
+This guide assumes you have already performed the
+quick [Install on Docker](/infrastructures/dbrepo/1.13/maintainer-guide/install-docker/). You can (re-)configure most
+components by executing:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/install.sh | DOWNLOAD_ONLY=1 bash
+make gen-secrets
 ```
 
-### Static Configuration
+Note that this script overwrites (previously generated) secrets, use with caution.
 
-Call the helper script to regenerate the client secret of the `dbrepo-client` and set it as value of the 
-`AUTH_SERVICE_CLIENT_SECRET` variable in the `.env` file.
+### Identity Service
 
-Update the rest of the default secrets in the `.env` file to secure passwords. You can use `openssl` for that, e.g. 
-`openssl rand -hex 16`. Set `auth_ldap.dn_lookup_bind.password` in `dist/rabbitmq.conf` to the value of
-`SYSTEM_PASSWORD`.
+Add the admin password to the `.env` file:
 
-Only set the `BASE_URL` environment variable in `.env` when your hostname is **not** `localhost`.
-
-## Runtime Configuration
+```shell
+echo "IDENTITY_SERVICE_ADMIN_PASSWORD=$(openssl rand -hex 16) >> .env"
+```
 
 ### Auth Service
 
-The [Auth Service](/infrastructures/dbrepo/1.13/api/auth-service/) can be configured easily when DBRepo is running. Start 
-DBRepo temporarily:
+We need to configure three components:
+
+1. Environment
+2. Client `dbrepo-client`
+3. User federation `Identity Service`
+
+First, add the admin password to the `.env` file:
 
 ```shell
-docker compose up -d
+echo "AUTH_SERVICE_ADMIN_PASSWORD=$(openssl rand -hex 16) >> .env"
 ```
 
-Log into the Auth Service with the default credentials `admin` and the value of `AUTH_SERVICE_ADMIN_PASSWORD` 
-(c.f. Figure 1) and select the "dbrepo" realm :material-numeric-1-circle-outline:. In the sidebar, select the 
+First, access the Admin UI at [http://localhost:8080](http://localhost:8080) and change the client secret of the 
+default `dbrepo-client` client:
+
+<figure markdown>
+![Change the Client Secret](/infrastructures/dbrepo/1.13/images/screenshots/auth-service-client-secret.png)
+</figure>
+
+Next, log into the Auth Service with the default credentials `admin` and the value of `AUTH_SERVICE_ADMIN_PASSWORD` 
+and select the "dbrepo" realm :material-numeric-1-circle-outline:. In the sidebar, select the 
 "User federation" :material-numeric-2-circle-outline: and from the provider list, select the "Identity Service" provider
 :material-numeric-3-circle-outline:.
 
@@ -41,74 +50,33 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 ![Keycloak identitiy provider list](/infrastructures/dbrepo/1.13/images/screenshots/auth-service-ldap-1.png){ .img-border }
 </figure>
 
-If you plan to change the default admin username (c.f. Figure 2), modify the Bind DN :material-numeric-1-circle-outline:
-but this is optional. Change the Bind credentials to the desired password :material-numeric-2-circle-outline: from
-the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
+Second, modify the Bind DN :material-numeric-1-circle-outline:. Change the **Bind credentials** to the desired 
+password :material-numeric-2-circle-outline: from the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
 <figure markdown>
 ![Keycloak identity provider settings](/infrastructures/dbrepo/1.13/images/screenshots/auth-service-ldap-2.png){ .img-border }
 </figure>
 
-Update the client secret of the `dbrepo-client`:
+### Apply
 
-```bash
-curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/.scripts/reg-client-secret.sh" | bash
-```
-
-### Gateway Service
-   
-Also, update the JWT key according to the 
-[Keycloak documentation](https://www.keycloak.org/docs/24.0.1/server_admin/index.html#rotating-keys). To secure your
-deployment traffic with SSL/TLS, tell the Gateway Service to use your certificate secret (e.g. from Let's Encrypt):
-
-```yaml title="docker-compose.yml"
-services:
-  ...
-  dbrepo-gateway-service:
-    ...
-    volumes:
-      - /path/to/cert.crt:/app/cert.crt
-      - /path/to/cert.key:/app/cert.key
-    ...
-```
-
-Now redirect all non-HTTPS routes to HTTPS in the Gateway Service:
-
-```config title="dist/dbrepo.conf"
-server {
-    listen 80 default_server;
-    server_name _;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl default_server;
-    server_name my_hostname;
-    ssl_certificate /app/cert.crt;
-    ssl_certificate_key /app/cert.key;
-    ...
-}
-```
-
-## Apply the Configuration
-
-Restart the configured DBRepo system to apply the static and runtime configuration:
+You need to remove all containers and volumes to apply the changes and then restart:
 
 ```shell
-docker compose down
+docker container stop $(docker container ls -aq -f "name=dbrepo-*")
+docker container rm $(docker container ls -aq -f "name=dbrepo-*")
+docker volume rm $(docker volume ls -q -f "name=dbrepo_*")
 docker compose up -d
 ```
 
-The secure installation is now finished!
-
 ## Next Steps
 
-You should now be able to view the front end at [http://localhost](http://localhost).
+You should now be able to view the front end at [https://localhost](https://localhost).
 
 Please be warned that the default configuration is not intended for public deployments. It is only intended to have a
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
 
 Next, create a [user account](/infrastructures/dbrepo/1.13/api/#create-user-account) and 
-then [create a database](/infrastructures/dbrepo/1.13/api/#create-database) to [import a dataset](/infrastructures/dbrepo/1.13/api/#import-dataset).
+then [create a database](/infrastructures/dbrepo/1.13/api/#create-database) 
+to [import a dataset](/infrastructures/dbrepo/1.13/api/#import-dataset).
 

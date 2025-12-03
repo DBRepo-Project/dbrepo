@@ -38,8 +38,8 @@ visibility, this can be changed later.
 
 !!! info "Python Compatibility"
 
-    Ensure that you use the same Python library version as the target instance. For example: if you see `1.13.0` in the
-    bottom left, you need to use the `1.13.0` Python library.
+    Ensure that you use the same Python library version as the target instance. For example: if you see `1.13.1` in the
+    bottom left, you need to use the `1.13.1` Python library.
 
 ```python
 from dbrepo.RestClient import RestClient

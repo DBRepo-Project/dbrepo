@@ -81,10 +81,10 @@ export default defineNuxtConfig({
         }
       },
       dashboard: {
-        url: 'http://localhost/dashboard'
+        url: 'https://localhost/dashboard'
       },
       api: {
-        client: 'http://localhost',
+        client: 'https://localhost',
         server: 'http://gateway-service',
       },
       database: {

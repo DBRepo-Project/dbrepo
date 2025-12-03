@@ -22,3 +22,6 @@ gen-docs-doc: ## Generate DBRepo documentation.
 .PHONY: gen-python-doc
 gen-python-doc: ## Generate Python Library documentation.
 	bash ./lib/python/build-site.sh
+
+gen-secrets:
+	IS_DEV=1 bash ./.scripts/gen-secrets.sh
