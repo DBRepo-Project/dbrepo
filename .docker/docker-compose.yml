@@ -10,7 +10,6 @@ volumes:
   broker-service-data:
   search-db-data:
   identity-service-data:
-  metric-db-data:
   dashboard-ui-data:
   dashboard-db-data:
 
