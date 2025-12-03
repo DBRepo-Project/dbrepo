@@ -35,7 +35,8 @@ nav:
       - Install on VM: maintainer-guide/install-vm.md
       - Build from Sourcecode: maintainer-guide/build-source.md
     - Management:
-      - Import Dump: maintainer-guide/import-dump.md
+      - Backup Data: maintainer-guide/backup-data.md
+      - Restore Data: maintainer-guide/restore-data.md
     - maintainer-guide/troubleshooting.md
     - Updating the Application: maintainer-guide/updating.md
   - API:
@@ -128,6 +129,7 @@ markdown_extensions:
   - def_list
   - md_in_html
   - admonition
+  - footnotes
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.tasklist:
