@@ -16,6 +16,7 @@ COPY ./composables ./composables
 COPY ./dto ./dto
 COPY ./layouts ./layouts
 COPY ./locales ./locales
+COPY ./modules ./modules
 COPY ./pages ./pages
 COPY ./plugins ./plugins
 COPY ./public ./public

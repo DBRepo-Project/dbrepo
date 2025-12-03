@@ -5,12 +5,19 @@
     "aliases": ["latest"]
   },
   {
+    "version": "1.12",
+    "title": "1.12",
+    "aliases": []
+  },
+  {
     "version": "1.11",
-    "title": "1.11"
+    "title": "1.11",
+    "aliases": []
   },
   {
     "version": "1.10",
-    "title": "1.10"
+    "title": "1.10",
+    "aliases": []
   },
   {
     "version": "1.9",

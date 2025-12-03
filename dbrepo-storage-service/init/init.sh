@@ -11,7 +11,7 @@ signature_v2 = False
 EOF
 
 function log() {
-    echo "{\"@timestamp\":\"$(date --rfc-3339='seconds')\", \"log.level\": \"$1\", \"message\": \"$2\"}" >> /var/log/app/service/storage/init.log
+    echo "{\"@timestamp\":\"$(date -u +"%Y-%m-%dT%H:%M:%S+00:00")\", \"log.level\": \"$1\", \"message\": \"$2\"}" >> /var/log/app/service/storage/init.log
 }
 
 S3CMD_OPTS="--config=/app/config/.s3cfg"

@@ -1,5 +1,6 @@
 # auxiliary files
 cache/
+.lock
 
 # environment
 chroot/

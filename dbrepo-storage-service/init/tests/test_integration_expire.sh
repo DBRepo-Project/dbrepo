@@ -19,6 +19,26 @@ function clean () {
 
 # BeforeAll
 clean
+cat <<EOF > .s3cfg
+{
+  "identities": [
+    {
+      "name": "default",
+      "credentials": [
+        {
+          "accessKey": "$S3_ACCESS_KEY_ID",
+          "secretKey": "$S3_SECRET_ACCESS_KEY"
+        }
+      ],
+      "actions": [
+        "Read",
+        "Write",
+        "List"
+      ]
+    }
+  ]
+}
+EOF
 
 # Test
 echo "[DEBUG] run test init_succeeds"

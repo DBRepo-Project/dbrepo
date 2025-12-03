@@ -28,7 +28,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "${OAUTH_ISSUER_URI:http://localhost/realms/dbrepo}"
+          issuer-uri: "${OAUTH_ISSUER_URI:https://localhost/realms/dbrepo}"
           jwk-set-uri: "${OAUTH_JWK_SET_URI:http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
   application:
     name: metadata-service
