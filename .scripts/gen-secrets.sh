@@ -25,7 +25,7 @@ BROKER_PATH=./config
 CERT_PATH=./config
 S3_PATH=./config
 DB_PATH=./config
-if [ ! -z $IS_DEV ]; then
+if [ $IS_DEV == "1" ]; then
   BROKER_PATH=./dbrepo-broker-service
   CERT_PATH=./dbrepo-gateway-service
   S3_PATH=./dbrepo-storage-service

@@ -57,6 +57,7 @@ fi
 echo "[📦] Pulling images for version ${APP_VERSION} ..."
 docker compose pull
 
+IS_DEV=0
 . ./config/gen-secrets.sh
 
 echo "[🎉] Success!"
