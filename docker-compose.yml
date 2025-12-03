@@ -10,7 +10,6 @@ volumes:
   broker-service-data:
   search-db-data:
   identity-service-data:
-  metric-db-data:
   dashboard-ui-data:
   dashboard-db-data:
 
@@ -19,7 +18,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnamilegacy/mariadb-galera:${MARIADB_VERSION}
+    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -39,30 +38,11 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-metadata-db-metrics:
-    restart: "no"
-    container_name: dbrepo-metadata-db-metrics
-    hostname: metadata-db-metrics
-    image: docker.io/bitnamilegacy/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
-    command:
-      - --mysqld.address=metadata-db:3306
-      - --config.my-cnf=/.my.cnf
-    volumes:
-      - ./dbrepo-metadata-db/metrics.cnf:/.my.cnf
-    healthcheck:
-      test: -h
-      <<: *healthcheck-params
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-data-db:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnamilegacy/mariadb-galera:${MARIADB_VERSION}
+    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
     volumes:
       - data-db-data:/bitnami/mariadb
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
@@ -80,30 +60,11 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-data-db-metrics:
-    restart: "no"
-    container_name: dbrepo-data-db-metrics
-    hostname: data-db-metrics
-    image: docker.io/bitnamilegacy/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
-    command:
-      - --mysqld.address=data-db:3306
-      - --config.my-cnf=/.my.cnf
-    volumes:
-      - ./dbrepo-data-db/metrics.cnf:/.my.cnf
-    healthcheck:
-      test: -h
-      <<: *healthcheck-params
-    depends_on:
-      dbrepo-data-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-auth-db:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnamilegacy/postgresql:${POSTGRES_VERSION}
+    image: docker.io/bitnamilegacy/postgresql:17.0.0
     volumes:
       - auth-db-data:/bitnami/postgresql
     environment:
@@ -121,7 +82,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-db
     hostname: dashboard-db
-    image: docker.io/bitnamilegacy/postgresql:${POSTGRES_VERSION}
+    image: docker.io/bitnamilegacy/postgresql:17.0.0
     volumes:
       - dashboard-db-data:/bitnami/postgresql
     environment:
@@ -138,7 +99,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: registry.datalab.tuwien.ac.at/bitnami/keycloak:${KEYCLOAK_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/keycloak:26.4.4
     volumes:
       - ./dbrepo-auth-service/master-realm.json:/opt/bitnami/keycloak/data/import/master-realm.json
       - ./dbrepo-auth-service/dbrepo-realm.json:/opt/bitnami/keycloak/data/import/dbrepo-realm.json
@@ -285,7 +246,7 @@ services:
     restart: "no"
     container_name: dbrepo-cache-db
     hostname: cache-db
-    image: docker.io/bitnamilegacy/valkey:${VALKEY_VERSION}
+    image: docker.io/bitnamilegacy/valkey:8.1.3
     environment:
       VALKEY_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
     ports:
@@ -300,7 +261,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnamilegacy/rabbitmq:${RABBITMQ_VERSION}
+    image: docker.io/bitnamilegacy/rabbitmq:3.13.7
     ports:
       - 15672:15672
       - 5672:5672
@@ -328,7 +289,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/bitnamilegacy/opensearch:${OPENSEARCH_VERSION}
+    image: docker.io/bitnamilegacy/opensearch:2.18.0
     volumes:
       - search-db-data:/bitnami/opensearch/data
     ports:
@@ -408,7 +369,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/bitnamilegacy/nginx:${NGINX_VERSION}
+    image: docker.io/bitnamilegacy/nginx:1.28.0
     ports:
       - "80:8080"
       - "443:8443"
@@ -436,7 +397,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: docker.io/bitnamilegacy/openldap:${OPENLDAP_VERSION}
+    image: docker.io/bitnamilegacy/openldap:2.6.8
     ports:
       - '1389:1389'
       - '1636:1636'
@@ -510,7 +471,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/bitnamilegacy/seaweedfs:${SEAWEEDFS_VERSION}
+    image: docker.io/bitnamilegacy/seaweedfs:3.87.0
     command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
@@ -519,20 +480,6 @@ services:
       - "8888:8888"
     healthcheck:
       test: echo "cluster.check" | weed shell | grep "checking master.*ok" || exit 1
-      <<: *healthcheck-params
-    logging:
-      driver: json-file
-
-  dbrepo-metric-db:
-    restart: "no"
-    container_name: dbrepo-metric-db
-    hostname: metric-db
-    image: docker.io/bitnamilegacy/prometheus:${PROMETHEUS_VERSION}
-    volumes:
-      - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
-      - metric-db-data:/opt/bitnami/prometheus/data
-    healthcheck:
-      test: promtool check healthy
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -613,7 +560,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: docker.io/bitnamilegacy/grafana:${GRAFANA_VERSION}
+    image: docker.io/bitnamilegacy/grafana:11.4.0
     ports:
       - "3000:3000"
     volumes:

@@ -19,7 +19,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnamilegacy/mariadb-galera:${MARIADB_VERSION}
+    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -43,7 +43,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db-metrics
     hostname: metadata-db-metrics
-    image: docker.io/bitnamilegacy/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
+    image: docker.io/bitnamilegacy/mysqld-exporter:0.15.1
     command:
       - --mysqld.address=metadata-db:3306
       - --config.my-cnf=/.my.cnf
@@ -62,7 +62,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnamilegacy/mariadb-galera:${MARIADB_VERSION}
+    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
     volumes:
       - data-db-data:/bitnami/mariadb
       - ./config/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
@@ -84,7 +84,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-metrics
     hostname: data-db-metrics
-    image: docker.io/bitnamilegacy/mysqld-exporter:${MYSQLD_EXPORTER_VERSION}
+    image: docker.io/bitnamilegacy/mysqld-exporter:0.15.1
     command:
       - --mysqld.address=data-db:3306
       - --config.my-cnf=/.my.cnf
@@ -103,7 +103,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnamilegacy/postgresql:${POSTGRES_VERSION}
+    image: docker.io/bitnamilegacy/postgresql:17.0.0
     volumes:
       - auth-db-data:/bitnami/postgresql
     environment:
@@ -121,7 +121,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-db
     hostname: dashboard-db
-    image: docker.io/bitnamilegacy/postgresql:${POSTGRES_VERSION}
+    image: docker.io/bitnamilegacy/postgresql:17.0.0
     volumes:
       - dashboard-db-data:/bitnami/postgresql
     environment:
@@ -138,7 +138,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: registry.datalab.tuwien.ac.at/bitnami/keycloak:${KEYCLOAK_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/keycloak:26.4.4
     volumes:
       - ./config/master-realm.json:/opt/bitnami/keycloak/data/import/master-realm.json
       - ./config/dbrepo-realm.json:/opt/bitnami/keycloak/data/import/dbrepo-realm.json
@@ -178,7 +178,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.1
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
@@ -241,7 +241,7 @@ services:
     restart: "no"
     container_name: dbrepo-consumer-service
     hostname: consumer-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.1
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -277,7 +277,7 @@ services:
     restart: "no"
     container_name: dbrepo-cache-db
     hostname: cache-db
-    image: docker.io/bitnamilegacy/valkey:${VALKEY_VERSION}
+    image: docker.io/bitnamilegacy/valkey:8.1.3
     environment:
       VALKEY_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
     ports:
@@ -292,7 +292,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnamilegacy/rabbitmq:${RABBITMQ_VERSION}
+    image: docker.io/bitnamilegacy/rabbitmq:3.13.7
     ports:
       - 5672:5672
       - 1883:1883
@@ -304,6 +304,8 @@ services:
       - broker-service-data:/bitnami/rabbitmq/mnesia
     environment:
       RABBITMQ_ERL_COOKIE: "${BROKER_SERVICE_ERL_COOKIE:-dbrepo}"
+      RABBITMQ_LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
+      RABBITMQ_LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -317,7 +319,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/bitnamilegacy/opensearch:${OPENSEARCH_VERSION}
+    image: docker.io/bitnamilegacy/opensearch:2.18.0
     volumes:
       - search-db-data:/bitnami/opensearch/data
     ports:
@@ -332,7 +334,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.1
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -354,7 +356,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.1
     environment:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
@@ -388,7 +390,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/bitnamilegacy/nginx:${NGINX_VERSION}
+    image: docker.io/bitnamilegacy/nginx:1.28.0
     ports:
       - "80:8080"
       - "443:8443"
@@ -416,7 +418,7 @@ services:
     restart: "no"
     container_name: dbrepo-identity-service
     hostname: identity-service
-    image: docker.io/bitnamilegacy/openldap:${OPENLDAP_VERSION}
+    image: docker.io/bitnamilegacy/openldap:2.6.8
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -438,7 +440,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.1
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -458,7 +460,7 @@ services:
     restart: "no"
     init: true
     container_name: dbrepo-dashboard-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.1
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -479,7 +481,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/bitnamilegacy/seaweedfs:${SEAWEEDFS_VERSION}
+    image: docker.io/bitnamilegacy/seaweedfs:3.87.0
     command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./config/s3_config.json:/app/s3_config.json
@@ -496,7 +498,7 @@ services:
     restart: "no"
     container_name: dbrepo-metric-db
     hostname: metric-db
-    image: docker.io/bitnamilegacy/prometheus:${PROMETHEUS_VERSION}
+    image: docker.io/bitnamilegacy/prometheus:2.54.1
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
@@ -511,7 +513,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.1
     environment:
       S3_ACCESS_KEY_ID: ${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -527,7 +529,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.1
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -576,7 +578,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: docker.io/bitnamilegacy/grafana:${GRAFANA_VERSION}
+    image: docker.io/bitnamilegacy/grafana:11.4.0
     ports:
       - "3000:3000"
     volumes:
@@ -607,7 +609,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:${APP_VERSION}
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.1
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-https://localhost}"
