@@ -785,6 +785,9 @@
                             "type": "boolean"
                         }
                     }
+                },
+                "plugins": {
+                    "type": "string"
                 }
             }
         },
