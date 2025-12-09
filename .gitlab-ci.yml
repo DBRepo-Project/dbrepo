@@ -301,6 +301,8 @@ build-search-service:
     - master
   before_script:
     - "pip install pipenv"
+    - "apk add --no-cache make"
+    - "make build-python-lib"
   script:
     - "cd dbrepo-search-service && pipenv install --system --deploy"
 
@@ -312,6 +314,8 @@ build-dashboard-service:
     - master
   before_script:
     - "pip install pipenv"
+    - "apk add --no-cache make"
+    - "make build-python-lib"
   script:
     - "cd dbrepo-dashboard-service && pipenv install --system --deploy"
 
@@ -324,7 +328,7 @@ build-images:
   variables:
     DOCKER_BUILDKIT: 1
   before_script:
-    - "apk add --no-cache make maven openjdk21-jdk"
+    - "apk add --no-cache make maven openjdk21-jdk python3-pipenv"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - make build-images
