@@ -56,7 +56,6 @@ public class RedisContainerConfig extends BaseTest {
         @Override
         public synchronized void start() {
             if (!started) {
-                super.stop();
                 super.start();
                 started = true;
             }
@@ -64,7 +63,9 @@ public class RedisContainerConfig extends BaseTest {
 
         @Override
         public void stop() {
-            // do nothing, JVM handles shut down
+            if (started) {
+                super.stop();
+            }
         }
     }
 }

@@ -6,8 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -34,17 +32,6 @@ public interface SubsetService {
     UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException;
-
-    /**
-     * Retrieve data from a subset in a database and optionally paginate with number of page and size of results.
-     *
-     * @param database The database.
-     * @param query    The query statements.
-     * @return The data.
-     * @throws QueryMalformedException The mapped query produced a database error.
-     * @throws TableNotFoundException  The database table is malformed.
-     */
-    Dataset<Row> getData(Database database, String query) throws QueryMalformedException, TableNotFoundException;
 
     /**
      * Compute result set count and -hash metadata for a given subset.
