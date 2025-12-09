@@ -64,6 +64,9 @@ server:
   tomcat:
     max-swallow-size: -1
 duckdb:
+  s3:
+    useSsl: "${DUCKDB_USE_SSL:false}"
+    urlStyle: "${DUCKDB_URL_STYLE:path}"
   extension:
     directory: "/home/dbrepo/.duckdb/extensions"
   tmp:
@@ -87,16 +90,11 @@ dbrepo:
   endpoints:
     metadataService: "${METADATA_SERVICE_ENDPOINT:http://metadata-service:8080}"
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
-    storageService: "${STORAGE_SERVICE_ENDPOINT:http://storage-service:9000}"
     authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
     computeService: "${COMPUTE_SERVICE_ENDPOINT:local[*]}"
   s3:
-    accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
-    secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
     bucket: "${S3_BUCKET:dbrepo}"
-    region: "${S3_REGION:eu-west-1}"
-    useSsl: "${S3_USE_SSL:false}"
-    urlStyle: "${S3_URL_STYLE:path}"
+    region: "${S3_REGION:default}"
   system:
     username: "${SYSTEM_USERNAME:admin}"
     password: "${SYSTEM_PASSWORD:admin}"
@@ -113,3 +111,37 @@ dbrepo:
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   baseUrl: "${BASE_URL:http://localhost}"
+  spark:
+    hadoop:
+      fs:
+        s3a:
+          aws:
+            credentials:
+              provider: "${S3A_AWS_CREDENTIALS_PROVIDER:org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider}"
+          access:
+            key: "${S3A_ACCESS_KEY:seaweedfsuser}"
+          connection:
+            timeout: "${S3A_CONNECTION_TIMEOUT:200000}"
+            establish:
+              timeout: "${S3A_CONNECTION_ESTABLISH_TIMEOUT:30000}"
+            ssl:
+              enabled: "${S3A_CONNECTION_SSL_ENABLED:false}"
+          endpoint: "${S3A_ENDPOINT:http://storage-service:9000}"
+          multipart:
+            purge:
+              age: "${S3A_MULTIPART_PURGE_AGE:600000}"
+          impl: "${S3A_IMPL:org.apache.hadoop.fs.s3a.S3AFileSystem}"
+          threads:
+            keepalivetime: "${S3A_THREADS_KEEPALIVETIME:60000}"
+          path:
+            style:
+              access: "${S3A_PATH_STYLE_ACCESS:true}"
+          committer:
+            name: "${S3A_COMMITTER_NAME:magic}"
+          change:
+            detection:
+              mode: "${S3A_CHANGE_DETECTION_MODE:none}"
+          multiobjectdelete:
+            enable: "${S3A_MULTIOBJECTDELETE_ENABLE:false}"
+          secret:
+            key: "${S3A_SECRET_KEY:seaweedfsuser}"

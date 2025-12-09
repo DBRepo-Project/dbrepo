@@ -58,21 +58,21 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         log.debug("from extension_directory load duckdb extension: mysql_scanner");
         connection.prepareStatement("LOAD 'mysql_scanner';")
                 .execute();
-        final String s3Endpoint = s3Config.getS3Endpoint().replaceAll("https?://", "");
+        final String s3Endpoint = s3Config.getS3aEndpoint().replaceAll("https?://", "");
         connection.prepareStatement("SET s3_endpoint = '" + s3Endpoint + "';")
                 .execute();
         log.debug("configure duckdb: s3_endpoint={}", s3Endpoint);
-        connection.prepareStatement("SET s3_use_ssl = " + s3Config.getS3UseSsl() + ";")
+        connection.prepareStatement("SET s3_use_ssl = " + duckDbConfig.getS3UseSsl() + ";")
                 .execute();
-        log.debug("configure duckdb: s3_use_ssl={}", s3Config.getS3UseSsl());
-        connection.prepareStatement("SET s3_url_style = '" + s3Config.getS3UrlStyle() + "';")
+        log.debug("configure duckdb: s3_use_ssl={}", duckDbConfig.getS3UseSsl());
+        connection.prepareStatement("SET s3_url_style = '" + duckDbConfig.getS3UrlStyle() + "';")
                 .execute();
-        log.debug("configure duckdb: s3_url_style={}", s3Config.getS3UrlStyle());
+        log.debug("configure duckdb: s3_url_style={}", duckDbConfig.getS3UrlStyle());
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
         connection.prepareStatement("SET temp_directory = '" + duckDbConfig.getTmpDirectory() + "';")
                 .execute();
         log.debug("configure duckdb: temp_directory={}", duckDbConfig.getTmpDirectory());
-        connection.prepareStatement("CREATE SECRET (TYPE s3, KEY_ID '" + s3Config.getS3AccessKeyId() + "', SECRET '" + s3Config.getS3SecretAccessKey() + "');")
+        connection.prepareStatement("CREATE SECRET (TYPE s3, KEY_ID '" + s3Config.getS3aAccessKey() + "', SECRET '" + s3Config.getS3aSecretKey() + "');")
                 .execute();
     }
 
