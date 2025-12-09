@@ -1,7 +1,7 @@
 ##@ Build
 
 .PHONY: build-images
-build-images: ## Build Docker images.
+build-images: build-java-lib build-python-lib ## Build Docker images.
 	docker compose build
 
 .PHONY: build-jupyter-image
