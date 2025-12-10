@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
-import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
@@ -11,13 +10,13 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
+import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
-import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
-import at.ac.tuwien.ifs.dbrepo.utils.StorageUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,8 +31,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,25 +51,27 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/subset")
 public class SubsetEndpoint {
 
+    private final DataMapper dataMapper;
+    private final DataService dataService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final AnalyseService analyseService;
     private final MetadataMapper metadataMapper;
-    private final StorageService storageService;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetEndpoint(MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                          StorageService storageService, MetadataService metadataService,
-                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway,
-                          AnalyseService analyseService, MetadataMapper metadataMapper) {
+    public SubsetEndpoint(DataMapper dataMapper, DataService dataService, MariaDbMapper mariaDbMapper,
+                          SubsetService subsetService, AnalyseService analyseService, MetadataMapper metadataMapper,
+                          MetadataService metadataService, EndpointValidator endpointValidator,
+                          MetadataServiceGateway metadataServiceGateway) {
+        this.dataMapper = dataMapper;
+        this.dataService = dataService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.analyseService = analyseService;
         this.metadataMapper = metadataMapper;
-        this.storageService = storageService;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -234,7 +235,7 @@ public class SubsetEndpoint {
             QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
             NotAllowedException, UserNotFoundException, MetadataServiceException, TableNotFoundException,
             ViewMalformedException, ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException,
-            ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
+            ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException, MalformedException {
         log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}", databaseId, page,
                 size, timestamp);
         /* check */
@@ -329,8 +330,8 @@ public class SubsetEndpoint {
                                      @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, QueryMalformedException, UserNotFoundException,
-            MetadataServiceException, TableNotFoundException, FormatNotAvailableException, StorageUnavailableException,
-            ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException {
+            MetadataServiceException, TableNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
+            AnalyseDataTypesException, QueryExecutionException, MalformedException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, accept={} page={}, size={}", databaseId,
                 subsetId, accept, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -380,25 +381,24 @@ public class SubsetEndpoint {
             final String paginatedStatement = mariaDbMapper.paginateSubset(subset.getQueryNormalized(),
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
-            final Dataset<Row> dataset = subsetService.getData(database, paginatedStatement);
             headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers");
             final Map<String, ColumnAnalysisResultDto> schema = analyseService.determineDataTypes(database, query);
             headers.set("X-Headers", String.join(",", schema.keySet()));
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    log.trace("accept header matches json");
+                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, paginatedStatement);
+                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset1)));
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(StorageUtil.transform(dataset));
+                            .body(dataMapper.datasetToJson(dataset1));
                 case "text/csv":
-                    log.trace("accept header matches csv");
-                    final ExportResourceDto resource = storageService.transformDataset(dataset);
-                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, paginatedStatement);
+                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset2)));
+                    headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(storageService.transformDataset(dataset)
-                                    .getResource());
+                            .body(dataset2);
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

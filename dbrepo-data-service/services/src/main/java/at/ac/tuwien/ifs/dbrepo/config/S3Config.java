@@ -18,14 +18,14 @@ import java.net.URI;
 @Configuration
 public class S3Config {
 
-    @Value("${dbrepo.endpoints.storageService}")
-    private String s3Endpoint;
+    @Value("${dbrepo.spark.hadoop.fs.s3a.endpoint}")
+    private String s3aEndpoint;
 
-    @Value("${dbrepo.s3.accessKeyId}")
-    private String s3AccessKeyId;
+    @Value("${dbrepo.spark.hadoop.fs.s3a.access.key}")
+    private String s3aAccessKey;
 
-    @Value("${dbrepo.s3.secretAccessKey}")
-    private String s3SecretAccessKey;
+    @Value("${dbrepo.spark.hadoop.fs.s3a.secret.key}")
+    private String s3aSecretKey;
 
     @Value("${dbrepo.s3.bucket}")
     private String s3Bucket;
@@ -33,19 +33,16 @@ public class S3Config {
     @Value("${dbrepo.s3.region}")
     private String s3Region;
 
-    @Value("${dbrepo.s3.useSsl}")
+    @Value("${duckdb.s3.useSsl}")
     private String s3UseSsl;
-
-    @Value("${dbrepo.s3.urlStyle}")
-    private String s3UrlStyle;
 
     @Bean
     public S3Client s3client() {
         final AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(s3AccessKeyId, s3SecretAccessKey));
+                AwsBasicCredentials.create(s3aAccessKey, s3aSecretKey));
         return S3Client.builder()
                 .region(Region.of(s3Region))
-                .endpointOverride(URI.create(s3Endpoint))
+                .endpointOverride(URI.create(s3aEndpoint))
                 .forcePathStyle(true)
                 .credentialsProvider(credentialsProvider)
                 .build();

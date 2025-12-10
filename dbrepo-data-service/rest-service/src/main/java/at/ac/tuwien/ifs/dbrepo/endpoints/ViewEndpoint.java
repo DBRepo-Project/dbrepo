@@ -1,17 +1,18 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
-import at.ac.tuwien.ifs.dbrepo.utils.StorageUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,8 +26,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.classic.Dataset;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -50,24 +51,24 @@ import java.util.UUID;
 public class ViewEndpoint {
 
     private final DSLContext context;
+    private final DataMapper dataMapper;
+    private final DataService dataService;
     private final ViewService viewService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
-    private final SubsetService subsetService;
-    private final StorageService storageService;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(DSLContext context, ViewService viewService, TableService tableService,
-                        MariaDbMapper mariaDbMapper, SubsetService subsetService, StorageService storageService,
-                        MetadataService metadataService, EndpointValidator endpointValidator) {
+    public ViewEndpoint(DSLContext context, DataMapper dataMapper, DataService dataService, ViewService viewService,
+                        TableService tableService, MariaDbMapper mariaDbMapper, MetadataService metadataService,
+                        EndpointValidator endpointValidator) {
         this.context = context;
+        this.dataMapper = dataMapper;
+        this.dataService = dataService;
         this.viewService = viewService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
-        this.subsetService = subsetService;
-        this.storageService = storageService;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
     }
@@ -237,8 +238,7 @@ public class ViewEndpoint {
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException, PaginationException,
             QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException,
-            DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException,
-            FormatNotAvailableException {
+            DatabaseNotFoundException, ViewMalformedException, FormatNotAvailableException, MalformedException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, accept={}, timestamp={}",
                 databaseId, viewId, page, size, accept, timestamp);
         endpointValidator.validateDataParams(page, size);
@@ -276,27 +276,25 @@ public class ViewEndpoint {
                         .build();
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
-            headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumn::getInternalName).toList()));
             final String query = mariaDbMapper.rawSelectQuery(view.getQuery(), timestamp,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
-            final Dataset<Row> dataset = subsetService.getData(database, query);
             final String viewName = view.getQueryHash();
             viewService.create(database, viewName, view.getQuery());
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    log.trace("accept header matches json");
+                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
+                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset1)));
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(StorageUtil.transform(dataset));
+                            .body(dataMapper.datasetToJson(dataset1));
                 case "text/csv":
-                    log.trace("accept header matches csv");
-                    final ExportResourceDto resource = storageService.transformDataset(dataset);
-                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
+                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset2)));
+                    headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(storageService.transformDataset(dataset)
-                                    .getResource());
+                            .body(dataset2);
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {
