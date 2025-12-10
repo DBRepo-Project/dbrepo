@@ -13,7 +13,9 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -38,13 +40,18 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
+    private final SubsetService subsetService;
     private final StorageService storageService;
+    private final DataService computeService;
 
     @Autowired
-    public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, StorageService storageService) {
+    public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SubsetService subsetService,
+                                   StorageService storageService, DataService computeService) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
+        this.subsetService = subsetService;
         this.storageService = storageService;
+        this.computeService = computeService;
     }
 
     @Override
@@ -262,13 +269,13 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Override
     @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
     public void importDataset(Database database, Table table, ImportDto data) throws MalformedException,
-            StorageNotFoundException, StorageUnavailableException, SQLException, QueryMalformedException,
-            TableMalformedException {
+            SQLException, QueryMalformedException, StorageUnavailableException, TableMalformedException,
+            StorageNotFoundException {
         final List<String> columns = table.getColumns()
                 .stream()
                 .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
                 .toList();
-        final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(),
+        final Dataset<Row> dataset = computeService.getCsv(columns, data.getLocation(),
                 String.valueOf(data.getSeparator()), data.getHeader());
         final Properties properties = new Properties();
         properties.setProperty("user", database.getContainer().getUsername());
@@ -301,7 +308,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             dataset.write()
                     .mode(SaveMode.Overwrite)
                     .option("header", data.getHeader())
-                    .jdbc(getSparkUrl(database), temporaryTable, properties);
+                    .jdbc(getSparkJdbcUrl(database), temporaryTable, properties);
             log.atDebug()
                     .setMessage("write data into temporary table: " + temporaryTable + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)

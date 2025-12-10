@@ -19,14 +19,50 @@ public class SparkConfig {
     @Value("${dbrepo.endpoints.computeService}")
     private String computeEndpoint;
 
-    @Value("${dbrepo.endpoints.storageService}")
-    private String s3Endpoint;
+    @Value("${spring.application.name}")
+    private String applicationName;
 
-    @Value("${dbrepo.s3.accessKeyId}")
-    private String s3AccessKeyId;
+    @Value("${dbrepo.spark.hadoop.fs.s3a.endpoint}")
+    private String s3aEndpoint;
 
-    @Value("${dbrepo.s3.secretAccessKey}")
-    private String s3SecretAccessKey;
+    @Value("${dbrepo.spark.hadoop.fs.s3a.access.key}")
+    private String s3aAccessKey;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.aws.credentials.provider}")
+    private String s3aAwsCredentialsProvider;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.connection.timeout}")
+    private String s3aConnectionTimeout;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.connection.establish.timeout}")
+    private String s3aConnectionEstablishTimeout;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.secret.key}")
+    private String s3aSecretKey;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.path.style.access}")
+    private String s3aPathStyleAccess;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.connection.ssl.enabled}")
+    private String s3aConnectionSslEnabled;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.multipart.purge.age}")
+    private String s3aMultipartPurgeAge;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.impl}")
+    private String s3aImpl;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.threads.keepalivetime}")
+    private String s3aThreadsKeepalivetime;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.committer.name}")
+    private String s3aCommitterName;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.change.detection.mode}")
+    private String s3aChangeDetectionMode;
+
+    @Value("${dbrepo.spark.hadoop.fs.s3a.multiobjectdelete.enable}")
+    private String s3aMultiobjectdeleteEnable;
 
     @Value("${spark.hadoop.version}")
     private String hadoopVersion;
@@ -53,18 +89,23 @@ public class SparkConfig {
 
     @Bean
     public Map<String, String> hadoopOptions() {
+        // spark.hadoop.xxx
         final Map<String, String> options = new LinkedHashMap<>();
-        options.put("fs.s3a.access.key", s3AccessKeyId);
-        options.put("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
-        options.put("fs.s3a.connection.establish.timeout", "30000");
-        options.put("fs.s3a.connection.timeout", "200000");
-        options.put("fs.s3a.connection.ssl.enabled", "false");
-        options.put("fs.s3a.endpoint", s3Endpoint);
-        options.put("fs.s3a.multipart.purge.age", "600000");
-        options.put("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
-        options.put("fs.s3a.threads.keepalivetime", "60000");
-        options.put("fs.s3a.path.style.access", "true");
-        options.put("fs.s3a.secret.key", s3SecretAccessKey);
+        options.put("fs.s3a.access.key", s3aAccessKey);
+        options.put("fs.s3a.aws.credentials.provider", s3aAwsCredentialsProvider);
+        options.put("fs.s3a.connection.timeout", s3aConnectionTimeout);
+        options.put("fs.s3a.connection.establish.timeout", s3aConnectionEstablishTimeout);
+        options.put("fs.s3a.connection.ssl.enabled", s3aConnectionSslEnabled);
+        options.put("fs.s3a.endpoint", s3aEndpoint);
+        options.put("fs.s3a.multipart.purge.age", s3aMultipartPurgeAge);
+        options.put("fs.s3a.impl", s3aImpl);
+        options.put("fs.s3a.threads.keepalivetime", s3aThreadsKeepalivetime);
+        options.put("fs.s3a.path.style.access", s3aPathStyleAccess);
+        options.put("fs.s3a.secret.key", s3aSecretKey);
+        options.put("fs.s3a.committer.name", s3aCommitterName);
+        // third-party compatibility flags
+        options.put("fs.s3a.change.detection.mode", s3aChangeDetectionMode);
+        options.put("fs.s3a.multiobjectdelete.enable", s3aMultiobjectdeleteEnable);
         return options;
     }
 
@@ -72,7 +113,7 @@ public class SparkConfig {
     public SparkConf sparkConf() {
         final SparkConf config = new SparkConf()
                 .setMaster(computeEndpoint)
-                .setAppName("data-service");
+                .setAppName(applicationName);
         sparkOptions()
                 .forEach(config::set);
         return config;

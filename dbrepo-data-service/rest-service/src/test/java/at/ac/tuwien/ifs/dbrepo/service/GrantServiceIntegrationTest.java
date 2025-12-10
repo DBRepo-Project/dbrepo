@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,6 +36,9 @@ public class GrantServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private GrantService grantService;
+
+    @MockitoBean
+    private DataService dataService;
 
     @Value("${dbrepo.grant.default.read}")
     private String grantDefaultRead;

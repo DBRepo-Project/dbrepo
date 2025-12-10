@@ -34,11 +34,14 @@ import static org.mockito.Mockito.when;
 @Testcontainers
 public class QueueServiceIntegrationTest extends BaseTest {
 
-    @Autowired
-    private QueueServiceRabbitMqImpl queueService;
+    @MockitoBean
+    private DataService dataService;
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
+
+    @Autowired
+    private QueueServiceRabbitMqImpl queueService;
 
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();

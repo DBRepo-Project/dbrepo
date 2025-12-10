@@ -1,7 +1,7 @@
 ##@ Build
 
 .PHONY: build-images
-build-images: ## Build Docker images.
+build-images: build-java-lib build-python-lib ## Build Docker images.
 	docker compose build
 
 .PHONY: build-jupyter-image
@@ -11,7 +11,7 @@ build-jupyter-image:
 .PHONY: build-java-lib
 build-java-lib: ## Build the Java Library.
 	APP_VERSION=$(APP_VERSION) mvn -f ./lib/java/dbrepo-core/pom.xml -q clean package install -DskipTests
-	rm -rf ./dbrepo-data-service/lib/at/ ./dbrepo-metadata-service/lib/at/
+	rm -rf ./dbrepo-consumer-service/lib/at/ ./dbrepo-data-service/lib/at/ ./dbrepo-metadata-service/lib/at/
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-consumer-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
 	mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$(APP_VERSION).jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$(APP_VERSION) -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true
