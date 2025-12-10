@@ -56,7 +56,6 @@ public class RedisContainerConfig extends BaseTest {
         @Override
         public synchronized void start() {
             if (!started) {
-                super.stop();
                 super.start();
                 started = true;
             }
