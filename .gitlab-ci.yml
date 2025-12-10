@@ -300,8 +300,8 @@ build-search-service:
     - merge_requests
     - master
   before_script:
-    - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make python3-build"
+    - "pip install pipenv build"
+    - "apk --no-cache add alpine-sdk make"
     - "make build-python-lib"
   script:
     - "cd dbrepo-search-service && pipenv install --system --deploy"
@@ -313,8 +313,8 @@ build-dashboard-service:
     - merge_requests
     - master
   before_script:
-    - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make python3-build"
+    - "pip install pipenv build"
+    - "apk --no-cache add alpine-sdk make"
     - "make build-python-lib"
   script:
     - "cd dbrepo-dashboard-service && pipenv install --system --deploy"
