@@ -328,11 +328,19 @@ build-images:
   variables:
     DOCKER_BUILDKIT: 1
   before_script:
-    - "apk add --no-cache alpine-sdk make maven openjdk21-jdk py3-build py3-venv"
-    - "python3 -m venv venv && source ./venv/bin/activate && pip install pipenv"
+    - "apk add --no-cache alpine-sdk make openjdk21-jdk make py3-build py3-pip"
+    - "python3 -m pip install pipenv"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - make build-images
+    - "make build-java-lib"
+    - "PIPENV_PIPFILE=./lib/python/Pipfile python3 -m pipenv lock"
+    - "python3 -m build --sdist ./lib/python"
+    - "python3 -m build --wheel ./lib/python"
+    - "cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib"
+    - "PIPENV_PIPFILE=./dbrepo-search-service/Pipfile python3 -m pipenv lock"
+    - "cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib"
+    - "PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile python3 -m pipenv lock"
+    - "docker compose build"
 
 build-helm:
   image: docker.io/docker:${DOCKER_VERSION}-dind
