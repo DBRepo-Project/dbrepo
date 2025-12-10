@@ -339,6 +339,7 @@ build-images:
     - build-java-lib
     - build-python-lib
   before_script:
+    - "apk add --no-cache make maven openjdk21-jdk"
     - "cp -r ./lib/python/dist/dbrepo-$APP_VERSION* ./dbrepo-search-service/lib"
     - "cp -r ./lib/python/dist/dbrepo-$APP_VERSION* ./dbrepo-dashboard-service/lib"
     - "mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-consumer-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
@@ -355,7 +356,7 @@ build-helm:
     - merge_requests
     - tags
   before_script:
-    - apk add --no-cache helm make
+    - "apk add --no-cache helm make"
     - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
