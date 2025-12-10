@@ -445,8 +445,8 @@ test-search-service:
   dependencies:
     - build-search-service
   before_script:
-    - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make python3-build"
+    - "pip install pipenv build"
+    - "apk --no-cache add alpine-sdk make"
     - "make build-python-lib"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/search"
@@ -477,8 +477,8 @@ test-dashboard-service:
   dependencies:
     - build-dashboard-service
   before_script:
-    - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make python3-build"
+    - "pip install pipenv build"
+    - "apk --no-cache add alpine-sdk make"
     - "make build-python-lib"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/dashboard"
