@@ -339,7 +339,8 @@ build-images:
     - build-java-lib
     - build-python-lib
   before_script:
-    - "ls -la ./lib/python/dist"
+    - "cp -r ./lib/python/dist/dbrepo-$APP_VERSION* ./dbrepo-search-service/lib"
+    - "cp -r ./lib/python/dist/dbrepo-$APP_VERSION* ./dbrepo-dashboard-service/lib"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - "docker compose build"
@@ -654,11 +655,14 @@ release-docs:
   only:
     refs:
       - /^release-.*/
+  needs:
+    - build-python-lib
+  dependencies:
+    - build-python-lib
   before_script:
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
-    - "pip install pipenv"
+    - "pip install pipenv ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz"
     - "pipenv install --dev --system --deploy"
-    - "python -m build --sdist ./lib/python && python -m build --wheel ./lib/python && pip install ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
     - "mkdir -p ./final/${APP_VERSION}"
     - git config --global user.name "$CI_TECH_LEAD_NAME"
