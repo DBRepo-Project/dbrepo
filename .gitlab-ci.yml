@@ -301,7 +301,7 @@ build-search-service:
     - master
   before_script:
     - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make"
+    - "apk --no-cache add alpine-sdk make python3-build"
     - "make build-python-lib"
   script:
     - "cd dbrepo-search-service && pipenv install --system --deploy"
@@ -314,7 +314,7 @@ build-dashboard-service:
     - master
   before_script:
     - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make"
+    - "apk --no-cache add alpine-sdk make python3-build"
     - "make build-python-lib"
   script:
     - "cd dbrepo-dashboard-service && pipenv install --system --deploy"
@@ -445,7 +445,7 @@ test-search-service:
     - build-search-service
   before_script:
     - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make"
+    - "apk --no-cache add alpine-sdk make python3-build"
     - "make build-python-lib"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/search"
@@ -477,7 +477,7 @@ test-dashboard-service:
     - build-dashboard-service
   before_script:
     - "pip install pipenv"
-    - "apk --no-cache add alpine-sdk make"
+    - "apk --no-cache add alpine-sdk make python3-build"
     - "make build-python-lib"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/dashboard"
