@@ -20,10 +20,6 @@ import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +38,6 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     private final DSLContext context;
     private final DataMapper dataMapper;
-    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
     private final SubsetCacheRepository subsetRepository;
@@ -50,48 +45,14 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Autowired
     public SubsetServiceMariaDbImpl(DSLContext context, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
-                                    SparkSession sparkSession, MetadataMapper metadataMapper,
-                                    SubsetCacheRepository subsetRepository, MetadataServiceGateway metadataServiceGateway) {
+                                    MetadataMapper metadataMapper, SubsetCacheRepository subsetRepository,
+                                    MetadataServiceGateway metadataServiceGateway) {
         this.context = context;
         this.dataMapper = dataMapper;
-        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
         this.subsetRepository = subsetRepository;
         this.metadataServiceGateway = metadataServiceGateway;
-    }
-
-    @Override
-    @Timed(value = "dbrepo_data_get_subset_data", description = "Time spent getting data from subset", histogram = true)
-    public Dataset<Row> getData(Database database, String query) throws QueryMalformedException, TableNotFoundException {
-        try {
-            final long start = System.currentTimeMillis();
-            log.trace("get data via query: {}", query);
-            final Dataset<Row> dataset = sparkSession.read()
-                    .format("jdbc")
-                    .option("user", database.getContainer().getUsername())
-                    .option("password", database.getContainer().getPassword())
-                    .option("url", getSparkUrl(database))
-                    .option("query", query)
-                    .load();
-            log.atDebug()
-                    .setMessage("get data from url " + getSparkUrl(database))
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "jdbc_get_data")
-                    .log();
-            return dataset;
-        } catch (Exception e) {
-            if (e instanceof ExtendedAnalysisException && e.getMessage().contains("TABLE_OR_VIEW_NOT_FOUND")
-                    || e instanceof SQLSyntaxErrorException && e.getMessage().contains("doesn't exist")) {
-                log.atError()
-                        .setMessage("Failed to find named reference")
-                        .setCause(e)
-                        .log();
-                throw new TableNotFoundException("Failed to find named reference: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
-            }
-            log.error("Malformed query: {}", e.getMessage());
-            throw new QueryMalformedException("Malformed query: " + e.getMessage(), e);
-        }
     }
 
     @Override

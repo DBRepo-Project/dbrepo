@@ -38,6 +38,25 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-metadata-db-metrics:
+    restart: "no"
+    container_name: dbrepo-metadata-db-metrics
+    hostname: metadata-db-metrics
+    image: docker.io/bitnamilegacy/mysqld-exporter:0.15.1
+    command:
+      - --mysqld.address=metadata-db:3306
+      - --config.my-cnf=/.my.cnf
+    volumes:
+      - ./config/metrics.cnf:/.my.cnf
+    healthcheck:
+      test: -h
+      <<: *healthcheck-params
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
   dbrepo-data-db:
     restart: "no"
     container_name: dbrepo-data-db
@@ -57,6 +76,25 @@ services:
     healthcheck:
       test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
       <<: *healthcheck-params
+    logging:
+      driver: json-file
+
+  dbrepo-data-db-metrics:
+    restart: "no"
+    container_name: dbrepo-data-db-metrics
+    hostname: data-db-metrics
+    image: docker.io/bitnamilegacy/mysqld-exporter:0.15.1
+    command:
+      - --mysqld.address=data-db:3306
+      - --config.my-cnf=/.my.cnf
+    volumes:
+      - ./config/metrics.cnf:/.my.cnf
+    healthcheck:
+      test: -h
+      <<: *healthcheck-params
+    depends_on:
+      dbrepo-data-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -139,7 +177,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.2
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
@@ -202,7 +240,7 @@ services:
     restart: "no"
     container_name: dbrepo-consumer-service
     hostname: consumer-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.2
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -295,7 +333,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.2
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -317,7 +355,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.2
     environment:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
@@ -401,7 +439,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.2
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -421,7 +459,7 @@ services:
     restart: "no"
     init: true
     container_name: dbrepo-dashboard-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.2
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -455,12 +493,26 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-metric-db:
+    restart: "no"
+    container_name: dbrepo-metric-db
+    hostname: metric-db
+    image: docker.io/bitnamilegacy/prometheus:2.54.1
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
+    healthcheck:
+      test: promtool check healthy
+      <<: *healthcheck-params
+    logging:
+      driver: json-file
+
   dbrepo-storage-service-init:
     restart: "no"
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.2
     environment:
       S3_ACCESS_KEY_ID: ${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -476,7 +528,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.2
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -556,7 +608,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.1
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.2
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-https://localhost}"

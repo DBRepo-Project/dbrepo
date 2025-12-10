@@ -1,11 +1,19 @@
 server:
   port: 18080
+spring:
+  data:
+    redis:
+      host: localhost
 dbrepo:
   endpoints:
     metadataService: http://localhost:9099
-    storageService: http://localhost:9000
     authService: http://localhost:8080
     computeService: local[*]
+  spark:
+    hadoop:
+      fs:
+        s3a:
+          endpoint: http://localhost:9000
 logging:
   level:
     at.ac.tuwien.ifs.dbrepo.: trace

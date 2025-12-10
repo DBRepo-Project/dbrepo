@@ -20,10 +20,15 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AnalyseDataTypesException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.classic.Dataset;
 import org.duckdb.DuckDBResultSet;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
@@ -312,6 +317,43 @@ public interface DataMapper {
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
                 .build();
+    }
+
+    default String datasetToColumnNameHeader(Dataset<Row> dataset) {
+        final Map<Integer, String> columnNames = new HashMap<>();
+        Arrays.stream(dataset.logicalPlan()
+                        .producedAttributes()
+                        .mkString(",")
+                        .split(","))
+                .forEach(entry -> {
+                    final String[] part = entry.split("#");
+                    if (part[1].contains("L")) {
+                        columnNames.put(Integer.valueOf(part[1].split("L")[0]), part[0]);
+                        return;
+                    }
+                    columnNames.put(Integer.valueOf(part[1]), part[0]);
+                });
+        return String.join(",", columnNames.values()
+                .stream()
+                .toList());
+    }
+
+    default Set<Map<String, Object>> datasetToJson(Dataset<Row> dataset) throws MalformedException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final List<String> rows = dataset.toJSON()
+                .toJavaRDD()
+                .collect();
+        final Set<Map<String, Object>> json = new HashSet<>();
+        for (String row : rows) {
+            try {
+                json.add(objectMapper.readValue(row, new TypeReference<>() {
+                }));
+            } catch (JsonProcessingException e) {
+                log.error("Failed to deserialize row '{}': {}", row, e.getMessage());
+                throw new MalformedException("Failed to deserialize row: " + e.getMessage(), e);
+            }
+        }
+        return json;
     }
 
     default Subset resultSetToSubset(@NotNull ResultSet data) throws SQLException {

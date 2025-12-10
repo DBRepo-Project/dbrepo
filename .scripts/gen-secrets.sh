@@ -21,15 +21,9 @@ else
   RABBIT_HASH=$(gen_rabbit_key $BROKER_SERVICE_PASSWORD)
 fi
 
-BROKER_PATH=./config
 CERT_PATH=./config
-S3_PATH=./config
-DB_PATH=./config
-if [ $IS_DEV == "1" ]; then
-  BROKER_PATH=./dbrepo-broker-service
+if [ ! -z $IS_DEV ]; then
   CERT_PATH=./dbrepo-gateway-service
-  S3_PATH=./dbrepo-storage-service
-  DB_PATH=./dbrepo-metadata-db
 fi
 
 function gen_aes_key() {
@@ -66,7 +60,7 @@ S3_ADMIN_ACCESS_KEY_ID=$S3_ADMIN_ACCESS_KEY_ID
 S3_ADMIN_SECRET_ACCESS_KEY=$S3_ADMIN_SECRET_ACCESS_KEY
 SYSTEM_PASSWORD=$(gen_pw)
 EOF
-cat <<EOF > $S3_PATH/s3_config.json
+cat <<EOF > ./dbrepo-storage-service/s3_config.json
 {
   "identities": [
     {
@@ -102,7 +96,7 @@ cat <<EOF > $S3_PATH/s3_config.json
   ]
 }
 EOF
-cat <<EOF > $BROKER_PATH/definitions.json
+cat <<EOF > ./dbrepo-broker-service/definitions.json
 {
   "bindings": [
     {
@@ -175,12 +169,12 @@ EOF
 
 echo "[🙉] Generating self-signed TLS certificate ..."
 rm -rf "$CERT_PATH/tls.key" "$CERT_PATH/tls.crt"
-openssl req -x509 -newkey rsa:4096 -keyout "$CERT_PATH/tls.key" -out "$CERT_PATH/tls.crt" -sha256 -days 3650 -nodes -subj "/CN=localhost"
+openssl req -x509 -newkey rsa:4096 -keyout "$CERT_PATH/tls.key" -out "$CERT_PATH/tls.crt" -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=localhost"
 sudo chown 1001:1001 "$CERT_PATH/tls.key" "$CERT_PATH/tls.crt"
 sudo chmod 755 "$CERT_PATH/tls.key" "$CERT_PATH/tls.crt"
 
 echo "[🙊] Generating database setup ..."
-cat <<EOF > $DB_PATH/2_setup-data.sql
+cat <<EOF > ./dbrepo-metadata-db/2_setup-data.sql
 BEGIN;
 INSERT INTO \`mdb_containers\` (id, name, internal_name, image_id, host, port, ui_host, ui_port, privileged_username,
                               privileged_password, readonly_username, readonly_password)

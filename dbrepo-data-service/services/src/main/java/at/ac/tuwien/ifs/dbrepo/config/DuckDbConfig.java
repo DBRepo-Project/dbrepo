@@ -16,4 +16,10 @@ public class DuckDbConfig {
     @Value("${duckdb.tmp.directory}")
     private String tmpDirectory;
 
+    @Value("${duckdb.s3.urlStyle}")
+    private String s3UrlStyle;
+
+    @Value("${duckdb.s3.useSsl}")
+    private String s3UseSsl;
+
 }
