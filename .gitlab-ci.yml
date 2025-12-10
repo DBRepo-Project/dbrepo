@@ -339,6 +339,7 @@ build-images:
     - build-java-lib
     - build-python-lib
   before_script:
+    - "ls -la ./lib/python/dist"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - "docker compose build"
