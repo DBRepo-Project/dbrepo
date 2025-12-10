@@ -341,7 +341,7 @@ build-images:
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - docker compose build"
+    - "docker compose build"
 
 build-helm:
   image: docker.io/docker:${DOCKER_VERSION}-dind
