@@ -328,7 +328,7 @@ build-images:
   variables:
     DOCKER_BUILDKIT: 1
   before_script:
-    - "apk add --no-cache alpine-sdk make openjdk21-jdk python3-dev"
+    - "apk add --no-cache alpine-sdk make openjdk21-jdk python3-dev py3-pip"
     - "python3 -m pip install pipenv"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
