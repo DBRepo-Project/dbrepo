@@ -5,7 +5,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
@@ -15,7 +14,6 @@ import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -40,15 +38,12 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
-    private final MetadataService metadataService;
 
     @Autowired
-    public ViewServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
-                                  MetadataService metadataService) {
+    public ViewServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
-        this.metadataService = metadataService;
     }
 
     @Override

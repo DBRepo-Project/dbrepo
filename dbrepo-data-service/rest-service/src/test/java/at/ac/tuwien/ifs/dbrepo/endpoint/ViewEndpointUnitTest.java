@@ -6,12 +6,11 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.ViewEndpoint;
+import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.classic.Dataset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class ViewEndpointUnitTest extends BaseTest {
 
+    @Autowired
+    private ViewEndpoint viewEndpoint;
+
     @MockitoBean
     private ViewService viewService;
 
@@ -54,11 +56,11 @@ public class ViewEndpointUnitTest extends BaseTest {
     @MockitoBean
     private SubsetService subsetService;
 
-    @Autowired
-    private ViewEndpoint viewEndpoint;
+    @MockitoBean
+    private DataService computeService;
 
-    @Autowired
-    private SparkSession sparkSession;
+    @MockitoBean
+    private DataMapper dataMapper;
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
@@ -97,8 +99,8 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
-    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException, MetadataServiceException {
+    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ViewMalformedException, SQLException, MetadataServiceException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -239,8 +241,8 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
-    public void delete_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException, MetadataServiceException {
+    public void delete_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ViewMalformedException, SQLException, MetadataServiceException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -275,16 +277,14 @@ public class ViewEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateDataPrivateSchema_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             DatabaseUnavailableException, QueryMalformedException, PaginationException, NotAllowedException,
-            MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException, FormatNotAvailableException {
-        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+            MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException,
+            FormatNotAvailableException, DatabaseMalformedException, MalformedException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_CACHE);
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
-        when(subsetService.getData(any(Database.class), anyString()))
-                .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -297,19 +297,17 @@ public class ViewEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void getData_privateDataPrivateSchemaAnonymous_fails() throws RemoteUnavailableException,
-            ViewNotFoundException, QueryMalformedException, NotAllowedException, MetadataServiceException,
-            TableNotFoundException, DatabaseNotFoundException {
-        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+            ViewNotFoundException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_CACHE);
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
-        when(subsetService.getData(any(Database.class), anyString()))
-                .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
+        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
+                .thenReturn("id,date,location,mintemp,rainfall");
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -321,7 +319,8 @@ public class ViewEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateHead_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
-            NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException, StorageUnavailableException, FormatNotAvailableException {
+            NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException,
+            ViewMalformedException, FormatNotAvailableException, DatabaseMalformedException, MalformedException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_3_ID))

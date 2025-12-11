@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # preset
-APP_VERSION="1.13.1"
+APP_VERSION="1.13.2"
 MIN_CPU=8
 MIN_RAM=10
 SKIP_CHECKS=${SKIP_CHECKS:-0}
@@ -57,7 +57,6 @@ fi
 echo "[📦] Pulling images for version ${APP_VERSION} ..."
 docker compose pull
 
-IS_DEV=0
 . ./config/gen-secrets.sh
 
 echo "[🎉] Success!"

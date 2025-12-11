@@ -1,18 +1,18 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.ExportResourceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
-import at.ac.tuwien.ifs.dbrepo.utils.StorageUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,8 +27,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,10 +50,10 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint {
 
+    private final DataMapper dataMapper;
+    private final DataService dataService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
-    private final SubsetService subsetService;
-    private final StorageService storageService;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
@@ -61,13 +61,13 @@ public class TableEndpoint {
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
-    public TableEndpoint(TableService tableService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                         StorageService storageService, MetadataService metadataService,
+    public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
+                         MariaDbMapper mariaDbMapper, MetadataService metadataService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+        this.dataMapper = dataMapper;
+        this.dataService = dataService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
-        this.subsetService = subsetService;
-        this.storageService = storageService;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -236,7 +236,7 @@ public class TableEndpoint {
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException,
-            FormatNotAvailableException, StorageUnavailableException {
+            FormatNotAvailableException {
         log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, accept={}",
                 databaseId, tableId, timestamp, page, size, accept);
         endpointValidator.validateDataParams(page, size);
@@ -273,27 +273,25 @@ public class TableEndpoint {
                         .headers(headers)
                         .build();
             }
-            headers.set("Access-Control-Expose-Headers", "X-Headers");
-            headers.set("X-Headers", String.join(",", table.getColumns().stream().map(Column::getInternalName).toList()));
             final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                     table.getInternalName(), timestamp,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size);
-            final Dataset<Row> dataset = subsetService.getData(database, query);
+            headers.set("Access-Control-Expose-Headers", "X-Headers");
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    log.trace("accept header matches json");
+                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
+                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset1));
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(StorageUtil.transform(dataset));
+                            .body(dataset1);
                 case MEDIA_TYPE_TEXT_CSV:
-                    log.trace("accept header matches csv");
-                    final ExportResourceDto resource = storageService.transformDataset(dataset);
-                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
+                    headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
+                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset2));
                     return ResponseEntity.status(HttpStatus.OK)
                             .headers(headers)
-                            .body(storageService.transformDataset(dataset)
-                                    .getResource());
+                            .body(dataset2);
                 default:
                     log.atError()
                             .setMessage("Invalid data format " + accept + " accepted")
