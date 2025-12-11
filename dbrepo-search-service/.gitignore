@@ -11,6 +11,8 @@ __pycache__/
 coverage.txt
 report.xml
 /omlib/
+lib/*.tar.gz
+lib/*.whl
 
 # Distribution / packaging
 .Python

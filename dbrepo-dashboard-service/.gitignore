@@ -14,6 +14,8 @@ api/
 dashboard.py
 access.py
 panel.py
+lib/*.tar.gz
+lib/*.whl
 
 # Distribution / packaging
 .Python
