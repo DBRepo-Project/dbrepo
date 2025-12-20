@@ -10,16 +10,15 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumn
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.service.ConceptService;
-import at.ac.tuwien.ifs.dbrepo.service.EntityService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
-import at.ac.tuwien.ifs.dbrepo.service.UnitService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +35,7 @@ import java.util.UUID;
 @Service
 public class TableServiceImpl implements TableService {
 
-    private final UnitService unitService;
     private final RabbitConfig rabbitConfig;
-    private final EntityService entityService;
-    private final ConceptService conceptService;
     private final MetadataMapper metadataMapper;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
@@ -47,15 +43,11 @@ public class TableServiceImpl implements TableService {
     private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
-    public TableServiceImpl(UnitService unitService, RabbitConfig rabbitConfig,
-                            EntityService entityService, ConceptService conceptService, MetadataMapper metadataMapper,
+    public TableServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
                             SearchServiceGateway searchServiceGateway,
                             DatabaseCacheRepository databaseCacheRepository) {
-        this.unitService = unitService;
         this.rabbitConfig = rabbitConfig;
-        this.entityService = entityService;
-        this.conceptService = conceptService;
         this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
@@ -95,8 +87,7 @@ public class TableServiceImpl implements TableService {
     @Transactional
     public Table createTable(Database database, CreateTableDto data, Principal principal) throws DataServiceException,
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
-            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
-            OntologyNotFoundException, SemanticEntityNotFoundException {
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException {
         final Table table = Table.builder()
                 .isVersioned(true)
                 .name(data.getName())
@@ -139,26 +130,8 @@ public class TableServiceImpl implements TableService {
                 }
                 column.setOrdinalPosition(idx[0]++);
                 column.setTable(table);
-                if (c.getUnitUri() != null) {
-                    log.trace("column {} has assigned unit uri: {}", column.getInternalName(), c.getUnitUri());
-                    TableColumnUnit unit;
-                    try {
-                        unit = unitService.find(c.getUnitUri());
-                    } catch (UnitNotFoundException e) {
-                        unit = unitService.create(metadataMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(c.getUnitUri())));
-                    }
-                    column.setUnit(unit);
-                }
-                if (c.getConceptUri() != null) {
-                    log.trace("column {} has assigned concept uri: {}", column.getInternalName(), c.getConceptUri());
-                    TableColumnConcept concept;
-                    try {
-                        concept = conceptService.find(c.getConceptUri());
-                    } catch (ConceptNotFoundException e) {
-                        concept = conceptService.create(metadataMapper.entityDtoToTableColumnConcept(entityService.findOneByUri(c.getConceptUri())));
-                    }
-                    column.setConcept(concept);
-                }
+                column.setConceptUri(c.getConceptUri());
+                column.setUnitUri(c.getUnitUri());
                 table.getColumns()
                         .add(column);
             }
@@ -242,6 +215,8 @@ public class TableServiceImpl implements TableService {
         tableEntity.setIsSchemaPublic(data.getIsSchemaPublic());
         tableEntity.setDescription(data.getDescription());
         final Database database = databaseRepository.save(table.getDatabase());
+        /* update the cache */
+        databaseCacheRepository.deleteById(database.getId());
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Updated table with id {}", table.getId());
@@ -250,33 +225,12 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
-    public TableColumn update(TableColumn column, ColumnSemanticsUpdateDto data) throws DataServiceException,
+    public void update(TableColumn column, ColumnSemanticsUpdateDto data) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
             SemanticEntityNotFoundException {
-        /* assign */
-        if (data.getConceptUri() != null) {
-            TableColumnConcept concept;
-            try {
-                concept = conceptService.find(data.getConceptUri());
-            } catch (ConceptNotFoundException e) {
-                concept = metadataMapper.entityDtoToTableColumnConcept(entityService.findOneByUri(data.getConceptUri()));
-            }
-            column.setConcept(concept);
-        } else {
-            column.setConcept(null);
-        }
-        if (data.getUnitUri() != null) {
-            TableColumnUnit unit;
-            try {
-                unit = unitService.find(data.getUnitUri());
-            } catch (UnitNotFoundException e) {
-                unit = metadataMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(data.getUnitUri()));
-            }
-            column.setUnit(unit);
-        } else {
-            column.setUnit(null);
-        }
+        column.setConceptUri(data.getConceptUri());
+        column.setUnitUri(data.getUnitUri());
         column.setDescription(data.getDescription());
         /* update in metadata database */
         final Table table = column.getTable();
@@ -286,7 +240,6 @@ public class TableServiceImpl implements TableService {
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated table column semantics");
-        return column;
     }
 
     @Override

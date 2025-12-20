@@ -6,8 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.EntityDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.TableColumnEntityDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -15,7 +13,6 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
-import at.ac.tuwien.ifs.dbrepo.service.EntityService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
@@ -50,18 +47,15 @@ import java.util.stream.Collectors;
 public class TableEndpoint extends RestEndpoint {
 
     private final TableService tableService;
-    private final EntityService entityService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final DashboardService dashboardService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(TableService tableService, EntityService entityService, MetadataMapper metadataMapper,
-                         DatabaseService databaseService, DashboardService dashboardService,
-                         EndpointValidator endpointValidator) {
+    public TableEndpoint(TableService tableService, MetadataMapper metadataMapper, DatabaseService databaseService,
+                         DashboardService dashboardService, EndpointValidator endpointValidator) {
         this.tableService = tableService;
-        this.entityService = entityService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.dashboardService = dashboardService;
@@ -119,50 +113,6 @@ public class TableEndpoint extends RestEndpoint {
         return tables.stream()
                 .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || hasAccess)
                 .toList();
-    }
-
-    @GetMapping("/{tableId}/suggest")
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('table-semantic-analyse')")
-    @Observed(name = "dbrepo_semantic_table_analyse")
-    @Operation(summary = "Suggest semantics",
-            description = "Suggests semantic concepts for a table. This action can only be performed by the table owner. Requires role `table-semantic-analyse`.",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Suggested table semantics successfully",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = EntityDto.class)))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Failed to parse statistic in search service",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "403",
-                    description = "Not the table owner.",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find database/table in metadata database",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "417",
-                    description = "Generated query is malformed",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "422",
-                    description = "Ontology does not have rdf or sparql endpoint",
-                    content = {@Content}),
-    })
-    public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                        @NotNull @PathVariable("tableId") UUID tableId,
-                                                        Principal principal)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
-        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
-        final Database database = databaseService.findById(databaseId);
-        final Table table = tableService.findById(database, tableId);
-        if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
-            log.error("Failed to analyse table semantics: not owner");
-            throw new NotAllowedException("Failed to analyse table semantics: not owner");
-        }
-        return ResponseEntity.ok()
-                .body(entityService.suggestByTable(table));
     }
 
     @PutMapping("/{tableId}/statistic")
@@ -253,44 +203,9 @@ public class TableEndpoint extends RestEndpoint {
             endpointValidator.validateOnlyAccess(database, principal, true);
             endpointValidator.validateOnlyOwnerOrWriteAll(table, AuthUtil.getUsername(principal));
         }
+        tableService.update(tableService.findColumnById(table, columnId), updateDto);
         return ResponseEntity.accepted()
-                .body(metadataMapper.tableColumnToColumnDto(tableService.update(
-                        tableService.findColumnById(table, columnId), updateDto)));
-    }
-
-    @GetMapping("/{tableId}/column/{columnId}/suggest")
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('table-semantic-analyse')")
-    @Observed(name = "dbrepo_semantic_column_analyse")
-    @Operation(summary = "Suggest semantics",
-            description = "Suggests column semantics. Requires role `table-semantic-analyse`.",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Suggested table column semantics successfully",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Generated query is malformed",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find database/table in metadata database",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "422",
-                    description = "Ontology does not have rdf or sparql endpoint",
-                    content = {@Content}),
-    })
-    public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                                         @NotNull @PathVariable("tableId") UUID tableId,
-                                                                         @NotNull @PathVariable("columnId") UUID columnId)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
-        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}",
-                databaseId, tableId, columnId);
-        return ResponseEntity.ok()
-                .body(entityService.suggestByColumn(
-                        tableService.findColumnById(
-                                tableService.findById(databaseService.findById(databaseId), tableId), columnId)));
+                .build();
     }
 
     @PostMapping
@@ -337,7 +252,6 @@ public class TableEndpoint extends RestEndpoint {
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
         final Table table = tableService.createTable(database, data, principal);
-        dashboardService.update(table.getDatabase());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.tableToTableBriefDto(table));
     }
@@ -386,10 +300,8 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
-        final Table table1 = tableService.updateTable(table, data);
-        dashboardService.update(table1.getDatabase());
         return ResponseEntity.accepted()
-                .body(metadataMapper.tableToTableBriefDto(table1));
+                .body(metadataMapper.tableToTableBriefDto(tableService.updateTable(table, data)));
     }
 
     @GetMapping("/{tableId}")

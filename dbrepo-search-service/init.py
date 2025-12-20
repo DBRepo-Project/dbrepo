@@ -42,7 +42,7 @@ dictConfig({
         },
     },
     'root': {
-        'level': 'DEBUG',
+        'level': os.getenv("LOG_APPLICATION_LEVEL", "debug").upper(),
         'handlers': ['wsgi', 'file']
     }
 })

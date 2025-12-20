@@ -29,7 +29,7 @@ public class RorGatewayImpl implements RorGateway {
     @Override
     public RorDto findById(String id) throws RorNotFoundException {
         final String path = "/organizations/" + id;
-        log.trace("find ror by id at endpoint {} with path {}", gatewayConfig.getRorEndpoint(), path);
+        log.trace("find ror by id at: {}{}", gatewayConfig.getRorEndpoint(), path);
         final ResponseEntity<RorDto> response;
         try {
             response = restTemplate.exchange(gatewayConfig.getRorEndpoint() + path, HttpMethod.GET, HttpEntity.EMPTY, RorDto.class);

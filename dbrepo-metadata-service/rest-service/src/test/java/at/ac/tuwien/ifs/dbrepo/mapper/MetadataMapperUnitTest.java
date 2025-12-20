@@ -206,20 +206,6 @@ public class MetadataMapperUnitTest extends BaseTest {
     }
 
     @Test
-    public void ontologyToOntologyBriefDto_succeeds() {
-
-        /* test */
-        assertEquals(ONTOLOGY_1_BRIEF_DTO, metadataMapper.ontologyToOntologyBriefDto(ONTOLOGY_1));
-    }
-
-    @Test
-    public void ontologyToOntologyDto_succeeds() {
-
-        /* test */
-        assertEquals(ONTOLOGY_1_DTO, metadataMapper.ontologyToOntologyDto(ONTOLOGY_1));
-    }
-
-    @Test
     public void relatedIdentifierToDoiRelatedIdentifier_succeeds() {
 
         /* test */

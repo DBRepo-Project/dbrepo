@@ -61,15 +61,6 @@ public class TableServiceUnitTest extends BaseTest {
     private UserService userService;
 
     @MockitoBean
-    private UnitService unitService;
-
-    @MockitoBean
-    private EntityService entityService;
-
-    @MockitoBean
-    private ConceptService conceptService;
-
-    @MockitoBean
     private DataServiceGateway dataServiceGateway;
 
     @Autowired
@@ -373,59 +364,39 @@ public class TableServiceUnitTest extends BaseTest {
     @Test
     public void update_known_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
             DatabaseNotFoundException, OntologyNotFoundException, SearchServiceConnectionException,
-            SemanticEntityNotFoundException, DataServiceConnectionException, UnitNotFoundException,
-            ConceptNotFoundException {
+            SemanticEntityNotFoundException, DataServiceConnectionException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_1_URI)
                 .conceptUri(CONCEPT_1_URI)
                 .build();
 
         /* mock */
-        when(unitService.find(UNIT_1_URI))
-                .thenReturn(UNIT_1);
-        when(conceptService.find(CONCEPT_1_URI))
-                .thenReturn(CONCEPT_1);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
-        final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
-        assertNotNull(response.getUnit());
-        assertNotNull(response.getConcept());
+        tableService.update(TABLE_1_COLUMNS.get(0), request);
     }
 
     @Test
     public void update_unknown_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
             DatabaseNotFoundException, OntologyNotFoundException, SearchServiceConnectionException,
-            SemanticEntityNotFoundException, DataServiceConnectionException, UnitNotFoundException,
-            ConceptNotFoundException {
+            SemanticEntityNotFoundException, DataServiceConnectionException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_1_URI)
                 .conceptUri(CONCEPT_1_URI)
                 .build();
 
         /* mock */
-        doThrow(UnitNotFoundException.class)
-                .when(unitService)
-                .find(UNIT_1_URI);
-        when(entityService.findOneByUri(UNIT_1_URI))
-                .thenReturn(UNIT_1_ENTITY_DTO);
-        doThrow(ConceptNotFoundException.class)
-                .when(conceptService)
-                .find(CONCEPT_1_URI);
-        when(entityService.findOneByUri(CONCEPT_1_URI))
-                .thenReturn(CONCEPT_1_ENTITY_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
-        final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
-        assertNotNull(response.getUnit());
-        assertNotNull(response.getConcept());
+        tableService.update(TABLE_1_COLUMNS.get(0), request);
     }
 
     @Test
@@ -607,6 +578,11 @@ public class TableServiceUnitTest extends BaseTest {
         doNothing()
                 .when(dataServiceGateway)
                 .updateTable(any(UUID.class), any(UUID.class), any(TableUpdateDto.class));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_3_ID);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_3_BRIEF_DTO);
 

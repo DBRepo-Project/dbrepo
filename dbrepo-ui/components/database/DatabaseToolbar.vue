@@ -193,7 +193,7 @@ export default {
       if (!this.database.is_public && !this.database.is_schema_public) {
         return false
       }
-      return this.database.dashboard_uid
+      return this.database.dashboard_uid && this.database.is_dashboard_enabled
     },
     isOwner () {
       if (!this.database || !this.cacheUser) {

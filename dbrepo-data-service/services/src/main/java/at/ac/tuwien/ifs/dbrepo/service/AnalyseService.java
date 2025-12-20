@@ -23,7 +23,7 @@ public interface AnalyseService {
      * @throws ColumnNotFoundException      The column was not found in the dataset with the given S3 key.
      * @throws ImageInvalidException        The provided image does not contain the analysed data type.
      */
-    SchemaAnalysisResultDto determineDataTypes(Image image, String key) throws AnalyseDataTypesException,
+    SchemaAnalysisResultDto determineS3CsvDataTypes(Image image, String key) throws AnalyseDataTypesException,
             DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException;
 
     /**
@@ -38,4 +38,16 @@ public interface AnalyseService {
      */
     Map<String, ColumnAnalysisResultDto> determineDataTypes(Database database, QueryDto subset)
             throws AnalyseDataTypesException, ColumnNotFoundException, DatabaseUnavailableException;
+
+    /**
+     * Determines the data types for a given subset statement and maps it to the given database engine image.
+     *
+     * @param database  The database.
+     * @param statement The statement.
+     * @return The data types.
+     * @throws ColumnNotFoundException      The column was not found in the dataset with the given S3 key.
+     * @throws DatabaseUnavailableException The target database is not available.
+     */
+    Map<String, ColumnAnalysisResultDto> determineDataTypes(Database database, String statement)
+            throws ColumnNotFoundException, DatabaseUnavailableException;
 }

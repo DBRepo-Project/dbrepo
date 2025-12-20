@@ -18,7 +18,7 @@
 
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>metadata-service</artifactId>
-    <version>1.13.2</version>
+    <version>1.13.3</version>
 
     <packaging>pom</packaging>
     <modules>
@@ -49,7 +49,6 @@
         <jwt.version>4.3.0</jwt.version>
         <c3p0.version>0.9.5.5</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
-        <apache-jena.version>4.10.0</apache-jena.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
         <testcontainers.version>1.19.1</testcontainers.version>
@@ -72,7 +71,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.13.2</version>
+            <version>1.13.3</version>
         </dependency>
         <!-- Spring -->
         <dependency>
@@ -208,17 +207,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>
-        <!-- RDF -->
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-core</artifactId>
-            <version>${apache-jena.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-arq</artifactId>
-            <version>${apache-jena.version}</version>
         </dependency>
         <!-- AMPQ -->
         <dependency>
