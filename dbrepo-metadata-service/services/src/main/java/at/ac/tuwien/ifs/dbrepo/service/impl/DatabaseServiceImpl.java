@@ -105,7 +105,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
-                .isDashboardEnabled(true)
+                .isDashboardEnabled(false)
                 .name(data.getName())
                 .internalName(metadataMapper.nameToInternalName(data.getName()) + metadataMapper.databaseSuffix())
                 .cid(data.getCid())

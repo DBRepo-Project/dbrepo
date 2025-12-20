@@ -235,7 +235,9 @@ export const useTableService = (): any => {
         enums: c.enums_values ? c.enums_values.split(',') : [],
         sets: c.sets_values ? c.sets_values.split(',') : [],
         index_length: c.index_length,
-        null_allowed: c.null_allowed
+        null_allowed: c.null_allowed,
+        concept_uri: c.concept_uri ? c.concept_uri : null,
+        unit_uri: c.unit_uri ? c.unit_uri : null,
       }
       return column
     })

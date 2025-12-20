@@ -165,7 +165,8 @@ services:
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
+      LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       METADATA_HOST: "${METADATA_HOST:-metadata-db}"
@@ -175,10 +176,10 @@ services:
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
-      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsuser}"
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY:-seaweedfsuser}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsuser}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY:-seaweedfsuser}"
       SPARQL_CONNECTION_TIMEOUT: "${SPARQL_CONNECTION_TIMEOUT:-10000}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -226,7 +227,8 @@ services:
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
       CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
+      LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
@@ -313,7 +315,7 @@ services:
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       COLLECTION: ${COLLECTION:-['database','table','column','identifier','unit','concept','user','view']}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
@@ -390,6 +392,9 @@ services:
         condition: service_healthy
       dbrepo-ui:
         condition: service_healthy
+    healthcheck:
+      test: curl -sSL 127.0.0.1:8080/health | grep 'UP' | exit
+      <<: *healthcheck-params
     logging:
       driver: json-file
 
@@ -428,7 +433,7 @@ services:
       dockerfile: init.Dockerfile
       network: host
     environment:
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
@@ -452,7 +457,7 @@ services:
       dockerfile: init.Dockerfile
       network: host
     environment:
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
       DASHBOARD_UI_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
       DASHBOARD_UI_USERNAME: "${DASHBOARD_UI_USERNAME:-admin}"
@@ -494,9 +499,9 @@ services:
       context: ./dbrepo-storage-service/init
       network: host
     environment:
-      S3_ACCESS_KEY_ID: ${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}
+      S3_ACCESS_KEY: ${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_SECRET_ACCESS_KEY: ${S3_ADMIN_SECRET_ACCESS_KEY:-seaweedfsadmin}
+      S3_SECRET_KEY: ${S3_ADMIN_SECRET_ACCESS_KEY:-seaweedfsadmin}
       STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     depends_on:
       dbrepo-storage-service:
@@ -536,14 +541,15 @@ services:
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT, EXECUTE}"
       GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
+      LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
-      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsuser}"
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY:-seaweedfsuser}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsuser}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY:-seaweedfsuser}"
       SPARK_USER: "${COMPUTE_SERVICE_USERNAME:-spark}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -579,6 +585,8 @@ services:
       GF_SECURITY_ADMIN_USER: "${DASHBOARD_UI_USERNAME:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
       GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
+      READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
+      READONLY_PASSWORD: "${READONLY_PASSWORD:-readonly}"
     healthcheck:
       test: curl -fsSL --head 127.0.0.1:3000
       <<: *healthcheck-params
@@ -601,6 +609,7 @@ services:
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
       DASHBOARD_UI_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
       DASHBOARD_UI_USERNAME: "${DASHBOARD_UI_USERNAME:-admin}"
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
