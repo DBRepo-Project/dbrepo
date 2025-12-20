@@ -47,9 +47,6 @@ that are used between the services themselves.
 | POST | [/api/v1/database/{databaseId}/access/{username}](#postapiv1databasedatabaseidaccessusername) | Give access |
 | DELETE | [/api/v1/database/{databaseId}/access/{username}](#deleteapiv1databasedatabaseidaccessusername) | Delete access |
 | HEAD | [/api/v1/database/{databaseId}/access/{username}](#headapiv1databasedatabaseidaccessusername) | Find/Check access |
-| GET | [/api/v1/ontology/{ontologyId}](#getapiv1ontologyontologyid) | Find ontology |
-| PUT | [/api/v1/ontology/{ontologyId}](#putapiv1ontologyontologyid) | Update ontology |
-| DELETE | [/api/v1/ontology/{ontologyId}](#deleteapiv1ontologyontologyid) | Delete ontology |
 | PUT | [/api/v1/message/{messageId}](#putapiv1messagemessageid) | Update message |
 | DELETE | [/api/v1/message/{messageId}](#deleteapiv1messagemessageid) | Delete message |
 | GET | [/api/v1/image/{imageId}](#getapiv1imageimageid) | Find image |
@@ -73,8 +70,6 @@ that are used between the services themselves.
 | PUT | [/api/v1/database/{databaseId}/metadata/table](#putapiv1databasedatabaseidmetadatatable) | Update database table schemas |
 | GET | [/api/v1/database/{databaseId}/image](#getapiv1databasedatabaseidimage) | Get database preview image |
 | PUT | [/api/v1/database/{databaseId}/image](#putapiv1databasedatabaseidimage) | Update database preview image |
-| GET | [/api/v1/ontology](#getapiv1ontology) | List ontologies |
-| POST | [/api/v1/ontology](#postapiv1ontology) | Create ontology |
 | GET | [/api/v1/message](#getapiv1message) | List messages |
 | POST | [/api/v1/message](#postapiv1message) | Create message |
 | GET | [/api/v1/image](#getapiv1image) | List images |
@@ -88,18 +83,13 @@ that are used between the services themselves.
 | GET | [/api/v1/container](#getapiv1container) | List containers |
 | POST | [/api/v1/container](#postapiv1container) | Create container |
 | GET | [/api/v1/user](#getapiv1user) | List users |
-| GET | [/api/v1/unit](#getapiv1unit) | List units |
-| GET | [/api/v1/ontology/{ontologyId}/entity](#getapiv1ontologyontologyidentity) | Find entities |
 | GET | [/api/v1/oai](#getapiv1oai) | Get record |
 | GET | [/api/v1/message/message/{messageId}](#getapiv1messagemessagemessageid) | Find message |
 | GET | [/api/v1/license](#getapiv1license) | List licenses |
 | GET | [/api/v1/identifier/retrieve](#getapiv1identifierretrieve) | Retrieve PID metadata |
 | GET | [/api/v1/database/{databaseId}](#getapiv1databasedatabaseid) | Find database |
-| GET | [/api/v1/database/{databaseId}/table/{tableId}/suggest](#getapiv1databasedatabaseidtabletableidsuggest) | Suggest semantics |
-| GET | [/api/v1/database/{databaseId}/table/{tableId}/column/{columnId}/suggest](#getapiv1databasedatabaseidtabletableidcolumncolumnidsuggest) | Suggest semantics |
 | GET | [/api/v1/container/{containerId}](#getapiv1containercontainerid) | Find container |
 | DELETE | [/api/v1/container/{containerId}](#deleteapiv1containercontainerid) | Delete container |
-| GET | [/api/v1/concept](#getapiv1concept) | List concepts |
 | GET | [/api/v1/search](#getapiv1search) | Performs a fuzzy search |
 | POST | [/api/v1/search/{field_type}](#postapiv1searchfield_type) | Performs a general search |
 | GET | [/api/v1/search/{field_type}/fields](#getapiv1searchfield_typefields) | Get searchable fields |
@@ -136,8 +126,6 @@ that are used between the services themselves.
 | UserDto | [#/components/schemas/UserDto](#componentsschemasuserdto) |  |
 | DatabaseBriefDto | [#/components/schemas/DatabaseBriefDto](#componentsschemasdatabasebriefdto) |  |
 | UserUpdateDto | [#/components/schemas/UserUpdateDto](#componentsschemasuserupdatedto) |  |
-| OntologyModifyDto | [#/components/schemas/OntologyModifyDto](#componentsschemasontologymodifydto) |  |
-| OntologyDto | [#/components/schemas/OntologyDto](#componentsschemasontologydto) |  |
 | BannerMessageUpdateDto | [#/components/schemas/BannerMessageUpdateDto](#componentsschemasbannermessageupdatedto) |  |
 | BannerMessageBriefDto | [#/components/schemas/BannerMessageBriefDto](#componentsschemasbannermessagebriefdto) |  |
 | ImageChangeDto | [#/components/schemas/ImageChangeDto](#componentsschemasimagechangedto) |  |
@@ -163,14 +151,11 @@ that are used between the services themselves.
 | TableBriefDto | [#/components/schemas/TableBriefDto](#componentsschemastablebriefdto) |  |
 | ColumnSemanticsUpdateDto | [#/components/schemas/ColumnSemanticsUpdateDto](#componentsschemascolumnsemanticsupdatedto) |  |
 | ColumnDto | [#/components/schemas/ColumnDto](#componentsschemascolumndto) |  |
-| ConceptBriefDto | [#/components/schemas/ConceptBriefDto](#componentsschemasconceptbriefdto) |  |
 | EnumDto | [#/components/schemas/EnumDto](#componentsschemasenumdto) |  |
 | SetDto | [#/components/schemas/SetDto](#componentsschemassetdto) |  |
-| UnitBriefDto | [#/components/schemas/UnitBriefDto](#componentsschemasunitbriefdto) |  |
 | DatabaseTransferDto | [#/components/schemas/DatabaseTransferDto](#componentsschemasdatabasetransferdto) |  |
 | DatabaseModifyImageDto | [#/components/schemas/DatabaseModifyImageDto](#componentsschemasdatabasemodifyimagedto) |  |
 | CreateAccessDto | [#/components/schemas/CreateAccessDto](#componentsschemascreateaccessdto) |  |
-| OntologyCreateDto | [#/components/schemas/OntologyCreateDto](#componentsschemasontologycreatedto) |  |
 | BannerMessageCreateDto | [#/components/schemas/BannerMessageCreateDto](#componentsschemasbannermessagecreatedto) |  |
 | ImageCreateDto | [#/components/schemas/ImageCreateDto](#componentsschemasimagecreatedto) |  |
 | CreateIdentifierCreatorDto | [#/components/schemas/CreateIdentifierCreatorDto](#componentsschemascreateidentifiercreatordto) |  |
@@ -188,10 +173,6 @@ that are used between the services themselves.
 | CreateContainerDto | [#/components/schemas/CreateContainerDto](#componentsschemascreatecontainerdto) |  |
 | ContainerDto | [#/components/schemas/ContainerDto](#componentsschemascontainerdto) |  |
 | ApiErrorDto | [#/components/schemas/ApiErrorDto](#componentsschemasapierrordto) |  |
-| ColumnBriefDto | [#/components/schemas/ColumnBriefDto](#componentsschemascolumnbriefdto) |  |
-| UnitDto | [#/components/schemas/UnitDto](#componentsschemasunitdto) |  |
-| OntologyBriefDto | [#/components/schemas/OntologyBriefDto](#componentsschemasontologybriefdto) |  |
-| EntityDto | [#/components/schemas/EntityDto](#componentsschemasentitydto) |  |
 | OaiListRecordsParameters | [#/components/schemas/OaiListRecordsParameters](#componentsschemasoailistrecordsparameters) |  |
 | BannerMessageDto | [#/components/schemas/BannerMessageDto](#componentsschemasbannermessagedto) |  |
 | ImageBriefDto | [#/components/schemas/ImageBriefDto](#componentsschemasimagebriefdto) |  |
@@ -199,6 +180,7 @@ that are used between the services themselves.
 | LdDatasetDto | [#/components/schemas/LdDatasetDto](#componentsschemaslddatasetdto) |  |
 | ViewColumnDto | [#/components/schemas/ViewColumnDto](#componentsschemasviewcolumndto) |  |
 | ViewDto | [#/components/schemas/ViewDto](#componentsschemasviewdto) |  |
+| ColumnBriefDto | [#/components/schemas/ColumnBriefDto](#componentsschemascolumnbriefdto) |  |
 | ConstraintsDto | [#/components/schemas/ConstraintsDto](#componentsschemasconstraintsdto) |  |
 | ForeignKeyBriefDto | [#/components/schemas/ForeignKeyBriefDto](#componentsschemasforeignkeybriefdto) |  |
 | ForeignKeyDto | [#/components/schemas/ForeignKeyDto](#componentsschemasforeignkeydto) |  |
@@ -206,9 +188,7 @@ that are used between the services themselves.
 | PrimaryKeyDto | [#/components/schemas/PrimaryKeyDto](#componentsschemasprimarykeydto) |  |
 | TableDto | [#/components/schemas/TableDto](#componentsschemastabledto) |  |
 | UniqueDto | [#/components/schemas/UniqueDto](#componentsschemasuniquedto) |  |
-| TableColumnEntityDto | [#/components/schemas/TableColumnEntityDto](#componentsschemastablecolumnentitydto) |  |
 | ContainerBriefDto | [#/components/schemas/ContainerBriefDto](#componentsschemascontainerbriefdto) |  |
-| ConceptDto | [#/components/schemas/ConceptDto](#componentsschemasconceptdto) |  |
 | ApiError | [#/components/schemas/ApiError](#componentsschemasapierror) |  |
 | IndexDto | [#/components/schemas/IndexDto](#componentsschemasindexdto) |  |
 | IndexFieldDto | [#/components/schemas/IndexFieldDto](#componentsschemasindexfielddto) |  |
@@ -2054,107 +2034,6 @@ basicAuth
 
 ***
 
-### [GET]/api/v1/ontology/{ontologyId}
-
-- Summary  
-Find ontology
-
-- Description  
-Finds an ontology with id in the metadata database.
-
-#### Responses
-
-- 200 Find one ontology
-
-`application/json`
-
-```ts
-{
-  id: string
-  uri: string
-  prefix: string
-  sparql: boolean
-  rdf: boolean
-  uri_pattern?: string
-  sparql_endpoint?: string
-  rdf_path?: string
-}
-```
-
-- 404 Could not find ontology
-
-***
-
-### [PUT]/api/v1/ontology/{ontologyId}
-
-- Summary  
-Update ontology
-
-- Description  
-Updates an ontology with id. Requires role `update-ontology`.
-
-- Security  
-bearerAuth  
-basicAuth  
-
-#### RequestBody
-
-- application/json
-
-```ts
-{
-  uri: string
-  prefix: string
-  sparql_endpoint?: string
-  rdf_path?: string
-}
-```
-
-#### Responses
-
-- 202 Updated ontology successfully
-
-`application/json`
-
-```ts
-{
-  id: string
-  uri: string
-  prefix: string
-  sparql: boolean
-  rdf: boolean
-  uri_pattern?: string
-  sparql_endpoint?: string
-  rdf_path?: string
-}
-```
-
-- 404 Could not find ontology
-
-***
-
-### [DELETE]/api/v1/ontology/{ontologyId}
-
-- Summary  
-Delete ontology
-
-- Description  
-Deletes an ontology with given id. Requires role `delete-ontology`.
-
-- Security  
-bearerAuth  
-basicAuth  
-
-#### Responses
-
-- 202 Deleted ontology successfully
-
-`application/json`
-
-- 404 Could not find ontology
-
-***
-
 ### [PUT]/api/v1/message/{messageId}
 
 - Summary  
@@ -3468,26 +3347,6 @@ basicAuth
     mean?: number
     // The statistically most middle numerical value
     median?: number
-    concept: {
-      // The concept id
-      id: string
-      // The concept URI
-      uri: string
-      // The concept name, taken as label from the ontology
-      name?: string
-      // The concept description giving a user-friendly explanation
-      description?: string
-    }
-    unit: {
-      // The unit id
-      id: string
-      // The unit URI
-      uri: string
-      // The unit name, taken as label from the ontology
-      name?: string
-      // The unit description giving a user-friendly explanation
-      description?: string
-    }
     description?: string
     enums: {
       // The enum id
@@ -3527,6 +3386,10 @@ basicAuth
     val_max?: number
     // The statistically determined standard deviation
     std_dev?: number
+    // The concept URI
+    concept_uri?: string
+    // The unit URI
+    unit_uri?: string
     is_null_allowed: boolean
   }[]
   constraints: {
@@ -3810,26 +3673,6 @@ basicAuth
   mean?: number
   // The statistically most middle numerical value
   median?: number
-  concept: {
-    // The concept id
-    id: string
-    // The concept URI
-    uri: string
-    // The concept name, taken as label from the ontology
-    name?: string
-    // The concept description giving a user-friendly explanation
-    description?: string
-  }
-  unit: {
-    // The unit id
-    id: string
-    // The unit URI
-    uri: string
-    // The unit name, taken as label from the ontology
-    name?: string
-    // The unit description giving a user-friendly explanation
-    description?: string
-  }
   description?: string
   enums: {
     // The enum id
@@ -3869,6 +3712,10 @@ basicAuth
   val_max?: number
   // The statistically determined standard deviation
   std_dev?: number
+  // The concept URI
+  concept_uri?: string
+  // The unit URI
+  unit_uri?: string
   is_null_allowed: boolean
 }
 ```
@@ -4319,78 +4166,6 @@ basicAuth
 - 502 Connection to search service failed
 
 - 503 Failed to save in search service
-
-***
-
-### [GET]/api/v1/ontology
-
-- Summary  
-List ontologies
-
-- Description  
-Lists all ontologies known to the metadata database.
-
-#### Responses
-
-- 200 List ontologies
-
-`application/json`
-
-```ts
-{
-  id: string
-  uri: string
-  prefix: string
-  sparql: boolean
-  rdf: boolean
-  uri_pattern?: string
-}[]
-```
-
-***
-
-### [POST]/api/v1/ontology
-
-- Summary  
-Create ontology
-
-- Description  
-Creates an ontology in the metadata database. Requires role `create-ontology`.
-
-- Security  
-bearerAuth  
-basicAuth  
-
-#### RequestBody
-
-- application/json
-
-```ts
-{
-  uri: string
-  prefix: string
-  sparql_endpoint?: string
-}
-```
-
-#### Responses
-
-- 201 Registered ontology successfully
-
-`application/json`
-
-```ts
-{
-  id: string
-  uri: string
-  prefix: string
-  sparql: boolean
-  rdf: boolean
-  uri_pattern?: string
-  sparql_endpoint?: string
-  rdf_path?: string
-}
-```
 
 ***
 
@@ -5476,97 +5251,6 @@ username?: string
 
 ***
 
-### [GET]/api/v1/unit
-
-- Summary  
-List units
-
-- Description  
-Lists units known to the metadata database.
-
-#### Responses
-
-- 200 Find all semantic units
-
-`application/json`
-
-```ts
-{
-  // The unit id
-  id: string
-  // The unit URI
-  uri: string
-  // The unit name, taken as label from the ontology
-  name?: string
-  // The unit description giving a user-friendly explanation
-  description?: string
-  columns: {
-    // The column id
-    id: string
-    // The column name
-    name: string
-    // The data source alias name
-    alias?: string
-    // The database id
-    database_id: string
-    // The table id
-    table_id: string
-    // The machine-friendly internal name
-    internal_name: string
-    // The column type name
-    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-  }[]
-}[]
-```
-
-***
-
-### [GET]/api/v1/ontology/{ontologyId}/entity
-
-- Summary  
-Find entities
-
-- Description  
-Finds semantic entities by label or uri in an ontology with id. Requires role `execute-semantic-query`.
-
-- Security  
-bearerAuth  
-basicAuth  
-
-#### Parameters(Query)
-
-```ts
-label?: string
-```
-
-```ts
-uri?: string
-```
-
-#### Responses
-
-- 200 Found entities
-
-`application/json`
-
-```ts
-{
-  uri: string
-  label: string
-  description?: string
-}[]
-```
-
-- 400 Filter params are invalid
-
-- 404 Could not find ontology
-
-- 417 Generated query or uri is malformed
-
-- 422 Ontology does not have rdf or sparql endpoint
-
-***
-
 ### [GET]/api/v1/oai
 
 - Summary  
@@ -5871,81 +5555,6 @@ basicAuth
 
 ***
 
-### [GET]/api/v1/database/{databaseId}/table/{tableId}/suggest
-
-- Summary  
-Suggest semantics
-
-- Description  
-Suggests semantic concepts for a table. This action can only be performed by the table owner. Requires role `table-semantic-analyse`.
-
-- Security  
-bearerAuth  
-basicAuth  
-
-#### Responses
-
-- 200 Suggested table semantics successfully
-
-`application/json`
-
-```ts
-{
-  uri: string
-  label: string
-  description?: string
-}[]
-```
-
-- 400 Failed to parse statistic in search service
-
-- 403 Not the table owner.
-
-- 404 Failed to find database/table in metadata database
-
-- 417 Generated query is malformed
-
-- 422 Ontology does not have rdf or sparql endpoint
-
-***
-
-### [GET]/api/v1/database/{databaseId}/table/{tableId}/column/{columnId}/suggest
-
-- Summary  
-Suggest semantics
-
-- Description  
-Suggests column semantics. Requires role `table-semantic-analyse`.
-
-- Security  
-bearerAuth  
-basicAuth  
-
-#### Responses
-
-- 200 Suggested table column semantics successfully
-
-`application/json`
-
-```ts
-{
-  uri: string
-  label?: string
-  description?: string
-  database_id: string
-  table_id: string
-  column_id: string
-}[]
-```
-
-- 400 Generated query is malformed
-
-- 404 Failed to find database/table in metadata database
-
-- 422 Ontology does not have rdf or sparql endpoint
-
-***
-
 ### [GET]/api/v1/container/{containerId}
 
 - Summary  
@@ -6054,51 +5663,6 @@ basicAuth
 - 403 Create container not permitted, need authority `delete-container`
 
 - 404 Container not found
-
-***
-
-### [GET]/api/v1/concept
-
-- Summary  
-List concepts
-
-- Description  
-List all semantic concepts known to the metadata database
-
-#### Responses
-
-- 200 List concepts
-
-`application/json`
-
-```ts
-{
-  // The concept id
-  id: string
-  // The concept URI
-  uri: string
-  // The concept name, taken as label from the ontology
-  name?: string
-  // The concept description giving a user-friendly explanation
-  description?: string
-  columns: {
-    // The column id
-    id: string
-    // The column name
-    name: string
-    // The data source alias name
-    alias?: string
-    // The database id
-    database_id: string
-    // The table id
-    table_id: string
-    // The machine-friendly internal name
-    internal_name: string
-    // The column type name
-    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-  }[]
-}[]
-```
 
 ***
 
@@ -6823,32 +6387,6 @@ body: {
 }
 ```
 
-### #/components/schemas/OntologyModifyDto
-
-```ts
-{
-  uri: string
-  prefix: string
-  sparql_endpoint?: string
-  rdf_path?: string
-}
-```
-
-### #/components/schemas/OntologyDto
-
-```ts
-{
-  id: string
-  uri: string
-  prefix: string
-  sparql: boolean
-  rdf: boolean
-  uri_pattern?: string
-  sparql_endpoint?: string
-  rdf_path?: string
-}
-```
-
 ### #/components/schemas/BannerMessageUpdateDto
 
 ```ts
@@ -7416,26 +6954,6 @@ body: {
   mean?: number
   // The statistically most middle numerical value
   median?: number
-  concept: {
-    // The concept id
-    id: string
-    // The concept URI
-    uri: string
-    // The concept name, taken as label from the ontology
-    name?: string
-    // The concept description giving a user-friendly explanation
-    description?: string
-  }
-  unit: {
-    // The unit id
-    id: string
-    // The unit URI
-    uri: string
-    // The unit name, taken as label from the ontology
-    name?: string
-    // The unit description giving a user-friendly explanation
-    description?: string
-  }
   description?: string
   enums: {
     // The enum id
@@ -7475,22 +6993,11 @@ body: {
   val_max?: number
   // The statistically determined standard deviation
   std_dev?: number
-  is_null_allowed: boolean
-}
-```
-
-### #/components/schemas/ConceptBriefDto
-
-```ts
-{
-  // The concept id
-  id: string
   // The concept URI
-  uri: string
-  // The concept name, taken as label from the ontology
-  name?: string
-  // The concept description giving a user-friendly explanation
-  description?: string
+  concept_uri?: string
+  // The unit URI
+  unit_uri?: string
+  is_null_allowed: boolean
 }
 ```
 
@@ -7513,21 +7020,6 @@ body: {
   id: string
   // The set value
   value: string
-}
-```
-
-### #/components/schemas/UnitBriefDto
-
-```ts
-{
-  // The unit id
-  id: string
-  // The unit URI
-  uri: string
-  // The unit name, taken as label from the ontology
-  name?: string
-  // The unit description giving a user-friendly explanation
-  description?: string
 }
 ```
 
@@ -7555,16 +7047,6 @@ body: {
 {
   // The access type
   type: enum[read, write_own, write_all]
-}
-```
-
-### #/components/schemas/OntologyCreateDto
-
-```ts
-{
-  uri: string
-  prefix: string
-  sparql_endpoint?: string
 }
 ```
 
@@ -8049,81 +7531,6 @@ body: {
 }
 ```
 
-### #/components/schemas/ColumnBriefDto
-
-```ts
-{
-  // The column id
-  id: string
-  // The column name
-  name: string
-  // The data source alias name
-  alias?: string
-  // The database id
-  database_id: string
-  // The table id
-  table_id: string
-  // The machine-friendly internal name
-  internal_name: string
-  // The column type name
-  type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-}
-```
-
-### #/components/schemas/UnitDto
-
-```ts
-{
-  // The unit id
-  id: string
-  // The unit URI
-  uri: string
-  // The unit name, taken as label from the ontology
-  name?: string
-  // The unit description giving a user-friendly explanation
-  description?: string
-  columns: {
-    // The column id
-    id: string
-    // The column name
-    name: string
-    // The data source alias name
-    alias?: string
-    // The database id
-    database_id: string
-    // The table id
-    table_id: string
-    // The machine-friendly internal name
-    internal_name: string
-    // The column type name
-    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-  }[]
-}
-```
-
-### #/components/schemas/OntologyBriefDto
-
-```ts
-{
-  id: string
-  uri: string
-  prefix: string
-  sparql: boolean
-  rdf: boolean
-  uri_pattern?: string
-}
-```
-
-### #/components/schemas/EntityDto
-
-```ts
-{
-  uri: string
-  label: string
-  description?: string
-}
-```
-
 ### #/components/schemas/OaiListRecordsParameters
 
 ```ts
@@ -8434,6 +7841,27 @@ body: {
   initial_view?: boolean
   // The sha256-hash of the query
   query_hash: string
+}
+```
+
+### #/components/schemas/ColumnBriefDto
+
+```ts
+{
+  // The column id
+  id: string
+  // The column name
+  name: string
+  // The data source alias name
+  alias?: string
+  // The database id
+  database_id: string
+  // The table id
+  table_id: string
+  // The machine-friendly internal name
+  internal_name: string
+  // The column type name
+  type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
 }
 ```
 
@@ -8776,26 +8204,6 @@ body: {
     mean?: number
     // The statistically most middle numerical value
     median?: number
-    concept: {
-      // The concept id
-      id: string
-      // The concept URI
-      uri: string
-      // The concept name, taken as label from the ontology
-      name?: string
-      // The concept description giving a user-friendly explanation
-      description?: string
-    }
-    unit: {
-      // The unit id
-      id: string
-      // The unit URI
-      uri: string
-      // The unit name, taken as label from the ontology
-      name?: string
-      // The unit description giving a user-friendly explanation
-      description?: string
-    }
     description?: string
     enums: {
       // The enum id
@@ -8835,6 +8243,10 @@ body: {
     val_max?: number
     // The statistically determined standard deviation
     std_dev?: number
+    // The concept URI
+    concept_uri?: string
+    // The unit URI
+    unit_uri?: string
     is_null_allowed: boolean
   }[]
   constraints: {
@@ -8986,19 +8398,6 @@ body: {
 }
 ```
 
-### #/components/schemas/TableColumnEntityDto
-
-```ts
-{
-  uri: string
-  label?: string
-  description?: string
-  database_id: string
-  table_id: string
-  column_id: string
-}
-```
-
 ### #/components/schemas/ContainerBriefDto
 
 ```ts
@@ -9025,37 +8424,6 @@ body: {
   count: integer
   // The machine-friendly container name
   internal_name: string
-}
-```
-
-### #/components/schemas/ConceptDto
-
-```ts
-{
-  // The concept id
-  id: string
-  // The concept URI
-  uri: string
-  // The concept name, taken as label from the ontology
-  name?: string
-  // The concept description giving a user-friendly explanation
-  description?: string
-  columns: {
-    // The column id
-    id: string
-    // The column name
-    name: string
-    // The data source alias name
-    alias?: string
-    // The database id
-    database_id: string
-    // The table id
-    table_id: string
-    // The machine-friendly internal name
-    internal_name: string
-    // The column type name
-    type: enum[char, varchar, binary, varbinary, tinyblob, tinytext, text, blob, mediumtext, mediumblob, longtext, longblob, enum, set, serial, bit, tinyint, bool, smallint, mediumint, int, bigint, float, double, decimal, date, datetime, timestamp, time, year]
-  }[]
 }
 ```
 

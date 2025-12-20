@@ -233,6 +233,7 @@ build-python-lib:
   only:
     - merge_requests
     - master
+    - /^release-.*/
     - tags
   before_script:
     - "apk --no-cache add python3-dev"
