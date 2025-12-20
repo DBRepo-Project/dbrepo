@@ -1,7 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ConceptBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.UnitBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -92,11 +90,11 @@ public class ColumnDto {
     @JsonProperty("val_min")
     private BigDecimal valMin;
 
-    @Schema(description = "The statistically lowest numerical value",example = "100")
+    @Schema(description = "The statistically lowest numerical value", example = "100")
     @JsonProperty("val_max")
     private BigDecimal valMax;
 
-    @Schema(description = "The statistically average numerical value",example = "45.4")
+    @Schema(description = "The statistically average numerical value", example = "45.4")
     private BigDecimal mean;
 
     @Schema(description = "The statistically most middle numerical value", example = "51")
@@ -106,9 +104,13 @@ public class ColumnDto {
     @Schema(description = "The statistically determined standard deviation", example = "5.32")
     private BigDecimal stdDev;
 
-    private ConceptBriefDto concept;
+    @JsonProperty("concept_uri")
+    @Schema(description = "The concept URI", example = "http://purl.obolibrary.org/obo/ENVO_09000027")
+    private String conceptUri;
 
-    private UnitBriefDto unit;
+    @JsonProperty("unit_uri")
+    @Schema(description = "The unit URI", example = "http://qudt.org/vocab/unit/DeciS-PER-M")
+    private String unit;
 
     @Size(max = 2048)
     @Schema(example = "Column comment")

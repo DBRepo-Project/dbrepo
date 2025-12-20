@@ -1,15 +1,14 @@
 package at.ac.tuwien.ifs.dbrepo.mvc;
 
+import at.ac.tuwien.ifs.dbrepo.config.MetricsConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.CreateContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseTransferDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
-import at.ac.tuwien.ifs.dbrepo.config.MetricsConfig;
-import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
-import at.ac.tuwien.ifs.dbrepo.endpoints.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.endpoints.*;
 import io.micrometer.observation.tck.TestObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -54,12 +53,6 @@ public class PrometheusEndpointMvcTest extends BaseTest {
     private ContainerEndpoint containerEndpoint;
 
     @Autowired
-    private ConceptEndpoint conceptEndpoint;
-
-    @Autowired
-    private UnitEndpoint unitEndpoint;
-
-    @Autowired
     private DatabaseEndpoint databaseEndpoint;
 
     @Autowired
@@ -76,9 +69,6 @@ public class PrometheusEndpointMvcTest extends BaseTest {
 
     @Autowired
     private MetadataEndpoint metadataEndpoint;
-
-    @Autowired
-    private OntologyEndpoint ontologyEndpoint;
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -393,85 +383,6 @@ public class PrometheusEndpointMvcTest extends BaseTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-ontology", "update-ontology", "delete-ontology", "execute-semantic-query"})
-    public void prometheusOntologyEndpoint_succeeds() {
-
-        /* mock */
-        try {
-            ontologyEndpoint.findAll();
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            ontologyEndpoint.find(ONTOLOGY_1_ID);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            ontologyEndpoint.create(ONTOLOGY_1_CREATE_DTO, USER_1_PRINCIPAL);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            ontologyEndpoint.update(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            ontologyEndpoint.delete(ONTOLOGY_1_ID);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            ontologyEndpoint.find(ONTOLOGY_1_ID, "thing", null);
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        for (String metric : List.of("dbrepo_ontologies_findall", "dbrepo_ontologies_find", "dbrepo_ontologies_create", "dbrepo_ontologies_update", "dbrepo_ontologies_delete", "dbrepo_ontologies_entities_find")) {
-            assertThat(registry)
-                    .hasObservationWithNameEqualTo(metric);
-        }
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-semantic-concept", "admin"})
-    public void prometheusConceptEndpoint_succeeds() {
-
-        /* mock */
-        try {
-            conceptEndpoint.findAll();
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        for (String metric : List.of("dbrepo_semantic_concepts_findall")) {
-            assertThat(registry)
-                    .hasObservationWithNameEqualTo(metric);
-        }
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-semantic-unit", "admin"})
-    public void prometheusUnitEndpoint_succeeds() {
-
-        /* mock */
-        try {
-            unitEndpoint.findAll();
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        for (String metric : List.of("dbrepo_semantic_units_findall")) {
-            assertThat(registry)
-                    .hasObservationWithNameEqualTo(metric);
-        }
-    }
-
-    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-table", "delete-table",
             "modify-table-column-semantics", "modify-foreign-table-column-semantics", "update-table-statistic",
             "table-semantic-analyse"})
@@ -503,17 +414,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            tableEndpoint.analyseTable(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
             tableEndpoint.updateStatistic(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            tableEndpoint.analyseTableColumn(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId());
         } catch (Exception e) {
             /* ignore */
         }
@@ -525,8 +426,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
 
         /* test */
         for (String metric : List.of("dbrepo_tables_findall", "dbrepo_table_create", "dbrepo_tables_find",
-                "dbrepo_table_delete", "dbrepo_statistic_table_update", "dbrepo_semantic_table_analyse",
-                "dbrepo_semantic_column_analyse", "dbrepo_semantics_column_save")) {
+                "dbrepo_table_delete", "dbrepo_statistic_table_update", "dbrepo_semantics_column_save")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

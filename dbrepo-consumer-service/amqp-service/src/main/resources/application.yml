@@ -42,6 +42,7 @@ management:
       enabled: true
 server:
   port: 8080
+  max-http-request-header-size: 64KB
   tomcat:
     max-swallow-size: -1
 duckdb:
@@ -51,8 +52,8 @@ logging:
   file:
     name: /var/log/app/service/data/app.log
   level:
-    root: warn
-    at.ac.tuwien.ifs.dbrepo.: "${LOG_LEVEL:info}"
+    root: "${LOG_ROOT_LEVEL:warn}"
+    at.ac.tuwien.ifs.dbrepo.: "${LOG_APPLICATION_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
   pattern:
     console: "%d %highlight(%-5level) %msg%n"

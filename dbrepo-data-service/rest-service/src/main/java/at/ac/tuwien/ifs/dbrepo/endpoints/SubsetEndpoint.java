@@ -31,8 +31,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +41,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -387,18 +386,15 @@ public class SubsetEndpoint {
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, paginatedStatement);
-                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset1)));
+                    final Set<Map<String, Object>> body = dataMapper.datasetToJson(dataService.getSubsetAsJson(database, paginatedStatement));
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(dataMapper.datasetToJson(dataset1));
+                            .body(body);
                 case "text/csv":
-                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, paginatedStatement);
-                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset2)));
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(dataset2);
+                            .body(dataService.getSubsetAsCsv(database, paginatedStatement));
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

@@ -6,12 +6,12 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>data-service</artifactId>
-        <version>1.13.2</version>
+        <version>1.13.3</version>
     </parent>
 
     <name>api</name>
     <artifactId>api</artifactId>
-    <version>1.13.2</version>
+    <version>1.13.3</version>
 
     <dependencies/>
 

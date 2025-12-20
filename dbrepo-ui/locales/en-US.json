@@ -500,10 +500,16 @@
             "title": "Extra Information"
           },
           "concept": {
-            "title": "Concept"
+            "title": "Concept",
+            "uri": {
+              "label": "Concept URI"
+            }
           },
           "unit": {
-            "title": "Measurement Unit"
+            "title": "Measurement Unit",
+            "uri": {
+              "label": "Unit URI"
+            }
           },
           "nullable": {
             "title": "Nullable"

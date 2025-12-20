@@ -309,7 +309,8 @@ public class TableEndpointUnitTest extends BaseTest {
     @WithAnonymousUser
     public void getData_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
-            DatabaseNotFoundException, FormatNotAvailableException, DatabaseMalformedException, MalformedException {
+            DatabaseNotFoundException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
@@ -332,7 +333,8 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_head_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException,
             MetadataServiceException, NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException,
-            DatabaseMalformedException, MalformedException {
+            MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
+            AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
@@ -428,8 +430,8 @@ public class TableEndpointUnitTest extends BaseTest {
     @MethodSource("anyAccess_parameters")
     public void getData_private_succeeds(String name, AccessTypeDto type) throws DatabaseUnavailableException,
             TableNotFoundException, RemoteUnavailableException, PaginationException, MetadataServiceException,
-            NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException, DatabaseMalformedException,
-            MalformedException {
+            NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException, MalformedException,
+            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -1286,8 +1288,8 @@ public class TableEndpointUnitTest extends BaseTest {
     @WithAnonymousUser
     public void getData_publicDataPrivateSchemaTextCsv_succeeds() throws TableNotFoundException, NotAllowedException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
-            DatabaseUnavailableException, FormatNotAvailableException, PaginationException, DatabaseMalformedException,
-            MalformedException {
+            DatabaseUnavailableException, FormatNotAvailableException, PaginationException, MalformedException,
+            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
@@ -1310,7 +1312,8 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_privateDataPrivateSchemaTextCsv_succeeds(String name, AccessTypeDto type)
             throws TableNotFoundException, NotAllowedException, RemoteUnavailableException, MetadataServiceException,
             DatabaseNotFoundException, DatabaseUnavailableException, FormatNotAvailableException, PaginationException,
-            DatabaseMalformedException, MalformedException {
+            MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
+            AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))

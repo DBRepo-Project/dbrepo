@@ -157,7 +157,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint analyse datatypes, databaseId={}, key={}", databaseId, key);
         final Database database = metadataService.getDatabase(databaseId);
         return ResponseEntity.ok()
-                .body(analyseService.determineDataTypes(database.getContainer().getImage(), key));
+                .body(analyseService.determineS3CsvDataTypes(database.getContainer().getImage(), key));
     }
 
 }

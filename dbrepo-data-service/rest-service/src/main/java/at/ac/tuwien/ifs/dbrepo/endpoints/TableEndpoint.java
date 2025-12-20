@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -9,6 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -54,6 +56,7 @@ public class TableEndpoint {
     private final DataService dataService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
+    private final AnalyseService analyseService;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
@@ -62,12 +65,13 @@ public class TableEndpoint {
 
     @Autowired
     public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
-                         MariaDbMapper mariaDbMapper, MetadataService metadataService,
+                         MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
+        this.analyseService = analyseService;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -236,7 +240,7 @@ public class TableEndpoint {
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException,
-            FormatNotAvailableException {
+            FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
         log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, accept={}",
                 databaseId, tableId, timestamp, page, size, accept);
         endpointValidator.validateDataParams(page, size);
@@ -284,7 +288,7 @@ public class TableEndpoint {
                     headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset1));
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(dataset1);
+                            .body(dataMapper.datasetToJson(dataset1));
                 case MEDIA_TYPE_TEXT_CSV:
                     final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
