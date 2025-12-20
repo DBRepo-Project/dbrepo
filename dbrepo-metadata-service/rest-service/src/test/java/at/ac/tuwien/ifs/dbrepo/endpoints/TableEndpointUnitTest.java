@@ -9,8 +9,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.EntityDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.TableColumnEntityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
@@ -18,11 +16,12 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
-import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.AccessService;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.jena.sys.JenaSystem;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,9 +61,6 @@ public class TableEndpointUnitTest extends BaseTest {
     @MockitoBean
     private UserService userService;
 
-    @MockitoBean
-    private EntityService entityService;
-
     @Autowired
     private TableEndpoint tableEndpoint;
 
@@ -86,12 +82,6 @@ public class TableEndpointUnitTest extends BaseTest {
     public static Stream<Arguments> canHaveSizeAndD_parameters() {
         return EndpointValidator.CAN_HAVE_SIZE_AND_D.stream()
                 .map(Arguments::arguments);
-    }
-
-    @BeforeAll
-    public static void beforeAll() {
-        /* init Apache Jena */
-        JenaSystem.init();
     }
 
     @Test
@@ -580,74 +570,6 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void analyseTable_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTable_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME, authorities = {"table-semantic-analyse"})
-    public void analyseTable_notOwner_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            analyseTable_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void findAll_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTable_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"table-semantic-analyse"})
-    public void findAll_hasRole_succeeds() throws MalformedException, TableNotFoundException,
-            DatabaseNotFoundException, NotAllowedException {
-
-        /* test */
-        analyseTable_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void analyseTableColumn_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0));
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void analyseTableColumn_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0));
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"table-semantic-analyse"})
-    public void analyseTableColumn_hasRole_succeeds() throws MalformedException, TableNotFoundException,
-            DatabaseNotFoundException {
-
-        /* test */
-        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0));
-    }
-
-    @Test
-    @WithAnonymousUser
     public void update_publicAnonymous_fails() {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .conceptUri(CONCEPT_2_URI)
@@ -1099,39 +1021,6 @@ public class TableEndpointUnitTest extends BaseTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void analyseTable_generic(UUID databaseId, Database database, UUID tableId, Table table, Principal principal)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
-
-        /* mock */
-        when(databaseService.findById(databaseId))
-                .thenReturn(database);
-        when(tableService.findById(database, tableId))
-                .thenReturn(table);
-        when(entityService.suggestByTable(table))
-                .thenReturn(List.of());
-
-        /* test */
-        final ResponseEntity<List<EntityDto>> response = tableEndpoint.analyseTable(databaseId, tableId, principal);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        final List<EntityDto> body = response.getBody();
-        assertNotNull(body);
-    }
-
-    public void analyseTableColumn_generic(UUID databaseId, UUID tableId, UUID columnId, TableColumn tableColumn)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
-
-        /* mock */
-        when(entityService.suggestByColumn(tableColumn))
-                .thenReturn(List.of());
-
-        /* test */
-        final ResponseEntity<List<TableColumnEntityDto>> response = tableEndpoint.analyseTableColumn(databaseId,
-                tableId, columnId);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        final List<TableColumnEntityDto> body = response.getBody();
-        assertNotNull(body);
-    }
-
     protected ResponseEntity<List<TableBriefDto>> generic_list(UUID databaseId, Database database, Principal principal,
                                                                String username, DatabaseAccess access)
             throws NotAllowedException, DatabaseNotFoundException, AccessNotFoundException, UserNotFoundException {
@@ -1266,8 +1155,9 @@ public class TableEndpointUnitTest extends BaseTest {
         if (table != null) {
             when(tableService.findById(database, tableId))
                     .thenReturn(table);
-            when(tableService.update(column, data))
-                    .thenReturn(column);
+            doNothing()
+                    .when(tableService)
+                    .update(column, data);
         } else {
             doThrow(DataServiceException.class)
                     .when(tableService)

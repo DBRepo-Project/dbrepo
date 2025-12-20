@@ -44,7 +44,7 @@ public class AnalyseEndpointUnitTest extends BaseTest {
         /* mock */
         when(metadataService.getImage(IMAGE_1_ID))
                 .thenReturn(IMAGE_1_CACHE);
-        when(analyseService.determineDataTypes(IMAGE_1_CACHE, "s3key"))
+        when(analyseService.determineS3CsvDataTypes(IMAGE_1_CACHE, "s3key"))
                 .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
 
         /* test */

@@ -52,6 +52,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     @Override
     public TokenDto getUserToken(String username, String password, String realm, String clientId, String clientSecret)
             throws BadCredentialsException {
+        log.debug("get user token for user: {}", username);
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
                 .realm(realm)
@@ -64,13 +65,14 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             return metadataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
                     .getAccessToken());
         } catch (NotAuthorizedException e) {
-            log.error("Failed to obtain user token: {}", e.getMessage());
-            throw new BadCredentialsException("Failed to obtain user token", e);
+            log.error("Failed to get user token: {}", e.getMessage());
+            throw new BadCredentialsException("Failed to get user token", e);
         }
     }
 
     @Override
     public TokenDto getUserToken(String username, String password) throws BadCredentialsException {
+        log.debug("get user token for user: {}", username);
         try (Keycloak userKeycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakConfig.getKeycloakEndpoint())
                 .realm(keycloakConfig.getKeycloakRealm())
@@ -83,20 +85,20 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             return metadataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
                     .getAccessToken());
         } catch (NotAuthorizedException e) {
-            log.error("Failed to obtain user token: {}", e.getMessage());
-            throw new BadCredentialsException("Failed to obtain user token", e);
+            log.error("Failed to get user token: {}", e.getMessage());
+            throw new BadCredentialsException("Failed to get user token", e);
         }
     }
 
     @Override
     public UserRepresentation findByUsername(String username) throws UserNotFoundException, NotAllowedException {
-        log.debug("find user in auth service by username: {}", username);
+        log.debug("get user token for user: {}", username);
         final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
                 .search(username);
         if (users.isEmpty()) {
-            log.error("Failed to find user with username {}", username);
-            throw new UserNotFoundException("Failed to find user");
+            log.error("Failed to get user with username: {}", username);
+            throw new UserNotFoundException("Failed to get user with username: " + username);
         }
         return mapRoles(users.getFirst());
     }

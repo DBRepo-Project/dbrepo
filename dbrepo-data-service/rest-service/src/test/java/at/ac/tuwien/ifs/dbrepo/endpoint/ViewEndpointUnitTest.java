@@ -278,7 +278,8 @@ public class ViewEndpointUnitTest extends BaseTest {
     public void getData_privateDataPrivateSchema_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             DatabaseUnavailableException, QueryMalformedException, PaginationException, NotAllowedException,
             MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException,
-            FormatNotAvailableException, DatabaseMalformedException, MalformedException {
+            FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException,
+            ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
@@ -320,7 +321,8 @@ public class ViewEndpointUnitTest extends BaseTest {
     public void getData_privateHead_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
             NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException,
-            ViewMalformedException, FormatNotAvailableException, DatabaseMalformedException, MalformedException {
+            ViewMalformedException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_3_ID))

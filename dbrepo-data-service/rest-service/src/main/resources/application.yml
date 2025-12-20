@@ -61,6 +61,7 @@ management:
       enabled: true
 server:
   port: 8080
+  max-http-request-header-size: 64KB
   tomcat:
     max-swallow-size: -1
 duckdb:
@@ -75,8 +76,8 @@ logging:
   file:
     name: /var/log/app/service/data/app.log
   level:
-    root: warn
-    at.ac.tuwien.ifs.dbrepo.: "${LOG_LEVEL:info}"
+    root: "${LOG_ROOT_LEVEL:warn}"
+    at.ac.tuwien.ifs.dbrepo.: "${LOG_APPLICATION_LEVEL:info}"
     org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
   pattern:
@@ -117,31 +118,31 @@ dbrepo:
         s3a:
           aws:
             credentials:
-              provider: "${S3A_AWS_CREDENTIALS_PROVIDER:org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider}"
+              provider: "${S3_AWS_CREDENTIALS_PROVIDER:org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider}"
           access:
-            key: "${S3A_ACCESS_KEY:seaweedfsuser}"
+            key: "${S3_ACCESS_KEY:seaweedfsuser}"
           connection:
-            timeout: "${S3A_CONNECTION_TIMEOUT:200000}"
+            timeout: "${S3_CONNECTION_TIMEOUT:200000}"
             establish:
-              timeout: "${S3A_CONNECTION_ESTABLISH_TIMEOUT:30000}"
+              timeout: "${S3_CONNECTION_ESTABLISH_TIMEOUT:30000}"
             ssl:
-              enabled: "${S3A_CONNECTION_SSL_ENABLED:false}"
-          endpoint: "${S3A_ENDPOINT:http://storage-service:9000}"
+              enabled: "${S3_CONNECTION_SSL_ENABLED:false}"
+          endpoint: "${S3_ENDPOINT:http://storage-service:9000}"
           multipart:
             purge:
-              age: "${S3A_MULTIPART_PURGE_AGE:600000}"
-          impl: "${S3A_IMPL:org.apache.hadoop.fs.s3a.S3AFileSystem}"
+              age: "${S3_MULTIPART_PURGE_AGE:600000}"
+          impl: "${S3_IMPL:org.apache.hadoop.fs.s3a.S3AFileSystem}"
           threads:
-            keepalivetime: "${S3A_THREADS_KEEPALIVETIME:60000}"
+            keepalivetime: "${S3_THREADS_KEEPALIVETIME:60000}"
           path:
             style:
-              access: "${S3A_PATH_STYLE_ACCESS:true}"
+              access: "${S3_PATH_STYLE_ACCESS:true}"
           committer:
-            name: "${S3A_COMMITTER_NAME:magic}"
+            name: "${S3_COMMITTER_NAME:magic}"
           change:
             detection:
-              mode: "${S3A_CHANGE_DETECTION_MODE:none}"
+              mode: "${S3_CHANGE_DETECTION_MODE:none}"
           multiobjectdelete:
-            enable: "${S3A_MULTIOBJECTDELETE_ENABLE:false}"
+            enable: "${S3_MULTIOBJECTDELETE_ENABLE:false}"
           secret:
-            key: "${S3A_SECRET_KEY:seaweedfsuser}"
+            key: "${S3_SECRET_KEY:seaweedfsuser}"

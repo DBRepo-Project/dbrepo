@@ -13,8 +13,6 @@ import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import at.ac.tuwien.ifs.dbrepo.utils.S3Util;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +37,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -118,7 +117,7 @@ public class TableEndpointIntegrationTest extends BaseTest {
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON_VALUE, httpServletRequest, USER_LOCAL_ADMIN_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        final List<Map<String, Object>> body = new LinkedList<>(dataMapper.datasetToJson((Dataset<Row>) response.getBody()));
+        final List<Map<String, Object>> body = new LinkedList<>((Set<Map<String, Object>>) response.getBody());
         assertNotNull(body);
         assertEquals(3, body.size());
         assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", 13.4, "rainfall", 0.6), body.get(0));

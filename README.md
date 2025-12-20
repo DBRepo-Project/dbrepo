@@ -27,30 +27,54 @@ online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/.
 Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md) and
 contact [Prof. Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/) or [Martin Weise](https://ec.tuwien.ac.at/~weise/).
 
-## Docker
+### Build
 
-Recommended for getting familiar with the system.
+Build the java library from scratch (you have to do this only once unless something has changed in `./lib/java/`):
+
+```shell
+make build-java-lib
+```
+
+Build the python library from scratch (you have to do this only once unless something has changed in `./lib/python/`):
+
+```shell
+make build-python-lib
+```
+
+Build the docker images:
+
+```shell
+docker compose build
+```
 
 ### Run
 
-After building the docker containers you can run them using the default `docker-compose.yml` in the root of
-the sourcecode directory. This starts all services in the background (as daemons hence the `-d` flag).
+After building, run the docker containers:
 
 ```shell
-make start-dev
+docker compose up -d
 ```
 
-Optionally view all logs in real-time:
+When updating the configuration, you need to recreate the Gateway Service
+additionally: `docker compose restart dbrepo-gateway-service`.
 
 ```shell
 docker compose logs -f
 ```
 
-## Kubernetes
+## Release Checklist
 
-Recommended for operational deployment.
+Build the Helm Chart schema:
 
-See the [Helm Chart](https://artifacthub.io/packages/helm/dbrepo/dbrepo) on Artifact Hub.
+```shell
+make build-helm
+```
+
+Build the OpenAPI docs:
+
+```shell
+make gen-openapi-doc
+```
 
 ## Acknowledgements
 
