@@ -319,9 +319,9 @@ public interface DataMapper {
                 .build();
     }
 
-    default String datasetToColumnNameHeader(Dataset<Row> dataset) {
+    default String datasetToColumnNameHeader(Dataset<Row> data) {
         final Map<Integer, String> columnNames = new HashMap<>();
-        Arrays.stream(dataset.logicalPlan()
+        Arrays.stream(data.logicalPlan()
                         .producedAttributes()
                         .mkString(",")
                         .split(","))

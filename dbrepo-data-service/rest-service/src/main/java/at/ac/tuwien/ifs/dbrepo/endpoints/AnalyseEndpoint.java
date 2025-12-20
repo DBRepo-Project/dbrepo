@@ -63,7 +63,7 @@ public class AnalyseEndpoint {
         log.debug("endpoint analyse datatypes, imageId={}, key={}", imageId, key);
         final Image image = metadataService.getImage(imageId);
         return ResponseEntity.ok()
-                .body(analyseService.determineDataTypes(image, key));
+                .body(analyseService.determineS3CsvDataTypes(image, key));
     }
 
 }

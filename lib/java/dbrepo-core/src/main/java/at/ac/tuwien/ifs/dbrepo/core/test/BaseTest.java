@@ -14,7 +14,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.*;
@@ -24,8 +23,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteBody;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteData;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoi;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoiRelatedIdentifier;
-import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.keycloak.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.maintenance.BannerMessageCreateDto;
@@ -42,7 +39,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.OrcidPersonDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.name.OrcidNameDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.person.name.OrcidValueDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
@@ -59,9 +55,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnConcept;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnUnit;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -71,7 +65,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Uni
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessageType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
 import at.ac.tuwien.ifs.dbrepo.core.test.utils.ArrayUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -294,73 +287,11 @@ public class BaseTest {
     public final static String CONCEPT_1_DESCRIPTION = null;
     public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 (UTC) */;
 
-    public final ConceptSaveDto CONCEPT_1_SAVE_DTO = ConceptSaveDto.builder()
-            .uri(CONCEPT_1_URI)
-            .name(CONCEPT_1_NAME)
-            .description(CONCEPT_1_DESCRIPTION)
-            .build();
-
-    public final ConceptDto CONCEPT_1_DTO = ConceptDto.builder()
-            .id(CONCEPT_1_ID)
-            .uri(CONCEPT_1_URI)
-            .name(CONCEPT_1_NAME)
-            .description(CONCEPT_1_DESCRIPTION)
-            .build();
-
-    public final ConceptBriefDto CONCEPT_1_BRIEF_DTO = ConceptBriefDto.builder()
-            .id(CONCEPT_1_ID)
-            .uri(CONCEPT_1_URI)
-            .name(CONCEPT_1_NAME)
-            .description(CONCEPT_1_DESCRIPTION)
-            .build();
-
-    public final TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
-            .id(CONCEPT_1_ID)
-            .uri(CONCEPT_1_URI)
-            .name(CONCEPT_1_NAME)
-            .description(CONCEPT_1_DESCRIPTION)
-            .created(CONCEPT_1_CREATED)
-            .build();
-
-    public final EntityDto CONCEPT_1_ENTITY_DTO = EntityDto.builder()
-            .uri(CONCEPT_1_URI)
-            .description(CONCEPT_1_DESCRIPTION)
-            .label(CONCEPT_1_NAME)
-            .build();
-
     public final static UUID CONCEPT_2_ID = UUID.fromString("c5cf9914-15c1-4813-af11-eb2a070d59a9");
     public final static String CONCEPT_2_NAME = "FAIR data";
     public final static String CONCEPT_2_URI = "http://www.wikidata.org/entity/Q29032648";
     public final static String CONCEPT_2_DESCRIPTION = "data compliant with the terms of the FAIR Data Principles";
     public final static Instant CONCEPT_2_CREATED = Instant.ofEpochSecond(1701976049L) /* 2023-12-07 19:07:28 (UTC) */;
-
-    public final ConceptSaveDto CONCEPT_2_SAVE_DTO = ConceptSaveDto.builder()
-            .uri(CONCEPT_2_URI)
-            .name(CONCEPT_2_NAME)
-            .description(CONCEPT_2_DESCRIPTION)
-            .build();
-
-    public final ConceptDto CONCEPT_2_DTO = ConceptDto.builder()
-            .id(CONCEPT_2_ID)
-            .uri(CONCEPT_2_URI)
-            .name(CONCEPT_2_NAME)
-            .description(CONCEPT_2_DESCRIPTION)
-            .build();
-
-    public final ConceptBriefDto CONCEPT_2_BRIEF_DTO = ConceptBriefDto.builder()
-            .id(CONCEPT_2_ID)
-            .uri(CONCEPT_2_URI)
-            .name(CONCEPT_2_NAME)
-            .description(CONCEPT_2_DESCRIPTION)
-            .build();
-
-    public final TableColumnConcept CONCEPT_2 = TableColumnConcept.builder()
-            .id(CONCEPT_2_ID)
-            .uri(CONCEPT_2_URI)
-            .name(CONCEPT_2_NAME)
-            .description(CONCEPT_2_DESCRIPTION)
-            .created(CONCEPT_2_CREATED)
-            .build();
 
     public final static UUID UNIT_1_ID = UUID.fromString("1fee60e4-42f8-4883-85a8-e282fddf6a62");
     public final static String UNIT_1_NAME = "millimetre";
@@ -368,73 +299,11 @@ public class BaseTest {
     public final static String UNIT_1_DESCRIPTION = "The millimetre is a unit of length defined as 1.0e-3 metre.";
     public final static Instant UNIT_1_CREATED = Instant.ofEpochSecond(1701976282L) /* 2023-12-07 19:11:22 */;
 
-    public final UnitSaveDto UNIT_1_SAVE_DTO = UnitSaveDto.builder()
-            .uri(UNIT_1_URI)
-            .name(UNIT_1_NAME)
-            .description(UNIT_1_DESCRIPTION)
-            .build();
-
-    public final UnitDto UNIT_1_DTO = UnitDto.builder()
-            .id(UNIT_1_ID)
-            .uri(UNIT_1_URI)
-            .name(UNIT_1_NAME)
-            .description(UNIT_1_DESCRIPTION)
-            .build();
-
-    public final UnitBriefDto UNIT_1_BRIEF_DTO = UnitBriefDto.builder()
-            .id(UNIT_1_ID)
-            .uri(UNIT_1_URI)
-            .name(UNIT_1_NAME)
-            .description(UNIT_1_DESCRIPTION)
-            .build();
-
-    public final TableColumnUnit UNIT_1 = TableColumnUnit.builder()
-            .id(UNIT_1_ID)
-            .uri(UNIT_1_URI)
-            .name(UNIT_1_NAME)
-            .description(UNIT_1_DESCRIPTION)
-            .created(UNIT_1_CREATED)
-            .build();
-
-    public final EntityDto UNIT_1_ENTITY_DTO = EntityDto.builder()
-            .uri(UNIT_1_URI)
-            .description(UNIT_1_DESCRIPTION)
-            .label(UNIT_1_NAME)
-            .build();
-
     public final static UUID UNIT_2_ID = UUID.fromString("d88591a9-5171-4b12-8381-bcff1cfe7442");
     public final static String UNIT_2_NAME = "tonne";
     public final static String UNIT_2_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
     public final static String UNIT_2_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
     public final static Instant UNIT_2_CREATED = Instant.ofEpochSecond(1701976462L) /* 2023-12-07 19:14:22 */;
-
-    public final UnitSaveDto UNIT_2_SAVE_DTO = UnitSaveDto.builder()
-            .uri(UNIT_2_URI)
-            .name(UNIT_2_NAME)
-            .description(UNIT_2_DESCRIPTION)
-            .build();
-
-    public final UnitDto UNIT_2_DTO = UnitDto.builder()
-            .id(UNIT_2_ID)
-            .uri(UNIT_2_URI)
-            .name(UNIT_2_NAME)
-            .description(UNIT_2_DESCRIPTION)
-            .build();
-
-    public final UnitBriefDto UNIT_2_BRIEF_DTO = UnitBriefDto.builder()
-            .id(UNIT_2_ID)
-            .uri(UNIT_2_URI)
-            .name(UNIT_2_NAME)
-            .description(UNIT_2_DESCRIPTION)
-            .build();
-
-    public final TableColumnUnit UNIT_2 = TableColumnUnit.builder()
-            .id(UNIT_2_ID)
-            .uri(UNIT_2_URI)
-            .name(UNIT_2_NAME)
-            .description(UNIT_2_DESCRIPTION)
-            .created(UNIT_2_CREATED)
-            .build();
 
     public final static String USER_BROKER_USERNAME = "guest";
     @SuppressWarnings("java:S2068")
@@ -1000,6 +869,12 @@ public class BaseTest {
     public final static Boolean IMAGE_1_DATA_TYPE_1_IS_QUOTED = false;
     public final static Boolean IMAGE_1_DATA_TYPE_1_IS_BUILDABLE = false;
 
+    public final static UUID IMAGE_1_DATA_TYPE_2_ID = UUID.fromString("dd577ef5-803d-4a14-8687-8f2b362bf523");
+    public final static String IMAGE_1_DATA_TYPE_2_VALUE = "date";
+
+    public final static UUID IMAGE_1_DATA_TYPE_3_ID = UUID.fromString("74161156-9b14-412b-a7b2-cb953681c023");
+    public final static String IMAGE_1_DATA_TYPE_3_VALUE = "varchar";
+
     public final List<DataType> IMAGE_1_DATA_TYPES = new LinkedList<>(List.of(
             DataType.builder()
                     .id(IMAGE_1_DATA_TYPE_1_ID)
@@ -1034,6 +909,14 @@ public class BaseTest {
             at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType.builder()
                     .id(IMAGE_1_DATA_TYPE_1_ID)
                     .value(IMAGE_1_DATA_TYPE_1_VALUE)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType.builder()
+                    .id(IMAGE_1_DATA_TYPE_2_ID)
+                    .value(IMAGE_1_DATA_TYPE_2_VALUE)
+                    .build(),
+            at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType.builder()
+                    .id(IMAGE_1_DATA_TYPE_3_ID)
+                    .value(IMAGE_1_DATA_TYPE_3_VALUE)
                     .build()
     ));
 
@@ -1704,8 +1587,8 @@ public class BaseTest {
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
-                    .concept(CONCEPT_1_BRIEF_DTO)
-                    .unit(UNIT_1_BRIEF_DTO)
+                    .conceptUri(CONCEPT_1_URI)
+                    .unit(UNIT_1_URI)
                     .isNullAllowed(true)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
@@ -2572,7 +2455,7 @@ public class BaseTest {
             .isVersioned(TABLE_8_VERSIONED)
             .isPublic(TABLE_8_IS_PUBLIC)
             .isSchemaPublic(TABLE_8_SCHEMA_PUBLIC)
-            .database(null /* DATABASE_1 */)
+            .database(null /* DATABASE_3 */)
             .name(TABLE_8_NAME)
             .queueName(TABLE_8_QUEUE_NAME)
             .columns(new LinkedList<>()) /* TABLE_8_COLUMNS */
@@ -2906,118 +2789,25 @@ public class BaseTest {
     public final static String ONTOLOGY_1_RDF_PATH = "rdf/om-2.0.rdf";
     public final static Boolean ONTOLOGY_1_RDF = true;
 
-    public final Ontology ONTOLOGY_1 = Ontology.builder()
-            .id(ONTOLOGY_1_ID)
-            .prefix(ONTOLOGY_1_PREFIX)
-            .uri(ONTOLOGY_1_URI)
-            .uriPattern(ONTOLOGY_1_URI_PATTERN)
-            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
-            .rdfPath(ONTOLOGY_1_RDF_PATH)
-            .build();
-
-    public final OntologyDto ONTOLOGY_1_DTO = OntologyDto.builder()
-            .id(ONTOLOGY_1_ID)
-            .prefix(ONTOLOGY_1_PREFIX)
-            .uri(ONTOLOGY_1_URI)
-            .uriPattern(ONTOLOGY_1_URI_PATTERN)
-            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
-            .sparql(ONTOLOGY_1_SPARQL)
-            .rdfPath(ONTOLOGY_1_RDF_PATH)
-            .rdf(ONTOLOGY_1_RDF)
-            .build();
-
-    public final OntologyBriefDto ONTOLOGY_1_BRIEF_DTO = OntologyBriefDto.builder()
-            .id(ONTOLOGY_1_ID)
-            .prefix(ONTOLOGY_1_PREFIX)
-            .uri(ONTOLOGY_1_URI)
-            .uriPattern(ONTOLOGY_1_URI_PATTERN)
-            .sparql(ONTOLOGY_1_SPARQL)
-            .rdf(ONTOLOGY_1_RDF)
-            .build();
-
-    public final OntologyCreateDto ONTOLOGY_1_CREATE_DTO = OntologyCreateDto.builder()
-            .prefix(ONTOLOGY_1_PREFIX)
-            .uri(ONTOLOGY_1_URI)
-            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
-            .build();
-
-    public final OntologyModifyDto ONTOLOGY_1_MODIFY_DTO = OntologyModifyDto.builder()
-            .prefix(ONTOLOGY_1_NEW_PREFIX)
-            .uri(ONTOLOGY_1_URI)
-            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
-            .build();
-
     public final static UUID ONTOLOGY_2_ID = UUID.fromString("41d902a1-f9f8-4d51-ad64-618b72acf5ed");
     public final static String ONTOLOGY_2_PREFIX = "wd";
     public final static String ONTOLOGY_2_URI = "http://www.wikidata.org/";
     public final static String ONTOLOGY_2_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
-
-    public final Ontology ONTOLOGY_2 = Ontology.builder()
-            .id(ONTOLOGY_2_ID)
-            .prefix(ONTOLOGY_2_PREFIX)
-            .uri(ONTOLOGY_2_URI)
-            .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
-            .build();
-
-    public final OntologyCreateDto ONTOLOGY_2_CREATE_DTO = OntologyCreateDto.builder()
-            .prefix(ONTOLOGY_2_PREFIX)
-            .uri(ONTOLOGY_2_URI)
-            .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
-            .build();
 
     public final static UUID ONTOLOGY_3_ID = UUID.fromString("5b41390b-d2d2-45c6-8038-1258c4b2725f");
     public final static String ONTOLOGY_3_PREFIX = "rdfs";
     public final static String ONTOLOGY_3_URI = "http://www.w3.org/2000/01/rdf-schema#";
     public final static String ONTOLOGY_3_SPARQL_ENDPOINT = null;
 
-    public final Ontology ONTOLOGY_3 = Ontology.builder()
-            .id(ONTOLOGY_3_ID)
-            .prefix(ONTOLOGY_3_PREFIX)
-            .uri(ONTOLOGY_3_URI)
-            .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
-            .build();
-
-    public final OntologyCreateDto ONTOLOGY_3_CREATE_DTO = OntologyCreateDto.builder()
-            .prefix(ONTOLOGY_3_PREFIX)
-            .uri(ONTOLOGY_3_URI)
-            .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
-            .build();
-
     public final static UUID ONTOLOGY_4_ID = UUID.fromString("d6992475-9b71-4a4a-a6eb-bc1fe6a34443");
     public final static String ONTOLOGY_4_PREFIX = "schema";
     public final static String ONTOLOGY_4_URI = "http://schema.org/";
     public final static String ONTOLOGY_4_SPARQL_ENDPOINT = null;
 
-    public final Ontology ONTOLOGY_4 = Ontology.builder()
-            .id(ONTOLOGY_4_ID)
-            .prefix(ONTOLOGY_4_PREFIX)
-            .uri(ONTOLOGY_4_URI)
-            .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
-            .build();
-
-    public final OntologyCreateDto ONTOLOGY_4_CREATE_DTO = OntologyCreateDto.builder()
-            .prefix(ONTOLOGY_4_PREFIX)
-            .uri(ONTOLOGY_4_URI)
-            .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
-            .build();
-
     public final static UUID ONTOLOGY_5_ID = UUID.fromString("f95d1330-762e-4f5a-875a-3c64da5808a1");
     public final static String ONTOLOGY_5_PREFIX = "db";
     public final static String ONTOLOGY_5_URI = "http://dbpedia.org";
     public final static String ONTOLOGY_5_SPARQL_ENDPOINT = "http://dbpedia.org/sparql";
-
-    public final Ontology ONTOLOGY_5 = Ontology.builder()
-            .id(ONTOLOGY_5_ID)
-            .prefix(ONTOLOGY_5_PREFIX)
-            .uri(ONTOLOGY_5_URI)
-            .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
-            .build();
-
-    public final OntologyCreateDto ONTOLOGY_5_CREATE_DTO = OntologyCreateDto.builder()
-            .prefix(ONTOLOGY_5_PREFIX)
-            .uri(ONTOLOGY_5_URI)
-            .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
-            .build();
 
     public final static UUID COLUMN_8_1_ID = UUID.fromString("af362ac6-5dbb-4ede-83ea-5d94b39641c8");
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
@@ -3458,8 +3248,8 @@ public class BaseTest {
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
-                    .concept(CONCEPT_1)
-                    .unit(UNIT_1)
+                    .conceptUri(CONCEPT_1_URI)
+                    .unitUri(UNIT_1_URI)
                     .isNullAllowed(true)
                     .sets(new LinkedList<>())
                     .enums(new LinkedList<>())
@@ -8971,19 +8761,6 @@ public class BaseTest {
             .user(USER_4_BRIEF_DTO)
             .build();
 
-    public final CreateDashboardResponseDto DATABASE_1_CREATE_DASHBOARD_RESPONSE_DTO =
-            CreateDashboardResponseDto.builder()
-                    .id(1L)
-                    .uid(DATABASE_1_DASHBOARD_UID)
-                    .build();
-
-    public final CreateDashboardDto DATABASE_1_CREATE_DASHBOARD_DTO = CreateDashboardDto.builder()
-            .databaseName(DATABASE_1_INTERNAL_NAME)
-            .isPublic(DATABASE_1_PUBLIC)
-            .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
-            .ownerUsername(USER_1_USERNAME)
-            .build();
-
     public final Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
             .created(DATABASE_2_CREATED)
@@ -9138,19 +8915,6 @@ public class BaseTest {
             .username(USER_3_USERNAME)
             .build();
 
-    public final CreateDashboardResponseDto DATABASE_2_CREATE_DASHBOARD_RESPONSE_DTO =
-            CreateDashboardResponseDto.builder()
-                    .id(2L)
-                    .uid(DATABASE_2_DASHBOARD_UID)
-                    .build();
-
-    public final CreateDashboardDto DATABASE_2_CREATE_DASHBOARD_DTO = CreateDashboardDto.builder()
-            .databaseName(DATABASE_2_INTERNAL_NAME)
-            .isPublic(DATABASE_2_PUBLIC)
-            .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
-            .ownerUsername(USER_2_USERNAME)
-            .build();
-
     public final Database DATABASE_3 = Database.builder()
             .id(DATABASE_3_ID)
             .created(Instant.now().minus(1, HOURS))
@@ -9285,19 +9049,6 @@ public class BaseTest {
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final CreateDashboardResponseDto DATABASE_3_CREATE_DASHBOARD_RESPONSE_DTO =
-            CreateDashboardResponseDto.builder()
-                    .id(3L)
-                    .uid(DATABASE_3_DASHBOARD_UID)
-                    .build();
-
-    public final CreateDashboardDto DATABASE_3_CREATE_DASHBOARD_DTO = CreateDashboardDto.builder()
-            .databaseName(DATABASE_3_INTERNAL_NAME)
-            .isPublic(DATABASE_3_PUBLIC)
-            .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
-            .ownerUsername(USER_3_USERNAME)
-            .build();
-
     public final Identifier IDENTIFIER_7 = Identifier.builder()
             .id(IDENTIFIER_7_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_7_DESCRIPTION_1)))
@@ -9418,19 +9169,6 @@ public class BaseTest {
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
             .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL)
             .username(USER_3_USERNAME)
-            .build();
-
-    public final CreateDashboardResponseDto DATABASE_4_CREATE_DASHBOARD_RESPONSE_DTO =
-            CreateDashboardResponseDto.builder()
-                    .id(4L)
-                    .uid(DATABASE_4_DASHBOARD_UID)
-                    .build();
-
-    public final CreateDashboardDto DATABASE_4_CREATE_DASHBOARD_DTO = CreateDashboardDto.builder()
-            .databaseName(DATABASE_4_INTERNAL_NAME)
-            .isPublic(DATABASE_4_PUBLIC)
-            .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
-            .ownerUsername(USER_4_USERNAME)
             .build();
 
     public final List<IdentifierDto> VIEW_1_DTO_IDENTIFIERS = List.of(IDENTIFIER_3_DTO);

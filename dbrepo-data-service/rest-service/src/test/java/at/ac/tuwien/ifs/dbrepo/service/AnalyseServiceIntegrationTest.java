@@ -1,14 +1,16 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.exception.ColumnNotFoundException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseUnavailableException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.mapper.DuckDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.impl.AnalyseServiceDuckDbImpl;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
+import at.ac.tuwien.ifs.dbrepo.utils.S3Util;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,11 +21,18 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +51,12 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private DuckDbMapper duckDbMapper;
+
+    @Autowired
+    private S3Client s3Client;
+
+    @Autowired
+    private S3Config s3Config;
 
     public static Stream<Arguments> query_arguments() {
         return Stream.of(
@@ -79,6 +94,14 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
+    @Container
+    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);
+
+    @DynamicPropertySource
+    static void dynamicProperties(DynamicPropertyRegistry registry) {
+        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", minIOContainer::getS3URL);
+    }
+
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         Thread.sleep(1000) /* wait for test container some more */;
@@ -86,10 +109,11 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException, InterruptedException {
+        /* s3 */
+        S3Util.cleanBucket(s3Client, s3Config);
         /* metadata database */
         MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
-        Thread.sleep(1000) /* wait for test container some more */;
     }
 
     @Test
@@ -129,6 +153,20 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
             assertEquals(row.getKey(), column.getName());
             assertEquals(row.getValue(), column.getDatatype());
         }
+    }
+
+    @Test
+    public void determineS3CsvDataTypes_succeeds() throws DatabaseUnavailableException, ColumnNotFoundException,
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+
+        /* mock */
+        s3Client.putObject(PutObjectRequest.builder()
+                .key("weather_aus.csv")
+                .bucket(s3Config.getS3Bucket())
+                .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
+
+        /* test */
+        final SchemaAnalysisResultDto response = analyseService.determineS3CsvDataTypes(IMAGE_1_CACHE, "weather_aus.csv");
     }
 
 }

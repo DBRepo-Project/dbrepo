@@ -106,6 +106,8 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     ordinal_position INT                                                                                                                                                                                                                                                                                        NOT NULL,
     index_length     BIGINT UNSIGNED                                                                                                                                                                                                                                                                            NULL,
     description      VARCHAR(2048),
+    concept_uri      TEXT,
+    unit_uri         TEXT,
     size             BIGINT UNSIGNED,
     d                BIGINT UNSIGNED,
     is_null_allowed  BOOLEAN                                                                                                                                                                                                                                                                                    NOT NULL DEFAULT TRUE,
@@ -205,49 +207,6 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
-
-CREATE TABLE IF NOT EXISTS `mdb_concepts`
-(
-    id          VARCHAR(36)  NOT NULL DEFAULT UUID(),
-    uri         TEXT         NOT NULL,
-    name        VARCHAR(255) null,
-    description TEXT         null,
-    created     TIMESTAMP    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (`id`),
-    UNIQUE (uri(200))
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_units`
-(
-    id          VARCHAR(36)  NOT NULL DEFAULT UUID(),
-    uri         TEXT         NOT NULL,
-    name        VARCHAR(255) null,
-    description TEXT         null,
-    created     TIMESTAMP    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (`id`),
-    UNIQUE (uri(200))
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
-(
-    id      VARCHAR(36) NOT NULL DEFAULT UUID(),
-    cID     VARCHAR(36) NOT NULL,
-    created TIMESTAMP   NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id, cid),
-    FOREIGN KEY (`id`) REFERENCES mdb_concepts (`id`),
-    FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_columns_units`
-(
-    id      VARCHAR(36) NOT NULL DEFAULT UUID(),
-    cID     VARCHAR(36) NOT NULL,
-    created TIMESTAMP   NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id, cID),
-    FOREIGN KEY (id) REFERENCES mdb_units (id),
-    FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
-) WITH SYSTEM VERSIONING;
-
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
     id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
@@ -276,21 +235,6 @@ CREATE TABLE IF NOT EXISTS `mdb_messages`
     link_text     VARCHAR(255)                      NULL,
     display_start TIMESTAMP                         NULL,
     display_end   TIMESTAMP                         NULL,
-    PRIMARY KEY (`id`)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_ontologies`
-(
-    id              VARCHAR(36) NOT NULL DEFAULT UUID(),
-    prefix          VARCHAR(8)  NOT NULL,
-    uri             TEXT        NOT NULL,
-    uri_pattern     TEXT,
-    sparql_endpoint TEXT        NULL,
-    rdf_path        TEXT        NULL,
-    last_modified   TIMESTAMP,
-    created         TIMESTAMP   NOT NULL DEFAULT NOW(),
-    UNIQUE (`prefix`),
-    UNIQUE (uri(200)),
     PRIMARY KEY (`id`)
 ) WITH SYSTEM VERSIONING;
 
@@ -588,22 +532,4 @@ VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Equal operator', '=',
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/');
-
-INSERT
-INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
-VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
-        'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null, 'rdf/om-2.0.rdf'),
-       ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql',
-        null),
-       ('mo', 'http://purl.org/ontology/mo/', 'http://purl.org/ontology/mo/.*', null, null),
-       ('dc', 'http://purl.org/dc/elements/1.1/', null, null, null),
-       ('xsd', 'http://www.w3.org/2001/XMLSchema#', null, null, null),
-       ('tl', 'http://purl.org/NET/c4dm/timeline.owl#', null, null, null),
-       ('foaf', 'http://xmlns.com/foaf/0.1/', null, null, null),
-       ('schema', 'http://schema.org/', null, null, null),
-       ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', null, null, null),
-       ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#', null, null, null),
-       ('owl', 'http://www.w3.org/2002/07/owl#', null, null, null),
-       ('prov', 'http://www.w3.org/ns/prov#', null, null, null),
-       ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql', null);
 COMMIT;

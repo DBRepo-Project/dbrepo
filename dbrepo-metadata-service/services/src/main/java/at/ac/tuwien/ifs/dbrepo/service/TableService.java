@@ -78,7 +78,7 @@ public interface TableService {
      * Updates a given table from the database in the metadata database.
      *
      * @param table The table.
-     * @param data The update data.
+     * @param data  The update data.
      * @return The updated table, if successful.
      * @throws DataServiceException             The data service responded with unexpected behavior.
      * @throws DataServiceConnectionException   The connection with the data service could not be established.
@@ -94,9 +94,8 @@ public interface TableService {
     /**
      * Updates a given table column in the metadata database.
      *
-     * @param column The table column.
+     * @param column    The table column.
      * @param updateDto The update data.
-     * @return The updated table column, if successful.
      * @throws DataServiceException             The data service responded with unexpected behavior.
      * @throws DataServiceConnectionException   The connection with the data service could not be established.
      * @throws DatabaseNotFoundException        The database was not found in the metadata service.
@@ -106,7 +105,7 @@ public interface TableService {
      * @throws OntologyNotFoundException        The ontology was not found in the metadata database.
      * @throws SemanticEntityNotFoundException  The semantic entity was not found in the metadata database.
      */
-    TableColumn update(TableColumn column, ColumnSemanticsUpdateDto updateDto) throws DataServiceException,
+    void update(TableColumn column, ColumnSemanticsUpdateDto updateDto) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
             SemanticEntityNotFoundException;
@@ -114,7 +113,7 @@ public interface TableService {
     /**
      * Find a table column by given table and column id.
      *
-     * @param table The table.
+     * @param table    The table.
      * @param columnId The column id.
      * @return The column, if found.
      * @throws MalformedException The table column was not found.
