@@ -148,39 +148,6 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         assertFalse(response.getIsPersisted());
     }
 
-//    @Test
-//    public void getData_succeeds() throws QueryMalformedException, TableNotFoundException {
-//        final List<List<String>> expected = List.of(
-//                List.of("1", "2008-12-01", "Albury", "13.4", "0.6"),
-//                List.of("2", "2008-12-02", "Albury", "7.4", "0.0"),
-//                List.of("3", "2008-12-03", "Albury", "12.9", "0.0"));
-//
-//        /* test */
-//        final Dataset<Row> response = subsetService.getData(DATABASE_1_CACHE, MariaDbUtil.replaceExecutionTimestamp(
-//                QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION, Instant.now().plus(12, ChronoUnit.HOURS)));
-//        assertNotNull(response);
-//        final List<List<String>> mapped = response.collectAsList()
-//                .stream()
-//                .map(row -> {
-//                    final List<String> map = new LinkedList<>();
-//                    for (int i = 0; i < response.columns().length; i++) {
-//                        map.add(row.get(i) != null ? String.valueOf(row.get(i)) : "");
-//                    }
-//                    return map;
-//                })
-//                .toList();
-//        assertEquals(expected, mapped);
-//    }
-
-//    @Test
-//    public void getData_notFound_fails() {
-//
-//        /* test */
-//        assertThrows(TableNotFoundException.class, () -> {
-//            subsetService.getData(DATABASE_1_CACHE, "SELECT 1 FROM i_do_not_exist");
-//        });
-//    }
-
     @Test
     public void getMetadata_malformed_fails() {
 

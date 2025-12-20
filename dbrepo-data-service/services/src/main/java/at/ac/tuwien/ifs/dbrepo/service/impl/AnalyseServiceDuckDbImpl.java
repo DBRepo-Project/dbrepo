@@ -46,55 +46,42 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     }
 
     public void setup(Connection connection) throws SQLException {
-        connection.prepareStatement("SET extension_directory = '" + duckDbConfig.getExtensionDirectory() + "';")
+        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("extension_directory", duckDbConfig.getExtensionDirectory()))
                 .execute();
-        log.debug("configure duckdb: extension_directory={}", duckDbConfig.getExtensionDirectory());
-        log.debug("from extension_directory load duckdb extension: httpfs");
-        connection.prepareStatement("LOAD 'httpfs';")
+        connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("httpfs"))
                 .execute();
-        log.debug("from extension_directory load duckdb extension: mysql");
-        connection.prepareStatement("LOAD 'mysql';")
+        connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("mysql"))
                 .execute();
-        log.debug("from extension_directory load duckdb extension: mysql_scanner");
-        connection.prepareStatement("LOAD 'mysql_scanner';")
+        connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("mysql_scanner"))
                 .execute();
-        final String s3Endpoint = s3Config.getS3aEndpoint().replaceAll("https?://", "");
-        connection.prepareStatement("SET s3_endpoint = '" + s3Endpoint + "';")
+        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_endpoint", s3Config.getS3aEndpoint().replaceAll("https?://", "")))
                 .execute();
-        log.debug("configure duckdb: s3_endpoint={}", s3Endpoint);
-        connection.prepareStatement("SET s3_use_ssl = " + duckDbConfig.getS3UseSsl() + ";")
+        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_use_ssl", duckDbConfig.getS3UseSsl()))
                 .execute();
-        log.debug("configure duckdb: s3_use_ssl={}", duckDbConfig.getS3UseSsl());
-        connection.prepareStatement("SET s3_url_style = '" + duckDbConfig.getS3UrlStyle() + "';")
+        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_url_style", duckDbConfig.getS3UrlStyle()))
                 .execute();
-        log.debug("configure duckdb: s3_url_style={}", duckDbConfig.getS3UrlStyle());
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
-        connection.prepareStatement("SET temp_directory = '" + duckDbConfig.getTmpDirectory() + "';")
+        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("temp_directory", duckDbConfig.getTmpDirectory()))
                 .execute();
-        log.debug("configure duckdb: temp_directory={}", duckDbConfig.getTmpDirectory());
-        connection.prepareStatement("CREATE SECRET (TYPE s3, KEY_ID '" + s3Config.getS3aAccessKey() + "', SECRET '" + s3Config.getS3aSecretKey() + "');")
+        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()))
                 .execute();
     }
 
     @Override
-    public SchemaAnalysisResultDto determineDataTypes(Image image, String key) throws AnalyseDataTypesException,
+    public SchemaAnalysisResultDto determineS3CsvDataTypes(Image image, String key) throws AnalyseDataTypesException,
             DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException {
         /* download sample from storage service */
         try (Connection connection = getDuckDbConnection()) {
             setup(connection);
-            long start = System.currentTimeMillis();
-            final PreparedStatement statement1 = connection.prepareStatement("FROM sniff_csv('s3://" + s3Config.getS3Bucket() + "/" + key + "');");
+            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.queryToRawDescribeCsvQuery(s3Config.getS3Bucket(), key));
             final DuckDBResultSet resultSet1 = (DuckDBResultSet) statement1.executeQuery();
             final SchemaAnalysisResultDto schema = dataMapper.resultSetToSchemaAnalysisResult(resultSet1);
+            log.debug("determined csv schema of: s3://{}/{}", s3Config.getS3Bucket(), key);
             statement1.close();
             /* detect schema */
-            final PreparedStatement statement2 = connection.prepareStatement("DESCRIBE TABLE 's3://" + s3Config.getS3Bucket() + "/" + key + "';");
+            final PreparedStatement statement2 = connection.prepareStatement(duckDbMapper.queryToRawDescribeS3TableQuery(s3Config.getS3Bucket(), key));
             final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
-            log.atDebug()
-                    .setMessage("determined data types of s3://" + s3Config.getS3Bucket() + "/" + key)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "determine_datatypes")
-                    .log();
+            log.debug("determined data types of s3://" + s3Config.getS3Bucket() + "/" + key);
             final Map<String, ColumnAnalysisResultDto> constraints = dataMapper.resultSetToConstraintResult(resultSet2);
             resultSet2.close();
             for (int i = 0; i < schema.getColumns().size(); i++) {
@@ -107,11 +94,6 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
                 column.setD(dataType.getDDefault());
                 column.setSize(dataType.getSizeDefault());
             }
-            log.atDebug()
-                    .setMessage("determined schema data types for dataset in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "determine_datatypes")
-                    .log();
             return schema;
         } catch (SQLException e) {
             if (e.getMessage().contains("404")) {
@@ -133,6 +115,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         return determineDataTypes(database, duckDbMapper.queryToRawDescribeQuery(subset.getQuery()));
     }
 
+    @Override
     public Map<String, ColumnAnalysisResultDto> determineDataTypes(Database database, String statement)
             throws ColumnNotFoundException, DatabaseUnavailableException {
         try (Connection connection = getDuckDbConnection()) {

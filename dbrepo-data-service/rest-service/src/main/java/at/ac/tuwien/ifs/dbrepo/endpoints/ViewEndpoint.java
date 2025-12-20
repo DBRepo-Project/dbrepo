@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
@@ -8,10 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.DataService;
-import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
-import at.ac.tuwien.ifs.dbrepo.service.TableService;
-import at.ac.tuwien.ifs.dbrepo.service.ViewService;
+import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -56,19 +54,21 @@ public class ViewEndpoint {
     private final ViewService viewService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
+    private final AnalyseService analyseService;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public ViewEndpoint(DSLContext context, DataMapper dataMapper, DataService dataService, ViewService viewService,
-                        TableService tableService, MariaDbMapper mariaDbMapper, MetadataService metadataService,
-                        EndpointValidator endpointValidator) {
+                        TableService tableService, MariaDbMapper mariaDbMapper, AnalyseService analyseService,
+                        MetadataService metadataService, EndpointValidator endpointValidator) {
         this.context = context;
         this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.viewService = viewService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
+        this.analyseService = analyseService;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
     }
@@ -238,7 +238,7 @@ public class ViewEndpoint {
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException, PaginationException,
             QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException,
-            DatabaseNotFoundException, ViewMalformedException, FormatNotAvailableException, MalformedException {
+            DatabaseNotFoundException, ViewMalformedException, FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, accept={}, timestamp={}",
                 databaseId, viewId, page, size, accept, timestamp);
         endpointValidator.validateDataParams(page, size);
@@ -275,10 +275,10 @@ public class ViewEndpoint {
                         .headers(headers)
                         .build();
             }
-            headers.set("Access-Control-Expose-Headers", "X-Headers");
             final String query = mariaDbMapper.rawSelectQuery(view.getQuery(), timestamp,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
+            headers.set("Access-Control-Expose-Headers", "X-Headers");
             final String viewName = view.getQueryHash();
             viewService.create(database, viewName, view.getQuery());
             switch (accept) {

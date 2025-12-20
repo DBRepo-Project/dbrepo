@@ -51,7 +51,7 @@ dictConfig({
         },
     },
     'root': {
-        'level': 'DEBUG',
+        'level': os.getenv("LOG_APPLICATION_LEVEL", "debug").upper(),
         'handlers': ['wsgi', 'file']
     }
 })
@@ -182,7 +182,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "1.13.2",
+        "version": "1.13.3",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -194,7 +194,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/"
     },
     "servers": [
         {
