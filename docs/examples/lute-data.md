@@ -6,6 +6,8 @@ author: Martin Weise
 
 Mirroring of internal database for users not authorized in the partner university.
 
+[:material-text-long: &nbsp;Publication](https://doi.org/10.1145/3748336.3748349){ .md-button .md-button--primary target="_blank" }
+
 ## Description
 
 The main aim of the E-LAUTE project is to create a novel form of music edition: an "open knowledge platform" in which 
