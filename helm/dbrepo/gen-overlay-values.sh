@@ -1,5 +1,5 @@
 #!/bin/bash
-OUTPUT_FILE="./values.yaml"
+OUTPUT_FILE="./overlay-values.yaml"
 if ! command -v rabbitmqadmin >/dev/null 2>&1; then
   echo "FATAL: rabbitmqadmin not found - install from https://github.com/rabbitmq/rabbitmqadmin-ng/releases"
   exit 1
