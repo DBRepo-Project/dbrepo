@@ -752,9 +752,6 @@
                         "updateStrategy": {
                             "type": "object",
                             "properties": {
-                                "Recreate": {
-                                    "type": "object"
-                                },
                                 "type": {
                                     "type": "string"
                                 }
@@ -1026,6 +1023,17 @@
                 "s3": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "accessKeyId": {
+                                    "type": "string"
+                                },
+                                "secretAccessKey": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "bucket": {
                             "type": "string"
                         },
@@ -1035,9 +1043,6 @@
                     }
                 }
             }
-        },
-        "gateway": {
-            "type": "string"
         },
         "gatewayservice": {
             "type": "object",
@@ -1549,10 +1554,10 @@
                         "auth": {
                             "type": "object",
                             "properties": {
-                                "password": {
+                                "accessKeyId": {
                                     "type": "string"
                                 },
-                                "username": {
+                                "secretAccessKey": {
                                     "type": "string"
                                 }
                             }
@@ -1861,9 +1866,6 @@
                                     "type": "string"
                                 }
                             }
-                        },
-                        "limit": {
-                            "type": "object"
                         },
                         "resources": {
                             "type": "object"

@@ -1545,11 +1545,11 @@
         },
         "urllib3-future": {
             "hashes": [
-                "sha256:9f6e451005689b9032b7d3721c7c7dd19ca22dc15b688d80436607e9432225d9",
-                "sha256:c5d3996cf0475ad1a554e372582fd0a43b01982b7a2cefe1795064f23e1f9624"
+                "sha256:a8ca77c6a3c8c1172511f45ba4358d2a682474580f75b2d234b1e427c58c922f",
+                "sha256:e88e2a835a4b75fd3dc4e9ccb3ba71e1000a8a98a43e0975e1d5be652beb2507"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.15.900"
+            "version": "==2.15.901"
         },
         "verlib2": {
             "hashes": [
@@ -2276,11 +2276,11 @@
         },
         "jaraco.functools": {
             "hashes": [
-                "sha256:227ff8ed6f7b8f62c56deff101545fa7543cf2c8e7b82a7c2116e672f29c26e8",
-                "sha256:cfd13ad0dd2c47a3600b439ef72d8615d482cedcff1632930d6f28924d92f294"
+                "sha256:9eec1e36f45c818d9bf307c8948eb03b2b56cd44087b3cdc989abca1f20b9176",
+                "sha256:da21933b0417b89515562656547a77b4931f98176eb173644c0d35032a33d6bb"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==4.3.0"
+            "version": "==4.4.0"
         },
         "jeepney": {
             "hashes": [

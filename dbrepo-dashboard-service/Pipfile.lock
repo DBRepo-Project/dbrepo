@@ -327,7 +327,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:57c965ae1cd2b35bbc69bb194a3d3f9fddec2729fa7ce0f81f193fbac3ca00ef"
+                "sha256:971bbd40c52bd3a227c7ab62bfbeb28d280bdb8348513628ba36d7135b936540"
             ],
             "path": "./lib/dbrepo-1.13.3.tar.gz"
         },
@@ -1441,11 +1441,11 @@
         },
         "urllib3-future": {
             "hashes": [
-                "sha256:9f6e451005689b9032b7d3721c7c7dd19ca22dc15b688d80436607e9432225d9",
-                "sha256:c5d3996cf0475ad1a554e372582fd0a43b01982b7a2cefe1795064f23e1f9624"
+                "sha256:a8ca77c6a3c8c1172511f45ba4358d2a682474580f75b2d234b1e427c58c922f",
+                "sha256:e88e2a835a4b75fd3dc4e9ccb3ba71e1000a8a98a43e0975e1d5be652beb2507"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.15.900"
+            "version": "==2.15.901"
         },
         "verlib2": {
             "hashes": [
