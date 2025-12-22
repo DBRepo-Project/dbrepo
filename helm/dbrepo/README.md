@@ -10,8 +10,14 @@ sample [
 `values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.6/helm-charts/dbrepo/values.yaml?inline=true)
 for your deployment and update the variables, especially `hostname`.
 
-```bash
+```shell
 helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.13.3"
+```
+
+Quickly auto-generate a `values.yaml` file with random secrets:
+
+```shell
+curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/v1.13.2/helm/dbrepo/gen-overlay-values.sh | bash
 ```
 
 ## Prerequisites
