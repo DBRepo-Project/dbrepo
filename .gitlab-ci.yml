@@ -14,7 +14,7 @@ variables:
   APP_VERSION: "1.13.3"
   DUCKDB_VERSION: "1.2.2"
   CHART_VERSION: "1.13.3"
-  SUPPORTED_VERSIONS: "1.11.0, 1.11.1, 1.12.0, 1.12.1, 1.13.1, 1.13.2, 1.13.3"
+  SUPPORTED_VERSIONS: "1.13.0, 1.13.1, 1.13.2, 1.13.3"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"

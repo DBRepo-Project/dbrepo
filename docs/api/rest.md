@@ -6,7 +6,7 @@ The REST API manages all of DBRepo. This documentation is also available as [Swa
 
 # REST API
 
-> Version 1.13.1
+> Version 1.13.3
 
 The merged REST API of DBRepo for users, developers and data stewards to be accessed publicly. Have a look at
 the [source code](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services) for non-public endpoints
