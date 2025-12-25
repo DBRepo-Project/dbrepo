@@ -10,8 +10,14 @@ sample [
 `values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.6/helm-charts/dbrepo/values.yaml?inline=true)
 for your deployment and update the variables, especially `hostname`.
 
-```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.13.3"
+```shell
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./overlay-values.yaml --version "1.13.3"
+```
+
+You can auto-generate the `overlay-values.yaml` file with random secrets:
+
+```shell
+curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/v1.13.3/helm/dbrepo/gen-overlay-values.sh | bash
 ```
 
 ## Prerequisites
@@ -62,32 +68,31 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Common parameters
 
-| Name            | Description                                                                     | Value                 |
-| --------------- | ------------------------------------------------------------------------------- | --------------------- |
-| `hostname`      | The hostname.                                                                   | `example.com`         |
-| `gateway`       | The gateway endpoint.                                                           | `https://example.com` |
-| `strategyType`  | The image pull                                                                  | `RollingUpdate`       |
-| `clusterDomain` | The cluster domain.                                                             | `cluster.local`       |
-| `username`      | The internal system username. This user is only used between the microservices. | `admin`               |
-| `password`      | The internal system password. This user is only used between the microservices. | `admin`               |
+| Name            | Description                                                                                                 | Value           |
+| --------------- | ----------------------------------------------------------------------------------------------------------- | --------------- |
+| `hostname`      | The hostname.                                                                                               | `example.com`   |
+| `strategyType`  | The image pull                                                                                              | `RollingUpdate` |
+| `clusterDomain` | The cluster domain.                                                                                         | `cluster.local` |
+| `username`      | The internal system username. This user is only used between the microservices and does not exist on paper. | `admin`         |
+| `password`      | The internal system password. This user is only used between the microservices and does not exist on paper. | `admin`         |
 
 ### Metadata Database
 
-| Name                                     | Description                                                                                                                            | Value                                                                  |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `metadatadb.enabled`                     | Enable the Metadata Database.                                                                                                          | `true`                                                                 |
-| `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
-| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
-| `metadatadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
-| `metadatadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
-| `metadatadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
-| `metadatadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
-| `metadatadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
-| `metadatadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
-| `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                       | `{}`                                                                   |
-| `metadatadb.resourcesPreset`             | The container resource preset                                                                                                          | `xlarge`                                                               |
-| `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
-| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
+| Name                                     | Description                                                                                                                             | Value                                                                  |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `metadatadb.enabled`                     | Enable the Metadata Database.                                                                                                           | `true`                                                                 |
+| `metadatadb.host`                        | The hostname for the microservices.                                                                                                     | `metadata-db`                                                          |
+| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `metadatadb.rootUser.user`               | The root username.                                                                                                                      | `root`                                                                 |
+| `metadatadb.rootUser.password`           | The root user password.                                                                                                                 | `dbrepo`                                                               |
+| `metadatadb.db.name`                     | The database name.                                                                                                                      | `dbrepo`                                                               |
+| `metadatadb.galera.mariabackup.user`     | The database backup username.                                                                                                           | `backup`                                                               |
+| `metadatadb.galera.mariabackup.password` | The database backup user password                                                                                                       | `backup`                                                               |
+| `metadatadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                          | `""`                                                                   |
+| `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                        | `{}`                                                                   |
+| `metadatadb.resourcesPreset`             | The container resource preset                                                                                                           | `xlarge`                                                               |
+| `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                              | `true`                                                                 |
+| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                 | `3`                                                                    |
 
 ### Dashboard Database Enable the Dashboard Database.
 
@@ -251,8 +256,8 @@ mqtt.prefetch = 10
 | `metadataservice.datacite.password`                                 | The DataCite api user password.                                                                                   | `""`                             |
 | `metadataservice.sparql.connectionTimeout`                          | The connection timeout for sparql queries fetching remote data in ms.                                             | `10000`                          |
 | `metadataservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.                                                             | `http://storage-service-s3:8333` |
-| `metadataservice.s3.auth.username`                                  | The S3-capable endpoint username (or access key id).                                                              | `seaweedfsadmin`                 |
-| `metadataservice.s3.auth.password`                                  | The S3-capable endpoint user password (or access key secret).                                                     | `seaweedfsadmin`                 |
+| `metadataservice.s3.auth.accessKeyId`                               | The S3-capable endpoint access key id.                                                                            | `seaweedfsuser`                  |
+| `metadataservice.s3.auth.secretAccessKey`                           | The S3-capable endpoint secret access key.                                                                        | `seaweedfsuser`                  |
 | `metadataservice.replicaCount`                                      | The number of replicas.                                                                                           | `2`                              |
 
 ### Data Service
@@ -287,6 +292,8 @@ mqtt.prefetch = 10
 | `dataservice.rabbitmq.consumer.password`                        | The user password for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.userPasswords`. | `admin`                                                                                                                              |
 | `dataservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.                                                                                            | `http://storage-service-s3:8333`                                                                                                     |
 | `dataservice.s3.bucket`                                         | The S3 bucket name.                                                                                                                              | `dbrepo`                                                                                                                             |
+| `dataservice.s3.auth.accessKeyId`                               | The S3-capable endpoint access key id.                                                                                                           | `seaweedfsuser`                                                                                                                      |
+| `dataservice.s3.auth.secretAccessKey`                           | The S3-capable endpoint secret access key.                                                                                                       | `seaweedfsuser`                                                                                                                      |
 | `dataservice.replicaCount`                                      | The number of replicas.                                                                                                                          | `2`                                                                                                                                  |
 
 ### Search Service
@@ -404,10 +411,10 @@ mqtt.prefetch = 10
 | `ui.public.about.content`                              | The content of the /about page. If not empty, the page will be displayed and markdown content will be rendered.                                                                                                                                                                                                      | `""`                                                        |
 | `ui.public.terms.content`                              | The content of the /terms page. If not empty, the page will be displayed and markdown content will be rendered.                                                                                                                                                                                                      | `""`                                                        |
 | `ui.public.policies.content`                           | The content of the /policies page. If not empty, the page will be displayed and markdown content will be rendered.                                                                                                                                                                                                   | `""`                                                        |
-| `ui.public.api.client`                                 | The endpoint for the client api. Overrides to the value of `gateway`.                                                                                                                                                                                                                                                | `""`                                                        |
-| `ui.public.api.server`                                 | The endpoint for the server api. Overrides to the value of `gateway`.                                                                                                                                                                                                                                                | `""`                                                        |
-| `ui.public.dashboard.url`                              | The url for the dashboard. Overrides to the value of `gateway` and path `/dashboard`.                                                                                                                                                                                                                                | `""`                                                        |
-| `ui.public.upload.client`                              | The endpoint for the upload client. Overrides to the value of `gateway` and path `/api/upload/files`.                                                                                                                                                                                                                | `""`                                                        |
+| `ui.public.api.client`                                 | The endpoint for the client api. Defaults to `https://<gateway>`.                                                                                                                                                                                                                                                    | `""`                                                        |
+| `ui.public.api.server`                                 | The endpoint for the server api. Defaults to `https://<gateway>`.                                                                                                                                                                                                                                                    | `""`                                                        |
+| `ui.public.dashboard.url`                              | The url for the dashboard. Defaults to `https://<gateway>/dashboard`.                                                                                                                                                                                                                                                | `""`                                                        |
+| `ui.public.upload.client`                              | The endpoint for the upload client. Defaults to `https://<gateway>/api/upload/files`.                                                                                                                                                                                                                                | `""`                                                        |
 | `ui.public.title`                                      | The user interface title.                                                                                                                                                                                                                                                                                            | `Database Repository`                                       |
 | `ui.public.logo`                                       | The user interface logo.                                                                                                                                                                                                                                                                                             | `/logo.svg`                                                 |
 | `ui.public.icon`                                       | The user interface icon.                                                                                                                                                                                                                                                                                             | `/favicon.ico`                                              |
@@ -467,13 +474,13 @@ mqtt.prefetch = 10
 
 ### Gateway Service
 
-| Name                                          | Description                                   | Value                   |
-| --------------------------------------------- | --------------------------------------------- | ----------------------- |
-| `gatewayservice.enabled`                      | Enable the Gateway Service.                   | `true`                  |
-| `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`             |
-| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                 |
-| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-setup` |
-| `gatewayservice.replicaCount`                 | The number of replicas.gatewayservice         | `3`                     |
+| Name                                          | Description                                                                                 | Value                   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------- |
+| `gatewayservice.enabled`                      | Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself. | `true`                  |
+| `gatewayservice.service.type`                 | The service type.                                                                           | `ClusterIP`             |
+| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.                                                      | `false`                 |
+| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy                                               | `gateway-service-setup` |
+| `gatewayservice.replicaCount`                 | The number of replicas.gatewayservice                                                       | `3`                     |
 
 ### Analytics Service
 

@@ -1,7 +1,14 @@
-# generated
+# Secrets
 *.crt
 *.key
 *.srl
 *.csr
+
+# Build
 build/
 tmpcharts-*
+
+# Environment
+.env
+env/
+overlay-values.yaml

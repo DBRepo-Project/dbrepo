@@ -1591,90 +1591,13 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
-  '/api/v1/ontology/{ontologyId}':
-    get:
-      tags:
-        - ontology-endpoint
-      summary: Find ontology
-      description: Finds an ontology with id in the metadata database.
-      operationId: find_4
-      parameters:
-        - name: ontologyId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Find one ontology
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OntologyDto'
-        '404':
-          description: Could not find ontology
-    put:
-      tags:
-        - ontology-endpoint
-      summary: Update ontology
-      description: Updates an ontology with id. Requires role `update-ontology`.
-      operationId: update_1
-      parameters:
-        - name: ontologyId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OntologyModifyDto'
-        required: true
-      responses:
-        '202':
-          description: Updated ontology successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OntologyDto'
-        '404':
-          description: Could not find ontology
-      security:
-        - bearerAuth: []
-        - basicAuth: []
-    delete:
-      tags:
-        - ontology-endpoint
-      summary: Delete ontology
-      description: Deletes an ontology with given id. Requires role `delete-ontology`.
-      operationId: delete
-      parameters:
-        - name: ontologyId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '202':
-          description: Deleted ontology successfully
-          content:
-            application/json: {}
-        '404':
-          description: Could not find ontology
-      security:
-        - bearerAuth: []
-        - basicAuth: []
   '/api/v1/message/{messageId}':
     put:
       tags:
         - message-endpoint
       summary: Update message
       description: Updates a message with id. Requires role `update-maintenance-message`.
-      operationId: update_2
+      operationId: update_1
       parameters:
         - name: messageId
           in: path
@@ -1705,7 +1628,7 @@ paths:
         - message-endpoint
       summary: Delete message
       description: Deletes a message with id. Requires role `delete-maintenance-message`.
-      operationId: delete_1
+      operationId: delete
       parameters:
         - name: messageId
           in: path
@@ -1753,7 +1676,7 @@ paths:
       description: >-
         Updates container image in the metadata database. Requires role
         `modify-image`.
-      operationId: update_3
+      operationId: update_2
       parameters:
         - name: imageId
           in: path
@@ -1786,7 +1709,7 @@ paths:
       description: >-
         Deletes a container image in the metadata database. Requires role
         `delete-image`.
-      operationId: delete_2
+      operationId: delete_1
       parameters:
         - name: imageId
           in: path
@@ -1810,7 +1733,7 @@ paths:
       description: >-
         Finds an identifier with id. The response format depends on the HTTP
         `Accept` header set on the request.
-      operationId: find_5
+      operationId: find_4
       parameters:
         - name: identifierId
           in: path
@@ -1902,7 +1825,7 @@ paths:
         - identifier-endpoint
       summary: Delete identifier
       description: Deletes an identifier with id. Requires role `delete-identifier`.
-      operationId: delete_3
+      operationId: delete_2
       parameters:
         - name: identifierId
           in: path
@@ -2008,7 +1931,7 @@ paths:
         - view-endpoint
       summary: Get view
       description: Gets a view with id in the metadata database.
-      operationId: find_6
+      operationId: find_5
       parameters:
         - name: databaseId
           in: path
@@ -2043,7 +1966,7 @@ paths:
       description: >-
         Updates a view with id. This can only be performed by the view owner or
         database owner. Requires role `create-database-view`.
-      operationId: update_4
+      operationId: update_3
       parameters:
         - name: databaseId
           in: path
@@ -2088,7 +2011,7 @@ paths:
         - view-endpoint
       summary: Delete view
       description: Deletes a view with id. Requires role `delete-database-view`.
-      operationId: delete_4
+      operationId: delete_3
       parameters:
         - name: databaseId
           in: path
@@ -2165,7 +2088,7 @@ paths:
       description: >-
         Updates a table in the database with id. Requires role `update-table` or
         `system`.
-      operationId: update_5
+      operationId: update_4
       parameters:
         - name: databaseId
           in: path
@@ -2213,7 +2136,7 @@ paths:
         Deletes a table with id. Only the owner of a table can perform this
         action (requires role `delete-table`) or anyone can delete a table
         (requires role `delete-foreign-table`).
-      operationId: delete_5
+      operationId: delete_4
       parameters:
         - name: databaseId
           in: path
@@ -2522,46 +2445,6 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
-  /api/v1/ontology:
-    get:
-      tags:
-        - ontology-endpoint
-      summary: List ontologies
-      description: Lists all ontologies known to the metadata database.
-      operationId: findAll
-      responses:
-        '200':
-          description: List ontologies
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OntologyBriefDto'
-    post:
-      tags:
-        - ontology-endpoint
-      summary: Create ontology
-      description: >-
-        Creates an ontology in the metadata database. Requires role
-        `create-ontology`.
-      operationId: create_2
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OntologyCreateDto'
-        required: true
-      responses:
-        '201':
-          description: Registered ontology successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OntologyDto'
-      security:
-        - bearerAuth: []
-        - basicAuth: []
   /api/v1/message:
     get:
       tags:
@@ -2596,7 +2479,7 @@ paths:
       description: >-
         Creates a message in the metadata database. Requires role
         `create-maintenance-message`.
-      operationId: create_3
+      operationId: create_2
       requestBody:
         content:
           application/json:
@@ -2619,7 +2502,7 @@ paths:
         - image-endpoint
       summary: List images
       description: Lists all container images known to the metadata database.
-      operationId: findAll_1
+      operationId: findAll
       responses:
         '200':
           description: List images
@@ -2636,7 +2519,7 @@ paths:
       description: >-
         Creates a container image in the metadata database. Requires role
         `create-image`.
-      operationId: create_4
+      operationId: create_3
       requestBody:
         content:
           application/json:
@@ -2663,7 +2546,7 @@ paths:
         - identifier-endpoint
       summary: List identifiers
       description: Lists all identifiers known to the metadata database
-      operationId: findAll_2
+      operationId: findAll_1
       parameters:
         - name: type
           in: query
@@ -2737,7 +2620,7 @@ paths:
         can only be created for objects the user has at least *READ* access in
         the associated database (requires role `create-identifier`) or for any
         object in any database (requires role `create-foreign-identifier`).
-      operationId: create_5
+      operationId: create_4
       requestBody:
         content:
           application/json:
@@ -2770,7 +2653,7 @@ paths:
         - view-endpoint
       summary: List views
       description: Lists views known to the metadata database.
-      operationId: findAll_3
+      operationId: findAll_2
       parameters:
         - name: databaseId
           in: path
@@ -2799,7 +2682,7 @@ paths:
       description: >-
         Creates a view. This can only be performed by the database owner.
         Requires role `create-database-view`.
-      operationId: create_6
+      operationId: create_5
       parameters:
         - name: databaseId
           in: path
@@ -2875,7 +2758,7 @@ paths:
         - table-endpoint
       summary: Create table
       description: Creates a table in the database with id. Requires role `create-table`.
-      operationId: create_7
+      operationId: create_6
       parameters:
         - name: databaseId
           in: path
@@ -2917,7 +2800,7 @@ paths:
         - container-endpoint
       summary: List containers
       description: List all containers in the metadata database.
-      operationId: findAll_4
+      operationId: findAll_3
       parameters:
         - name: limit
           in: query
@@ -2941,7 +2824,7 @@ paths:
       description: >-
         Creates a container in the metadata database. Requires role
         `create-container`.
-      operationId: create_8
+      operationId: create_7
       requestBody:
         content:
           application/json:
@@ -2976,7 +2859,7 @@ paths:
         from the result list. If the optional query parameter `username` is
         present, the result list can be filtered by matching this exact
         username.
-      operationId: findAll_5
+      operationId: findAll_4
       parameters:
         - name: username
           in: query
@@ -2998,68 +2881,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-  /api/v1/unit:
-    get:
-      tags:
-        - unit-endpoint
-      summary: List units
-      description: Lists units known to the metadata database.
-      operationId: findAll_6
-      responses:
-        '200':
-          description: Find all semantic units
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UnitDto'
-  '/api/v1/ontology/{ontologyId}/entity':
-    get:
-      tags:
-        - ontology-endpoint
-      summary: Find entities
-      description: >-
-        Finds semantic entities by label or uri in an ontology with id. Requires
-        role `execute-semantic-query`.
-      operationId: find_7
-      parameters:
-        - name: ontologyId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: label
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: uri
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Found entities
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EntityDto'
-        '400':
-          description: Filter params are invalid
-        '404':
-          description: Could not find ontology
-        '417':
-          description: Generated query or uri is malformed
-        '422':
-          description: Ontology does not have rdf or sparql endpoint
-      security:
-        - bearerAuth: []
-        - basicAuth: []
   /api/v1/oai:
     get:
       tags:
@@ -3087,7 +2908,7 @@ paths:
         - message-endpoint
       summary: Find message
       description: Finds a message with id in the metadata database.
-      operationId: find_8
+      operationId: find_6
       parameters:
         - name: messageId
           in: path
@@ -3188,94 +3009,6 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
-  '/api/v1/database/{databaseId}/table/{tableId}/suggest':
-    get:
-      tags:
-        - table-endpoint
-      summary: Suggest semantics
-      description: >-
-        Suggests semantic concepts for a table. This action can only be
-        performed by the table owner. Requires role `table-semantic-analyse`.
-      operationId: analyseTable
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Suggested table semantics successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EntityDto'
-        '400':
-          description: Failed to parse statistic in search service
-        '403':
-          description: Not the table owner.
-        '404':
-          description: Failed to find database/table in metadata database
-        '417':
-          description: Generated query is malformed
-        '422':
-          description: Ontology does not have rdf or sparql endpoint
-      security:
-        - bearerAuth: []
-        - basicAuth: []
-  '/api/v1/database/{databaseId}/table/{tableId}/column/{columnId}/suggest':
-    get:
-      tags:
-        - table-endpoint
-      summary: Suggest semantics
-      description: Suggests column semantics. Requires role `table-semantic-analyse`.
-      operationId: analyseTableColumn
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: columnId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Suggested table column semantics successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TableColumnEntityDto'
-        '400':
-          description: Generated query is malformed
-        '404':
-          description: Failed to find database/table in metadata database
-        '422':
-          description: Ontology does not have rdf or sparql endpoint
-      security:
-        - bearerAuth: []
-        - basicAuth: []
   '/api/v1/container/{containerId}':
     get:
       tags:
@@ -3306,7 +3039,7 @@ paths:
       description: >-
         Deletes a container in the metadata database. Requires role
         `delete-container`.
-      operationId: delete_6
+      operationId: delete_5
       parameters:
         - name: containerId
           in: path
@@ -3324,22 +3057,6 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
-  /api/v1/concept:
-    get:
-      tags:
-        - concept-endpoint
-      summary: List concepts
-      description: List all semantic concepts known to the metadata database
-      operationId: findAll_7
-      responses:
-        '200':
-          description: List concepts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ConceptDto'
   /api/v1/search:
     get:
       consumes:
@@ -4684,58 +4401,6 @@ components:
       required:
         - language
         - theme
-    OntologyModifyDto:
-      type: object
-      properties:
-        uri:
-          type: string
-          example: Ontology URI
-        prefix:
-          type: string
-          example: Ontology prefix
-        sparql_endpoint:
-          type: string
-          example: Ontology SPARQL endpoint
-        rdf_path:
-          type: string
-          example: rdf/om-2.0.rdf
-      required:
-        - prefix
-        - uri
-    OntologyDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 7c491e40-082a-47b8-b82c-51d03c520466
-        uri:
-          type: string
-          example: 'http://www.wikidata.org/'
-        prefix:
-          type: string
-          example: wd
-        sparql:
-          type: boolean
-          example: true
-        rdf:
-          type: boolean
-          example: false
-        uri_pattern:
-          type: string
-          example: 'http://www.wikidata.org/entity/.*'
-        sparql_endpoint:
-          type: string
-          example: 'https://query.wikidata.org/sparql'
-        rdf_path:
-          type: string
-          example: rdf/om-2.0.rdf
-      required:
-        - id
-        - prefix
-        - rdf
-        - sparql
-        - uri
     BannerMessageUpdateDto:
       type: object
       properties:
@@ -6551,10 +6216,6 @@ components:
           type: number
           description: The statistically most middle numerical value
           example: 51
-        concept:
-          $ref: '#/components/schemas/ConceptBriefDto'
-        unit:
-          $ref: '#/components/schemas/UnitBriefDto'
         description:
           type: string
           example: Column comment
@@ -6663,6 +6324,14 @@ components:
           type: number
           description: The statistically determined standard deviation
           example: 5.32
+        concept_uri:
+          type: string
+          description: The concept URI
+          example: 'http://purl.obolibrary.org/obo/ENVO_09000027'
+        unit_uri:
+          type: string
+          description: The unit URI
+          example: 'http://qudt.org/vocab/unit/DeciS-PER-M'
         is_null_allowed:
           type: boolean
           example: false
@@ -6675,31 +6344,6 @@ components:
         - ord
         - table_id
         - type
-    ConceptBriefDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The concept id
-          example: 8cabc011-4bdf-44d4-9d33-b2648e2ddbf1
-        uri:
-          type: string
-          description: The concept URI
-          example: 'http://www.wikidata.org/entity/Q202444'
-        name:
-          type: string
-          description: 'The concept name, taken as label from the ontology'
-          example: given name
-        description:
-          type: string
-          description: The concept description giving a user-friendly explanation
-          example: >
-            physical property of matter that quantitatively expresses the common
-            notions of hot and cold
-      required:
-        - id
-        - uri
     EnumDto:
       type: object
       properties:
@@ -6730,29 +6374,6 @@ components:
       required:
         - id
         - value
-    UnitBriefDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The unit id
-          example: ba1935e8-6817-488f-af0a-f54389af9001
-        uri:
-          type: string
-          description: The unit URI
-          example: >-
-            http://www.ontology-of-units-of-measure.org/resource/om-2/CelsiusTemperature
-        name:
-          type: string
-          description: 'The unit name, taken as label from the ontology'
-          example: Degree Celsius
-        description:
-          type: string
-          description: The unit description giving a user-friendly explanation
-      required:
-        - id
-        - uri
     DatabaseTransferDto:
       type: object
       properties:
@@ -6782,21 +6403,6 @@ components:
           example: read
       required:
         - type
-    OntologyCreateDto:
-      type: object
-      properties:
-        uri:
-          type: string
-          example: Ontology URI
-        prefix:
-          type: string
-          example: Ontology prefix
-        sparql_endpoint:
-          type: string
-          example: Ontology SPARQL endpoint
-      required:
-        - prefix
-        - uri
     BannerMessageCreateDto:
       type: object
       properties:
@@ -8141,153 +7747,6 @@ components:
         - code
         - message
         - status
-    ColumnBriefDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The column id
-          example: a453e444-e00d-41ca-902c-11e9c54b39f1
-        name:
-          type: string
-          description: The column name
-          example: Given Name
-          maxLength: 64
-          minLength: 0
-        alias:
-          type: string
-          description: The data source alias name
-          example: firstname
-        database_id:
-          type: string
-          format: uuid
-          description: The database id
-          example: 911f9052-c58c-4e1c-b3f2-66af2107be16
-        table_id:
-          type: string
-          format: uuid
-          description: The table id
-          example: bfffa915-a547-4466-9c65-ddc0d38fdb08
-        internal_name:
-          type: string
-          description: The machine-friendly internal name
-          example: given_name
-          maxLength: 64
-          minLength: 0
-        type:
-          type: string
-          description: The column type name
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-          example: varchar
-      required:
-        - database_id
-        - id
-        - internal_name
-        - name
-        - table_id
-        - type
-    UnitDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The unit id
-          example: ba1935e8-6817-488f-af0a-f54389af9001
-        uri:
-          type: string
-          description: The unit URI
-          example: >-
-            http://www.ontology-of-units-of-measure.org/resource/om-2/CelsiusTemperature
-        name:
-          type: string
-          description: 'The unit name, taken as label from the ontology'
-          example: Degree Celsius
-        description:
-          type: string
-          description: The unit description giving a user-friendly explanation
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-      required:
-        - columns
-        - id
-        - uri
-    OntologyBriefDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 7c491e40-082a-47b8-b82c-51d03c520466
-        uri:
-          type: string
-          example: 'http://www.wikidata.org/'
-        prefix:
-          type: string
-          example: wd
-        sparql:
-          type: boolean
-          example: true
-        rdf:
-          type: boolean
-          example: false
-        uri_pattern:
-          type: string
-          example: 'http://www.wikidata.org/entity/.*'
-      required:
-        - id
-        - prefix
-        - rdf
-        - sparql
-        - uri
-    EntityDto:
-      type: object
-      properties:
-        uri:
-          type: string
-          example: 'https://www.wikidata.org/entity/Q1686799'
-        label:
-          type: string
-          example: Apache Jena
-        description:
-          type: string
-          example: open source semantic web framework for Java
-      required:
-        - label
-        - uri
     OaiListRecordsParameters:
       type: object
       properties:
@@ -8647,6 +8106,82 @@ components:
         - owner
         - query
         - query_hash
+    ColumnBriefDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The column id
+          example: a453e444-e00d-41ca-902c-11e9c54b39f1
+        name:
+          type: string
+          description: The column name
+          example: Given Name
+          maxLength: 64
+          minLength: 0
+        alias:
+          type: string
+          description: The data source alias name
+          example: firstname
+        database_id:
+          type: string
+          format: uuid
+          description: The database id
+          example: 911f9052-c58c-4e1c-b3f2-66af2107be16
+        table_id:
+          type: string
+          format: uuid
+          description: The table id
+          example: bfffa915-a547-4466-9c65-ddc0d38fdb08
+        internal_name:
+          type: string
+          description: The machine-friendly internal name
+          example: given_name
+          maxLength: 64
+          minLength: 0
+        type:
+          type: string
+          description: The column type name
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+          example: varchar
+      required:
+        - database_id
+        - id
+        - internal_name
+        - name
+        - table_id
+        - type
     ConstraintsDto:
       type: object
       properties:
@@ -8892,35 +8427,6 @@ components:
         - id
         - name
         - table
-    TableColumnEntityDto:
-      type: object
-      properties:
-        uri:
-          type: string
-          example: 'https://www.wikidata.org/entity/Q1686799'
-        label:
-          type: string
-          example: Apache Jena
-        description:
-          type: string
-          example: open source semantic web framework for Java
-        database_id:
-          type: string
-          format: uuid
-          example: 475b4107-a64d-4495-a7ef-3cb0dadd4804
-        table_id:
-          type: string
-          format: uuid
-          example: 9a9208af-90ea-4382-9a11-0c8f6d89bd1f
-        column_id:
-          type: string
-          format: uuid
-          example: 297860e3-3b29-451c-ae8a-a85ed5941018
-      required:
-        - column_id
-        - database_id
-        - table_id
-        - uri
     ContainerBriefDto:
       type: object
       properties:
@@ -8963,36 +8469,6 @@ components:
         - internal_name
         - name
         - quota
-    ConceptDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The concept id
-          example: 8cabc011-4bdf-44d4-9d33-b2648e2ddbf1
-        uri:
-          type: string
-          description: The concept URI
-          example: 'http://www.wikidata.org/entity/Q202444'
-        name:
-          type: string
-          description: 'The concept name, taken as label from the ontology'
-          example: given name
-        description:
-          type: string
-          description: The concept description giving a user-friendly explanation
-          example: >
-            physical property of matter that quantitatively expresses the common
-            notions of hot and cold
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-      required:
-        - columns
-        - id
-        - uri
     ApiError:
       properties:
         code:

@@ -11,8 +11,8 @@ metadata:
     service: search-service-cron
 spec:
   schedule: "{{ .Values.searchservice.setupJob.schedule }}"
-  successfulJobsHistoryLimit: {{ .Values.searchservice.setupJob.limit.successful | default 1 }}
-  failedJobsHistoryLimit: {{ .Values.searchservice.setupJob.limit.failed | default 1 }}
+  successfulJobsHistoryLimit: {{ .Values.searchservice.setupJob.successfulJobsHistoryLimit | default 1 }}
+  failedJobsHistoryLimit: {{ .Values.searchservice.setupJob.failedJobsHistoryLimit | default 1 }}
   jobTemplate:
     metadata:
       annotations:
