@@ -1350,8 +1350,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         .append(c.getInternalName())
                         .append("`");
             }
-            // Include replication_key
-            sql.append(", t.`replication_key`");
+            // Include replication_key and row_start (system versioning column)
+            sql.append(", t.`replication_key`, t.`row_start`");
 
             sql.append(" FROM `")
                     .append(database.getInternalName())
