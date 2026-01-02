@@ -464,7 +464,7 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     /**
      * Performs the actual startup tasks for the replication service.
-     * This is the central orchestrator with all logic in one place - no nested method calls!
+     * Uses MonitoringService to detect missing tuples and triggers sync from master.
      * Returns ReplicationSynchronisationDataDto if new data is found, null otherwise.
      */
     private ReplicationSynchronisationDataDto performStartupTasks() {
@@ -496,7 +496,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             
             log.info("✅ Retrieved {} databases from metadata service", allDatabases.size());
             
-            // 2. Process each database sequentially
+            // 2. Process each database - check for missing tuples via MonitoringService
             log.info("Step 2: Processing each database for missing tuples via monitoring service...");
             for (DatabaseBriefDto databaseBrief : allDatabases) {
 
@@ -507,17 +507,17 @@ public class ReplicationServiceImpl implements ReplicationService {
                     DatabaseDto fullDatabase = metadataServiceGateway.getDatabaseById(databaseBrief.getId());
                     synchronizeSubsets(fullDatabase);
                     
-                    // Log replica URLs if available
-                    if (fullDatabase.getReplicaUrls() != null && !fullDatabase.getReplicaUrls().isEmpty()) {
-                        log.info("  - Replica URLs:");
-                        fullDatabase.getReplicaUrls().forEach((url, id) -> 
-                            log.info("    * {} -> Database ID: {}", url, id));
-                    } else {
-                        log.info("  - Replica URLs: None configured");
-                        continue; // Skip databases without replicas
+                    // Skip databases without replicas
+                    if (fullDatabase.getReplicaUrls() == null || fullDatabase.getReplicaUrls().isEmpty()) {
+                        log.info("  - Replica URLs: None configured, skipping");
+                        continue;
                     }
                     
-                    // Step 2a: Check for missing tuples via MonitoringService
+                    log.info("  - Replica URLs:");
+                    fullDatabase.getReplicaUrls().forEach((url, id) -> 
+                        log.info("    * {} -> Database ID: {}", url, id));
+                    
+                    // Check for missing tuples via MonitoringService
                     log.info("🔍 Checking for missing tuples via MonitoringService for database {}...", databaseBrief.getInternalName());
                     try {
                         ReplicationMonitoringDatabaseDto monitoringStatus = monitoringService.status(databaseBrief.getId());
@@ -528,55 +528,26 @@ public class ReplicationServiceImpl implements ReplicationService {
                                 if (site.getSiteUrl() != null && site.getSiteUrl().equals(baseUrl)) {
                                     log.info("📊 Local site status: {} - {}", site.getStatus(), site.getMessage());
                                     
-                                    // If there are missing tuples on this site, fetch them from master
+                                    // If there are missing tuples on this site, trigger sync from master
                                     if ("degraded".equalsIgnoreCase(site.getStatus()) && 
                                         site.getMessage() != null && site.getMessage().contains("missing")) {
-                                        log.info("⚠️ Missing tuples detected on local site. Initiating sync from master...");
+                                        log.info("⚠️ Missing tuples detected on local site. Triggering sync from master...");
                                         
                                         // Sync missing tuples from creation location (master)
                                         ReplicationSynchronisationDataDto syncedData = syncMissingTuplesFromMaster(fullDatabase);
                                         if (syncedData != null) {
-                                            return syncedData;
+                                            log.info("✅ Triggered sync for missing tuples in database {}", databaseBrief.getInternalName());
                                         }
+                                    } else {
+                                        log.info("✅ No missing tuples detected for database {}", databaseBrief.getInternalName());
                                     }
                                 }
                             }
                         }
                     } catch (Exception e) {
-                        log.warn("⚠️ Could not check monitoring status for database {}: {}. Falling back to timestamp-based sync.", 
+                        log.warn("⚠️ Could not check monitoring status for database {}: {}", 
                                 databaseBrief.getInternalName(), e.getMessage());
                     }
-                    
-                    // Step 2b: Fallback - Get latest replication timestamp for this database
-                    Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(fullDatabase);
-                    
-                    if (latestTimestamp != null) {
-                        log.info("✅ Database {} has latest replication timestamp: {}", 
-                                databaseBrief.getInternalName(), latestTimestamp);
-                        
-                        // Check for new tuples after this timestamp
-                        ReplicationSynchronisationDataDto replicationData = checkForNewTuplesAfterTimestamp(fullDatabase, latestTimestamp, databaseBrief);
-                        
-                        if (replicationData != null) {
-                            log.info("🔄 Found replication data for database {}: {} tuples, {} replication timestamps", 
-                                    databaseBrief.getInternalName(), 
-                                    replicationData.getTuples() != null ? replicationData.getTuples().size() : 0,
-                                    replicationData.getReplicationTimestamps() != null ? replicationData.getReplicationTimestamps().size() : 0);
-                            
-                            // Add replication timestamps to local data service
-                            log.info("Timestmap format returned from remote data service:");
-                            log.info(String.valueOf(replicationData.getReplicationTimestamps().get(0).getRowStart()));
-                            log.info("📥 Adding replication timestamps to local data service...");
-                            synchronizeReplicas(replicationData, fullDatabase);
-                            
-                            // Return the replication data to the main method
-                            return replicationData;
-                        }
-                    } else {
-                        log.info("ℹ️ Database {} has no replication timestamps", databaseBrief.getInternalName());
-                    }
-
-
                     
                 } catch (Exception e) {
                     log.error("❌ Could not process database {}: {}", 
@@ -586,7 +557,6 @@ public class ReplicationServiceImpl implements ReplicationService {
             }
             
             log.info("=== REPLICATION SERVICE STARTUP TASKS COMPLETED SUCCESSFULLY ===");
-            log.info("ℹ️ No new replication data found in any database");
             return null;
             
         } catch (Exception e) {
