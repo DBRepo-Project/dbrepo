@@ -1382,12 +1382,24 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 if (replicationKey != null) {
                     tupleData.put("replication_key", replicationKey);
                 }
+                
+                // Extract row_start (system versioning column) - the original insertion timestamp
+                java.time.Instant rowStart = null;
+                try {
+                    java.sql.Timestamp rowStartTs = rs.getTimestamp("row_start");
+                    if (rowStartTs != null) {
+                        rowStart = rowStartTs.toInstant();
+                    }
+                } catch (SQLException e) {
+                    log.debug("Could not extract row_start for tuple: {}", e.getMessage());
+                }
 
-                // Return as a Map with structure: { replicationKey, tableId, data }
+                // Return as a Map with structure: { replicationKey, tableId, data, rowStart }
                 Map<String, Object> missingTuple = new java.util.HashMap<>();
                 missingTuple.put("replicationKey", replicationKey);
                 missingTuple.put("tableId", table.getId());
                 missingTuple.put("data", tupleData);
+                missingTuple.put("rowStart", rowStart); // Include the original row_start timestamp
 
                 missingTuples.add(missingTuple);
             }

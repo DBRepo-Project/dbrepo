@@ -69,6 +69,7 @@ public class TableEndpoint extends RestEndpoint {
     private final ReplicationService replicationService;
     private final RabbitTemplate rabbitTemplate;
     private final ReplicationForwardingService replicationForwardingService;
+    private final ReplicationTimestampService replicationTimestampService;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
@@ -83,7 +84,8 @@ public class TableEndpoint extends RestEndpoint {
                          SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, 
                          ReplicationService replicationService, RabbitTemplate rabbitTemplate,
-                         ReplicationForwardingService replicationForwardingService) {
+                         ReplicationForwardingService replicationForwardingService,
+                         ReplicationTimestampService replicationTimestampService) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -95,6 +97,7 @@ public class TableEndpoint extends RestEndpoint {
         this.replicationService = replicationService;
         this.rabbitTemplate = rabbitTemplate;
         this.replicationForwardingService = replicationForwardingService;
+        this.replicationTimestampService = replicationTimestampService;
     }
 
     @PostMapping
@@ -1090,20 +1093,49 @@ public class TableEndpoint extends RestEndpoint {
                             @SuppressWarnings("unchecked")
                             Map<String, Object> data = (Map<String, Object>) missingTuple.get("data");
                             String replicationKey = (String) missingTuple.get("replicationKey");
+                            Instant rowStart = (Instant) missingTuple.get("rowStart");
                             
                             // Publish the tuple data to RabbitMQ for the requesting site
                             rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, data);
                             log.debug("📤 Published tuple with replicationKey={} to {}", replicationKey, routingKey);
                             
-                            // Forward timestamp information to the requesting site
-                            TupleReplicationTimestampDto timestampDto = TupleReplicationTimestampDto.builder()
+                            // 1. Forward this master's timestamp (with actual row_start) to the requesting site
+                            TupleReplicationTimestampDto masterTimestamp = TupleReplicationTimestampDto.builder()
                                     .siteUrl(baseUrl) // This master site
                                     .replicationId(replicationKey)
                                     .databaseId(databaseId)
                                     .tableId(tableId)
-                                    .rowStart(Instant.now()) // Will be updated when inserted at remote
+                                    .rowStart(rowStart != null ? rowStart : Instant.now()) // Use actual row_start from table
                                     .build();
-                            replicationForwardingService.forwardTimestampToReplica(timestampDto, database, siteUrl);
+                            replicationForwardingService.forwardTimestampToReplica(masterTimestamp, database, siteUrl);
+                            
+                            // 2. Query timestamps from other replicas and forward them to the requesting site
+                            try {
+                                List<at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp> existingTimestamps = 
+                                        replicationTimestampService.findByReplicationId(database, replicationKey);
+                                
+                                for (at.ac.tuwien.ifs.dbrepo.core.entity.replication.TupleReplicationTimestamp existingTs : existingTimestamps) {
+                                    // Skip timestamps from requesting site (they don't have it yet) and master (already sent above)
+                                    if (existingTs.getSiteUrl().equals(siteUrl) || existingTs.getSiteUrl().equals(baseUrl)) {
+                                        continue;
+                                    }
+                                    
+                                    // Forward other replica's timestamp to the requesting site
+                                    TupleReplicationTimestampDto otherReplicaTimestamp = TupleReplicationTimestampDto.builder()
+                                            .siteUrl(existingTs.getSiteUrl()) // The other replica
+                                            .replicationId(replicationKey)
+                                            .databaseId(databaseId)
+                                            .tableId(tableId)
+                                            .rowStart(existingTs.getRowStart() != null ? existingTs.getRowStart().toInstant() : null)
+                                            .build();
+                                    replicationForwardingService.forwardTimestampToReplica(otherReplicaTimestamp, database, siteUrl);
+                                    log.debug("📤 Forwarded timestamp from {} to requesting site {}", existingTs.getSiteUrl(), siteUrl);
+                                }
+                            } catch (Exception tsEx) {
+                                log.warn("⚠️ Could not query/forward other replicas' timestamps: {}", tsEx.getMessage());
+                            }
+
+                            
                             broadcastedCount++;
                             
                         } catch (Exception pubEx) {
