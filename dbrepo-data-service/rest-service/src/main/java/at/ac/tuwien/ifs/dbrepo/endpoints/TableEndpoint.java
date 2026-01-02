@@ -1023,7 +1023,7 @@ public class TableEndpoint extends RestEndpoint {
     }
 
     @GetMapping("/{tableId}/missing-tuples")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAuthority('insert-table-data')")
     @Operation(summary = "Get missing tuples for site",
             description = "Returns tuples that exist locally but are missing on a specific replica site. Used for startup synchronization.",
             security = {@SecurityRequirement(name = "basicAuth")},
