@@ -528,6 +528,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     }
                     
                     log.info("🔍 Checking for missing tuples via MASTER's monitoring endpoint at {}...", masterUrl);
+                    ReplicationMonitoringDatabaseDto monitoringStatus = null;
                     try {
                         // Call master's monitoring endpoint: GET /api/replication/monitoring/{databaseId}/status
                         String monitoringEndpoint = String.format("%s/api/replication/monitoring/%s/status", 
@@ -542,35 +543,51 @@ public class ReplicationServiceImpl implements ReplicationService {
                                 new ParameterizedTypeReference<ReplicationMonitoringDatabaseDto>() {}
                         );
                         
-                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                            ReplicationMonitoringDatabaseDto monitoringStatus = response.getBody();
-                            
-                            if (monitoringStatus.getSites() != null) {
-                                for (ReplicationMonitoringSiteDto site : monitoringStatus.getSites()) {
-                                    // Check if this site is the current site (local) and has status issues
-                                    if (site.getSiteUrl() != null && site.getSiteUrl().equals(baseUrl)) {
-                                        log.info("📊 Local site status (from master): {} - {}", site.getStatus(), site.getMessage());
-                                        
-                                        // If there are missing tuples on this site, trigger sync from master
-                                        if ("degraded".equalsIgnoreCase(site.getStatus()) && 
-                                            site.getMessage() != null && site.getMessage().contains("missing")) {
-                                            log.info("⚠️ Missing tuples detected on local site. Triggering sync from master...");
-                                            
-                                            // Sync missing tuples from creation location (master)
-                                            ReplicationSynchronisationDataDto syncedData = syncMissingTuplesFromMaster(fullDatabase);
-                                            if (syncedData != null) {
-                                                log.info("✅ Triggered sync for missing tuples in database {}", databaseBrief.getInternalName());
-                                            }
-                                        } else {
-                                            log.info("✅ No missing tuples detected for database {}", databaseBrief.getInternalName());
-                                        }
-                                    }
-                                }
+                        if (response.getBody() != null) {
+                            monitoringStatus = response.getBody();
+                        }
+                    } catch (org.springframework.web.client.HttpClientErrorException | 
+                             org.springframework.web.client.HttpServerErrorException e) {
+                        // The monitoring endpoint returns 503 when status is degraded, but body still contains valid data
+                        log.debug("Monitoring endpoint returned {}: {}", e.getStatusCode(), e.getMessage());
+                        try {
+                            String responseBody = e.getResponseBodyAsString();
+                            if (responseBody != null && !responseBody.isEmpty()) {
+                                com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                                monitoringStatus = objectMapper.readValue(responseBody, ReplicationMonitoringDatabaseDto.class);
+                                log.info("📊 Parsed monitoring data from {} response", e.getStatusCode());
                             }
+                        } catch (Exception parseEx) {
+                            log.warn("⚠️ Could not parse monitoring response: {}", parseEx.getMessage());
                         }
                     } catch (Exception e) {
                         log.warn("⚠️ Could not check monitoring status from master for database {}: {}", 
                                 databaseBrief.getInternalName(), e.getMessage());
+                    }
+                    
+                    // Process the monitoring status if we got it
+                    if (monitoringStatus != null && monitoringStatus.getSites() != null) {
+                        for (ReplicationMonitoringSiteDto site : monitoringStatus.getSites()) {
+                            // Check if this site is the current site (local) and has status issues
+                            if (site.getSiteUrl() != null && site.getSiteUrl().equals(baseUrl)) {
+                                log.info("📊 Local site status (from master): {} - {}", site.getStatus(), site.getMessage());
+                                
+                                // If there are missing tuples on this site, trigger sync from master
+                                if ("degraded".equalsIgnoreCase(site.getStatus()) && 
+                                    site.getMessage() != null && site.getMessage().contains("missing")) {
+                                    log.info("⚠️ Missing tuples detected on local site. Triggering sync from master...");
+                                    
+                                    // Sync missing tuples from creation location (master)
+                                    ReplicationSynchronisationDataDto syncedData = syncMissingTuplesFromMaster(fullDatabase);
+                                    if (syncedData != null) {
+                                        log.info("✅ Triggered sync for missing tuples in database {}", databaseBrief.getInternalName());
+                                    }
+                                } else {
+                                    log.info("✅ No missing tuples detected for database {}", databaseBrief.getInternalName());
+                                }
+                            }
+                        }
                     }
                     
                 } catch (Exception e) {
