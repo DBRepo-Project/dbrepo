@@ -28,7 +28,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
-import at.ac.tuwien.ifs.dbrepo.service.MonitoringService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
@@ -57,7 +56,6 @@ public class ReplicationServiceImpl implements ReplicationService {
     private final GatewayConfig gatewayConfig;
     private final ReplicationTimestampService replicationTimestampService;
     private final MetadataServiceGateway metadataServiceGateway;
-    private final MonitoringService monitoringService;
     private final RabbitTemplate rabbitTemplate;
 
     @Value("${BASE_URL:http://localhost:8080}")
@@ -72,14 +70,12 @@ public class ReplicationServiceImpl implements ReplicationService {
                                 GatewayConfig gatewayConfig,
                                 ReplicationTimestampService replicationTimestampService,
                                 MetadataServiceGateway metadataServiceGateway,
-                                MonitoringService monitoringService,
                                 RabbitTemplate rabbitTemplate) {
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
         this.localDataServiceRestTemplate = localDataServiceRestTemplate;
         this.gatewayConfig = gatewayConfig;
         this.replicationTimestampService = replicationTimestampService;
         this.metadataServiceGateway = metadataServiceGateway;
-        this.monitoringService = monitoringService;
         this.rabbitTemplate = rabbitTemplate;
     }
 
@@ -517,35 +513,63 @@ public class ReplicationServiceImpl implements ReplicationService {
                     fullDatabase.getReplicaUrls().forEach((url, id) -> 
                         log.info("    * {} -> Database ID: {}", url, id));
                     
-                    // Check for missing tuples via MonitoringService
-                    log.info("🔍 Checking for missing tuples via MonitoringService for database {}...", databaseBrief.getInternalName());
+                    // Check for missing tuples by calling the MASTER's monitoring endpoint
+                    String masterUrl = fullDatabase.getCreationLocation();
+                    if (masterUrl == null || masterUrl.trim().isEmpty()) {
+                        log.info("  - No master (creation location) configured, skipping");
+                        continue;
+                    }
+                    
+                    // Find the database ID on the master
+                    UUID masterDatabaseId = fullDatabase.getReplicaUrls().get(masterUrl);
+                    if (masterDatabaseId == null) {
+                        log.warn("  - Could not find database ID on master {}, skipping", masterUrl);
+                        continue;
+                    }
+                    
+                    log.info("🔍 Checking for missing tuples via MASTER's monitoring endpoint at {}...", masterUrl);
                     try {
-                        ReplicationMonitoringDatabaseDto monitoringStatus = monitoringService.status(databaseBrief.getId());
+                        // Call master's monitoring endpoint: GET /api/replication/monitoring/{databaseId}
+                        String monitoringEndpoint = String.format("%s/api/replication/monitoring/%s", 
+                                masterUrl, masterDatabaseId);
                         
-                        if (monitoringStatus.getSites() != null) {
-                            for (ReplicationMonitoringSiteDto site : monitoringStatus.getSites()) {
-                                // Check if this site is the current site (local) and has status issues
-                                if (site.getSiteUrl() != null && site.getSiteUrl().equals(baseUrl)) {
-                                    log.info("📊 Local site status: {} - {}", site.getStatus(), site.getMessage());
-                                    
-                                    // If there are missing tuples on this site, trigger sync from master
-                                    if ("degraded".equalsIgnoreCase(site.getStatus()) && 
-                                        site.getMessage() != null && site.getMessage().contains("missing")) {
-                                        log.info("⚠️ Missing tuples detected on local site. Triggering sync from master...");
+                        log.info("📡 Calling master monitoring endpoint: {}", monitoringEndpoint);
+                        
+                        ResponseEntity<ReplicationMonitoringDatabaseDto> response = externalReplicationRestTemplate.exchange(
+                                monitoringEndpoint,
+                                org.springframework.http.HttpMethod.GET,
+                                null,
+                                new ParameterizedTypeReference<ReplicationMonitoringDatabaseDto>() {}
+                        );
+                        
+                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                            ReplicationMonitoringDatabaseDto monitoringStatus = response.getBody();
+                            
+                            if (monitoringStatus.getSites() != null) {
+                                for (ReplicationMonitoringSiteDto site : monitoringStatus.getSites()) {
+                                    // Check if this site is the current site (local) and has status issues
+                                    if (site.getSiteUrl() != null && site.getSiteUrl().equals(baseUrl)) {
+                                        log.info("📊 Local site status (from master): {} - {}", site.getStatus(), site.getMessage());
                                         
-                                        // Sync missing tuples from creation location (master)
-                                        ReplicationSynchronisationDataDto syncedData = syncMissingTuplesFromMaster(fullDatabase);
-                                        if (syncedData != null) {
-                                            log.info("✅ Triggered sync for missing tuples in database {}", databaseBrief.getInternalName());
+                                        // If there are missing tuples on this site, trigger sync from master
+                                        if ("degraded".equalsIgnoreCase(site.getStatus()) && 
+                                            site.getMessage() != null && site.getMessage().contains("missing")) {
+                                            log.info("⚠️ Missing tuples detected on local site. Triggering sync from master...");
+                                            
+                                            // Sync missing tuples from creation location (master)
+                                            ReplicationSynchronisationDataDto syncedData = syncMissingTuplesFromMaster(fullDatabase);
+                                            if (syncedData != null) {
+                                                log.info("✅ Triggered sync for missing tuples in database {}", databaseBrief.getInternalName());
+                                            }
+                                        } else {
+                                            log.info("✅ No missing tuples detected for database {}", databaseBrief.getInternalName());
                                         }
-                                    } else {
-                                        log.info("✅ No missing tuples detected for database {}", databaseBrief.getInternalName());
                                     }
                                 }
                             }
                         }
                     } catch (Exception e) {
-                        log.warn("⚠️ Could not check monitoring status for database {}: {}", 
+                        log.warn("⚠️ Could not check monitoring status from master for database {}: {}", 
                                 databaseBrief.getInternalName(), e.getMessage());
                     }
                     
