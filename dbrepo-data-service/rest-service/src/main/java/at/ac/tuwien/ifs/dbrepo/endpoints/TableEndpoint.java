@@ -46,6 +46,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.net.URI;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationForwardingService;
 
 @Slf4j
 @RestController
@@ -62,16 +66,23 @@ public class TableEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
     private final ReplicationService replicationService;
+    private final RabbitTemplate rabbitTemplate;
+    private final ReplicationForwardingService replicationForwardingService;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Value("${dbrepo.baseUrl}")
     private String baseUrl;
 
+    @Value("${dbrepo.replication.exchangeName:dbrepo-replication}")
+    private String replicationExchangeName;
+
     @Autowired
     public TableEndpoint(CacheService cacheService, TableService tableService, MariaDbMapper mariaDbMapper,
                          SubsetService subsetService, StorageService storageService, DatabaseService databaseService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, ReplicationService replicationService) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, 
+                         ReplicationService replicationService, RabbitTemplate rabbitTemplate,
+                         ReplicationForwardingService replicationForwardingService) {
         this.cacheService = cacheService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -81,6 +92,8 @@ public class TableEndpoint extends RestEndpoint {
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
         this.replicationService = replicationService;
+        this.rabbitTemplate = rabbitTemplate;
+        this.replicationForwardingService = replicationForwardingService;
     }
 
     @PostMapping
@@ -1006,6 +1019,105 @@ public class TableEndpoint extends RestEndpoint {
         } catch (Exception e) {
             log.error("Error processing tuples with timestamps: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to process tuples with timestamps: " + e.getMessage(), e);
+        }
+    }
+
+    @GetMapping("/{tableId}/missing-tuples")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Get missing tuples for site",
+            description = "Returns tuples that exist locally but are missing on a specific replica site. Used for startup synchronization.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List of missing tuples",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto.class)))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database or table",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the database",
+                    content = {@Content}),
+    })
+    public ResponseEntity<List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto>> getMissingTuplesForSite(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @NotNull @RequestParam("siteUrl") String siteUrl)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            MetadataServiceException, DatabaseNotFoundException {
+        log.info("endpoint get missing tuples for site, databaseId={}, tableId={}, siteUrl={}", 
+                databaseId, tableId, siteUrl);
+        
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final TableDto table = cacheService.getTable(databaseId, tableId);
+        
+        try {
+            List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> missingTuples = 
+                    tableService.findMissingTuplesForSite(database, table, siteUrl);
+            log.info("Found {} missing tuples for site {} in table {}", 
+                    missingTuples.size(), siteUrl, table.getInternalName());
+            
+            // Broadcast missing tuples via RabbitMQ ONLY to the requesting site
+            if (!missingTuples.isEmpty()) {
+                // Find the remote database and table IDs for the requesting site
+                UUID remoteDatabaseId = database.getReplicaUrls() != null ? 
+                        database.getReplicaUrls().get(siteUrl) : null;
+                UUID remoteTableId = table.getReplicaUrls() != null ? 
+                        table.getReplicaUrls().get(siteUrl) : null;
+                
+                if (remoteDatabaseId != null && remoteTableId != null) {
+                    // Extract siteId from URL (hostname prefix before first dot)
+                    String siteId = null;
+                    try {
+                        String host = new URI(siteUrl).getHost();
+                        siteId = host != null && host.contains(".") ? host.substring(0, host.indexOf('.')) : host;
+                    } catch (Exception e) {
+                        log.warn("Could not extract siteId from URL {}: {}", siteUrl, e.getMessage());
+                        siteId = siteUrl; // fallback to full URL
+                    }
+                    
+                    // Routing key format for replication: dbrepo.<siteId>.<remoteDatabaseId>.<remoteTableId>
+                    String routingKey = "dbrepo." + siteId + "." + remoteDatabaseId + "." + remoteTableId;
+                    
+                    log.info("📤 Broadcasting {} missing tuples to site {} via RabbitMQ (exchange={}, routingKey={})", 
+                            missingTuples.size(), siteUrl, replicationExchangeName, routingKey);
+                    
+                    for (at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto missingTuple : missingTuples) {
+                        try {
+                            // Publish the tuple data to RabbitMQ for the requesting site
+                            rabbitTemplate.convertAndSend(replicationExchangeName, routingKey, missingTuple.getData());
+                            log.debug("📤 Published tuple with replicationKey={} to {}", 
+                                    missingTuple.getReplicationKey(), routingKey);
+                            
+                            // Forward timestamp information to the requesting site
+                            TupleReplicationTimestampDto timestampDto = TupleReplicationTimestampDto.builder()
+                                    .siteUrl(baseUrl) // This master site
+                                    .replicationId(missingTuple.getReplicationKey())
+                                    .databaseId(databaseId)
+                                    .tableId(tableId)
+                                    .rowStart(Instant.now()) // Will be updated when inserted at remote
+                                    .build();
+                            replicationForwardingService.forwardTimestampToReplica(timestampDto, database, siteUrl);
+                            
+                        } catch (Exception pubEx) {
+                            log.error("❌ Failed to publish missing tuple to RabbitMQ: {}", pubEx.getMessage());
+                        }
+                    }
+                    
+                    log.info("✅ Broadcasted {} missing tuples to site {} via RabbitMQ", 
+                            missingTuples.size(), siteUrl);
+                } else {
+                    log.warn("⚠️ Could not find remote database/table IDs for site {}. remoteDatabaseId={}, remoteTableId={}", 
+                            siteUrl, remoteDatabaseId, remoteTableId);
+                }
+            }
+            
+            return ResponseEntity.ok(missingTuples);
+        } catch (java.sql.SQLException e) {
+            log.error("Failed to find missing tuples: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to find missing tuples: " + e.getMessage(), e);
         }
     }
 

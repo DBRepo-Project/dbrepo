@@ -1316,4 +1316,97 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         }
     }
 
+    @Override
+    public List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> findMissingTuplesForSite(
+            DatabaseDto database, TableDto table, String siteUrl) throws SQLException {
+        log.info("Finding missing tuples for site {} in table {}.{}", 
+                siteUrl, database.getInternalName(), table.getInternalName());
+
+        List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> missingTuples = new ArrayList<>();
+
+        // Check if table has replication_key column
+        final boolean hasReplicationKeyColumn = table.getColumns().stream()
+                .anyMatch(c -> "replication_key".equalsIgnoreCase(c.getInternalName()));
+        if (!hasReplicationKeyColumn) {
+            log.info("Table {}.{} does not have replication_key column, skipping", 
+                    database.getInternalName(), table.getInternalName());
+            return missingTuples;
+        }
+
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+
+        try {
+            // Query to find tuples that exist locally but have no replication timestamp for the target site
+            // This uses a LEFT JOIN to find tuples where the replication timestamp is missing
+            final StringBuilder sql = new StringBuilder();
+            sql.append("SELECT ");
+
+            // Add all table columns
+            final int[] colIdx = new int[]{0};
+            for (ColumnDto c : table.getColumns()) {
+                sql.append(colIdx[0]++ == 0 ? "" : ", ")
+                        .append("t.`")
+                        .append(c.getInternalName())
+                        .append("`");
+            }
+            // Include replication_key
+            sql.append(", t.`replication_key`");
+
+            sql.append(" FROM `")
+                    .append(database.getInternalName())
+                    .append("`.`")
+                    .append(table.getInternalName())
+                    .append("` t ")
+                    .append("LEFT JOIN tuple_replication_timestamps trt ")
+                    .append("ON t.`replication_key` = trt.replication_id AND trt.site_url = ? ")
+                    .append("WHERE t.`replication_key` IS NOT NULL AND trt.replication_id IS NULL");
+
+            log.debug("Executing query to find missing tuples: {}", sql);
+
+            final PreparedStatement ps = connection.prepareStatement(sql.toString());
+            ps.setString(1, siteUrl);
+
+            final ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> tupleData = new java.util.HashMap<>();
+
+                // Extract all column values
+                for (ColumnDto column : table.getColumns()) {
+                    Object value = rs.getObject(column.getInternalName());
+                    tupleData.put(column.getInternalName(), value);
+                }
+
+                // Extract replication key
+                String replicationKey = rs.getString("replication_key");
+                if (replicationKey != null) {
+                    tupleData.put("replication_key", replicationKey);
+                }
+
+                at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto missingTuple = 
+                        at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto.builder()
+                        .replicationKey(replicationKey)
+                        .tableId(table.getId())
+                        .data(tupleData)
+                        .build();
+
+                missingTuples.add(missingTuple);
+            }
+
+            connection.commit();
+            log.info("Found {} missing tuples for site {} in table {}.{}", 
+                    missingTuples.size(), siteUrl, database.getInternalName(), table.getInternalName());
+
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to find missing tuples for site {} in table {}.{}: {}", 
+                    siteUrl, database.getInternalName(), table.getInternalName(), e.getMessage());
+            throw e;
+        } finally {
+            dataSource.close();
+        }
+
+        return missingTuples;
+    }
+
 }

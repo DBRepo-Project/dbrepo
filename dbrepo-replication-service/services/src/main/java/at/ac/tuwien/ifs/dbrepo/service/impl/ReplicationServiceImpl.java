@@ -26,10 +26,15 @@ import org.springframework.context.event.EventListener;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
+import at.ac.tuwien.ifs.dbrepo.service.MonitoringService;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringSiteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
@@ -52,21 +57,30 @@ public class ReplicationServiceImpl implements ReplicationService {
     private final GatewayConfig gatewayConfig;
     private final ReplicationTimestampService replicationTimestampService;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final MonitoringService monitoringService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${BASE_URL:http://localhost:8080}")
     private String baseUrl;
+
+    @Value("${dbrepo.rabbitmq.exchangeName:dbrepo-exchange}")
+    private String rabbitExchangeName;
 
     @Autowired
     public ReplicationServiceImpl(@Qualifier("externalReplicationRestTemplate") RestTemplate externalReplicationRestTemplate,
                                 @Qualifier("dataRestTemplate") RestTemplate localDataServiceRestTemplate,
                                 GatewayConfig gatewayConfig,
                                 ReplicationTimestampService replicationTimestampService,
-                                MetadataServiceGateway metadataServiceGateway) {
+                                MetadataServiceGateway metadataServiceGateway,
+                                MonitoringService monitoringService,
+                                RabbitTemplate rabbitTemplate) {
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
         this.localDataServiceRestTemplate = localDataServiceRestTemplate;
         this.gatewayConfig = gatewayConfig;
         this.replicationTimestampService = replicationTimestampService;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.monitoringService = monitoringService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -483,7 +497,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.info("✅ Retrieved {} databases from metadata service", allDatabases.size());
             
             // 2. Process each database sequentially
-            log.info("Step 2: Processing each database for replication timestamps...");
+            log.info("Step 2: Processing each database for missing tuples via monitoring service...");
             for (DatabaseBriefDto databaseBrief : allDatabases) {
 
                 try {
@@ -500,9 +514,40 @@ public class ReplicationServiceImpl implements ReplicationService {
                             log.info("    * {} -> Database ID: {}", url, id));
                     } else {
                         log.info("  - Replica URLs: None configured");
+                        continue; // Skip databases without replicas
                     }
                     
-                    // Get latest replication timestamp for this database
+                    // Step 2a: Check for missing tuples via MonitoringService
+                    log.info("🔍 Checking for missing tuples via MonitoringService for database {}...", databaseBrief.getInternalName());
+                    try {
+                        ReplicationMonitoringDatabaseDto monitoringStatus = monitoringService.status(databaseBrief.getId());
+                        
+                        if (monitoringStatus.getSites() != null) {
+                            for (ReplicationMonitoringSiteDto site : monitoringStatus.getSites()) {
+                                // Check if this site is the current site (local) and has status issues
+                                if (site.getSiteUrl() != null && site.getSiteUrl().equals(baseUrl)) {
+                                    log.info("📊 Local site status: {} - {}", site.getStatus(), site.getMessage());
+                                    
+                                    // If there are missing tuples on this site, fetch them from master
+                                    if ("degraded".equalsIgnoreCase(site.getStatus()) && 
+                                        site.getMessage() != null && site.getMessage().contains("missing")) {
+                                        log.info("⚠️ Missing tuples detected on local site. Initiating sync from master...");
+                                        
+                                        // Sync missing tuples from creation location (master)
+                                        ReplicationSynchronisationDataDto syncedData = syncMissingTuplesFromMaster(fullDatabase);
+                                        if (syncedData != null) {
+                                            return syncedData;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.warn("⚠️ Could not check monitoring status for database {}: {}. Falling back to timestamp-based sync.", 
+                                databaseBrief.getInternalName(), e.getMessage());
+                    }
+                    
+                    // Step 2b: Fallback - Get latest replication timestamp for this database
                     Instant latestTimestamp = replicationTimestampService.getLatestReplicationTimestamp(fullDatabase);
                     
                     if (latestTimestamp != null) {
@@ -548,6 +593,84 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.error("❌ Error during startup tasks: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to complete startup tasks", e);
         }
+    }
+
+    /**
+     * Syncs missing tuples from the master site (creation location).
+     * Calls the master's missing-tuples endpoint which will directly broadcast the tuples
+     * via RabbitMQ to this site. The tuples will then be consumed by the local ReplicationListener.
+     */
+    private ReplicationSynchronisationDataDto syncMissingTuplesFromMaster(DatabaseDto database) {
+        log.info("🔄 Triggering missing tuple sync from master for database {}", database.getInternalName());
+        
+        String masterUrl = database.getCreationLocation();
+        if (masterUrl == null || masterUrl.trim().isEmpty()) {
+            log.warn("⚠️ No creation location (master) for database {}", database.getInternalName());
+            return null;
+        }
+        
+        // Find the remote database ID on the master
+        UUID masterDatabaseId = database.getReplicaUrls() != null ? 
+                database.getReplicaUrls().get(masterUrl) : null;
+        
+        if (masterDatabaseId == null) {
+            log.warn("⚠️ Could not find master database ID for {}", masterUrl);
+            return null;
+        }
+        
+        int totalMissingTuples = 0;
+        
+        // For each table in the database, trigger the master to broadcast missing tuples
+        if (database.getTables() != null) {
+            for (var table : database.getTables()) {
+                try {
+                    // Find remote table ID on master
+                    UUID remoteTableId = (table.getReplicaUrls() != null) ? 
+                            table.getReplicaUrls().get(masterUrl) : null;
+                    
+                    if (remoteTableId == null) {
+                        log.info("ℹ️ No remote table ID for table {} on master, skipping", table.getInternalName());
+                        continue;
+                    }
+                    
+                    // Call master's missing-tuples endpoint - this will trigger RabbitMQ broadcast to this site
+                    String endpoint = String.format("%s/api/v1/database/%s/table/%s/missing-tuples?siteUrl=%s",
+                            masterUrl, masterDatabaseId, remoteTableId, baseUrl);
+                    
+                    log.info("📡 Triggering missing tuple broadcast from master: {}", endpoint);
+                    
+                    ResponseEntity<List<MissingTupleDto>> response = externalReplicationRestTemplate.exchange(
+                            endpoint,
+                            org.springframework.http.HttpMethod.GET,
+                            null,
+                            new ParameterizedTypeReference<List<MissingTupleDto>>() {}
+                    );
+                    
+                    if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                        int count = response.getBody().size();
+                        totalMissingTuples += count;
+                        log.info("✅ Master found {} missing tuples for table {} - broadcasting via RabbitMQ", 
+                                count, table.getInternalName());
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Failed to trigger sync for table {}: {}", 
+                            table.getInternalName(), e.getMessage());
+                }
+            }
+        }
+        
+        if (totalMissingTuples == 0) {
+            log.info("✅ No missing tuples found in any table");
+            return null;
+        }
+        
+        log.info("✅ Triggered broadcast of {} total missing tuples from master via RabbitMQ", totalMissingTuples);
+        
+        // Return empty result - the actual tuples will arrive via RabbitMQ
+        return ReplicationSynchronisationDataDto.builder()
+                .tuples(new ArrayList<>())
+                .replicationTimestamps(new ArrayList<>())
+                .build();
     }
 
 

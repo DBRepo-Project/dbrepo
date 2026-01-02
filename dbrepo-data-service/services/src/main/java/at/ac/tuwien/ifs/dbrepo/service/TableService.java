@@ -201,4 +201,17 @@ public interface TableService {
     ReplicationSynchronisationDataDto loadNewTuplesAfterTimestamp(DatabaseDto database,
                                                                   Instant timestamp) throws SQLException,
                                                         QueryMalformedException;
+
+    /**
+     * Finds tuples that exist locally but are missing on a specific replica site.
+     * This is used during startup synchronization to identify which tuples need to be replicated.
+     *
+     * @param database The database to check.
+     * @param table    The table to check.
+     * @param siteUrl  The site URL to check for missing tuples.
+     * @return List of missing tuples with their data.
+     * @throws SQLException Failed to establish connection to database.
+     */
+    List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> findMissingTuplesForSite(
+            DatabaseDto database, TableDto table, String siteUrl) throws SQLException;
 }
