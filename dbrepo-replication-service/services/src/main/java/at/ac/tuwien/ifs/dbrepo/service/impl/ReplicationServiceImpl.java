@@ -529,8 +529,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                     
                     log.info("🔍 Checking for missing tuples via MASTER's monitoring endpoint at {}...", masterUrl);
                     try {
-                        // Call master's monitoring endpoint: GET /api/replication/monitoring/{databaseId}
-                        String monitoringEndpoint = String.format("%s/api/replication/monitoring/%s", 
+                        // Call master's monitoring endpoint: GET /api/replication/monitoring/{databaseId}/status
+                        String monitoringEndpoint = String.format("%s/api/replication/monitoring/%s/status", 
                                 masterUrl, masterDatabaseId);
                         
                         log.info("📡 Calling master monitoring endpoint: {}", monitoringEndpoint);
