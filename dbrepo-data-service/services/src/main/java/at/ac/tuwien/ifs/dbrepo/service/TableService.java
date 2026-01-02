@@ -209,9 +209,9 @@ public interface TableService {
      * @param database The database to check.
      * @param table    The table to check.
      * @param siteUrl  The site URL to check for missing tuples.
-     * @return List of missing tuples with their data.
+     * @return List of missing tuples as Maps with keys: replicationKey, tableId, data.
      * @throws SQLException Failed to establish connection to database.
      */
-    List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> findMissingTuplesForSite(
+    List<Map<String, Object>> findMissingTuplesForSiteAsMap(
             DatabaseDto database, TableDto table, String siteUrl) throws SQLException;
 }

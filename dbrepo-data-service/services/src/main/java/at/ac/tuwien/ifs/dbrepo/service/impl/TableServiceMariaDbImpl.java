@@ -1317,12 +1317,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
-    public List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> findMissingTuplesForSite(
+    public List<Map<String, Object>> findMissingTuplesForSiteAsMap(
             DatabaseDto database, TableDto table, String siteUrl) throws SQLException {
         log.info("Finding missing tuples for site {} in table {}.{}", 
                 siteUrl, database.getInternalName(), table.getInternalName());
 
-        List<at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto> missingTuples = new ArrayList<>();
+        List<Map<String, Object>> missingTuples = new ArrayList<>();
 
         // Check if table has replication_key column
         final boolean hasReplicationKeyColumn = table.getColumns().stream()
@@ -1383,12 +1383,11 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     tupleData.put("replication_key", replicationKey);
                 }
 
-                at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto missingTuple = 
-                        at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto.builder()
-                        .replicationKey(replicationKey)
-                        .tableId(table.getId())
-                        .data(tupleData)
-                        .build();
+                // Return as a Map with structure: { replicationKey, tableId, data }
+                Map<String, Object> missingTuple = new java.util.HashMap<>();
+                missingTuple.put("replicationKey", replicationKey);
+                missingTuple.put("tableId", table.getId());
+                missingTuple.put("data", tupleData);
 
                 missingTuples.add(missingTuple);
             }
