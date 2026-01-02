@@ -33,7 +33,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.monitoring.ReplicationMonitoringSiteDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.replication.MissingTupleDto;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
@@ -650,18 +649,21 @@ public class ReplicationServiceImpl implements ReplicationService {
                     
                     log.info("📡 Triggering missing tuple broadcast from master: {}", endpoint);
                     
-                    ResponseEntity<List<MissingTupleDto>> response = externalReplicationRestTemplate.exchange(
+                    // The endpoint now returns {"found": X, "broadcasted": Y, "siteUrl": "..."}
+                    ResponseEntity<Map<String, Object>> response = externalReplicationRestTemplate.exchange(
                             endpoint,
                             org.springframework.http.HttpMethod.GET,
                             null,
-                            new ParameterizedTypeReference<List<MissingTupleDto>>() {}
+                            new ParameterizedTypeReference<Map<String, Object>>() {}
                     );
                     
                     if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                        int count = response.getBody().size();
-                        totalMissingTuples += count;
-                        log.info("✅ Master found {} missing tuples for table {} - broadcasting via RabbitMQ", 
-                                count, table.getInternalName());
+                        Map<String, Object> result = response.getBody();
+                        int found = result.get("found") != null ? ((Number) result.get("found")).intValue() : 0;
+                        int broadcasted = result.get("broadcasted") != null ? ((Number) result.get("broadcasted")).intValue() : 0;
+                        totalMissingTuples += broadcasted;
+                        log.info("✅ Master found {} tuples, broadcasted {} tuples for table {} via RabbitMQ", 
+                                found, broadcasted, table.getInternalName());
                     }
                 } catch (Exception e) {
                     log.error("❌ Failed to trigger sync for table {}: {}", 
