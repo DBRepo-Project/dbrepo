@@ -7,9 +7,10 @@
 {% block content %}
     <script>
     </script>
-    <div class="container">
-
-        <div class="left-section">
+    <div class="ui container">
+        <div class="ui relaxed grid mt-5">
+        <div class="two column row top-padded">
+            <div class="sixteen wide tablet eleven wide computer column main-record-content">
             <div id="view-header">
 {#                Created {{ view.created }}#}
 
@@ -31,15 +32,17 @@
             <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
             <p style="white-space: pre-line;">{{ metadata.description }}</p>
             <h2>Data</h2>
-            {{ preview_info_box(data) }}
+            {{ preview_info_box(view, data) }}
             {% if type == "view" %}
                 {{ view_schema_box(metadata) }}
             {% endif %}
         </div>
-        <div class="right-section">
+        </div>
+        <div class="sixteen wide tablet five wide computer column sidebar">
             {%- include "/view_records/details/side_bar.html" %}
 
 
+        </div>
         </div>
     </div>
 

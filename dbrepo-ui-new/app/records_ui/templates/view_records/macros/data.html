@@ -1,14 +1,14 @@
-{%- macro preview_info(view_data) %}
-    <table id="preview_table">
+{%- macro preview_info(table, table_data) %}
+    <table class="ui striped table files fluid open" id="preview_table">
     <thead>
             <tr>
-                {% for column in view_data[0].keys() %}
+                {% for column in table_data[0].keys() %}
                     <th>{{ column }}</th>
                 {% endfor %}
             </tr>
         </thead>
     <tbody>
-        {% for row in view_data %}
+        {% for row in table_data %}
             <tr>
             {% for value in row.values() %}
                         <td>{{ value }}</td>
@@ -19,18 +19,18 @@
     </table>
 {%- endmacro %}
 
-{% macro preview_info_box(view_data) %}
-    <div role="button" class="accordion link-box">
-        <span class="box-title"> Dataset </span>
-        <i class="angle right icon" aria-hidden="true"></i>
-    </div>
-    <div class="panel">
-        {{ preview_info(view_data) }}
+{% macro preview_info_box(table, table_data) %}
+     <div class="ui accordion">
+        <div class="active title m-0">Dataset<i class="dropdown angle icon" aria-hidden="true"></i></div>
+
+        <div class="active content pt-0">
+         {{ preview_info(table, table_data) }}
+        </div>
     </div>
 {%- endmacro %}
 
 {% macro schema_table(view) %}
-    <table id="dataset_list">
+    <table class="ui striped table files fluid open" id="dataset_list">
     <thead>
         <tr>
             <th>Name</th>
@@ -55,11 +55,11 @@
 {%- endmacro %}
 
 {% macro view_schema_box(view) %}
-    <div role="button" class="accordion link-box">
-        <span class="box-title"> Schema </span>
-        <i class="angle right icon" aria-hidden="true"></i>
-    </div>
-    <div class="panel">
-        {{ schema_table(view) }}
+    <div class="ui accordion">
+        <div class="active title m-0">Schema<i class="dropdown angle icon" aria-hidden="true"></i></div>
+
+        <div class="active content pt-0">
+         {{ schema_table(view) }}
+        </div>
     </div>
 {%- endmacro %}
