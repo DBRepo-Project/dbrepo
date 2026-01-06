@@ -15,8 +15,8 @@ records_bp = Blueprint('records', __name__, template_folder='templates', static_
 def show_record(db_id):
     database = repo.get_database(database_id=db_id)
     view = repo.get_view(database_id=db_id, view_id=database.views[0].id)
-    view_data = repo.get_view_data(database_id=db_id, view_id=database.views[0].id, page=1, size=10).to_dict(orient='records')
-    queries = repo.get_queries(database_id=db_id)
+    view_data = repo.get_view_data(database_id=db_id, view_id=database.views[1].id, page=1, size=10).to_dict(orient='records')
+    # queries = repo.get_queries(database_id=db_id)
     queries = []
     return render_template('records/detail.html', database=database, view=view, data=view_data,
                            doi_id=0, queries=queries)
@@ -44,15 +44,12 @@ def show_subset_record(database_id, subset_id):
 
 @records_bp.route('/get-data', methods=['GET'])
 def get_data():
-    databse_id = request.args.get('database_id')
+    database_id = request.args.get('database_id')
     view_id = request.args.get('id')
-    view_data = repo.get_view_data(database_id=databse_id, view_id=view_id, page=1, size=10).to_dict(orient='records')
 
+    view_data = repo.get_view_data(database_id=database_id, view_id=view_id, page=1, size=10).to_dict(orient='records')
+    print(view_data)
     return jsonify(view_data)  # Return data as JSON
-
-
-view_records_bp = Blueprint('view_records', __name__, template_folder='templates', static_folder='static',
-                            static_url_path='/static/admin')
 
 
 @records_bp.route('/get-subset-data', methods=['GET'])

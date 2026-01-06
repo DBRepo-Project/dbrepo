@@ -1,19 +1,4 @@
 
-$('.accordion').on('click', function() {
-
-        if ($(this).next('.active').is(':visible')) {
-            $(this).next('.active').slideUp(
-                function() {$(this).prev().css("border-radius", "5px");
-            })
-
-        } else {
-            $(this).next('.active').slideDown();
-            $(this).css("border-radius", "5px 5px 0 0");
-        }
-
-        $(this).find('.icon').toggleClass('right down');
-    });
-
 $('.preview_button').on('click', async function() {
     const database_id = $(this).data('database_id');
     const preview_id = $(this).data('value');
@@ -39,32 +24,39 @@ $('.subset_preview_button').on('click', async function() {
     if (!response.ok) {
         throw new Error("Failed to fetch data");
     }
-
     const dataset = await response.json();
 
     renderTable(dataset, name);
 });
 
 function renderTable(dataset, name) {
-
     const $table = $("#preview_table");
 
     const $table_name = $("#preview_name");
 
     $table_name.text(name);
-
-
     $table.empty();
 
-    dataset.forEach((rowData, rowIndex) => {
-        const $row = $("<tr></tr>");
+    if (!dataset || dataset.length === 0) return;
 
-        Object.values(rowData).forEach(cellData => {
-            const $cell = rowIndex === 0 ? $("<th></th>") : $("<td></td>");
-            $cell.text(cellData);
-            $row.append($cell);
-        });
+    const $thead = $("<thead></thead>");
+    const $tbody = $("<tbody></tbody>");
 
-        $table.append($row);
+    // ----- Header from keys (like Jinja) -----
+    const $headerRow = $("<tr></tr>");
+    Object.keys(dataset[0]).forEach(column => {
+        $("<th></th>").text(column).appendTo($headerRow);
     });
+    $thead.append($headerRow);
+
+    // ----- Body from values -----
+    dataset.forEach(rowData => {
+        const $row = $("<tr></tr>");
+        Object.values(rowData).forEach(value => {
+            $("<td></td>").text(value).appendTo($row);
+        });
+        $tbody.append($row);
+    });
+
+    $table.append($thead, $tbody);
 }

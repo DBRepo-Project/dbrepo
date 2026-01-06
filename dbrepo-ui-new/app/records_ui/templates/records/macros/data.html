@@ -1,5 +1,5 @@
 {%- macro preview_info(table, table_data) %}
-    <table class="ui striped table files fluid open">
+    <table class="ui striped table files fluid open" id="preview_table">
     <thead>
             <tr>
                 {% for column in table_data[0].keys() %}
@@ -21,12 +21,12 @@
 
 
 {% macro preview_info_box(table, table_data) %}
-    <div role="button" class="accordion link-box">
-        <span id="preview_name" class="box-title"> {{ table.name }} </span>
-        <i class="angle right icon" aria-hidden="true"></i>
-    </div>
-    <div class="active content pt-0">
-        {{ preview_info(table, table_data) }}
+    <div class="ui accordion">
+        <div class="active title m-0">Data<i class="dropdown angle icon" aria-hidden="true"></i></div>
+
+        <div class="active content pt-0">
+         {{ preview_info(table, table_data) }}
+        </div>
     </div>
 {%- endmacro %}
 
@@ -52,10 +52,10 @@
                             <i class="download icon" aria-hidden="true"></i>Download
                         </a>
                         <a role="button" class="ui compact mini button preview-link right floated" href="/subset/{{ subset.database_id }}/{{ subset.id }}">
-                          <i class="info icon" aria-hidden="true"></i>Details
+                            <i class="info icon" aria-hidden="true"></i>Details
                         </a>
                         <a role="button" class="ui compact mini button preview-link right floated subset_preview_button" data-value="{{ subset.id }}" data-database_id="{{ subset.database_id }}" data-name="{{ subset.identifiers[0].titles[0].title }}">
-                          <i class="eye icon" aria-hidden="true"></i>Preview
+                            <i class="eye icon" aria-hidden="true"></i>Preview
                         </a>
 
                     </span>
@@ -72,7 +72,7 @@
         <tr>
             <th>Name</th>
             <th>
-                <a role="button" class="ui compact mini button right floated" href="">
+                <a role="button" class="ui labeled icon compact mini button right floated" href="">
                   <i class="file archive icon button" aria-hidden="true"></i>Download all
                 </a>
             </th>
@@ -84,15 +84,16 @@
                 <td>{{ view.name }}</td>
                 <td>
                     <span>
-                        <a role="button" class="ui compact mini button right floated">
-                            <i class="download icon" aria-hidden="true"></i>Download
-                        </a>
-                        <a role="button" class="ui compact mini button preview-link right floated" href="/view/{{ view.database_id }}/{{ view.id }}">
-                          <i class="info icon" aria-hidden="true"></i>Details
-                        </a>
-                        <a role="button" class="ui compact mini button preview-link right floated preview_button" data-value="{{ view.id }}" data-database_id="{{ view.database_id }}" data-name="{{ view.name }}">
+                        <a role="button" class="ui labeled icon compact mini button preview-link right floated preview_button" data-value="{{ view.id }}" data-database_id="{{ view.database_id }}" data-name="{{ view.name }}">
                           <i class="eye icon" aria-hidden="true"></i>Preview
                         </a>
+                        <a role="button" class="ui labeled icon compact mini button right floated">
+                            <i class="download icon" aria-hidden="true"></i>Download
+                        </a>
+                        <a role="button" class="ui labeled icon compact mini button preview-link right floated" href="/view/{{ view.database_id }}/{{ view.id }}">
+                          <i class="info icon" aria-hidden="true"></i>Details
+                        </a>
+
 
                     </span>
                 </td>
@@ -104,12 +105,12 @@
 
 
 {% macro datasource_list_box(views) %}
-        <div role="button" class="accordion link-box">
-            <span class="box-title"> Data Sources </span>
-            <i class="angle right icon" aria-hidden="true"></i>
-        </div>
-        <div class="active content pt-0">
-            {{ datasource_list(views) }}
+        <div class="ui accordion">
+            <div class="active title m-0">Data Sources<i class="dropdown angle icon" aria-hidden="true"></i></div>
+
+            <div class="active content pt-0">
+             {{ datasource_list(views) }}
+            </div>
         </div>
 {%- endmacro %}
 
