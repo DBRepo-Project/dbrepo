@@ -97,7 +97,7 @@ p {
   width: 25%;
 }
 
-#type {
+.type {
   width:13%;
   border-radius: 5px;
   background-color: #767676;

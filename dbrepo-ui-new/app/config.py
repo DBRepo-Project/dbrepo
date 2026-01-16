@@ -8,5 +8,5 @@ DETAIL_SIDE_BAR_TEMPLATES = [
 VIEW_DETAIL_SIDE_BAR_TEMPLATES = [
   "/view_records/details/side_bar/database.html",
   "/view_records/details/side_bar/metadata.html",
-  "/view_records/details/side_bar/identifier.html",
+  #"/view_records/details/side_bar/identifier.html",
 ]

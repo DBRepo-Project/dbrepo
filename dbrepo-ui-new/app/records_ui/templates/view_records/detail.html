@@ -11,13 +11,13 @@
         <div class="ui relaxed grid mt-5">
         <div class="two column row top-padded">
             <div class="sixteen wide tablet eleven wide computer column main-record-content">
-            <div id="view-header">
+            <div id="view-header" class="ui">
 {#                Created {{ view.created }}#}
 
                 {% if type == "view" %}
-                    <div class="view-header-child" id="type">Data Source</div>
+                    <div class="view-header-child type" id="type">Data Source</div>
                 {% else %}
-                    <div class="view-header-child" id="type">Data Set</div>
+                    <div class="view-header-child type" id="type">Data Set</div>
                 {% endif %}
 
                 <div class="view-header-child" id="access"><i class="lock open icon"></i>Open</div>
@@ -37,12 +37,12 @@
                 {{ view_schema_box(metadata) }}
             {% endif %}
         </div>
-        </div>
+
         <div class="sixteen wide tablet five wide computer column sidebar">
             {%- include "/view_records/details/side_bar.html" %}
 
-
         </div>
+            </div>
         </div>
     </div>
 
