@@ -29,6 +29,19 @@ $('.subset_preview_button').on('click', async function() {
     renderTable(dataset, name);
 });
 
+$('.subset_pagination_button').on('click', async function() {
+    const database_id = $(this).data('database_id');
+    const preview_id = $(this).data('value');
+
+    const response = await fetch(`/get-subset-data?database_id=${database_id}&id=${preview_id}`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch data");
+    }
+    const dataset = await response.json();
+
+    renderTable(dataset, "name");
+});
+
 function renderTable(dataset, name) {
     const $table = $("#preview_table");
 

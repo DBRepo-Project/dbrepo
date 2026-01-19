@@ -1,4 +1,4 @@
-{%- macro preview_info(table, table_data) %}
+{%- macro preview_info(table, table_data, page, total_pages) %}
     <table class="ui striped table files fluid open" id="preview_table">
     <thead>
             <tr>
@@ -17,14 +17,39 @@
         {% endfor %}
     </tbody>
     </table>
+<div class="ui center aligned basic segment">
+  <div class="ui pagination menu">
+
+    {% if page > 1 %}
+      <a class="item" href="?page={{ page - 1 }}">← Prev</a>
+    {% else %}
+      <div class="disabled item">← Prev</div>
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+      {% if p == page %}
+        <div class="active item">{{ p }}</div>
+      {% else %}
+        <a class="item" href="?page={{ p }}">{{ p }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page < total_pages %}
+      <a class="item subset_pagination_button"  >Next →</a>
+    {% else %}
+      <div class="disabled item">Next →</div>
+    {% endif %}
+
+  </div>
+</div>
 {%- endmacro %}
 
-{% macro preview_info_box(table, table_data) %}
+{% macro preview_info_box(table, table_data, page, total_pages) %}
      <div class="ui accordion">
         <div class="active title m-0">Dataset<i class="dropdown angle icon" aria-hidden="true"></i></div>
 
         <div class="active content pt-0">
-         {{ preview_info(table, table_data) }}
+         {{ preview_info(table, table_data, page, total_pages) }}
         </div>
     </div>
 {%- endmacro %}

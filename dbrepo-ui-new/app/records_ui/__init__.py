@@ -29,7 +29,7 @@ def show_view_record(database_id, view_id):
     database = repo.get_database(database_id=database_id)
 
     return render_template('view_records/detail.html', database=database, metadata=view,
-                           data=view_data, type="view")
+                           data=view_data, type="view", page=1, total_pages=10)
 
 @records_bp.route('/subset/<database_id>/<subset_id>')
 def show_subset_record(database_id, subset_id):

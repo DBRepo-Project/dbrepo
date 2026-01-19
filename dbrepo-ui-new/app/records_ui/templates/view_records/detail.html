@@ -32,7 +32,7 @@
             <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
             <p style="white-space: pre-line;">{{ metadata.description }}</p>
             <h2>Data</h2>
-            {{ preview_info_box(view, data) }}
+            {{ preview_info_box(view, data, page, total_pages) }}
             {% if type == "view" %}
                 {{ view_schema_box(metadata) }}
             {% endif %}
