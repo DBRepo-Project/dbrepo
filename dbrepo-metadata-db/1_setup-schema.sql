@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
     position INT          NULL,
     PRIMARY KEY (`uid`),
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 (

@@ -9,13 +9,13 @@ We welcome contributions to DBRepo!
 Local development depends on the following packages for Debian 12:
 
 ```shell
-apt install maven openjdk-17-jdk make nodejs npm
+apt install maven openjdk-21-jdk make nodejs npm
 ```
 
 Required tools for local development:
 
 * [Docker Engine](https://docs.docker.com/engine/install/) (`docker --version` must be at least `24.x`)
-* [Minikube](https://minikube.sigs.k8s.io/docs/start/) (`minikube version` must be at least `1.32.x`)
+* [K3S](https://k3s.io) 
 
 ## Getting Started
 

@@ -15,6 +15,7 @@ tmp.yaml
 .scannerwork/
 .docker/config/
 .docker/dist.tar.gz
+.cache/
 
 #### Docs ###
 .docs/.swagger/dist/

@@ -4,7 +4,7 @@ author: Martin Weise
 
 # Installation
 
-Before you can use GeoNetwork on your own computer, you need to install it:
+Before you can use DBRepo on your own computer, you need to install it:
 
 <div class="grid cards" markdown>
 

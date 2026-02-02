@@ -151,6 +151,11 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
 plugins:
   - search
+#  - with-pdf:
+#      author: Martin Weise
+#      cover_title: DBRepo - Database Repository
+#      cover_subtitle: Documentation for version v1.13.3
+#      output_path: dbrepo_v1.13.pdf
   - mike:
       alias_type: redirect
       deploy_prefix: infrastructures/dbrepo
