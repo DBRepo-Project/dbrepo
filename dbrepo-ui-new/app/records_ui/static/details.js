@@ -14,6 +14,22 @@ $('.preview_button').on('click', async function() {
     renderTable(dataset, name);
 });
 
+$('.copy-doi-button').on('click', async function() {
+        const value = $(this).data('value');
+
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+        } else {
+            // Fallback method
+            const temp = document.createElement('textarea');
+            temp.value = value;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+        }
+});
+
 $('.subset_preview_button').on('click', async function() {
     const database_id = $(this).data('database_id');
     const preview_id = $(this).data('value');

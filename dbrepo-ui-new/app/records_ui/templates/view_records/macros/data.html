@@ -35,7 +35,7 @@
     {% endfor %}
 
     {% if page < total_pages %}
-      <a class="item subset_pagination_button"  >Next →</a>
+      <a role="button" class="item subset_pagination_button" data-value="{{ table }}" >Next →</a>
     {% else %}
       <div class="disabled item">Next →</div>
     {% endif %}

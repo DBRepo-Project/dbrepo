@@ -1,23 +1,41 @@
 <section id="identifier_info" aria-label="identifier_info" class="info-box">
 
-    <div class="label">Persistent Identifier</div>
-    <div class="value">{{ database.identifiers[doi_id].doi}}</div>
-    <br>
 
-    <div class="label">Publisher</div>
-    <div class="value">{{ database.identifiers[doi_id].publisher}}</div>
-    <br>
 
-    <div class="label">Publication Date</div>
-    <div class="value">{{ database.identifiers[doi_id].publication_day }}.{{ database.identifiers[doi_id].publication_month}}.{{ database.identifiers[doi_id].publication_year }}</div>
-    <br>
+    <h3 class="ui medium top attached header mt-0">Details</h3>
 
-    <div class="label">Licenses</div>
-    <div class="value">{% for license in database.identifiers[doi_id].licenses %}
+    <div class="ui segment bottom attached rdm-sidebar">
+    <dl class="details-list">
+    <dt class="ui tiny header">Persistent Identifier</dt>
+    <dd>
+        <span><img id="record-doi-badge" data-target="[data-modal='10.5281/zenodo.18390222']" title="Get the DOI badge!" src="/badge/DOI/10.5281/zenodo.18390222.svg" alt="">
+                {{ database.identifiers[doi_id].doi}}
+
+        </span>
+        <div id="copy-button-record-doi-badge" class="copy-doi-button" data-value="{{ database.identifiers[doi_id].doi}}" data-size="mini"><button aria-label="Copy to clipboard" class="ui mini basic icon button copy"><i aria-hidden="true" class="copy icon"></i></button></div>
+
+
+    </dd>
+
+
+    <dt class="ui tiny header">Publisher</dt>
+    <dd>{{ database.identifiers[doi_id].publisher}}</dd>
+
+
+    <dt class="ui tiny header">Publication Date</dt>
+    <dd>{{ database.identifiers[doi_id].publication_day }}.{{ database.identifiers[doi_id].publication_month}}.{{ database.identifiers[doi_id].publication_year }}</dd>
+
+
+    <dt class="ui tiny header">Licenses</dt>
+    <dd>{% for license in database.identifiers[doi_id].licenses %}
         {{ license.identifier }} {{ "; " if not loop.last }}
-    {%- endfor -%}</div>
-    <br>
+    {%- endfor -%}</dd>
 
-    <div class="label">Citation</div>
-    <div class="value">{{ database.identifiers[doi_id].query }}</div>
+
+    <dt class="ui tiny header">Citation</dt>
+    <dd>{{ database.identifiers[doi_id].query }}</dd>
+
+        </dl>
+
+    </div>
 </section>
