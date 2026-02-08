@@ -2,10 +2,10 @@
 author: Martin Weise
 ---
 
-The REST API manages all of DBRepo. This documentation is also available as [Sphinx UI](/infrastructures/dbrepo/1.13/python/).
+The REST API manages all of DBRepo. This documentation is also available as [Sphinx UI](../../python/).
 
-Ensure that you use the same Python library version as the target instance. For example: if you see `1.10.0` in the
-bottom left, you need to use the `1.10.0` Python library.
+Ensure that you use the same Python library version as the target instance. For example: if you see `1.9.2` in the
+bottom left, you need to use the `1.9.2` Python library.
 
 # Python API
 
@@ -50,7 +50,7 @@ Import a csv dataset from a file and analyse it for the possible primary key.
 
 #### analyse_table_statistics(database_id: str, table_id: str) → [TableStatistics](../source/dbrepo.api.md#dbrepo.api.dto.TableStatistics)
 
-Analyses the numerical contents of a table in a database with given database id and table id.
+Analyses the numerical contents of a table in a database with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -60,7 +60,7 @@ Analyses the numerical contents of a table in a database with given database id 
 * **Raises:**
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the file was not found by the Analyse Service.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the metadata service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the metadata service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the analysis.
 
@@ -90,7 +90,7 @@ through e.g. docker run image:tag -d.
 
 #### create_database(name: str, container_id: str, is_public: bool = True, is_schema_public: bool = True) → [Database](../source/dbrepo.api.md#dbrepo.api.dto.Database)
 
-Create a databases in a container with given container id.
+Create a databases in a container with the given container id.
 
 * **Parameters:**
   * **name** – The name of the database.
@@ -104,17 +104,17 @@ Create a databases in a container with given container id.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the container does not exist.
   * [**QueryStoreError**](../source/dbrepo.api.md#dbrepo.api.exceptions.QueryStoreError) – If something went wrong with the query store.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
-#### create_database_access(database_id: str, user_id: str, type: [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)) → [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)
+#### create_database_access(database_id: str, username: str, type: [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)) → [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)
 
-Create access to a database with given database id and user id.
+Create access to a database with the given database id and username.
 
 * **Parameters:**
   * **database_id** – The database id.
-  * **user_id** – The user id.
+  * **username** – The username.
   * **type** – The access type.
 * **Returns:**
   The access type, if successful.
@@ -122,7 +122,7 @@ Create access to a database with given database id and user id.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database or user does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the data service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the data service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
@@ -153,21 +153,66 @@ Create an identifier draft.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database, table/view/subset or user does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the creation of the identifier.
 
-#### create_subset(database_id: str, query: [QueryDefinition](../source/dbrepo.api.md#dbrepo.api.dto.QueryDefinition), page: int = 0, size: int = 10, timestamp: datetime = None) → DataFrame
+#### create_subset(database_id: str, query: [QueryDefinition](../source/dbrepo.api.md#dbrepo.api.dto.QueryDefinition), page: int = 0, size: int = 1000000, timestamp: datetime = None) → DataFrame
 
-Executes a SQL query in a database where the current user has at least read access with given database id. The
-result set can be paginated with setting page and size (both). Historic data can be queried by setting
+Executes a SQL query in a database where the current user has at least read access with the given database id.
+The result set can be paginated with setting page and size (both). Historic data can be queried by setting
 timestamp.
+
+The query parameter can be difficult to set for complex subsets involving joins. We give a full example:
+
+```
+``
+```
+
+```
+`
+```
+
+python
+from dbrepo.api.dto import QueryDefinition, JoinDefinition, JoinType, ConditionalDefinition, FilterDefinition,             FilterType, OrderDefinition, OrderType
+
+query = QueryDefinition(datasources=[“some_table”],
+: columns=[“some_table.id”, “some_table.username”, “other_table.city”],
+  joins=[JoinDefinition(type=JoinType.INNER,
+  <br/>
+  > datasource=”other_table”,
+  > conditionals=[ConditionalDefinition(
+  <br/>
+  > > column=”some_table.username”,
+  > > foreign_column=”other_table.username”)])],
+  <br/>
+  filters=[FilterDefinition(type=FilterType.WHERE,
+  : > column=”some_table.age”,
+    > operator=”>”,
+    > value=”18”),
+    <br/>
+    FilterDefinition(type=FilterType.AND),
+    FilterDefinition(type=FilterType.WHERE,
+    <br/>
+    > column=”some_table.zip”,
+    > operator=”=”,
+    > value=”1040”)],
+  <br/>
+  orders=[OrderDefinition(column=”some_table.username”, direction=OrderType.ASC)])
+
+```
+``
+```
+
+```
+`
+```
 
 * **Parameters:**
   * **database_id** – The database id.
   * **query** – The query definition.
   * **page** – The result pagination number. Optional. Default: 0.
-  * **size** – The result pagination size. Optional. Default: 10.
+  * **size** – The result pagination size. Optional. Default: 1000000.
   * **timestamp** – The timestamp at which the data validity is set. Optional. Default: <current timestamp>.
 * **Returns:**
   The result set, if successful.
@@ -182,7 +227,7 @@ timestamp.
 
 #### create_table(database_id: str, name: str, is_public: bool, is_schema_public: bool, dataframe: DataFrame, description: str = None, with_data: bool = True) → [TableBrief](../source/dbrepo.api.md#dbrepo.api.dto.TableBrief)
 
-Updates the database owner of a database with given database id.
+Updates the database owner of a database with the given database id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -199,13 +244,13 @@ Updates the database owner of a database with given database id.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database does not exist.
   * [**NameExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NameExistsError) – If a table with this name already exists.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the data service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the data service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the creation.
 
 #### create_table_data(database_id: str, table_id: str, data: dict) → None
 
-Insert data into a table in a database with given database id and table id.
+Insert data into a table in a database with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -220,7 +265,7 @@ Insert data into a table in a database with given database id and table id.
 
 #### create_view(database_id: str, name: str, query: [QueryDefinition](../source/dbrepo.api.md#dbrepo.api.dto.QueryDefinition), is_public: bool, is_schema_public: bool) → [ViewBrief](../source/dbrepo.api.md#dbrepo.api.dto.ViewBrief)
 
-Create a view in a database with given database id.
+Create a view in a database with the given database id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -235,13 +280,13 @@ Create a view in a database with given database id.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database does not exist.
   * [**ExternalSystemError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ExternalSystemError) – If the mapped view creation query is erroneous.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
 #### delete_container(container_id: str) → None
 
-Deletes a container with given id. Note that this does not delete the container, but deletes the entry in the
+Deletes a container with the given id. Note that this does not delete the container, but deletes the entry in the
 metadata database. The container still needs to be removed, e.g. docker container stop hash and then
 docker container rm hash.
 
@@ -253,24 +298,24 @@ docker container rm hash.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the container does not exist.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the deletion.
 
-#### delete_database_access(database_id: str, user_id: str) → None
+#### delete_database_access(database_id: str, username: str) → None
 
-Deletes the access for a user to a database with given database id and user id.
+Deletes the access for a user to a database with the given database id and username.
 
 * **Parameters:**
   * **database_id** – The database id.
-  * **user_id** – The user id.
+  * **username** – The username.
 * **Raises:**
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database or user does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the data service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the data service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
 #### delete_table(database_id: str, table_id: str) → None
 
-Delete a table with given database id and table id.
+Delete a table with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -279,13 +324,13 @@ Delete a table with given database id and table id.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the container does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the data service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the data service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the deletion.
 
 #### delete_table_data(database_id: str, table_id: str, keys: dict) → None
 
-Delete data in a table in a database with given database id and table id.
+Delete data in a table in a database with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -300,7 +345,7 @@ Delete data in a table in a database with given database id and table id.
 
 #### delete_view(database_id: str, view_id: str) → None
 
-Deletes a view in a database with given database id and view id.
+Deletes a view in a database with the given database id and view id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -310,7 +355,7 @@ Deletes a view in a database with given database id and view id.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the container does not exist.
   * [**ExternalSystemError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ExternalSystemError) – If the mapped view deletion query is erroneous.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the deletion.
 
@@ -323,7 +368,7 @@ Get list of concepts known to the metadata database.
 
 #### get_container(container_id: str) → [Container](../source/dbrepo.api.md#dbrepo.api.dto.Container)
 
-Get a container with given id.
+Get a container with the given id.
 
 * **Returns:**
   List of containers, if successful.
@@ -342,7 +387,7 @@ Get all containers.
 
 #### get_database(database_id: str) → [Database](../source/dbrepo.api.md#dbrepo.api.dto.Database)
 
-Get a databases with given id.
+Get a databases with the given id.
 
 * **Parameters:**
   **database_id** – The database id.
@@ -354,7 +399,7 @@ Get a databases with given id.
 
 #### get_database_access(database_id: str) → [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)
 
-Get access of a view in a database with given database id and view id.
+Get access of a view in a database with the given database id and view id.
 
 * **Parameters:**
   **database_id** – The database id.
@@ -395,14 +440,14 @@ Get the identifier by given id.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the identifier does not exist.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval of the identifier.
 
-#### get_identifier_data(identifier_id: str, page: int = 0, size: int = 10000) → DataFrame
+#### get_identifier_data(identifier_id: str, page: int = 0, size: int = 1000000) → DataFrame
 
 Get the identifier data by given id.
 
 * **Parameters:**
   * **identifier_id** – The identifier id.
   * **page** – The result pagination number. Optional. Default: 0.
-  * **size** – The result pagination size. Optional. Default: 10000.
+  * **size** – The result pagination size. Optional. Default: 1000000.
 * **Returns:**
   The identifier, if successful.
 * **Raises:**
@@ -469,7 +514,7 @@ Get list of ontologies.
 
 #### get_queries(database_id: str) → List[[Query](../source/dbrepo.api.md#dbrepo.api.dto.Query)]
 
-Get queries from a database with given database id.
+Get queries from a database with the given database id.
 
 * **Parameters:**
   **database_id** – The database id.
@@ -483,7 +528,7 @@ Get queries from a database with given database id.
 
 #### get_subset(database_id: str, subset_id: str) → [Query](../source/dbrepo.api.md#dbrepo.api.dto.Query)
 
-Get query from a database with given database id and query id.
+Get query from a database with the given database id and query id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -497,16 +542,15 @@ Get query from a database with given database id and query id.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
-#### get_subset_data(database_id: str, subset_id: str, page: int = 0, size: int = 10) → DataFrame
+#### get_subset_data(database_id: str, subset_id: str, page: int = 0, size: int = 1000000) → DataFrame
 
-Re-executes a query in a database with given database id and query id.
+Re-executes a query in a database with the given database id and query id.
 
 * **Parameters:**
   * **database_id** – The database id.
   * **subset_id** – The subset id.
   * **page** – The result pagination number. Optional. Default: 0.
-  * **size** – The result pagination size. Optional. Default: 10.
-  * **size** – The result pagination size. Optional. Default: 10.
+  * **size** – The result pagination size. Optional. Default: 1000000.
 * **Returns:**
   The subset data, if successful.
 * **Raises:**
@@ -518,7 +562,7 @@ Re-executes a query in a database with given database id and query id.
 
 #### get_subset_data_count(database_id: str, subset_id: str) → int
 
-Re-executes a query in a database with given database id and query id and only counts the results.
+Re-executes a query in a database with the given database id and query id and only counts the results.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -534,7 +578,7 @@ Re-executes a query in a database with given database id and query id and only c
 
 #### get_table(database_id: str, table_id: str) → [Table](../source/dbrepo.api.md#dbrepo.api.dto.Table)
 
-Get a table with given database id and table id.
+Get a table with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -546,15 +590,15 @@ Get a table with given database id and table id.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the table does not exist.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
-#### get_table_data(database_id: str, table_id: str, page: int = 0, size: int = 10, timestamp: datetime = None) → DataFrame
+#### get_table_data(database_id: str, table_id: str, page: int = 0, size: int = 1000000, timestamp: datetime = None) → DataFrame
 
-Get data of a table in a database with given database id and table id.
+Get data of a table in a database with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
   * **table_id** – The table id.
   * **page** – The result pagination number. Optional. Default: 0.
-  * **size** – The result pagination size. Optional. Default: 10.
+  * **size** – The result pagination size. Optional. Default: 1000000.
   * **timestamp** – The query execution time. Optional.
 * **Returns:**
   The table data, if successful.
@@ -567,7 +611,7 @@ Get data of a table in a database with given database id and table id.
 
 #### get_table_data_count(database_id: str, table_id: str, timestamp: datetime = None) → int
 
-Get data count of a table in a database with given database id and table id.
+Get data count of a table in a database with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -620,9 +664,9 @@ Get all units known to the metadata database.
 * **Raises:**
   [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
-#### get_user(user_id: str) → [User](../source/dbrepo.api.md#dbrepo.api.dto.User)
+#### get_user(username: str) → [User](../source/dbrepo.api.md#dbrepo.api.dto.User)
 
-Get a user with given user id.
+Get a user with the given username.
 
 * **Returns:**
   The user, if successful.
@@ -642,7 +686,7 @@ Get all users.
 
 #### get_view(database_id: str, view_id: str) → [View](../source/dbrepo.api.md#dbrepo.api.dto.View)
 
-Get a view of a database with given database id and view id.
+Get a view of a database with the given database id and view id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -654,15 +698,15 @@ Get a view of a database with given database id and view id.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the container does not exist.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
-#### get_view_data(database_id: str, view_id: str, page: int = 0, size: int = 10) → DataFrame
+#### get_view_data(database_id: str, view_id: str, page: int = 0, size: int = 1000000) → DataFrame
 
-Get data of a view in a database with given database id and view id.
+Get data of a view in a database with the given database id and view id.
 
 * **Parameters:**
   * **database_id** – The database id.
   * **view_id** – The view id.
   * **page** – The result pagination number. Optional. Default: 0.
-  * **size** – The result pagination size. Optional. Default: 10.
+  * **size** – The result pagination size. Optional. Default: 1000000.
 * **Returns:**
   The view data, if successful.
 * **Raises:**
@@ -675,7 +719,7 @@ Get data of a view in a database with given database id and view id.
 
 #### get_view_data_count(database_id: str, view_id: str) → int
 
-Get data count of a view in a database with given database id and view id.
+Get data count of a view in a database with the given database id and view id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -692,7 +736,7 @@ Get data count of a view in a database with given database id and view id.
 
 #### get_views(database_id: str) → List[[ViewBrief](../source/dbrepo.api.md#dbrepo.api.dto.ViewBrief)]
 
-Gets views of a database with given database id.
+Gets views of a database with the given database id.
 
 * **Parameters:**
   **database_id** – The database id.
@@ -704,7 +748,7 @@ Gets views of a database with given database id.
 
 #### import_table_data(database_id: str, table_id: str, dataframe: DataFrame) → None
 
-Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
+Import a csv dataset from a file into a table in a database with the given database id and table id. ATTENTION:
 the import is column-ordering sensitive! The csv dataset must have the same columns in the same order as the
 target table.
 
@@ -721,7 +765,7 @@ target table.
 
 #### publish_identifier(identifier_id: str) → [Identifier](../source/dbrepo.api.md#dbrepo.api.dto.Identifier)
 
-Publish an identifier with given id.
+Publish an identifier with the given id.
 
 * **Parameters:**
   **identifier_id** – The identifier id.
@@ -731,17 +775,17 @@ Publish an identifier with given id.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database, table/view/subset or user does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the creation of the identifier.
 
-#### update_database_access(database_id: str, user_id: str, type: [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)) → [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)
+#### update_database_access(database_id: str, username: str, type: [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)) → [AccessType](../source/dbrepo.api.md#dbrepo.api.dto.AccessType)
 
-Updates the access for a user to a database with given database id and user id.
+Updates the access for a user to a database with the given database id and username.
 
 * **Parameters:**
   * **database_id** – The database id.
-  * **user_id** – The user id.
+  * **username** – The username.
   * **type** – The access type.
 * **Returns:**
   The access type, if successful.
@@ -749,30 +793,30 @@ Updates the access for a user to a database with given database id and user id.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database or user does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the data service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the data service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval.
 
-#### update_database_owner(database_id: str, user_id: str) → [Database](../source/dbrepo.api.md#dbrepo.api.dto.Database)
+#### update_database_owner(database_id: str, username: str) → [Database](../source/dbrepo.api.md#dbrepo.api.dto.Database)
 
-Updates the database owner of a database with given database id.
+Updates the database owner of a database with the given database id.
 
 * **Parameters:**
   * **database_id** – The database id.
-  * **user_id** – The user id of the new owner.
+  * **username** – The username of the new owner.
 * **Returns:**
   The database, if successful.
 * **Raises:**
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload was rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the update.
 
 #### update_database_schema(database_id: str) → [DatabaseBrief](../source/dbrepo.api.md#dbrepo.api.dto.DatabaseBrief)
 
-Updates the database table and view metadata of a database with given database id.
+Updates the database table and view metadata of a database with the given database id.
 
 * **Parameters:**
   **database_id** – The database id.
@@ -782,13 +826,13 @@ Updates the database table and view metadata of a database with given database i
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload was rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the data service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the data service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the data service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the update.
 
 #### update_database_visibility(database_id: str, is_public: bool, is_schema_public: bool, is_dashboard_enabled: bool) → [Database](../source/dbrepo.api.md#dbrepo.api.dto.Database)
 
-Updates the database visibility of a database with given database id.
+Updates the database visibility of a database with the given database id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -801,7 +845,7 @@ Updates the database visibility of a database with given database id.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload was rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the update.
 
@@ -833,13 +877,13 @@ Update an existing identifier and update the metadata attached to it.
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the database, table/view/subset or user does not exist.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the creation of the identifier.
 
 #### update_subset(database_id: str, subset_id: str, persist: bool) → [Query](../source/dbrepo.api.md#dbrepo.api.dto.Query)
 
-Save query or mark it for deletion (at a later time) in a database with given database id and query id.
+Save query or mark it for deletion (at a later time) in a database with the given database id and query id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -871,13 +915,13 @@ Update semantic information of a table column by given database id and table id 
   * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
   * [**ForbiddenError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ForbiddenError) – If something went wrong with the authorization.
   * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the accept header is neither application/json nor application/ld+json.
-  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with connection to the search service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the search service.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the retrieval of the identifiers.
 
 #### update_table_data(database_id: str, table_id: str, data: dict, keys: dict) → None
 
-Update data in a table in a database with given database id and table id.
+Update data in a table in a database with the given database id and table id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -891,12 +935,26 @@ Update data in a table in a database with given database id and table id.
   * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the metadata service.
   * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the update.
 
-#### update_user(user_id: str, theme: str, language: str, firstname: str = None, lastname: str = None, affiliation: str = None, orcid: str = None) → [UserBrief](../source/dbrepo.api.md#dbrepo.api.dto.UserBrief)
+#### update_table_statistics(database_id: str, table_id: str) → None
 
-Updates a user with given user id.
+Updates the numerical contents of a table in a database with the given database id and table id.
 
 * **Parameters:**
-  * **user_id** – The user id of the user that should be updated.
+  * **database_id** – The database id.
+  * **table_id** – The table id.
+* **Raises:**
+  * [**MalformedError**](../source/dbrepo.api.md#dbrepo.api.exceptions.MalformedError) – If the payload is rejected by the service.
+  * [**NotExistsError**](../source/dbrepo.api.md#dbrepo.api.exceptions.NotExistsError) – If the file was not found by the Analyse Service.
+  * [**ServiceConnectionError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceConnectionError) – If something went wrong with the connection to the metadata service.
+  * [**ServiceError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ServiceError) – If something went wrong with obtaining the information in the search service.
+  * [**ResponseCodeError**](../source/dbrepo.api.md#dbrepo.api.exceptions.ResponseCodeError) – If something went wrong with the analysis.
+
+#### update_user(username: str, theme: str, language: str, firstname: str = None, lastname: str = None, affiliation: str = None, orcid: str = None) → [UserBrief](../source/dbrepo.api.md#dbrepo.api.dto.UserBrief)
+
+Updates a user with the given username.
+
+* **Parameters:**
+  * **username** – The username of the user that should be updated.
   * **theme** – The user theme. One of “light”, “dark”, “light-contrast”, “dark-contrast”.
   * **language** – The user language localization. One of “en”, “de”.
   * **firstname** – The updated given name. Optional.
@@ -913,7 +971,7 @@ Updates a user with given user id.
 
 #### update_view(database_id: str, view_id: str, is_public: bool, is_schema_public: bool) → [ViewBrief](../source/dbrepo.api.md#dbrepo.api.dto.ViewBrief)
 
-Get a view of a database with given database id and view id.
+Get a view of a database with the given database id and view id.
 
 * **Parameters:**
   * **database_id** – The database id.
@@ -946,11 +1004,20 @@ The AmqpClient class for communicating with the DBRepo AMQP API to import data. 
   * **username** – The AMQP API username. Optional.
   * **password** – The AMQP API password. Optional.
 
-#### publish(routing_key: str, data=<class 'dict'>, exchange: str = 'dbrepo') → None
+#### publish(routing_key: str, data: dict, exchange: str = 'dbrepo') → None
 
 Publishes data to a given exchange with the given routing key with a blocking connection.
 
 * **Parameters:**
   * **routing_key** – The routing key.
-  * **data** – The data.
+  * **data** – The data tuple.
+  * **exchange** – The exchange name. Default: “dbrepo”.
+
+#### publish_dataframe(routing_key: str, data: DataFrame, exchange: str = 'dbrepo') → None
+
+Publishes bulk of data to a given exchange with the given routing key with a blocking connection.
+
+* **Parameters:**
+  * **routing_key** – The routing key.
+  * **data** – The dataframe
   * **exchange** – The exchange name. Default: “dbrepo”.
