@@ -701,6 +701,7 @@ release-docs:
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
     - "cp ./docs/index.html.tpl ./final/index.html" # redirect patch docs
+    - "cp ./docs/*.pdf ./final/"
     - sed -i "s/DOC_VERSION/$DOC_VERSION/g" ./final/index.html
     - "bash ./.gitlab/gen-badge.sh"
     - eval $(ssh-agent -s)
