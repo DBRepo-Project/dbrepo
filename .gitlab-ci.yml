@@ -685,7 +685,7 @@ release-docs:
   dependencies:
     - build-python-lib
   before_script:
-    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
+    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl py3-sphinx"
     - "pip install pipenv ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
