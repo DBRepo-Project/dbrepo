@@ -252,3 +252,9 @@ font-size: 1em;
 /*  padding: 0;*/
 /*}*/
 
+.doi-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+

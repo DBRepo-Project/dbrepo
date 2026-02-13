@@ -8,11 +8,11 @@
     <dl class="details-list">
     <dt class="ui tiny header">Persistent Identifier</dt>
     <dd>
-        <span><img id="record-doi-badge" data-target="[data-modal='10.5281/zenodo.18390222']" title="Get the DOI badge!" src="/badge/DOI/10.5281/zenodo.18390222.svg" alt="">
+        <div class="doi-row"><img id="record-doi-badge" data-target="[data-modal='10.5281/zenodo.18390222']" title="Get the DOI badge!" src="/badge/DOI/10.5281/zenodo.18390222.svg" alt="">
                 {{ database.identifiers[doi_id].doi}}
+            <div id="copy-button-record-doi-badge" class="copy-doi-button" data-value="{{ database.identifiers[doi_id].doi}}" data-size="mini"><button aria-label="Copy to clipboard" class="ui mini basic icon button copy"><i aria-hidden="true" class="copy icon"></i></button></div>
 
-        </span>
-        <div id="copy-button-record-doi-badge" class="copy-doi-button" data-value="{{ database.identifiers[doi_id].doi}}" data-size="mini"><button aria-label="Copy to clipboard" class="ui mini basic icon button copy"><i aria-hidden="true" class="copy icon"></i></button></div>
+        </div>
 
 
     </dd>
