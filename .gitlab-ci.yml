@@ -607,7 +607,7 @@ release-images:
   needs:
     - build-python-lib
   before_script:
-    - "apk add --no-cache make maven openjdk21-jdk"
+    - "apk add --no-cache make maven openjdk21-jdk bash"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
