@@ -27,7 +27,7 @@ Follow the recommendation of the safe to bootstrap feature on each node N=`0`, `
 for `safe_to_bootstrap: 1`.
 
 ```shell
-kubectl exec data-db-N -- cat \
+kubectl -n $NAMESPACE exec pod/data-db-$N -- cat \
     /bitnami/mariadb/data/grastate.dat
 ```
 
@@ -36,7 +36,7 @@ kubectl exec data-db-N -- cat \
     Alternatively, you can use the MySQL daemon `mysqld` to determine the sequence number:
 
     ```shell
-    kubectl exec data-db-N -- mysqld --wsrep-recover
+    kubectl -n $NAMESPACE exec pod/data-db-N -- mysqld --wsrep-recover
     ```
 
 !!! bug "Use the PVCs directly and read the sequence number from the volumes"
@@ -78,6 +78,14 @@ kubectl exec data-db-N -- cat \
 If there exists a node with `safe_to_bootstrap: 1`, use this node `M` to [bootstrap](#bootstrap) from. Otherwise, 
 if **no** node is safe to bootstrap from, follow the next section of [unexpected shutdown](#unexpected-shutdown)
 scenario.
+
+```shell
+kubectl --namespace $NAMESPACE \
+   delete \
+   statefulset \
+   data-db \
+   --cascade=orphan
+```
 
 Then tell the node `M` to form a new primary component by itself. This process is non-destructive and increases the
 chance of a fast incremental State Transfer (IST) for the other nodes.
