@@ -595,23 +595,6 @@ test-ui:
     - "sleep 30"
     - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh"
 
-clean-images:
-  stage: clean
-  image: docker:${DOCKER_VERSION}-dind
-  only:
-    - tags
-    - dev
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "apk add --no-cache wget bash"
-    - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64"
-    - "chmod +x /usr/local/sbin/regctl"
-  script:
-    - bash ./.gitlab/remove-unsupported-images.sh
-
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
@@ -621,20 +604,8 @@ release-images:
     REPOSITORY_URL: "$CI_REGISTRY2_URL"
   dependencies:
     - build-python-lib
-    - clean-images
-    - test-data-service
-    - test-python-lib
-    - test-metadata-service
-    - test-search-service
-    - test-ui
   needs:
     - build-python-lib
-    - clean-images
-    - test-data-service
-    - test-python-lib
-    - test-metadata-service
-    - test-search-service
-    - test-ui
   before_script:
     - "apk add --no-cache make maven openjdk21-jdk"
     - "docker logout ${CI_REGISTRY_URL}"
