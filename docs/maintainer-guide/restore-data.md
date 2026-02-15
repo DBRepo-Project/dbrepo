@@ -17,6 +17,10 @@ the [Helm Chart documentation](https://artifacthub.io/packages/helm/bitnami/mari
 official [MariaDB 11.3.2 documentation](https://mariadb.com/docs/server/server-usage/backup-and-restore/mariadb-backup/full-backup-and-restore-with-mariadb-backup)
 as it simplifies many steps.
 
+If you are not sure what to do, attempt to restore the database, assuming it was 
+an [orderly shutdown](#orderly-shutdown). Only then attempt a disaster recovery after
+a [crash shutdown](#crash-shutdown).
+
 ### Orderly Shutdown
 
 This section follows the official MariaDB 11.3.2 documentation adapted to the Bitnami Chart. This is the case when some
@@ -31,49 +35,47 @@ kubectl -n $NAMESPACE exec pod/data-db-$N -- cat \
     /bitnami/mariadb/data/grastate.dat
 ```
 
-!!! bug "Use the daemon to read the InnoDB storage engine logs and report the last known transaction position"
+Alternatively, you can use the daemon to read the InnoDB storage engine logs and report the last known transaction
+position. Use the MySQL daemon `mysqld` to determine the sequence number.
 
-    Alternatively, you can use the MySQL daemon `mysqld` to determine the sequence number:
+```shell
+kubectl -n $NAMESPACE exec pod/data-db-N -- mysqld --wsrep-recover
+```
 
-    ```shell
-    kubectl -n $NAMESPACE exec pod/data-db-N -- mysqld --wsrep-recover
-    ```
+Alternatively, you can use the PVCs directly and read the sequence number from the volumes if you cannot use the pods.
+Find the most advanced node directly in the PVCs.
 
-!!! bug "Use the PVCs directly and read the sequence number from the volumes"
-
-    Alternatively, if you cannot use the pods, you can try to find the most advanced node directly in the PVCs:
-
-    ```shell
-    kubectl run -i --rm --tty volpod --overrides='
-    {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {
-            "name": "volpod"
-        },
-        "spec": {
-            "containers": [{
-                "command": [
-                    "cat",
-                    "/mnt/data/grastate.dat"
-                ],
-                "image": "bitnami/minideb",
-                "name": "mycontainer",
-                "volumeMounts": [{
-                    "mountPath": "/mnt",
-                    "name": "galeradata"
-                }]
-            }],
-            "restartPolicy": "Never",
-            "volumes": [{
-                "name": "galeradata",
-                "persistentVolumeClaim": {
-                    "claimName": "data-data-db-N"
-                }
+```shell
+kubectl run -i --rm --tty volpod --overrides='
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "name": "volpod"
+    },
+    "spec": {
+        "containers": [{
+            "command": [
+                "cat",
+                "/mnt/data/grastate.dat"
+            ],
+            "image": "bitnami/minideb",
+            "name": "mycontainer",
+            "volumeMounts": [{
+                "mountPath": "/mnt",
+                "name": "galeradata"
             }]
-        }
-    }' --image="bitnami/minideb"
-    ```
+        }],
+        "restartPolicy": "Never",
+        "volumes": [{
+            "name": "galeradata",
+            "persistentVolumeClaim": {
+                "claimName": "data-data-db-N"
+            }
+        }]
+    }
+}' --image="bitnami/minideb"
+```
 
 If there exists a node with `safe_to_bootstrap: 1`, use this node `M` to [bootstrap](#bootstrap) from. Otherwise, 
 if **no** node is safe to bootstrap from, follow the next section of [unexpected shutdown](#unexpected-shutdown)
