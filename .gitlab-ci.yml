@@ -11,10 +11,10 @@ variables:
   REGCLIENT_VERSION: "0.8.2"
   BUN_VERSION: "1.2.21"
   DOC_VERSION: "1.13"
-  APP_VERSION: "1.13.2"
+  APP_VERSION: "1.13.3"
   DUCKDB_VERSION: "1.2.2"
-  CHART_VERSION: "1.13.2"
-  SUPPORTED_VERSIONS: "1.11.0, 1.11.1, 1.12.0, 1.12.1, 1.13.1, 1.13.2"
+  CHART_VERSION: "1.13.3"
+  SUPPORTED_VERSIONS: "1.13.0, 1.13.1, 1.13.2, 1.13.3"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
@@ -233,6 +233,8 @@ build-python-lib:
   only:
     - merge_requests
     - master
+    - /^release-.*/
+    - tags
   before_script:
     - "apk --no-cache add python3-dev"
     - "python -m pip install build"
@@ -304,12 +306,17 @@ build-search-service:
   only:
     - merge_requests
     - master
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
+  needs:
+    - build-python-lib
+  dependencies:
+    - build-python-lib
   before_script:
-    - "pip install pipenv build"
-    - "apk --no-cache add alpine-sdk make"
-    - "make build-python-lib"
+    - "cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$APP_VERSION.tar.gz"
+    - "pip install pipenv"
   script:
-    - "cd dbrepo-search-service && pipenv install --system --deploy"
+    - "pipenv install --system --deploy"
 
 build-dashboard-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
@@ -317,12 +324,17 @@ build-dashboard-service:
   only:
     - merge_requests
     - master
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-dashboard-service/Pipfile"
+  needs:
+    - build-python-lib
+  dependencies:
+    - build-python-lib
   before_script:
-    - "pip install pipenv build"
-    - "apk --no-cache add alpine-sdk make"
-    - "make build-python-lib"
+    - "cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$APP_VERSION.tar.gz"
+    - "pip install pipenv"
   script:
-    - "cd dbrepo-dashboard-service && pipenv install --system --deploy"
+    - "pipenv install --system --deploy"
 
 build-images:
   image: docker.io/docker:${DOCKER_VERSION}-dind
@@ -456,13 +468,14 @@ test-search-service:
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
+    - build-python-lib
     - build-search-service
   dependencies:
+    - build-python-lib
     - build-search-service
   before_script:
-    - "pip install pipenv build"
-    - "apk --no-cache add alpine-sdk make"
-    - "make build-python-lib"
+    - "cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$APP_VERSION.tar.gz"
+    - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/search"
   script:
@@ -488,13 +501,14 @@ test-dashboard-service:
   variables:
     PIPENV_PIPFILE: "./dbrepo-dashboard-service/Pipfile"
   needs:
+    - build-python-lib
     - build-dashboard-service
   dependencies:
+    - build-python-lib
     - build-dashboard-service
   before_script:
-    - "pip install pipenv build"
-    - "apk --no-cache add alpine-sdk make"
-    - "make build-python-lib"
+    - "cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$APP_VERSION.tar.gz"
+    - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p /var/log/app/service/dashboard"
   script:
@@ -581,24 +595,6 @@ test-ui:
     - "sleep 30"
     - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh"
 
-clean-images:
-  stage: clean
-  image: docker:${DOCKER_VERSION}-dind
-  only:
-    refs:
-      - tags
-      - dev
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "apk add --no-cache wget bash"
-    - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64"
-    - "chmod +x /usr/local/sbin/regctl"
-  script:
-    - bash ./.gitlab/remove-unsupported-images.sh
-
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
@@ -607,14 +603,11 @@ release-images:
   variables:
     REPOSITORY_URL: "$CI_REGISTRY2_URL"
   dependencies:
-    - clean-images
-    - test-data-service
-    - test-python-lib
-    - test-metadata-service
-    - test-search-service
-    - test-ui
+    - build-python-lib
+  needs:
+    - build-python-lib
   before_script:
-    - "apk add --no-cache make maven openjdk21-jdk"
+    - "apk add --no-cache make maven openjdk21-jdk bash"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
@@ -657,15 +650,14 @@ release-docs:
   stage: release
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   only:
-    refs:
-      - /^release-.*/
+    - /^release-.*/
   needs:
     - build-python-lib
   dependencies:
     - build-python-lib
   before_script:
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
-    - "pip install pipenv ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz"
+    - "pip install pipenv furo sphinx ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
     - "mkdir -p ./final/${APP_VERSION}"
@@ -680,6 +672,7 @@ release-docs:
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
     - "cp ./docs/index.html.tpl ./final/index.html" # redirect patch docs
+    - "cp ./docs/*.pdf ./final/"
     - sed -i "s/DOC_VERSION/$DOC_VERSION/g" ./final/index.html
     - "bash ./.gitlab/gen-badge.sh"
     - eval $(ssh-agent -s)
@@ -712,8 +705,7 @@ verify-install-script:
   image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: verify
   only:
-    refs:
-      - /^release-.*/
+    - /^release-.*/
   variables:
     SKIP_CHECKS: 1
   before_script:

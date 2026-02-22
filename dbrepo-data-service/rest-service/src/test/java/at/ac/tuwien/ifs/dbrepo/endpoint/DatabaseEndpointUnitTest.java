@@ -272,7 +272,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
-        when(analyseService.determineDataTypes(any(Image.class), anyString()))
+        when(analyseService.determineS3CsvDataTypes(any(Image.class), anyString()))
                 .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
 
         /* test */

@@ -20,15 +20,13 @@ global:
 
 ## @param hostname The hostname.
 hostname: example.com
-## @param gateway The gateway endpoint.
-gateway: https://example.com
 ## @param strategyType The image pull
 strategyType: RollingUpdate
 ## @param clusterDomain The cluster domain.
 clusterDomain: cluster.local
-## @param username The internal system username. This user is only used between the microservices.
+## @param username The internal system username. This user is only used between the microservices and does not exist on paper.
 username: admin
-## @param password The internal system password. This user is only used between the microservices.
+## @param password The internal system password. This user is only used between the microservices and does not exist on paper.
 password: admin
 
 ## @section Metadata Database
@@ -43,7 +41,7 @@ metadatadb:
     repository: bitnamilegacy/mariadb-galera
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
-  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
+  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/api/data-db/#data
   extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param metadatadb.rootUser.user The root username.
@@ -426,7 +424,7 @@ consumerservice:
   enabled: true
   image:
     ## @skip consumerservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.3
   ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -483,7 +481,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.3
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -567,10 +565,10 @@ metadataservice:
     ## @skip metadataservice.s3.bucket
     bucket: dbrepo
     auth:
-      ## @param metadataservice.s3.auth.username The S3-capable endpoint username (or access key id).
-      username: seaweedfsadmin
-      ## @param metadataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
-      password: seaweedfsadmin
+      ## @param metadataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
+      accessKeyId: seaweedfsuser
+      ## @param metadataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
+      secretAccessKey: seaweedfsuser
   ## @param metadataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -583,7 +581,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.3
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -653,6 +651,11 @@ dataservice:
     endpoint: http://storage-service-s3:8333
     ## @param dataservice.s3.bucket The S3 bucket name.
     bucket: dbrepo
+    auth:
+      ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
+      accessKeyId: seaweedfsuser
+      ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
+      secretAccessKey: seaweedfsuser
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -665,7 +668,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.3
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -717,11 +720,9 @@ searchservice:
     enabled: true
     ## @param searchservice.setupJob.schedule The interval duration when the cronjob is executed.
     schedule: "@midnight"
-    ## @skip searchservice.setupJob.limit
-    limit: { }
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.3
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -787,7 +788,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.3
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -918,7 +919,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.3
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -985,15 +986,15 @@ ui:
       ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and markdown content will be rendered.
       content: ""
     api:
-      ## @param ui.public.api.client The endpoint for the client api. Overrides to the value of `gateway`.
+      ## @param ui.public.api.client The endpoint for the client api. Defaults to `https://<gateway>`.
       client: ""
-      ## @param ui.public.api.server The endpoint for the server api. Overrides to the value of `gateway`.
+      ## @param ui.public.api.server The endpoint for the server api. Defaults to `https://<gateway>`.
       server: ""
     dashboard:
-      ## @param ui.public.dashboard.url The url for the dashboard. Overrides to the value of `gateway` and path `/dashboard`.
+      ## @param ui.public.dashboard.url The url for the dashboard. Defaults to `https://<gateway>/dashboard`.
       url: ""
     upload:
-      ## @param ui.public.upload.client The endpoint for the upload client. Overrides to the value of `gateway` and path `/api/upload/files`.
+      ## @param ui.public.upload.client The endpoint for the upload client. Defaults to `https://<gateway>/api/upload/files`.
       client: ""
     ## @param ui.public.title The user interface title.
     title: "Database Repository"
@@ -1048,7 +1049,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.3
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1103,7 +1104,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.3
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1131,7 +1132,7 @@ dashboardui:
     ## @skip dashboardui.admin.user
     user: "admin"
     ## @skip dashboardui.admin.password
-    password: "539a9a9bb28526f340b03c6117f5"
+    password: "admin"
   metrics:
     ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
     enabled: true
@@ -1147,8 +1148,6 @@ dashboardui:
     updateStrategy:
       ## @skip dashboardui.grafana.updateStrategy.type
       type: Recreate
-      ## @skip dashboardui.grafana.updateStrategy.Recreate
-      Recreate: { }
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
     ## @param dashboardui.grafana.replicaCount The number of replicas.
@@ -1216,7 +1215,7 @@ metricdb:
 ## @section Gateway Service
 
 gatewayservice:
-  ## @param gatewayservice.enabled Enable the Gateway Service.
+  ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service

@@ -74,17 +74,11 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false)
     private Integer ordinalPosition;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinTable(name = "mdb_columns_concepts",
-            joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
-            inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
-    private TableColumnConcept concept;
+    @Column
+    private String conceptUri;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinTable(name = "mdb_columns_units",
-            joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
-            inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
-    private TableColumnUnit unit;
+    @Column
+    private String unitUri;
 
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "column")

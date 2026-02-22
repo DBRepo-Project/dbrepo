@@ -686,6 +686,8 @@ interface InternalColumnDto {
   unique: boolean;
   sets_values: string;
   enums_values: string;
+  unit_uri: string | null;
+  concept_uri: string | null;
 }
 
 interface ConstraintsCreateDto {

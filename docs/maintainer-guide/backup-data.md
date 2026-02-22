@@ -60,7 +60,7 @@ this for all nodes e.g. nodes `0`, `1` and `2`). Beware that not all paths are w
     ```shell
     kubectl -n $NAMESPACE \
         cp \
-        pod/data-db-0:/bitnami/mariadb/backup.tar.gz \
+        data-db-0:/bitnami/mariadb/backup.tar.gz \
         backup-data-db-0.tar.gz && \
         rm -f \
             /bitnami/mariadb/backup.tar.gz
@@ -103,7 +103,7 @@ this for all nodes e.g. nodes `0`, `1` and `2`). Beware that not all paths are w
     ```shell
     kubectl -n $NAMESPACE \
         cp \
-        pod/metadata-db-0:/bitnami/mariadb/backup.tar.gz \
+        metadata-db-0:/bitnami/mariadb/backup.tar.gz \
         backup-metadata-db-0.tar.gz && \
         rm -f \
             /bitnami/mariadb/backup.tar.gz

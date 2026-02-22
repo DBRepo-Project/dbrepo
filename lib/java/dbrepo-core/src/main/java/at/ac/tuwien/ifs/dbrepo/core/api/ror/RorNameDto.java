@@ -3,8 +3,6 @@ package at.ac.tuwien.ifs.dbrepo.core.api.ror;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Builder
@@ -13,13 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class RorDto {
+public class RorNameDto {
 
-    private String id;
+    private String lang;
 
-    private String name;
-
-    private List<RorNameDto> names;
-
-    private Integer established;
+    private String value;
 }
+

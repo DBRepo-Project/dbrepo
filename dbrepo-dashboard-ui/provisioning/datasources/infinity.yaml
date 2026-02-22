@@ -5,13 +5,14 @@ datasources:
     uid: dbrepojson0
     type: yesoreyeram-infinity-datasource
     basicAuth: true
-    basicAuthUser: user
+    basicAuthUser: $READONLY_USERNAME
     url: $BASE_URL
     jsonData:
+      tlsSkipVerify: true
       auth_method: 'basicAuth'
       httpHeaderName1: Accept
       allowedHosts:
-        - '$BASE_URL'
+        - $BASE_URL
     secureJsonData:
-      basicAuthPassword: user
+      basicAuthPassword: $READONLY_PASSWORD
       httpHeaderValue1: application/json

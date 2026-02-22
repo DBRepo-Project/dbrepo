@@ -129,6 +129,28 @@
           cols="1"
           class="pl-1">
           <v-text-field
+            v-model="c.concept_uri"
+            required
+            persistent-hint
+            :variant="inputVariant"
+            :label="$t('pages.table.subpages.schema.concept.uri.label')"
+            @focusout="formatValues(c)" />
+        </v-col>
+        <v-col
+          cols="1"
+          class="pl-1">
+          <v-text-field
+            v-model="c.unit_uri"
+            required
+            persistent-hint
+            :variant="inputVariant"
+            :label="$t('pages.table.subpages.schema.unit.uri.label')"
+            @focusout="formatValues(c)" />
+        </v-col>
+        <v-col
+          cols="1"
+          class="pl-1">
+          <v-text-field
             v-model="c.comment"
             required
             persistent-hint

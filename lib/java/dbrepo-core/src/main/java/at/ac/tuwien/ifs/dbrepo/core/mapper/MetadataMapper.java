@@ -16,7 +16,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyBriefDto;
@@ -43,10 +42,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.summary.organization.disambiguated.OrcidDisambiguatedDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.orcid.activities.employments.affiliation.group.summary.organization.disambiguated.OrcidDisambiguatedSourceTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.EntityDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyCreateDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.semantics.OntologyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorNameDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
@@ -65,8 +61,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnConcept;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnUnit;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -76,7 +70,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Uni
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessage;
 import at.ac.tuwien.ifs.dbrepo.core.entity.maintenance.BannerMessageType;
-import at.ac.tuwien.ifs.dbrepo.core.entity.semantics.Ontology;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ColumnNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageInvalidException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
@@ -483,10 +476,31 @@ public interface MetadataMapper {
     }
 
     default ExternalMetadataDto rorDtoToExternalMetadataDto(RorDto data) {
+        String organizationName = null;
+        if (data.getName() != null) {
+            organizationName = data.getName();
+            log.trace("mapped ror name to organization name: {}", organizationName);
+        } else if (!data.getNames().isEmpty()) {
+            final Optional<RorNameDto> optional = data.getNames()
+                    .stream()
+                    .filter(n -> Objects.nonNull(n.getLang()))
+                    .filter(n -> n.getLang().equals("en"))
+                    .findFirst();
+            if (optional.isPresent()) {
+                organizationName = optional.get()
+                        .getValue();
+                log.trace("mapped ror name list (en) to organization name: {}", organizationName);
+            } else {
+                organizationName = data.getNames()
+                        .getFirst()
+                        .getValue();
+                log.trace("mapped ror name list (first element) to organization name: {}", organizationName);
+            }
+        }
         return ExternalMetadataDto.builder()
                 .affiliations(new ExternalAffiliationDto[]{
                         ExternalAffiliationDto.builder()
-                                .organizationName(data.getName())
+                                .organizationName(organizationName)
                                 .build()})
                 .type(ExternalResultType.ORGANIZATIONAL)
                 .build();
@@ -840,36 +854,6 @@ public interface MetadataMapper {
         log.trace("mapped instant {} to string {}", data, datestamp);
         return datestamp;
     }
-
-    @Mappings({
-            @Mapping(target = "rdf", expression = "java(data.getRdfPath() != null)"),
-            @Mapping(target = "sparql", expression = "java(data.getSparqlEndpoint() != null)")
-    })
-    OntologyDto ontologyToOntologyDto(Ontology data);
-
-    @Mappings({
-            @Mapping(target = "rdf", expression = "java(data.getRdfPath() != null)"),
-            @Mapping(target = "sparql", expression = "java(data.getSparqlEndpoint() != null)")
-    })
-    OntologyBriefDto ontologyToOntologyBriefDto(Ontology data);
-
-    Ontology ontologyCreateDtoToOntology(OntologyCreateDto data);
-
-    ConceptDto tableColumnConceptToConceptDto(TableColumnConcept data);
-
-    ConceptBriefDto tableColumnConceptToConceptBriefDto(TableColumnConcept data);
-
-    UnitDto tableColumnUnitToUnitDto(TableColumnUnit data);
-
-    UnitBriefDto tableColumnUnitToUnitBriefDto(TableColumnUnit data);
-
-    TableColumnUnit unitSaveDtoToTableColumnUnit(UnitSaveDto data);
-
-    TableColumnUnit entityDtoToTableColumnUnit(EntityDto data);
-
-    TableColumnConcept entityDtoToTableColumnConcept(EntityDto data);
-
-    TableColumnConcept conceptSaveDtoToTableColumnConcept(ConceptSaveDto data);
 
     @Mappings({
             @Mapping(target = "databaseId", source = "tdbid"),
