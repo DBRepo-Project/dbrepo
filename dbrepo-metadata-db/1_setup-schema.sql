@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
     PRIMARY KEY (`id`),
     UNIQUE (`name`, `version`),
     UNIQUE (`is_default`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     readonly_password   VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`image_id`) REFERENCES mdb_images (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_licenses`
 (
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `mdb_licenses`
     description TEXT         NOT NULL,
     PRIMARY KEY (`identifier`),
     UNIQUE (uri(200))
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     last_modified         TIMESTAMP,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`cid`) REFERENCES mdb_containers (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     PRIMARY KEY (`ID`),
     UNIQUE (`tDBID`, `internal_name`),
     FOREIGN KEY (`tDBID`) REFERENCES mdb_databases (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     FOREIGN KEY (`tID`) REFERENCES mdb_tables (`ID`) ON DELETE CASCADE,
     PRIMARY KEY (`ID`),
     UNIQUE (`tID`, `internal_name`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
     value     VARCHAR(255) NOT NULL,
     FOREIGN KEY (`column_id`) REFERENCES mdb_columns (`ID`) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
     value     VARCHAR(255) NOT NULL,
     FOREIGN KEY (`column_id`) REFERENCES mdb_columns (`ID`) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 (
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
     PRIMARY KEY (`fkid`),
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`rtid`) REFERENCES mdb_tables (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
 (
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
     PRIMARY KEY (`pkid`),
     FOREIGN KEY (`tID`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`) ON DELETE CASCADE
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 (
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
     FOREIGN KEY (`fkid`) REFERENCES mdb_constraints_foreign_key (`fkid`) ON UPDATE CASCADE,
     FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`),
     FOREIGN KEY (`rcid`) REFERENCES mdb_columns (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
 (
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
     position INT          NULL,
     PRIMARY KEY (`uid`),
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 (
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
     PRIMARY KEY (`id`),
     FOREIGN KEY (`uid`) REFERENCES mdb_constraints_unique (`uid`),
     FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`) ON DELETE CASCADE
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 (
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
     checks VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
     PRIMARY KEY (`id`),
     UNIQUE (`vdbid`, `internal_name`),
     FOREIGN KEY (`vdbid`) REFERENCES mdb_databases (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_messages`
 (
@@ -236,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `mdb_messages`
     display_start TIMESTAMP                         NULL,
     display_end   TIMESTAMP                         NULL,
     PRIMARY KEY (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
@@ -252,7 +252,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     PRIMARY KEY (`id`),
     FOREIGN KEY (`view_id`) REFERENCES mdb_view (`id`) ON DELETE CASCADE,
     UNIQUE (view_id, internal_name)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
@@ -282,7 +282,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     FOREIGN KEY (`dbid`) REFERENCES mdb_databases (`id`),
     FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`),
     FOREIGN KEY (`vid`) REFERENCES mdb_view (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 (
@@ -291,7 +291,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
     PRIMARY KEY (pid, license_id),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`),
     FOREIGN KEY (`license_id`) REFERENCES mdb_licenses (`identifier`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
@@ -303,7 +303,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
     language         VARCHAR(2),
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
@@ -319,7 +319,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
     ordinal_position       INT          NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
@@ -331,7 +331,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
     ordinal_position INT         NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
 (
@@ -343,7 +343,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
     ordinal_position INT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  NOT NULL,
     PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
@@ -363,7 +363,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
     affiliation_identifier_scheme_uri TEXT,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_access`
 (
@@ -374,7 +374,7 @@ CREATE TABLE IF NOT EXISTS `mdb_access`
     created  TIMESTAMP    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (username, aDBID),
     FOREIGN KEY (`aDBID`) REFERENCES mdb_databases (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
@@ -384,7 +384,7 @@ CREATE TABLE IF NOT EXISTS `mdb_have_access`
     created     TIMESTAMP                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (username, database_id),
     FOREIGN KEY (`database_id`) REFERENCES mdb_databases (`id`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_image_types`
 (
@@ -411,7 +411,7 @@ CREATE TABLE IF NOT EXISTS `mdb_image_types`
     PRIMARY KEY (`id`),
     FOREIGN KEY (`image_id`) REFERENCES `mdb_images` (`id`),
     UNIQUE (`value`)
-) WITH SYSTEM VERSIONING;
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_image_operators`
 (
@@ -423,7 +423,7 @@ CREATE TABLE IF NOT EXISTS `mdb_image_operators`
     PRIMARY KEY (`id`),
     FOREIGN KEY (`image_id`) REFERENCES `mdb_images` (`id`),
     UNIQUE (image_id, value)
-) WITH SYSTEM VERSIONING;
+);
 
 COMMIT;
 

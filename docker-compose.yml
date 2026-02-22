@@ -18,13 +18,13 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
+    image: dbrepo-metadata-db:latest
+    build: ./dbrepo-data-db
     volumes:
-      - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./dbrepo-metadata-db/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
       MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
@@ -33,7 +33,7 @@ services:
       MARIADB_SKIP_TEST_DB: "yes"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
+      test: ["CMD-SHELL", "pg_isready"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -42,12 +42,12 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
+    image: dbrepo-data-db:latest
+    build: ./dbrepo-data-db
     volumes:
-      - data-db-data:/bitnami/mariadb
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
-      - "3307:3306"
+      - "5433:5432"
     environment:
       MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
@@ -55,7 +55,7 @@ services:
       MARIADB_SKIP_TEST_DB: "yes"
       MARIADB_USER: "${READONLY_USERNAME:-readonly}"
     healthcheck:
-      test: /opt/bitnami/scripts/mariadb-galera/healthcheck.sh --connect --innodb_initialized
+      test: ["CMD-SHELL", "pg_isready"]
       <<: *healthcheck-params
     logging:
       driver: json-file
