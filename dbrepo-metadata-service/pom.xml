@@ -29,7 +29,7 @@
         <module>services</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -60,6 +60,7 @@
         <redisson.version>3.52.0</redisson.version>
         <springdoc-openapi.version>2.8.5</springdoc-openapi.version>
         <keycloak.version>26.0.4</keycloak.version>
+        <postgresql.version>42.7.10</postgresql.version>
         <sonar.coverage.jacoco.xmlReportPaths>
             ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
@@ -126,9 +127,9 @@
         </dependency>
         <!-- Data Source -->
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>${mariadb.version}</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>com.mchange</groupId>
