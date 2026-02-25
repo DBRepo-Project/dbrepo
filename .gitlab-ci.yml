@@ -740,7 +740,7 @@ verify-install-script:
   before_script:
     - "apk add bash curl"
   script:
-    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
+    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/.scripts/install.sh | bash | grep 'Success!'"
 
 verify-dist:
   image: docker.io/alpine:${ALPINE_VERSION}
