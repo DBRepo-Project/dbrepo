@@ -12,6 +12,7 @@ volumes:
   identity-service-data:
   dashboard-ui-data:
   dashboard-db-data:
+  metric-db-data:
 
 services:
   dbrepo-metadata-db:
