@@ -18,7 +18,7 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_messages")
 @NamedQueries({
-        @NamedQuery(name = "BannerMessage.findByActive", query = "select m from BannerMessage m where (m.displayStart = null and m.displayEnd = null) or (m.displayStart = null and m.displayEnd >= NOW()) or (m.displayStart <= NOW() and m.displayEnd >= NOW()) or (m.displayStart <= NOW() and m.displayEnd = null)")
+        @NamedQuery(name = "BannerMessage.findByActive", query = "select m from BannerMessage m where (m.displayStart is null and m.displayEnd is null) or (m.displayStart is null and m.displayEnd >= current_timestamp()) or (m.displayStart <= current_timestamp() and m.displayEnd >= current_timestamp()) or (m.displayStart <= current_timestamp() and m.displayEnd is null)")
 })
 public class BannerMessage {
 

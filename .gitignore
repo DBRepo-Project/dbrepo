@@ -50,7 +50,6 @@ fda-ui/
 .demo
 
 ### Certificates ###
-*.crt
 *.p12
 root.crt
 intermediate.crt

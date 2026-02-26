@@ -15,7 +15,7 @@ spring:
     url: "jdbc:postgresql://${METADATA_HOST:localhost}:${METADATA_PORT:5432}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS:}"
     driver-class-name: org.postgresql.Driver
     username: "${METADATA_USERNAME:postgres}"
-    password: "${METADATA_DB_PASSWORD:postgres}"
+    password: "${METADATA_DB_PASSWORD:dbrepo}"
   jpa:
     show-sql: false
     open-in-view: false
@@ -24,7 +24,6 @@ spring:
         default_schema: "${METADATA_DB:dbrepo}"
         jdbc:
           time_zone: UTC
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       resourceserver:

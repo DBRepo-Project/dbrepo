@@ -19,8 +19,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo-metadata-db:latest
-    build: ./dbrepo-data-db
+    image: docker.io/postgres:18-alpine
     volumes:
       - metadata-db-data:/home/postgres/pgdata/pgroot/data
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -28,11 +27,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      SCOPE: "metadata-db"
-      PGPASSWORD_ADMIN: "${READONLY_PASSWORD:-readonly}"
-      PGUSER_SUPERUSER: "${METADATA_DB_USERNAME:-postgres}"
-      PGPASSWORD_SUPERUSER: "${METADATA_DB_PASSWORD:-dbrepo}"
-      PGUSER_ADMIN: "${READONLY_USERNAME:-readonly}"
+      POSTGRES_DB: "dbrepo"
+      POSTGRES_USER: "${METADATA_DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       <<: *healthcheck-params
@@ -47,15 +44,11 @@ services:
     build: ./dbrepo-data-db
     volumes:
       - data-db-data:/home/postgres/pgdata/pgroot/data
-      - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
     ports:
       - "5433:5432"
     environment:
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepo}"
-      MARIADB_PASSWORD: "${READONLY_PASSWORD:-readonly}"
-      MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
-      MARIADB_SKIP_TEST_DB: "yes"
-      MARIADB_USER: "${READONLY_USERNAME:-readonly}"
+      POSTGRES_USER: "${DATA_DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       <<: *healthcheck-params
@@ -173,8 +166,8 @@ services:
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       METADATA_HOST: "${METADATA_HOST:-metadata-db}"
       METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
-      METADATA_PORT: "${METADATA_PORT:-3306}"
-      METADATA_USERNAME: root
+      METADATA_PORT: "${METADATA_PORT:-5432}"
+      METADATA_USERNAME: "${METADATA_DB_USERNAME:-postgres}"
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
