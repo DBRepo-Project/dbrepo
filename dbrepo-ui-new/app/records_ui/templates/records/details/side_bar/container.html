@@ -1,17 +1,19 @@
 <section id="database_info" aria-label="database_info" class="info-box">
-    <h3>Container</h3>
-    <div class="label">Name</div>
-    <div class="value">{{ database.container.name }}</div>
-    <br>
+    <h3 class="ui medium top attached header mt-0">Container</h3>
 
-    <div class="label">Internal Name</div>
-    <div class="value">{{ database.container.internal_name }}</div>
-    <br>
+    <div class="ui segment bottom attached rdm-sidebar">
+    <dl class="details-list">
+    <dt class="ui tiny header">Name</dt>
+    <dd>{{ database.container.name }}</dd>
 
-    <div class="label">Image</div>
-    <div class="value">{{ database.container.image.name }}</div>
-    <br>
+    <dt class="ui tiny header">Internal Name</dt>
+    <dd>{{ database.container.internal_name }}</dd>
 
-    <div class="label">Version</div>
-    <div class="value">{{ database.container.image.version }}</div>
+    <dt class="ui tiny header">Image</dt>
+    <dd>{{ database.container.image.name }}</dd>
+
+    <dt class="ui tiny header">Version</dt>
+    <dd>{{ database.container.image.version }}</dd>
+    </dl>
+    </div>
 </section>

@@ -1,0 +1,71 @@
+<section id="identifier_info" aria-label="identifier_info" class="info-box">
+
+    <h3 class="ui medium top attached header mt-0">Citation</h3>
+    <div class="ui segment bottom attached rdm-sidebar">
+
+  <div id="citation-text" class="wrap-overflowing-text rel-mb-2">
+    <div id="citation-display">
+      {{ citations.values()|list|first | safe }}
+    </div>
+  </div>
+
+  <div class="auto-column-grid no-wrap doi-row">
+
+    <div class="flex align-items-center">
+
+      <label id="citation-style-label" class="mr-10">
+        Style
+      </label>
+
+      <div
+        id="citation-style"
+        class="ui tiny selection dropdown citation-dropdown"
+        aria-labelledby="citation-style-label"
+        role="listbox"
+        tabindex="0"
+      >
+
+        <div class="text">
+          {{ citations.keys()|list|first|upper }}
+        </div>
+
+        <i class="dropdown icon"></i>
+
+        <div class="menu">
+          {% for style in citations %}
+            <div
+              class="item {% if loop.first %}active selected{% endif %}"
+              data-value="{{ style }}"
+              role="option"
+            >
+              <span class="text">
+                {{ style|replace('-', ' ')|upper }}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+
+    </div>
+
+    <button
+      aria-label="Copy to clipboard"
+      class="ui medium basic icon button cit-copy"
+      type="button"
+      data-value="{{ database.identifiers[doi_id].doi}}"
+    >
+      <i class="copy icon"></i>
+    </button>
+
+  </div>
+
+</div>
+
+<div
+  id="citation-data"
+  data-citations='{{ citations | tojson | safe }}'
+  hidden>
+</div>
+
+</section>

@@ -3,6 +3,7 @@ DETAIL_SIDE_BAR_TEMPLATES = [
   "/records/details/side_bar/identifier.html",
   # "/records/details/side_bar/database_info.html",
   "/records/details/side_bar/container.html",
+  "/records/details/side_bar/citation.html",
 ]
 
 VIEW_DETAIL_SIDE_BAR_TEMPLATES = [

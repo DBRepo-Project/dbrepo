@@ -1,19 +1,21 @@
 <section id="identifiers_info" aria-label="identifier_info" class="info-box">
-    <div id="identifier_header">
-    <h3>Identifiers</h3>
-</div>
+    <h3 class="ui medium top attached header mt-0">Identifiers</h3>
     <div id="identifiers_list_div">
     <ul id="identifiers_list">
-        {%- for identifier in  database.identifiers -%}
+        {%- for ident in  database.identifiers -%}
             <li id="identifiers_list_item">
-            {{identifier.titles[0].title}}
-            {{identifier.doi}}
+                <div class="left floated content">
+                      <span>{{ident.titles[0].title}}</span>
+            <br>
+                <span>
+                    <a class="text-muted-darken" href="{{database.id}}?doi={{ident.doi}}">DOI: {{ident.doi}}</a>
+                </span>
+                    {{ident.publication_day}}.{{ident.publication_month}}.{{ident.publication_year}}
+                </div>
+
             </li>
         {%- endfor -%}
 
     </ul>
     </div>
-
-    <h2>Citation</h2>
-<div>{{ citation | safe }}</div>
 </section>

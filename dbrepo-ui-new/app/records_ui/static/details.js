@@ -1,5 +1,4 @@
-
-$('.preview_button').on('click', async function() {
+$('.preview_button').on('click', async function () {
     const database_id = $(this).data('database_id');
     const preview_id = $(this).data('value');
     const name = $(this).data('name');
@@ -14,23 +13,23 @@ $('.preview_button').on('click', async function() {
     renderTable(dataset, name);
 });
 
-$('.copy-doi-button').on('click', async function() {
-        const value = $(this).data('value');
+$('.copy-doi-button').on('click', async function () {
+    const value = $(this).data('value');
 
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(value);
-        } else {
-            // Fallback method
-            const temp = document.createElement('textarea');
-            temp.value = value;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-        }
+    if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+    } else {
+        // Fallback method
+        const temp = document.createElement('textarea');
+        temp.value = value;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+    }
 });
 
-$('.subset_preview_button').on('click', async function() {
+$('.subset_preview_button').on('click', async function () {
     const database_id = $(this).data('database_id');
     const preview_id = $(this).data('value');
     const name = $(this).data('name');
@@ -45,7 +44,7 @@ $('.subset_preview_button').on('click', async function() {
     renderTable(dataset, name);
 });
 
-$('.subset_pagination_button').on('click', async function() {
+$('.subset_pagination_button').on('click', async function () {
     const database_id = $(this).data('database_id');
     const preview_id = $(this).data('value');
 
@@ -89,3 +88,35 @@ function renderTable(dataset, name) {
 
     $table.append($thead, $tbody);
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const citations = JSON.parse(
+        document.getElementById("citation-data")
+            .dataset.citations
+    );
+
+    const display = document.getElementById("citation-display");
+
+    // activate Semantic dropdown
+    $('.ui.dropdown').dropdown({
+        onChange: function (value) {
+            display.innerHTML = citations[value];
+        }
+    });
+
+    const copyBtn = document.querySelector(".cit-copy");
+
+     copyBtn.addEventListener("click", async function () {
+        try {
+            const text = display.innerText;
+
+            await navigator.clipboard.writeText(text);
+
+        } catch (err) {
+            console.error("Copy failed:", err);
+        }
+    });
+
+});
+

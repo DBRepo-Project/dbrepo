@@ -241,6 +241,18 @@ font-size: 1em;
 .angle {
   float: right !important;
 }
+
+.sidebar {
+  .ui.top.attached.header {
+    background-color: transparent!important;
+    font-size: 18px!important;
+    border: none!important;
+    font-weight: 500!important;
+  }
+}
+
+
+
 /*additional css (not present in invenios stylesheet)*/
 
 /*.content.active {*/
@@ -256,5 +268,10 @@ font-size: 1em;
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: nowrap;
+
+  .selection {
+    min-width: 10em!important;
+  }
 }
 
