@@ -120,13 +120,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* create in data database */
         dataServiceGateway.createDatabase(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
-                .userId(owner.getId())
                 .username(owner.getUsername())
-                .password(owner.getAttributes().getMariadbPassword())
-                .privilegedUsername(container.getPrivilegedUsername())
-                .privilegedPassword(container.getPrivilegedPassword())
-                .readonlyUsername(container.getReadonlyUsername())
-                .readonlyPassword(container.getReadonlyPassword())
+                .password(owner.getAttributes().getPostgresPassword())
                 .internalName(entity.getInternalName())
                 .build());
         entity.setExchangeName(rabbitConfig.getExchangeName());
@@ -144,23 +139,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         searchServiceGateway.update(database);
         log.info("Created database with id {}", database.getId());
         return database;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public void updatePassword(Database database, UserDto user) throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException {
-        final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getUsername())
-                .stream()
-                .distinct()
-                .toList();
-        log.debug("found {} distinct databases where access for user with id {} is present", databases.size(), user.getId());
-        final UpdateUserPasswordDto payload = UpdateUserPasswordDto.builder()
-                .username(user.getUsername())
-                .password(user.getAttributes().getMariadbPassword())
-                .build();
-        dataServiceGateway.updateDatabase(database.getId(), payload);
-        log.info("Updated user password in database with id {}", database.getId());
     }
 
     @Override

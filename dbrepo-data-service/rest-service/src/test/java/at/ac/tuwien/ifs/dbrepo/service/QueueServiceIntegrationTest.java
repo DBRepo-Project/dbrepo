@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.PostgresContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MetadataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -35,16 +34,13 @@ import static org.mockito.Mockito.when;
 public class QueueServiceIntegrationTest extends BaseTest {
 
     @MockitoBean
-    private DataService dataService;
-
-    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     private QueueServiceRabbitMqImpl queueService;
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {

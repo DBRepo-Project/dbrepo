@@ -11,9 +11,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
-import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
@@ -41,7 +40,6 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -51,8 +49,7 @@ import java.util.UUID;
 public class SubsetEndpoint {
 
     private final DataMapper dataMapper;
-    private final DataService dataService;
-    private final MariaDbMapper mariaDbMapper;
+    private final PostgresMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final AnalyseService analyseService;
     private final MetadataMapper metadataMapper;
@@ -61,12 +58,11 @@ public class SubsetEndpoint {
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetEndpoint(DataMapper dataMapper, DataService dataService, MariaDbMapper mariaDbMapper,
+    public SubsetEndpoint(DataMapper dataMapper, PostgresMapper mariaDbMapper,
                           SubsetService subsetService, AnalyseService analyseService, MetadataMapper metadataMapper,
                           MetadataService metadataService, EndpointValidator endpointValidator,
                           MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
-        this.dataService = dataService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.analyseService = analyseService;
@@ -386,15 +382,17 @@ public class SubsetEndpoint {
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Set<Map<String, Object>> body = dataMapper.datasetToJson(dataService.getSubsetAsJson(database, paginatedStatement));
+//                    final Set<Map<String, Object>> body = dataMapper.datasetToJson(dataService.getSubsetAsJson(database, paginatedStatement));
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(body);
+                            .body(null);
+//                            .body(body);
                 case "text/csv":
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
-                            .body(dataService.getSubsetAsCsv(database, paginatedStatement));
+                            .body(null);
+//                            .body(dataService.getSubsetAsCsv(database, paginatedStatement));
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

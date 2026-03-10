@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
+import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -8,9 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
+import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -29,8 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -52,11 +49,9 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint {
 
-    private final DataMapper dataMapper;
     private final DataService dataService;
     private final TableService tableService;
-    private final MariaDbMapper mariaDbMapper;
-    private final AnalyseService analyseService;
+    private final PostgresMapper postgresMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
@@ -64,14 +59,12 @@ public class TableEndpoint {
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
-    public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
-                         MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
-        this.dataMapper = dataMapper;
+    public TableEndpoint(DataService dataService, TableService tableService, PostgresMapper postgresMapper,
+                         MetadataService metadataService, EndpointValidator endpointValidator,
+                         MetadataServiceGateway metadataServiceGateway) {
         this.dataService = dataService;
         this.tableService = tableService;
-        this.mariaDbMapper = mariaDbMapper;
-        this.analyseService = analyseService;
+        this.postgresMapper = postgresMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -209,7 +202,8 @@ public class TableEndpoint {
             @ApiResponse(responseCode = "200",
                     description = "Get table data",
                     headers = {@Header(name = "X-Count", description = "Number of rows", schema = @Schema(implementation = Long.class), required = true),
-                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
+                            @Header(name = "X-Headers", description = "Header names", schema = @Schema(implementation = String.class)),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` and `X-Headers` custom headers", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = Map[].class)),
@@ -240,7 +234,7 @@ public class TableEndpoint {
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException,
-            FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, DatabaseMalformedException {
         log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, accept={}",
                 databaseId, tableId, timestamp, page, size, accept);
         endpointValidator.validateDataParams(page, size);
@@ -277,25 +271,24 @@ public class TableEndpoint {
                         .headers(headers)
                         .build();
             }
-            final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
-                    table.getInternalName(), timestamp,
+            headers.set("Access-Control-Expose-Headers", "X-Count X-Headers");
+            final Result result = dataService.get(database, table.getInternalName(), timestamp,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size);
-            headers.set("Access-Control-Expose-Headers", "X-Headers");
+            headers.set("X-Headers", Strings.join(result.getHeaders(), ','));
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
-                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset1));
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(dataMapper.datasetToJson(dataset1));
+                            .body(result.getData());
                 case MEDIA_TYPE_TEXT_CSV:
-                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
+//                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
-                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset2));
+//                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset2));
                     return ResponseEntity.status(HttpStatus.OK)
                             .headers(headers)
-                            .body(dataset2);
+                            .body(null);
+//                            .body(dataset2);
                 default:
                     log.atError()
                             .setMessage("Invalid data format " + accept + " accepted")
@@ -566,7 +559,7 @@ public class TableEndpoint {
                                               @RequestHeader("Authorization") String authorization)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
             StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,
-            DatabaseUnavailableException, DatabaseNotFoundException {
+            DatabaseUnavailableException, DatabaseNotFoundException, TableMalformedException {
         log.atDebug()
                 .setMessage("endpoint insert table data")
                 .addKeyValue("database_id", databaseId)
@@ -582,7 +575,7 @@ public class TableEndpoint {
         }
         try {
             tableService.importDataset(database, table, data);
-        } catch (SQLException | TableMalformedException e) {
+        } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }

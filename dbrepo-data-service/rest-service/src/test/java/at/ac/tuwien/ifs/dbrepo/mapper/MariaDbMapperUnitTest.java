@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MariaDbMapperUnitTest extends BaseTest {
 
     @Autowired
-    private MariaDbMapper mariaDbMapper;
+    private PostgresMapper mariaDbMapper;
 
     @Autowired
     private DSLContext context;

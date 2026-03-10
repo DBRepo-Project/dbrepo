@@ -2,7 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.database;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.UUID;
@@ -24,12 +26,11 @@ import java.util.UUID;
 public class DatabaseAccess {
 
     @Id
-    @Column(columnDefinition = "VARCHAR(36)", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private String username;
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "database_id", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "database_id", updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID hdbid;
 
     @ToString.Exclude
@@ -42,6 +43,7 @@ public class DatabaseAccess {
     private Database database;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     private AccessType type;
 

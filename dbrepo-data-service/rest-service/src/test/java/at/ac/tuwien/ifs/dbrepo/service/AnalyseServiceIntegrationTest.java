@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.PostgresContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
@@ -24,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -92,7 +91,7 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
     }
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @Container
     private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);

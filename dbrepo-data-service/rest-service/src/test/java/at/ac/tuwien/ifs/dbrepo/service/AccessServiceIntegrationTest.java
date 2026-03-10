@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.PostgresContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -35,14 +34,11 @@ public class AccessServiceIntegrationTest extends BaseTest {
     @Autowired
     private AccessService accessService;
 
-    @MockitoBean
-    private DataService dataService;
-
     @Value("${dbrepo.grant.default.write}")
     private String grantDefaultWrite;
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @Container
     private static RedisContainerConfig.CustomRedisContainer redisContainer = RedisContainerConfig.getContainer();
@@ -57,7 +53,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void create_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+        accessService.create(DATABASE_1_CACHE, AccessTypeDto.READ, USER_1_USERNAME, USER_1_PASSWORD);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
@@ -66,7 +62,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void create_writeOwn_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_OWN);
+        accessService.create(DATABASE_1_CACHE, AccessTypeDto.WRITE_OWN, USER_1_USERNAME, USER_1_PASSWORD);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
@@ -75,7 +71,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void create_writeAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_ALL);
+        accessService.create(DATABASE_1_CACHE, AccessTypeDto.WRITE_ALL, USER_1_USERNAME, USER_1_PASSWORD);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
@@ -84,7 +80,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void update_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+        accessService.update(DATABASE_1_CACHE, AccessTypeDto.READ, USER_1_USERNAME);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
@@ -93,7 +89,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void update_writeOwn_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_OWN);
+        accessService.update(DATABASE_1_CACHE, AccessTypeDto.WRITE_OWN, USER_1_USERNAME);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
@@ -102,7 +98,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void update_writeAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.WRITE_ALL);
+        accessService.update(DATABASE_1_CACHE, AccessTypeDto.WRITE_ALL, USER_1_USERNAME);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(Arrays.stream(grantDefaultWrite.split(",")).map(String::trim).toArray(), privileges.toArray());
     }
@@ -112,7 +108,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.update(DATABASE_1_CACHE, USER_5_CACHE, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1_CACHE, AccessTypeDto.WRITE_ALL, USER_5_USERNAME);
         });
     }
 
@@ -120,7 +116,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
     public void delete_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.delete(DATABASE_1_CACHE, USER_1_CACHE);
+        accessService.delete(DATABASE_1_CACHE, USER_1_USERNAME);
         final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_1_USERNAME);
         containsInAnyOrder(new String[]{"USAGE"}, privileges.toArray());
     }
@@ -130,7 +126,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.delete(DATABASE_1_CACHE, USER_5_CACHE);
+            accessService.delete(DATABASE_1_CACHE, USER_5_USERNAME);
         });
     }
 

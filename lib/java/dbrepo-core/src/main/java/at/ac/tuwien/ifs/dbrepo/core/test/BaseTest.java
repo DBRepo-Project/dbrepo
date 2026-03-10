@@ -137,7 +137,9 @@ public class BaseTest {
     public final static SimpleDateFormat MARIADB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
+    @Deprecated
     public final static String MARIADB_IMAGE = "bitnamilegacy/mariadb:11.3.2";
+    public final static String POSTGRESQL_IMAGE = "postgres:18-alpine";
     public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
     public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.4.4";
     public final static String REDIS_IMAGE = "docker.io/redis:5.0.3-alpine";
@@ -317,11 +319,11 @@ public class BaseTest {
     public final static String USER_LOCAL_ADMIN_LANGUAGE = "en";
     public final static Boolean USER_LOCAL_ADMIN_ENABLED = true;
     @SuppressWarnings("java:S2068")
-    public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
+    public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "s3cr3t1nf0rm4t10n";
 
     public final UserAttributesDto USER_LOCAL_ADMIN_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_LOCAL_ADMIN_THEME)
-            .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
+            .postgresPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
             .language(USER_LOCAL_ADMIN_LANGUAGE)
             .build();
 
@@ -345,7 +347,7 @@ public class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_1_PASSWORD = "712!1e7021c4d077662543620bbC5";
     @SuppressWarnings("java:S2068")
-    public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
+    public final static String USER_1_DATABASE_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
     public final static String USER_1_QUALIFIED_NAME = USER_1_FIRSTNAME + " " + USER_1_LASTNAME + " — @" + USER_1_USERNAME;
@@ -367,7 +369,7 @@ public class BaseTest {
             .theme(USER_1_THEME)
             .orcid(USER_1_ORCID_URL)
             .affiliation(USER_1_AFFILIATION)
-            .mariadbPassword(USER_1_DATABASE_PASSWORD)
+            .postgresPassword(USER_1_DATABASE_PASSWORD)
             .language(USER_1_LANGUAGE)
             .build();
 
@@ -465,7 +467,7 @@ public class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_2_PASSWORD = "3B4^30099d6e27b4715ba003a9d3b";
     @SuppressWarnings("java:S2068")
-    public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
+    public final static String USER_2_DATABASE_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_QUALIFIED_NAME = USER_2_FIRSTNAME + " " + USER_2_LASTNAME + " — @" + USER_2_USERNAME;
     public final static Boolean USER_2_IS_INTERNAL = false;
     public final static String USER_2_THEME = "light";
@@ -475,7 +477,7 @@ public class BaseTest {
             .theme(USER_2_THEME)
             .orcid(USER_2_ORCID_URL)
             .affiliation(USER_2_AFFILIATION)
-            .mariadbPassword(USER_2_DATABASE_PASSWORD)
+            .postgresPassword(USER_2_DATABASE_PASSWORD)
             .language(USER_2_LANGUAGE)
             .build();
 
@@ -529,7 +531,7 @@ public class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_3_PASSWORD = "c6b@74Ea27a52820570c739e3c022";
     @SuppressWarnings("java:S2068")
-    public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
+    public final static String USER_3_DATABASE_PASSWORD = "*3cr3t1nf0rm4t10n";
     public final static String USER_3_QUALIFIED_NAME = USER_3_FIRSTNAME + " " + USER_3_LASTNAME + " — @" + USER_3_USERNAME;
     public final static Boolean USER_3_IS_INTERNAL = false;
     public final static String USER_3_THEME = "light";
@@ -538,7 +540,7 @@ public class BaseTest {
             .theme(USER_3_THEME)
             .orcid(USER_3_ORCID_URL)
             .affiliation(USER_3_AFFILIATION)
-            .mariadbPassword(USER_3_DATABASE_PASSWORD)
+            .postgresPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
     public final UserDto USER_3_DTO = UserDto.builder()
@@ -590,7 +592,7 @@ public class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_4_PASSWORD = "deb&6E361784ae1cbebbc3bf5fd50";
     @SuppressWarnings("java:S2068")
-    public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
+    public final static String USER_4_DATABASE_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
     public final static Boolean USER_4_IS_INTERNAL = false;
     public final static String USER_4_THEME = "light";
@@ -599,7 +601,7 @@ public class BaseTest {
             .theme(USER_4_THEME)
             .orcid(USER_4_ORCID_URL)
             .affiliation(USER_4_AFFILIATION)
-            .mariadbPassword(USER_4_DATABASE_PASSWORD)
+            .postgresPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
     public final UserDto USER_4_DTO = UserDto.builder()
@@ -649,7 +651,7 @@ public class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_5_PASSWORD = "24d$fec836B956ada9c722f3cd403";
     @SuppressWarnings("java:S2068")
-    public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public final static String USER_5_DATABASE_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
     public final static Boolean USER_5_IS_INTERNAL = false;
     public final static String USER_5_THEME = "dark";
@@ -657,7 +659,7 @@ public class BaseTest {
     public final UserAttributesDto USER_5_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_5_THEME)
             .affiliation(USER_5_AFFILIATION)
-            .mariadbPassword(USER_5_DATABASE_PASSWORD)
+            .postgresPassword(USER_5_DATABASE_PASSWORD)
             .build();
 
     public final UserDto USER_5_DTO = UserDto.builder()
@@ -708,7 +710,7 @@ public class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_6_PASSWORD = "006%381aBa58e072ef21244c0e3d9";
     @SuppressWarnings("java:S2068")
-    public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public final static String USER_6_DATABASE_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static Boolean USER_6_VERIFIED = true;
     public final static Boolean USER_6_ENABLED = true;
     public final static Boolean USER_6_IS_INTERNAL = false;
@@ -718,7 +720,7 @@ public class BaseTest {
     public final UserAttributesDto USER_6_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_6_THEME)
             .affiliation(USER_6_AFFILIATION)
-            .mariadbPassword(USER_6_DATABASE_PASSWORD)
+            .postgresPassword(USER_6_DATABASE_PASSWORD)
             .build();
 
     public final UserDto USER_6_DTO = UserDto.builder()
@@ -739,14 +741,14 @@ public class BaseTest {
     public final Principal USER_6_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_6_DETAILS,
             USER_6_PASSWORD, USER_6_DETAILS.getAuthorities());
 
-    public final static UUID IMAGE_1_ID = UUID.fromString("e5449ade-acc1-4ba4-8858-e3496cdecd9c");
+    public final static UUID IMAGE_1_ID = UUID.fromString("bcb85554-4087-4d38-9604-ae89eaccb72f");
     public final static String IMAGE_1_REGISTRY = "docker.io";
-    public final static String IMAGE_1_NAME = "mariadb";
-    public final static String IMAGE_1_VERSION = "11.1.3";
-    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
-    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
-    public final static String IMAGE_1_JDBC_METHOD = "mariadb";
-    public final static Integer IMAGE_1_DEFAULT_PORT = 3306;
+    public final static String IMAGE_1_NAME = "postgres";
+    public final static String IMAGE_1_VERSION = "18-alpine";
+    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+    public final static String IMAGE_1_DRIVER = "org.postgresql.Driver";
+    public final static String IMAGE_1_JDBC_METHOD = "postgresql";
+    public final static Integer IMAGE_1_DEFAULT_PORT = 5432;
     public final static Boolean IMAGE_1_IS_DEFAULT = true;
 
     public final ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
@@ -1151,12 +1153,6 @@ public class BaseTest {
             .internalName(DATABASE_1_INTERNAL_NAME)
             .containerId(CONTAINER_1_ID)
             .username(USER_1_USERNAME)
-            .password(USER_1_PASSWORD)
-            .userId(USER_1_ID)
-            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
-            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
-            .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
-            .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
     public final static UUID DATABASE_2_ID = UUID.fromString("dd9dfee2-9fbd-46b0-92d5-98f0f8866ffe");

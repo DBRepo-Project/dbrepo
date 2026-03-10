@@ -2,7 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.identifier;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.UUID;
@@ -19,8 +20,7 @@ import java.util.UUID;
 public class Creator {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @Column
@@ -35,15 +35,17 @@ public class Creator {
     @Column(name = "creator_name", nullable = false)
     private String creatorName;
 
-    @Column(columnDefinition = "ENUM('PERSONAL', 'ORGANIZATIONAL')")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(columnDefinition = "ENUM('PERSONAL', 'ORGANIZATIONAL')")
     private NameType nameType;
 
     @Column
     private String nameIdentifier;
 
-    @Column(columnDefinition = "ENUM('ROR', 'GRID', 'ISNI', 'ORCID')")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(columnDefinition = "ENUM('ROR', 'GRID', 'ISNI', 'ORCID')")
     private NameIdentifierSchemeType nameIdentifierScheme;
 
     @Column
@@ -55,8 +57,9 @@ public class Creator {
     @Column
     private String affiliationIdentifier;
 
-    @Column(columnDefinition = "ENUM('ROR', 'GRID', 'ISNI')")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(columnDefinition = "ENUM('ROR', 'GRID', 'ISNI')")
     private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
 
     private String affiliationIdentifierSchemeUri;

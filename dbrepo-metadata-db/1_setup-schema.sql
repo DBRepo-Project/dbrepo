@@ -1,8 +1,10 @@
+CREATE SCHEMA dbrepo;
+
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS mdb_images
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_images
 (
-    id            VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
+    id            UUID         NOT NULL DEFAULT gen_random_uuid(),
     registry      VARCHAR(255) NOT NULL DEFAULT 'docker.io',
     name          VARCHAR(255) NOT NULL,
     version       VARCHAR(255) NOT NULL,
@@ -18,9 +20,9 @@ CREATE TABLE IF NOT EXISTS mdb_images
     UNIQUE (is_default)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_containers
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_containers
 (
-    id                  VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
+    id                  UUID         NOT NULL DEFAULT gen_random_uuid(),
     internal_name       VARCHAR(255) NOT NULL,
     name                VARCHAR(255) NOT NULL,
     host                VARCHAR(255) NOT NULL,
@@ -28,7 +30,7 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     ui_host             VARCHAR(255) NOT NULL,
     ui_port             INT          NOT NULL,
     ui_additional_flags TEXT,
-    image_id            VARCHAR(36)  NOT NULL,
+    image_id            UUID         NOT NULL,
     created             TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified       TIMESTAMP,
     privileged_username VARCHAR(255) NOT NULL,
@@ -37,10 +39,10 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     readonly_username   VARCHAR(255) NOT NULL,
     readonly_password   VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES mdb_images (id)
+    FOREIGN KEY (image_id) REFERENCES dbrepo.mdb_images (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_licenses
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_licenses
 (
     identifier  VARCHAR(255) NOT NULL,
     uri         TEXT         NOT NULL,
@@ -49,10 +51,10 @@ CREATE TABLE IF NOT EXISTS mdb_licenses
     UNIQUE (uri)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_databases
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_databases
 (
-    id                    VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    cid                   VARCHAR(36)  NOT NULL,
+    id                    UUID         NOT NULL DEFAULT gen_random_uuid(),
+    cid                   UUID         NOT NULL,
     grafana_dashboard_uid character varying(255),
     name                  VARCHAR(255) NOT NULL,
     internal_name         VARCHAR(255) NOT NULL,
@@ -68,13 +70,13 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     created               TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified         TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (cid) REFERENCES mdb_containers (id)
+    FOREIGN KEY (cid) REFERENCES dbrepo.mdb_containers (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_tables
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_tables
 (
-    id               VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    tDBID            VARCHAR(36)  NOT NULL,
+    id               UUID         NOT NULL DEFAULT gen_random_uuid(),
+    tDBID            UUID         NOT NULL,
     tName            VARCHAR(64)  NOT NULL,
     internal_name    VARCHAR(64)  NOT NULL,
     queue_name       VARCHAR(255) NOT NULL,
@@ -92,15 +94,15 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     last_modified    TIMESTAMP,
     PRIMARY KEY (ID),
     UNIQUE (tDBID, internal_name),
-    FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
+    FOREIGN KEY (tDBID) REFERENCES dbrepo.mdb_databases (id)
 );
 
 CREATE TYPE data_type AS ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL');
 
-CREATE TABLE IF NOT EXISTS mdb_columns
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_columns
 (
-    id               VARCHAR(36)    NOT NULL DEFAULT gen_random_uuid(),
-    tID              VARCHAR(36)    NOT NULL,
+    id               UUID           NOT NULL DEFAULT gen_random_uuid(),
+    tID              UUID           NOT NULL,
     cName            VARCHAR(64),
     internal_name    VARCHAR(64)    NOT NULL,
     Datatype         data_type      NOT NULL,
@@ -120,99 +122,99 @@ CREATE TABLE IF NOT EXISTS mdb_columns
     std_dev          DECIMAL(65, 4) NULL,
     created          TIMESTAMP      NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
-    FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
+    FOREIGN KEY (tID) REFERENCES dbrepo.mdb_tables (ID) ON DELETE CASCADE,
     PRIMARY KEY (ID),
     UNIQUE (tID, internal_name)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_columns_enums
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_columns_enums
 (
-    id        VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    column_id VARCHAR(36)  NOT NULL,
+    id        UUID         NOT NULL DEFAULT gen_random_uuid(),
+    column_id UUID         NOT NULL,
     value     VARCHAR(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
+    FOREIGN KEY (column_id) REFERENCES dbrepo.mdb_columns (ID) ON DELETE CASCADE,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_columns_sets
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_columns_sets
 (
-    id        VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    column_id VARCHAR(36)  NOT NULL,
+    id        UUID         NOT NULL DEFAULT gen_random_uuid(),
+    column_id UUID         NOT NULL,
     value     VARCHAR(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
+    FOREIGN KEY (column_id) REFERENCES dbrepo.mdb_columns (ID) ON DELETE CASCADE,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_constraints_foreign_key
 (
-    fkid      VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    tid       VARCHAR(36)  NOT NULL,
-    rtid      VARCHAR(36)  NOT NULL,
+    fkid      UUID         NOT NULL DEFAULT gen_random_uuid(),
+    tid       UUID         NOT NULL,
+    rtid      UUID         NOT NULL,
     name      VARCHAR(255) NOT NULL,
     on_update VARCHAR(50)  NULL,
     on_delete VARCHAR(50)  NULL,
     position  INT          NULL,
     PRIMARY KEY (fkid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
-    FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
+    FOREIGN KEY (tid) REFERENCES dbrepo.mdb_tables (id) ON DELETE CASCADE,
+    FOREIGN KEY (rtid) REFERENCES dbrepo.mdb_tables (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_primary_key
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_constraints_primary_key
 (
-    pkid VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-    tID  VARCHAR(36) NOT NULL,
-    cid  VARCHAR(36) NOT NULL,
+    pkid UUID NOT NULL DEFAULT gen_random_uuid(),
+    tID  UUID NOT NULL,
+    cid  UUID NOT NULL,
     PRIMARY KEY (pkid),
-    FOREIGN KEY (tID) REFERENCES mdb_tables (id) ON DELETE CASCADE,
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
+    FOREIGN KEY (tID) REFERENCES dbrepo.mdb_tables (id) ON DELETE CASCADE,
+    FOREIGN KEY (cid) REFERENCES dbrepo.mdb_columns (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key_reference
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_constraints_foreign_key_reference
 (
-    id   VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-    fkid VARCHAR(36) NOT NULL,
-    cid  VARCHAR(36) NOT NULL,
-    rcid VARCHAR(36) NOT NULL,
+    id   UUID NOT NULL DEFAULT gen_random_uuid(),
+    fkid UUID NOT NULL,
+    cid  UUID NOT NULL,
+    rcid UUID NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (fkid, cid, rcid),
-    FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id),
-    FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
+    FOREIGN KEY (fkid) REFERENCES dbrepo.mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
+    FOREIGN KEY (cid) REFERENCES dbrepo.mdb_columns (id),
+    FOREIGN KEY (rcid) REFERENCES dbrepo.mdb_columns (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_unique
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_constraints_unique
 (
-    uid      VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
+    uid      UUID         NOT NULL DEFAULT gen_random_uuid(),
     name     VARCHAR(255) NOT NULL,
-    tid      VARCHAR(36)  NOT NULL,
+    tid      UUID         NOT NULL,
     position INT          NULL,
     PRIMARY KEY (uid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
+    FOREIGN KEY (tid) REFERENCES dbrepo.mdb_tables (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_constraints_unique_columns
 (
-    id  VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-    uid VARCHAR(36) NOT NULL,
-    cid VARCHAR(36) NOT NULL,
+    id  UUID NOT NULL DEFAULT gen_random_uuid(),
+    uid UUID NOT NULL,
+    cid UUID NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
+    FOREIGN KEY (uid) REFERENCES dbrepo.mdb_constraints_unique (uid),
+    FOREIGN KEY (cid) REFERENCES dbrepo.mdb_columns (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_checks
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_constraints_checks
 (
-    id     VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    tid    VARCHAR(36)  NOT NULL,
+    id     UUID         NOT NULL DEFAULT gen_random_uuid(),
+    tid    UUID         NOT NULL,
     checks VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
+    FOREIGN KEY (tid) REFERENCES dbrepo.mdb_tables (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS mdb_view
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_view
 (
-    id               VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    vdbid            VARCHAR(36)  NOT NULL,
+    id               UUID         NOT NULL DEFAULT gen_random_uuid(),
+    vdbid            UUID         NOT NULL,
     vName            VARCHAR(64)  NOT NULL,
     internal_name    VARCHAR(64)  NOT NULL,
     Query            TEXT         NOT NULL,
@@ -225,14 +227,14 @@ CREATE TABLE IF NOT EXISTS mdb_view
     owned_by         VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (vdbid, internal_name),
-    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id)
+    FOREIGN KEY (vdbid) REFERENCES dbrepo.mdb_databases (id)
 );
 
 CREATE TYPE message_type AS ENUM ('ERROR', 'WARNING', 'INFO');
 
-CREATE TABLE IF NOT EXISTS mdb_messages
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_messages
 (
-    id            VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
+    id            UUID         NOT NULL DEFAULT gen_random_uuid(),
     type          message_type NOT NULL DEFAULT 'INFO',
     message       TEXT         NOT NULL,
     link          TEXT         NULL,
@@ -244,10 +246,10 @@ CREATE TABLE IF NOT EXISTS mdb_messages
 
 CREATE TYPE column_type AS ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL');
 
-CREATE TABLE IF NOT EXISTS mdb_view_columns
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_view_columns
 (
-    id               VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-    view_id          VARCHAR(36) NOT NULL,
+    id               UUID        NOT NULL DEFAULT gen_random_uuid(),
+    view_id          UUID        NOT NULL,
     name             VARCHAR(64),
     internal_name    VARCHAR(64) NOT NULL,
     column_type      column_type NOT NULL,
@@ -256,20 +258,20 @@ CREATE TABLE IF NOT EXISTS mdb_view_columns
     d                BIGINT,
     is_null_allowed  BOOLEAN     NOT NULL DEFAULT TRUE,
     PRIMARY KEY (id),
-    FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE,
+    FOREIGN KEY (view_id) REFERENCES dbrepo.mdb_view (id) ON DELETE CASCADE,
     UNIQUE (view_id, internal_name)
 );
 
 CREATE TYPE identifier_type AS ENUM ('DATABASE', 'SUBSET', 'VIEW', 'TABLE');
 CREATE TYPE identifier_status AS ENUM ('DRAFT', 'PUBLISHED');
 
-CREATE TABLE IF NOT EXISTS mdb_identifiers
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifiers
 (
-    id                VARCHAR(36)       NOT NULL DEFAULT gen_random_uuid(),
-    dbid              VARCHAR(36)       NOT NULL,
-    qid               VARCHAR(36),
-    vid               VARCHAR(36),
-    tid               VARCHAR(36),
+    id                UUID              NOT NULL DEFAULT gen_random_uuid(),
+    dbid              UUID              NOT NULL,
+    qid               UUID,
+    vid               UUID,
+    tid               UUID,
     publisher         VARCHAR(255)      NOT NULL,
     language          VARCHAR(2),
     publication_year  INT               NOT NULL,
@@ -288,40 +290,40 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     owned_by          VARCHAR(255)      NOT NULL,
     last_modified     TIMESTAMP,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id),
-    FOREIGN KEY (vid) REFERENCES mdb_view (id)
+    FOREIGN KEY (dbid) REFERENCES dbrepo.mdb_databases (id),
+    FOREIGN KEY (tid) REFERENCES dbrepo.mdb_tables (id),
+    FOREIGN KEY (vid) REFERENCES dbrepo.mdb_view (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_identifier_licenses
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifier_licenses
 (
-    pid        VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
+    pid        UUID         NOT NULL DEFAULT gen_random_uuid(),
     license_id VARCHAR(255) NOT NULL,
     PRIMARY KEY (pid, license_id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
+    FOREIGN KEY (pid) REFERENCES dbrepo.mdb_identifiers (id),
+    FOREIGN KEY (license_id) REFERENCES dbrepo.mdb_licenses (identifier)
 );
 
 CREATE TYPE title_type AS ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER');
 
-CREATE TABLE IF NOT EXISTS mdb_identifier_titles
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifier_titles
 (
-    id               VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-    pid              VARCHAR(36) NOT NULL,
-    title            TEXT        NOT NULL,
+    id               UUID NOT NULL DEFAULT gen_random_uuid(),
+    pid              UUID NOT NULL,
+    title            TEXT NOT NULL,
     title_type       title_type,
-    ordinal_position INT         NOT NULL,
+    ordinal_position INT  NOT NULL,
     language         VARCHAR(2),
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    FOREIGN KEY (pid) REFERENCES dbrepo.mdb_identifiers (id)
 );
 
 CREATE TYPE funder_identifier_type AS ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER');
 
-CREATE TABLE IF NOT EXISTS mdb_identifier_funders
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifier_funders
 (
-    id                     VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    pid                    VARCHAR(36)  NOT NULL,
+    id                     UUID         NOT NULL DEFAULT gen_random_uuid(),
+    pid                    UUID         NOT NULL,
     funder_name            VARCHAR(255) NOT NULL,
     funder_identifier      TEXT,
     funder_identifier_type funder_identifier_type,
@@ -331,46 +333,46 @@ CREATE TABLE IF NOT EXISTS mdb_identifier_funders
     language               VARCHAR(255),
     ordinal_position       INT          NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    FOREIGN KEY (pid) REFERENCES dbrepo.mdb_identifiers (id)
 );
 
 CREATE TYPE description_type AS ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER');
 
-CREATE TABLE IF NOT EXISTS mdb_identifier_descriptions
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifier_descriptions
 (
-    id               VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-    pid              VARCHAR(36) NOT NULL,
-    description      TEXT        NOT NULL,
+    id               UUID NOT NULL DEFAULT gen_random_uuid(),
+    pid              UUID NOT NULL,
+    description      TEXT NOT NULL,
     description_type description_type,
     language         VARCHAR(2),
-    ordinal_position INT         NOT NULL,
+    ordinal_position INT  NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    FOREIGN KEY (pid) REFERENCES dbrepo.mdb_identifiers (id)
 );
 
 CREATE TYPE identifier_related_type AS ENUM ('DOI', 'URL', 'URN', 'ARK', 'ARXIV', 'BIBCODE', 'EAN13', 'EISSN', 'HANDLE', 'IGSN', 'ISBN', 'ISTC', 'LISSN', 'LSID', 'PMID', 'PURL', 'UPC', 'W3ID');
 CREATE TYPE identifier_related_relation AS ENUM ('IS_CITED_BY', 'CITES', 'IS_SUPPLEMENT_TO', 'IS_SUPPLEMENTED_BY', 'IS_CONTINUED_BY', 'CONTINUES', 'IS_DESCRIBED_BY', 'DESCRIBES', 'HAS_METADATA', 'IS_METADATA_FOR', 'HAS_VERSION', 'IS_VERSION_OF', 'IS_NEW_VERSION_OF', 'IS_PREVIOUS_VERSION_OF', 'IS_PART_OF', 'HAS_PART', 'IS_PUBLISHED_IN', 'IS_REFERENCED_BY', 'REFERENCES', 'IS_DOCUMENTED_BY', 'DOCUMENTS', 'IS_COMPILED_BY', 'COMPILES', 'IS_VARIANT_FORM_OF', 'IS_ORIGINAL_FORM_OF', 'IS_IDENTICAL_TO', 'IS_REVIEWED_BY', 'REVIEWS', 'IS_DERIVED_FROM', 'IS_SOURCE_OF', 'IS_REQUIRED_BY', 'REQUIRES', 'IS_OBSOLETED_BY', 'OBSOLETES');
 
-CREATE TABLE IF NOT EXISTS mdb_identifier_related
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifier_related
 (
-    id               VARCHAR(36)                 NOT NULL DEFAULT gen_random_uuid(),
-    pid              VARCHAR(36)                 NOT NULL DEFAULT gen_random_uuid(),
+    id               UUID                        NOT NULL DEFAULT gen_random_uuid(),
+    pid              UUID                        NOT NULL DEFAULT gen_random_uuid(),
     value            VARCHAR(255)                NOT NULL,
     type             identifier_related_type     NOT NULL,
     relation         identifier_related_relation NOT NULL,
     ordinal_position INT                         NOT NULL,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    FOREIGN KEY (pid) REFERENCES dbrepo.mdb_identifiers (id)
 );
 
 CREATE TYPE name_type AS ENUM ('PERSONAL', 'ORGANIZATIONAL');
 CREATE TYPE scheme_type AS ENUM ('ROR', 'GRID', 'ISNI', 'ORCID');
 CREATE TYPE affiliation_scheme_type AS ENUM ('ROR', 'GRID', 'ISNI');
 
-CREATE TABLE IF NOT EXISTS mdb_identifier_creators
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_identifier_creators
 (
-    id                                VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    pid                               VARCHAR(36)  NOT NULL,
+    id                                UUID         NOT NULL DEFAULT gen_random_uuid(),
+    pid                               UUID         NOT NULL,
     ordinal_position                  INT          NOT NULL,
     given_names                       TEXT,
     family_name                       TEXT,
@@ -384,36 +386,36 @@ CREATE TABLE IF NOT EXISTS mdb_identifier_creators
     affiliation_identifier_scheme     affiliation_scheme_type,
     affiliation_identifier_scheme_uri TEXT,
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    FOREIGN KEY (pid) REFERENCES dbrepo.mdb_identifiers (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_access
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_access
 (
     username VARCHAR(255) NOT NULL,
-    aDBID    VARCHAR(36)  NOT NULL,
+    aDBID    UUID         NOT NULL,
     attime   TIMESTAMP,
     download BOOLEAN,
     created  TIMESTAMP    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (username, aDBID),
-    FOREIGN KEY (aDBID) REFERENCES mdb_databases (id)
+    FOREIGN KEY (aDBID) REFERENCES dbrepo.mdb_databases (id)
 );
 
 CREATE TYPE access_type AS ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL');
 
-CREATE TABLE IF NOT EXISTS mdb_have_access
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_have_access
 (
     username    VARCHAR(255) NOT NULL,
-    database_id VARCHAR(36)  NOT NULL,
+    database_id UUID         NOT NULL,
     access_type access_type  NOT NULL,
     created     TIMESTAMP    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (username, database_id),
-    FOREIGN KEY (database_id) REFERENCES mdb_databases (id)
+    FOREIGN KEY (database_id) REFERENCES dbrepo.mdb_databases (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_image_types
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_image_types
 (
-    id            VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    image_id      VARCHAR(36)  NOT NULL,
+    id            UUID         NOT NULL DEFAULT gen_random_uuid(),
+    image_id      UUID         NOT NULL,
     display_name  VARCHAR(255) NOT NULL,
     value         VARCHAR(255) NOT NULL,
     size_min      INT,
@@ -433,22 +435,22 @@ CREATE TABLE IF NOT EXISTS mdb_image_types
     is_quoted     BOOLEAN      NOT NULL,
     is_buildable  BOOLEAN      NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES mdb_images (id),
+    FOREIGN KEY (image_id) REFERENCES dbrepo.mdb_images (id),
     UNIQUE (value)
 );
 
-COMMENT ON COLUMN mdb_image_types.size_required IS 'When setting NULL, the service assumes the data type has no size';
-COMMENT ON COLUMN mdb_image_types.d_required IS 'When setting NULL, the service assumes the data type has no d';
+COMMENT ON COLUMN dbrepo.mdb_image_types.size_required IS 'When setting NULL, the service assumes the data type has no size';
+COMMENT ON COLUMN dbrepo.mdb_image_types.d_required IS 'When setting NULL, the service assumes the data type has no d';
 
-CREATE TABLE IF NOT EXISTS mdb_image_operators
+CREATE TABLE IF NOT EXISTS dbrepo.mdb_image_operators
 (
-    id            VARCHAR(36)  NOT NULL DEFAULT gen_random_uuid(),
-    image_id      VARCHAR(36)  NOT NULL,
+    id            UUID         NOT NULL DEFAULT gen_random_uuid(),
+    image_id      UUID         NOT NULL,
     display_name  VARCHAR(255) NOT NULL,
     value         VARCHAR(255) NOT NULL,
     documentation TEXT         NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES mdb_images (id),
+    FOREIGN KEY (image_id) REFERENCES dbrepo.mdb_images (id),
     UNIQUE (image_id, value)
 );
 
@@ -456,19 +458,19 @@ COMMIT;
 
 BEGIN;
 
-INSERT INTO mdb_licenses (identifier, uri, description)
+INSERT INTO dbrepo.mdb_licenses (identifier, uri, description)
 VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
         'CC0 waives copyright interest in a work you''ve created and dedicates it to the world-wide public domain. Use CC0 to opt out of copyright entirely and ensure your work has the widest reach.'),
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
-INSERT INTO mdb_images (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
+INSERT INTO dbrepo.mdb_images (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
 VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'postgres', 'docker.io', '18-alpine', 5432,
         'org.hibernate.dialect.PostgreSQLDialect', 'org.postgresql.Driver', 'postgresql');
 
-INSERT INTO mdb_image_types (image_id, display_name, value, size_min, size_max, size_default, size_required,
-                             size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
-                             documentation, is_quoted, is_buildable, is_generated)
+INSERT INTO dbrepo.mdb_image_types (image_id, display_name, value, size_min, size_max, size_default, size_required,
+                                    size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
+                                    documentation, is_quoted, is_buildable, is_generated)
 VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'BIGINT(size)', 'bigint', 0, null, null, FALSE, 1, null, null, null,
         null, null, null, null, 'https://mariadb.com/kb/en/bigint/', FALSE, TRUE, FALSE),
        ('32c13903-651a-404c-8fd3-f92708899a69', 'BINARY(size)', 'binary', 0, 255, 255, TRUE, 1, null, null, null, null,
@@ -538,7 +540,7 @@ VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'BIGINT(size)', 'bigint', 0, nul
         null, null, null, null, 'https://mariadb.com/kb/en/varchar/', FALSE, TRUE, FALSE);
 
 
-INSERT INTO mdb_image_operators (image_id, display_name, value, documentation)
+INSERT INTO dbrepo.mdb_image_operators (image_id, display_name, value, documentation)
 VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'Equal operator', '=',
         'https://mariadb.com/kb/en/assignment-operators-assignment-operator/'),
        ('32c13903-651a-404c-8fd3-f92708899a69', 'NULL-safe equal operator', '<=>',

@@ -1,7 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.PostgresContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -42,13 +41,10 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     private SubsetService subsetService;
 
     @MockitoBean
-    private DataService dataService;
-
-    @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @Container
     private static RedisContainerConfig.CustomRedisContainer redisContainer = RedisContainerConfig.getContainer();

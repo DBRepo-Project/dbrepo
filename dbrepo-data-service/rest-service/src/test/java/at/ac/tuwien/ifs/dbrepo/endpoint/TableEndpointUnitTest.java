@@ -14,7 +14,6 @@ import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.classic.Dataset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -65,9 +64,6 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
-
-    @MockitoBean
-    private DataService dataService;
 
     @MockitoBean
     private DataMapper dataMapper;
@@ -310,7 +306,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
             DatabaseNotFoundException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
-            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
@@ -319,8 +315,6 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_2_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,firstname,lastname,birth,reminder");
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
@@ -334,7 +328,7 @@ public class TableEndpointUnitTest extends BaseTest {
             SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException,
             MetadataServiceException, NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException,
             MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
@@ -431,7 +425,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_private_succeeds(String name, AccessTypeDto type) throws DatabaseUnavailableException,
             TableNotFoundException, RemoteUnavailableException, PaginationException, MetadataServiceException,
             NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException, MalformedException,
-            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -440,8 +434,6 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
@@ -1289,7 +1281,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_publicDataPrivateSchemaTextCsv_succeeds() throws TableNotFoundException, NotAllowedException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
             DatabaseUnavailableException, FormatNotAvailableException, PaginationException, MalformedException,
-            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
@@ -1298,8 +1290,6 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_2_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,firstname,lastname,birth,reminder");
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, "text/csv", httpServletRequest, null);
@@ -1313,7 +1303,7 @@ public class TableEndpointUnitTest extends BaseTest {
             throws TableNotFoundException, NotAllowedException, RemoteUnavailableException, MetadataServiceException,
             DatabaseNotFoundException, DatabaseUnavailableException, FormatNotAvailableException, PaginationException,
             MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -1324,8 +1314,6 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "text/csv", httpServletRequest, USER_2_PRINCIPAL);
@@ -1548,7 +1536,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
             StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1592,7 +1580,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_writeAllAccessForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, MetadataServiceException, StorageNotFoundException,
             MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1614,7 +1602,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_privateWriteAllForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, MetadataServiceException, StorageNotFoundException,
             MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1659,7 +1647,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_private_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
             StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")

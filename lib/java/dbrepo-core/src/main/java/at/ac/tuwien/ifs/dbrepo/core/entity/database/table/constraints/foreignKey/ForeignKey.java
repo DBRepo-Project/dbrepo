@@ -3,7 +3,9 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKe
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.LinkedList;
@@ -22,8 +24,7 @@ import java.util.UUID;
 public class ForeignKey {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "fkid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
+    @Column(name = "fkid", updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @Column(updatable = false, nullable = false)
@@ -48,12 +49,14 @@ public class ForeignKey {
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "foreignKey")
     private List<ForeignKeyReference> references = new LinkedList<>();
 
-    @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(columnDefinition = "VARCHAR(50)")
     private ReferenceType onUpdate;
 
-    @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(columnDefinition = "VARCHAR(50)")
     private ReferenceType onDelete;
 
     @PrePersist

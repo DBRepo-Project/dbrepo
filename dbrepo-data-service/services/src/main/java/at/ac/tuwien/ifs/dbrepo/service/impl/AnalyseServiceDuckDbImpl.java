@@ -50,11 +50,11 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
                 .execute();
         connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("httpfs"))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("mysql"))
+        connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("postgres"))
                 .execute();
         connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("mysql_scanner"))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_endpoint", s3Config.getS3aEndpoint().replaceAll("https?://", "")))
+        connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_endpoint", s3Config.getS3Endpoint().replaceAll("https?://", "")))
                 .execute();
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_use_ssl", duckDbConfig.getS3UseSsl()))
                 .execute();
@@ -63,7 +63,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("temp_directory", duckDbConfig.getTmpDirectory()))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()))
+        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3AccessKey(), s3Config.getS3SecretKey()))
                 .execute();
     }
 
@@ -94,6 +94,8 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
                 column.setD(dataType.getDDefault());
                 column.setSize(dataType.getSizeDefault());
             }
+            log.debug("Determined schema: {}", schema);
+            log.info("Determined schema of {} column(s)", schema.getColumns());
             return schema;
         } catch (SQLException e) {
             if (e.getMessage().contains("404")) {

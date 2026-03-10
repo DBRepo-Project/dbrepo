@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.core.entity.cache;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class Operator {
 
     @Id
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @NotBlank

@@ -21,9 +21,10 @@ RUN mvn -q clean package -DskipTests
 FROM --platform=$BUILDPLATFORM docker.io/bitnamilegacy/java:21 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-ENV DUCKDB_VERSION="1.2.2"
+ENV DUCKDB_VERSION="1.4.4"
+ENV DUCKDB_PLATFORM="linux_amd64"
 
-WORKDIR /home/dbrepo/.duckdb/extensions/v${DUCKDB_VERSION}/linux_amd64
+WORKDIR /home/dbrepo/.duckdb/extensions/v${DUCKDB_VERSION}/${DUCKDB_PLATFORM}
 
 COPY ./lib/httpfs.duckdb_extension.gz ./httpfs.duckdb_extension.gz
 COPY ./lib/mysql_scanner.duckdb_extension.gz ./mysql_scanner.duckdb_extension.gz

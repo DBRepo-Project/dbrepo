@@ -1,8 +1,14 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.cache.*;
+import at.ac.tuwien.ifs.dbrepo.cache.ContainerCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.TableCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.ViewCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
@@ -17,7 +23,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -33,9 +40,6 @@ public class CredentialServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
-
-    @MockitoBean
-    private UserCacheRepository userRepository;
 
     @MockitoBean
     private TableCacheRepository tableRepository;
@@ -116,39 +120,6 @@ public class CredentialServiceUnitTest extends BaseTest {
         final Container response = metadataService.getContainer(CONTAINER_1_ID);
         assertNotNull(response);
         assertEquals(CONTAINER_1_ID, response.getId());
-    }
-
-    @Test
-    public void getUser_notCached_succeeds() throws RemoteUnavailableException, MetadataServiceException,
-            UserNotFoundException {
-
-        /* mock */
-        when(metadataServiceGateway.getUserByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_CACHE);
-        when(userRepository.save(any(User.class)))
-                .thenReturn(USER_1_CACHE);
-
-        /* test */
-        final User response = metadataService.getUser(USER_1_USERNAME);
-        assertNotNull(response);
-        assertEquals(USER_1_ID, response.getId());
-    }
-
-    @Test
-    public void getUser_cached_succeeds() throws RemoteUnavailableException, MetadataServiceException,
-            UserNotFoundException {
-
-        /* mock */
-        doThrow(RuntimeException.class)
-                .when(metadataServiceGateway)
-                .getUserByUsername(USER_1_USERNAME); /* should never be thrown */
-        when(userRepository.findById(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1_CACHE));
-
-        /* test */
-        final User response = metadataService.getUser(USER_1_USERNAME);
-        assertNotNull(response);
-        assertEquals(USER_1_ID, response.getId());
     }
 
     @Test

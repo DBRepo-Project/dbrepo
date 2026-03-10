@@ -21,6 +21,9 @@ public interface DatabaseService {
      */
     Database create(Container container, CreateDatabaseDto data) throws SQLException, DatabaseMalformedException;
 
+    void createExtensions(Container container, String databaseName) throws SQLException,
+            QueryStoreCreateException;
+
     /**
      * Creates the query store in the container and database.
      *

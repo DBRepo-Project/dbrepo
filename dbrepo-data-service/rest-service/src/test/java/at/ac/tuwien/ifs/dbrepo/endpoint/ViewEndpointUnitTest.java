@@ -10,7 +10,6 @@ import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.classic.Dataset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +54,6 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @MockitoBean
     private SubsetService subsetService;
-
-    @MockitoBean
-    private DataService computeService;
 
     @MockitoBean
     private DataMapper dataMapper;
@@ -307,8 +303,6 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {

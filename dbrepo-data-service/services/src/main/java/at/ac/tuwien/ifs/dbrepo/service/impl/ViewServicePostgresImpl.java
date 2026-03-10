@@ -13,16 +13,15 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.ViewNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
-import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,14 +32,14 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class ViewServiceMariaDbImpl extends DataConnector implements ViewService {
+public class ViewServicePostgresImpl extends DataConnector implements ViewService {
 
     private final DataMapper dataMapper;
-    private final MariaDbMapper mariaDbMapper;
+    private final PostgresMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public ViewServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper) {
+    public ViewServicePostgresImpl(DataMapper dataMapper, PostgresMapper mariaDbMapper, MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
@@ -55,9 +54,7 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
                 .name(viewName)
                 .internalName(mariaDbMapper.nameToInternalName(viewName))
                 .query(query)
-                .queryHash(Hashing.sha256()
-                        .hashString(query, StandardCharsets.UTF_8)
-                        .toString())
+                .queryHash(DigestUtils.sha256Hex(query))
                 .isPublic(database.getIsPublic())
                 .owner(UserBriefDto.builder()
                         .username(database.getOwnedBy())
@@ -91,9 +88,7 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
             while (resultSet2.next()) {
                 view = dataMapper.resultSetToTable(resultSet2, view);
             }
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to create view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to create view: " + e.getMessage(), e);
         } finally {
@@ -151,17 +146,14 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
         try {
             /* drop view if exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(database.getInternalName(),
-                            view.getInternalName()))
+            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(view.getInternalName()))
                     .execute();
             log.atDebug()
                     .setMessage("delete view: " + view.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "view_delete")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to delete view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to delete view: " + e.getMessage(), e);
         } finally {
@@ -181,7 +173,7 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
             /* find view data */
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            database.getInternalName(), view.getInternalName(), timestamp))
+                            view.getInternalName(), timestamp))
                     .executeQuery();
             log.atDebug()
                     .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
@@ -189,9 +181,7 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
                     .addKeyValue(Constants.ACTION, "count_view")
                     .log();
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to find row count from view {}.{}: {}", database.getInternalName(), view.getInternalName(), e.getMessage());
             throw new QueryMalformedException("Failed to find row count from view " + database.getInternalName() + "." + view.getInternalName() + ": " + e.getMessage(), e);
         } finally {

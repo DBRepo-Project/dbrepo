@@ -20,17 +20,11 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AnalyseDataTypesException;
-import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
-import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 import org.duckdb.DuckDBResultSet;
-import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -99,9 +92,7 @@ public interface DataMapper {
                 .isPublic(database.getIsPublic())
                 .isSchemaPublic(database.getIsSchemaPublic())
                 .query(resultSet.getString(9))
-                .queryHash(Hashing.sha256()
-                        .hashString(resultSet.getString(9), StandardCharsets.UTF_8)
-                        .toString())
+                .queryHash(DigestUtils.sha256Hex(resultSet.getString(9)))
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
                 .build();
@@ -130,19 +121,28 @@ public interface DataMapper {
 
     ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
 
+    default ColumnTypeDto columnTypeToColumnTypeDto(String data) {
+        final String upper = data.toUpperCase();
+        switch (upper) {
+            case "CHARACTER VARYING":
+                return ColumnTypeDto.VARCHAR;
+        }
+        return ColumnTypeDto.valueOf(upper);
+    }
+
     default TableDto resultSetToTable(ResultSet resultSet, TableDto table) throws SQLException {
         final ColumnDto column = ColumnDto.builder()
                 .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
                 .isNullAllowed(resultSet.getString(3).equals("YES"))
-                .columnType(ColumnTypeDto.valueOf(resultSet.getString(4).toUpperCase()))
+                .columnType(columnTypeToColumnTypeDto(resultSet.getString(4)))
                 .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
-                .name(resultSet.getString(10))
-                .internalName(resultSet.getString(10))
+                .name(resultSet.getString(8))
+                .internalName(resultSet.getString(8))
                 .tableId(table.getId())
                 .databaseId(table.getDatabaseId())
-                .description(resultSet.getString(11))
+                .description(resultSet.getString(9))
                 .build();
-        final String dataType = resultSet.getString(8);
+        final String dataType = resultSet.getString(4);
         if (column.getColumnType().equals(ColumnTypeDto.ENUM)) {
             column.setEnums(Arrays.stream(dataType.substring(0, resultSet.getString(8).length() - 1)
                             .replace("enum(", "")
@@ -218,7 +218,7 @@ public interface DataMapper {
                     .prompt(resultSet.getString("Prompt"))
                     .build();
         } catch (JsonProcessingException e) {
-            log.error("Failed to analyse data types: parse columns: " + e.getMessage());
+            log.error("Failed to analyse data types: parse columns: {}", e.getMessage());
             throw new AnalyseDataTypesException("Failed to analyse data types: parse columns", e);
         }
     }
@@ -267,12 +267,12 @@ public interface DataMapper {
         return constraints;
     }
 
-    default List<ColumnAnalysisResultDto> structListToColumnAnalysisResultDtoList(String data)
+    default List<ColumnAnalysisResultDto> structListToColumnAnalysisResultDtoList(String columns)
             throws JsonProcessingException {
-        log.trace("raw columns: {}", data);
-        final Pattern pattern = Pattern.compile("\\{name=([^,]+), type=([^}]+)");
-        final Matcher matcher = pattern.matcher(data);
-        final List<ColumnAnalysisResultDto> columns = new LinkedList<>();
+        log.trace("raw columns: {}", columns);
+        final Pattern pattern = Pattern.compile("\\{'?name'?: *([^,']+), '?type'?: *([^'}]+)");
+        final Matcher matcher = pattern.matcher(columns);
+        final List<ColumnAnalysisResultDto> result = new LinkedList<>();
         while (matcher.find()) {
             final ColumnAnalysisResultDto analysis = ColumnAnalysisResultDto.builder()
                     .name(matcher.group(1))
@@ -282,9 +282,10 @@ public interface DataMapper {
             if (analysis.getDatatype().equals(ColumnTypeDto.VARCHAR)) {
                 analysis.setSize(255);
             }
-            columns.add(analysis);
+            result.add(analysis);
         }
-        return columns;
+        log.debug("mapped to {} column(s) analysis: {}", result.size(), result.stream().map(ColumnAnalysisResultDto::getName).toList());
+        return result;
     }
 
     /**
@@ -300,7 +301,7 @@ public interface DataMapper {
         return ColumnTypeDto.valueOf(data);
     }
 
-    default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
+    default QueryDto resultSetToQueryDto(ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
         return QueryDto.builder()
                 .id(UUID.fromString(data.getString(1)))
@@ -319,44 +320,7 @@ public interface DataMapper {
                 .build();
     }
 
-    default String datasetToColumnNameHeader(Dataset<Row> data) {
-        final Map<Integer, String> columnNames = new HashMap<>();
-        Arrays.stream(data.logicalPlan()
-                        .producedAttributes()
-                        .mkString(",")
-                        .split(","))
-                .forEach(entry -> {
-                    final String[] part = entry.split("#");
-                    if (part[1].contains("L")) {
-                        columnNames.put(Integer.valueOf(part[1].split("L")[0]), part[0]);
-                        return;
-                    }
-                    columnNames.put(Integer.valueOf(part[1]), part[0]);
-                });
-        return String.join(",", columnNames.values()
-                .stream()
-                .toList());
-    }
-
-    default Set<Map<String, Object>> datasetToJson(Dataset<Row> dataset) throws MalformedException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final List<String> rows = dataset.toJSON()
-                .toJavaRDD()
-                .collect();
-        final Set<Map<String, Object>> json = new HashSet<>();
-        for (String row : rows) {
-            try {
-                json.add(objectMapper.readValue(row, new TypeReference<>() {
-                }));
-            } catch (JsonProcessingException e) {
-                log.error("Failed to deserialize row '{}': {}", row, e.getMessage());
-                throw new MalformedException("Failed to deserialize row: " + e.getMessage(), e);
-            }
-        }
-        return json;
-    }
-
-    default Subset resultSetToSubset(@NotNull ResultSet data) throws SQLException {
+    default Subset resultSetToSubset(ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
         return Subset.builder()
                 .id(UUID.fromString(data.getString(1)))

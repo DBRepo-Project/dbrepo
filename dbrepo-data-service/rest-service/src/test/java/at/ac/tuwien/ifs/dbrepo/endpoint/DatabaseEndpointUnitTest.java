@@ -4,7 +4,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.DatabaseEndpoint;
@@ -66,7 +65,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_CACHE), any(User.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_CACHE), any(AccessTypeDto.class), anyString(), anyString());
 
         /* test */
         final ResponseEntity<Void> response = databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
@@ -85,7 +84,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_CACHE), any(User.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_CACHE), any(AccessTypeDto.class), anyString(), anyString());
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -102,11 +101,6 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .containerId(CONTAINER_1_ID)
                 .username(USER_1_USERNAME)
                 .password(USER_1_PASSWORD)
-                .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
-                .readonlyPassword(CONTAINER_1_READONLY_HASHED_PASSWORD)
-                .userId(USER_1_ID)
-                .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
-                .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
                 .build();
 
         /* mock */
@@ -119,7 +113,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_CACHE), any(User.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_CACHE), any(AccessTypeDto.class), anyString(), anyString());
 
         /* test */
         assertThrows(MalformedException.class, () -> {

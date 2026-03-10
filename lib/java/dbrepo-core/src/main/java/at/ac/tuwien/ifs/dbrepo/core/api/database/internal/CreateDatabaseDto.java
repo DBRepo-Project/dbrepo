@@ -28,33 +28,8 @@ public class CreateDatabaseDto {
     @Schema(description = "The machine-friendly name of the database", example = "weather")
     private String internalName;
 
-    @NotBlank
-    @JsonProperty("privileged_username")
-    @Schema(description = "The username of the privileged user", example = "root")
-    private String privilegedUsername;
-
-    @NotBlank
-    @JsonProperty("privileged_password")
-    @Schema(description = "The password of the privileged user", example = "dbrepo")
-    private String privilegedPassword;
-
-    @NotBlank
-    @JsonProperty("readonly_username")
-    @Schema(description = "The username of the user that can only read from the database. This user is used to access the data from the dashboard.", example = "readonly")
-    private String readonlyUsername;
-
-    @NotBlank
-    @JsonProperty("readonly_password")
-    @Schema(description = "The password of the user that can only read from the database. This user is used to access the data from the dashboard.", example = "readonly")
-    private String readonlyPassword;
-
     @NotNull
-    @JsonProperty("user_id")
-    @Schema(description = "The user id", example = "0e695ea5-9249-4a75-a77a-eeac3ec1c2c0")
-    private UUID userId;
-
-    @NotBlank
-    @Schema(description = "The username of the user that owns the database", example = "foobar")
+    @Schema(description = "The username", example = "foobar")
     private String username;
 
     @NotBlank

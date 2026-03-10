@@ -37,8 +37,7 @@ import java.util.UUID;
 public class View {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @ToString.Exclude

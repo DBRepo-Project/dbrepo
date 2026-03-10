@@ -1,10 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.AccessEndpoint;
@@ -87,7 +84,7 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(USER_4_CACHE);
         doThrow(SQLException.class)
                 .when(accessService)
-                .create(DATABASE_1_CACHE, USER_4_CACHE, AccessTypeDto.READ);
+                .create(DATABASE_1_CACHE, AccessTypeDto.READ, USER_4_USERNAME, USER_4_PASSWORD);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -169,7 +166,7 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(USER_1_CACHE);
         doThrow(SQLException.class)
                 .when(accessService)
-                .update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+                .update(DATABASE_1_CACHE, AccessTypeDto.READ, USER_1_USERNAME);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -251,7 +248,7 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(USER_1_CACHE);
         doNothing()
                 .when(accessService)
-                .delete(any(Database.class), any(User.class));
+                .delete(any(Database.class), anyString());
 
         /* test */
         final ResponseEntity<Void> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
@@ -332,7 +329,7 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .thenReturn(USER_1_CACHE);
         doThrow(SQLException.class)
                 .when(accessService)
-                .delete(DATABASE_1_CACHE, USER_1_CACHE);
+                .delete(DATABASE_1_CACHE, USER_1_USERNAME);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {

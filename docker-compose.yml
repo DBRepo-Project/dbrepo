@@ -471,7 +471,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/bitnamilegacy/seaweedfs:3.87.0
+    image: docker.io/chrislusf/seaweedfs:4.13
     command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
@@ -494,10 +494,8 @@ services:
       context: ./dbrepo-storage-service/init
       network: host
     environment:
-      S3_ACCESS_KEY: ${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_SECRET_KEY: ${S3_ADMIN_SECRET_ACCESS_KEY:-seaweedfsadmin}
-      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
+      STORAGE_ENDPOINT_MASTER: ${STORAGE_ENDPOINT_MASTER:-storage-service:9333}
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -535,7 +533,7 @@ services:
       EXCHANGE_NAME: "${EXCHANGE_NAME:-dbrepo}"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT, EXECUTE}"
-      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, EXECUTE, CREATE, INSERT, UPDATE, DELETE}"
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}

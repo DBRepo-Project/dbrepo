@@ -15,7 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
-import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
@@ -34,23 +34,21 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetService {
+public class SubsetServicePostgresImpl extends DataConnector implements SubsetService {
 
     private final DSLContext context;
     private final DataMapper dataMapper;
-    private final MariaDbMapper mariaDbMapper;
-    private final MetadataMapper metadataMapper;
+    private final PostgresMapper mariaDbMapper;
     private final SubsetCacheRepository subsetRepository;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(DSLContext context, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
-                                    MetadataMapper metadataMapper, SubsetCacheRepository subsetRepository,
-                                    MetadataServiceGateway metadataServiceGateway) {
+    public SubsetServicePostgresImpl(DSLContext context, DataMapper dataMapper, PostgresMapper mariaDbMapper,
+                                     SubsetCacheRepository subsetRepository,
+                                     MetadataServiceGateway metadataServiceGateway) {
         this.context = context;
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
-        this.metadataMapper = metadataMapper;
         this.subsetRepository = subsetRepository;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -134,9 +132,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                         .filter(i -> i.getQueryId().equals(subset.getId()))
                         .toList());
                 if (subset.getOwner().getUsername() != null) {
-                    subset.setOwner(metadataMapper.userToUserBriefDto(
-                            metadataServiceGateway.getUserByUsername(subset.getOwner()
-                                    .getUsername())));
+                    subset.setOwner(subset.getOwner());
                 } else {
                     subset.getOwner().setUsername("anonymous");
                 }
@@ -221,10 +217,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             queryId = UUID.fromString(callableStatement.getString(5));
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
-            connection.commit();
             return queryId;
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to store query: {}", e.getMessage());
             throw new QueryStoreInsertException("Failed to store query: " + e.getMessage(), e);
         } finally {

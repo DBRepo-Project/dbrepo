@@ -114,7 +114,7 @@ public class UserEndpoint extends RestEndpoint {
         final HttpHeaders headers = new HttpHeaders();
         if (AuthUtil.isSystem(principal)) {
             headers.set("X-Username", user.getUsername());
-            headers.set("X-Password", user.getAttributes().getMariadbPassword());
+            headers.set("X-Password", user.getAttributes().getPostgresPassword());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
         }
         return ResponseEntity.status(HttpStatus.OK)

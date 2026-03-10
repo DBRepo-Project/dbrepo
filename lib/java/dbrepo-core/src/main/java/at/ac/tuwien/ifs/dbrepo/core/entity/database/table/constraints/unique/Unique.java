@@ -23,8 +23,7 @@ import java.util.UUID;
 public class Unique {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "uid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
+    @Column(name = "uid", updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @Column(updatable = false, nullable = false)

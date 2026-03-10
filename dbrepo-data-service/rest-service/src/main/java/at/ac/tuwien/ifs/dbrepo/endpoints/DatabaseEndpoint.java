@@ -7,7 +7,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
@@ -37,16 +36,14 @@ public class DatabaseEndpoint {
 
     private final AccessService accessService;
     private final AnalyseService analyseService;
-    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final MetadataService metadataService;
 
     @Autowired
-    public DatabaseEndpoint(AccessService accessService, AnalyseService analyseService, MetadataMapper metadataMapper,
-                            DatabaseService databaseService, MetadataService metadataService) {
+    public DatabaseEndpoint(AccessService accessService, AnalyseService analyseService, DatabaseService databaseService,
+                            MetadataService metadataService) {
         this.accessService = accessService;
         this.analyseService = analyseService;
-        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.metadataService = metadataService;
     }
@@ -75,19 +72,14 @@ public class DatabaseEndpoint {
     public ResponseEntity<Void> create(@Valid @RequestBody CreateDatabaseDto data)
             throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
             DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException, MalformedException {
-        log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
-                data.getContainerId(), data.getInternalName(), data.getUsername());
+        log.debug("endpoint create database, data.containerId={}, data.internalName={}", data.getContainerId(),
+                data.getInternalName());
         final Container container = metadataService.getContainer(data.getContainerId());
         try {
             final Database database = databaseService.create(container, data);
+            databaseService.createExtensions(container, data.getInternalName());
             databaseService.createQueryStore(container, data.getInternalName());
-            accessService.create(database, metadataMapper.createDatabaseDtoToUser(data), AccessTypeDto.WRITE_ALL);
-            accessService.create(database, metadataMapper.createDatabaseDtoToPrivilegedUser(data), AccessTypeDto.WRITE_ALL);
-            if (data.getReadonlyPassword().startsWith("*")) {
-                log.error("Failed to give readonly user read-access: password is hashed");
-                throw new MalformedException("Failed to give readonly user read-access: password is hashed");
-            }
-            accessService.create(database, metadataMapper.createDatabaseDtoToReadonlyUser(data), AccessTypeDto.READ);
+            accessService.create(database, AccessTypeDto.WRITE_ALL, data.getUsername(), data.getPassword());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {

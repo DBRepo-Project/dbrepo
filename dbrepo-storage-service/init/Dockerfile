@@ -1,20 +1,10 @@
-FROM --platform=$BUILDPLATFORM docker.io/python:3.13-alpine3.23 AS runtime
+FROM --platform=$BUILDPLATFORM docker.io/chrislusf/seaweedfs:4.13 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
-
-RUN apk --no-cache add \
-    bash \
-    s3cmd
 
 WORKDIR /app
 
-RUN mkdir -p /app/config && \
-    chown -R 1001:1001 /app/config
+COPY ./init.sh ./init.sh
 
-RUN mkdir -p /var/log/app/service/storage && \
-    chown -R 1001:1001 /var/log/app/service/storage
+RUN chmod +x ./init.sh
 
-RUN adduser -D dbrepo --uid 1001
-
-COPY --chown=1001 --chmod=0744 ./init.sh /app/init.sh
-
-ENTRYPOINT [ "bash", "-c", "/app/init.sh" ]
+ENTRYPOINT [ "sh", "./init.sh" ]

@@ -21,8 +21,7 @@ import java.util.UUID;
 public class PrimaryKey {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "pkid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
+    @Column(name = "pkid", updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @ToString.Exclude

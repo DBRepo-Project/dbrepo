@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.PostgresContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -34,7 +33,7 @@ public class ViewServiceIntegrationTest extends BaseTest {
     private ViewService viewService;
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {

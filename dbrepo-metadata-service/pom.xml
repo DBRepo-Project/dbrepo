@@ -51,7 +51,7 @@
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
-        <testcontainers.version>1.19.1</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <jackson.version>2.15.2</jackson.version>
         <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>
         <aws-s3.version>2.25.23</aws-s3.version>

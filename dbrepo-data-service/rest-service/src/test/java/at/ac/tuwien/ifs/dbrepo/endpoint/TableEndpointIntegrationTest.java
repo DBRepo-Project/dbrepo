@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoint;
 
-import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
+import at.ac.tuwien.ifs.dbrepo.config.PostgresContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -27,7 +27,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -59,9 +58,6 @@ public class TableEndpointIntegrationTest extends BaseTest {
     @Autowired
     private S3Config s3Config;
 
-    @Autowired
-    private DataMapper dataMapper;
-
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
 
@@ -75,7 +71,7 @@ public class TableEndpointIntegrationTest extends BaseTest {
     private HttpServletRequest httpServletRequest;
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @Container
     private static RedisContainerConfig.CustomRedisContainer redisContainer = RedisContainerConfig.getContainer();

@@ -24,7 +24,7 @@ public class JooqConfig {
         settings.setStatementType(StatementType.STATIC_STATEMENT);
         settings.setRenderSchema(true);
         configuration.setSettings(settings);
-        configuration.set(SQLDialect.MARIADB);
+        configuration.set(SQLDialect.POSTGRES);
         return using(configuration);
     }
 

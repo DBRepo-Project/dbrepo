@@ -32,7 +32,7 @@ public class UserAttributesDto {
 
     @JsonIgnore
     @ToString.Exclude
-    @Schema(example = "*CC67043C7BCFF5EEA5566BD9B1F3C74FD9A5CF5D")
-    private String mariadbPassword;
+    @Schema(example = "s3cr3t1nf0rm4t10n")
+    private String postgresPassword;
 
 }

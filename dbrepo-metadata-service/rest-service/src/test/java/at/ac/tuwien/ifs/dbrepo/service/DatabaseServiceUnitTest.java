@@ -87,21 +87,6 @@ public class DatabaseServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws DataServiceException, DatabaseNotFoundException,
-            DataServiceConnectionException {
-
-        /* mock */
-        when(databaseRepository.findAllAtLestReadAccessDesc(USER_1_USERNAME))
-                .thenReturn(List.of(DATABASE_1));
-        doNothing()
-                .when(dataServiceGateway)
-                .updateDatabase(eq(DATABASE_1_ID), any(UpdateUserPasswordDto.class));
-
-        /* test */
-        databaseService.updatePassword(DATABASE_1, USER_1_DTO);
-    }
-
-    @Test
     public void modifyImage_succeeds() throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException {
         final byte[] image = new byte[]{1, 2, 3, 4, 5};
 

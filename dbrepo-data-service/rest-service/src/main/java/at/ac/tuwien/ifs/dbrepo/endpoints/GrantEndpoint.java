@@ -3,7 +3,6 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseGrantsDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
@@ -74,13 +73,12 @@ public class GrantEndpoint {
             DatabaseUnavailableException, UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint check access to database, databaseId={}", databaseId);
         final Database database = metadataService.getDatabase(databaseId);
-        final User user = metadataService.getUser(username);
-        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !user.getUsername().equals(AuthUtil.getUsername(principal))) {
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !username.equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to find access: not owner or foreign user");
             throw new NotAllowedException("Failed to find access: not owner or foreign user");
         }
         try {
-            final DatabaseGrantsDto grants = grantService.find(database, user);
+            final DatabaseGrantsDto grants = grantService.find(database, username);
             final DatabaseGrantsDto body = request.getMethod().equals("HEAD") ? null : grants;
             if (grants.getType() == null) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)

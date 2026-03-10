@@ -146,22 +146,6 @@ public interface MetadataMapper {
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
             .withZone(ZoneId.of("UTC"));
 
-    @Mappings({
-            @Mapping(target = "id", source = "userId"),
-            @Mapping(target = "username", source = "privilegedUsername"),
-            @Mapping(target = "password", source = "privilegedPassword"),
-    })
-    User createDatabaseDtoToPrivilegedUser(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto data);
-
-    @Mappings({
-            @Mapping(target = "id", source = "userId"),
-    })
-    User createDatabaseDtoToUser(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto data);
-
-    @Mappings({
-            @Mapping(target = "username", source = "readonlyUsername"),
-            @Mapping(target = "password", source = "readonlyPassword"),
-    })
     User createDatabaseDtoToReadonlyUser(CreateDatabaseDto data);
 
     @Mappings({
@@ -247,7 +231,7 @@ public interface MetadataMapper {
                         .affiliation(attributeToValue("affiliation", data.getAttributes()))
                         .orcid(attributeToValue("orcid", data.getAttributes()))
                         .language(attributeToValue("language", data.getAttributes()))
-                        .mariadbPassword(attributeToValue("mariadb_password", data.getAttributes()))
+                        .postgresPassword(attributeToValue("postgres_password", data.getAttributes()))
                         .build())
                 .build();
     }
@@ -272,8 +256,8 @@ public interface MetadataMapper {
             if (data.getAttributes().getLanguage() != null) {
                 put("language", new LinkedList<>(List.of(data.getAttributes().getLanguage())));
             }
-            if (data.getAttributes().getMariadbPassword() != null) {
-                put("mariadb_password", new LinkedList<>(List.of(data.getAttributes().getMariadbPassword())));
+            if (data.getAttributes().getPostgresPassword() != null) {
+                put("postgres_password", new LinkedList<>(List.of(data.getAttributes().getPostgresPassword())));
             }
         }});
         return user;
@@ -1002,8 +986,6 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "host", source = "host"),
             @Mapping(target = "port", source = "port"),
-            @Mapping(target = "username", source = "privilegedUsername"),
-            @Mapping(target = "password", source = "privilegedPassword")
     })
     at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container containerToContainerCache(Container data);
 

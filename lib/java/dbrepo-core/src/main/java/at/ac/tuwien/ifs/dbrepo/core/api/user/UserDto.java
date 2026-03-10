@@ -31,7 +31,7 @@ public class UserDto {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @Schema(example = "p4ssw0rd")
+    @Schema(example = "s3cr3t1nf0rm4t10n")
     private String password;
 
     @JsonProperty("qualified_name")

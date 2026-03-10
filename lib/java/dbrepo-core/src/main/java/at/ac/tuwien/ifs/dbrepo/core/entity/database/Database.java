@@ -3,10 +3,14 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
+import org.hibernate.dialect.PostgreSQLUUIDJdbcType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -40,8 +44,7 @@ import java.util.UUID;
 public class Database implements Serializable {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @Column(name = "grafana_dashboard_uid")
@@ -105,9 +108,9 @@ public class Database implements Serializable {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isDashboardEnabled;
 
-    @Lob
+    @Type(JsonBinaryType.class)
     @Basic(fetch = FetchType.LAZY)
-    @Column(columnDefinition = "LONGBLOB")
+    @Column(columnDefinition = "BYTEA")
     private byte[] image;
 
     @EqualsAndHashCode.Exclude

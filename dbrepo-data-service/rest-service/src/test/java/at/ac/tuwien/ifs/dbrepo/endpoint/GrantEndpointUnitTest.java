@@ -54,7 +54,7 @@ public class GrantEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
-        when(grantService.find(DATABASE_1_CACHE, USER_1_CACHE))
+        when(grantService.find(DATABASE_1_CACHE, USER_1_USERNAME))
                 .thenReturn(READ_GRANT_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -79,7 +79,7 @@ public class GrantEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_2_CACHE);
         when(metadataService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
-        when(grantService.find(DATABASE_2_CACHE, USER_1_CACHE))
+        when(grantService.find(DATABASE_2_CACHE, USER_1_USERNAME))
                 .thenReturn(READ_GRANT_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -104,7 +104,7 @@ public class GrantEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
-        when(grantService.find(DATABASE_1_CACHE, USER_1_CACHE))
+        when(grantService.find(DATABASE_1_CACHE, USER_1_USERNAME))
                 .thenReturn(READ_GRANT_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -21,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Testcontainers
-public class MariadbConfigTest extends BaseTest {
+public class PostgresConfigTest extends BaseTest {
 
     @Container
-    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+    private static PostgresContainerConfig.CustomPostgresContainer postgresContainer = PostgresContainerConfig.getContainer();
 
     @BeforeAll
     @SuppressWarnings("java:S2925")

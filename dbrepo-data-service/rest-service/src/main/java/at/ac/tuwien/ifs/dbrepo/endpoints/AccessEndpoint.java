@@ -76,7 +76,7 @@ public class AccessEndpoint {
             throw new AccessNotFoundException("Failed to create access to user " + username + ": already has access");
         }
         try {
-            accessService.create(database, user, data.getType());
+            accessService.create(database, data.getType(), username, user.getPassword());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {
@@ -123,7 +123,7 @@ public class AccessEndpoint {
             throw new AccessNotFoundException("Failed to update access to user " + username + ": no access");
         }
         try {
-            accessService.update(database, user, access.getType());
+            accessService.update(database, access.getType(), user.getUsername());
             return ResponseEntity.accepted()
                     .build();
         } catch (SQLException e) {
@@ -168,7 +168,7 @@ public class AccessEndpoint {
             throw new AccessNotFoundException("Failed to delete access to user " + username + ": no access");
         }
         try {
-            accessService.delete(database, user);
+            accessService.delete(database, user.getUsername());
             return ResponseEntity.accepted()
                     .build();
         } catch (SQLException e) {

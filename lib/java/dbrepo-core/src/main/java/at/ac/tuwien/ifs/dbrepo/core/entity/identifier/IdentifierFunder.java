@@ -2,7 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.identifier;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -20,8 +22,7 @@ import java.util.UUID;
 public class IdentifierFunder implements Serializable {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @Column
@@ -33,8 +34,9 @@ public class IdentifierFunder implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String funderIdentifier;
 
-    @Column(name = "funder_identifier_type", columnDefinition = "ENUM('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(name = "funder_identifier_type", columnDefinition = "ENUM('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
     private IdentifierFunderType funderIdentifierType;
 
     @Column(columnDefinition = "TEXT")

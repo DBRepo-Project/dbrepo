@@ -7,7 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
-import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -16,15 +16,16 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 @Slf4j
 @Service
-public class DatabaseServiceMariaDbImpl extends DataConnector implements DatabaseService {
+public class DatabaseServicePostgresImpl extends DataConnector implements DatabaseService {
 
-    private final MariaDbMapper mariaDbMapper;
+    private final PostgresMapper mariaDbMapper;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(MariaDbMapper mariaDbMapper) {
+    public DatabaseServicePostgresImpl(PostgresMapper mariaDbMapper) {
         this.mariaDbMapper = mariaDbMapper;
     }
 
@@ -38,14 +39,12 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
                     .execute();
-            connection.commit();
             log.atDebug()
                     .setMessage("created database: " + data.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_database")
                     .log();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to create database access: {}", e.getMessage());
             throw new DatabaseMalformedException("Failed to create database access: " + e.getMessage(), e);
         } finally {
@@ -56,6 +55,32 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                 .internalName(data.getInternalName())
                 .container(container)
                 .build();
+    }
+
+    @Override
+    public void createExtensions(Container container, String databaseName) throws SQLException,
+            QueryStoreCreateException {
+        final ComboPooledDataSource dataSource = getDataSource(container, databaseName);
+        final Connection connection = dataSource.getConnection();
+        try {
+            /* create query store */
+            for (String extension : List.of("plpython3u", "aws_s3", "periods")) {
+                final long start = System.currentTimeMillis();
+                connection.prepareStatement(mariaDbMapper.createExtensionRawQuery(extension))
+                        .execute();
+                log.atDebug()
+                        .setMessage("created extension " + extension + " in database: " + databaseName)
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "create_extension")
+                        .log();
+            }
+        } catch (SQLException e) {
+            log.error("Failed to create extension: {}", e.getMessage());
+            throw new QueryStoreCreateException("Failed to create extension: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Created extensions in database with name {}", databaseName);
     }
 
     @Override
@@ -81,33 +106,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_procedure_hash_table")
                     .log();
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery())
-                    .execute();
-            log.atDebug()
-                    .setMessage("created query store procedure in database: " + databaseName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_procedure_store_query")
-                    .log();
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery())
-                    .execute();
-            log.atDebug()
-                    .setMessage("created internal query store procedure in database: " + databaseName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_procedure_internal_store_query")
-                    .log();
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalHashQueryProcedureRawQuery())
-                    .execute();
-            log.atDebug()
-                    .setMessage("created query hash procedure in database: " + databaseName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_procedure_hash_query")
-                    .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to create query store: {}", e.getMessage());
             throw new QueryStoreCreateException("Failed to create query store: " + e.getMessage(), e);
         } finally {
@@ -131,9 +130,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "update_user_password")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to update user password in database: {}", e.getMessage());
             throw new DatabaseMalformedException("Failed to update user password in database: " + e.getMessage(), e);
         } finally {

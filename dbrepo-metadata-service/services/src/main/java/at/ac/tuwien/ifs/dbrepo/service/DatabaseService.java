@@ -95,18 +95,6 @@ public interface DatabaseService {
             DashboardServiceConnectionException;
 
     /**
-     * Updates the user's password.
-     *
-     * @param database The database.
-     * @param user     The user.
-     * @throws DataServiceException           The data service responded with unexpected behavior.
-     * @throws DataServiceConnectionException The connection with the data service could not be established.
-     * @throws DatabaseNotFoundException      The created database was not found in the metadata database.
-     */
-    void updatePassword(Database database, UserDto user) throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException;
-
-    /**
      * Updates the visibility of the database.
      *
      * @param database The database.

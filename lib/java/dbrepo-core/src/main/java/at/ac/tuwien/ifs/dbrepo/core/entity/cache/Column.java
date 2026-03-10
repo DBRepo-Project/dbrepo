@@ -20,6 +20,7 @@ import java.util.UUID;
 public class Column {
 
     @Id
+    @jakarta.persistence.Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @NotBlank

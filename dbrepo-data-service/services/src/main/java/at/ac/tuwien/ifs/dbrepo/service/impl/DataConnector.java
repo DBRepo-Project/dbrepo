@@ -35,36 +35,16 @@ public abstract class DataConnector {
         return getDataSource(database.getContainer(), database.getInternalName());
     }
 
-    public String getSparkJdbcUrl(Container container, String databaseName) {
-        final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
-                .append("?sessionVariables=sql_mode='ANSI_QUOTES'");
-        log.trace("mapped container to spark jdbc url: {}", sb);
-        return sb.toString();
-    }
-
-    public String getSparkJdbcUrl(Database databaseDto) {
-        return getSparkJdbcUrl(databaseDto.getContainer(), databaseDto.getInternalName());
-    }
-
-    public String getSparkS3Url(String bucket, String s3key) {
-        final StringBuilder sb =  new StringBuilder("s3a://")
-                .append(bucket)
-                .append("/")
-                .append(s3key);
-        log.trace("mapped container to spark s3 url: {}", sb);
-        return sb.toString();
-    }
-
     public String getJdbcUrl(Container container, String databaseName) {
         final StringBuilder stringBuilder = new StringBuilder("jdbc:")
                 .append(container.getImage().getJdbcMethod())
                 .append("://")
                 .append(container.getHost())
                 .append(":")
-                .append(container.getPort());
+                .append(container.getPort())
+                .append("/");
         if (databaseName != null) {
-            stringBuilder.append("/")
-                    .append(databaseName);
+            stringBuilder.append(databaseName);
         }
         log.trace("mapped container to jdbc url: {}", stringBuilder);
         return stringBuilder.toString();

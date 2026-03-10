@@ -2,7 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.core.entity.maintenance;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -23,12 +25,12 @@ import java.util.UUID;
 public class BannerMessage {
 
     @Id
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, nullable = false, columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
-    @Column(nullable = false, columnDefinition = "ENUM('ERROR','WARNING','INFO')")
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(nullable = false, columnDefinition = "ENUM('ERROR','WARNING','INFO')")
     private BannerMessageType type;
 
     @Column(nullable = false)
