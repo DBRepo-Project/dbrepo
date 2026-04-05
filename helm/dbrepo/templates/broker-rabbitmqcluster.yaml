@@ -1,0 +1,52 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  labels:
+    app: broker-service
+  name: broker-service
+spec:
+  replicas: 3
+  override:
+    statefulSet:
+      spec:
+        template:
+          spec:
+            containers:
+              - name: rabbitmq
+                volumeMounts:
+                  - mountPath: /etc/rabbitmq/definitions.json
+                    subPath: definitions.json
+                    name: definitions
+            volumes:
+              - name: definitions
+                configMap:
+                  name: broker-service-definitions
+  secretBackend:
+    externalSecret:
+      name: broker-service-secret
+  rabbitmq:
+    additionalConfig: |
+      load_definitions = /etc/rabbitmq/definitions.json # Path to the mounted definitions file
+    advancedConfig: |
+      [
+        {
+          rabbit, [
+            {forced_feature_flags_on_init, [quorum_queue]}
+          ]
+        },
+        {
+          rabbitmq_auth_backend_ldap,
+          [
+            {
+              tag_queries, [
+                {
+                  administrator, {in_group_nested, "cn=system,ou=users,{{ .Values.identityservice.global.ldapDomain }}", "member"}
+                },
+                {
+                  management, {constant, false}
+                }
+              ]
+            }
+          ]
+        }
+      ].

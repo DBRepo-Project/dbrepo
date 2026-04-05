@@ -1,11 +1,13 @@
-FROM docker.io/postgres:18-alpine AS build
+FROM ghcr.io/cloudnative-pg/postgresql:17.9-system-trixie AS build
 
-RUN apk --no-cache add \
-    make \
-    gcc \
-    clang19 \
-    git \
-    openssh
+USER 0
+
+RUN apt update && \
+    apt install -y make \
+                   gcc \
+                   git \
+                   postgresql-server-dev-17 \
+                   python3-boto3
 
 # EXT: periods
 WORKDIR /periods
@@ -21,24 +23,29 @@ WORKDIR /aws_s3
 RUN git clone https://github.com/chimpler/postgres-aws-s3.git && \
     mv -f postgres-aws-s3/* .
 
-FROM docker.io/postgres:18-alpine AS runtime
-LABEL org.opencontainers.image.authors="martin.weise@student.tuwien.ac.at"
+FROM ghcr.io/cloudnative-pg/postgresql:17.9-system-trixie AS runtime
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk --no-cache add \
-    py-boto3
+USER 0
+
+RUN apt update && \
+    apt install -y python3-boto3 && \
+    apt clean
+
+ARG LIBDIR="/usr/lib/postgresql/17/lib"
 
 # EXT: periods
-COPY --from=build /periods/periods.bc /usr/local/lib/postgresql/bitcode/periods/periods.bc
-COPY --from=build /periods/periods.so /usr/local/lib/postgresql/periods.so
+COPY --from=build /periods/periods.bc $LIBDIR/bitcode/periods/periods.bc
+COPY --from=build /periods/periods.so $LIBDIR/periods.so
 
-WORKDIR /usr/local/share/postgresql/extension
+ARG SHAREDIR="/usr/share/postgresql/17"
 
-COPY --from=build /periods/periods--1.0.sql ./periods--1.0.sql
-COPY --from=build /periods/periods--1.0--1.1.sql ./periods--1.0--1.1.sql
-COPY --from=build /periods/periods--1.1.sql ./periods--1.1.sql
-COPY --from=build /periods/periods--1.0--1.1.sql ./periods--1.0--1.2.sql
-COPY --from=build /periods/periods--1.2.sql ./periods--1.2.sql
-COPY --from=build /periods/periods.control ./periods.control
+COPY --from=build /periods/periods--1.0.sql $SHAREDIR/extension/periods--1.0.sql
+COPY --from=build /periods/periods--1.0--1.1.sql $SHAREDIR/extension/periods--1.0--1.1.sql
+COPY --from=build /periods/periods--1.1.sql $SHAREDIR/extension/periods--1.1.sql
+COPY --from=build /periods/periods--1.0--1.1.sql $SHAREDIR/extension/periods--1.0--1.2.sql
+COPY --from=build /periods/periods--1.2.sql $SHAREDIR/extension/periods--1.2.sql
+COPY --from=build /periods/periods.control $SHAREDIR/extension/periods.control
 
 # EXT: aws_s3
 COPY --from=build /aws_s3/aws_s3--0.0.1.sql ./aws_s3--0.0.1.sql

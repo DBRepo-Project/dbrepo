@@ -1,0 +1,27 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: metadata-db
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  instances: {{ .Values.metadatadb.replicaCount }}
+  imageName: {{ .Values.metadatadb.image }}
+
+  superuserSecret:
+    name: metadata-db-superuser-secret
+  bootstrap:
+    initdb:
+      # app is an unprivileged user
+      database: {{ .Values.metadatadb.appUser.user }}
+      owner: {{ .Values.metadatadb.appUser.user }}
+      secret:
+        name: metadata-db-appuser-secret
+      postInitSQLRefs:
+        configMapRefs:
+          - name: metadata-db-initdb-scripts
+            key: 01-setup-schema.sql
+          - name: metadata-db-initdb-scripts
+            key: 02-setup-data.sql
+
+  storage:
+    size: 1Gi

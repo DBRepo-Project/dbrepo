@@ -788,15 +788,9 @@
         "datadb": {
             "type": "object",
             "properties": {
-                "configurationConfigMap": {
-                    "type": "string"
-                },
-                "db": {
+                "appUser": {
                     "type": "object",
                     "properties": {
-                        "name": {
-                            "type": "string"
-                        },
                         "password": {
                             "type": "string"
                         },
@@ -808,76 +802,16 @@
                 "enabled": {
                     "type": "boolean"
                 },
-                "extraFlags": {
-                    "type": "string"
-                },
                 "fullnameOverride": {
                     "type": "string"
                 },
-                "galera": {
-                    "type": "object",
-                    "properties": {
-                        "mariabackup": {
-                            "type": "object",
-                            "properties": {
-                                "password": {
-                                    "type": "string"
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "host": {
-                    "type": "string"
-                },
                 "image": {
-                    "type": "object",
-                    "properties": {
-                        "repository": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "initdbScriptsConfigMap": {
                     "type": "string"
-                },
-                "jdbcExtraArgs": {
-                    "type": "string"
-                },
-                "metrics": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "repository": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "persistence": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
                 },
                 "replicaCount": {
                     "type": "integer"
                 },
-                "resourcesPreset": {
-                    "type": "string"
-                },
-                "rootUser": {
+                "superUser": {
                     "type": "object",
                     "properties": {
                         "password": {
@@ -1305,6 +1239,17 @@
         "metadatadb": {
             "type": "object",
             "properties": {
+                "appUser": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "db": {
                     "type": "object",
                     "properties": {
@@ -1316,79 +1261,13 @@
                 "enabled": {
                     "type": "boolean"
                 },
-                "extraFlags": {
-                    "type": "string"
-                },
-                "extraInitDbScripts": {
-                    "type": "object"
-                },
-                "fullnameOverride": {
-                    "type": "string"
-                },
-                "galera": {
-                    "type": "object",
-                    "properties": {
-                        "mariabackup": {
-                            "type": "object",
-                            "properties": {
-                                "password": {
-                                    "type": "string"
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "host": {
-                    "type": "string"
-                },
                 "image": {
-                    "type": "object",
-                    "properties": {
-                        "repository": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "initdbScriptsConfigMap": {
                     "type": "string"
-                },
-                "jdbcExtraArgs": {
-                    "type": "string"
-                },
-                "metrics": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "repository": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "persistence": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
                 },
                 "replicaCount": {
                     "type": "integer"
                 },
-                "resourcesPreset": {
-                    "type": "string"
-                },
-                "rootUser": {
+                "superUser": {
                     "type": "object",
                     "properties": {
                         "password": {

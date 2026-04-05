@@ -29,58 +29,52 @@ username: admin
 ## @param password The internal system password. This user is only used between the microservices and does not exist on paper.
 password: admin
 
+## @section Data Database
+
+datadb:
+  ## @param datadb.enabled Enable the Auth Service.
+  enabled: true
+  ## @skip datadb.fullnameOverride
+  fullnameOverride: data-db
+  ## @skip datadb.image
+  image: registry.datalab.tuwien.ac.at/cloudnative-pg/postgresql:17.9-periods-aws_s3
+  superUser:
+    ## @param datadb.superUser.user The application username.
+    user: postgres
+    ## @param datadb.superUser.password The application password.
+    password: dbrepo
+  appUser:
+    ## @param datadb.appUser.user The application username.
+    user: app
+    ## @param datadb.appUser.password The application password.
+    password: dbrepo
+  ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
+  replicaCount: 5
+
 ## @section Metadata Database
 
 metadatadb:
   ## @param metadatadb.enabled Enable the Metadata Database.
   enabled: true
-  ## @skip metadatadb.fullnameOverride
-  fullnameOverride: metadata-db
-  image:
-    ## @skip metadatadb.image.repository
-    repository: bitnamilegacy/mariadb-galera
-  ## @param metadatadb.host The hostname for the microservices.
-  host: metadata-db
-  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/api/data-db/#data
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-  rootUser:
-    ## @param metadatadb.rootUser.user The root username.
-    user: root
-    ## @param metadatadb.rootUser.password The root user password.
+  ## @skip metadatadb.host
+  host: metadata-db-rw
+  ## @skip metadatadb.image
+  image: registry.datalab.tuwien.ac.at/cloudnative-pg/postgresql:17.9-periods-aws_s3
+  superUser:
+    ## @param metadatadb.superUser.user The application username.
+    user: postgres
+    ## @param metadatadb.superUser.password The application password.
+    password: dbrepo
+  appUser:
+    ## @param metadatadb.appUser.user The application username.
+    user: app
+    ## @param metadatadb.appUser.password The application password.
     password: dbrepo
   db:
     ## @param metadatadb.db.name The database name.
     name: dbrepo
-  galera:
-    mariabackup:
-      ## @param metadatadb.galera.mariabackup.user The database backup username.
-      user: backup
-      ## @param metadatadb.galera.mariabackup.password The database backup user password
-      password: backup
-  ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
-  jdbcExtraArgs: ""
-  metrics:
-    image:
-      ## @skip metadatadb.metrics.image.repository
-      repository: bitnamilegacy/mysqld-exporter
-    ## @skip metadatadb.metrics.enabled The Prometheus settings.
-    enabled: true
-  ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
-  initdbScriptsConfigMap: metadata-db-config
-  ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
-  extraInitDbScripts: { }
-  #    03-additional-data.sql: |
-  #      BEGIN;
-  #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
-  #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
-  #      COMMIT;
-  ## @param metadatadb.resourcesPreset The container resource preset
-  resourcesPreset: "xlarge"
-  persistence:
-    ## @param metadatadb.persistence.enabled Enable persistent storage.
-    enabled: true
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 3
+  replicaCount: 5
 
 ## @section Dashboard Database Enable the Dashboard Database.
 
@@ -222,58 +216,6 @@ cachedb:
     ## @param cachedb.auth.password The Valkey password
     password: valkey
 
-## @section Data Database
-
-datadb:
-  ## @param datadb.enabled Enable the Auth Service.
-  enabled: true
-  ## @skip datadb.fullnameOverride
-  fullnameOverride: data-db
-  image:
-    ## @skip datadb.image.repository
-    repository: bitnamilegacy/mariadb-galera
-  ## @param datadb.host The hostname for the microservices.
-  host: data-db
-  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-  rootUser:
-    ## @param datadb.rootUser.user The root username.
-    user: root
-    ## @param datadb.rootUser.password The root user password.
-    password: dbrepo
-  db:
-    ## @param datadb.db.name The database name.
-    name: dbrepo
-    ## @param datadb.db.user The readonly username.
-    user: readonly
-    ## @param datadb.db.password The readonly password.
-    password: readonly
-  galera:
-    mariabackup:
-      ## @param datadb.galera.mariabackup.user The database backup username.
-      user: backup
-      ## @param datadb.galera.mariabackup.password The database backup user password
-      password: backup
-  ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
-  jdbcExtraArgs: ""
-  metrics:
-    image:
-      ## @skip datadb.metrics.image.repository
-      repository: bitnamilegacy/mysqld-exporter
-    ## @skip datadb.metrics.enabled The Prometheus settings.
-    enabled: true
-  ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 3
-  ## @param datadb.resourcesPreset The container resource preset
-  resourcesPreset: "xlarge"
-  ## @param datadb.configurationConfigMap The configmap name holding the `my.cnf` key that defines the mariadb configuration.
-  configurationConfigMap: "data-db-config"
-  ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
-  initdbScriptsConfigMap: "data-db-scripts-config"
-  persistence:
-    ## @param datadb.persistence.enabled Enable persistent storage.
-    enabled: true
-
 ## @section Search Database
 
 searchdb:
@@ -317,12 +259,6 @@ brokerservice:
   enabled: true
   ## @skip brokerservice.fullnameOverride
   fullnameOverride: broker-service
-  image:
-    ## @skip brokerservice.image.repository
-    repository: bitnamilegacy/rabbitmq
-  metrics:
-    ## @skip brokerservice.metrics.enabled
-    enabled: true
   ## @param brokerservice.endpoint The management api endpoint for the microservices.
   endpoint: http://broker-service:15672
   ## @param brokerservice.host The hostname for the microservices.
@@ -337,85 +273,11 @@ brokerservice:
   exchangeName: dbrepo
   ## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
   routingKey: dbrepo.#
-  ## @param brokerservice.connectionTimeout The connection timeout in ms.
-  connectionTimeout: 60000
-  ldap:
-    ## @skip brokerservice.ldap.enabled
-    enabled: true
-    ## @skip brokerservice.ldap.authorisationEnabled
-    authorisationEnabled: true
-    ## @skip brokerservice.ldap.servers
-    servers:
-      - identity-service
-    ## @skip brokerservice.ldap.port
-    port: 1389
-    ## @param brokerservice.ldap.binddn The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`.
-    binddn: cn=admin,dc=dbrepo,dc=at
-    ## @param brokerservice.ldap.bindpw The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.
-    bindpw: admin
-    ## @param brokerservice.ldap.uidField The field containing the user id.
-    uidField: uid
-    ## @param brokerservice.ldap.basedn The base domain name containing the users.
-    basedn: dc=dbrepo,dc=at
-    ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
-    userDnPattern: ${username}
   auth:
     ## @skip brokerservice.auth.username
     username: admin
     ## @skip brokerservice.auth.password
     password: admin
-    ## @param brokerservice.auth.passwordHash
-    ## ref https://www.rabbitmq.com/docs/passwords
-    passwordHash: iKGI3TYZWTFemooqE1zwAu/fkbUB9AgVSiFGt3iwDZRNPpZc
-    tls:
-      ## @param brokerservice.auth.tls.enabled Enable TLS support
-      enabled: false
-      ## @param brokerservice.auth.tls.existingSecretFullChain If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`
-      existingSecretFullChain: false
-      ## @param brokerservice.auth.tls.existingSecret Existing secret with certificate content
-      existingSecret: ingress-cert
-  rbac:
-    ## @skip brokerservice.rbac.create
-    create: true
-  ## @skip brokerservice.advancedConfigurationExistingSecret
-  advancedConfigurationExistingSecret: broker-service-secret
-  ## @skip brokerservice.loadDefinition
-  loadDefinition:
-    enabled: true
-    existingSecret: broker-service-secret
-  ## @param brokerservice.extraPlugins The list of plugins to be activated.
-  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
-  ## @skip brokerservice.extraContainerPorts The list of extra container ports to be exposed
-  extraContainerPorts:
-    - name: mqtt
-      containerPort: 1883
-  service:
-    ## @skip brokerservice.service.extraPorts
-    extraPorts:
-      - name: mqtt
-        port: 1883
-        targetPort: 1883
-    # loadBalancerIP:
-  ## @skip brokerservice.logs
-  logs: ""
-  ## @param brokerservice.extraConfiguration The extra configuration for MQTT
-  extraConfiguration: |
-    # user
-    default_vhost = dbrepo
-    log.connection.level = warning
-    # https://www.rabbitmq.com/docs/logging#log-message-categories
-    log.console = true
-    log.console.level = debug
-    log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
-    log.file.formatter = json
-    log.file.level = info
-    log.file.rotation.size = 10485760
-    log.file.rotation.count = 5
-    mqtt.vhost = dbrepo
-    mqtt.exchange = dbrepo
-    mqtt.prefetch = 10
-  ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount: 3
 
 ## @section Consumer Service
 
@@ -424,7 +286,7 @@ consumerservice:
   enabled: true
   image:
     ## @skip consumerservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.4
   ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -481,7 +343,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.4
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -581,7 +443,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.4
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -668,7 +530,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.4
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -722,7 +584,7 @@ searchservice:
     schedule: "@midnight"
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.4
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -788,7 +650,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.4
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -919,7 +781,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.4
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -1049,7 +911,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.4
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1104,7 +966,7 @@ dashboardservice:
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.4
     ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)

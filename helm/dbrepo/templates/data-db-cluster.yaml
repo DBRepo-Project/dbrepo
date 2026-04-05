@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: data-db
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  instances: {{ .Values.datadb.replicaCount }}
+  imageName: {{ .Values.datadb.image }}
+
+  superuserSecret:
+    name: datadb-db-superuser-secret
+  bootstrap:
+    initdb:
+      # app is an unprivileged user
+      database: {{ .Values.datadb.appUser.user }}
+      owner: {{ .Values.datadb.appUser.user }}
+      secret:
+        name: data-db-appuser-secret
+
+  storage:
+    size: 1Gi

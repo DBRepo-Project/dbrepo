@@ -24,6 +24,7 @@ spring:
         default_schema: "${METADATA_DB:dbrepo}"
         jdbc:
           time_zone: UTC
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       resourceserver:
