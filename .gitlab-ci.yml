@@ -190,7 +190,7 @@ build-metadata-service:
     - build-java-lib
     - lint-metadata-service
   before_script:
-    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
