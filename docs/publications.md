@@ -26,6 +26,20 @@ DBRepo logo in various formats:
 
 ## Refereed
 
+##### 2026
+
+* Demuth, D. (2026). DBRepo: Make Research in Relational Databases FAIR, Versioned and Citable, in *Love Data Week* 
+  pp. 1-8, February 9th-13th (online). 
+  DOI: [10.5281/zenodo.18629998](https://doi.org/10.5281/zenodo.18629998) :wikimedia-open-access:<br />
+
+##### 2025
+
+* Danar, W., Sunindyo, Purnama, H., Akbar, S., Satya, D. P., Weise, M., Piroi, F. & Rauber, A. (2025). Developing a
+  FAIR-Compliant RDM Framework: Insights from TU Wien and ITB, in *Proceedings of the International Conference on Data
+  and Software Engineering*, October 28-29th (Batam, Indonesia).
+  DOI: [10.1109/ICoDSE68111.2025.11351906](https://doi.org/10.1109/ICoDSE68111.2025.11351906)<br />
+  \[[PDF](https://ec.tuwien.ac.at/~weise/pdf/danar2025rdmframework.pdf)\]
+
 ##### 2024
 
 * Weise, M., & Rauber, A. (2024). DBRepo: A Data Repository System for Research Data in Databases, in *Proceedings of

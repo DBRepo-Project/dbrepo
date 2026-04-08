@@ -12,6 +12,10 @@ make gen-secrets
 
 Note that this script overwrites (previously generated) secrets, use with caution.
 
+### Storage Service
+
+You need to manually update the `s3_config.json` file when changing either `S3_ACCESS_KEY_ID` or `S3_SECRET_ACCESS_KEY`.
+
 ### Identity Service
 
 Add the admin password to the `.env` file:
@@ -70,7 +74,7 @@ docker compose up -d
 
 ## Next Steps
 
-You should now be able to view the front end at [https://localhost](https://localhost).
+You should now be able to view the front end at [http://localhost](http://localhost).
 
 Please be warned that the default configuration is not intended for public deployments. It is only intended to have a
 running system within minutes to play around within the system and explore features. It is strongly advised to change 

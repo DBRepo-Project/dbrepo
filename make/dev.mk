@@ -17,6 +17,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-auth-service/import-realms.sh ./.docker/config
 	cp ./dbrepo-auth-service/master-realm.json ./.docker/config
 	cp ./dbrepo-data-db/1_grant-user.sql ./.docker/config
+	cp ./dbrepo-cache-db/valkey.conf ./.docker/config
 	cp ./dbrepo-metadata-db/1_setup-schema.sql ./.docker/config
 	cp ./dbrepo-metadata-db/2_setup-data.sql ./.docker/config
 	cp ./dbrepo-metadata-db/metrics.cnf ./.docker/config
@@ -25,6 +26,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-broker-service/definitions.json ./.docker/config
 	cp ./dbrepo-broker-service/advanced.config ./.docker/config
 	cp ./dbrepo-gateway-service/dbrepo.conf ./.docker/config
+	cp ./dbrepo-cache-db/valkey.conf ./.docker/config
 	cp -r ./dbrepo-dashboard-ui/dashboards ./.docker/config
 	cp -r ./dbrepo-dashboard-ui/provisioning ./.docker/config
 	cp ./dbrepo-dashboard-ui/grafana.ini ./.docker/config/grafana.ini

@@ -61,27 +61,6 @@ public interface DataMapper {
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
             .withZone(ZoneId.of("UTC"));
 
-    default String rabbitMqTupleToInsertOrUpdateQuery(String databaseName, String tableName, Map<String, Object> data) {
-        /* parameterized query for prepared statement */
-        final StringBuilder statement = new StringBuilder("INSERT INTO `")
-                .append(databaseName)
-                .append("`.`")
-                .append(tableName)
-                .append("` (")
-                .append(data.keySet()
-                        .stream()
-                        .map(column -> "`" + column + "`")
-                        .collect(Collectors.joining(",")))
-                .append(") VALUES (");
-        final int[] idx = new int[]{1, 0, 1};
-        data.values()
-                .forEach(c -> statement.append(idx[1]++ > 0 ? "," : "")
-                        .append("?"));
-        statement.append(");");
-        log.trace("generated statement: {}", statement);
-        return statement.toString();
-    }
-
     /**
      * Map the inspected schema to either an existing view/table and append e.g. column or (if not existing) create a new view/table.
      *
