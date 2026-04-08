@@ -4,13 +4,13 @@ application:
 spring:
   data:
     redis:
-      provider: "${CACHE_DB_PROVIDER:valkey}"
       host: "${CACHE_DB_HOST:cache-db}"
       port: "${CACHE_DB_PORT:6379}"
       timeout: 3000
       connectTimeout: 10000
       clientName: dbrepo
       password: "${CACHE_DB_PASSWORD:valkey}"
+      username: "${CACHE_DB_USERNAME:default}"
   datasource:
     url: "jdbc:mariadb://${METADATA_HOST:localhost}:${METADATA_PORT:3306}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS:}"
     driver-class-name: org.mariadb.jdbc.Driver
@@ -28,7 +28,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "${OAUTH_ISSUER_URI:https://localhost/realms/dbrepo}"
+          issuer-uri: "${OAUTH_ISSUER_URI:http://localhost:8080/realms/dbrepo}"
           jwk-set-uri: "${OAUTH_JWK_SET_URI:http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
   application:
     name: metadata-service
@@ -71,6 +71,7 @@ logging:
       file: ecs
 dbrepo:
   cache:
+    provider: "${CACHE_DB_PROVIDER:valkey}"
     ttl: "${CACHE_TTL:60}"
   datacite:
     url: "${DATACITE_URL:https://api.datacite.org}"
