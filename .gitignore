@@ -49,12 +49,6 @@ fda-ui/
 ### demo ###
 .demo
 
-### Certificates ###
-*.crt
-*.p12
-root.crt
-intermediate.crt
-
 ### Environment ###
 .env
 .s3cfg

@@ -15,12 +15,11 @@ if (process.env.NODE_ENV === 'development') {
   }
   process.env.VERSION = 'bun-dev'
   process.env.NUXT_PUBLIC_API_SERVER = api
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL = api + '/realms/dbrepo/protocol/openid-connect/auth'
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI = api + ':3001'
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL = api + '/realms/dbrepo/protocol/openid-connect/logout'
+  process.env.NUXT_STORAGE_OIDC_HOST = 'localhost'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL = api + '/realms/dbrepo'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID = 'dbrepo-client'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET = 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
   process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI = api + ':3001/auth/keycloak/callback'
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL = api + '/realms/dbrepo/protocol/openid-connect/token'
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL = api + '/realms/dbrepo/protocol/openid-connect/userinfo'
 }
 
 /**
@@ -39,6 +38,8 @@ export default defineNuxtConfig({
       }
     }
   },
+
+  logLevel: 'verbose',
 
   build: {
     transpile: ['vuetify'],
@@ -81,10 +82,10 @@ export default defineNuxtConfig({
         }
       },
       dashboard: {
-        url: 'https://localhost/dashboard'
+        url: 'http://localhost/dashboard'
       },
       api: {
-        client: 'https://localhost',
+        client: 'http://localhost',
         server: 'http://gateway-service',
       },
       database: {
@@ -113,11 +114,6 @@ export default defineNuxtConfig({
       },
       links: {}
     },
-    oidc: {
-      session: {
-        automaticRefresh: true
-      }
-    },
     storage: {
       oidc: {
         host: 'cache-db',
@@ -126,9 +122,8 @@ export default defineNuxtConfig({
         base: 'oidc',
         username: 'default',
         password: 'valkey',
-        ttl: null
       }
-    }
+    },
   },
 
   devServer: {
@@ -141,27 +136,27 @@ export default defineNuxtConfig({
   },
 
   oidc: {
+    enabled: true,
     defaultProvider: 'keycloak',
-    providers: {
-      keycloak: {
-        audience: 'account',
-        authorizationUrl: '',
-        baseUrl: 'http://localhost/realms/dbrepo',
-        clientId: 'dbrepo-client',
-        clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
-        exposeAccessToken: true,
-        logoutRedirectUri: '',
-        logoutUrl: '',
-        optionalClaims: ['realm_access'],
-        redirectUri: 'http://localhost',
-        scope: ['openid', 'roles'],
-        tokenUrl: '',
-        userInfoUrl: ''
-      },
-    },
     middleware: {
       globalMiddlewareEnabled: false,
       customLoginPage: false
+    },
+    session: {
+      automaticRefresh: true,
+      expirationCheck: true
+    },
+    providers: {
+      keycloak: {
+        audience: 'account',
+        baseUrl: 'http://localhost:8080/realms/dbrepo',
+        clientId: 'dbrepo-client',
+        clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
+        redirectUri: 'http://localhost/auth/keycloak/callback',
+        logoutRedirectUri: 'http://localhost',
+        exposeAccessToken: true,
+        optionalClaims: ['realm_access'],
+      },
     },
   },
 
@@ -216,5 +211,6 @@ export default defineNuxtConfig({
   devtools: {
     enabled: false
   },
+
   compatibilityDate: '2025-09-04'
 })

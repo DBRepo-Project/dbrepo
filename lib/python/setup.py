@@ -2,13 +2,10 @@
 import os
 from distutils.core import setup
 
-app_version = os.environ.get("APP_VERSION", "1.13.3")
-doc_version = os.environ.get("DOC_VERSION", "1.13")
-
 setup(name="dbrepo",
-      version=str(app_version),
+      version="1.13.4",
       description="A library for communicating with DBRepo",
-      url=f"https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/{doc_version}/",
+      url=f"https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/",
       author="Martin Weise",
       license="Apache-2.0",
       author_email="martin.weise@tuwien.ac.at",
