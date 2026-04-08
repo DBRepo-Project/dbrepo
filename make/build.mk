@@ -10,7 +10,7 @@ build-jupyter-image:
 
 .PHONY: build-java-lib
 build-java-lib: ## Build the Java Library.
-	APP_VERSION=$(APP_VERSION) bash ./.scripts/build-java-lib.sh
+	bash ./.scripts/build-java-lib.sh
 
 .PHONY: build-ui
 build-ui: ## Build the UI.
@@ -18,7 +18,7 @@ build-ui: ## Build the UI.
 
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
-	APP_VERSION=$(APP_VERSION) bash ./.scripts/build-python-lib.sh
+	bash ./.scripts/build-python-lib.sh
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.

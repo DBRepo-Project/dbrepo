@@ -37,13 +37,14 @@ S3_ACCESS_KEY_ID=$(gen_pw)
 S3_SECRET_ACCESS_KEY=$(gen_pw)
 S3_ADMIN_ACCESS_KEY_ID=$(gen_pw)
 S3_ADMIN_SECRET_ACCESS_KEY=$(gen_pw)
+CACHE_DB_PASSWORD=$(gen_pw)
 cat <<EOF > .env
 #### SECRETS BELOW ARE AUTO-GENERATED ####
 AUTH_DB_PASSWORD=$(gen_pw)
 AUTH_SERVICE_ADMIN_PASSWORD=$(gen_pw)
 BROKER_SERVICE_ERL_COOKIE=$(gen_pw)
 BROKER_SERVICE_PASSWORD=$BROKER_SERVICE_PASSWORD
-CACHE_DB_PASSWORD=$(gen_pw)
+CACHE_DB_PASSWORD=$CACHE_DB_PASSWORD
 DASHBOARD_DB_PASSWORD=$(gen_pw)
 DASHBOARD_UI_PASSWORD=$(gen_pw)
 DATA_DB_PASSWORD=$DATA_DB_PASSWORD
@@ -60,7 +61,18 @@ S3_ADMIN_ACCESS_KEY_ID=$S3_ADMIN_ACCESS_KEY_ID
 S3_ADMIN_SECRET_ACCESS_KEY=$S3_ADMIN_SECRET_ACCESS_KEY
 SYSTEM_PASSWORD=$(gen_pw)
 EOF
-cat <<EOF > ./dbrepo-storage-service/s3_config.json
+SECRET_PATH="./dbrepo-cache-db"
+if [[ $INSTALL_SCRIPT -eq 1 ]]; then
+  SECRET_PATH="./config"
+fi
+cat <<EOF > $SECRET_PATH
+user default on >$CACHE_DB_PASSWORD sanitize-payload ~* &* +@all
+EOF
+SECRET_PATH="./dbrepo-storage-service"
+if [[ $INSTALL_SCRIPT -eq 1 ]]; then
+  SECRET_PATH="./config"
+fi
+cat <<EOF > $SECRET_PATH/s3_config.json
 {
   "identities": [
     {
@@ -96,7 +108,11 @@ cat <<EOF > ./dbrepo-storage-service/s3_config.json
   ]
 }
 EOF
-cat <<EOF > ./dbrepo-broker-service/definitions.json
+SECRET_PATH="./dbrepo-broker-service"
+if [[ $INSTALL_SCRIPT -eq 1 ]]; then
+  SECRET_PATH="./config"
+fi
+cat <<EOF > $SECRET_PATH/definitions.json
 {
   "bindings": [
     {
@@ -174,7 +190,11 @@ sudo chown 1001:1001 "$CERT_PATH/tls.key" "$CERT_PATH/tls.crt"
 sudo chmod 755 "$CERT_PATH/tls.key" "$CERT_PATH/tls.crt"
 
 echo "[🙊] Generating database setup ..."
-cat <<EOF > ./dbrepo-metadata-db/2_setup-data.sql
+SECRET_PATH="./dbrepo-metadata-db"
+if [[ $INSTALL_SCRIPT -eq 1 ]]; then
+  SECRET_PATH="./config"
+fi
+cat <<EOF > $SECRET_PATH/2_setup-data.sql
 BEGIN;
 INSERT INTO \`mdb_containers\` (id, name, internal_name, image_id, host, port, ui_host, ui_port, privileged_username,
                               privileged_password, readonly_username, readonly_password)

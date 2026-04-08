@@ -9,12 +9,13 @@ variables:
   JAVA_VERSION: "21"
   NODE_VERSION: "24"
   REGCLIENT_VERSION: "0.8.2"
+  README_GENERATOR_VERSION: "2.8.1"
   BUN_VERSION: "1.2.21"
   DOC_VERSION: "1.13"
-  APP_VERSION: "1.13.3"
+  APP_VERSION: "1.13.4"
   DUCKDB_VERSION: "1.2.2"
   CHART_VERSION: "1.13.3"
-  SUPPORTED_VERSIONS: "1.13.0, 1.13.1, 1.13.2, 1.13.3"
+  SUPPORTED_VERSIONS: "1.13.0, 1.13.1, 1.13.2, 1.13.3, 1.13.4"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
@@ -118,7 +119,7 @@ lint-helm-readme:
     - apk add --no-cache alpine-sdk bash git
     - cp ./helm/dbrepo/README.md ./CI_README.md
     - git clone https://github.com/bitnami/readme-generator-for-helm
-    - (cd ./readme-generator-for-helm && npm install && npm install -g pkg && pkg . -t node*-alpine-x64 -o /usr/local/sbin/readme-generator)
+    - (cd ./readme-generator-for-helm && git checkout $README_GENERATOR_VERSION && npm install && npm install -g pkg && pkg . -t node*-alpine-x64 -o /usr/local/sbin/readme-generator)
   script:
     - readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
     - diff ./CI_README.md ./helm/dbrepo/README.md
@@ -595,23 +596,6 @@ test-ui:
     - "sleep 30"
     - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh"
 
-clean-images:
-  stage: clean
-  image: docker:${DOCKER_VERSION}-dind
-  only:
-    - tags
-    - dev
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "apk add --no-cache wget bash"
-    - "wget -O /usr/local/sbin/regctl https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64"
-    - "chmod +x /usr/local/sbin/regctl"
-  script:
-    - bash ./.gitlab/remove-unsupported-images.sh
-
 release-images:
   stage: release
   image: docker:${DOCKER_VERSION}-dind
@@ -621,22 +605,10 @@ release-images:
     REPOSITORY_URL: "$CI_REGISTRY2_URL"
   dependencies:
     - build-python-lib
-    - clean-images
-    - test-data-service
-    - test-python-lib
-    - test-metadata-service
-    - test-search-service
-    - test-ui
   needs:
     - build-python-lib
-    - clean-images
-    - test-data-service
-    - test-python-lib
-    - test-metadata-service
-    - test-search-service
-    - test-ui
   before_script:
-    - "apk add --no-cache make maven openjdk21-jdk"
+    - "apk add --no-cache make maven openjdk21-jdk bash"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
@@ -740,7 +712,7 @@ verify-install-script:
   before_script:
     - "apk add bash curl"
   script:
-    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
+    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/.scripts/install.sh | bash | grep 'Success!'"
 
 verify-dist:
   image: docker.io/alpine:${ALPINE_VERSION}

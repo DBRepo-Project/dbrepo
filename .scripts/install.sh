@@ -57,13 +57,13 @@ fi
 echo "[📦] Pulling images for version ${APP_VERSION} ..."
 docker compose pull
 
-. ./config/gen-secrets.sh
+INSTALL_SCRIPT=1 bash ./config/gen-secrets.sh
 
 echo "[🎉] Success!"
 echo ""
 echo "You can now:"
 echo ""
-echo "  1) Either start the deployment running on https://localhost, or"
+echo "  1) Either start the deployment running on http://localhost, or"
 echo "  2) Edit the BASE_URL variable in .env to set your hostname"
 echo ""
 echo "Then start the local deployment with:"

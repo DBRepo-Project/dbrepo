@@ -16,7 +16,7 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
     <name>data-service</name>
-    <version>1.13.3</version>
+    <version>1.13.4</version>
 
     <description>Service that manages the data</description>
 
@@ -43,7 +43,6 @@
         <java.version>21</java.version>
         <spring-cloud.version>4.1.4</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <rabbitmq.version>5.20.0</rabbitmq.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
         <commons-io.version>2.17.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
@@ -101,7 +100,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.13.3</version>
+            <version>1.13.4</version>
         </dependency>
         <!-- Spring -->
         <dependency>
@@ -281,16 +280,6 @@
             <artifactId>java-jwt</artifactId>
             <version>${jwt.version}</version>
         </dependency>
-        <!-- AMPQ -->
-        <dependency>
-            <groupId>org.springframework.amqp</groupId>
-            <artifactId>spring-rabbit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>${rabbitmq.version}</version>
-        </dependency>
         <!-- Api -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -311,12 +300,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>rabbitmq</artifactId>
-            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
