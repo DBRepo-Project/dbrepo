@@ -1532,11 +1532,11 @@
         },
         "urllib3-future": {
             "hashes": [
-                "sha256:791b5e8c96776c2cb3daf013cc61ee682c3551f53f7dce6c8acc378d43f0610c",
-                "sha256:dd9a649b02f0e7ad92b3b9e79b81f9fe0c1bcab62dd5de1bf4d2f9a444da39fd"
+                "sha256:81f069a751668f574a956ce593ad2c2e4f4215c79f1e15d23db826c5985b0cdc",
+                "sha256:a0bda2d90e4b70379ae65a6afd13804e44bd23429e6098b277f1a61ecce655a5"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.19.903"
+            "version": "==2.19.904"
         },
         "verlib2": {
             "hashes": [
@@ -2437,11 +2437,11 @@
         },
         "more-itertools": {
             "hashes": [
-                "sha256:eaf287826069452a8f61026c597eae2428b2d1ba2859083abbf240b46842ce6d",
-                "sha256:fefaf25b7ab08f0b45fa9f1892cae93b9fc0089ef034d39213bce15f1cc9e199"
+                "sha256:392a9e1e362cbc106a2457d37cabf9b36e5e12efd4ebff1654630e76597df804",
+                "sha256:6e35b35f818b01f691643c6c611bc0902f2e92b46c18fffa77ae1e7c46e912e4"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==11.0.1"
+            "version": "==11.0.2"
         },
         "nh3": {
             "hashes": [

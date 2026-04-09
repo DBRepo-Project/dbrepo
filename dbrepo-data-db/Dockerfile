@@ -42,5 +42,5 @@ COPY --from=build /periods/periods--1.2.sql $SHAREDIR/extension/periods--1.2.sql
 COPY --from=build /periods/periods.control $SHAREDIR/extension/periods.control
 
 # EXT: aws_s3
-COPY --from=build /aws_s3/aws_s3--0.0.1.sql ./aws_s3--0.0.1.sql
-COPY --from=build /aws_s3/aws_s3.control ./aws_s3.control
+COPY --from=build /aws_s3/aws_s3--0.0.1.sql $SHAREDIR/extension/aws_s3--0.0.1.sql
+COPY --from=build /aws_s3/aws_s3.control $SHAREDIR/extension/aws_s3.control

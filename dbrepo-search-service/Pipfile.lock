@@ -1580,11 +1580,11 @@
         },
         "urllib3-future": {
             "hashes": [
-                "sha256:791b5e8c96776c2cb3daf013cc61ee682c3551f53f7dce6c8acc378d43f0610c",
-                "sha256:dd9a649b02f0e7ad92b3b9e79b81f9fe0c1bcab62dd5de1bf4d2f9a444da39fd"
+                "sha256:81f069a751668f574a956ce593ad2c2e4f4215c79f1e15d23db826c5985b0cdc",
+                "sha256:a0bda2d90e4b70379ae65a6afd13804e44bd23429e6098b277f1a61ecce655a5"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.19.903"
+            "version": "==2.19.904"
         },
         "verlib2": {
             "hashes": [
