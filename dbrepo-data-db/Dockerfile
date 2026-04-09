@@ -1,4 +1,4 @@
-FROM ghcr.io/cloudnative-pg/postgresql:17.9-system-trixie AS build
+FROM ghcr.io/cloudnative-pg/postgresql:17.9-minimal-trixie AS build
 
 USER 0
 
@@ -23,7 +23,7 @@ WORKDIR /aws_s3
 RUN git clone https://github.com/chimpler/postgres-aws-s3.git && \
     mv -f postgres-aws-s3/* .
 
-FROM ghcr.io/cloudnative-pg/postgresql:17.9-system-trixie AS runtime
+FROM ghcr.io/cloudnative-pg/postgresql:17.9-minimal-trixie AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 USER 0
@@ -51,4 +51,4 @@ COPY --from=build /periods/periods.control $SHAREDIR/extension/periods.control
 COPY --from=build /aws_s3/aws_s3--0.0.1.sql ./aws_s3--0.0.1.sql
 COPY --from=build /aws_s3/aws_s3.control ./aws_s3.control
 
-WORKDIR /
+USER postgres

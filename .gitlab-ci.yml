@@ -12,10 +12,10 @@ variables:
   README_GENERATOR_VERSION: "2.8.1"
   BUN_VERSION: "1.2.21"
   DOC_VERSION: "1.13"
-  APP_VERSION: "1.13.3"
+  APP_VERSION: "1.13.4"
   DUCKDB_VERSION: "1.2.2"
   CHART_VERSION: "1.13.3"
-  SUPPORTED_VERSIONS: "1.13.0, 1.13.1, 1.13.2, 1.13.3"
+  SUPPORTED_VERSIONS: "1.13.0, 1.13.1, 1.13.2, 1.13.3, 1.13.4"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
@@ -190,7 +190,7 @@ build-metadata-service:
     - build-java-lib
     - lint-metadata-service
   before_script:
-    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages

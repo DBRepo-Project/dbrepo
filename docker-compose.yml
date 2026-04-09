@@ -42,18 +42,18 @@ services:
     hostname: data-db
     image: dbrepo-data-db:latest
     build: ./dbrepo-data-db
-    volumes:
-      - data-db-data:/home/postgres/pgdata/pgroot/data
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: "${DATA_DB_USERNAME:-postgres}"
-      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      <<: *healthcheck-params
-    logging:
-      driver: json-file
+#    volumes:
+#      - data-db-data:/home/postgres/pgdata/pgroot/data
+#    ports:
+#      - "5433:5432"
+#    environment:
+#      POSTGRES_USER: "${DATA_DB_USERNAME:-postgres}"
+#      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready"]
+#      <<: *healthcheck-params
+#    logging:
+#      driver: json-file
 
   dbrepo-auth-db:
     restart: "no"
@@ -114,9 +114,9 @@ services:
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      KEYCLOAK_HOSTNAME: "${BASE_URL:-https://localhost}"
-      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-https://localhost}"
-      KEYCLOAK_PROXY_HEADERS: "xforwarded"
+      KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost:8080}"
+      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost:8080}"
+      KEYCLOAK_PROXY_HEADERS: "forwarded"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
@@ -147,13 +147,14 @@ services:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
-      BASE_URL: "${BASE_URL:-https://localhost}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
+      CACHE_DB_USERNAME: "${CACHE_DB_USERNAME:-default}"
       CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-http://data.crossref.org}"
       DASHBOARD_SERVICE_ENDPOINT: "${DASHBOARD_SERVICE_ENDPOINT:-http://dashboard-service:8080}"
@@ -171,10 +172,10 @@ services:
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
-      S3_ACCESS_KEY: "${S3_ACCESS_KEY:-seaweedfsuser}"
+      S3_ACCESS_KEY_ID: "${S3_USER_ACCESS_KEY_ID:-seaweedfsuser}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_SECRET_KEY: "${S3_SECRET_KEY:-seaweedfsuser}"
+      S3_SECRET_ACCESS_KEY: "${S3_USER_SECRET_ACCESS_KEY:-seaweedfsuser}"
       SPARQL_CONNECTION_TIMEOUT: "${SPARQL_CONNECTION_TIMEOUT:-10000}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -220,6 +221,7 @@ services:
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
+      CACHE_DB_USERNAME: "${CACHE_DB_USERNAME:-default}"
       CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
@@ -243,11 +245,16 @@ services:
     restart: "no"
     container_name: dbrepo-cache-db
     hostname: cache-db
-    image: docker.io/bitnamilegacy/valkey:8.1.3
+    image: docker.io/valkey/valkey:8
+    command:
+      - "valkey-server"
+      - "/etc/valkey.conf"
     environment:
       VALKEY_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
     ports:
       - "6379:6379"
+    volumes:
+      - ./dbrepo-cache-db/valkey.conf:/etc/valkey.conf
     healthcheck:
       test: "redis-cli -a ${CACHE_DB_PASSWORD:-valkey} ping | grep PONG"
       <<: *healthcheck-params
@@ -334,27 +341,24 @@ services:
         COMMIT: ${CI_COMMIT_SHORT_SHA:-}
       network: host
     environment:
-      NODE_TLS_REJECT_UNAUTHORIZED: "0"
       NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
-      NUXT_OIDC_AUTH_SESSION_SECRET: "${OIDC_AUTH_SESSION_SECRET:-d1f_1oEZsiMCEzdt-KqYUQI14WJc4coCw87kwTGS9ZJrWnk_}"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-https://localhost}/realms/dbrepo"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-https://localhost}/realms/dbrepo/protocol/openid-connect/auth"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost:8080}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-http://localhost}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-https://localhost}"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "${BASE_URL:-https://localhost}/realms/dbrepo/protocol/openid-connect/logout"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-https://localhost}/auth/keycloak/callback"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${BASE_URL:-https://localhost}/realms/dbrepo/protocol/openid-connect/token"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${BASE_URL:-https://localhost}/realms/dbrepo/protocol/openid-connect/userinfo"
-      NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:-T1eUAWRG3A7UAfLKBP1vc-ydKa4xIJR4k_0JIeG7m8EG9zri}"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
       NUXT_OIDC_TOKEN_KEY: "${OIDC_TOKEN_KEY:-data:;base64,aOy1Sqlm3S41V824iZg+nuTDmEOv9QZuCGPB5I3oX48=}"
-      NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-https://localhost}"
-      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-https://gateway-service}"
-      NUXT_PUBLIC_DASHBOARD_URL: "${BASE_URL:-https://localhost}/dashboard"
+      NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:-T1eUAWRG3A7UAfLKBP1vc-ydKa4xIJR4k_0JIeG7m8EG9zri}"
+      NUXT_OIDC_AUTH_SESSION_SECRET: "${NUXT_OIDC_AUTH_SESSION_SECRET:-P2g0Yb8G0bE_0pRAy5AayM5Yr7OmnIIrnsYqyud6JD6_L4FI}"
+      NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
+      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
+      NUXT_PUBLIC_DASHBOARD_URL: "${BASE_URL:-http://localhost}/dashboard"
     healthcheck:
       test: curl -fsSL 127.0.0.1:3000 && curl -fsSL 127.0.0.1:3000/health
       <<: *healthcheck-params
     depends_on:
+      dbrepo-cache-db:
+        condition: service_healthy
       dbrepo-search-service:
         condition: service_healthy
     extra_hosts:
@@ -366,14 +370,11 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/bitnamilegacy/nginx:1.28.0
+    image: docker.io/nginx:1.28
     ports:
       - "80:8080"
-      - "443:8443"
     volumes:
-      - ./dbrepo-gateway-service/tls.key:/app/tls.key:ro
-      - ./dbrepo-gateway-service/tls.crt:/app/tls.crt:ro
-      - ./dbrepo-gateway-service/dbrepo.conf:/opt/bitnami/nginx/conf/server_blocks/dbrepo.conf:ro
+      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/dbrepo.conf:ro
     depends_on:
       dbrepo-broker-service:
         condition: service_healthy
@@ -495,7 +496,9 @@ services:
       network: host
     environment:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      STORAGE_ENDPOINT_MASTER: ${STORAGE_ENDPOINT_MASTER:-storage-service:9333}
+      S3_ACCESS_KEY_ID: "${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: "${S3_ADMIN_SECRET_ACCESS_KEY:-seaweedfsadmin}"
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -514,9 +517,9 @@ services:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
-      AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+      AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
-      BASE_URL: "${BASE_URL:-https://localhost}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
@@ -527,6 +530,7 @@ services:
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
+      CACHE_DB_USERNAME: "${CACHE_DB_USERNAME:-default}"
       CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[*]}"
@@ -539,10 +543,10 @@ services:
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
-      S3_ACCESS_KEY: "${S3_ACCESS_KEY:-seaweedfsuser}"
+      S3_ACCESS_KEY_ID: "${S3_USER_ACCESS_KEY_ID:-seaweedfsuser}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_SECRET_KEY: "${S3_SECRET_KEY:-seaweedfsuser}"
+      S3_SECRET_ACCESS_KEY: "${S3_USER_SECRET_ACCESS_KEY:-seaweedfsuser}"
       SPARK_USER: "${COMPUTE_SERVICE_USERNAME:-spark}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -560,8 +564,6 @@ services:
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
     image: docker.io/bitnamilegacy/grafana:11.4.0
-    ports:
-      - "3000:3000"
     volumes:
       - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
       - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
@@ -570,7 +572,7 @@ services:
       - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
       - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
     environment:
-      BASE_URL: "${BASE_URL:-https://localhost}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
       DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
@@ -598,7 +600,7 @@ services:
       network: host
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
-      BASE_URL: "${BASE_URL:-https://localhost}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
       DASHBOARD_UI_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
       DASHBOARD_UI_USERNAME: "${DASHBOARD_UI_USERNAME:-admin}"
