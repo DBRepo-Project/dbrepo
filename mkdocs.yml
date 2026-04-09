@@ -154,7 +154,7 @@ plugins:
 #  - with-pdf:
 #      author: Martin Weise
 #      cover_title: DBRepo - Database Repository
-#      cover_subtitle: Documentation for version v1.13.3
+#      cover_subtitle: Documentation for version v1.13.4
 #      output_path: dbrepo_v1.13.pdf
   - mike:
       alias_type: redirect
