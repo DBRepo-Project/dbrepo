@@ -1,11 +1,13 @@
-FROM docker.io/postgres:17-alpine AS build
+FROM ghcr.io/cloudnative-pg/postgresql:17.9-system-trixie AS build
 
+USER 0
 
-RUN apk --no-cache add make \
-                       gcc \
-                       clang19 \
-                       git \
-                       openssh
+RUN apt update && \
+    apt install -y make \
+                   gcc \
+                   git \
+                   postgresql-server-dev-17 \
+                   python3-boto3
 
 # EXT: periods
 WORKDIR /periods
@@ -21,18 +23,22 @@ WORKDIR /aws_s3
 RUN git clone https://github.com/chimpler/postgres-aws-s3.git && \
     mv -f postgres-aws-s3/* .
 
-FROM docker.io/postgres:17-alpine AS runtime
+FROM ghcr.io/cloudnative-pg/postgresql:17.9-system-trixie AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk --no-cache add py-boto3
+USER 0
 
-ARG LIBDIR="/usr/local/lib/postgresql"
+RUN apt update && \
+    apt install -y python3-boto3 && \
+    apt clean
+
+ARG LIBDIR="/usr/lib/postgresql/17/lib"
 
 # EXT: periods
 COPY --from=build /periods/periods.bc $LIBDIR/bitcode/periods/periods.bc
 COPY --from=build /periods/periods.so $LIBDIR/periods.so
 
-ARG SHAREDIR="/usr/local/share/postgresql"
+ARG SHAREDIR="/usr/share/postgresql/17"
 
 COPY --from=build /periods/periods--1.0.sql $SHAREDIR/extension/periods--1.0.sql
 COPY --from=build /periods/periods--1.0--1.1.sql $SHAREDIR/extension/periods--1.0--1.1.sql

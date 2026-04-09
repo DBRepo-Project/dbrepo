@@ -1,5 +1,5 @@
 x-healthcheck-params: &healthcheck-params
-  interval: 30s
+  interval: 20s
   timeout: 10s
   retries: 15
 
@@ -42,18 +42,18 @@ services:
     hostname: data-db
     image: dbrepo-data-db:latest
     build: ./dbrepo-data-db
-#    volumes:
-#      - data-db-data:/home/postgres/pgdata/pgroot/data
-#    ports:
-#      - "5433:5432"
-#    environment:
-#      POSTGRES_USER: "${DATA_DB_USERNAME:-postgres}"
-#      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready"]
-#      <<: *healthcheck-params
-#    logging:
-#      driver: json-file
+    volumes:
+      - data-db-data:/home/postgres/pgdata/pgroot/data
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: "${DATA_DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      <<: *healthcheck-params
+    logging:
+      driver: json-file
 
   dbrepo-auth-db:
     restart: "no"
