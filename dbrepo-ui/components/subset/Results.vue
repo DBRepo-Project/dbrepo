@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="results-table-scroll">
     <v-data-table-server
       flat
       v-model="selection"
@@ -235,7 +235,16 @@ export default {
   }
 }
 </script>
-<style>
+<style scoped>
+.results-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.results-table-scroll :deep(table) {
+  min-width: max-content;
+}
+
 .v-data-table {
   border-radius: 0;
 }
