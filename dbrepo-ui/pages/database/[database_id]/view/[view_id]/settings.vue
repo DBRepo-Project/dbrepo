@@ -62,6 +62,30 @@
       </v-card>
     </v-form>
     <v-divider
+      v-if="canRefreshView" />
+    <v-card
+      v-if="canRefreshView"
+      variant="flat"
+      rounded="0"
+      :title="$t('pages.view.refresh.title')"
+      :subtitle="$t('pages.view.refresh.subtitle', { view: view.internal_name })">
+      <v-card-text>
+        <v-row>
+          <v-col
+            lg="8">
+            <v-btn
+              size="small"
+              variant="flat"
+              color="info"
+              :loading="loadingRefresh"
+              @click="refreshView">
+              {{ $t('navigation.refresh')}}
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+    <v-divider
       v-if="canDeleteView" />
     <v-card
       v-if="canDeleteView"
@@ -77,6 +101,7 @@
               size="small"
               variant="flat"
               color="error"
+              :loading="loadingDelete"
               @click="askDelete">
               {{ $t('navigation.delete')}}
             </v-btn>
@@ -102,6 +127,8 @@ export default {
     return {
       valid: false,
       loading: false,
+      loadingRefresh: false,
+      loadingDelete: false,
       modify: {
         is_public: null,
         is_schema_public: null
@@ -187,6 +214,12 @@ export default {
       }
       return this.roles.includes('delete-database-view') && this.view.owner.username === this.cacheUser.preferred_username
     },
+    canRefreshView () {
+      if (!this.roles || !this.cacheUser || !this.view) {
+        return false
+      }
+      return this.roles.includes('refresh-database-view') && this.view.owner.username === this.cacheUser.preferred_username
+    },
     canViewSettings () {
       if (!this.view || !this.access || !this.cacheUser) {
         return false
@@ -251,6 +284,28 @@ export default {
         this.cacheStore.reloadTable()
       }
       this.dialogSemantic = false
+    },
+    refreshView () {
+      this.loadingRefresh = true
+      const viewService = useViewService()
+      viewService.refresh(this.database.id, this.view.id)
+        .then(() => {
+          console.info('Refresh view with id ', this.view.id)
+          this.cacheStore.reloadDatabase()
+          const toast = useToastInstance()
+          toast.success('Successfully refreshed view with id ' + this.view.id)
+        })
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            toast.error(message)
+            return
+          }
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loadingRefresh = false
+        })
     },
     askDelete () {
       if (!confirm(this.$t('pages.view.delete.subtitle', { view: this.view.internal_name }))) {

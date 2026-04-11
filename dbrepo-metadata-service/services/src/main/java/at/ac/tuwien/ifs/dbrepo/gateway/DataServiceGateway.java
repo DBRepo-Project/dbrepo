@@ -131,6 +131,9 @@ public interface DataServiceGateway {
     void deleteView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException;
 
+    void refreshView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
+            ViewNotFoundException;
+
     /**
      * Finds a given query in a given database.
      *

@@ -102,6 +102,9 @@ public interface DataMapper {
 
     default ColumnTypeDto columnTypeToColumnTypeDto(String data) {
         final String upper = data.toUpperCase();
+        if (upper.startsWith("TINYINT(1)")) {
+            return ColumnTypeDto.BOOL;
+        }
         switch (upper) {
             case "CHARACTER VARYING":
                 return ColumnTypeDto.VARCHAR;
@@ -141,11 +144,10 @@ public interface DataMapper {
                     .toList());
         }
         /* fix boolean and set size for others */
-        if (dataType.startsWith("tinyint(1)")) {
-            column.setColumnType(ColumnTypeDto.BOOL);
-        } else if (resultSet.getString(5) != null) {
+        if (resultSet.getString(5) != null) {
             column.setSize(resultSet.getLong(5));
-        } else if (resultSet.getString(6) != null) {
+        }
+        if (resultSet.getString(6) != null) {
             column.setSize(resultSet.getLong(6));
         }
         table.getColumns()
@@ -157,10 +159,10 @@ public interface DataMapper {
         final ViewColumnDto column = ViewColumnDto.builder()
                 .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
                 .isNullAllowed(resultSet.getString(3).equals("YES"))
-                .columnType(ColumnTypeDto.valueOf(resultSet.getString(4).toUpperCase()))
+                .columnType(columnTypeToColumnTypeDto(resultSet.getString(4)))
                 .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
-                .name(resultSet.getString(10))
-                .internalName(resultSet.getString(10))
+                .name(resultSet.getString(8))
+                .internalName(resultSet.getString(8))
                 .databaseId(view.getDatabaseId())
                 .build();
         /* fix boolean and set size for others */

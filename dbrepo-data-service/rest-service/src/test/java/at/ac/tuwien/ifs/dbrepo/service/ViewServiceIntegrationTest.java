@@ -53,7 +53,7 @@ public class ViewServiceIntegrationTest extends BaseTest {
     public void createView_succeeds() throws SQLException, ViewMalformedException {
 
         /* test */
-        viewService.create(DATABASE_1_CACHE, VIEW_1_NAME, VIEW_1_QUERY);
+        viewService.create(DATABASE_1_CACHE, VIEW_1_NAME, VIEW_1_QUERY, false);
     }
 
     @Test

@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -33,6 +34,9 @@ public interface ViewService {
      */
     void delete(View view) throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             ViewNotFoundException, SearchServiceException, SearchServiceConnectionException;
+
+    void refresh(View view) throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Creates a view in the container with given id and database with id with the given query.

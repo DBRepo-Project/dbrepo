@@ -75,6 +75,17 @@ public class ViewServiceImpl implements ViewService {
         log.info("Deleted view with id {}", view.getId());
     }
 
+    @Transactional
+    @Override
+    public void refresh(View view) throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        /* refresh in data service */
+        dataServiceGateway.refreshView(view.getDatabase().getId(), view.getId());
+        /* update in search service */
+//        searchServiceGateway.update(database);
+        log.info("Refreshed view with id {}", view.getId());
+    }
+
     @Override
     @Transactional
     public View create(Database database, String ownedBy, CreateViewDto data) throws MalformedException,

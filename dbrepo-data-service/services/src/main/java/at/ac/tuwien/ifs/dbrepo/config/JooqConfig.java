@@ -22,7 +22,7 @@ public class JooqConfig {
         final DefaultConfiguration configuration = new DefaultConfiguration();
         final Settings settings = new Settings();
         settings.setStatementType(StatementType.STATIC_STATEMENT);
-        settings.setRenderSchema(true);
+        settings.setRenderSchema(false);
         configuration.setSettings(settings);
         configuration.set(SQLDialect.POSTGRES);
         return using(configuration);

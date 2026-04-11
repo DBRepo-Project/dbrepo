@@ -766,11 +766,11 @@
         },
         "niquests": {
             "hashes": [
-                "sha256:4098d29516936f58d35c348abda23a632e21d1f38de78e60d68d013254c12f88",
-                "sha256:d2f672163c58ce9bc1922ac71c88c0f6b999878b7c642fe3ba8ded275dcbe2ec"
+                "sha256:5d97b6fc90219d0d8d8feea11b78267a5ac003290a90b5a5a5d8db7c4b7312f0",
+                "sha256:fe486ce71204f9f5ade1266ab1568cc09e4af772409070e26e65b0f8fda5c642"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==3.18.4"
+            "version": "==3.18.5"
         },
         "numpy": {
             "hashes": [
@@ -931,11 +931,11 @@
         },
         "prometheus-client": {
             "hashes": [
-                "sha256:150db128af71a5c2482b36e588fc8a6b95e498750da4b17065947c16070f4055",
-                "sha256:7e0ced7fbbd40f7b84962d5d2ab6f17ef88a72504dcf7c0b40737b43b2a461f9"
+                "sha256:5e373b75c31afb3c86f1a52fa1ad470c9aace18082d39ec0d2f918d11cc9ba28",
+                "sha256:d5aec89e349a6ec230805d0df882f3807f74fd6c1a2fa86864e3c2279059fed1"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==0.24.1"
+            "version": "==0.25.0"
         },
         "prometheus-flask-exporter": {
             "hashes": [
@@ -1580,11 +1580,11 @@
         },
         "urllib3-future": {
             "hashes": [
-                "sha256:81f069a751668f574a956ce593ad2c2e4f4215c79f1e15d23db826c5985b0cdc",
-                "sha256:a0bda2d90e4b70379ae65a6afd13804e44bd23429e6098b277f1a61ecce655a5"
+                "sha256:1ea385c64b8197fa81668b2bf507d578d49f0411f5e2fa00a7603f1ca6123e2c",
+                "sha256:eff59e3c53b7762e288d342b0d53fd34a8a94e6d6d897ecb667c6719537f964e"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.19.904"
+            "version": "==2.19.905"
         },
         "verlib2": {
             "hashes": [

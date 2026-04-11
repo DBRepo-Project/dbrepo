@@ -465,6 +465,7 @@ interface ViewCreateDto {
   query: SubsetDto;
   is_public: boolean;
   is_schema_public: boolean;
+  is_materialized: boolean;
 }
 
 interface ViewUpdateDto {

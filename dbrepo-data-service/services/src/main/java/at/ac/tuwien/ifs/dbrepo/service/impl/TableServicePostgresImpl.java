@@ -169,11 +169,27 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
-            final long start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.dropTableVersioningRawQuery(table.getInternalName()))
+                    .execute();
+            log.atDebug()
+                    .setMessage("delete table versioning: " + database.getInternalName() + "." + table.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "delete_table_versioning")
+                    .log();
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.dropTableVersioningRawQuery(table.getInternalName() + "_history"))
+                    .execute();
+            log.atDebug()
+                    .setMessage("delete history table: " + database.getInternalName() + "." + table.getInternalName() + "_history")
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "delete_history_table")
+                    .log();
+            start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropTableRawQuery(table.getInternalName()))
                     .execute();
             log.atDebug()
-                    .setMessage("delete table: " + table.getInternalName() + "." + database.getInternalName())
+                    .setMessage("delete table: " + database.getInternalName() + "." + table.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "delete_table")
                     .log();

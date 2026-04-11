@@ -45,7 +45,7 @@ public interface ViewService {
      * @throws SQLException           The connection to the data database was unsuccessful.
      * @throws ViewMalformedException The view is malformed.
      */
-    ViewDto create(Database database, String viewName, String query) throws SQLException,
+    ViewDto create(Database database, String viewName, String query, Boolean isMaterialized) throws SQLException,
             ViewMalformedException;
 
     /**
@@ -59,6 +59,8 @@ public interface ViewService {
      */
     List<ViewDto> explore(Database database) throws SQLException, DatabaseMalformedException,
             ViewNotFoundException;
+
+    void refresh(Database database, View view) throws SQLException, ViewMalformedException;
 
     /**
      * Counts tuples in a view at system-versioned timestamp.

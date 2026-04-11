@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -48,22 +47,20 @@ import java.util.UUID;
 public class ViewEndpoint {
 
     private final DSLContext context;
-    private final DataMapper dataMapper;
     private final ViewService viewService;
     private final TableService tableService;
-    private final PostgresMapper mariaDbMapper;
+    private final PostgresMapper postgresMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(DSLContext context, DataMapper dataMapper, ViewService viewService,
-                        TableService tableService, PostgresMapper mariaDbMapper, MetadataService metadataService,
+    public ViewEndpoint(DSLContext context, ViewService viewService, TableService tableService,
+                        PostgresMapper postgresMapper, MetadataService metadataService,
                         EndpointValidator endpointValidator) {
         this.context = context;
-        this.dataMapper = dataMapper;
         this.viewService = viewService;
         this.tableService = tableService;
-        this.mariaDbMapper = mariaDbMapper;
+        this.postgresMapper = postgresMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
     }
@@ -144,8 +141,8 @@ public class ViewEndpoint {
         final Database database = metadataService.getDatabase(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(viewService.create(database, mariaDbMapper.nameToInternalName(data.getName()),
-                            mariaDbMapper.subsetDtoToNormalizedQuery(context, database, data.getQuery())));
+                    .body(viewService.create(database, postgresMapper.nameToInternalName(data.getName()),
+                            postgresMapper.subsetDtoToNormalizedQuery(context, database, data.getQuery()), data.getIsMaterialized()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -182,6 +179,41 @@ public class ViewEndpoint {
         final Database database = metadataService.getDatabase(databaseId);
         try {
             viewService.delete(database, view);
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .build();
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PatchMapping("/{viewId}")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Refresh materialized view",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Refreshed materialized view"),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find view in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "412",
+                    description = "View is not materialized",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Void> refresh(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                        @NotNull @PathVariable("viewId") UUID viewId)
+            throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
+            ViewMalformedException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint refresh view, databaseId={}, viewId={}", databaseId, viewId);
+        final View view = metadataService.getView(databaseId, viewId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            viewService.refresh(database, view);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -270,12 +302,12 @@ public class ViewEndpoint {
                         .headers(headers)
                         .build();
             }
-            final String query = mariaDbMapper.rawSelectQuery(view.getQuery(), timestamp,
+            final String query = postgresMapper.rawSelectQuery(view.getQuery(), timestamp,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Headers");
-            final String viewName = view.getQueryHash();
-            viewService.create(database, viewName, view.getQuery());
+//            final String viewName = view.getQueryHash();
+//            viewService.create(database, viewName, view.getQuery(), false);
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
 //                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);

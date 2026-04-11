@@ -67,7 +67,7 @@ public class ViewEndpointUnitTest extends BaseTest {
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
-        when(viewService.create(any(Database.class), anyString(), anyString()))
+        when(viewService.create(any(Database.class), anyString(), anyString(), anyBoolean()))
                 .thenReturn(VIEW_1_DTO);
 
         /* test */
@@ -85,7 +85,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         doThrow(SQLException.class)
                 .when(viewService)
-                .create(any(Database.class), anyString(), anyString());
+                .create(any(Database.class), anyString(), anyString(), anyBoolean());
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -101,7 +101,7 @@ public class ViewEndpointUnitTest extends BaseTest {
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
-        when(viewService.create(DATABASE_1_CACHE, VIEW_1_NAME, VIEW_1_QUERY))
+        when(viewService.create(DATABASE_1_CACHE, VIEW_1_NAME, VIEW_1_QUERY, false))
                 .thenReturn(VIEW_1_DTO);
 
         /* test */

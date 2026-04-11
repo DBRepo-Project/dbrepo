@@ -234,6 +234,51 @@ public class ViewEndpoint extends RestEndpoint {
                 .build();
     }
 
+    @PatchMapping("/{viewId}")
+    @Transactional
+    @PreAuthorize("hasAuthority('refresh-database-view')")
+    @Observed(name = "dbrepo_view_refresh")
+    @Operation(summary = "Refresh materialized view",
+            description = "Refreshes a materialized view with id. Requires role `refresh-database-view`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Refresh materialized view successfully"),
+            @ApiResponse(responseCode = "403",
+                    description = "Refresh not allowed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database, view or user could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "412",
+                    description = "View is not materialized",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Void> refresh(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                       @NotNull @PathVariable("viewId") UUID viewId,
+                                       Principal principal) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, DashboardServiceException,
+            DashboardServiceConnectionException {
+        log.debug("endpoint refresh materialized view, databaseId={}, viewId={}", databaseId, viewId);
+        final Database database = databaseService.findById(databaseId);
+        if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
+            log.error("Failed to refresh materialized view: not the database owner {}", database.getOwnedBy());
+            throw new NotAllowedException("Failed to refresh materialized view: not the database owner " + database.getOwnedBy());
+        }
+        final View view = viewService.findById(database, viewId);
+        viewService.refresh(view);
+//        dashboardService.update(databaseService.findById(databaseId));
+        return ResponseEntity.accepted()
+                .build();
+    }
+
     @PutMapping("/{viewId}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-view-visibility')")

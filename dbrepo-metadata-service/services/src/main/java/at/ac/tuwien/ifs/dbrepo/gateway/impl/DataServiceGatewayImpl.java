@@ -290,6 +290,30 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
+    public void refreshView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
+            ViewNotFoundException {
+        final ResponseEntity<Void> response;
+        final String path = "/api/v1/database/" + databaseId + "/view/" + viewId;
+        log.trace("refresh view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
+        try {
+            response = restTemplate.exchange(path, HttpMethod.PATCH, HttpEntity.EMPTY, Void.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to refresh view: {}", e.getMessage());
+            throw new DataServiceConnectionException("Failed to refresh view: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to refresh view: not found: {}", e.getMessage());
+            throw new ViewNotFoundException("Failed to refresh view: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to refresh view: {}", e.getMessage());
+            throw new DataServiceException("Failed to refresh view: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+            log.error("Failed to refresh view: wrong http code: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to refresh view: wrong http code: " + response.getStatusCode());
+        }
+    }
+
+    @Override
     public QueryDto findQuery(UUID databaseId, UUID queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException {
         final ResponseEntity<QueryDto> response;

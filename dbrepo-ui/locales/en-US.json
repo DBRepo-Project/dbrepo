@@ -678,6 +678,12 @@
           "hint": "Required, e.g. can hide insights on the {resource} such as {schema}.",
           "enabled": "Visible",
           "disabled": "Hidden"
+        },
+        "materialized": {
+          "label": "Materialized",
+          "hint": "Required, e.g. can persist data to behave like a table.",
+          "enabled": "Materialized",
+          "disabled": "Live"
         }
       },
       "owner": {

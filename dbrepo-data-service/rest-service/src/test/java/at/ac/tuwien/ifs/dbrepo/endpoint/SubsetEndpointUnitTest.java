@@ -339,7 +339,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(Database.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_CACHE);
-        when(viewService.create(any(Database.class), anyString(), anyString()))
+        when(viewService.create(any(Database.class), anyString(), anyString(), anyBoolean()))
                 .thenReturn(QUERY_5_VIEW_DTO);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);

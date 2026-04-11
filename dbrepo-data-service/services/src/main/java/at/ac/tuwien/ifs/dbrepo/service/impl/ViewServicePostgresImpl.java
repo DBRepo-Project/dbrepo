@@ -46,7 +46,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
     }
 
     @Override
-    public ViewDto create(Database database, String viewName, String query) throws SQLException,
+    public ViewDto create(Database database, String viewName, String query, Boolean isMaterialized) throws SQLException,
             ViewMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -56,6 +56,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
                 .query(query)
                 .queryHash(DigestUtils.sha256Hex(query))
                 .isPublic(database.getIsPublic())
+                .isMaterialized(database.getIsPublic())
                 .owner(UserBriefDto.builder()
                         .username(database.getOwnedBy())
                         .build())
@@ -67,21 +68,20 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
         try {
             /* create view if not exists */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), query))
+            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), query, view.getIsMaterialized()))
                     .execute();
             log.atDebug()
-                    .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
+                    .setMessage("created view: " + database.getInternalName() + "." + view.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_view")
                     .log();
             /* select view columns */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
-            statement2.setString(1, database.getInternalName());
-            statement2.setString(2, view.getInternalName());
+            statement2.setString(1, view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
-                    .setMessage("created view: " + view.getInternalName() + "." + database.getInternalName())
+                    .setMessage("selected view columns: " + database.getInternalName() + "." + view.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_view_columns")
                     .log();
@@ -149,7 +149,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             connection.prepareStatement(mariaDbMapper.dropViewRawQuery(view.getInternalName()))
                     .execute();
             log.atDebug()
-                    .setMessage("delete view: " + view.getInternalName() + "." + database.getInternalName())
+                    .setMessage("delete view: " + database.getInternalName() + "." + view.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "view_delete")
                     .log();
@@ -160,6 +160,29 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             dataSource.close();
         }
         log.info("Deleted view {}.{}", database.getInternalName(), view.getInternalName());
+    }
+
+    @Override
+    public void refresh(Database database, View view) throws SQLException, ViewMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            /* drop view if exists */
+            final long start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.refreshMaterializedViewRawQuery(view.getInternalName()))
+                    .execute();
+            log.atDebug()
+                    .setMessage("refresh materialized view: " + database.getInternalName() + "." + view.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "view_materialized_refresh")
+                    .log();
+        } catch (SQLException e) {
+            log.error("Failed to refresh  materializedview: {}", e.getMessage());
+            throw new ViewMalformedException("Failed to refresh materialized view: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Refreshed materialized view {}.{}", database.getInternalName(), view.getInternalName());
     }
 
     @Override
@@ -176,7 +199,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
                             view.getInternalName(), timestamp))
                     .executeQuery();
             log.atDebug()
-                    .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
+                    .setMessage("count view: " + database.getInternalName() + "." + view.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "count_view")
                     .log();
@@ -199,12 +222,11 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             /* obtain only view metadata */
             long start = System.currentTimeMillis();
             final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
-            statement1.setString(1, database.getInternalName());
-            statement1.setString(2, viewName);
-            log.trace("1={}, 2={}", database.getInternalName(), viewName);
+            statement1.setString(1, viewName);
+            log.trace("1={}", viewName);
             final ResultSet resultSet1 = statement1.executeQuery();
             log.atDebug()
-                    .setMessage("inspected view: " + viewName + "." + database.getInternalName())
+                    .setMessage("inspected view: " + database.getInternalName() + "." + viewName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_view_schema")
                     .log();
@@ -219,12 +241,11 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             /* obtain view columns */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
-            statement2.setString(1, database.getInternalName());
-            statement2.setString(2, view.getInternalName());
-            log.trace("1={}, 2={}", database.getInternalName(), view.getInternalName());
+            statement2.setString(1, view.getInternalName());
+            log.trace("1={}",  view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
-                    .setMessage("inspect view columns: " + viewName + "." + database.getInternalName())
+                    .setMessage("inspect view columns: " + database.getInternalName() + "." + viewName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_view_columns")
                     .log();

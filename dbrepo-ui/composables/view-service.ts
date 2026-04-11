@@ -18,6 +18,22 @@ export const useViewService = (): any => {
     })
   }
 
+  async function refresh(databaseId: string, viewId: string): Promise<void> {
+    const axios = useAxiosInstance()
+    console.debug('refresh view with id', viewId, 'in database with id', databaseId)
+    return new Promise<void>((resolve, reject) => {
+      axios.patch<void>(`/api/v1/database/${databaseId}/view/${viewId}`)
+        .then((response) => {
+          console.info('Refreshed view with id', viewId, 'in database with id', databaseId)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to refresh view', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
   async function findOne(databaseId: string, viewId: string): Promise<ViewDto> {
     const axios = useAxiosInstance()
     console.debug('get view with id', viewId, 'in database with id', databaseId)
@@ -126,5 +142,5 @@ export const useViewService = (): any => {
     })
   }
 
-  return {remove, findOne, create, update, reExecuteData, reExecuteCount, exportData}
+  return {remove, findOne, create, update, reExecuteData, reExecuteCount, exportData, refresh}
 }

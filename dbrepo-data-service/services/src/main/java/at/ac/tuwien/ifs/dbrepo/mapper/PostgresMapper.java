@@ -45,7 +45,7 @@ public interface PostgresMapper {
 
     Logger log = LoggerFactory.getLogger(PostgresMapper.class);
 
-    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
+    DateTimeFormatter sqlDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
             .withZone(ZoneId.of("UTC"));
 
     @Named("internalMapping")
@@ -202,10 +202,18 @@ public interface PostgresMapper {
 
     @Named("dropView")
     default String dropViewRawQuery(String viewName) {
-        final StringBuilder statement = new StringBuilder("DROP VIEW IF EXISTS ")
+        final StringBuilder statement = new StringBuilder("DROP VIEW ")
                 .append(viewName)
                 .append(";");
         log.trace("mapped drop view statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String refreshMaterializedViewRawQuery(String viewName) {
+        final StringBuilder statement = new StringBuilder("REFRESH MATERIALIZED VIEW ")
+                .append(viewName)
+                .append(";");
+        log.trace("mapped refresh materialized view statement: {}", statement);
         return statement.toString();
     }
 
@@ -234,10 +242,18 @@ public interface PostgresMapper {
      * @param query    The query statement.
      * @return The raw query statement to create the view.
      */
-    default String viewCreateRawQuery(String viewName, String query) {
-        final String statement = "CREATE VIEW IF NOT EXISTS " + viewName + " AS (" + query + ")";
+    default String viewCreateRawQuery(String viewName, String query, Boolean isMaterialized) {
+        final StringBuilder statement = new StringBuilder("CREATE ");
+        if (isMaterialized) {
+            statement.append("MATERIALIZED ");
+        }
+        statement.append("VIEW ")
+                .append(viewName)
+                .append(" AS (")
+                .append(query)
+                .append(")");
         log.trace("mapped create view statement: {}", statement);
-        return statement;
+        return statement.toString();
     }
 
     default String databaseViewsSelectRawQuery() {
@@ -467,7 +483,7 @@ public interface PostgresMapper {
                 .append(tableOrView);
         if (timestamp != null) {
             statement.append("__as_of('")
-                    .append(mariaDbFormatter.format(timestamp))
+                    .append(sqlDateFormatter.format(timestamp))
                     .append("')");
         }
         statement.append(";");
@@ -497,26 +513,25 @@ public interface PostgresMapper {
         return statement.toString();
     }
 
-    @Named("dropTableQuery")
-    default String dropTableRawQuery(String tableName) {
-        return dropTableRawQuery(tableName, true);
-    }
-
     /**
      * Map the table delete query as raw query. Currently, preparing statements for database name and table name are not supported by the driver.
      *
      * @param tableName The table name.
-     * @param force     If true, force the deletion and throw an error if the table does not exist, otherwise ignore errors.
      * @return The raw query statement.
      */
-    default String dropTableRawQuery(String tableName, Boolean force) {
+    default String dropTableRawQuery(String tableName) {
         final StringBuilder statement = new StringBuilder("DROP TABLE ");
-        if (!force) {
-            statement.append("IF EXISTS ");
-        }
         statement.append(tableName)
-                .append(";");
+                .append(" CASCADE;");
         log.trace("mapped drop table query: {}", statement);
+        return statement.toString();
+    }
+
+    default String dropTableVersioningRawQuery(String tableName) {
+        final StringBuilder statement = new StringBuilder("SELECT periods.drop_system_versioning('");
+        statement.append(tableName)
+                .append("');");
+        log.trace("mapped drop table versioning query: {}", statement);
         return statement.toString();
     }
 
@@ -758,7 +773,7 @@ public interface PostgresMapper {
         statement.append(")");
         if (timestamp != null) {
             statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                    .append(mariaDbFormatter.format(timestamp))
+                    .append(sqlDateFormatter.format(timestamp))
                     .append("'");
         }
         statement.append(" as tbl");
@@ -798,7 +813,7 @@ public interface PostgresMapper {
                 .append(tableOrViewName);
         if (timestamp != null) {
             statement.append("__as_of('")
-                    .append(mariaDbFormatter.format(timestamp))
+                    .append(sqlDateFormatter.format(timestamp))
                     .append("')");
         }
         /* pagination */
@@ -859,12 +874,13 @@ public interface PostgresMapper {
         return columns;
     }
 
-    default Map<UUID, String> databaseToDatasourceKV(Database database) {
+    default Map<UUID, String> databaseToDatasourceKV(Database database, Instant timestamp) {
         final Map<UUID, String> dataSources = new HashMap<>();
         if (database.getTables() != null) {
             database.getTables()
                     .forEach(table -> {
-                        dataSources.put(table.getId(), table.getInternalName());
+                        final String optionalSuffix = timestamp == null ? "" : "__as_of('" + sqlDateFormatter.format(timestamp) + "')";
+                        dataSources.put(table.getId(), table.getInternalName() + optionalSuffix);
                     });
         }
         if (database.getViews() != null) {
@@ -1001,7 +1017,7 @@ public interface PostgresMapper {
                     return field;
                 })
                 .toList();
-        final List<Map.Entry<UUID, String>> tables = databaseToDatasourceKV(database)
+        final List<Map.Entry<UUID, String>> tables = databaseToDatasourceKV(database, timestamp)
                 .entrySet()
                 .stream()
                 .filter(entry -> data.getDatasourceIds().contains(entry.getKey()))
@@ -1012,7 +1028,7 @@ public interface PostgresMapper {
                 .from(tables.stream()
                         .map(entry -> table(entry.getValue() + (idx[0]++ == tables.size() ? "/*dbrepo:temporal_tables*/" : "")))
                         .toList());
-        final Map<UUID, String> datasources = databaseToDatasourceKV(database);
+        final Map<UUID, String> datasources = databaseToDatasourceKV(database, timestamp);
         if (data.getJoins() != null) {
             log.debug("subset joins: {}", data.getJoins().stream().map(j -> datasources.get(j.getDatasourceId())).toList());
             for (JoinDto join : data.getJoins()) {
@@ -1024,7 +1040,7 @@ public interface PostgresMapper {
             }
         }
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
-        final String value = timestamp != null ? " FOR SYSTEM_TIME AS OF TIMESTAMP '" + mariaDbFormatter.format(timestamp) + "'" : "";
+        final String value = timestamp != null ? " FOR SYSTEM_TIME AS OF TIMESTAMP '" + sqlDateFormatter.format(timestamp) + "'" : "";
         final String sql;
         if (data.getOrders() == null) {
             sql = where.getSQL(ParamType.INLINED)

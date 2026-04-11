@@ -47,12 +47,17 @@ public class ViewDto {
 
     @NotNull
     @JsonProperty("is_public")
-    @Schema(description = "The visibility; if true, The will be displayed publicly and is searchable", example = "true")
+    @Schema(description = "The visibility. If true, the data will be displayed publicly and will be searchable", example = "true")
     private Boolean isPublic;
 
     @NotNull
+    @JsonProperty("is_materialized")
+    @Schema(description = "The behavior. If true, the view behaves like a table with persisted results.", example = "true")
+    private Boolean isMaterialized;
+
+    @NotNull
     @JsonProperty("is_schema_public")
-    @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
+    @Schema(description = "The insights; If true, the schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
 
     @JsonProperty("initial_view")

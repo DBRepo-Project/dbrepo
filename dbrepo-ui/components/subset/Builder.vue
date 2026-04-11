@@ -54,6 +54,25 @@
             <v-col
               lg="4">
               <v-select
+                v-model="view.is_materialized"
+                :items="materialOptions"
+                persistent-hint
+                :variant="inputVariant"
+                required
+                clearable
+                :rules="[
+                  v => v !== null || $t('validation.required')
+                ]"
+                :label="$t('pages.database.resource.materialized.label')"
+                :hint="$t('pages.database.resource.materialized.hint')" />
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="isView"
+            dense>
+            <v-col
+              lg="4">
+              <v-select
                 v-model="view.is_public"
                 :items="dataOptions"
                 persistent-hint
@@ -571,6 +590,10 @@ export default {
         { title: this.$t('pages.database.resource.data.enabled'), value: true },
         { title: this.$t('pages.database.resource.data.disabled'), value: false },
       ],
+      materialOptions: [
+        { title: this.$t('pages.database.resource.materialized.enabled'), value: true },
+        { title: this.$t('pages.database.resource.materialized.disabled'), value: false },
+      ],
       schemaOptions: [
         { title: this.$t('pages.database.resource.schema.enabled'), value: true },
         { title: this.$t('pages.database.resource.schema.disabled'), value: false },
@@ -588,6 +611,7 @@ export default {
       view: {
         is_public: true,
         is_schema_public: true,
+        is_materialized: false,
         name: null
       },
       select: [],

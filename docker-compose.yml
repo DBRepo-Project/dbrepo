@@ -59,16 +59,17 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnamilegacy/postgresql:17.0.0
+    image: docker.io/postgres:17-alpine
+    ports:
+      - "15434:5432"
     volumes:
-      - auth-db-data:/bitnami/postgresql
+      - auth-db-data:/home/postgres/pgdata/pgroot/data
     environment:
-      POSTGRESQL_DATABASE: "${AUTH_DB_NAME:-keycloak}"
-      POSTGRESQL_USERNAME: "${AUTH_DB_USERNAME:-keycloak}"
-      POSTGRESQL_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      POSTGRES_DB: "${AUTH_DB_NAME:-keycloak}"
+      POSTGRES_USER: "${AUTH_DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${AUTH_DB_PASSWORD:-postgres}"
     healthcheck:
-      test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME:-postgres}"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -77,15 +78,15 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-db
     hostname: dashboard-db
-    image: docker.io/bitnamilegacy/postgresql:17.0.0
+    image: docker.io/postgres:17-alpine
     volumes:
-      - dashboard-db-data:/bitnami/postgresql
+      - dashboard-db-data:/home/postgres/pgdata/pgroot/data
     environment:
-      POSTGRESQL_DATABASE: "${DASHBOARD_DB_NAME:-grafana}"
-      POSTGRESQL_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
-      POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+      POSTGRES_DB: "${DASHBOARD_DB_NAME:-grafana}"
+      POSTGRES_USER: "${DASHBOARD_DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${DASHBOARD_DB_PASSWORD:-postgres}"
     healthcheck:
-      test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
+      test: ["CMD-SHELL", "pg_isready -U ${DASHBOARD_DB_USERNAME:-postgres}"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -101,8 +102,13 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # legacy
+      KC_DB: "postgres"
+      KC_DB_USERNAME: "${AUTH_DB_USERNAME:-postgres}"
+      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-postgres}"
       KC_BOOTSTRAP_ADMIN_USERNAME: "${AUTH_SERVICE_ADMIN:-admin}"
       KC_BOOTSTRAP_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
+      # bitnami
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
       LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -112,8 +118,8 @@ services:
       KEYCLOAK_EXTRA_ARGS: "--import-realm"
       KEYCLOAK_DATABASE_HOST: "auth-db"
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
-      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
-      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-postgres}"
+      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-postgres}"
       KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost:8080}"
       KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost:8080}"
       KEYCLOAK_PROXY_HEADERS: "forwarded"
@@ -496,9 +502,7 @@ services:
       network: host
     environment:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_ACCESS_KEY_ID: "${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}"
-      S3_SECRET_ACCESS_KEY: "${S3_ADMIN_SECRET_ACCESS_KEY:-seaweedfsadmin}"
-      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
+      STORAGE_SERVICE_HOSTNAME: ${STORAGE_SERVICE_HOSTNAME:-storage-service:9333}
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -574,8 +578,8 @@ services:
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
-      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
-      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-postgres}"
+      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-postgres}"
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_SECURITY_ADMIN_USER: "${DASHBOARD_UI_USERNAME:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
