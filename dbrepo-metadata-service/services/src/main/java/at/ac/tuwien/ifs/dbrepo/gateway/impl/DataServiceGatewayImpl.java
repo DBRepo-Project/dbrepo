@@ -13,10 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -296,7 +293,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         final String path = "/api/v1/database/" + databaseId + "/view/" + viewId;
         log.trace("refresh view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
-            response = restTemplate.exchange(path, HttpMethod.PATCH, HttpEntity.EMPTY, Void.class);
+            response = restTemplate.exchange(path, HttpMethod.POST, HttpEntity.EMPTY, Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to refresh view: {}", e.getMessage());
             throw new DataServiceConnectionException("Failed to refresh view: " + e.getMessage(), e);
@@ -344,11 +341,13 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     @Override
     public List<TableDto> getTableSchemas(UUID databaseId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-HTTP-Method-Override", "PATCH");
         final ResponseEntity<TableDto[]> response;
         final String path = "/api/v1/database/" + databaseId + "/table";
         log.trace("get table schemas at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
-            response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, TableDto[].class);
+            response = restTemplate.exchange(path, HttpMethod.GET, new HttpEntity<>(headers), TableDto[].class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to get table schemas: {}", e.getMessage());
             throw new DataServiceConnectionException("Failed to get table schemas: " + e.getMessage(), e);

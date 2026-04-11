@@ -272,7 +272,7 @@ public class TableEndpoint {
                         .build();
             }
             headers.set("Access-Control-Expose-Headers", "X-Count X-Headers");
-            final Result result = dataService.get(database, table.getInternalName(), timestamp,
+            final Result result = dataService.getTableData(database, table.getInternalName(), timestamp,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size);
             headers.set("X-Headers", Strings.join(result.getHeaders(), ','));

@@ -20,6 +20,7 @@
     "data": "Data",
     "continue": "Continue",
     "assign": "Assign",
+    "refresh": "Refresh Data",
     "back": "Back",
     "more": "More",
     "schema": "Schema",
@@ -970,6 +971,10 @@
       "tabs": {
         "info": "Info",
         "data": "Data"
+      },
+      "refresh": {
+        "title": "Refresh Materialization",
+        "subtitle": "Refresh the cached data of the materialized view"
       },
       "id": {
         "title": "ID"

@@ -9,5 +9,9 @@ import java.time.Instant;
 
 public interface DataService {
 
-    Result get(Database database, String tableOrViewName, Instant timestamp, Long page, Long size) throws SQLException, DatabaseMalformedException;
+    Result getTableData(Database database, String tableName, Instant timestamp, Long page, Long size)
+            throws SQLException, DatabaseMalformedException;
+
+    Result getViewData(Database database, String viewName, Instant timestamp, Long page, Long size)
+            throws SQLException, DatabaseMalformedException;
 }

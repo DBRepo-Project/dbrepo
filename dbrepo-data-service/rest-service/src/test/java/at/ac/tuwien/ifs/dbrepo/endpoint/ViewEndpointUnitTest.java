@@ -275,7 +275,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             DatabaseUnavailableException, QueryMalformedException, PaginationException, NotAllowedException,
             MetadataServiceException, TableNotFoundException, DatabaseNotFoundException, ViewMalformedException,
             FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException,
-            ImageInvalidException, AnalyseDataTypesException {
+            ImageInvalidException, AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
@@ -316,7 +316,7 @@ public class ViewEndpointUnitTest extends BaseTest {
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
             NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException,
             ViewMalformedException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
-            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getView(DATABASE_1_ID, VIEW_3_ID))

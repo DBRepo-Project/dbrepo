@@ -765,31 +765,6 @@ public interface PostgresMapper {
         }
     }
 
-    default String rawSelectQuery(String query, Instant timestamp, Long page, Long size) {
-        /* query check (this is enforced by the db also) */
-        // FIXME
-        final StringBuilder statement = new StringBuilder("SELECT * FROM (")
-                .append(query);
-        statement.append(")");
-        if (timestamp != null) {
-            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                    .append(sqlDateFormatter.format(timestamp))
-                    .append("'");
-        }
-        statement.append(" as tbl");
-        /* pagination */
-        if (size != null && page != null) {
-            log.trace("pagination size/limit of {}", size);
-            statement.append(" LIMIT ")
-                    .append(size);
-            log.trace("pagination page/offset of {}", page);
-            statement.append(" OFFSET ")
-                    .append(page * size);
-        }
-        log.trace("mapped select query: {}", statement);
-        return statement.toString();
-    }
-
     default String paginateSubset(String normalizedQuery, Long page, Long size) {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder(normalizedQuery);
@@ -806,11 +781,14 @@ public interface PostgresMapper {
         return statement.toString();
     }
 
-    default String defaultRawSelectQuery(String tableOrViewName, Instant timestamp, Long page,
-                                         Long size) {
+    default String defaultRawViewSelectQuery(String viewName, Instant timestamp, Long page, Long size) {
+
+    }
+
+    default String defaultRawTableSelectQuery(String tableName, Instant timestamp, Long page, Long size) {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM ")
-                .append(tableOrViewName);
+                .append(tableName);
         if (timestamp != null) {
             statement.append("__as_of('")
                     .append(sqlDateFormatter.format(timestamp))

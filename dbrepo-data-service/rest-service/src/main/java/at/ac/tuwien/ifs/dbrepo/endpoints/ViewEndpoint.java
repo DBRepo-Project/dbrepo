@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
+import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
@@ -7,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
+import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
@@ -52,17 +54,19 @@ public class ViewEndpoint {
     private final PostgresMapper postgresMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
+    private final DataService dataService;
 
     @Autowired
     public ViewEndpoint(DSLContext context, ViewService viewService, TableService tableService,
                         PostgresMapper postgresMapper, MetadataService metadataService,
-                        EndpointValidator endpointValidator) {
+                        EndpointValidator endpointValidator, DataService dataService) {
         this.context = context;
         this.viewService = viewService;
         this.tableService = tableService;
         this.postgresMapper = postgresMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
+        this.dataService = dataService;
     }
 
     @GetMapping
@@ -264,8 +268,8 @@ public class ViewEndpoint {
                                      @NotNull @RequestHeader("Accept") String accept,
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException, PaginationException,
-            QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException,
-            DatabaseNotFoundException, ViewMalformedException, FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            QueryMalformedException, NotAllowedException, MetadataServiceException, DatabaseNotFoundException,
+            FormatNotAvailableException, DatabaseMalformedException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, accept={}, timestamp={}",
                 databaseId, viewId, page, size, accept, timestamp);
         endpointValidator.validateDataParams(page, size);
@@ -302,20 +306,15 @@ public class ViewEndpoint {
                         .headers(headers)
                         .build();
             }
-            final String query = postgresMapper.rawSelectQuery(view.getQuery(), timestamp,
-                    accept.equals("text/csv") ? null : page,
-                    accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Headers");
-//            final String viewName = view.getQueryHash();
-//            viewService.create(database, viewName, view.getQuery(), false);
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-//                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
-//                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset1)));
+                    final Result result = dataService.getViewData(database, view.getInternalName(), timestamp,
+                            accept.equals("text/csv") ? null : page, accept.equals("text/csv") ? null : size);
+                    headers.set("X-Headers", String.join(",", result.getHeaders()));
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(null);
-//                            .body(dataMapper.datasetToJson(dataset1));
+                            .body(result.getData());
                 case "text/csv":
 //                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
 //                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset2)));
