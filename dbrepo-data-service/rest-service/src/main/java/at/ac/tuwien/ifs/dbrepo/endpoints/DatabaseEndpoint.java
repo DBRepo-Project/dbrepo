@@ -78,7 +78,6 @@ public class DatabaseEndpoint {
         try {
             final Database database = databaseService.create(container, data);
             databaseService.createExtensions(container, data.getInternalName());
-            databaseService.createQueryStore(container, data.getInternalName());
             accessService.create(database, AccessTypeDto.WRITE_ALL, data.getUsername(), data.getPassword());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();

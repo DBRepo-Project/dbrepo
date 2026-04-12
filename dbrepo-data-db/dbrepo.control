@@ -1,0 +1,5 @@
+# dbrepo extension
+comment = 'dbrepo extension for postgresql'
+default_version = '1.13'
+module_pathname = '$libdir/dbrepo'
+relocatable = true

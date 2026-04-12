@@ -8,9 +8,11 @@ import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,8 +43,43 @@ public class DataServicePostgresImpl extends DataConnector implements DataServic
             /* should never happen */
             throw new SQLException("Failed to find table: " + tableName);
         }
-        return getData(database, optional.get().getColumns().stream().map(Column::getInternalName).toList(),
-                postgresMapper.defaultRawTableSelectQuery(tableName, timestamp, page, size));
+        final List<String> headers = optional.get()
+                .getColumns()
+                .stream()
+                .map(Column::getInternalName)
+                .toList();
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            long start = System.currentTimeMillis();
+            final PreparedStatement statement;
+            statement = connection.prepareStatement(postgresMapper.defaultRawTableSelectQuery(tableName, timestamp, page, size));
+            final ResultSet resultSet = statement.executeQuery();
+            final long duration = System.currentTimeMillis() - start;
+            log.atDebug()
+                    .setMessage("executed query statement in " + duration + "ms")
+                    .addKeyValue(Constants.DURATION, duration)
+                    .addKeyValue(Constants.ACTION, "execute")
+                    .log();
+            final List<Map<String, Object>> data = new ArrayList<>();
+            while (resultSet.next()) {
+                final int[] idx = new int[]{1};
+                final Map<String, Object> row = new LinkedHashMap<>();
+                for (String header : headers) {
+                    row.put(header, resultSet.getString(idx[0]++));
+                }
+                data.add(row);
+            }
+            return Result.builder()
+                    .headers(headers)
+                    .data(data)
+                    .build();
+        } catch (SQLException e) {
+            log.error("Failed to get data: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to get data: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override
@@ -56,20 +93,31 @@ public class DataServicePostgresImpl extends DataConnector implements DataServic
             /* should never happen */
             throw new SQLException("Failed to find view: " + viewName);
         }
-        return getData(database, optional.get().getColumns().stream().map(ViewColumn::getInternalName).toList(),
-                postgresMapper.defaultRawViewSelectQuery(viewName, timestamp, page, size));
-    }
-
-    public Result getData(Database database, List<String> headers, String query)
-            throws SQLException, DatabaseMalformedException {
+        final List<String> headers = optional.get()
+                .getColumns()
+                .stream()
+                .map(ViewColumn::getInternalName)
+                .toList();
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
+        final String target = DigestUtils.sha3_224Hex(viewName);
         try {
             long start = System.currentTimeMillis();
-            final PreparedStatement statement;
-            statement = connection.prepareStatement(query);
-            final ResultSet resultSet = statement.executeQuery();
-            final long duration = System.currentTimeMillis() - start;
+            final PreparedStatement statement1;
+            /* create temporary table */
+            statement1 = connection.prepareStatement(postgresMapper.defaultCreateTemporaryTableFromSourceQuery(target, viewName));
+            statement1.execute();
+            long duration = System.currentTimeMillis() - start;
+            log.atDebug()
+                    .setMessage("executed query statement in " + duration + "ms")
+                    .addKeyValue(Constants.DURATION, duration)
+                    .addKeyValue(Constants.ACTION, "create_temporary_table")
+                    .log();
+            /* select from temporary table as of time */
+            final PreparedStatement statement2;
+            statement2 = connection.prepareStatement(postgresMapper.defaultRawTableSelectQuery(target, timestamp, page, size));
+            final ResultSet resultSet = statement2.executeQuery();
+            duration = System.currentTimeMillis() - start;
             log.atDebug()
                     .setMessage("executed query statement in " + duration + "ms")
                     .addKeyValue(Constants.DURATION, duration)

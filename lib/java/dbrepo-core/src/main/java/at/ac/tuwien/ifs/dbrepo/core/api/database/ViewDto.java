@@ -65,7 +65,7 @@ public class ViewDto {
     private Boolean isInitialView;
 
     @NotNull
-    @Schema(description = "The SQL statement used to create the view", example = "SELECT `id` FROM `air_quality` ORDER BY `value` DESC")
+    @Schema(description = "The SQL statement used to create the view", example = "SELECT id FROM air_quality ORDER BY value DESC")
     private String query;
 
     @NotNull

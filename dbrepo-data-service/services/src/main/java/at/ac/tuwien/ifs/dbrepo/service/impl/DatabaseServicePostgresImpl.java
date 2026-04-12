@@ -64,7 +64,7 @@ public class DatabaseServicePostgresImpl extends DataConnector implements Databa
         final Connection connection = dataSource.getConnection();
         try {
             /* create query store */
-            for (String extension : List.of("plpython3u", "aws_s3", "periods")) {
+            for (String extension : List.of("plpython3u", "pgcrypto", "aws_s3", "periods", "dbrepo")) {
                 final long start = System.currentTimeMillis();
                 connection.prepareStatement(mariaDbMapper.createExtensionRawQuery(extension))
                         .execute();
@@ -81,38 +81,6 @@ public class DatabaseServicePostgresImpl extends DataConnector implements Databa
             dataSource.close();
         }
         log.info("Created extensions in database with name {}", databaseName);
-    }
-
-    @Override
-    public void createQueryStore(Container container, String databaseName) throws SQLException,
-            QueryStoreCreateException {
-        final ComboPooledDataSource dataSource = getDataSource(container, databaseName);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* create query store */
-            long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
-                    .execute();
-            log.atDebug()
-                    .setMessage("created query store in database: " + databaseName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_query_store")
-                    .log();
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery())
-                    .execute();
-            log.atDebug()
-                    .setMessage("created query store hash table procedure in database: " + databaseName)
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_procedure_hash_table")
-                    .log();
-        } catch (SQLException e) {
-            log.error("Failed to create query store: {}", e.getMessage());
-            throw new QueryStoreCreateException("Failed to create query store: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        log.info("Created query store in database with name {}", databaseName);
     }
 
     @Override

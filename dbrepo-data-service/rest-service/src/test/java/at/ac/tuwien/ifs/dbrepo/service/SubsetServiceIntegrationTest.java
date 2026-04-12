@@ -158,7 +158,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         final UUID response = subsetService.storeQuery(DATABASE_1_CACHE, QUERY_1_STATEMENT,
-                QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION, USER_1_USERNAME);
+                QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION);
         assertNotNull(response);
         final List<Map<String, Object>> subsets = MariaDbUtil.listQueryStore(DATABASE_1_CACHE);
         assertEquals(1, subsets.size());
@@ -183,7 +183,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
             QueryMalformedException, ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
 
         /* test */
-        final UUID response = subsetService.create(DATABASE_1_CACHE, QUERY_1_SUBSET_DTO, QUERY_1_EXECUTION, USER_1_USERNAME);
+        final UUID response = subsetService.create(DATABASE_1_CACHE, QUERY_1_SUBSET_DTO, QUERY_1_EXECUTION);
         assertNotNull(response);
     }
 
@@ -192,7 +192,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
 
         /* test */
         assertThrows(QueryStoreInsertException.class, () -> {
-            subsetService.storeQuery(DATABASE_1_CACHE, "DROP DATABASE `weather`", "", QUERY_1_EXECUTION, USER_1_USERNAME);
+            subsetService.storeQuery(DATABASE_1_CACHE, "DROP DATABASE `weather`", "", QUERY_1_EXECUTION);
         });
     }
 
@@ -200,14 +200,14 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     public void storeQuery_simple_succeeds() throws QueryStoreInsertException, SQLException {
 
         /* test */
-        subsetService.storeQuery(DATABASE_1_CACHE, "SELECT 1", "SELECT 1", QUERY_1_EXECUTION, USER_1_USERNAME);
+        subsetService.storeQuery(DATABASE_1_CACHE, "SELECT 1", "SELECT 1", QUERY_1_EXECUTION);
     }
 
     @Test
     public void storeQuery_simpleRow_succeeds() throws QueryStoreInsertException, SQLException {
 
         /* test */
-        subsetService.storeQuery(DATABASE_1_CACHE, "VALUES (1, 2, 3)", "VALUES (1, 2, 3)", QUERY_1_EXECUTION, USER_1_USERNAME);
+        subsetService.storeQuery(DATABASE_1_CACHE, "VALUES (1, 2, 3)", "VALUES (1, 2, 3)", QUERY_1_EXECUTION);
     }
 
     protected void findById_generic(UUID queryId) throws RemoteUnavailableException, SQLException,

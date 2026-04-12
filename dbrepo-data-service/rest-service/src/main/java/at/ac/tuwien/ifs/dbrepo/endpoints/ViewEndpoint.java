@@ -146,7 +146,8 @@ public class ViewEndpoint {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(viewService.create(database, postgresMapper.nameToInternalName(data.getName()),
-                            postgresMapper.subsetDtoToNormalizedQuery(context, database, data.getQuery()), data.getIsMaterialized()));
+                            postgresMapper.subsetDtoToNormalizedQuery(context, database, data.getQuery()),
+                            data.getIsMaterialized()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -301,7 +302,7 @@ public class ViewEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
                 headers.set("Access-Control-Expose-Headers", "X-Count");
-                headers.set("X-Count", "" + viewService.count(database, view, timestamp));
+//                headers.set("X-Count", "" + viewService.count(database, view, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();

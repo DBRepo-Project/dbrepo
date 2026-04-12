@@ -20,7 +20,6 @@ public interface SubsetService {
      * @param database  The database.
      * @param subset    The subset information.
      * @param timestamp The timestamp as of which the data is queried. If smaller than <now>, historic data is queried.
-     * @param username  The username of the creating user.
      * @return The query id.
      * @throws QueryStoreInsertException The query store refused to insert the query.
      * @throws SQLException              The connection to the database could not be established.
@@ -29,9 +28,9 @@ public interface SubsetService {
      * @throws ViewNotFoundException     The referenced view source was not found.
      * @throws ColumnNotFoundException   The referenced column was not found.
      */
-    UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
-            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
-            ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException;
+    UUID create(Database database, SubsetDto subset, Instant timestamp) throws QueryStoreInsertException, SQLException,
+            QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewNotFoundException,
+            ColumnNotFoundException;
 
     /**
      * Compute result set count and -hash metadata for a given subset.
@@ -84,12 +83,11 @@ public interface SubsetService {
      *
      * @param database  The database.
      * @param statement The query statement.
-     * @param username  The username.
      * @return The stored query id on success.
      * @throws SQLException              The connection to the database could not be established.
      * @throws QueryStoreInsertException The query store failed to insert the query.
      */
-    UUID storeQuery(Database database, String statement, String normalizedQuery, Instant timestamp, String username)
+    UUID storeQuery(Database database, String statement, String normalizedQuery, Instant timestamp)
             throws SQLException, QueryStoreInsertException;
 
     /**

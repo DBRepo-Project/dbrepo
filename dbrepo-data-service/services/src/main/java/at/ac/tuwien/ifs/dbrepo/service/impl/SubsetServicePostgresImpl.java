@@ -12,7 +12,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.SubsetType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
-import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
@@ -38,7 +37,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
 
     private final DSLContext context;
     private final DataMapper dataMapper;
-    private final PostgresMapper mariaDbMapper;
+    private final PostgresMapper postgresMapper;
     private final SubsetCacheRepository subsetRepository;
     private final MetadataServiceGateway metadataServiceGateway;
 
@@ -48,19 +47,19 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
                                      MetadataServiceGateway metadataServiceGateway) {
         this.context = context;
         this.dataMapper = dataMapper;
-        this.mariaDbMapper = mariaDbMapper;
+        this.postgresMapper = mariaDbMapper;
         this.subsetRepository = subsetRepository;
         this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @Override
     @Timed(value = "dbrepo_data_create_subset", description = "Time spent creating a subset", histogram = true)
-    public UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
-            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
+    public UUID create(Database database, SubsetDto subset, Instant timestamp) throws QueryStoreInsertException,
+            SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
-        final String query = mariaDbMapper.subsetDtoToNormalizedQuery(context, database, subset);
-        final String normalizedQuery = mariaDbMapper.subsetDtoToNormalizedTimestampedQuery(context, database, subset, timestamp);
-        return storeQuery(database, query, normalizedQuery, timestamp, username);
+        final String query = postgresMapper.subsetDtoToNormalizedQuery(context, database, subset);
+        final String normalizedQuery = postgresMapper.subsetDtoToNormalizedTimestampedQuery(context, database, subset, timestamp);
+        return storeQuery(database, query, normalizedQuery, timestamp);
     }
 
     @Timed(value = "dbrepo_data_hash_subset_data", description = "Time spent hashing subset data", histogram = true)
@@ -71,7 +70,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
-            final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreHashQueryRawQuery());
+            final CallableStatement callableStatement = connection.prepareCall(postgresMapper.queryStoreHashQueryRawQuery());
             callableStatement.setString(1, statement);
             callableStatement.registerOutParameter(2, Types.VARCHAR);
             log.atDebug()
@@ -82,7 +81,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
                     .log();
             callableStatement.executeUpdate();
             final String resultHash = callableStatement.getString(2);
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.countRawSelectQuery(statement))
+            final ResultSet resultSet = connection.prepareStatement(postgresMapper.countRawSelectQuery(statement))
                     .executeQuery();
             log.atDebug()
                     .setMessage("count subset in database: " + database.getInternalName())
@@ -90,7 +89,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
                     .addKeyValue(Constants.ACTION, "count_query")
                     .addKeyValue("query", statement)
                     .log();
-            final Long resultCount = mariaDbMapper.resultSetToNumber(resultSet);
+            final Long resultCount = postgresMapper.resultSetToNumber(resultSet);
             log.info("Computed result set metadata: count {} and hash: {}", resultCount, resultHash);
             return SubsetMetadata.builder()
                     .resultCount(resultCount)
@@ -113,7 +112,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.filterToGetQueriesRawQuery(filterPersisted));
+            final PreparedStatement statement = connection.prepareStatement(postgresMapper.filterToGetQueriesRawQuery(filterPersisted));
             if (filterPersisted != null) {
                 statement.setBoolean(1, filterPersisted);
                 log.trace("filter persisted only {}", filterPersisted);
@@ -140,7 +139,6 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
                 subset.setDatabaseId(database.getId());
                 queries.add(subset);
             }
-            log.info("Find {} queries", queries.size());
             return queries;
         } catch (SQLException e) {
             log.error("Failed to find queries: {}", e.getMessage());
@@ -163,7 +161,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
-            final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreFindQueryRawQuery());
+            final PreparedStatement preparedStatement = connection.prepareStatement(postgresMapper.queryStoreFindQueryRawQuery());
             preparedStatement.setString(1, String.valueOf(queryId));
             final ResultSet resultSet = preparedStatement.executeQuery();
             log.atDebug()
@@ -188,7 +186,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
 
     @Override
     @Timed(value = "dbrepo_data_store_subset_query", description = "Time spent storing a subset query in the query store", histogram = true)
-    public UUID storeQuery(Database database, String query, String normalizedQuery, Instant timestamp, String username)
+    public UUID storeQuery(Database database, String query, String normalizedQuery, Instant timestamp)
             throws SQLException, QueryStoreInsertException {
         /* save */
         final UUID queryId;
@@ -197,16 +195,12 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         try {
             /* insert query into query store */
             final long start = System.currentTimeMillis();
-            final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
-            if (username != null) {
-                callableStatement.setString(1, username);
-            } else {
-                callableStatement.setNull(1, Types.VARCHAR);
-            }
-            callableStatement.setString(2, query);
-            callableStatement.setString(3, normalizedQuery);
-            callableStatement.setTimestamp(4, Timestamp.from(Instant.now()));
-            callableStatement.registerOutParameter(5, Types.VARCHAR);
+            final CallableStatement callableStatement = connection.prepareCall(postgresMapper.queryStoreStoreQueryRawQuery());
+            callableStatement.setString(1, query);
+            callableStatement.setString(2, normalizedQuery);
+            callableStatement.setTimestamp(3, Timestamp.from(timestamp));
+            callableStatement.registerOutParameter(4, Types.VARCHAR);
+            log.trace("1={}, 2={}, 3={}, 4={}", query, normalizedQuery, Timestamp.from(timestamp), Types.VARCHAR);
             callableStatement.executeUpdate();
             log.atDebug()
                     .setMessage("store query in query store of database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
@@ -214,7 +208,7 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
                     .addKeyValue(Constants.ACTION, "store_query")
                     .addKeyValue("query", query)
                     .log();
-            queryId = UUID.fromString(callableStatement.getString(5));
+            queryId = UUID.fromString(callableStatement.getString(4));
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
             return queryId;
@@ -235,9 +229,10 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         try {
             /* update query */
             final long start = System.currentTimeMillis();
-            final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreUpdateQueryRawQuery());
-            preparedStatement.setBoolean(1, persist);
-            preparedStatement.setString(2, String.valueOf(subsetId));
+            final PreparedStatement preparedStatement = connection.prepareStatement(postgresMapper.queryStoreUpdateQueryRawQuery());
+            preparedStatement.setString(1, String.valueOf(subsetId));
+            preparedStatement.setBoolean(2, persist);
+            log.trace("1={}, 2={}", subsetId, persist);
             preparedStatement.executeUpdate();
             log.atDebug()
                     .setMessage("persist query in query store of database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")

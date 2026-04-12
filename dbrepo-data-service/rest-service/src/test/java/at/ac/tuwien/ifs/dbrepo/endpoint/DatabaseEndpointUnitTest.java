@@ -61,9 +61,6 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(databaseService.create(CONTAINER_1_CACHE, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_CACHE);
         doNothing()
-                .when(databaseService)
-                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
-        doNothing()
                 .when(accessService)
                 .create(eq(DATABASE_1_CACHE), any(AccessTypeDto.class), anyString(), anyString());
 
@@ -95,7 +92,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_readonlyPasswordHashed_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            SQLException, QueryStoreCreateException, DatabaseMalformedException, MetadataServiceException {
+            SQLException, DatabaseMalformedException, MetadataServiceException {
         final CreateDatabaseDto request = CreateDatabaseDto.builder()
                 .internalName(DATABASE_1_INTERNAL_NAME)
                 .containerId(CONTAINER_1_ID)
@@ -109,9 +106,6 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(databaseService.create(CONTAINER_1_CACHE, request))
                 .thenReturn(DATABASE_1_CACHE);
         doNothing()
-                .when(databaseService)
-                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
-        doNothing()
                 .when(accessService)
                 .create(eq(DATABASE_1_CACHE), any(AccessTypeDto.class), anyString(), anyString());
 
@@ -124,14 +118,11 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_unavailable_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            MetadataServiceException, SQLException, QueryStoreCreateException {
+            MetadataServiceException {
 
         /* mock */
         when(metadataService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_CACHE);
-        doThrow(QueryStoreCreateException.class)
-                .when(databaseService)
-                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
 
         /* test */
         assertThrows(QueryStoreCreateException.class, () -> {
@@ -158,7 +149,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_queryStore_fails() throws RemoteUnavailableException, ContainerNotFoundException, SQLException,
-            DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
+            DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
@@ -166,9 +157,6 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .getContainer(CONTAINER_1_ID);
         when(databaseService.create(CONTAINER_1_CACHE, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_CACHE);
-        doThrow(QueryStoreCreateException.class)
-                .when(databaseService)
-                .createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {

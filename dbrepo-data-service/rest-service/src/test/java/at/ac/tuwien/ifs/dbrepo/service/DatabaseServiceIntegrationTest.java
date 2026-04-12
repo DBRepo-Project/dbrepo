@@ -57,18 +57,6 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException {
-
-        /* mock */
-        MariaDbUtil.dropQueryStore(DATABASE_1_CACHE);
-
-        /* test */
-        databaseService.createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
-        final List<Map<String, Object>> queryStore = MariaDbUtil.listQueryStore(DATABASE_1_CACHE);
-        assertEquals(0, queryStore.size());
-    }
-
-    @Test
     public void create_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* mock */

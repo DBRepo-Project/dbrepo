@@ -56,7 +56,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
                 .query(query)
                 .queryHash(DigestUtils.sha256Hex(query))
                 .isPublic(database.getIsPublic())
-                .isMaterialized(database.getIsPublic())
+                .isMaterialized(isMaterialized)
                 .owner(UserBriefDto.builder()
                         .username(database.getOwnedBy())
                         .build())
@@ -242,7 +242,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, view.getInternalName());
-            log.trace("1={}",  view.getInternalName());
+            log.trace("1={}", view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
                     .setMessage("inspect view columns: " + database.getInternalName() + "." + viewName)

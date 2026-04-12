@@ -19,15 +19,15 @@ public interface DuckDbMapper {
                 .append(data.getContainer().getPassword())
                 .append(" port=")
                 .append(data.getContainer().getPort())
-                .append(" database=")
+                .append(" dbname=")
                 .append(data.getInternalName())
-                .append("' AS mysqldb (TYPE mysql);");
-        log.debug("mapped attach mysql statement: {}", statement);
+                .append("' AS postgres_db (TYPE postgres, READ_ONLY, SCHEMA 'public');");
+        log.debug("mapped attach postgres statement: {}", statement);
         return statement.toString();
     }
 
     default String queryToRawDescribeQuery(String data) {
-        final StringBuilder statement = new StringBuilder("USE mysqldb; DESCRIBE (")
+        final StringBuilder statement = new StringBuilder("USE postgres_db; DESCRIBE (")
                 .append(data.replace("`", "\""))
                 .append(");");
         log.debug("mapped describe statement: {}", statement);

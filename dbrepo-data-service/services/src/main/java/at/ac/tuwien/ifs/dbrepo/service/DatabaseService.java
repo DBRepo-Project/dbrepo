@@ -25,17 +25,6 @@ public interface DatabaseService {
             QueryStoreCreateException;
 
     /**
-     * Creates the query store in the container and database.
-     *
-     * @param container    The container.
-     * @param databaseName The database name.
-     * @throws SQLException              The connection to the database could not be established.
-     * @throws QueryStoreCreateException The query store could not be created.
-     */
-    void createQueryStore(Container container, String databaseName) throws SQLException,
-            QueryStoreCreateException;
-
-    /**
      * Updates a user's password in a given database.
      *
      * @param database The database.

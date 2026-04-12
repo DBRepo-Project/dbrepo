@@ -152,50 +152,38 @@ public interface PostgresMapper {
         return statement;
     }
 
-    default String queryStoreCreateTableRawQuery() {
-        final String statement = "CREATE TABLE qs_queries ( id VARCHAR(36) NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(), created TIMESTAMP NOT NULL DEFAULT NOW(), executed TIMESTAMP NOT NULL default NOW(), created_by VARCHAR(36), query text NOT NULL, query_normalized text NOT NULL, is_persisted boolean NOT NULL, query_hash VARCHAR(255) NOT NULL, result_hash VARCHAR(255), result_number bigint ); SELECT periods.add_system_time_period('qs_queries', 'row_start', 'row_end'); SELECT periods.add_system_versioning('qs_queries');";
-        log.trace("mapped create query store table statement: {}", statement);
-        return statement;
-    }
-
-    default String queryStoreCreateHashTableProcedureRawQuery() {
-        final String statement = "CREATE OR REPLACE PROCEDURE store_query(IN query TEXT, IN normalized_query TEXT, IN executed TIMESTAMP, OUT query_id VARCHAR(36)) LANGUAGE plpgsql AS $$ DECLARE _queryhash VARCHAR(255) DEFAULT sha256(query::bytea); _querycount BIGINT DEFAULT 0;BEGIN IF query IS NULL OR normalized_query IS NULL OR executed IS NULL THEN RAISE EXCEPTION 'input cannot be null'; END IF; IF _queryhash IS NULL THEN INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, executed) SELECT CURRENT_USER, query, normalized_query, false, _queryhash, _queryhash, _querycount, executed WHERE NOT EXISTS (SELECT id FROM qs_queries WHERE query_hash = _queryhash AND result_hash IS NULL); query_id := (SELECT id FROM qs_queries WHERE query_hash = _queryhash AND result_hash IS NULL); ELSE INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, executed) SELECT CURRENT_USER, query, query, false, _queryhash, _queryhash, _querycount, executed WHERE NOT EXISTS (SELECT id FROM qs_queries WHERE query_hash = _queryhash AND result_hash = _queryhash); query_id := (SELECT id FROM qs_queries WHERE query_hash = _queryhash AND result_hash = _queryhash); END IF; END $$;";
-        log.trace("mapped create query store hash_table procedure statement: {}", statement);
-        return statement;
-    }
-
     default String queryStoreStoreQueryRawQuery() {
-        final String statement = "{call store_query(?, ?, ?, ?, ?)}";
+        final String statement = "CALL dbrepo.store_query(?, ?, ?, ?)";
         log.trace("mapped store query statement: {}", statement);
         return statement;
     }
 
-    default String queryStoreHashQueryRawQuery() {
-        final String statement = "{call hash_query(?, ?)}";
-        log.trace("mapped hash query statement: {}", statement);
-        return statement;
-    }
-
     default String queryStoreUpdateQueryRawQuery() {
-        final String statement = "UPDATE qs_queries SET is_persisted = ? WHERE id = ?";
+        final String statement = "CALL dbrepo.persist(?, ?)";
         log.trace("mapped update query statement: {}", statement);
         return statement;
     }
 
     default String queryStoreFindQueryRawQuery() {
-        final String statement = "SELECT id, created_by, query, query_normalized, query_hash, result_hash, result_number, is_persisted, executed FROM qs_queries q WHERE q.id = ?";
+        final String statement = "SELECT id, created_by, query, query_normalized, query_hash, result_hash, result_number, is_persisted, executed FROM dbrepo.queries q WHERE q.id = ?";
         log.trace("mapped find query statement: {}", statement);
         return statement;
     }
 
     default String databaseTablesSelectRawQuery() {
-        final String statement = "SELECT DISTINCT t.TABLE_NAME FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = ? AND t.TABLE_TYPE = 'SYSTEM VERSIONED' AND t.TABLE_NAME != 'qs_queries' ORDER BY t.TABLE_NAME ASC";
+        final String statement = "SELECT DISTINCT t.TABLE_NAME FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = 'query_store' AND t.TABLE_TYPE = 'SYSTEM VERSIONED' AND t.TABLE_NAME != 'queries' ORDER BY t.TABLE_NAME ASC";
         log.trace("mapped select tables statement: {}", statement);
         return statement;
     }
 
+    default String queryStoreHashQueryRawQuery() {
+        final String statement = "CALL dbrepo.hash_query(?, ?)";
+        log.trace("mapped hash query statement: {}", statement);
+        return statement;
+    }
+
     default String databaseTableSelectRawQuery() {
-        final String statement = "SELECT t.table_name, t.table_type, -1 as table_rows, -1 as avg_row_length, -1 as data_length, -1 as max_data_length, NOW() as create_time, NOW() as update_time, v.view_definition, (SELECT obj_description(c.oid) FROM pg_class c WHERE c.relkind = 'r' AND c.relname = t.table_name) FROM information_schema.tables t LEFT JOIN information_schema.views v ON v.table_name = t.table_name WHERE t.table_schema = 'public' AND t.table_name NOT LIKE '%_history' AND t.table_name != 'qs_queries' AND t.table_name = ?;";
+        final String statement = "SELECT t.table_name, t.table_type, -1 as table_rows, -1 as avg_row_length, -1 as data_length, -1 as max_data_length, NOW() as create_time, NOW() as update_time, v.view_definition, (SELECT obj_description(c.oid) FROM pg_class c WHERE c.relkind = 'r' AND c.relname = t.table_name) FROM information_schema.tables t LEFT JOIN information_schema.views v ON v.table_name = t.table_name WHERE t.table_schema = 'public' AND t.table_name NOT LIKE '%_history' AND t.table_name != 'queries' AND t.table_name = ?;";
         log.trace("mapped select table statement: {}", statement);
         return statement;
     }
@@ -263,7 +251,7 @@ public interface PostgresMapper {
     }
 
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
-        final StringBuilder statement = new StringBuilder("SELECT id, created_by, query, query_normalized, query_hash, result_hash, result_number, is_persisted, executed FROM qs_queries");
+        final StringBuilder statement = new StringBuilder("SELECT id, created_by, query, query_normalized, query_hash, result_hash, result_number, is_persisted, executed FROM dbrepo.queries");
         if (filterPersisted != null) {
             statement.append(" WHERE is_persisted = ?");
         }
@@ -781,10 +769,6 @@ public interface PostgresMapper {
         return statement.toString();
     }
 
-    default String defaultRawViewSelectQuery(String viewName, Instant timestamp, Long page, Long size) {
-
-    }
-
     default String defaultRawTableSelectQuery(String tableName, Instant timestamp, Long page, Long size) {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM ")
@@ -805,6 +789,16 @@ public interface PostgresMapper {
         }
         statement.append(") as tbl");
         log.trace("mapped select query: {}", statement);
+        return statement.toString();
+    }
+
+    default String defaultCreateTemporaryTableFromSourceQuery(String target, String source) {
+        final StringBuilder statement = new StringBuilder("CREATE TEMPORARY TABLE \"")
+                .append(target)
+                .append("\" AS SELECT * FROM ")
+                .append(source)
+                .append(";");
+        log.trace("mapped create temporary table query: {}", statement);
         return statement.toString();
     }
 
@@ -911,33 +905,33 @@ public interface PostgresMapper {
         switch (operator) {
             case "=":
             case "<=>":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).eq(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).eq(data.getValue());
             case "<":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).lt(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).lt(data.getValue());
             case "<=":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).le(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).le(data.getValue());
             case ">":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).gt(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).gt(data.getValue());
             case ">=":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).ge(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).ge(data.getValue());
             case "!=":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).ne(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).ne(data.getValue());
             case "LIKE":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).like(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).like(data.getValue());
             case "NOT LIKE":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).notLike(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).notLike(data.getValue());
             case "IN":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).in(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).in(data.getValue());
             case "NOT IN":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).notIn(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).notIn(data.getValue());
             case "IS NOT NULL":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).isNotNull();
+                return field(name(column.getDatasourceName(), column.getInternalName())).isNotNull();
             case "IS NULL":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).isNull();
+                return field(name(column.getDatasourceName(), column.getInternalName())).isNull();
             case "REGEXP":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).likeRegex(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).likeRegex(data.getValue());
             case "NOT REGEXP":
-                return field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).notLikeRegex(data.getValue());
+                return field(name(column.getDatasourceName(), column.getInternalName())).notLikeRegex(data.getValue());
         }
         log.error("Failed to map operator: {}", operator);
         throw new IllegalArgumentException("Failed to map operator: " + operator);
@@ -949,14 +943,14 @@ public interface PostgresMapper {
         for (OrderDto order : data.getOrders()) {
             final at.ac.tuwien.ifs.dbrepo.api.Column column = columnIdToColumn(database, order.getColumnId());
             if (order.getDirection() == null) {
-                sort.add(field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())));
+                sort.add(field(name(column.getDatasourceName(), column.getInternalName())));
                 continue;
             }
             switch (order.getDirection()) {
                 case ASC ->
-                        sort.add(field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).asc());
+                        sort.add(field(name(column.getDatasourceName(), column.getInternalName())).asc());
                 case DESC ->
-                        sort.add(field(name(database.getInternalName(), column.getDatasourceName(), column.getInternalName())).desc());
+                        sort.add(field(name(column.getDatasourceName(), column.getInternalName())).desc());
             }
         }
         return step.orderBy(sort);
@@ -986,7 +980,7 @@ public interface PostgresMapper {
                 .stream()
                 .filter(entry -> data.getColumns().stream().anyMatch(column -> column.getId().equals(entry.getKey())))
                 .map(entry -> {
-                    Field<Object> field = field(name(database.getInternalName(), entry.getValue().getDatasourceName(), entry.getValue().getInternalName()));
+                    Field<Object> field = field(name(entry.getValue().getInternalName()));
                     final Optional<SubsetColumnDto> optional = data.getColumns().stream().filter(column -> entry.getKey().equals(column.getId())).findFirst();
                     if (optional.isPresent() && optional.get().getAlias() != null) {
                         log.trace("column {}.{}.{} is aliased: {}", database.getInternalName(), entry.getValue().getDatasourceName(), entry.getValue().getInternalName(), optional.get().getAlias());
@@ -1004,7 +998,7 @@ public interface PostgresMapper {
         final int[] idx = new int[]{1};
         SelectJoinStep<Record> query = context.select(filteredColumns)
                 .from(tables.stream()
-                        .map(entry -> table(entry.getValue() + (idx[0]++ == tables.size() ? "/*dbrepo:temporal_tables*/" : "")))
+                        .map(entry -> table(entry.getValue()))
                         .toList());
         final Map<UUID, String> datasources = databaseToDatasourceKV(database, timestamp);
         if (data.getJoins() != null) {
@@ -1012,21 +1006,18 @@ public interface PostgresMapper {
             for (JoinDto join : data.getJoins()) {
                 for (ConditionalDto conditional : join.getConditionals()) {
                     query = query.join(table(datasources.get(join.getDatasourceId())), joinTypeDtoToJoinType(join.getType()))
-                            .on(field(name(database.getInternalName(), columns.get(conditional.getColumnId()).getDatasourceName(), columns.get(conditional.getColumnId()).getInternalName())).eq(
-                                    field(name(database.getInternalName(), columns.get(conditional.getForeignColumnId()).getDatasourceName(), columns.get(conditional.getForeignColumnId()).getInternalName()))));
+                            .on(field(name(columns.get(conditional.getColumnId()).getDatasourceName(), columns.get(conditional.getColumnId()).getInternalName())).eq(
+                                    field(name(columns.get(conditional.getForeignColumnId()).getDatasourceName(), columns.get(conditional.getForeignColumnId()).getInternalName()))));
                 }
             }
         }
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
-        final String value = timestamp != null ? " FOR SYSTEM_TIME AS OF TIMESTAMP '" + sqlDateFormatter.format(timestamp) + "'" : "";
         final String sql;
         if (data.getOrders() == null) {
-            sql = where.getSQL(ParamType.INLINED)
-                    .replace("/*dbrepo:temporal_tables*/", value);
+            sql = where.getSQL(ParamType.INLINED);
         } else {
             sql = subsetToSelectOrder(where, database, data)
-                    .getSQL(ParamType.INLINED)
-                    .replace("/*dbrepo:temporal_tables*/", value);
+                    .getSQL(ParamType.INLINED);
         }
         log.trace("mapped prepared query: {}", sql);
         return sql;

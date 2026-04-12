@@ -303,7 +303,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(any(Database.class), any(UUID.class)))
                 .thenReturn(QUERY_5_CACHE);
-        when(subsetService.create(any(Database.class), any(SubsetDto.class), any(Instant.class), anyString()))
+        when(subsetService.create(any(Database.class), any(SubsetDto.class), any(Instant.class)))
                 .thenReturn(QUERY_5_ID);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -328,14 +328,14 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
+            AnalyseDataTypesException, QueryExecutionException, MalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
-        when(subsetService.create(any(Database.class), any(SubsetDto.class), any(Instant.class), eq(USER_1_USERNAME)))
+        when(subsetService.create(any(Database.class), any(SubsetDto.class), any(Instant.class)))
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(Database.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_CACHE);
@@ -382,14 +382,14 @@ public class SubsetEndpointUnitTest extends BaseTest {
             DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
             QueryNotSupportedException, StorageNotFoundException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
+            AnalyseDataTypesException, QueryExecutionException, MalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_4_ID))
                 .thenReturn(DATABASE_4_CACHE);
         when(subsetService.findById(eq(DATABASE_4_CACHE), any(UUID.class)))
                 .thenReturn(QUERY_9_CACHE);
-        when(subsetService.create(eq(DATABASE_4_CACHE), any(SubsetDto.class), any(Instant.class), eq(null)))
+        when(subsetService.create(eq(DATABASE_4_CACHE), any(SubsetDto.class), any(Instant.class)))
                 .thenReturn(QUERY_9_ID);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_9_VIEW_DTO);
@@ -412,7 +412,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
             StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
             ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException,
-            QueryExecutionException, MalformedException, DatabaseMalformedException {
+            QueryExecutionException, MalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -421,7 +421,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(any(Database.class), any(UUID.class)))
                 .thenReturn(QUERY_1_CACHE);
-        when(subsetService.create(any(Database.class), any(SubsetDto.class), any(Instant.class), anyString()))
+        when(subsetService.create(any(Database.class), any(SubsetDto.class), any(Instant.class)))
                 .thenReturn(QUERY_1_ID);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);

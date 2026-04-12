@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
 import org.jooq.conf.StatementType;
 import org.jooq.impl.DefaultConfiguration;
@@ -22,7 +23,7 @@ public class JooqConfig {
         final DefaultConfiguration configuration = new DefaultConfiguration();
         final Settings settings = new Settings();
         settings.setStatementType(StatementType.STATIC_STATEMENT);
-        settings.setRenderSchema(false);
+        settings.setRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED);
         configuration.setSettings(settings);
         configuration.set(SQLDialect.POSTGRES);
         return using(configuration);

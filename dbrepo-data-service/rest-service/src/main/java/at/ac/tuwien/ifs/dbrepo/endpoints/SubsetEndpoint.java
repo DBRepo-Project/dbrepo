@@ -48,7 +48,6 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/subset")
 public class SubsetEndpoint {
 
-    private final DataMapper dataMapper;
     private final PostgresMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final AnalyseService analyseService;
@@ -58,11 +57,9 @@ public class SubsetEndpoint {
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetEndpoint(DataMapper dataMapper, PostgresMapper mariaDbMapper,
-                          SubsetService subsetService, AnalyseService analyseService, MetadataMapper metadataMapper,
-                          MetadataService metadataService, EndpointValidator endpointValidator,
-                          MetadataServiceGateway metadataServiceGateway) {
-        this.dataMapper = dataMapper;
+    public SubsetEndpoint(PostgresMapper mariaDbMapper, SubsetService subsetService, AnalyseService analyseService,
+                          MetadataMapper metadataMapper, MetadataService metadataService,
+                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.analyseService = analyseService;
@@ -237,12 +234,6 @@ public class SubsetEndpoint {
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateSubsetParams(data);
         /* parameters */
-        final String username;
-        if (principal != null) {
-            username = AuthUtil.getUsername(principal);
-        } else {
-            username = null;
-        }
         if (page == null) {
             page = 0L;
             log.debug("page not set: default to {}", page);
@@ -267,7 +258,7 @@ public class SubsetEndpoint {
             }
         }
         try {
-            final UUID subsetId = subsetService.create(database, data, timestamp, username);
+            final UUID subsetId = subsetService.create(database, data, timestamp);
             return getData(databaseId, subsetId, principal, "application/json", request, timestamp, page, size);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -325,8 +316,8 @@ public class SubsetEndpoint {
                                      @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, QueryMalformedException, UserNotFoundException,
-            MetadataServiceException, TableNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException, QueryExecutionException, MalformedException {
+            MetadataServiceException, FormatNotAvailableException, ColumnNotFoundException,
+            AnalyseDataTypesException, QueryExecutionException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, accept={} page={}, size={}", databaseId,
                 subsetId, accept, page, size);
         endpointValidator.validateDataParams(page, size);

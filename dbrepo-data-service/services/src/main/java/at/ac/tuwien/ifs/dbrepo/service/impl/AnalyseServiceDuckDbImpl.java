@@ -52,8 +52,6 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
                 .execute();
         connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("postgres"))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawLoadExtensionQuery("mysql_scanner"))
-                .execute();
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_endpoint", s3Config.getS3Endpoint().replaceAll("https?://", "")))
                 .execute();
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("s3_use_ssl", duckDbConfig.getS3UseSsl()))

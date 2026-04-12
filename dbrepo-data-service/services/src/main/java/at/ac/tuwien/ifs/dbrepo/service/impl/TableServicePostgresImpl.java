@@ -428,7 +428,6 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             /* inspect tables before views */
             final long start = System.currentTimeMillis();
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
-            statement.setString(1, database.getInternalName());
             final ResultSet resultSet1 = statement.executeQuery();
             log.atDebug()
                     .setMessage("explored tables in database: " + database.getInternalName())
