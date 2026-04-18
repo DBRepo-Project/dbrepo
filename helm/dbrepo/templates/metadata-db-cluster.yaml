@@ -1,3 +1,5 @@
+{{ if .Values.metadatadb.enabled }}
+---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -6,22 +8,21 @@ metadata:
 spec:
   instances: {{ .Values.metadatadb.replicaCount }}
   imageName: {{ .Values.metadatadb.image }}
-
-  superuserSecret:
-    name: metadata-db-superuser-secret
   bootstrap:
     initdb:
       # app is an unprivileged user
-      database: {{ .Values.metadatadb.appUser.user }}
+      database: dbrepo
       owner: {{ .Values.metadatadb.appUser.user }}
       secret:
         name: metadata-db-appuser-secret
-      postInitSQLRefs:
+      postInitApplicationSQLRefs:
         configMapRefs:
           - name: metadata-db-initdb-scripts
             key: 01-setup-schema.sql
           - name: metadata-db-initdb-scripts
             key: 02-setup-data.sql
-
+          - name: metadata-db-initdb-scripts
+            key: 03-change-owner.sql
   storage:
-    size: 1Gi
+    size: 8Gi
+{{- end }}

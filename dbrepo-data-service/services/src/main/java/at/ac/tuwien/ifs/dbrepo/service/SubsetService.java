@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
@@ -10,6 +11,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public interface SubsetService {
@@ -100,4 +103,10 @@ public interface SubsetService {
      * @throws QueryStorePersistException The query store failed to persist/unpersist the query.
      */
     void persist(Database database, UUID subsetId, Boolean persist) throws SQLException, QueryStorePersistException;
+
+    List<Map<String, Object>> getData(Database database, Set<String> columns, String normalizedQuery, Long page, Long size)
+            throws SQLException, DatabaseMalformedException;
+
+    String getDataAsCsv(Database database, Set<String> columns, String normalizedQuery) throws SQLException,
+            DatabaseMalformedException;
 }

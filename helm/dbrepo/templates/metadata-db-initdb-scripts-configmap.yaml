@@ -7,15 +7,49 @@ metadata:
   namespace: {{ include "common.names.namespace" . | quote }}
 data:
   {{ (.Files.Glob "files/01-setup-schema.sql").AsConfig | nindent 2 }}
-  {{- if .Values.datadb.enabled }}
+  {{- if .Values.metadatadb.enabled }}
   02-setup-data.sql: |-
     BEGIN;
     INSERT INTO mdb_containers (id, name, internal_name, image_id, host, port, privileged_username,
-                                  privileged_password, readonly_username, readonly_password)
-    VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203', 'registry.datalab.tuwien.ac.at/cloudnative-pg/postgresql:17.9', 'postgresql:17.9',
-            'd79cb089-363c-488b-9717-649e44d8fcc5', 'metadata-db-rw', 5432, '{{ .Values.datadb.superUser.user }}',
-            '{{ .Values.datadb.superUser.password }}', '{{ .Values.datadb.appUser.user }}',
+                                privileged_password, readonly_username, readonly_password)
+    VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203',
+            'registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-periods-aws_s3',
+            'postgresql:17.9-periods-aws_s3',
+            '32c13903-651a-404c-8fd3-f92708899a69', 'metadata-db-rw', 5432, '{{ .Values.datadb.appUser.user }}',
+            '{{ .Values.datadb.appUser.password }}', '{{ .Values.datadb.appUser.user }}',
             '{{ .Values.datadb.appUser.password }}');
+    COMMIT;
+  03-change-owner.sql: |-
+    BEGIN;
+    ALTER SCHEMA public OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_access OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_columns OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_columns_enums OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_columns_sets OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_constraints_checks OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_constraints_foreign_key OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_constraints_foreign_key_reference OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_constraints_primary_key OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_constraints_unique OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_constraints_unique_columns OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_containers OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_databases OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_have_access OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifier_creators OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifier_descriptions OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifier_funders OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifier_licenses OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifier_related OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifier_titles OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_identifiers OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_image_operators OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_image_types OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_images OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_licenses OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_messages OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_tables OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_view OWNER TO {{ .Values.metadatadb.appUser.user }};
+    ALTER TABLE mdb_view_columns OWNER TO {{ .Values.metadatadb.appUser.user }};
     COMMIT;
   {{- end }}
 {{- end }}

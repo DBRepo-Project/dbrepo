@@ -8,7 +8,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
-import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
@@ -54,19 +53,17 @@ public class ViewEndpoint {
     private final PostgresMapper postgresMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
-    private final DataService dataService;
 
     @Autowired
     public ViewEndpoint(DSLContext context, ViewService viewService, TableService tableService,
                         PostgresMapper postgresMapper, MetadataService metadataService,
-                        EndpointValidator endpointValidator, DataService dataService) {
+                        EndpointValidator endpointValidator) {
         this.context = context;
         this.viewService = viewService;
         this.tableService = tableService;
         this.postgresMapper = postgresMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
-        this.dataService = dataService;
     }
 
     @GetMapping
@@ -298,7 +295,7 @@ public class ViewEndpoint {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
-        try {
+//        try {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
                 headers.set("Access-Control-Expose-Headers", "X-Count");
@@ -310,12 +307,13 @@ public class ViewEndpoint {
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Result result = dataService.getViewData(database, view.getInternalName(), timestamp,
-                            accept.equals("text/csv") ? null : page, accept.equals("text/csv") ? null : size);
-                    headers.set("X-Headers", String.join(",", result.getHeaders()));
+//                    final Result result = dataService.getViewData(database, view.getInternalName(), timestamp,
+//                            accept.equals("text/csv") ? null : page, accept.equals("text/csv") ? null : size);
+//                    headers.set("X-Headers", String.join(",", result.getHeaders()));
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(result.getData());
+//                            .body(result.getData());
+                            .body(null);
                 case "text/csv":
 //                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
 //                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset2)));
@@ -326,10 +324,10 @@ public class ViewEndpoint {
 //                            .body(dataset2);
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
-        } catch (SQLException e) {
-            log.error("Failed to establish connection to database: {}", e.getMessage());
-            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
-        }
+//        } catch (SQLException e) {
+//            log.error("Failed to establish connection to database: {}", e.getMessage());
+//            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+//        }
     }
 
     @GetMapping("/{viewId}/statistic")

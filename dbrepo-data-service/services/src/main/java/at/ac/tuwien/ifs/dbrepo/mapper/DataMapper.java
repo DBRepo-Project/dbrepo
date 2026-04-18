@@ -42,7 +42,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.sql.Types.*;
 
@@ -50,9 +49,6 @@ import static java.sql.Types.*;
 public interface DataMapper {
 
     Logger log = LoggerFactory.getLogger(DataMapper.class);
-
-    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
-            .withZone(ZoneId.of("UTC"));
 
     /**
      * Map the inspected schema to either an existing view/table and append e.g. column or (if not existing) create a new view/table.
@@ -295,9 +291,7 @@ public interface DataMapper {
                 .owner(UserBriefDto.builder()
                         .username(data.getString(2))
                         .build())
-                .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
-                        .atZone(ZoneId.of("UTC"))
-                        .toInstant())
+                .execution(data.getTimestamp(9).toInstant())
                 .build();
     }
 
@@ -312,9 +306,7 @@ public interface DataMapper {
                 .resultNumber(data.getLong(7))
                 .isPersisted(data.getBoolean(8))
                 .ownedBy(data.getString(2))
-                .execution(LocalDateTime.parse(data.getString(9), mariaDbFormatter)
-                        .atZone(ZoneId.of("UTC"))
-                        .toInstant())
+                .execution(data.getTimestamp(9).toInstant())
                 .build();
     }
 
@@ -323,9 +315,7 @@ public interface DataMapper {
         final List<TableHistoryDto> history = new LinkedList<>();
         while (resultSet.next()) {
             history.add(TableHistoryDto.builder()
-                    .timestamp(LocalDateTime.parse(resultSet.getString(1), mariaDbFormatter)
-                            .atZone(ZoneId.of("UTC"))
-                            .toInstant())
+                    .timestamp(resultSet.getTimestamp(1).toInstant())
                     .event(HistoryEventTypeDto.valueOf(resultSet.getString(2).toUpperCase()))
                     .total(resultSet.getLong(3))
                     .build());

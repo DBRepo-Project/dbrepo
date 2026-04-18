@@ -5,12 +5,6 @@ dependencies:
 - name: keycloak
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 25.2.0
-- name: nginx
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.0.2
-- name: rabbitmq
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 14.7.0
 - name: seaweedfs
   repository: file://../seaweedfs
   version: 4.8.7
@@ -26,5 +20,5 @@ dependencies:
 - name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 5.0.6
-digest: sha256:4155408cd2ee14166b71b4e8fb65e42efebeed149db1cac0a7783d2cf331300a
-generated: "2026-03-28T20:26:41.872185337+01:00"
+digest: sha256:3c2f0e14563ba27aa9d480ef419d8ba7e44a104a51ff451b62482fea0841e6d3
+generated: "2026-04-13T18:39:33.870149771+02:00"

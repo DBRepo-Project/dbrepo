@@ -4,12 +4,11 @@ import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
-import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
@@ -41,6 +40,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -49,9 +49,7 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint {
 
-    private final DataService dataService;
     private final TableService tableService;
-    private final PostgresMapper postgresMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
@@ -59,12 +57,9 @@ public class TableEndpoint {
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
-    public TableEndpoint(DataService dataService, TableService tableService, PostgresMapper postgresMapper,
-                         MetadataService metadataService, EndpointValidator endpointValidator,
-                         MetadataServiceGateway metadataServiceGateway) {
-        this.dataService = dataService;
+    public TableEndpoint(TableService tableService, MetadataService metadataService,
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
-        this.postgresMapper = postgresMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -272,15 +267,16 @@ public class TableEndpoint {
                         .build();
             }
             headers.set("Access-Control-Expose-Headers", "X-Count X-Headers");
-            final Result result = dataService.getTableData(database, table.getInternalName(), timestamp,
+            final Set<String> columns = Set.copyOf(table.getColumns().stream().map(Column::getInternalName).toList());
+            final List<Map<String, Object>> data = tableService.getData(database, columns, table.getInternalName(), timestamp,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size);
-            headers.set("X-Headers", Strings.join(result.getHeaders(), ','));
+            headers.set("X-Headers", Strings.join(columns, ','));
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     return ResponseEntity.ok()
                             .headers(headers)
-                            .body(result.getData());
+                            .body(data);
                 case MEDIA_TYPE_TEXT_CSV:
 //                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");

@@ -15,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.conf.ParamType;
@@ -176,9 +177,9 @@ public interface PostgresMapper {
         return statement;
     }
 
-    default String queryStoreHashQueryRawQuery() {
-        final String statement = "CALL dbrepo.hash_query(?, ?)";
-        log.trace("mapped hash query statement: {}", statement);
+    default String queryStoreHashQueryResultRawQuery() {
+        final String statement = "CALL dbrepo.hash_query_result(?, ?)";
+        log.trace("mapped hash query result statement: {}", statement);
         return statement;
     }
 
@@ -753,25 +754,11 @@ public interface PostgresMapper {
         }
     }
 
-    default String paginateSubset(String normalizedQuery, Long page, Long size) {
+    default String defaultRawTableSelectQuery(Set<String> columns, String tableName, Instant timestamp, Long page, Long size) {
         /* query check (this is enforced by the db also) */
-        final StringBuilder statement = new StringBuilder(normalizedQuery);
-        /* pagination */
-        if (size != null && page != null) {
-            log.trace("pagination size/limit of {}", size);
-            statement.append(" LIMIT ")
-                    .append(size);
-            log.trace("pagination page/offset of {}", page);
-            statement.append(" OFFSET ")
-                    .append(page * size);
-        }
-        log.trace("mapped select query: {}", statement);
-        return statement.toString();
-    }
-
-    default String defaultRawTableSelectQuery(String tableName, Instant timestamp, Long page, Long size) {
-        /* query check (this is enforced by the db also) */
-        final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM ")
+        final StringBuilder statement = new StringBuilder("SELECT ")
+                .append(Strings.join(columns, ','))
+                .append(" FROM (SELECT * FROM ")
                 .append(tableName);
         if (timestamp != null) {
             statement.append("__as_of('")
@@ -792,13 +779,23 @@ public interface PostgresMapper {
         return statement.toString();
     }
 
-    default String defaultCreateTemporaryTableFromSourceQuery(String target, String source) {
-        final StringBuilder statement = new StringBuilder("CREATE TEMPORARY TABLE \"")
-                .append(target)
-                .append("\" AS SELECT * FROM ")
-                .append(source)
-                .append(";");
-        log.trace("mapped create temporary table query: {}", statement);
+    default String defaultRawSubsetSelectQuery(Set<String> columns, String query, Long page, Long size) {
+        /* query check (this is enforced by the db also) */
+        final StringBuilder statement = new StringBuilder("SELECT ")
+                .append(Strings.join(columns, ','))
+                .append(" FROM (")
+                .append(query)
+                .append(") as tbl");
+        /* pagination */
+        if (size != null && page != null) {
+            log.trace("pagination size/limit of {}", size);
+            statement.append(" LIMIT ")
+                    .append(size);
+            log.trace("pagination page/offset of {}", page);
+            statement.append(" OFFSET ")
+                    .append(page * size);
+        }
+        log.trace("mapped select query: {}", statement);
         return statement.toString();
     }
 

@@ -294,7 +294,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
             ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException,
-            QueryExecutionException, MalformedException {
+            QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -328,7 +328,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException, QueryExecutionException, MalformedException {
+            AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -382,7 +382,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
             QueryNotSupportedException, StorageNotFoundException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
-            AnalyseDataTypesException, QueryExecutionException, MalformedException {
+            AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_4_ID))
@@ -412,7 +412,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
             StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException,
             ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException,
-            QueryExecutionException, MalformedException {
+            QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -504,7 +504,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             UserNotFoundException, NotAllowedException, SQLException, QueryNotFoundException, QueryMalformedException,
             DatabaseUnavailableException, PaginationException, MetadataServiceException, TableNotFoundException,
             FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException, QueryExecutionException,
-            MalformedException {
+            MalformedException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -600,7 +600,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             UserNotFoundException, DatabaseUnavailableException, NotAllowedException, QueryMalformedException,
             QueryNotFoundException, PaginationException, SQLException, MetadataServiceException,
             TableNotFoundException, FormatNotAvailableException, ColumnNotFoundException, AnalyseDataTypesException,
-            QueryExecutionException, MalformedException {
+            QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))

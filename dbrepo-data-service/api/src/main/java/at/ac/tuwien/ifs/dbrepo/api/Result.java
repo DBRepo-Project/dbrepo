@@ -6,6 +6,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,7 +19,7 @@ import java.util.Map;
 public class Result {
 
     @NotNull
-    private List<String> headers;
+    private Set<String> headers;
 
     @NotNull
     private List<Map<String, Object>> data;

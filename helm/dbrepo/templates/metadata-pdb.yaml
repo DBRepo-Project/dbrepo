@@ -1,0 +1,14 @@
+{{- if .Values.metadataservice.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: metadata-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: metadata-service
+      service: metadata-service
+{{- end }}

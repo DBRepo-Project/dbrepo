@@ -1,0 +1,14 @@
+{{- if .Values.dataservice.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: data-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: data-service
+      service: data-service
+{{- end }}

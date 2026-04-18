@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
+import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
@@ -9,6 +10,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public interface TableService {
@@ -166,4 +169,7 @@ public interface TableService {
      * @throws TableNotFoundException The table was not found in the given database.
      */
     TableDto inspect(Database database, String tableName) throws SQLException, TableNotFoundException;
+
+    List<Map<String, Object>> getData(Database database, Set<String> columns, String tableName, Instant timestamp, Long page, Long size)
+            throws SQLException, DatabaseMalformedException;
 }

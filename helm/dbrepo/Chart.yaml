@@ -4,21 +4,21 @@ annotations:
     - name: openldap
       image: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
     - name: metadata-service
-      image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4
     - name: data-service
-      image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4
     - name: search-service
-      image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service:1.13.4
     - name: search-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service-init:1.13.4
     - name: storage-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/storage-service-init:1.13.4
     - name: storage-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/storage-service-init:1.13.4
     - name: ui
-      image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4
     - name: dashboard-service-init
-      image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.4
+      image: registry.datalab.tuwien.ac.at/dbrepo-nightly/dashboard-service-init:1.13.4
   licenses: Apache-2.0
 apiVersion: v2
 name: dbrepo
@@ -33,7 +33,7 @@ keywords:
 maintainers:
   - name: Martin Weise
     email: martin.weise@tuwien.ac.at
-home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/
+home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo-nightly/1.13/
 icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/public/favicon.png
 dependencies:
   - name: opensearch
@@ -46,11 +46,6 @@ dependencies:
     version: 25.2.0
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: authservice.enabled
-  - name: nginx
-    alias: gatewayservice
-    version: 20.0.2
-    repository: oci://registry-1.docker.io/bitnamicharts
-    condition: gatewayservice.enabled
   - name: seaweedfs
     alias: storageservice
     version: 4.8.7

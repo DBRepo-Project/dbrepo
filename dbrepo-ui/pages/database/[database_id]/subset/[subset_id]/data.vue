@@ -18,14 +18,6 @@
       </v-toolbar-title>
       <v-spacer />
       <v-btn
-        v-if="canViewSubsetData"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
-        variant="flat"
-        :loading="downloadLoading"
-        :text="$t('toolbars.table.data.download')"
-        class="mr-2"
-        @click.stop="download" />
-      <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
@@ -119,7 +111,7 @@ export default {
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access)
-    }
+    },
   },
   mounted () {
     this.loadSubset()
@@ -148,32 +140,6 @@ export default {
           this.loadingSubset = false
         })
     },
-    download () {
-      this.downloadLoading = true
-      const queryService = useQueryService()
-      queryService.exportCsv(this.$route.params.database_id, this.subset.id)
-        .then((data) => {
-          this.downloadLoading = false
-          const url = URL.createObjectURL(data)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = 'subset.csv'
-          document.body.appendChild(link)
-          link.click()
-        })
-        .catch(({code, message}) => {
-          this.downloadLoading = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
-        .finally(() => {
-          this.downloadLoading = false
-        })
-    }
   }
 }
 </script>

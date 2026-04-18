@@ -1,6 +1,6 @@
 {{- if .Values.ingress.enabled }}
 1. Get the application URL by running these commands:
-  https://{{ .Values.hostname }}
+  http://{{ .Values.hostname }}
 {{- else }}
 Enable ingress to access the UI with `ingress.enabled: true`.
 {{- end }}

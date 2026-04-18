@@ -1,52 +1,72 @@
+{{- if .Values.brokerservice.enabled }}
+---
 apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
-  labels:
-    app: broker-service
   name: broker-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    rabbitmq.com/topology-allowed-namespaces: "dbrepo"
 spec:
   replicas: 3
-  override:
-    statefulSet:
-      spec:
-        template:
-          spec:
-            containers:
-              - name: rabbitmq
-                volumeMounts:
-                  - mountPath: /etc/rabbitmq/definitions.json
-                    subPath: definitions.json
-                    name: definitions
-            volumes:
-              - name: definitions
-                configMap:
-                  name: broker-service-definitions
-  secretBackend:
-    externalSecret:
-      name: broker-service-secret
   rabbitmq:
     additionalConfig: |
-      load_definitions = /etc/rabbitmq/definitions.json # Path to the mounted definitions file
-    advancedConfig: |
-      [
-        {
-          rabbit, [
-            {forced_feature_flags_on_init, [quorum_queue]}
-          ]
-        },
-        {
-          rabbitmq_auth_backend_ldap,
-          [
-            {
-              tag_queries, [
-                {
-                  administrator, {in_group_nested, "cn=system,ou=users,{{ .Values.identityservice.global.ldapDomain }}", "member"}
-                },
-                {
-                  management, {constant, false}
-                }
-              ]
-            }
-          ]
-        }
-      ].
+      default_user = {{ .Values.brokerservice.auth.username }}
+      default_pass = {{ .Values.brokerservice.auth.password }}
+  persistence:
+    storage: "1Gi"
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: dbrepo
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  name: {{ .Values.brokerservice.virtualHost }}
+  rabbitmqClusterReference:
+    name: broker-service
+    namespace: {{ include "common.names.namespace" . | quote }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: dbrepo-exchange
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  name: {{ .Values.brokerservice.exchangeName }}
+  type: topic
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: broker-service
+    namespace: {{ include "common.names.namespace" . | quote }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: dbrepo-queue
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  name: {{ .Values.brokerservice.queueName }}
+  type: quorum
+  vhost: {{ .Values.brokerservice.virtualHost }}
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: broker-service
+    namespace: {{ include "common.names.namespace" . | quote }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: dbrepo-exchange-queue-binding
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  source: {{ .Values.brokerservice.exchangeName }}
+  destination: {{ .Values.brokerservice.queueName }}
+  destinationType: queue
+  routingKey: {{ .Values.brokerservice.routingKey }}
+  rabbitmqClusterReference:
+    name: broker-service
+    namespace: {{ include "common.names.namespace" . | quote }}
+{{- end }}

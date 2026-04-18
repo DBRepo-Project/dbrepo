@@ -1,0 +1,14 @@
+{{- if .Values.dashboardservice.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: dashboard-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: dashboard-service
+      service: dashboard-service
+{{- end }}

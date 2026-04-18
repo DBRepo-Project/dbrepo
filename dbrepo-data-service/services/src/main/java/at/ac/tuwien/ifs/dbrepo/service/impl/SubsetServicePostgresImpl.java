@@ -19,16 +19,14 @@ import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.time.Instant;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -70,17 +68,18 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
-            final CallableStatement callableStatement = connection.prepareCall(postgresMapper.queryStoreHashQueryRawQuery());
+            final CallableStatement callableStatement = connection.prepareCall(postgresMapper.queryStoreHashQueryResultRawQuery());
             callableStatement.setString(1, statement);
             callableStatement.registerOutParameter(2, Types.VARCHAR);
+            callableStatement.executeUpdate();
+            final String resultHash = callableStatement.getString(2);
             log.atDebug()
-                    .setMessage("hash subset in database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
+                    .setMessage("hash query in database " + database.getInternalName() + " in " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + "ms")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "hash_subset")
                     .addKeyValue("query", statement)
+                    .addKeyValue("result_hash", resultHash)
                     .log();
-            callableStatement.executeUpdate();
-            final String resultHash = callableStatement.getString(2);
             final ResultSet resultSet = connection.prepareStatement(postgresMapper.countRawSelectQuery(statement))
                     .executeQuery();
             log.atDebug()
@@ -248,6 +247,52 @@ public class SubsetServicePostgresImpl extends DataConnector implements SubsetSe
         }
         subsetRepository.deleteById(subsetId);
         log.info("Performed (un-)persist for query with id {} in database with name {}", subsetId, database.getInternalName());
+    }
+
+    @Override
+    public List<Map<String, Object>> getData(Database database, Set<String> columns, String normalizedQuery, Long page, Long size)
+            throws SQLException, DatabaseMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            long start = System.currentTimeMillis();
+            final PreparedStatement statement;
+            statement = connection.prepareStatement(postgresMapper.defaultRawSubsetSelectQuery(columns, normalizedQuery, page, size));
+            final ResultSet resultSet = statement.executeQuery();
+            final long duration = System.currentTimeMillis() - start;
+            log.atDebug()
+                    .setMessage("executed query statement in " + duration + "ms")
+                    .addKeyValue(Constants.DURATION, duration)
+                    .addKeyValue(Constants.ACTION, "execute")
+                    .log();
+            final List<Map<String, Object>> data = new ArrayList<>();
+            while (resultSet.next()) {
+                final int[] idx = new int[]{1};
+                final Map<String, Object> row = new LinkedHashMap<>();
+                for (String header : columns) {
+                    row.put(header, resultSet.getString(idx[0]++));
+                }
+                data.add(row);
+            }
+            return data;
+        } catch (SQLException e) {
+            log.error("Failed to get data: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to get data: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
+    public String getDataAsCsv(Database database, Set<String> columns, String normalizedQuery) throws SQLException,
+            DatabaseMalformedException {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(String.join(",", columns.stream().map(StringEscapeUtils::escapeCsv).toList()))
+                        .append("\n");
+        getData(database, columns, normalizedQuery, null, null)
+                .forEach(row -> builder.append(String.join(",", row.values().stream().map(v -> StringEscapeUtils.escapeCsv(String.valueOf(v))).toList()))
+                        .append("\n"));
+        return builder.toString();
     }
 
 }

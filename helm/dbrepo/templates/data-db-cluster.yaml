@@ -1,3 +1,5 @@
+{{ if .Values.datadb.enabled }}
+---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -6,7 +8,6 @@ metadata:
 spec:
   instances: {{ .Values.datadb.replicaCount }}
   imageName: {{ .Values.datadb.image }}
-
   superuserSecret:
     name: datadb-db-superuser-secret
   bootstrap:
@@ -16,6 +17,6 @@ spec:
       owner: {{ .Values.datadb.appUser.user }}
       secret:
         name: data-db-appuser-secret
-
   storage:
-    size: 1Gi
+    size: 8Gi
+{{- end }}

@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -36,15 +37,15 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
 
     private final S3Config s3Config;
     private final DataMapper dataMapper;
-    private final PostgresMapper mariaDbMapper;
+    private final PostgresMapper postgresMapper;
     private final StorageService storageService;
 
     @Autowired
-    public TableServicePostgresImpl(S3Config s3Config, DataMapper dataMapper, PostgresMapper mariaDbMapper,
+    public TableServicePostgresImpl(S3Config s3Config, DataMapper dataMapper, PostgresMapper postgresMapper,
                                     StorageService storageService) {
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
-        this.mariaDbMapper = mariaDbMapper;
+        this.postgresMapper = postgresMapper;
         this.storageService = storageService;
     }
 
@@ -59,7 +60,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             /* obtain statistic */
             final long start = System.currentTimeMillis();
             final TableDto tmpTable = inspect(database, tableName);
-            final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(tableName, tmpTable.getColumns());
+            final String query = postgresMapper.tableColumnStatisticsSelectRawQuery(tableName, tmpTable.getColumns());
             if (query == null) {
                 log.debug("table {}.{} does not have columns that can be analysed for statistical properties", database.getInternalName(), tableName);
                 return null;
@@ -99,13 +100,13 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
     @Override
     public TableDto create(Database database, CreateTableDto data) throws SQLException,
             TableMalformedException, TableExistsException, TableNotFoundException {
-        final String tableName = mariaDbMapper.nameToInternalName(data.getName());
+        final String tableName = postgresMapper.nameToInternalName(data.getName());
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(data))
+            connection.prepareStatement(postgresMapper.tableCreateDtoToCreateTableRawQuery(data))
                     .execute();
             log.atDebug()
                     .setMessage("created table: " + database.getInternalName() + "." + tableName)
@@ -136,7 +137,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             /* create table if not exists */
             final long start = System.currentTimeMillis();
             final PreparedStatement statement = connection.prepareStatement(
-                    mariaDbMapper.tableNameToUpdateTableRawQuery(table.getInternalName()));
+                    postgresMapper.tableNameToUpdateTableRawQuery(table.getInternalName()));
             log.trace("1={}", data.getDescription());
             if (data.getDescription() == null) {
                 statement.setString(1, "");
@@ -170,7 +171,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         try {
             /* create table if not exists */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableVersioningRawQuery(table.getInternalName()))
+            connection.prepareStatement(postgresMapper.dropTableVersioningRawQuery(table.getInternalName()))
                     .execute();
             log.atDebug()
                     .setMessage("delete table versioning: " + database.getInternalName() + "." + table.getInternalName())
@@ -178,7 +179,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                     .addKeyValue(Constants.ACTION, "delete_table_versioning")
                     .log();
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableVersioningRawQuery(table.getInternalName() + "_history"))
+            connection.prepareStatement(postgresMapper.dropTableVersioningRawQuery(table.getInternalName() + "_history"))
                     .execute();
             log.atDebug()
                     .setMessage("delete history table: " + database.getInternalName() + "." + table.getInternalName() + "_history")
@@ -186,7 +187,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                     .addKeyValue(Constants.ACTION, "delete_history_table")
                     .log();
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(table.getInternalName()))
+            connection.prepareStatement(postgresMapper.dropTableRawQuery(table.getInternalName()))
                     .execute();
             log.atDebug()
                     .setMessage("delete table: " + database.getInternalName() + "." + table.getInternalName())
@@ -215,7 +216,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         try {
             /* find table data */
             final long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectHistoryRawQuery(
+            final ResultSet resultSet = connection.prepareStatement(postgresMapper.selectHistoryRawQuery(
                             table.getInternalName(), size))
                     .executeQuery();
             log.atDebug()
@@ -244,7 +245,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         try {
             /* find table data */
             final long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
+            final ResultSet resultSet = connection.prepareStatement(postgresMapper.selectCountRawQuery(
                             tableName, timestamp))
                     .executeQuery();
             log.atDebug()
@@ -252,7 +253,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "get_table_count")
                     .log();
-            queryResult = mariaDbMapper.resultSetToNumber(resultSet);
+            queryResult = postgresMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to find row count from table {}.{}: {}", database, tableName, e.getMessage());
             throw new QueryMalformedException("Failed to find row count from table " + database + "." + tableName + ": " + e.getMessage(), e);
@@ -276,7 +277,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         long start = System.currentTimeMillis();
         try {
             /* import tuple */
-            connection.prepareStatement(mariaDbMapper.tableImportFromS3ToRawQuery(s3Config, data,
+            connection.prepareStatement(postgresMapper.tableImportFromS3ToRawQuery(s3Config, data,
                             table.getInternalName(), String.join(",", columns)))
                     .execute();
             log.atDebug()
@@ -307,10 +308,10 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         try {
             /* import tuple */
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
+            final PreparedStatement statement = connection.prepareStatement(postgresMapper.tupleToRawDeleteQuery(
                     table, data));
             for (String column : data.getKeys().keySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                postgresMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
                 idx[0]++;
             }
@@ -355,10 +356,10 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         try {
             /* create tuple */
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
+            final PreparedStatement statement = connection.prepareStatement(postgresMapper.tupleToRawCreateQuery(
                     table, data));
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                postgresMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -388,17 +389,17 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         final Connection connection = dataSource.getConnection();
         try {
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
+            final PreparedStatement statement = connection.prepareStatement(postgresMapper.tupleToRawUpdateQuery(
                     table, data));
             /* set data */
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                postgresMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
             /* set key(s) */
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                postgresMapper.prepareStatementWithColumnTypeObject(storageService, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -427,7 +428,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         try {
             /* inspect tables before views */
             final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
+            final PreparedStatement statement = connection.prepareStatement(postgresMapper.databaseTablesSelectRawQuery());
             final ResultSet resultSet1 = statement.executeQuery();
             log.atDebug()
                     .setMessage("explored tables in database: " + database.getInternalName())
@@ -464,7 +465,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             /* obtain only table metadata */
             long start = System.currentTimeMillis();
             /* obtain only table metadata */
-            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
+            final PreparedStatement statement1 = connection.prepareStatement(postgresMapper.databaseTableSelectRawQuery());
             statement1.setString(1, tableName);
             log.trace("1={}", tableName);
             TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
@@ -475,7 +476,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                     .log();
             /* obtain columns metadata */
             start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            final PreparedStatement statement2 = connection.prepareStatement(postgresMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, tableName);
             log.trace("1={}", tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
@@ -489,7 +490,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             }
             /* obtain check constraints metadata */
             start = System.currentTimeMillis();
-            final ResultSet resultSet3 = connection.prepareStatement(mariaDbMapper.columnsCheckConstraintSelectRawQuery(tableName))
+            final ResultSet resultSet3 = connection.prepareStatement(postgresMapper.columnsCheckConstraintSelectRawQuery(tableName))
                     .executeQuery();
             log.atDebug()
                     .setMessage("inspect table check constraints: " + database.getInternalName() + "." + tableName)
@@ -505,7 +506,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             }
             /* obtain column constraints metadata */
             start = System.currentTimeMillis();
-            final PreparedStatement statement4 = connection.prepareStatement(mariaDbMapper.databaseTableConstraintsSelectRawQuery());
+            final PreparedStatement statement4 = connection.prepareStatement(postgresMapper.databaseTableConstraintsSelectRawQuery());
             statement4.setString(1, tableName);
             log.trace("1={}", tableName);
             final ResultSet resultSet4 = statement4.executeQuery();
@@ -535,6 +536,40 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                     });
             log.debug("obtained metadata for table {}.{}", database.getInternalName(), tableName);
             return tmpTable;
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
+    public List<Map<String, Object>>  getData(Database database, Set<String> columns, String tableName, Instant timestamp, Long page, Long size)
+            throws SQLException, DatabaseMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            long start = System.currentTimeMillis();
+            final PreparedStatement statement;
+            statement = connection.prepareStatement(postgresMapper.defaultRawTableSelectQuery(columns, tableName, timestamp, page, size));
+            final ResultSet resultSet = statement.executeQuery();
+            final long duration = System.currentTimeMillis() - start;
+            log.atDebug()
+                    .setMessage("executed query statement in " + duration + "ms")
+                    .addKeyValue(Constants.DURATION, duration)
+                    .addKeyValue(Constants.ACTION, "execute")
+                    .log();
+            final List<Map<String, Object>> data = new ArrayList<>();
+            while (resultSet.next()) {
+                final int[] idx = new int[]{1};
+                final Map<String, Object> row = new LinkedHashMap<>();
+                for (String header : columns) {
+                    row.put(header, resultSet.getString(idx[0]++));
+                }
+                data.add(row);
+            }
+            return data;
+        } catch (SQLException e) {
+            log.error("Failed to get data: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to get data: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

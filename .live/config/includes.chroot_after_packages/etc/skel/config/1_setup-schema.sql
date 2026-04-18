@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     internal_name       VARCHAR(255) NOT NULL,
     name                VARCHAR(255) NOT NULL,
     host                VARCHAR(255) NOT NULL,
-    port                INT          NOT NULL DEFAULT 3306,
+    port                INT          NOT NULL DEFAULT 5432,
     ui_host             VARCHAR(255) NOT NULL DEFAULT host,
     ui_port             INT          NOT NULL DEFAULT port,
     ui_additional_flags TEXT,
