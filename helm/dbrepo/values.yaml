@@ -104,6 +104,15 @@ dashboarddb:
       repository: bitnamilegacy/postgres-exporter
     ## @skip dashboarddb.metrics.enabled
     enabled: true
+  ## @skip dashboarddb.primary
+  primary:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
   auth:
     ## @param dashboarddb.auth.database The dashboard database name.
     database: grafana
@@ -414,6 +423,14 @@ brokerservice:
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
+  ## @skip brokerservice.resources
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 3
 

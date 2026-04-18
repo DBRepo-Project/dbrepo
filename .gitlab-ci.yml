@@ -3,7 +3,7 @@ variables:
   HOSTALIASES: "./hosts"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: "/var/run/dind/docker.sock"
-  DOCKER_VERSION: "27"
+  DOCKER_VERSION: "28"
   ALPINE_VERSION: "3.21"
   PYTHON_VERSION: "3.11"
   JAVA_VERSION: "21"
@@ -563,7 +563,6 @@ test-storage-service-init:
     - "apk --no-cache add s3cmd bash libxml2-utils"
     - "docker compose build dbrepo-storage-service-init"
     - "mkdir -p /app/config /var/log/app/service/storage"
-    - "echo ${CI_S3_CONFIG} | base64 -d > /app/.s3cfg"
   script:
     - "bash ./dbrepo-storage-service/init/tests/test_integration_expire.sh"
 
