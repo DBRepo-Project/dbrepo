@@ -44,9 +44,12 @@ def show_record(db_id):
     database = repo.get_database(database_id=db_id)
     if len(database.views) > 0:
         view = repo.get_view(database_id=db_id, view_id=database.views[0].id)
+        view_data = repo.get_view_data(database_id=db_id, view_id=database.views[1].id, page=1, size=10).to_dict(
+            orient='records')
     else:
         view = None
-    # view_data = repo.get_view_data(database_id=db_id, view_id=database.views[1].id, page=1, size=10).to_dict(orient='records')
+        view_data = pd.DataFrame({"placeholder": []}).to_dict(orient="records")
+
     # queries = repo.get_queries(database_id=db_id)
 
     identifier = database.identifiers[0]
@@ -54,7 +57,7 @@ def show_record(db_id):
         identifier = get_identifier_by_doi(database.identifiers, doi)
     # PLACEHOLDERS
     queries = []
-    view_data = pd.DataFrame({"placeholder": []})
+    #view_data = pd.DataFrame({"placeholder": []}).to_dict(orient="records")
 
     authors_list = [{"literal": c.creator_name} for c in identifier.creators]
 
@@ -67,9 +70,7 @@ def show_record(db_id):
     }
 
     citation_html = generate_citation(citation_item)
-    print(citation_html)
 
-    view_data = view_data.to_dict(orient="records")
     return render_template('records/detail.html', database=database, view=view, data=view_data,
                            doi_id=0, identifier=identifier, queries=queries, citations=citation_html)
 

@@ -143,12 +143,11 @@ p {
   align-items: center;
   border-radius: .28571429rem!important;
 
-   .title {
+   .table-title {
       padding: 1em!important;
       font-size: 1rem;
       margin-bottom: 1rem;
       color: #2f6fa7!important;
-
 
       .icon {
         float: right;
@@ -214,7 +213,7 @@ font-size: 1em;
 }
 
 
-#identifiers_list {
+.identifiers_list {
   width: 100%;
   list-style: none;
   padding: 0;
@@ -223,7 +222,7 @@ font-size: 1em;
   border-bottom: 1px solid #ddd;
 }
 
-#identifiers_list_item {
+.identifiers_list_item {
   display: flex;
   justify-content: space-between;
   padding: 10px;
@@ -236,6 +235,19 @@ font-size: 1em;
 
 #identifier_header {
   margin: 20px;
+}
+
+#identifiers_accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+#toggleTitle {
+    order: 2; /* move visually below */
+}
+
+#accordionContent {
+    order: 1;
 }
 
 .angle {

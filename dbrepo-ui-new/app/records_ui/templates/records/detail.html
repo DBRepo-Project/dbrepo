@@ -23,7 +23,7 @@
             <h1>{{ database.name }}</h1>
             <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
             <p style="white-space: pre-line;">{{ database.identifiers[0].descriptions[0].description }}</p>
-            <h2>{{ _('Data') }}</h2>
+            <h2>{{ _("Data") }}</h2>
             {{ preview_info_box(view, data) }}
             {{ datasource_list_box(database.views) }}
             {{ dataset_list_box(queries) }}

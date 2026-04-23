@@ -24,7 +24,7 @@
 
 {% macro preview_info_box(table, table_data) %}
     <div class="ui accordion">
-        <div class="active title m-0">Data<i class="dropdown angle icon" aria-hidden="true"></i></div>
+        <div class="active table-title title m-0">Data<i class="dropdown angle icon" aria-hidden="true"></i></div>
 
         <div class="active content pt-0">
          {{ preview_info(table, table_data) }}
@@ -74,9 +74,9 @@
         <tr>
             <th>Name</th>
             <th>
-                <a role="button" class="ui labeled icon compact mini button right floated" href="">
-                  <i class="file archive icon button" aria-hidden="true"></i>Download all
-                </a>
+<!--                <a role="button" class="ui labeled icon compact mini button right floated" href="">-->
+<!--                  <i class="file archive icon button" aria-hidden="true"></i>Download all-->
+<!--                </a>-->
             </th>
         </tr>
     </thead>
@@ -108,7 +108,7 @@
 
 {% macro datasource_list_box(views) %}
         <div class="ui accordion">
-            <div class="active title m-0">Data Sources<i class="dropdown angle icon" aria-hidden="true"></i></div>
+            <div class="active table-title title m-0">Data Sources<i class="dropdown angle icon" aria-hidden="true"></i></div>
 
             <div class="active content pt-0">
              {{ datasource_list(views) }}
@@ -118,7 +118,7 @@
 
 {% macro dataset_list_box(subsets) %}
         <div class="ui accordion">
-            <div class="active title m-0">Datasets<i class="dropdown angle icon" aria-hidden="true"></i></div>
+            <div class="active table-title title m-0">Datasets<i class="dropdown angle icon" aria-hidden="true"></i></div>
 
             <div class="active content pt-0">
                 {{ dataset_list(subsets) }}

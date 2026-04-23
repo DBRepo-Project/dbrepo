@@ -1,21 +1,48 @@
-<section id="identifiers_info" aria-label="identifier_info" class="info-box">
+<section id="identifiers_info" class="info-box">
     <h3 class="ui medium top attached header mt-0">Identifiers</h3>
-    <div id="identifiers_list_div">
-    <ul id="identifiers_list">
-        {%- for ident in  database.identifiers -%}
-            <li id="identifiers_list_item">
+    <ul class="identifiers_list">
+        {# --- Always visible first 4 --- #}
+        {%- for ident in database.identifiers[:4] -%}
+            <li class="identifiers_list_item">
                 <div class="left floated content">
-                      <span>{{ident.titles[0].title}}</span>
-            <br>
-                <span>
-                    <a class="text-muted-darken" href="{{database.id}}?doi={{ident.doi}}">DOI: {{ident.doi}}</a>
-                </span>
+                    <span>{{ident.titles[0].title}}</span><br>
+                    <span>
+                        <a class="text-muted-darken" href="{{database.id}}?doi={{ident.doi}}">
+                            DOI: {{ident.doi}}
+                        </a>
+                    </span>
                     {{ident.publication_day}}.{{ident.publication_month}}.{{ident.publication_year}}
                 </div>
-
             </li>
         {%- endfor -%}
-
     </ul>
+
+    {# --- Accordion for remaining items --- #}
+    {% if database.identifiers|length > 4 %}
+    <div class="ui accordion" id="identifiers_accordion">
+        <div class="title" id="toggleTitle">
+            <i class="dropdown icon"></i>
+            Show more
+        </div>
+        <div class="content" id="accordionContent">
+            <ul class="identifiers_list">
+                {%- for ident in database.identifiers[4:] -%}
+                    <li class="identifiers_list_item">
+                        <div class="left floated content">
+                            <span>{{ident.titles[0].title}}</span><br>
+                            <span>
+                                <a class="text-muted-darken" href="{{database.id}}?doi={{ident.doi}}">
+                                    DOI: {{ident.doi}}
+                                </a>
+                            </span>
+                            {{ident.publication_day}}.{{ident.publication_month}}.{{ident.publication_year}}
+                        </div>
+                    </li>
+                {%- endfor -%}
+            </ul>
+        </div>
+
     </div>
+
+    {% endif %}
 </section>
