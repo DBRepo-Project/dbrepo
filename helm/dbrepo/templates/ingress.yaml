@@ -1,19 +1,24 @@
 {{- if .Values.ingress.enabled }}
+{{ $hostname := regexReplaceAll "https?://" .Values.hostname "" }}
+{{- if .Values.authservice.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: basic-routes-ingress
+  name: auth
+  namespace: {{ include "common.names.namespace" . | quote }}
   annotations:
-    cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.hostname }}
-      secretName: ingress-cert
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
-    - host: {{ .Values.hostname }}
+    - host: {{ $hostname }}
       http:
         paths:
           - path: /admin
@@ -37,6 +42,28 @@ spec:
                 name: auth-service
                 port:
                   number: 80
+{{- end }}
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: search
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
           - path: /api/v1/search
             pathType: Prefix
             backend:
@@ -44,6 +71,28 @@ spec:
                 name: search-service
                 port:
                   number: 80
+{{- end }}
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
           - path: /api/v1/datasource
             pathType: Prefix
             backend:
@@ -58,6 +107,28 @@ spec:
                 name: dashboard-service
                 port:
                   number: 80
+{{- end }}
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: data
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
           - path: /api/v1/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/table/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(data|statistic|history)
             pathType: ImplementationSpecific
             backend:
@@ -72,18 +143,40 @@ spec:
                 name: data-service
                 port:
                   number: 80
-          - path: /api/v1/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: metadata-service
-                port:
-                  number: 80
           - path: /api/v1/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/(subset|grant|analyse)
             pathType: ImplementationSpecific
             backend:
               service:
                 name: data-service
+                port:
+                  number: 80
+{{- end }}
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: metadata
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
+          - path: /api/v1/database/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/view
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: metadata-service
                 port:
                   number: 80
           - path: /api/v1/(database|concept|container|identifier|image|message|license|oai|ontology|unit|user)
@@ -100,6 +193,28 @@ spec:
                 name: metadata-service
                 port:
                   number: 80
+{{- end }}
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ui
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
           - path: /auth
             pathType: Prefix
             backend:
@@ -114,22 +229,27 @@ spec:
                 name: ui
                 port:
                   number: 3000
+{{- end }}
+{{- if .Values.dataservice.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: upload-routes-ingress
+  name: data-upload
+  namespace: {{ include "common.names.namespace" . | quote }}
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 2G
-    cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.hostname }}
-      secretName: ingress-cert
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
-    - host: {{ .Values.hostname }}
+    - host: {{ $hostname }}
       http:
         paths:
           - path: /api/v1/upload
@@ -139,23 +259,28 @@ spec:
                 name: data-service
                 port:
                   number: 80
+{{- end }}
+{{- if .Values.metadataservice.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: rewrite-identifier-routes-ingress
+  name: metadata-pid
+  namespace: {{ include "common.names.namespace" . | quote }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: "/api/v1/identifier/$1"
     nginx.ingress.kubernetes.io/use-regex: "true"
-    cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.hostname }}
-      secretName: ingress-cert
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
-    - host: {{ .Values.hostname }}
+    - host: {{ $hostname }}
       http:
         paths:
           - path: /pid/([0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})
@@ -165,24 +290,28 @@ spec:
                 name: metadata-service
                 port:
                   number: 80
-
+{{- end }}
+{{- if .Values.dashboardui.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: rewrite-dashboard-routes-ingress
+  name: dashboard-ui
+  namespace: {{ include "common.names.namespace" . | quote }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: "/$1"
     nginx.ingress.kubernetes.io/use-regex: "true"
-    cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.hostname }}
-      secretName: ingress-cert
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
-    - host: {{ .Values.hostname }}
+    - host: {{ $hostname }}
       http:
         paths:
           - path: /dashboard/(.*)
@@ -192,5 +321,5 @@ spec:
                 name: dashboard-ui
                 port:
                   number: 3000
-
+{{- end }}
 {{- end }}

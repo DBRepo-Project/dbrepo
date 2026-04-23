@@ -43,16 +43,7 @@ public class Container {
     private Integer port;
 
     @Column
-    private String uiHost;
-
-    @Column
-    private Integer uiPort;
-
-    @Column
     private Integer quota;
-
-    @Column
-    private String uiAdditionalFlags;
 
     @EqualsAndHashCode.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)

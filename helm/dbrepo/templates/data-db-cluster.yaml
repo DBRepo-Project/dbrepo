@@ -8,15 +8,18 @@ metadata:
 spec:
   instances: {{ .Values.datadb.replicaCount }}
   imageName: {{ .Values.datadb.image }}
-  superuserSecret:
-    name: datadb-db-superuser-secret
   bootstrap:
     initdb:
-      # app is an unprivileged user
       database: {{ .Values.datadb.appUser.user }}
       owner: {{ .Values.datadb.appUser.user }}
       secret:
         name: data-db-appuser-secret
+  managed:
+    roles:
+      - name: {{ .Values.datadb.appUser.user }}
+        ensure: present
+        login: true
+        superuser: true
   storage:
-    size: 8Gi
+    size: 1Gi
 {{- end }}

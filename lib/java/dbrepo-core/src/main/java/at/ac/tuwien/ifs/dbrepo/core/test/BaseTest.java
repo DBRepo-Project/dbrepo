@@ -925,9 +925,6 @@ public class BaseTest {
     public final static UUID CONTAINER_1_ID = UUID.fromString("7ddb7e87-b965-43a2-9a24-4fa406d998f4");
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNAL_NAME = "dbrepo-userdb-u01";
-    public final static String CONTAINER_1_UI_HOST = "localhost";
-    public final static Integer CONTAINER_1_UI_PORT = 3306;
-    public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
     public final static Integer CONTAINER_1_QUOTA = 4;
     public final static Integer CONTAINER_1_COUNT = 3;
     public final static String CONTAINER_1_HOST = "localhost";
@@ -949,10 +946,7 @@ public class BaseTest {
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
-            .uiHost(CONTAINER_1_UI_HOST)
-            .uiPort(CONTAINER_1_UI_PORT)
             .quota(CONTAINER_1_QUOTA)
-            .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .databases(new LinkedList<>())

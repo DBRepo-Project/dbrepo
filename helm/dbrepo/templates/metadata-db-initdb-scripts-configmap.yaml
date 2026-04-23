@@ -13,9 +13,9 @@ data:
     INSERT INTO mdb_containers (id, name, internal_name, image_id, host, port, privileged_username,
                                 privileged_password, readonly_username, readonly_password)
     VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203',
-            'registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-periods-aws_s3',
-            'postgresql:17.9-periods-aws_s3',
-            '32c13903-651a-404c-8fd3-f92708899a69', 'metadata-db-rw', 5432, '{{ .Values.datadb.appUser.user }}',
+            'registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg',
+            'postgresql:17.9-cloudnative-pg',
+            '32c13903-651a-404c-8fd3-f92708899a69', 'data-db-rw', 5432, '{{ .Values.datadb.appUser.user }}',
             '{{ .Values.datadb.appUser.password }}', '{{ .Values.datadb.appUser.user }}',
             '{{ .Values.datadb.appUser.password }}');
     COMMIT;

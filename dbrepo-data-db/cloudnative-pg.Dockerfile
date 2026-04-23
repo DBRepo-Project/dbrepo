@@ -29,7 +29,7 @@ LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 USER 0
 
 RUN apt update && \
-    apt install -y python3-boto3 && \
+    apt install -y python3-boto3 postgresql-plpython3-17 && \
     apt clean
 
 ARG LIBDIR="/usr/lib/postgresql/17/lib"

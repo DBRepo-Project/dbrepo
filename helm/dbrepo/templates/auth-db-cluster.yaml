@@ -1,0 +1,20 @@
+{{ if .Values.authservice.enabled }}
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: auth-db
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  instances: {{ .Values.authservice.externalDatabase.replicaCount }}
+  imageName: {{ .Values.authservice.externalDatabase.image }}
+  bootstrap:
+    initdb:
+      # app is an unprivileged user
+      database: {{ .Values.authservice.externalDatabase.database }}
+      owner: {{ .Values.authservice.externalDatabase.user }}
+      secret:
+        name: auth-db-appuser-secret
+  storage:
+    size: 1Gi
+{{- end }}

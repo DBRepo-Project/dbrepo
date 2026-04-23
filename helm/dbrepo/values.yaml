@@ -19,7 +19,7 @@ global:
 ## @section Common parameters
 
 ## @param hostname The hostname.
-hostname: dbrepo.local
+hostname: https://s209.dl.hpc.tuwien.ac.at
 ## @param strategyType The image pull
 strategyType: RollingUpdate
 ## @param clusterDomain The cluster domain.
@@ -37,16 +37,11 @@ datadb:
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
   ## @skip datadb.image
-  image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg
-  superUser:
-    ## @param datadb.superUser.user The application username.
-    user: postgres
-    ## @param datadb.superUser.password The application password.
-    password: dbrepo
+  image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
   appUser:
-    ## @param datadb.appUser.user The application username.
-    user: app
-    ## @param datadb.appUser.password The application password.
+    ## @param datadb.appUser.user The admin username.
+    user: dbrepo
+    ## @param datadb.appUser.password The admin password.
     password: dbrepo
   ## @param datadb.replicaCount The number of cluster nodes
   replicaCount: 3
@@ -59,19 +54,12 @@ metadatadb:
   ## @skip metadatadb.host
   host: metadata-db-rw
   ## @skip metadatadb.image
-  image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg
-  superUser:
-    ## @param metadatadb.superUser.user The superuser username, disabled by default.
-    ## ref: https://cloudnative-pg.io/docs/1.26/applications/#secrets
-     user: postgres
-    ## @param metadatadb.superUser.password The application password.
-     password: postgres
+  image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
   appUser:
     ## @param metadatadb.appUser.user The application username.
     user: dbrepo
     ## @param metadatadb.appUser.password The application password.
     password: dbrepo
-  extraArgs: "?currentSchema=public"
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
 
@@ -136,21 +124,16 @@ authservice:
     adminPassword: admin
   ## @skip authservice.postgresql
   postgresql:
-    enabled: true
-    image:
-      ## @skip authservice.postgresql.image.repository
-      repository: bitnamilegacy/postgresql
-    volumePermissions:
-      image:
-        ## @skip authservice.postgresql.volumePermissions.image.repository
-        repository: bitnamilegacy/os-shell
-    metrics:
-      image:
-        ## @skip authservice.postgresql.metrics.image.repository
-        repository: bitnamilegacy/postgres-exporter
-    fullnameOverride: auth-db
-    auth:
-      postgresPassword: postgres
+    enabled: false
+  externalDatabase:
+    host: auth-db-rw
+    port: 5432
+    user: keycloak
+    database: keycloak
+    schema: public
+    password: keycloak
+    replicaCount: 3
+    image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   jwt:
@@ -340,7 +323,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.1
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.5
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -629,6 +612,8 @@ storageservice:
   s3:
     ## @skip storageservice.s3.enabled
     enabled: true
+    ## @skip storageservice.s3.replicaCount
+    replicaCount: 2
     ## @param storageservice.s3.bucket The S3-bucket name.
     bucket: dbrepo
     auth:
@@ -778,7 +763,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.21
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -1071,6 +1056,42 @@ metricdb:
           - targets:
               - auth-service-metrics:8080
 
+## @section Gateway Service
+
+gatewayservice:
+  ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
+  enabled: true
+  ## @skip gatewayservice.fullnameOverride
+  fullnameOverride: gateway-service
+  image:
+    ## @skip gatewayservice.image.repository
+    repository: bitnamilegacy/nginx
+  service:
+    ## @param gatewayservice.service.type The service type.
+    type: ClusterIP
+  metrics:
+    ## @param gatewayservice.metrics.enabled Enable the Prometheus metrics sidecar.
+    enabled: false
+  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
+  existingServerBlockConfigmap: gateway-service-setup
+  ## @skip gatewayservice.extraVolumes
+  extraVolumes:
+    - name: logging
+      emptyDir: { }
+  ## @skip gatewayservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: logging
+      mountPath: /var/log/nginx
+  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
+  replicaCount: 3
+
+## @section Analytics Service
+
+computeservice:
+  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
+  endpoint: local[*]
+
+
 ## @section Ingress
 
 ingress:
@@ -1080,13 +1101,9 @@ ingress:
   className: nginx
   tls:
     ## @param ingress.tls.enabled Enable the ingress.
-    enabled: false
+    enabled: true
     ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
     secretName: ingress-cert
   ## @skip ingress.annotations The ingress rules for proxying requests directly to services.
-  ## @example
-  ## annotations:
-  ##   cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-  ##   nginx.ingress.kubernetes.io/proxy-body-size: 2G
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
