@@ -8,6 +8,12 @@ metadata:
 spec:
   instances: {{ .Values.authservice.externalDatabase.replicaCount }}
   imageName: {{ .Values.authservice.externalDatabase.image }}
+  type: rw
+  pgbouncer:
+    poolMode: session
+    parameters:
+      max_client_conn: "1000"
+      default_pool_size: "10"
   bootstrap:
     initdb:
       # app is an unprivileged user

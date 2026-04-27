@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.DataDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.DuckDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
@@ -31,15 +32,17 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
 
     private final S3Config s3Config;
     private final DataMapper dataMapper;
+    private final DataDbConfig dataDbConfig;
     private final DuckDbConfig duckDbConfig;
     private final DuckDbMapper duckDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public AnalyseServiceDuckDbImpl(S3Config s3Config, DataMapper dataMapper, DuckDbConfig duckDbConfig,
-                                    DuckDbMapper duckDbMapper, MetadataMapper metadataMapper) {
+    public AnalyseServiceDuckDbImpl(S3Config s3Config, DataMapper dataMapper, DataDbConfig dataDbConfig,
+                                    DuckDbConfig duckDbConfig, DuckDbMapper duckDbMapper, MetadataMapper metadataMapper) {
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
+        this.dataDbConfig = dataDbConfig;
         this.duckDbConfig = duckDbConfig;
         this.duckDbMapper = duckDbMapper;
         this.metadataMapper = metadataMapper;
@@ -122,7 +125,8 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
             final long start = System.currentTimeMillis();
             setup(connection);
             /* attach to mariadb in duckdb */
-            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
+            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(
+                    database, dataDbConfig.getDefaultSchema()));
             statement1.executeUpdate();
             statement1.close();
             final PreparedStatement statement2 = connection.prepareStatement(statement);

@@ -34,10 +34,17 @@ password: admin
 datadb:
   ## @param datadb.enabled Enable the Auth Service.
   enabled: true
+  ## @skip datadb.host
+  host: data-db-rw
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
   ## @skip datadb.image
   image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
+  pooler:
+    ## @param datadb.pooler.enabled Enable the pgbouncer pooler.
+    enabled: true
+    ## @param datadb.pooler.replicaCount The number of cluster nodes
+    replicaCount: 3
   appUser:
     ## @param datadb.appUser.user The admin username.
     user: dbrepo
@@ -55,6 +62,11 @@ metadatadb:
   host: metadata-db-rw
   ## @skip metadatadb.image
   image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
+  pooler:
+    ## @param metadatadb.pooler.enabled Enable the pgbouncer pooler.
+    enabled: true
+    ## @param metadatadb.pooler.replicaCount The number of cluster nodes
+    replicaCount: 3
   appUser:
     ## @param metadatadb.appUser.user The application username.
     user: dbrepo
@@ -323,7 +335,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.5
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.8
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -423,7 +435,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.7
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -495,9 +507,9 @@ dataservice:
     bucket: dbrepo
     auth:
       ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId: seaweedfsuser
+      accessKeyId: seaweedfsadmin
       ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey: seaweedfsuser
+      secretAccessKey: seaweedfsadmin
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -585,24 +597,6 @@ storageservice:
   enabled: true
   ## @skip storageservice.fullnameOverride
   fullnameOverride: storage-service
-  mariadb:
-    ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
-    enabled: true
-    image:
-      ## @skip storageservice.mariadb.image.repository
-      repository: bitnamilegacy/mariadb
-    ## @skip storageservice.mariadb.fullnameOverride
-    fullnameOverride: storage-db
-    auth:
-      ## @param storageservice.mariadb.auth.rootPassword The password for the root user.
-      rootPassword: seaweedfsfiler
-  postgresql:
-    ## @skip storageservice.postgresql.enabled
-    enabled: false
-  master:
-    metrics:
-      ## @skip storageservice.master.metrics.enabled
-      enabled: true
   filer:
     ## @param storageservice.filer.enabled Cannot use the filer in the standard component since it's incompatible with OpenShift
     enabled: true
@@ -612,21 +606,23 @@ storageservice:
   s3:
     ## @skip storageservice.s3.enabled
     enabled: true
-    ## @skip storageservice.s3.replicaCount
-    replicaCount: 2
-    ## @param storageservice.s3.bucket The S3-bucket name.
+    ## @skip storageservice.s3.replicas
+    replicas: 2
     bucket: dbrepo
-    auth:
-      ## @param storageservice.s3.auth.enabled Enable the S3 service.
-      enabled: true
-      ## @param storageservice.s3.auth.adminAccessKeyId The S3 access key id for the admin user. In some systems this is named `username`.
-      adminAccessKeyId: seaweedfsadmin
-      ## @param storageservice.s3.auth.adminSecretAccessKey The S3 secret access key for the admin user. In some systems this is named `password`.
-      adminSecretAccessKey: seaweedfsadmin
-      ## @param storageservice.s3.auth.defaultAccessKeyId The S3 access key id for the default user that can only read and write.
-      defaultAccessKeyId: seaweedfsuser
-      ## @param storageservice.s3.auth.defaultSecretAccessKey The S3 secret access key for the default user that can only read and write.
-      defaultSecretAccessKey: seaweedfsuser
+    enableAuth: true
+    credentials:
+      admin:
+        accessKey: "seaweedfsadmin"
+        secretKey: "seaweedfsadmin"
+      read:
+        accessKey: "seaweedfsuser"
+        secretKey: "seaweedfsuser"
+    createBuckets:
+      - name: dbrepo
+        anonymousRead: false
+        ttl: 7d
+        objectLock: true
+        versioning: Enabled
   setupJob:
     ## @param storageservice.setupJob.enabled Enable the setup job that creates the bucket in the s3 endpoint.
     enabled: true

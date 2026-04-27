@@ -38,6 +38,7 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
 
     @Override
     public void putObject(String key, byte[] content) throws StorageObjectExistsException {
+        log.debug("put object into bucket {} with pre-computed key {}", s3Config.getS3Bucket(), key);
         final long start = System.currentTimeMillis();
         try {
             final GetObjectResponse response = s3Client.getObject(GetObjectRequest.builder()
@@ -46,7 +47,7 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
                             .build())
                     .response();
             if (matchesAnyHash(response, content)) {
-                log.debug("object with key {} already exists", key);
+                log.debug("Object with key {} already exists", key);
                 throw new StorageObjectExistsException("Object already exists");
             }
         } catch (NoSuchKeyException e) {

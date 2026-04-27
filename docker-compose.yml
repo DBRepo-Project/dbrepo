@@ -169,12 +169,9 @@ services:
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
-      METADATA_DB: "${METADATA_DB:-dbrepo}"
+      METADATA_DB_URL: "${METADATA_DB_URL:-jdbc:postgresql://metadata-db:5432/dbrepo}"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-postgres}"
-      METADATA_HOST: "${METADATA_HOST:-metadata-db}"
-      METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
-      METADATA_PORT: "${METADATA_PORT:-5432}"
-      METADATA_USERNAME: "${METADATA_DB_USERNAME:-postgres}"
+      METADATA_DB_USERNAME: "${METADATA_DB_USERNAME:-postgres}"
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"

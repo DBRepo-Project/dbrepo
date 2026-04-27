@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.api.Result;
+import at.ac.tuwien.ifs.dbrepo.config.DataDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -37,14 +38,16 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
 
     private final S3Config s3Config;
     private final DataMapper dataMapper;
+    private final DataDbConfig dataDbConfig;
     private final PostgresMapper postgresMapper;
     private final StorageService storageService;
 
     @Autowired
-    public TableServicePostgresImpl(S3Config s3Config, DataMapper dataMapper, PostgresMapper postgresMapper,
-                                    StorageService storageService) {
+    public TableServicePostgresImpl(S3Config s3Config, DataMapper dataMapper, DataDbConfig dataDbConfig,
+                                    PostgresMapper postgresMapper, StorageService storageService) {
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
+        this.dataDbConfig = dataDbConfig;
         this.postgresMapper = postgresMapper;
         this.storageService = storageService;
     }
@@ -465,7 +468,8 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             /* obtain only table metadata */
             long start = System.currentTimeMillis();
             /* obtain only table metadata */
-            final PreparedStatement statement1 = connection.prepareStatement(postgresMapper.databaseTableSelectRawQuery());
+            final PreparedStatement statement1 = connection.prepareStatement(
+                    postgresMapper.databaseTableSelectRawQuery(dataDbConfig.getDefaultSchema()));
             statement1.setString(1, tableName);
             log.trace("1={}", tableName);
             TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
@@ -476,7 +480,8 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                     .log();
             /* obtain columns metadata */
             start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(postgresMapper.databaseTableColumnsSelectRawQuery());
+            final PreparedStatement statement2 = connection.prepareStatement(
+                    postgresMapper.databaseTableColumnsSelectRawQuery(dataDbConfig.getDefaultSchema()));
             statement2.setString(1, tableName);
             log.trace("1={}", tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
@@ -506,7 +511,8 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             }
             /* obtain column constraints metadata */
             start = System.currentTimeMillis();
-            final PreparedStatement statement4 = connection.prepareStatement(postgresMapper.databaseTableConstraintsSelectRawQuery());
+            final PreparedStatement statement4 = connection.prepareStatement(
+                    postgresMapper.databaseTableConstraintsSelectRawQuery(dataDbConfig.getDefaultSchema()));
             statement4.setString(1, tableName);
             log.trace("1={}", tableName);
             final ResultSet resultSet4 = statement4.executeQuery();
@@ -542,7 +548,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
     }
 
     @Override
-    public List<Map<String, Object>>  getData(Database database, Set<String> columns, String tableName, Instant timestamp, Long page, Long size)
+    public List<Map<String, Object>> getData(Database database, Set<String> columns, String tableName, Instant timestamp, Long page, Long size)
             throws SQLException, DatabaseMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();

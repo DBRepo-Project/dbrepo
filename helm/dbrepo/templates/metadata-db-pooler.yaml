@@ -1,0 +1,20 @@
+{{- if .Values.metadatadb.enabled }}
+{{- if .Values.metadatadb.pooler.enabled }}
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: metadata-db-pooler-rw
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  cluster:
+    name: metadata-db
+  instances: {{ .Values.metadatadb.pooler.replicaCount }}
+  type: rw
+  pgbouncer:
+    poolMode: session
+    parameters:
+      max_client_conn: "1000"
+      default_pool_size: "10"
+{{- end }}
+{{- end }}

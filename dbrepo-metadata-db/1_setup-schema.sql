@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS dbrepo.mdb_containers
     internal_name       VARCHAR(255) NOT NULL,
     name                VARCHAR(255) NOT NULL,
     host                VARCHAR(255) NOT NULL,
-    port                INT          NOT NULL DEFAULT 3306,
+    port                INT          NOT NULL DEFAULT 5432,
     image_id            UUID         NOT NULL,
     created             TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified       TIMESTAMP,

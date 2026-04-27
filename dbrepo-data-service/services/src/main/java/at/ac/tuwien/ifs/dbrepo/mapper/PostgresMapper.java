@@ -183,8 +183,8 @@ public interface PostgresMapper {
         return statement;
     }
 
-    default String databaseTableSelectRawQuery() {
-        final String statement = "SELECT t.table_name, t.table_type, -1 as table_rows, -1 as avg_row_length, -1 as data_length, -1 as max_data_length, NOW() as create_time, NOW() as update_time, v.view_definition, (SELECT obj_description(c.oid) FROM pg_class c WHERE c.relkind = 'r' AND c.relname = t.table_name) FROM information_schema.tables t LEFT JOIN information_schema.views v ON v.table_name = t.table_name WHERE t.table_schema = 'public' AND t.table_name NOT LIKE '%_history' AND t.table_name != 'queries' AND t.table_name = ?;";
+    default String databaseTableSelectRawQuery(String schema) {
+        final String statement = "SELECT t.table_name, t.table_type, -1 as table_rows, -1 as avg_row_length, -1 as data_length, -1 as max_data_length, NOW() as create_time, NOW() as update_time, v.view_definition, (SELECT obj_description(c.oid) FROM pg_class c WHERE c.relkind = 'r' AND c.relname = t.table_name) FROM information_schema.tables t LEFT JOIN information_schema.views v ON v.table_name = t.table_name WHERE t.table_schema = '" + schema + "' AND t.table_name NOT LIKE '%_history' AND t.table_name != 'queries' AND t.table_name = ?;";
         log.trace("mapped select table statement: {}", statement);
         return statement;
     }
@@ -212,14 +212,14 @@ public interface PostgresMapper {
         return statement;
     }
 
-    default String databaseTableColumnsSelectRawQuery() {
-        final String statement = "SELECT ordinal_position, column_default, is_nullable, data_type, character_maximum_length, numeric_precision, numeric_scale, column_name, (SELECT pgd.description FROM pg_catalog.pg_statio_all_tables as st INNER JOIN pg_catalog.pg_description pgd on (pgd.objoid = st.relid) INNER JOIN information_schema.columns c ON (pgd.objsubid = c.ordinal_position AND c.table_schema = st.schemaname AND c.table_name = st.relname)) FROM information_schema.columns WHERE TABLE_SCHEMA = 'public' AND TABLE_NAME = ? AND column_name NOT IN ('row_start', 'row_end') ORDER BY ORDINAL_POSITION;";
+    default String databaseTableColumnsSelectRawQuery(String schema) {
+        final String statement = "SELECT ordinal_position, column_default, is_nullable, data_type, character_maximum_length, numeric_precision, numeric_scale, column_name, (SELECT pgd.description FROM pg_catalog.pg_statio_all_tables as st INNER JOIN pg_catalog.pg_description pgd on (pgd.objoid = st.relid) INNER JOIN information_schema.columns c ON (pgd.objsubid = c.ordinal_position AND c.table_schema = st.schemaname AND c.table_name = st.relname)) FROM information_schema.columns WHERE TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = ? AND column_name NOT IN ('row_start', 'row_end') ORDER BY ORDINAL_POSITION;";
         log.trace("mapped select columns statement: {}", statement);
         return statement;
     }
 
-    default String databaseTableConstraintsSelectRawQuery() {
-        final String statement = "SELECT kcu.ordinal_position, tc.constraint_type, kcu.constraint_name, kcu.column_name, pgc.confrelid::regclass AS referenced_table_name, ccu.column_name as referenced_column_name, rfc.delete_rule, rfc.update_rule FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_catalog = kcu.constraint_catalog AND tc.constraint_schema = kcu.constraint_schema AND tc.constraint_name = kcu.constraint_name LEFT JOIN information_schema.referential_constraints rfc ON tc.constraint_name = rfc.constraint_name AND tc.constraint_schema = rfc.constraint_schema LEFT JOIN pg_constraint pgc ON pgc.conname = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE tc.constraint_schema = 'public' AND LOWER(kcu.column_name) != 'row_end' AND tc.table_name = ? ORDER BY kcu.ordinal_position;";
+    default String databaseTableConstraintsSelectRawQuery(String schema) {
+        final String statement = "SELECT kcu.ordinal_position, tc.constraint_type, kcu.constraint_name, kcu.column_name, pgc.confrelid::regclass AS referenced_table_name, ccu.column_name as referenced_column_name, rfc.delete_rule, rfc.update_rule FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_catalog = kcu.constraint_catalog AND tc.constraint_schema = kcu.constraint_schema AND tc.constraint_name = kcu.constraint_name LEFT JOIN information_schema.referential_constraints rfc ON tc.constraint_name = rfc.constraint_name AND tc.constraint_schema = rfc.constraint_schema LEFT JOIN pg_constraint pgc ON pgc.conname = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE tc.constraint_schema = '" + schema + "' AND LOWER(kcu.column_name) != 'row_end' AND tc.table_name = ? ORDER BY kcu.ordinal_position;";
         log.trace("mapped select table constraints statement: {}", statement);
         return statement;
     }

@@ -15,7 +15,7 @@ data:
     VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203',
             'registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg',
             'postgresql:17.9-cloudnative-pg',
-            '32c13903-651a-404c-8fd3-f92708899a69', 'data-db-rw', 5432, '{{ .Values.datadb.appUser.user }}',
+            '32c13903-651a-404c-8fd3-f92708899a69', '{{ include "datadb.endpoint" . | trim }}', 5432, '{{ .Values.datadb.appUser.user }}',
             '{{ .Values.datadb.appUser.password }}', '{{ .Values.datadb.appUser.user }}',
             '{{ .Values.datadb.appUser.password }}');
     COMMIT;

@@ -46,6 +46,7 @@ public abstract class DataConnector {
         if (databaseName != null) {
             stringBuilder.append(databaseName);
         }
+        stringBuilder.append("?prepareThreshold=0");
         log.trace("mapped container to jdbc url: {}", stringBuilder);
         return stringBuilder.toString();
     }

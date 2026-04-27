@@ -41,7 +41,6 @@
     <properties>
         <java.version>21</java.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <rabbitmq.version>5.20.0</rabbitmq.version>
         <commons-io.version>2.17.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
         <guava.version>33.0.0-jre</guava.version>
@@ -130,6 +129,7 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.mchange</groupId>
@@ -208,16 +208,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>
-        <!-- AMPQ -->
-        <dependency>
-            <groupId>org.springframework.amqp</groupId>
-            <artifactId>spring-rabbit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>${rabbitmq.version}</version>
         </dependency>
         <!-- Caching -->
         <dependency>

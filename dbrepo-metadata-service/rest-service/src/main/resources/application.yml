@@ -12,10 +12,10 @@ spring:
       password: "${CACHE_DB_PASSWORD:valkey}"
       username: "${CACHE_DB_USERNAME:default}"
   datasource:
-    url: "jdbc:postgresql://${METADATA_HOST:localhost}:${METADATA_PORT:5432}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS:}"
-    driver-class-name: org.postgresql.Driver
-    username: "${METADATA_USERNAME:postgres}"
-    password: "${METADATA_DB_PASSWORD:postgres}"
+    url: "${METADATA_DB_URL:jdbc:postgresql://localhost:5432/dbrepo}"
+    driverClassName: "${METADATA_DB_DRIVER:org.postgresql.Driver}"
+    username: "${METADATA_DB_USERNAME:dbrepo}"
+    password: "${METADATA_DB_PASSWORD:dbrepo}"
   jpa:
     show-sql: false
     open-in-view: false
@@ -24,7 +24,6 @@ spring:
         default_schema: "${METADATA_DB_SCHEMA:public}"
         jdbc:
           time_zone: UTC
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       resourceserver:

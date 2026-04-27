@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.DataDbConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
@@ -35,12 +36,15 @@ import java.util.List;
 public class ViewServicePostgresImpl extends DataConnector implements ViewService {
 
     private final DataMapper dataMapper;
+    private final DataDbConfig dataDbConfig;
     private final PostgresMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public ViewServicePostgresImpl(DataMapper dataMapper, PostgresMapper mariaDbMapper, MetadataMapper metadataMapper) {
+    public ViewServicePostgresImpl(DataMapper dataMapper, DataDbConfig dataDbConfig, PostgresMapper mariaDbMapper,
+                                   MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
+        this.dataDbConfig = dataDbConfig;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
     }
@@ -77,7 +81,8 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
                     .log();
             /* select view columns */
             start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            final PreparedStatement statement2 = connection.prepareStatement(
+                    mariaDbMapper.databaseTableColumnsSelectRawQuery(dataDbConfig.getDefaultSchema()));
             statement2.setString(1, view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
@@ -221,7 +226,8 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
         try {
             /* obtain only view metadata */
             long start = System.currentTimeMillis();
-            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
+            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery(
+                    dataDbConfig.getDefaultSchema()));
             statement1.setString(1, viewName);
             log.trace("1={}", viewName);
             final ResultSet resultSet1 = statement1.executeQuery();
@@ -240,7 +246,8 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
                     .build());
             /* obtain view columns */
             start = System.currentTimeMillis();
-            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            final PreparedStatement statement2 = connection.prepareStatement(
+                    mariaDbMapper.databaseTableColumnsSelectRawQuery(dataDbConfig.getDefaultSchema()));
             statement2.setString(1, view.getInternalName());
             log.trace("1={}", view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();

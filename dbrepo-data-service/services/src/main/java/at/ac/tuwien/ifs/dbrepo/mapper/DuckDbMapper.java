@@ -10,7 +10,7 @@ public interface DuckDbMapper {
 
     String stars = "********";
 
-    default String databaseDtoToRawAttachQuery(Database data) {
+    default String databaseDtoToRawAttachQuery(Database data, String schema) {
         final StringBuilder statement = new StringBuilder("ATTACH 'host=")
                 .append(data.getContainer().getHost())
                 .append(" user=")
@@ -21,7 +21,9 @@ public interface DuckDbMapper {
                 .append(data.getContainer().getPort())
                 .append(" dbname=")
                 .append(data.getInternalName())
-                .append("' AS postgres_db (TYPE postgres, READ_ONLY, SCHEMA 'public');");
+                .append("' AS postgres_db (TYPE postgres, READ_ONLY, SCHEMA '")
+                .append(schema)
+                .append("');");
         log.debug("mapped attach postgres statement: {}", statement);
         return statement.toString();
     }

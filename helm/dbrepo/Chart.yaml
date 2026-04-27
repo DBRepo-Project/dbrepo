@@ -48,8 +48,8 @@ dependencies:
     condition: authservice.enabled
   - name: seaweedfs
     alias: storageservice
-    version: 4.8.7
-    repository: file://../seaweedfs
+    version: 4.21.0
+    repository: https://seaweedfs.github.io/seaweedfs/helm
     condition: storageservice.enabled
   - name: grafana
     alias: dashboardui

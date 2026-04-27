@@ -20,6 +20,8 @@ spec:
         ensure: present
         login: true
         superuser: true
+        createdb: true
+        createrole: true
   storage:
-    size: 1Gi
+    size: 8Gi
 {{- end }}
