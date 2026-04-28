@@ -831,6 +831,9 @@ public interface PostgresMapper {
         if (database.getViews() != null) {
             database.getViews()
                     .forEach(view -> {
+                        if (view.getColumns() == null) {
+                            return;
+                        }
                         view.getColumns()
                                 .forEach(column -> {
                                     columns.put(column.getId(), at.ac.tuwien.ifs.dbrepo.api.Column.builder()

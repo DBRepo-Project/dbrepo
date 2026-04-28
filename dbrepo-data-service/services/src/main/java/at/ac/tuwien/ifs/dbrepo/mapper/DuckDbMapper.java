@@ -24,7 +24,7 @@ public interface DuckDbMapper {
                 .append("' AS postgres_db (TYPE postgres, READ_ONLY, SCHEMA '")
                 .append(schema)
                 .append("');");
-        log.debug("mapped attach postgres statement: {}", statement);
+        log.debug("mapped attach postgres statement: {}", statement.toString().replaceAll(data.getContainer().getPassword(), stars));
         return statement.toString();
     }
 
