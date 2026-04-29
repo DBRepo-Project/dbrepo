@@ -22,6 +22,16 @@ spec:
         superuser: true
         createdb: true
         createrole: true
+  postgresql:
+    parameters:
+      shared_buffers: "2GB"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 2Gi
+    limits:
+      cpu: 200m
+      memory: 8Gi
   storage:
     size: 8Gi
 {{- end }}

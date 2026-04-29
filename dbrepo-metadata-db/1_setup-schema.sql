@@ -462,7 +462,7 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
 INSERT INTO dbrepo.mdb_images (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
-VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'postgres', 'docker.io', '18-alpine', 5432,
+VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'postgres', 'docker.io', '17-alpine', 5432,
         'org.hibernate.dialect.PostgreSQLDialect', 'org.postgresql.Driver', 'postgresql');
 
 INSERT INTO dbrepo.mdb_image_types (image_id, display_name, value, size_min, size_max, size_default, size_required,

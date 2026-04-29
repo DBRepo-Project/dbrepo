@@ -146,8 +146,13 @@ authservice:
     password: keycloak
     replicaCount: 3
     image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
-  ## @param authservice.resourcesPreset The container resource presets
-  resourcesPreset: "small"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 1024Mi
   jwt:
     ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
@@ -206,6 +211,15 @@ cachedb:
   image:
     ## @skip cachedb.image.repository
     repository: bitnamilegacy/valkey
+  primary:
+    ## @skip cachedb.primary.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 1024Mi
   auth:
     ## @param cachedb.auth.password The Valkey password
     password: valkey
@@ -226,6 +240,33 @@ searchdb:
   host: search-db
   ## @param searchdb.port The port for the microservices.
   port: 9200
+  master:
+    ## @skip searchdb.master.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  coordinating:
+    ## @skip searchdb.coordinating.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  data:
+    ## @skip searchdb.data.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
   ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
     enabled: false
@@ -233,6 +274,8 @@ searchdb:
     ## @skip searchdb.security.enabled
     enabled: false
   dashboards:
+    ## @skip searchdb.dashboards.enabled
+    enabled: false
     image:
       ## @skip searchdb.dashboards.image.repository
       repository: bitnamilegacy/opensearch-dashboards
@@ -315,16 +358,14 @@ consumerservice:
     seccompProfile:
       ## @param consumerservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param consumerservice.resourcesPreset The container resource preset
-  resourcesPreset: "small"
   ## @param consumerservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
   ## @param consumerservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -372,16 +413,14 @@ metadataservice:
     seccompProfile:
       ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param metadataservice.resourcesPreset The container resource preset
-  resourcesPreset: "small"
   ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 1024Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
   crossref:
@@ -472,16 +511,14 @@ dataservice:
     seccompProfile:
       ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param dataservice.resourcesPreset The container resource preset
-  resourcesPreset: "large"
   ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 1024Mi
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
@@ -559,16 +596,14 @@ searchservice:
     seccompProfile:
       ## @param searchservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param searchservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
   ## @param searchservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 500Mi
   setupJob:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
     enabled: true
@@ -577,16 +612,14 @@ searchservice:
     image:
       ## @skip searchservice.setupJob.image.name
       name: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service-init:1.13.4
-    ## @param searchservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 1024Mi
     ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -597,15 +630,48 @@ storageservice:
   enabled: true
   ## @skip storageservice.fullnameOverride
   fullnameOverride: storage-service
+  master:
+    ## @skip storageservice.master.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   filer:
     ## @param storageservice.filer.enabled Cannot use the filer in the standard component since it's incompatible with OpenShift
     enabled: true
+    ## @skip storageservice.filer.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   volume:
     ## @skip storageservice.volume.enabled
     enabled: true
+    ## @skip storageservice.volume.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   s3:
     ## @skip storageservice.s3.enabled
     enabled: true
+    ## @skip storageservice.s3.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
     ## @skip storageservice.s3.replicas
     replicas: 2
     bucket: dbrepo
@@ -655,16 +721,14 @@ storageservice:
       seccompProfile:
         ## @param storageservice.setupJob.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
         type: "RuntimeDefault"
-    ## @param storageservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset: "nano"
     ## @param storageservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 1024Mi
 
 ## @section Identity Service
 
@@ -721,16 +785,14 @@ identityservice:
     seccompProfile:
       ## @param identityservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param identityservice.resourcesPreset The container resource preset
-  resourcesPreset: "nano"
   ## @param identityservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
   ## @param identityservice.endpoint The identity service endpoint.
   endpoint: ldap://identity-service:1389
   ## @skip identityservice.customSchemaFiles
@@ -804,16 +866,14 @@ ui:
     seccompProfile:
       ## @param ui.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param ui.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
   ## @param ui.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
   ## @skip ui.resources
   public:
     about:
@@ -928,16 +988,14 @@ dashboardservice:
     seccompProfile:
       ## @param dashboardservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param dashboardservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
   ## @param dashboardservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
   ## @param dashboardservice.replicaCount The number of replicas.
   setupJob:
     ## @param dashboardservice.setupJob.enabled Enable the setup job that creates dashboards for existing databases in the Dashboard UI.
@@ -945,16 +1003,14 @@ dashboardservice:
     image:
       ## @skip dashboardservice.setupJob.image.name
       name: registry.datalab.tuwien.ac.at/dbrepo-nightly/dashboard-service-init:1.13.4
-    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset: "nano"
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
   ## @param dashboardservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -990,103 +1046,19 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
+    ## @skip dashboardui.grafana.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
     ## @param dashboardui.grafana.replicaCount The number of replicas.
     replicaCount: 2
   persistence:
     ## @skip dashboardui.persistence.enabled
     enabled: false
-
-## @section Metric Service
-
-metricdb:
-  ## @param metricdb.enabled Enable the Metric Service.
-  enabled: true
-  ## @skip metricdb.fullnameOverride
-  fullnameOverride: metric-db
-  ## @param metricdb.endpoint The endpoint for microservices.
-  endpoint: http://metric-db-server
-  alertmanager:
-    ## @skip metricdb.alertmanager.enabled
-    enabled: false
-  server:
-    image:
-      ## @skip metricdb.server.image.repository
-      repository: bitnamilegacy/prometheus
-    rbac:
-      ## @skip metricdb.server.rbac.create
-      create: false
-    updateStrategy:
-      ## @skip metricdb.server.updateStrategy.type
-      type: Recreate
-    service:
-      ## @skip metricdb.server.service.type
-      type: ClusterIP
-    persistence:
-      ## @skip metricdb.server.persistence.enabled
-      enabled: true
-    ## @skip metricdb.server.extraScrapeConfigs
-    extraScrapeConfigs:
-      - job_name: 'actuator scrape'
-        metrics_path: '/actuator/prometheus'
-        static_configs:
-          - targets:
-              - data-service
-              - metadata-service
-      - job_name: 'metrics scrape'
-        metrics_path: '/metrics'
-        static_configs:
-          - targets:
-              - analyse-service
-              - auth-service-metrics:9000
-              - broker-service:9419
-              - dashboard-db-metrics:9187
-              - dashboard-service
-              - data-db-metrics:9104
-              - metadata-db-metrics:9104
-              - search-service
-              - storage-service-master-metrics:9327
-              - ui:3000
-      - job_name: 'realm scrape'
-        metrics_path: '/realms/dbrepo/metrics'
-        static_configs:
-          - targets:
-              - auth-service-metrics:8080
-
-## @section Gateway Service
-
-gatewayservice:
-  ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
-  enabled: true
-  ## @skip gatewayservice.fullnameOverride
-  fullnameOverride: gateway-service
-  image:
-    ## @skip gatewayservice.image.repository
-    repository: bitnamilegacy/nginx
-  service:
-    ## @param gatewayservice.service.type The service type.
-    type: ClusterIP
-  metrics:
-    ## @param gatewayservice.metrics.enabled Enable the Prometheus metrics sidecar.
-    enabled: false
-  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
-  existingServerBlockConfigmap: gateway-service-setup
-  ## @skip gatewayservice.extraVolumes
-  extraVolumes:
-    - name: logging
-      emptyDir: { }
-  ## @skip gatewayservice.extraVolumeMounts
-  extraVolumeMounts:
-    - name: logging
-      mountPath: /var/log/nginx
-  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
-  replicaCount: 3
-
-## @section Analytics Service
-
-computeservice:
-  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
-  endpoint: local[*]
-
 
 ## @section Ingress
 

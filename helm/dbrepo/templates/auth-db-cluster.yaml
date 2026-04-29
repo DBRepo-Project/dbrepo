@@ -8,12 +8,6 @@ metadata:
 spec:
   instances: {{ .Values.authservice.externalDatabase.replicaCount }}
   imageName: {{ .Values.authservice.externalDatabase.image }}
-  type: rw
-  pgbouncer:
-    poolMode: session
-    parameters:
-      max_client_conn: "1000"
-      default_pool_size: "10"
   bootstrap:
     initdb:
       # app is an unprivileged user
@@ -21,6 +15,16 @@ spec:
       owner: {{ .Values.authservice.externalDatabase.user }}
       secret:
         name: auth-db-appuser-secret
+  postgresql:
+    parameters:
+      shared_buffers: "1GB"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 1Gi
+    limits:
+      cpu: 200m
+      memory: 4Gi
   storage:
     size: 1Gi
 {{- end }}

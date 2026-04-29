@@ -23,6 +23,16 @@ spec:
             key: 02-setup-data.sql
           - name: metadata-db-initdb-scripts
             key: 03-change-owner.sql
+  postgresql:
+    parameters:
+      shared_buffers: "1GB"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 1Gi
+    limits:
+      cpu: 200m
+      memory: 4Gi
   storage:
     size: 1Gi
 {{- end }}
