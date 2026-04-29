@@ -28,10 +28,10 @@ services:
       - "15432:5432"
     environment:
       POSTGRES_DB: "dbrepo"
-      POSTGRES_USER: "${METADATA_DB_USERNAME:-postgres}"
-      POSTGRES_PASSWORD: "${METADATA_DB_PASSWORD:-postgres}"
+      POSTGRES_USER: "${METADATA_DB_USERNAME:-dbrepo}"
+      POSTGRES_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATA_DB_USERNAME:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATA_DB_USERNAME:-dbrepo}"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -47,10 +47,10 @@ services:
     ports:
       - "15433:5432"
     environment:
-      POSTGRES_USER: "${DATA_DB_USERNAME:-postgres}"
-      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-postgres}"
+      POSTGRES_USER: "${DATA_DB_USERNAME:-dbrepo}"
+      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATA_DB_USERNAME:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATA_DB_USERNAME:-dbrepo}"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -66,10 +66,10 @@ services:
       - auth-db-data:/home/postgres/pgdata/pgroot/data
     environment:
       POSTGRES_DB: "${AUTH_DB_NAME:-keycloak}"
-      POSTGRES_USER: "${AUTH_DB_USERNAME:-postgres}"
-      POSTGRES_PASSWORD: "${AUTH_DB_PASSWORD:-postgres}"
+      POSTGRES_USER: "${AUTH_DB_USERNAME:-dbrepo}"
+      POSTGRES_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME:-dbrepo}"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -83,10 +83,10 @@ services:
       - dashboard-db-data:/home/postgres/pgdata/pgroot/data
     environment:
       POSTGRES_DB: "${DASHBOARD_DB_NAME:-grafana}"
-      POSTGRES_USER: "${DASHBOARD_DB_USERNAME:-postgres}"
-      POSTGRES_PASSWORD: "${DASHBOARD_DB_PASSWORD:-postgres}"
+      POSTGRES_USER: "${DASHBOARD_DB_USERNAME:-dbrepo}"
+      POSTGRES_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DASHBOARD_DB_USERNAME:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DASHBOARD_DB_USERNAME:-dbrepo}"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -104,8 +104,8 @@ services:
     environment:
       # legacy
       KC_DB: "postgres"
-      KC_DB_USERNAME: "${AUTH_DB_USERNAME:-postgres}"
-      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-postgres}"
+      KC_DB_USERNAME: "${AUTH_DB_USERNAME:-dbrepo}"
+      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       KC_BOOTSTRAP_ADMIN_USERNAME: "${AUTH_SERVICE_ADMIN:-admin}"
       KC_BOOTSTRAP_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
       # bitnami
@@ -118,8 +118,8 @@ services:
       KEYCLOAK_EXTRA_ARGS: "--import-realm"
       KEYCLOAK_DATABASE_HOST: "auth-db"
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
-      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-postgres}"
-      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-postgres}"
+      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-dbrepo}"
+      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost:8080}"
       KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost:8080}"
       KEYCLOAK_PROXY_HEADERS: "forwarded"
@@ -170,8 +170,8 @@ services:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       METADATA_DB_URL: "${METADATA_DB_URL:-jdbc:postgresql://metadata-db:5432/dbrepo}"
-      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-postgres}"
-      METADATA_DB_USERNAME: "${METADATA_DB_USERNAME:-postgres}"
+      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      METADATA_DB_USERNAME: "${METADATA_DB_USERNAME:-dbrepo}"
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
@@ -567,8 +567,8 @@ services:
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
-      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-postgres}"
-      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-postgres}"
+      DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-dbrepo}"
+      DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_SECURITY_ADMIN_USER: "${DASHBOARD_UI_USERNAME:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"

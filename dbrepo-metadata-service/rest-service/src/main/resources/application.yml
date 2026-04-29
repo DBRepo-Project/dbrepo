@@ -21,7 +21,7 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        default_schema: "${METADATA_DB_SCHEMA:public}"
+        default_schema: "${METADATA_DB_SCHEMA:dbrepo}"
         jdbc:
           time_zone: UTC
   security:
