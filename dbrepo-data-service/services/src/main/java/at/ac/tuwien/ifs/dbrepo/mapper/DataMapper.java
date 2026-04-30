@@ -26,6 +26,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.duckdb.DuckDBResultSet;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +38,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.sql.Types.*;
+import static java.sql.Types.REAL;
 
 @Mapper(componentModel = "spring")
 public interface DataMapper {
@@ -92,6 +92,9 @@ public interface DataMapper {
         return statistic;
     }
 
+    @Mappings({
+            @Mapping(target = "ownedBy", source = "owner.username")
+    })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
@@ -101,11 +104,16 @@ public interface DataMapper {
         if (upper.startsWith("TINYINT(1)")) {
             return ColumnTypeDto.BOOL;
         }
-        switch (upper) {
-            case "CHARACTER VARYING":
-                return ColumnTypeDto.VARCHAR;
-        }
-        return ColumnTypeDto.valueOf(upper);
+        return switch (upper) {
+            case "BOOLEAN" -> ColumnTypeDto.BOOL;
+            case "INTEGER" -> ColumnTypeDto.INT;
+            case "NUMERIC" -> ColumnTypeDto.DECIMAL;
+            case "CHARACTER" -> ColumnTypeDto.CHAR;
+            case "DOUBLE PRECISION" -> ColumnTypeDto.DOUBLE;
+            case "CHARACTER VARYING" -> ColumnTypeDto.VARCHAR;
+            case "TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITHOUT TIME ZONE" -> ColumnTypeDto.TIMESTAMP;
+            default -> ColumnTypeDto.valueOf(upper);
+        };
     }
 
     default TableDto resultSetToTable(ResultSet resultSet, TableDto table) throws SQLException {
@@ -458,6 +466,7 @@ public interface DataMapper {
             case CHAR -> VARCHAR;
             case VARCHAR -> VARCHAR;
             case BINARY -> BINARY;
+            case REAL -> REAL;
             case VARBINARY -> BINARY;
             case TINYBLOB -> BLOB;
             case TINYTEXT -> VARCHAR;
@@ -496,7 +505,7 @@ public interface DataMapper {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 if (value == null) {
-                    ps.setNull(idx, Types.BLOB);
+                    ps.setNull(idx, BLOB);
                     break;
                 }
                 try {

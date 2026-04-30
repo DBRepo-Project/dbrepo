@@ -151,7 +151,7 @@ authservice:
       cpu: 50m
       memory: 64Mi
     limits:
-      cpu: 200m
+      cpu: 500m
       memory: 1024Mi
   jwt:
     ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
@@ -187,7 +187,7 @@ authservice:
     - name: logging
       mountPath: /var/log/app/service/auth
   ## @skip authservice.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
 
 ## @sectionn Cache Database
 
@@ -241,35 +241,51 @@ searchdb:
   ## @param searchdb.port The port for the microservices.
   port: 9200
   master:
+    ## @skip searchdb.master.replicaCount
+    replicaCount: 1
     ## @skip searchdb.master.resources
     resources:
       requests:
         cpu: 50m
         memory: 64Mi
       limits:
-        cpu: 200m
+        cpu: 500m
         memory: 512Mi
   coordinating:
+    ## @skip searchdb.coordinating.replicaCount
+    replicaCount: 1
     ## @skip searchdb.coordinating.resources
     resources:
       requests:
         cpu: 50m
         memory: 64Mi
       limits:
-        cpu: 200m
+        cpu: 500m
         memory: 512Mi
   data:
+    ## @skip searchdb.data.replicaCount
+    replicaCount: 1
     ## @skip searchdb.data.resources
     resources:
       requests:
         cpu: 50m
         memory: 64Mi
       limits:
-        cpu: 200m
-        memory: 512Mi
+        cpu: 250m
+        memory: 2Gi
   ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
     enabled: false
+    ## @skip searchdb.ingest.replicaCount
+    replicaCount: 1
+    ## @skip searchdb.ingest.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
   security:
     ## @skip searchdb.security.enabled
     enabled: false
@@ -313,6 +329,21 @@ brokerservice:
     username: admin
     ## @skip brokerservice.auth.password
     password: admin
+  ## @param brokerservice.resources
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    ## @param brokerservice.persistence.enabled
+    enabled: true
+    ## @param brokerservice.persistence.size
+    size: 1Gi
+  ## @param brokerservice.replicaCount The number of replicas.
+  replicaCount: 3
 
 ## @section Consumer Service
 
@@ -419,13 +450,13 @@ metadataservice:
       cpu: 50m
       memory: 64Mi
     limits:
-      cpu: 100m
+      cpu: 250m
       memory: 1024Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
   crossref:
     ## @param metadataservice.crossref.endpoint The CrossRef endpoint.
-    endpoint: http://data.crossref.org
+    endpoint: httpx://data.crossref.org
   ror:
     ## @param metadataservice.ror.endpoint The ROR endpoint.
     endpoint: https://api.ror.org
@@ -603,7 +634,7 @@ searchservice:
       memory: 64Mi
     limits:
       cpu: 200m
-      memory: 500Mi
+      memory: 250Mi
   setupJob:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
     enabled: true
@@ -824,11 +855,11 @@ ui:
     name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.21
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
-    ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
+    ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
     authSessionSecret: qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
-    ## @param ui.oidc.sessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
+    ## @param ui.oidc.sessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
     sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
-    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
+    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterward.
     tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
   ## @param ui.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -877,13 +908,13 @@ ui:
   ## @skip ui.resources
   public:
     about:
-      ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and markdown content will be rendered.
+      ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and Markdown content will be rendered.
       content: ""
     terms:
-      ## @param ui.public.terms.content The content of the /terms page. If not empty, the page will be displayed and markdown content will be rendered.
+      ## @param ui.public.terms.content The content of the /terms page. If not empty, the page will be displayed and Markdown content will be rendered.
       content: ""
     policies:
-      ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and markdown content will be rendered.
+      ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and Markdown content will be rendered.
       content: ""
     api:
       ## @param ui.public.api.client The endpoint for the client api. Defaults to `https://<gateway>`.
@@ -915,10 +946,10 @@ ui:
         - protocol: "mqtt"
           port: "1883"
           encrypted: false
-      ## @param ui.public.broker.extra Extra metadata displayed.
+      ## @param ui.public.broker.extra The extra metadata displayed.
       extra: ""
     database:
-      ## @param ui.public.database.extra Extra metadata displayed.
+      ## @param ui.public.database.extra The extra metadata displayed.
       extra: ""
     pid:
       default:

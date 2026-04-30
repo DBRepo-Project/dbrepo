@@ -82,8 +82,11 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             /* select view columns */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(
-                    mariaDbMapper.databaseTableColumnsSelectRawQuery(dataDbConfig.getDefaultSchema()));
-            statement2.setString(1, view.getInternalName());
+                    mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            statement2.setString(1, dataDbConfig.getDefaultSchema());
+            statement2.setString(2, view.getInternalName());
+            log.trace("1={}", dataDbConfig.getDefaultSchema());
+            log.trace("2={}", view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
                     .setMessage("selected view columns: " + database.getInternalName() + "." + view.getInternalName())
@@ -226,10 +229,11 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
         try {
             /* obtain only view metadata */
             long start = System.currentTimeMillis();
-            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery(
-                    dataDbConfig.getDefaultSchema()));
-            statement1.setString(1, viewName);
-            log.trace("1={}", viewName);
+            final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
+            statement1.setString(1, dataDbConfig.getDefaultSchema());
+            statement1.setString(2, viewName);
+            log.trace("1={}", dataDbConfig.getDefaultSchema());
+            log.trace("2={}", viewName);
             final ResultSet resultSet1 = statement1.executeQuery();
             log.atDebug()
                     .setMessage("inspected view: " + database.getInternalName() + "." + viewName)
@@ -247,9 +251,11 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             /* obtain view columns */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(
-                    mariaDbMapper.databaseTableColumnsSelectRawQuery(dataDbConfig.getDefaultSchema()));
-            statement2.setString(1, view.getInternalName());
-            log.trace("1={}", view.getInternalName());
+                    mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            statement2.setString(1, dataDbConfig.getDefaultSchema());
+            statement2.setString(2, view.getInternalName());
+            log.trace("1={}", dataDbConfig.getDefaultSchema());
+            log.trace("2={}", view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
                     .setMessage("inspect view columns: " + database.getInternalName() + "." + viewName)

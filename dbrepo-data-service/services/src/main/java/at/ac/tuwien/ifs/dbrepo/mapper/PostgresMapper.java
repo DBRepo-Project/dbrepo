@@ -172,7 +172,7 @@ public interface PostgresMapper {
     }
 
     default String databaseTablesSelectRawQuery() {
-        final String statement = "SELECT DISTINCT t.TABLE_NAME FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = 'query_store' AND t.TABLE_TYPE = 'SYSTEM VERSIONED' AND t.TABLE_NAME != 'queries' ORDER BY t.TABLE_NAME ASC";
+        final String statement = "SELECT DISTINCT t.TABLE_NAME FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = ? AND t.TABLE_NAME  !='queries' AND t.TABLE_NAME NOT LIKE '%_history' ORDER BY t.TABLE_NAME ASC";
         log.trace("mapped select tables statement: {}", statement);
         return statement;
     }
@@ -183,8 +183,8 @@ public interface PostgresMapper {
         return statement;
     }
 
-    default String databaseTableSelectRawQuery(String schema) {
-        final String statement = "SELECT t.table_name, t.table_type, -1 as table_rows, -1 as avg_row_length, -1 as data_length, -1 as max_data_length, NOW() as create_time, NOW() as update_time, v.view_definition, (SELECT obj_description(c.oid) FROM pg_class c WHERE c.relkind = 'r' AND c.relname = t.table_name) FROM information_schema.tables t LEFT JOIN information_schema.views v ON v.table_name = t.table_name WHERE t.table_schema = '" + schema + "' AND t.table_name NOT LIKE '%_history' AND t.table_name != 'queries' AND t.table_name = ?;";
+    default String databaseTableSelectRawQuery() {
+        final String statement = "SELECT t.table_name, t.table_type, -1 as table_rows, -1 as avg_row_length, -1 as data_length, -1 as max_data_length, NOW() as create_time, NOW() as update_time, v.view_definition, (SELECT obj_description(c.oid) FROM pg_class c WHERE c.relkind = 'r' AND c.relname = t.table_name) FROM information_schema.tables t LEFT JOIN information_schema.views v ON v.table_name = t.table_name WHERE t.table_schema = ? AND t.TABLE_NAME  !='queries' AND t.table_name NOT LIKE '%_history' AND t.table_name = ?;";
         log.trace("mapped select table statement: {}", statement);
         return statement;
     }
@@ -212,8 +212,8 @@ public interface PostgresMapper {
         return statement;
     }
 
-    default String databaseTableColumnsSelectRawQuery(String schema) {
-        final String statement = "SELECT ordinal_position, column_default, is_nullable, data_type, character_maximum_length, numeric_precision, numeric_scale, column_name, (SELECT pgd.description FROM pg_catalog.pg_statio_all_tables as st INNER JOIN pg_catalog.pg_description pgd on (pgd.objoid = st.relid) INNER JOIN information_schema.columns c ON (pgd.objsubid = c.ordinal_position AND c.table_schema = st.schemaname AND c.table_name = st.relname)) FROM information_schema.columns WHERE TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = ? AND column_name NOT IN ('row_start', 'row_end') ORDER BY ORDINAL_POSITION;";
+    default String databaseTableColumnsSelectRawQuery() {
+        final String statement = "SELECT ordinal_position, column_default, is_nullable, data_type, character_maximum_length, numeric_precision, numeric_scale, column_name, (SELECT pgd.description FROM pg_catalog.pg_statio_all_tables as st INNER JOIN pg_catalog.pg_description pgd on (pgd.objoid = st.relid) INNER JOIN information_schema.columns c ON (pgd.objsubid = c.ordinal_position AND c.table_schema = st.schemaname AND c.table_name = st.relname) AND c.table_name = information_schema.columns.table_name AND c.column_name = information_schema.columns.column_name) FROM information_schema.columns WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND column_name NOT IN ('row_start', 'row_end') ORDER BY ORDINAL_POSITION;";
         log.trace("mapped select columns statement: {}", statement);
         return statement;
     }
@@ -268,26 +268,8 @@ public interface PostgresMapper {
      * @return The MySQL string.
      */
     default String columnTypeDtoToDataType(CreateTableColumnDto data) {
-        return switch (data.getType()) {
-            case CHAR -> "CHAR(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
-            case VARCHAR -> "VARCHAR(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
-            case BINARY -> "BINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
-            case VARBINARY -> "VARBINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
-            case ENUM -> "ENUM(" + String.join(",", data.getEnums().stream().map(e -> ("'" + e + "'")).toList()) + ")";
-            case SET -> "SET(" + String.join(",", data.getSets().stream().map(e -> ("'" + e + "'")).toList()) + ")";
-            case BIT -> "BIT(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
-            case TINYINT -> "TINYINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
-            case SMALLINT -> "SMALLINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
-            case MEDIUMINT -> "MEDIUMINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
-            case INT -> "INT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
-            case BIGINT -> "BIGINT";
-            case FLOAT -> "FLOAT(" + Objects.requireNonNullElse(data.getSize(), "24") + ")";
-            case DOUBLE ->
-                    "DOUBLE(" + Objects.requireNonNullElse(data.getSize(), "25") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
-            case DECIMAL ->
-                    "DECIMAL(" + Objects.requireNonNullElse(data.getSize(), "10") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
-            default -> data.getType().getType().toUpperCase();
-        };
+        return data.getType()
+                .toString();
     }
 
     default String columnCreateDtoToPrimaryKeyLengthSpecification(CreateTableColumnDto data) {

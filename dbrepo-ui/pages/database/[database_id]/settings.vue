@@ -99,26 +99,6 @@
             :headers="headers"
             :items="accesses"
             :items-per-page="10">
-            <template v-slot:item.type="{ item }">
-              <v-chip
-                size="small"
-                :append-icon="`mdi-${item.type.startsWith(item.grants?.type) ? 'checkbox-marked-circle' : 'close-circle'}`">
-                {{ item.type }}
-              </v-chip>
-            </template>
-            <template v-slot:item.qualified_name="{ item }">
-              <span
-                v-if="item && item.user">
-                {{ item.user.qualified_name }}
-              </span>
-            </template>
-            <template v-slot:item.grants="{ item }">
-              <v-skeleton-loader
-                v-if="item.loading"
-                type="text" />
-              <span
-                v-else>{{ item.grants?.grants.join(', ') }}</span>
-            </template>
             <template v-slot:item.action="{ item }">
               <v-btn
                 v-if="item && item.user && item.user.username !== cacheUser.preferred_username"
@@ -350,11 +330,6 @@ export default {
           sortable: false
         },
         {
-          title: this.$t('pages.database.subpages.access.grants'),
-          value: 'grants',
-          sortable: false
-        },
-        {
           title: this.$t('pages.database.subpages.access.action'),
           value: 'action',
           sortable: false
@@ -495,7 +470,6 @@ export default {
       }
       this.modifyVisibility.is_public = this.database.is_public
       this.modifyOwner.username = this.database.owner.username
-      this.findGrants()
     }
   },
   mounted () {
@@ -513,10 +487,6 @@ export default {
   methods: {
     submit () {
       this.$refs.form.validate()
-    },
-    findGrants () {
-      this.accesses = this.database.accesses
-      this.accesses.forEach(a => this.findGrant(a.user.username))
     },
     closeDialog () {
       this.editAccessDialog = false
@@ -542,31 +512,6 @@ export default {
         })
         .finally(() => {
           this.loading = false
-        })
-    },
-    findGrant (username) {
-      if (!this.database) {
-        return false
-      }
-      const access = this.accesses.filter(a => a.user.username === username)[0]
-      access['loading'] = true
-      const grantService = useGrantService()
-      grantService.findOne(this.database.id, username)
-        .then((grant) => {
-          access['grants'] = grant
-          access['loading'] = false
-        })
-        .catch(({code, message}) => {
-          access['loading'] = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
-        .finally(() => {
-          access['loading'] = false
         })
     },
     uploadFile () {

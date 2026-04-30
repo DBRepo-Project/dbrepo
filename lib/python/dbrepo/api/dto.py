@@ -123,6 +123,11 @@ class TableBrief(BaseModel):
     owned_by: str
 
 
+class TableDense(BaseModel):
+    id: str
+    database_id: str
+
+
 class UserAttributes(BaseModel):
     theme: str
     language: str
@@ -172,6 +177,7 @@ class ColumnType(str, Enum):
     VARBINARY = "varbinary"
     TINYBLOB = "tinyblob"
     TINYTEXT = "tinytext"
+    REAL = "real"
     TEXT = "text"
     BLOB = "blob"
     MEDIUMTEXT = "mediumtext"
@@ -1201,7 +1207,7 @@ class Database(BaseModel):
 
 class Unique(BaseModel):
     id: str
-    table: TableBrief
+    table: TableDense
     columns: List[ColumnBrief]
 
 
@@ -1231,8 +1237,8 @@ class ForeignKey(BaseModel):
     id: str
     name: str
     references: List[ForeignKeyReference]
-    table: TableBrief
-    referenced_table: TableBrief
+    table: TableDense
+    referenced_table: TableDense
     on_update: Optional[ReferenceType] = None
     on_delete: Optional[ReferenceType] = None
 
@@ -1247,7 +1253,7 @@ class CreateForeignKey(BaseModel):
 
 class PrimaryKey(BaseModel):
     id: str
-    table: TableBrief
+    table: TableDense
     column: ColumnBrief
 
 

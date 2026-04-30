@@ -974,6 +974,7 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "tdbid", source = "databaseId"),
+            @Mapping(target = "ownedBy", source = "owner.username"),
             @Mapping(target = "database", ignore = true)
     })
     Table tableDtoToTable(TableDto data);

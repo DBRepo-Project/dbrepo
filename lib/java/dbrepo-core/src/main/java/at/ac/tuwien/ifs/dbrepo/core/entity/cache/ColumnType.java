@@ -18,6 +18,9 @@ public enum ColumnType {
     @JsonProperty("binary")
     BINARY("binary"),
 
+    @JsonProperty("real")
+    REAL("real"),
+
     @JsonProperty("varbinary")
     VARBINARY("varbinary"),
 

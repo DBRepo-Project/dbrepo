@@ -21,6 +21,9 @@ public enum ColumnTypeDto {
     @JsonProperty("varbinary")
     VARBINARY("varbinary"),
 
+    @JsonProperty("real")
+    REAL("real"),
+
     @JsonProperty("tinyblob")
     TINYBLOB("tinyblob"),
 

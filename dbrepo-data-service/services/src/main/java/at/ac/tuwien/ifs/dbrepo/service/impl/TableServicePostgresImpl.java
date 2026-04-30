@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
-import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.config.DataDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
@@ -91,7 +90,6 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
                             .build());
             log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to obtain column statistics: {}", e.getMessage());
             throw new TableMalformedException("Failed to obtain column statistics: " + e.getMessage(), e);
         } finally {
@@ -428,10 +426,15 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         final List<TableDto> tables = new LinkedList<>();
+        if (database.getTables() == null) {
+            database.setTables(new LinkedList<>());
+        }
         try {
             /* inspect tables before views */
             final long start = System.currentTimeMillis();
             final PreparedStatement statement = connection.prepareStatement(postgresMapper.databaseTablesSelectRawQuery());
+            statement.setString(1, dataDbConfig.getDefaultSchema());
+            log.trace("1={}", dataDbConfig.getDefaultSchema());
             final ResultSet resultSet1 = statement.executeQuery();
             log.atDebug()
                     .setMessage("explored tables in database: " + database.getInternalName())
@@ -469,9 +472,11 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             long start = System.currentTimeMillis();
             /* obtain only table metadata */
             final PreparedStatement statement1 = connection.prepareStatement(
-                    postgresMapper.databaseTableSelectRawQuery(dataDbConfig.getDefaultSchema()));
-            statement1.setString(1, tableName);
-            log.trace("1={}", tableName);
+                    postgresMapper.databaseTableSelectRawQuery());
+            statement1.setString(1, dataDbConfig.getDefaultSchema());
+            statement1.setString(2, tableName);
+            log.trace("1={}", dataDbConfig.getDefaultSchema());
+            log.trace("2={}", tableName);
             TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
             log.atDebug()
                     .setMessage("inspected table: " + database.getInternalName() + "." + tableName)
@@ -481,9 +486,11 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             /* obtain columns metadata */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(
-                    postgresMapper.databaseTableColumnsSelectRawQuery(dataDbConfig.getDefaultSchema()));
-            statement2.setString(1, tableName);
-            log.trace("1={}", tableName);
+                    postgresMapper.databaseTableColumnsSelectRawQuery());
+            statement2.setString(1, dataDbConfig.getDefaultSchema());
+            statement2.setString(2, tableName);
+            log.trace("1={}", dataDbConfig.getDefaultSchema());
+            log.trace("2={}", tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
                     .setMessage("inspect table columns: " + database.getInternalName() + "." + tableName)

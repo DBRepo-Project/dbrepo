@@ -12,6 +12,7 @@ public enum TableColumnType {
     VARBINARY,
     TINYBLOB,
     TINYTEXT,
+    REAL,
     TEXT,
     BLOB,
     MEDIUMTEXT,

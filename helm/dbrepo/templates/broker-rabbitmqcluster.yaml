@@ -8,13 +8,19 @@ metadata:
   annotations:
     rabbitmq.com/topology-allowed-namespaces: "dbrepo"
 spec:
-  replicas: 3
+  replicas: {{ .Values.brokerservice.replicaCount }}
   rabbitmq:
     additionalConfig: |
       default_user = {{ .Values.brokerservice.auth.username }}
       default_pass = {{ .Values.brokerservice.auth.password }}
+  {{- if .Values.brokerservice.resources }}
+  resources:
+    {{- .Values.brokerservice.resources | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if .Values.brokerservice.persistence.enabled }}
   persistence:
-    storage: "1Gi"
+    storage: {{ .Values.brokerservice.persistence.size }}
+  {{- end }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Vhost
