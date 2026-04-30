@@ -337,6 +337,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             log.debug("fetched unknown view from data service: {}.{}", database.getInternalName(), view.getInternalName());
             final View viewEntity = metadataMapper.viewDtoToView(view);
             viewEntity.setDatabase(database);
+            log.trace("===========> view.owned_by = {}", viewEntity.getOwnedBy());
             for (ViewColumn column : viewEntity.getColumns()) {
                 column.setView(viewEntity);
             }

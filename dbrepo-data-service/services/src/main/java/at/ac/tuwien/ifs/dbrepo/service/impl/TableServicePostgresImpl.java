@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.config.DataDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
@@ -444,7 +445,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             while (resultSet1.next()) {
                 final String tableName = resultSet1.getString(1);
                 if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
-                    log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), tableName);
+                    log.trace("table {}.{} already known to metadata database, skip.", database.getInternalName(), tableName);
                     continue;
                 }
                 final TableDto table = inspect(database, tableName);
@@ -458,7 +459,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         } finally {
             dataSource.close();
         }
-        log.info("Found {} table schema(s)", tables.size());
+        log.info("Found {} new table schema(s): {}", tables.size(), tables.stream().map(TableDto::getInternalName).toList());
         return tables;
     }
 

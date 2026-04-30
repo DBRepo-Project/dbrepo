@@ -246,7 +246,7 @@ public interface PostgresMapper {
     }
 
     default String databaseViewsSelectRawQuery() {
-        final String statement = "SELECT DISTINCT t.TABLE_NAME FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = ? AND t.TABLE_TYPE = 'VIEW'";
+        final String statement = "SELECT DISTINCT v.table_name FROM information_schema.views v WHERE v.table_catalog = ? AND v.table_schema = ? AND v.table_name NOT LIKE '%_history'";
         log.trace("mapped select views statement: {}", statement);
         return statement;
     }

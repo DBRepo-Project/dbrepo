@@ -116,6 +116,9 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
             /* inspect tables before views */
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseViewsSelectRawQuery());
             statement.setString(1, database.getInternalName());
+            statement.setString(2, dataDbConfig.getDefaultSchema());
+            log.trace("1={}", database.getInternalName());
+            log.trace("2={}", dataDbConfig.getDefaultSchema());
             final long start = System.currentTimeMillis();
             final ResultSet resultSet1 = statement.executeQuery();
             log.atDebug()
@@ -125,15 +128,14 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
                     .log();
             while (resultSet1.next()) {
                 final String viewName = resultSet1.getString(1);
-                if (viewName.length() == 64) {
-                    log.trace("view {}.{} seems to be a subset view (name length = 64), skip.", database.getInternalName(), viewName);
-                    continue;
+                if (database.getViews() == null) {
+                    database.setViews(new LinkedList<>());
                 }
                 if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(viewName))) {
                     log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), viewName);
                     continue;
                 }
-                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(viewName))) {
+                if (database.getViews().stream().noneMatch(t -> t.getInternalName().equals(viewName))) {
                     views.add(inspect(database, viewName));
                 }
             }
@@ -143,7 +145,7 @@ public class ViewServicePostgresImpl extends DataConnector implements ViewServic
         } finally {
             dataSource.close();
         }
-        log.info("Found {} view schema(s)", views.size());
+        log.info("Found {} new view schema(s): {}", views.size(), views.stream().map(ViewDto::getInternalName).toList());
         return views;
     }
 

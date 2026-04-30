@@ -1123,12 +1123,13 @@ public interface MetadataMapper {
     ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 
     @Mappings({
-            @Mapping(target = "vdbid", source = "database.id")
+            @Mapping(target = "vdbid", source = "database.id"),
     })
     ViewBriefDto viewToViewBriefDto(View data);
 
     @Mappings({
             @Mapping(target = "database", ignore = true),
+            @Mapping(target = "ownedBy", source = "owner.username"),
     })
     View viewDtoToView(ViewDto data);
 
