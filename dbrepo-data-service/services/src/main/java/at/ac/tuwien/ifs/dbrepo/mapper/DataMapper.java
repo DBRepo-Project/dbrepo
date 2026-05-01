@@ -261,7 +261,7 @@ public interface DataMapper {
         while (matcher.find()) {
             final ColumnAnalysisResultDto analysis = ColumnAnalysisResultDto.builder()
                     .name(matcher.group(1))
-                    .datatype(dataTypeToColumnTypeDto(matcher.group(2)))
+                    .datatype(columnTypeToColumnTypeDto(matcher.group(2)))
                     .nullAllowed(true)
                     .build();
             if (analysis.getDatatype().equals(ColumnTypeDto.VARCHAR)) {
@@ -271,19 +271,6 @@ public interface DataMapper {
         }
         log.debug("mapped to {} column(s) analysis: {}", result.size(), result.stream().map(ColumnAnalysisResultDto::getName).toList());
         return result;
-    }
-
-    /**
-     * Maps the DuckDB Analysis data type given in data to the internally defined data types. Do not use for schema inspection.
-     *
-     * @param data The data type.
-     * @return The mapped internal data type.
-     */
-    default ColumnTypeDto dataTypeToColumnTypeDto(String data) {
-        if (data.equals("BOOLEAN")) {
-            return ColumnTypeDto.BOOL;
-        }
-        return ColumnTypeDto.valueOf(data);
     }
 
     default QueryDto resultSetToQueryDto(ResultSet data) throws SQLException {

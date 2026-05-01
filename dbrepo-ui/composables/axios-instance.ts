@@ -24,7 +24,7 @@ export const useAxiosInstance = () => {
   const config = useRuntimeConfig()
   if (!instance) {
     instance = axios.create({
-      timeout: 300_000,
+      timeout: 600_000, // 10min
       params: {},
       headers: {
         Accept: 'application/json',

@@ -260,6 +260,34 @@ spec:
                 port:
                   number: 80
 {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tus-upload
+  namespace: {{ include "common.names.namespace" . | quote }}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 2G
+    {{ toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
+          - path: /files
+            pathType: Prefix
+            backend:
+              service:
+                name: upload-service
+                port:
+                  number: 80
 {{- if .Values.metadataservice.enabled }}
 ---
 apiVersion: networking.k8s.io/v1

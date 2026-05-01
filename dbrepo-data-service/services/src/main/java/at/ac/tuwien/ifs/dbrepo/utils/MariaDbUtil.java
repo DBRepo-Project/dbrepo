@@ -30,7 +30,6 @@ public class MariaDbUtil {
      */
     final public static List<ColumnTypeDto> numericDataTypes = List.of(
             ColumnTypeDto.TINYINT,
-            ColumnTypeDto.BOOL,
             ColumnTypeDto.SMALLINT,
             ColumnTypeDto.MEDIUMINT,
             ColumnTypeDto.INT,

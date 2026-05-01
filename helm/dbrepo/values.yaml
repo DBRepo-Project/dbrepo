@@ -906,7 +906,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.25
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.28
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
