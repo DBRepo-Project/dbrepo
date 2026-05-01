@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
 );
 
-CREATE TYPE data_type AS ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL');
+CREATE TYPE data_type AS ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL','REAL');
 
 CREATE TABLE IF NOT EXISTS mdb_columns
 (
@@ -199,9 +199,9 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
 
 CREATE TABLE IF NOT EXISTS mdb_constraints_checks
 (
-    id     UUID         NOT NULL DEFAULT gen_random_uuid(),
-    tid    UUID         NOT NULL,
-    checks VARCHAR(255) NOT NULL,
+    id     UUID NOT NULL DEFAULT gen_random_uuid(),
+    tid    UUID NOT NULL,
+    checks TEXT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 );
@@ -239,7 +239,7 @@ CREATE TABLE IF NOT EXISTS mdb_messages
     PRIMARY KEY (id)
 );
 
-CREATE TYPE column_type AS ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL');
+CREATE TYPE column_type AS ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR','SERIAL','REAL');
 
 CREATE TABLE IF NOT EXISTS mdb_view_columns
 (
@@ -460,12 +460,12 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
 INSERT INTO mdb_images (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
-VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'postgres', 'docker.io', '18-alpine', 5432,
+VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'postgres', 'docker.io', '17-alpine', 5432,
         'org.hibernate.dialect.PostgreSQLDialect', 'org.postgresql.Driver', 'postgresql');
 
 INSERT INTO mdb_image_types (image_id, display_name, value, size_min, size_max, size_default, size_required,
-                                    size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
-                                    documentation, is_quoted, is_buildable, is_generated)
+                             size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
+                             documentation, is_quoted, is_buildable, is_generated)
 VALUES ('32c13903-651a-404c-8fd3-f92708899a69', 'BIGINT(size)', 'bigint', 0, null, null, FALSE, 1, null, null, null,
         null, null, null, null, 'https://mariadb.com/kb/en/bigint/', FALSE, TRUE, FALSE),
        ('32c13903-651a-404c-8fd3-f92708899a69', 'BINARY(size)', 'binary', 0, 255, 255, TRUE, 1, null, null, null, null,

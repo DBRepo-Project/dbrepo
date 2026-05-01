@@ -407,7 +407,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.8
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.10
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -505,7 +505,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.11
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.12
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -852,7 +852,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.21
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.22
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
