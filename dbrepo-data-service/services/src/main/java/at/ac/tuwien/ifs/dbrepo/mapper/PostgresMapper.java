@@ -172,7 +172,7 @@ public interface PostgresMapper {
     }
 
     default String databaseTablesSelectRawQuery() {
-        final String statement = "SELECT DISTINCT t.TABLE_NAME FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = ? AND t.TABLE_NAME  !='queries' AND t.TABLE_NAME NOT LIKE '%_history' ORDER BY t.TABLE_NAME ASC";
+        final String statement = "SELECT DISTINCT t.table_name FROM information_schema.TABLES t WHERE t.table_schema = ? AND t.table_name != 'queries' AND NOT EXISTS(SELECT 1 FROM periods.system_versioning s WHERE s.history_table_name = t.table_name::regclass OR s.view_name = t.table_name::regclass) ORDER BY t.table_name ASC;";
         log.trace("mapped select tables statement: {}", statement);
         return statement;
     }
