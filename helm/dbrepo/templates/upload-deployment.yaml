@@ -1,0 +1,74 @@
+{{- if .Values.uploadservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: upload-service
+    service: upload-service
+spec:
+  replicas: {{ .Values.uploadservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: upload-service
+      service: upload-service
+  template:
+    metadata:
+      labels:
+        app: upload-service
+        service: upload-service
+    spec:
+      {{- if .Values.uploadservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.uploadservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: upload-service
+          image: ghcr.io/tus/tusd:v2
+          args:
+            - --behind-proxy
+            - --s3-bucket {{ .Values.dataservice.s3.bucket }}
+            - --s3-endpoint {{ .Values.dataservice.s3.endpoint }}
+          imagePullPolicy: IfNotPresent
+          {{- if .Values.uploadservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.uploadservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/consumer
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ .Values.dataservice.s3.auth.accessKeyId }}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{ .Values.dataservice.s3.auth.secretAccessKey }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/files"
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/files"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.uploadservice.resources }}
+          resources: {{- toYaml .Values.uploadservice.resources | nindent 12 }}
+          {{- else if ne .Values.uploadservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.uploadservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
+{{- end }}

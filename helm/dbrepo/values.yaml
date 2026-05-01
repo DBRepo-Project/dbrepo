@@ -62,6 +62,8 @@ metadatadb:
   host: metadata-db-rw
   ## @skip metadatadb.image
   image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
+  ## @param metadatadb.defaultSchema The default schema.
+  defaultSchema: public
   pooler:
     ## @param metadatadb.pooler.enabled Enable the pgbouncer pooler.
     enabled: true
@@ -496,6 +498,58 @@ metadataservice:
   ## @param metadataservice.replicaCount The number of replicas.
   replicaCount: 2
 
+## @section Upload Service
+
+uploadservice:
+  ## @param metadataservice.enabled Enable the Broker Service.
+  enabled: true
+  ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
+    enabled: true
+    ## @param metadataservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param metadataservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param metadataservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param metadataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 1001
+  containerSecurityContext:
+    ## @param metadataservice.containerSecurityContext.enabled Enable containers' Security Context
+    enabled: true
+    ## @param metadataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param metadataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param metadataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+    runAsGroup: 1001
+    ## @param metadataservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+    runAsNonRoot: true
+    ## @param metadataservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param metadataservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
+    capabilities:
+      ## @param metadataservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+    seccompProfile:
+      ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 1024Mi
+  ## @param metadataservice.replicaCount The number of replicas.
+  replicaCount: 2
+
 ## @section Data Service
 
 dataservice:
@@ -505,7 +559,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.13
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.15
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -590,7 +644,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service:1.13.4
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service:1.13.4-rc.0
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -642,7 +696,7 @@ searchservice:
     schedule: "@midnight"
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service-init:1.13.4
+      name: registry.datalab.tuwien.ac.at/dbrepo-nightly/search-service-init:1.13.4-rc.0
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources:
       requests:
@@ -852,7 +906,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.23
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.25
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
