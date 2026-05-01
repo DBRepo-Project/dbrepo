@@ -149,11 +149,11 @@ export default defineNuxtConfig({
     providers: {
       keycloak: {
         audience: 'account',
-        baseUrl: 'http://localhost:8080/realms/dbrepo',
+        baseUrl: 'https://s209.dl.hpc.tuwien.ac.at/realms/dbrepo',
         clientId: 'dbrepo-client',
         clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
-        redirectUri: 'http://localhost/auth/keycloak/callback',
-        logoutRedirectUri: 'http://localhost',
+        redirectUri: 'https://s209.dl.hpc.tuwien.ac.at/auth/keycloak/callback',
+        logoutRedirectUri: 'https://s209.dl.hpc.tuwien.ac.at',
         exposeAccessToken: true,
         optionalClaims: ['realm_access'],
       },
