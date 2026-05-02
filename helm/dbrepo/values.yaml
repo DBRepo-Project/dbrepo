@@ -772,8 +772,8 @@ storageservice:
       - name: dbrepo
         anonymousRead: false
         ttl: 7d
-        objectLock: true
-        versioning: Enabled
+#        objectLock: true
+#        versioning: Enabled
   setupJob:
     ## @param storageservice.setupJob.enabled Enable the setup job that creates the bucket in the s3 endpoint.
     enabled: true
@@ -906,7 +906,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.28
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.30
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
