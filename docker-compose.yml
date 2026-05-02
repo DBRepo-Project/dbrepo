@@ -553,6 +553,7 @@ services:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
       S3_SECRET_ACCESS_KEY: "${S3_USER_SECRET_ACCESS_KEY:-seaweedfsuser}"
+      S3_REGION: "${S3_REGION:-default}"
       SPARK_USER: "${COMPUTE_SERVICE_USERNAME:-spark}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"

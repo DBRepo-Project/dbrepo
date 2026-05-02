@@ -63,7 +63,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("temp_directory", duckDbConfig.getTmpDirectory()))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()))
+        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config))
                 .execute();
     }
 
