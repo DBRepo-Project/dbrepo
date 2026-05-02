@@ -24,14 +24,14 @@ spec:
         createrole: true
   postgresql:
     parameters:
-      shared_buffers: "2GB"
+      shared_buffers: "8GB"
   resources:
     requests:
       cpu: 50m
-      memory: 2Gi
+      memory: 8Gi
     limits:
       cpu: 1
-      memory: 8Gi
+      memory: 32Gi
   storage:
     size: 8Gi
 {{- end }}
