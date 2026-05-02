@@ -5,9 +5,6 @@ dependencies:
 - name: keycloak
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 25.2.0
-- name: seaweedfs
-  repository: https://seaweedfs.github.io/seaweedfs/helm
-  version: 4.21.0
 - name: grafana
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 11.4.2
@@ -17,5 +14,5 @@ dependencies:
 - name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 5.0.6
-digest: sha256:5b12dd3fb36a10043969d2e0e8ced49f03245ad5a0169fe6d1460a1357fa708a
-generated: "2026-04-27T10:35:47.062419491+02:00"
+digest: sha256:7520b1dc31edc6071d70f35107d8111fa338eb75c1abf4eb803cdd2d3aab3f2b
+generated: "2026-05-02T16:38:47.709247+02:00"

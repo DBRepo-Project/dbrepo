@@ -51,7 +51,7 @@ datadb:
     ## @param datadb.appUser.password The admin password.
     password: dbrepo
   ## @param datadb.replicaCount The number of cluster nodes
-  replicaCount: 3
+  replicaCount: 6
 
 ## @section Metadata Database
 
@@ -559,7 +559,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.15
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.16
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -624,14 +624,16 @@ dataservice:
       password: admin
   s3:
     ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storage-service-s3:8333
+    endpoint: https://amzn-dbrepo.s3.eu-central-1.amazonaws.com
     ## @param dataservice.s3.bucket The S3 bucket name.
-    bucket: dbrepo
+    bucket: amzn-dbrepo
+    ## @param dataservice.s3.region The S3 bucket region.
+    region: eu-central-1
     auth:
       ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId: seaweedfsadmin
+      accessKeyId: AKIAUEKR5YVODJQBTPGX
       ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey: seaweedfsadmin
+      secretAccessKey: 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
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -707,113 +709,6 @@ searchservice:
         memory: 1024Mi
     ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
-
-## @section Storage Service
-
-storageservice:
-  ## @param storageservice.enabled Enable the Storage Service.
-  enabled: true
-  ## @skip storageservice.fullnameOverride
-  fullnameOverride: storage-service
-  master:
-    ## @skip storageservice.master.resources
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 128Mi
-  filer:
-    ## @param storageservice.filer.enabled Cannot use the filer in the standard component since it's incompatible with OpenShift
-    enabled: true
-    ## @skip storageservice.filer.resources
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 128Mi
-  volume:
-    ## @skip storageservice.volume.enabled
-    enabled: true
-    ## @skip storageservice.volume.resources
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 128Mi
-  s3:
-    ## @skip storageservice.s3.enabled
-    enabled: true
-    ## @skip storageservice.s3.resources
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 128Mi
-    ## @skip storageservice.s3.replicas
-    replicas: 2
-    bucket: dbrepo
-    enableAuth: true
-    credentials:
-      admin:
-        accessKey: "seaweedfsadmin"
-        secretKey: "seaweedfsadmin"
-      read:
-        accessKey: "seaweedfsuser"
-        secretKey: "seaweedfsuser"
-    createBuckets:
-      - name: dbrepo
-        anonymousRead: false
-        ttl: 7d
-#        objectLock: true
-#        versioning: Enabled
-  setupJob:
-    ## @param storageservice.setupJob.enabled Enable the setup job that creates the bucket in the s3 endpoint.
-    enabled: true
-    image:
-      ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo-nightly/storage-service-init:1.13.4
-    s3:
-      ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
-      endpoint: http://storage-service-s3:8333
-    containerSecurityContext:
-      ## @param storageservice.setupJob.containerSecurityContext.enabled Enable the containers' Security Context
-      enabled: true
-      ## @param storageservice.setupJob.containerSecurityContext.seLinuxOptions Set SELinux options in container
-      seLinuxOptions: { }
-      ## @param storageservice.setupJob.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-      runAsUser: 1001
-      ## @param storageservice.setupJob.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-      runAsGroup: 0
-      ## @param storageservice.setupJob.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-      runAsNonRoot: true
-      ## @param storageservice.setupJob.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-      allowPrivilegeEscalation: false
-      ## @param storageservice.setupJob.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-      readOnlyRootFilesystem: false
-      capabilities:
-        ## @param storageservice.setupJob.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-        drop: [ "ALL" ]
-        ## @param storageservice.setupJob.containerSecurityContext.capabilities.add Set container's Security Context runAsNonRoot
-        add: [ "NET_BIND_SERVICE" ]
-      seccompProfile:
-        ## @param storageservice.setupJob.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-        type: "RuntimeDefault"
-    ## @param storageservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 1024Mi
 
 ## @section Identity Service
 
@@ -906,7 +801,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.30
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-rc.32
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.

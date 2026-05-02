@@ -46,11 +46,6 @@ dependencies:
     version: 25.2.0
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: authservice.enabled
-  - name: seaweedfs
-    alias: storageservice
-    version: 4.21.0
-    repository: https://seaweedfs.github.io/seaweedfs/helm
-    condition: storageservice.enabled
   - name: grafana
     alias: dashboardui
     version: 11.4.2
