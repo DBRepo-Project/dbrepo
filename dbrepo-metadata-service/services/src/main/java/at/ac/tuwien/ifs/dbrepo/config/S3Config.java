@@ -30,12 +30,15 @@ public class S3Config {
     @Value("${dbrepo.s3.bucket}")
     private String s3Bucket;
 
+    @Value("${dbrepo.s3.region}")
+    private String s3Region;
+
     @Bean
     public S3Client s3client() {
         final AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
                 AwsBasicCredentials.create(s3AccessKeyId, s3SecretAccessKey));
         return S3Client.builder()
-                .region(Region.EU_WEST_1)
+                .region(Region.of(s3Region))
                 .endpointOverride(URI.create(s3Endpoint))
                 .forcePathStyle(true)
                 .credentialsProvider(credentialsProvider)

@@ -120,7 +120,7 @@ dbrepo:
             credentials:
               provider: "${S3_AWS_CREDENTIALS_PROVIDER:org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider}"
           access:
-            key: "${S3_ACCESS_KEY:seaweedfsuser}"
+            key: "${S3_ACCESS_KEY_ID:seaweedfsuser}"
           connection:
             timeout: "${S3_CONNECTION_TIMEOUT:200000}"
             establish:
@@ -145,4 +145,4 @@ dbrepo:
           multiobjectdelete:
             enable: "${S3_MULTIOBJECTDELETE_ENABLE:false}"
           secret:
-            key: "${S3_SECRET_KEY:seaweedfsuser}"
+            key: "${S3_SECRET_ACCESS_KEY:seaweedfsuser}"

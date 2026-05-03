@@ -1,0 +1,21 @@
+summary: Imports a .csv from the Storage Service
+description: |
+  Imports a specific .csv file from the Storage Service via S3
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: filename
+    description: Name of the object file to import from the Storage Service
+    required: true
+
+responses:
+  202:
+    description: Imported the .csv
+    content: { }
+  400:
+    description: The Storage Service could not be contacted or .csv was not found.
+tags:
+  - sidecar
