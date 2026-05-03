@@ -41,7 +41,19 @@ spec:
               protocol: TCP
           envFrom:
             - secretRef:
-                name: ui-secret
+                name: ui-storage-secret
+            - secretRef:
+                name: ui-auth-secret
+            - secretRef:
+                name: ui-metadata-secret
+            - secretRef:
+                name: ui-upload-secret
+            - secretRef:
+                name: ui-pid-secret
+            - secretRef:
+                name: ui-broker-secret
+            - secretRef:
+                name: ui-dashboard-secret
           volumeMounts:
             {{- if .Values.ui.extraVolumeMounts }}
             {{- .Values.ui.extraVolumeMounts | toYaml | nindent 12 }}
