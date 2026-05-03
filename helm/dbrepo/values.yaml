@@ -19,7 +19,7 @@ global:
 ## @section Common parameters
 
 ## @param hostname The hostname.
-hostname: example.com
+hostname: https://s116.dl.hpc.tuwien.ac.at
 ## @param strategyType The image pull
 strategyType: RollingUpdate
 ## @param clusterDomain The cluster domain.
@@ -74,8 +74,14 @@ metadatadb:
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
+  resources:
+    requests:
+      cpu: 50m
+      memory: 4Gi
+    limits:
+      cpu: '1'
+      memory: 8Gi
   ## @param metadatadb.resourcesPreset The container resource preset
-  resourcesPreset: "xlarge"
   persistence:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
     enabled: true
@@ -152,14 +158,20 @@ authservice:
         ## @skip authservice.postgresql.volumePermissions.image.repository
         repository: bitnamilegacy/os-shell
     metrics:
+      enabled: false
       image:
         ## @skip authservice.postgresql.metrics.image.repository
         repository: bitnamilegacy/postgres-exporter
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
-  ## @param authservice.resourcesPreset The container resource presets
-  resourcesPreset: "small"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 1024Mi
   jwt:
     ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
@@ -194,7 +206,7 @@ authservice:
     - name: logging
       mountPath: /var/log/app/service/auth
   ## @skip authservice.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
 
 ## @sectionn Cache Database
 
@@ -218,6 +230,15 @@ cachedb:
   image:
     ## @skip cachedb.image.repository
     repository: bitnamilegacy/valkey
+  primary:
+    ## @skip cachedb.primary.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 1024Mi
   auth:
     ## @param cachedb.auth.password The Valkey password
     password: valkey
@@ -266,10 +287,15 @@ datadb:
   replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
-  ## @param datadb.configurationConfigMap The configmap name holding the `my.cnf` key that defines the mariadb configuration.
-  configurationConfigMap: "data-db-config"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
   initdbScriptsConfigMap: "data-db-scripts-config"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 4Gi
+    limits:
+      cpu: '1'
+      memory: 8Gi
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true
@@ -290,13 +316,58 @@ searchdb:
   host: search-db
   ## @param searchdb.port The port for the microservices.
   port: 9200
+  master:
+    ## @skip searchdb.master.replicaCount
+    replicaCount: 1
+    ## @skip searchdb.master.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  coordinating:
+    ## @skip searchdb.coordinating.replicaCount
+    replicaCount: 1
+    ## @skip searchdb.coordinating.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  data:
+    ## @skip searchdb.data.replicaCount
+    replicaCount: 1
+    ## @skip searchdb.data.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 2Gi
   ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
     enabled: false
+    ## @skip searchdb.ingest.replicaCount
+    replicaCount: 1
+    ## @skip searchdb.ingest.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
   security:
     ## @skip searchdb.security.enabled
     enabled: false
   dashboards:
+    ## @skip searchdb.dashboards.enabled
+    enabled: false
     image:
       ## @skip searchdb.dashboards.image.repository
       repository: bitnamilegacy/opensearch-dashboards
@@ -322,7 +393,7 @@ brokerservice:
     repository: bitnamilegacy/rabbitmq
   metrics:
     ## @skip brokerservice.metrics.enabled
-    enabled: true
+    enabled: false
   ## @param brokerservice.endpoint The management api endpoint for the microservices.
   endpoint: http://broker-service:15672
   ## @param brokerservice.host The hostname for the microservices.
@@ -337,83 +408,24 @@ brokerservice:
   exchangeName: dbrepo
   ## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
   routingKey: dbrepo.#
-  ## @param brokerservice.connectionTimeout The connection timeout in ms.
-  connectionTimeout: 60000
-  ldap:
-    ## @skip brokerservice.ldap.enabled
-    enabled: true
-    ## @skip brokerservice.ldap.authorisationEnabled
-    authorisationEnabled: true
-    ## @skip brokerservice.ldap.servers
-    servers:
-      - identity-service
-    ## @skip brokerservice.ldap.port
-    port: 1389
-    ## @param brokerservice.ldap.binddn The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`.
-    binddn: cn=admin,dc=dbrepo,dc=at
-    ## @param brokerservice.ldap.bindpw The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.
-    bindpw: admin
-    ## @param brokerservice.ldap.uidField The field containing the user id.
-    uidField: uid
-    ## @param brokerservice.ldap.basedn The base domain name containing the users.
-    basedn: dc=dbrepo,dc=at
-    ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
-    userDnPattern: ${username}
   auth:
     ## @skip brokerservice.auth.username
     username: admin
     ## @skip brokerservice.auth.password
     password: admin
-    ## @param brokerservice.auth.passwordHash
-    ## ref https://www.rabbitmq.com/docs/passwords
-    passwordHash: iKGI3TYZWTFemooqE1zwAu/fkbUB9AgVSiFGt3iwDZRNPpZc
-    tls:
-      ## @param brokerservice.auth.tls.enabled Enable TLS support
-      enabled: false
-      ## @param brokerservice.auth.tls.existingSecretFullChain If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`
-      existingSecretFullChain: false
-      ## @param brokerservice.auth.tls.existingSecret Existing secret with certificate content
-      existingSecret: ingress-cert
-  rbac:
-    ## @skip brokerservice.rbac.create
-    create: true
-  ## @skip brokerservice.advancedConfigurationExistingSecret
-  advancedConfigurationExistingSecret: broker-service-secret
-  ## @skip brokerservice.loadDefinition
-  loadDefinition:
+  ## @param brokerservice.resources
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    ## @param brokerservice.persistence.enabled
     enabled: true
-    existingSecret: broker-service-secret
-  ## @param brokerservice.extraPlugins The list of plugins to be activated.
-  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
-  ## @skip brokerservice.extraContainerPorts The list of extra container ports to be exposed
-  extraContainerPorts:
-    - name: mqtt
-      containerPort: 1883
-  service:
-    ## @skip brokerservice.service.extraPorts
-    extraPorts:
-      - name: mqtt
-        port: 1883
-        targetPort: 1883
-    # loadBalancerIP:
-  ## @skip brokerservice.logs
-  logs: ""
-  ## @param brokerservice.extraConfiguration The extra configuration for MQTT
-  extraConfiguration: |
-    # user
-    default_vhost = dbrepo
-    log.connection.level = warning
-    # https://www.rabbitmq.com/docs/logging#log-message-categories
-    log.console = true
-    log.console.level = debug
-    log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
-    log.file.formatter = json
-    log.file.level = info
-    log.file.rotation.size = 10485760
-    log.file.rotation.count = 5
-    mqtt.vhost = dbrepo
-    mqtt.exchange = dbrepo
-    mqtt.prefetch = 10
+    ## @param brokerservice.persistence.size
+    size: 1Gi
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 3
 
@@ -461,16 +473,14 @@ consumerservice:
     seccompProfile:
       ## @param consumerservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param consumerservice.resourcesPreset The container resource preset
-  resourcesPreset: "small"
   ## @param consumerservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
   ## @param consumerservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -481,7 +491,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.4
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-mariadb-rc.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -518,21 +528,19 @@ metadataservice:
     seccompProfile:
       ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param metadataservice.resourcesPreset The container resource preset
-  resourcesPreset: "small"
   ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 1024Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
   crossref:
     ## @param metadataservice.crossref.endpoint The CrossRef endpoint.
-    endpoint: http://data.crossref.org
+    endpoint: https://data.crossref.org
   ror:
     ## @param metadataservice.ror.endpoint The ROR endpoint.
     endpoint: https://api.ror.org
@@ -559,16 +567,6 @@ metadataservice:
   sparql:
     ## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
     connectionTimeout: 10000
-  s3:
-    ## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storage-service-s3:8333
-    ## @skip metadataservice.s3.bucket
-    bucket: dbrepo
-    auth:
-      ## @param metadataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId: seaweedfsuser
-      ## @param metadataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey: seaweedfsuser
   ## @param metadataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -581,7 +579,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.4
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-mariadb-rc.1
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -618,16 +616,14 @@ dataservice:
     seccompProfile:
       ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param dataservice.resourcesPreset The container resource preset
-  resourcesPreset: "large"
   ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 2Gi
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
@@ -648,14 +644,16 @@ dataservice:
       password: admin
   s3:
     ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storage-service-s3:8333
+    endpoint: https://amzn-dbrepo.s3.eu-central-1.amazonaws.com
     ## @param dataservice.s3.bucket The S3 bucket name.
-    bucket: dbrepo
+    bucket: amzn-dbrepo
+    ## @param dataservice.s3.region The S3 bucket region.
+    region: eu-central-1
     auth:
       ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId: seaweedfsuser
+      accessKeyId: AKIAUEKR5YVODJQBTPGX
       ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey: seaweedfsuser
+      secretAccessKey: 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
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -705,16 +703,14 @@ searchservice:
     seccompProfile:
       ## @param searchservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param searchservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
   ## @param searchservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 250Mi
   setupJob:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
     enabled: true
@@ -726,13 +722,13 @@ searchservice:
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 1024Mi
     ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -881,16 +877,14 @@ identityservice:
     seccompProfile:
       ## @param identityservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param identityservice.resourcesPreset The container resource preset
-  resourcesPreset: "nano"
   ## @param identityservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
   ## @param identityservice.endpoint The identity service endpoint.
   endpoint: ldap://identity-service:1389
   ## @skip identityservice.customSchemaFiles
@@ -919,14 +913,14 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.4
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/ui:1.13.4-mariadb-rc.0
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
-    ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
+    ## @param ui.oidc.authSessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
     authSessionSecret: qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
-    ## @param ui.oidc.sessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
+    ## @param ui.oidc.sessionSecret This should be at least 48 characters random string. It is used to encrypt the user session.
     sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
-    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
+    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterward.
     tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
   ## @param ui.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -964,26 +958,24 @@ ui:
     seccompProfile:
       ## @param ui.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param ui.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
   ## @param ui.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
   ## @skip ui.resources
   public:
     about:
-      ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and markdown content will be rendered.
+      ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and Markdown content will be rendered.
       content: ""
     terms:
-      ## @param ui.public.terms.content The content of the /terms page. If not empty, the page will be displayed and markdown content will be rendered.
+      ## @param ui.public.terms.content The content of the /terms page. If not empty, the page will be displayed and Markdown content will be rendered.
       content: ""
     policies:
-      ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and markdown content will be rendered.
+      ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and Markdown content will be rendered.
       content: ""
     api:
       ## @param ui.public.api.client The endpoint for the client api. Defaults to `https://<gateway>`.
@@ -1006,7 +998,7 @@ ui:
     touch: "/apple-touch-icon.png"
     broker:
       ## @param ui.public.broker.host The displayed broker hostname.
-      host: example.com
+      host: localhost
       ## @skip ui.public.broker.connections The array of connections that should be displayed in the frontend.
       connections:
         - protocol: "amqp"
@@ -1015,10 +1007,10 @@ ui:
         - protocol: "mqtt"
           port: "1883"
           encrypted: false
-      ## @param ui.public.broker.extra Extra metadata displayed.
+      ## @param ui.public.broker.extra The extra metadata displayed.
       extra: ""
     database:
-      ## @param ui.public.database.extra Extra metadata displayed.
+      ## @param ui.public.database.extra The extra metadata displayed.
       extra: ""
     pid:
       default:
@@ -1088,33 +1080,29 @@ dashboardservice:
     seccompProfile:
       ## @param dashboardservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @param dashboardservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
   ## @param dashboardservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
   ## @param dashboardservice.replicaCount The number of replicas.
   setupJob:
     ## @param dashboardservice.setupJob.enabled Enable the setup job that creates dashboards for existing databases in the Dashboard UI.
     enabled: true
     image:
       ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.4
-    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset: "nano"
+      name: registry.datalab.tuwien.ac.at/dbrepo-nightly/dashboard-service-init:1.13.4
     ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
   ## @param dashboardservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -1150,6 +1138,14 @@ dashboardui:
       type: Recreate
     ## @skip dashboardui.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-ui-secret
+    ## @skip dashboardui.grafana.resources
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
     ## @param dashboardui.grafana.replicaCount The number of replicas.
     replicaCount: 2
   persistence:
@@ -1252,7 +1248,7 @@ computeservice:
 
 ingress:
   ## @param ingress.enabled Enable the ingress.
-  enabled: false
+  enabled: true
   ## @param ingress.className The ingress class name.
   className: nginx
   tls:
@@ -1261,8 +1257,5 @@ ingress:
     ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
     secretName: ingress-cert
   ## @skip ingress.annotations The ingress rules for proxying requests directly to services.
-  ## @example
-  ## annotations:
-  ##   cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-  ##   nginx.ingress.kubernetes.io/proxy-body-size: 2G
-  annotations: { }
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
