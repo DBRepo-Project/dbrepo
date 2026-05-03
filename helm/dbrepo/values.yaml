@@ -284,21 +284,22 @@ datadb:
     ## @skip datadb.metrics.enabled The Prometheus settings.
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 3
+  replicaCount: 6
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
   initdbScriptsConfigMap: "data-db-scripts-config"
   resources:
     requests:
-      cpu: 50m
-      memory: 4Gi
+      cpu: 500m
+      memory: 8Gi
     limits:
       cpu: '1'
       memory: 8Gi
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true
+    size: 50Gi
 
 ## @section Search Database
 
@@ -579,7 +580,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-mariadb-rc.1
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-mariadb-rc.2
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -644,7 +645,7 @@ dataservice:
       password: admin
   s3:
     ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: https://amzn-dbrepo.s3.eu-central-1.amazonaws.com
+    endpoint: https://s3.eu-central-1.amazonaws.com
     ## @param dataservice.s3.bucket The S3 bucket name.
     bucket: amzn-dbrepo
     ## @param dataservice.s3.region The S3 bucket region.
