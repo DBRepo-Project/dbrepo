@@ -47,11 +47,6 @@ dependencies:
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: authservice.enabled
   - name: mariadb-galera
-    alias: datadb
-    version: 13.2.7
-    repository: oci://registry-1.docker.io/bitnamicharts
-    condition: datadb.enabled
-  - name: mariadb-galera
     alias: metadatadb
     version: 13.2.7
     repository: oci://registry-1.docker.io/bitnamicharts

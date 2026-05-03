@@ -1,10 +1,10 @@
-create table asdasd
+create table dbrepo.asdf
 (
-    column00 bigint(255)  not null
+    column00 bigint       not null
         primary key,
     column01 varchar(255) null,
     column02 text         null,
-    column03 bigint(255)  null,
+    column03 bigint       null,
     column04 varchar(255) null,
     column05 varchar(255) null,
     column06 varchar(255) null,
@@ -22,6 +22,6 @@ create table asdasd
     column18 varchar(255) null,
     column19 varchar(255) null,
     column20 varchar(255) null
-)
-    with system versioning;
-
+);
+SELECT periods.add_system_time_period('dbrepo.asdf', 'row_start', 'row_end');
+SELECT periods.add_system_versioning('dbrepo.asdf');

@@ -29,6 +29,30 @@ username: admin
 ## @param password The internal system password. This user is only used between the microservices and does not exist on paper.
 password: admin
 
+## @section Data Database
+
+datadb:
+  ## @param datadb.enabled Enable the Auth Service.
+  enabled: true
+  ## @skip datadb.host
+  host: data-db-rw
+  ## @skip datadb.fullnameOverride
+  fullnameOverride: data-db
+  ## @skip datadb.image
+  image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
+  pooler:
+    ## @param datadb.pooler.enabled Enable the pgbouncer pooler.
+    enabled: true
+    ## @param datadb.pooler.replicaCount The number of cluster nodes
+    replicaCount: 3
+  appUser:
+    ## @param datadb.appUser.user The admin username.
+    user: dbrepo
+    ## @param datadb.appUser.password The admin password.
+    password: dbrepo
+  ## @param datadb.replicaCount The number of cluster nodes
+  replicaCount: 3
+
 ## @section Metadata Database
 
 metadatadb:
@@ -243,64 +267,6 @@ cachedb:
     ## @param cachedb.auth.password The Valkey password
     password: valkey
 
-## @section Data Database
-
-datadb:
-  ## @param datadb.enabled Enable the Auth Service.
-  enabled: true
-  ## @skip datadb.fullnameOverride
-  fullnameOverride: data-db
-  image:
-    ## @skip datadb.image.repository
-    repository: bitnamilegacy/mariadb-galera
-  ## @param datadb.host The hostname for the microservices.
-  host: data-db
-  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-  rootUser:
-    ## @param datadb.rootUser.user The root username.
-    user: root
-    ## @param datadb.rootUser.password The root user password.
-    password: dbrepo
-  db:
-    ## @param datadb.db.name The database name.
-    name: dbrepo
-    ## @param datadb.db.user The readonly username.
-    user: readonly
-    ## @param datadb.db.password The readonly password.
-    password: readonly
-  galera:
-    mariabackup:
-      ## @param datadb.galera.mariabackup.user The database backup username.
-      user: backup
-      ## @param datadb.galera.mariabackup.password The database backup user password
-      password: backup
-  ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
-  jdbcExtraArgs: ""
-  metrics:
-    image:
-      ## @skip datadb.metrics.image.repository
-      repository: bitnamilegacy/mysqld-exporter
-    ## @skip datadb.metrics.enabled The Prometheus settings.
-    enabled: true
-  ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 6
-  ## @param datadb.resourcesPreset The container resource preset
-  resourcesPreset: "xlarge"
-  ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
-  initdbScriptsConfigMap: "data-db-scripts-config"
-  resources:
-    requests:
-      cpu: 500m
-      memory: 8Gi
-    limits:
-      cpu: '1'
-      memory: 8Gi
-  persistence:
-    ## @param datadb.persistence.enabled Enable persistent storage.
-    enabled: true
-    size: 50Gi
-
 ## @section Search Database
 
 searchdb:
@@ -434,7 +400,7 @@ brokerservice:
 
 consumerservice:
   ## @param consumerservice.enabled Enable the Broker Service.
-  enabled: true
+  enabled: false
   image:
     ## @skip consumerservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.4
@@ -580,7 +546,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-mariadb-rc.2
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-postgres-rc.3
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
