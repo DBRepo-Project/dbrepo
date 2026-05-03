@@ -78,7 +78,7 @@ public interface DuckDbMapper {
                 .append(config.getS3aAccessKey())
                 .append("', SECRET '")
                 .append(config.getS3aSecretKey())
-                .append("' REGION '")
+                .append("', REGION '")
                 .append(config.getS3Region())
                 .append("');");
         log.debug("mapped set s3 secret statement: {}", statement.toString().replace(config.getS3aAccessKey(), stars).replace(config.getS3aSecretKey(), stars));
