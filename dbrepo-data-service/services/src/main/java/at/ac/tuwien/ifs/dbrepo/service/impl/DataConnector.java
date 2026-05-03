@@ -46,15 +46,6 @@ public abstract class DataConnector {
         return getSparkJdbcUrl(databaseDto.getContainer(), databaseDto.getInternalName());
     }
 
-    public String getSparkS3Url(String bucket, String s3key) {
-        final StringBuilder sb =  new StringBuilder("s3a://")
-                .append(bucket)
-                .append("/")
-                .append(s3key);
-        log.trace("mapped container to spark s3 url: {}", sb);
-        return sb.toString();
-    }
-
     public String getJdbcUrl(Container container, String databaseName) {
         final StringBuilder stringBuilder = new StringBuilder("jdbc:")
                 .append(container.getImage().getJdbcMethod())

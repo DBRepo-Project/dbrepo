@@ -94,7 +94,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                             .build());
             log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to obtain column statistics: {}", e.getMessage());
             throw new TableMalformedException("Failed to obtain column statistics: " + e.getMessage(), e);
         } finally {
@@ -120,9 +119,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_table")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             if (e.getMessage().contains("already exists")) {
                 log.error("Failed to create table: already exists");
                 throw new TableExistsException("Failed to create table: already exists", e);
@@ -159,9 +156,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "update_table_comment")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             if (e.getMessage().toLowerCase().contains("doesn't exist")) {
                 log.error("Failed to delete table: not found: {}", e.getMessage());
                 throw new TableNotFoundException("Failed to delete table: not found", e);
@@ -190,9 +185,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "delete_table")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             if (e.getMessage().toLowerCase().contains("unknown table")) {
                 log.error("Failed to delete table: not found: {}", e.getMessage());
                 throw new TableNotFoundException("Failed to delete table: not found", e);
@@ -223,9 +216,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.ACTION, "get_table_history")
                     .log();
             history = dataMapper.resultSetToTableHistory(resultSet);
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to find history for table {}.{}: {}", database, table.getInternalName(), e.getMessage());
             throw new TableNotFoundException("Failed to find history for table " + database + "." + table.getInternalName() + ": " + e.getMessage(), e);
         } finally {
@@ -254,9 +245,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.ACTION, "get_table_count")
                     .log();
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to find row count from table {}.{}: {}", database, tableName, e.getMessage());
             throw new QueryMalformedException("Failed to find row count from table " + database + "." + tableName + ": " + e.getMessage(), e);
         } finally {
@@ -288,14 +277,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             /* import tuple */
             connection.prepareStatement(mariaDbMapper.copyTableSchemaToRawQuery(table.getInternalName(), temporaryTable))
                     .execute();
-            connection.commit();
             log.atDebug()
                     .setMessage("copy table schema from " + table.getInternalName() + "." + database.getInternalName() + " into temporary table: " + temporaryTable + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_copy_schema")
                     .log();
         } catch (SQLException e) {
-            connection.rollback();
             log.atError()
                     .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
                     .setCause(e)
@@ -327,14 +314,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.prepareStatement(mariaDbMapper.temporaryTableToRawMergeQuery(temporaryTable,
                             table.getInternalName(), table.getColumns().stream().map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName).toList()))
                     .execute();
-            connection.commit();
             log.atDebug()
                     .setMessage("merge data from temporary table " + temporaryTable + "." + database.getInternalName() + " into table: " + table.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_merge_data")
                     .log();
         } catch (SQLException e) {
-            connection.rollback();
             log.atError()
                     .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
                     .setCause(e)
@@ -347,7 +332,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                             false))
                     .execute();
             log.debug("deleted temporary table: {}", temporaryTable);
-            connection.commit();
             log.atDebug()
                     .setMessage("delete temporary table: " + temporaryTable + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -383,9 +367,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_delete_tuple")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to delete tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete tuple: " + e.getMessage(), e);
         } finally {
@@ -433,9 +415,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_create_tuple")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to create tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to create tuple: " + e.getMessage(), e);
         } finally {
@@ -475,9 +455,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_update_tuple")
                     .log();
-            connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to update tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to update tuple: " + e.getMessage(), e);
         } finally {

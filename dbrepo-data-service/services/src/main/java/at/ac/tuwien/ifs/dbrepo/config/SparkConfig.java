@@ -64,6 +64,9 @@ public class SparkConfig {
     @Value("${dbrepo.spark.hadoop.fs.s3a.multiobjectdelete.enable}")
     private String s3aMultiobjectdeleteEnable;
 
+    @Value("${dbrepo.spark.hadoop.fs.s3a.disableCache}")
+    private String s3aDisableCache;
+
     @Value("${spark.hadoop.version}")
     private String hadoopVersion;
 
@@ -79,6 +82,7 @@ public class SparkConfig {
                 "org.apache.hadoop:hadoop-aws:" + hadoopVersion,
                 "org.mariadb.jdbc:mariadb-java-client:" + mariadbVersion,
                 "software.amazon.awssdk:bundle:" + awsSdkVersion,
+                "org.postgresql:postgresql:42.7.10",
         };
         final Map<String, String> options = new LinkedHashMap<>();
         options.put("spark.driver.extraJavaOptions", "-Divy.cache.dir=/tmp -Divy.home=/tmp");
@@ -99,6 +103,7 @@ public class SparkConfig {
         options.put("fs.s3a.endpoint", s3aEndpoint);
         options.put("fs.s3a.multipart.purge.age", s3aMultipartPurgeAge);
         options.put("fs.s3a.impl", s3aImpl);
+        options.put("fs.s3a.impl.disable.cache", s3aDisableCache);
         options.put("fs.s3a.threads.keepalivetime", s3aThreadsKeepalivetime);
         options.put("fs.s3a.path.style.access", s3aPathStyleAccess);
         options.put("fs.s3a.secret.key", s3aSecretKey);

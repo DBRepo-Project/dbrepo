@@ -564,43 +564,29 @@ public interface MariaDbMapper {
         if (!force) {
             statement.append("IF EXISTS ");
         }
-        statement.append("`")
-                .append(databaseName)
-                .append("`.`")
+        statement.append("\"")
                 .append(tableName)
-                .append("`;");
+                .append("\";");
         log.trace("mapped drop table query: {}", statement);
         return statement.toString();
     }
 
     default String copyTableSchemaToRawQuery(String from, String to) {
-        final StringBuilder statement = new StringBuilder("CREATE OR REPLACE TABLE `")
+        final StringBuilder statement = new StringBuilder("CREATE TABLE \"")
                 .append(to)
-                .append("` LIKE `")
+                .append("\" (LIKE \"")
                 .append(from)
-                .append("`;");
+                .append("\" INCLUDING ALL);");
         log.trace("mapped copy table schema statement: {}", statement);
         return statement.toString();
     }
 
     default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {
-        final StringBuilder statement = new StringBuilder("INSERT INTO `")
+        final StringBuilder statement = new StringBuilder("INSERT INTO \"")
                 .append(table)
-                .append("` SELECT * FROM `")
+                .append("\" SELECT * FROM \"")
                 .append(tmp)
-                .append("` ON DUPLICATE KEY UPDATE ");
-        final int[] idx = new int[]{0};
-        columns.forEach(column -> statement.append(idx[0]++ > 0 ? ", " : "")
-                .append("`")
-                .append(table)
-                .append("`.`")
-                .append(column)
-                .append("` = `")
-                .append(tmp)
-                .append("`.`")
-                .append(column)
-                .append("`"));
-        statement.append(";");
+                .append(";");
         log.trace("mapped insert statement: {}", statement);
         return statement.toString();
     }

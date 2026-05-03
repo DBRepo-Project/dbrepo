@@ -132,6 +132,7 @@ dbrepo:
             purge:
               age: "${S3_MULTIPART_PURGE_AGE:600000}"
           impl: "${S3_IMPL:org.apache.hadoop.fs.s3a.S3AFileSystem}"
+          disableCache: "${S3_IMPL_DISABLE_CACHE:true}"
           threads:
             keepalivetime: "${S3_THREADS_KEEPALIVETIME:60000}"
           path:

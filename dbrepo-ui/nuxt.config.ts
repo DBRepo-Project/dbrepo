@@ -82,11 +82,11 @@ export default defineNuxtConfig({
         }
       },
       dashboard: {
-        url: 'https://s116.dl.hpc.tuwien.ac.at/dashboard'
+        url: 'http://localhost/dashboard'
       },
       api: {
-        client: 'https://s116.dl.hpc.tuwien.ac.at',
-        server: 'https://s116.dl.hpc.tuwien.ac.at',
+        client: 'http://localhost',
+        server: 'http://localhost',
       },
       database: {
         image: {
@@ -149,11 +149,11 @@ export default defineNuxtConfig({
     providers: {
       keycloak: {
         audience: 'account',
-        baseUrl: 'https://s116.dl.hpc.tuwien.ac.at/realms/dbrepo',
+        baseUrl: 'http://localhost:8080/realms/dbrepo',
         clientId: 'dbrepo-client',
         clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
-        redirectUri: 'https://s116.dl.hpc.tuwien.ac.at/auth/keycloak/callback',
-        logoutRedirectUri: 'https://s116.dl.hpc.tuwien.ac.at',
+        redirectUri: 'http://localhost/auth/keycloak/callback',
+        logoutRedirectUri: 'http://localhost',
         exposeAccessToken: true,
         optionalClaims: ['realm_access'],
       },

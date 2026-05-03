@@ -12,10 +12,11 @@ class S3Client:
         endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
         aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
         aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+        aws_region = os.getenv('S3_REGION', 'default')
         logging.info(
-            f"retrieve file from S3, endpoint_url={endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden)")
+            f"retrieve file from S3, endpoint_url={endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden), aws_region={aws_region}")
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
-                                   aws_secret_access_key=aws_secret_access_key)
+                                   region_name=aws_region, aws_secret_access_key=aws_secret_access_key)
         self.bucket_exists_or_exit("dbrepo-upload")
         self.bucket_exists_or_exit("dbrepo-download")
 
