@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
+import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import org.mapstruct.Mapper;
 
@@ -74,13 +75,15 @@ public interface DuckDbMapper {
         return statement.toString();
     }
 
-    default String queryToRawSetS3SecretQuery(String accessKey, String secretKey) {
+    default String queryToRawSetS3SecretQuery(S3Config config) {
         final StringBuilder statement = new StringBuilder("CREATE SECRET (TYPE s3, KEY_ID '")
-                .append(accessKey)
+                .append(config.getS3AccessKey())
                 .append("', SECRET '")
-                .append(secretKey)
+                .append(config.getS3SecretKey())
+                .append("', REGION '")
+                .append(config.getS3Region())
                 .append("');");
-        log.debug("mapped set s3 secret statement: {}", statement.toString().replace(accessKey, stars).replace(secretKey, stars));
+        log.debug("mapped set s3 secret statement: {}", statement.toString().replace(config.getS3AccessKey(), stars).replace(config.getS3SecretKey(), stars));
         return statement.toString();
     }
 

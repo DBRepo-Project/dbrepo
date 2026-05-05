@@ -33,6 +33,9 @@ public class S3Config {
     @Value("${dbrepo.s3.region}")
     private String s3Region;
 
+    @Value("${dbrepo.sharedFileSystem}")
+    private String sharedFileSystem;
+
     @Bean
     public S3Client s3client() {
         final AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(

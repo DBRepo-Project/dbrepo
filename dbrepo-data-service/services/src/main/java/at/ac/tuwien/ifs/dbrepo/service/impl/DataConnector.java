@@ -35,6 +35,17 @@ public abstract class DataConnector {
         return getDataSource(database.getContainer(), database.getInternalName());
     }
 
+    public String getSparkJdbcUrl(Container container, String databaseName) {
+        final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
+                .append("&sessionVariables=sql_mode='ANSI_QUOTES'");
+        log.trace("mapped container to spark jdbc url: {}", sb);
+        return sb.toString();
+    }
+
+    public String getSparkJdbcUrl(Database databaseDto) {
+        return getSparkJdbcUrl(databaseDto.getContainer(), databaseDto.getInternalName());
+    }
+
     public String getJdbcUrl(Container container, String databaseName) {
         final StringBuilder stringBuilder = new StringBuilder("jdbc:")
                 .append(container.getImage().getJdbcMethod())

@@ -93,6 +93,8 @@ dbrepo:
     metadataService: "${METADATA_SERVICE_ENDPOINT:http://metadata-service:8080}"
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
     authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
+    computeService: "${COMPUTE_SERVICE_ENDPOINT:local[*]}"
+    sidecar: "${SIDECAR_ENDPOINT:http://data-db-sidecar:8080}"
   s3:
     bucket: "${S3_BUCKET:dbrepo}"
     region: "${S3_REGION:default}"
@@ -116,3 +118,39 @@ dbrepo:
       write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, INSERT, UPDATE, DELETE}"
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   baseUrl: "${BASE_URL:http://localhost}"
+  sharedFileSystem: "${SHARED_FILESYSTEM:/tmp}"
+  spark:
+    hadoop:
+      fs:
+        s3a:
+          aws:
+            credentials:
+              provider: "${S3_AWS_CREDENTIALS_PROVIDER:org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider}"
+          access:
+            key: "${S3_ACCESS_KEY_ID:seaweedfsuser}"
+          connection:
+            timeout: "${S3_CONNECTION_TIMEOUT:200000}"
+            establish:
+              timeout: "${S3_CONNECTION_ESTABLISH_TIMEOUT:30000}"
+            ssl:
+              enabled: "${S3_CONNECTION_SSL_ENABLED:false}"
+          endpoint: "${S3_ENDPOINT:http://storage-service:9000}"
+          multipart:
+            purge:
+              age: "${S3_MULTIPART_PURGE_AGE:600000}"
+          impl: "${S3_IMPL:org.apache.hadoop.fs.s3a.S3AFileSystem}"
+          disableCache: "${S3_IMPL_DISABLE_CACHE:true}"
+          threads:
+            keepalivetime: "${S3_THREADS_KEEPALIVETIME:60000}"
+          path:
+            style:
+              access: "${S3_PATH_STYLE_ACCESS:true}"
+          committer:
+            name: "${S3_COMMITTER_NAME:magic}"
+          change:
+            detection:
+              mode: "${S3_CHANGE_DETECTION_MODE:none}"
+          multiobjectdelete:
+            enable: "${S3_MULTIOBJECTDELETE_ENABLE:false}"
+          secret:
+            key: "${S3_SECRET_ACCESS_KEY:seaweedfsuser}"

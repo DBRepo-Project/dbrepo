@@ -491,7 +491,7 @@ public interface PostgresMapper {
      * @return The raw query statement.
      */
     default String dropTableRawQuery(String tableName) {
-        final StringBuilder statement = new StringBuilder("DROP TABLE ");
+        final StringBuilder statement = new StringBuilder("DROP TABLE IF EXISTS ");
         statement.append(tableName)
                 .append(" CASCADE;");
         log.trace("mapped drop table query: {}", statement);
@@ -503,6 +503,50 @@ public interface PostgresMapper {
         statement.append(tableName)
                 .append("');");
         log.trace("mapped drop table versioning query: {}", statement);
+        return statement.toString();
+    }
+
+    default String copyTableSchemaToRawQuery(String from, String to) {
+        final StringBuilder statement = new StringBuilder("CREATE TABLE \"")
+                .append(to)
+                .append("\" (LIKE \"")
+                .append(from)
+                .append("\" INCLUDING ALL);");
+        log.trace("mapped copy table schema statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {
+        final StringBuilder statement = new StringBuilder("INSERT INTO \"")
+                .append(table)
+                .append("\" SELECT * FROM \"")
+                .append(tmp)
+                .append("\";");
+        log.trace("mapped insert statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String importCsvIntoTable(S3Config s3Config, ImportDto data, String table, List<String> columns) {
+        final StringBuilder statement = new StringBuilder("COPY ")
+                .append(table)
+                .append("(")
+                .append(Strings.join(columns, ','))
+                .append(") FROM '")
+                .append(s3Config.getSharedFileSystem())
+                .append("/")
+                .append(data.getLocation())
+                .append("'");
+        if (data.getSeparator() != null) {
+            statement.append(" DELIMITER '")
+                    .append(data.getSeparator())
+                    .append("'");
+        }
+        statement.append(" NULL '' CSV");
+        if (data.getHeader()) {
+            statement.append(" HEADER ");
+        }
+        statement.append(";");
+        log.trace("mapped insert statement: {}", statement);
         return statement.toString();
     }
 
@@ -929,10 +973,8 @@ public interface PostgresMapper {
                 continue;
             }
             switch (order.getDirection()) {
-                case ASC ->
-                        sort.add(field(name(column.getDatasourceName(), column.getInternalName())).asc());
-                case DESC ->
-                        sort.add(field(name(column.getDatasourceName(), column.getInternalName())).desc());
+                case ASC -> sort.add(field(name(column.getDatasourceName(), column.getInternalName())).asc());
+                case DESC -> sort.add(field(name(column.getDatasourceName(), column.getInternalName())).desc());
             }
         }
         return step.orderBy(sort);

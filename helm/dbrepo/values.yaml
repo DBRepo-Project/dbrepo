@@ -51,7 +51,7 @@ datadb:
     ## @param datadb.appUser.password The admin password.
     password: dbrepo
   ## @param datadb.replicaCount The number of cluster nodes
-  replicaCount: 6
+  replicaCount: 3
 
 ## @section Metadata Database
 
@@ -409,7 +409,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-rc.10
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-postgres-rc.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -458,7 +458,7 @@ metadataservice:
   endpoint: http://metadata-service
   crossref:
     ## @param metadataservice.crossref.endpoint The CrossRef endpoint.
-    endpoint: httpx://data.crossref.org
+    endpoint: https://data.crossref.org
   ror:
     ## @param metadataservice.ror.endpoint The ROR endpoint.
     endpoint: https://api.ror.org
@@ -485,68 +485,6 @@ metadataservice:
   sparql:
     ## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
     connectionTimeout: 10000
-  s3:
-    ## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storage-service-s3:8333
-    ## @skip metadataservice.s3.bucket
-    bucket: dbrepo
-    auth:
-      ## @param metadataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId: seaweedfsuser
-      ## @param metadataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey: seaweedfsuser
-  ## @param metadataservice.replicaCount The number of replicas.
-  replicaCount: 2
-
-## @section Upload Service
-
-uploadservice:
-  ## @param metadataservice.enabled Enable the Broker Service.
-  enabled: true
-  ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: { }
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:
-    ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled: true
-    ## @param metadataservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy: Always
-    ## @param metadataservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls: [ ]
-    ## @param metadataservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups: [ ]
-    ## @param metadataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup: 1001
-  containerSecurityContext:
-    ## @param metadataservice.containerSecurityContext.enabled Enable containers' Security Context
-    enabled: true
-    ## @param metadataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: { }
-    ## @param metadataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser: 1001
-    ## @param metadataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup: 1001
-    ## @param metadataservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot: true
-    ## @param metadataservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation: false
-    ## @param metadataservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem: false
-    capabilities:
-      ## @param metadataservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop: [ "ALL" ]
-    seccompProfile:
-      ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type: "RuntimeDefault"
-  ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 250m
-      memory: 1024Mi
   ## @param metadataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -559,7 +497,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-rc.16
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-postgres-rc.9
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -600,10 +538,10 @@ dataservice:
   resources:
     requests:
       cpu: 50m
-      memory: 64Mi
+      memory: 512Mi
     limits:
-      cpu: 200m
-      memory: 1024Mi
+      cpu: 500m
+      memory: 2Gi
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
@@ -624,7 +562,7 @@ dataservice:
       password: admin
   s3:
     ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: https://amzn-dbrepo.s3.eu-central-1.amazonaws.com
+    endpoint: https://s3.eu-central-1.amazonaws.com
     ## @param dataservice.s3.bucket The S3 bucket name.
     bucket: amzn-dbrepo
     ## @param dataservice.s3.region The S3 bucket region.
