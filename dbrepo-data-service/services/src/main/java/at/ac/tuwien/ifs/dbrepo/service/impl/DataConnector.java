@@ -3,10 +3,13 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.duckdb.DuckDBConnection;
+import org.hibernate.c3p0.internal.C3P0ConnectionProvider;
 import org.springframework.stereotype.Service;
 
+import java.beans.PropertyVetoException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -14,9 +17,11 @@ import java.sql.SQLException;
 @Service
 public abstract class DataConnector {
 
-    public ComboPooledDataSource getDataSource(Container container, String databaseName) {
+    @SneakyThrows
+    public ComboPooledDataSource getDataSource(Container container, String databaseName) throws SQLException {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(getJdbcUrl(container, databaseName));
+        dataSource.setDriverClass(container.getImage().getDriverClass());
         dataSource.setUser(container.getUsername());
         dataSource.setPassword(container.getPassword());
         dataSource.setInitialPoolSize(5);
@@ -27,11 +32,11 @@ public abstract class DataConnector {
         return dataSource;
     }
 
-    public ComboPooledDataSource getDataSource(Container container) {
+    public ComboPooledDataSource getDataSource(Container container) throws SQLException {
         return getDataSource(container, null);
     }
 
-    public ComboPooledDataSource getDataSource(Database database) {
+    public ComboPooledDataSource getDataSource(Database database) throws SQLException {
         return getDataSource(database.getContainer(), database.getInternalName());
     }
 

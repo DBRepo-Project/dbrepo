@@ -435,9 +435,11 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
-INSERT INTO `mdb_images` (id, name, registry, version, default_port, dialect, driver_class, jdbc_method)
+INSERT INTO `mdb_images` (id, name, registry, version, default_port, dialect, driver_class, jdbc_method, is_default)
 VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'mariadb', 'docker.io', '11.1.3', 3306,
-        'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
+        'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb', 0),
+       ('d79cb089-363c-488b-9717-649e44d8fcc6', 'postgresql', 'docker.io', '17.9-cloudnative-pg', 5432,
+        'org.hibernate.dialect.PostgreSQLDialect', 'org.postgresql.Driver', 'postgresql', 1);
 
 INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_default, size_required,
                                size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,

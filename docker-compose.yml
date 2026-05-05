@@ -6,6 +6,7 @@ x-healthcheck-params: &healthcheck-params
 volumes:
   metadata-db-data:
   data-db-data:
+  data-db2-data:
   auth-db-data:
   broker-service-data:
   search-db-data:
@@ -61,26 +62,45 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-data-db-sidecar:
+  dbrepo-data-db2:
     restart: "no"
-    container_name: dbrepo-data-db-sidecar
-    hostname: data-db-sidecar
-    image: dbrepo-data-db-sidecar:latest
-    build:
-      context: ./dbrepo-data-db/sidecar
-      network: host
-    ports:
-      - "3305:3305"
-    environment:
-      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
-      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
-      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+    container_name: dbrepo-data-db2
+    hostname: data-db2
+    image: dbrepo-data-db:latest
+    build: ./dbrepo-data-db
     volumes:
-      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+      - data-db2-data:/home/postgres/pgdata/pgroot/data
+    ports:
+      - "15433:5432"
+    environment:
+      POSTGRES_USER: "${DATA_DB_USERNAME:-dbrepo}"
+      POSTGRES_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: curl -sSL 127.0.0.1:3305/health | jq .status | grep "UP" || exit 1
+      test: ["CMD-SHELL", "pg_isready -U ${DATA_DB_USERNAME:-dbrepo}"]
       <<: *healthcheck-params
+    logging:
+      driver: json-file
+
+#  dbrepo-data-db-sidecar:
+#    restart: "no"
+#    container_name: dbrepo-data-db-sidecar
+#    hostname: data-db-sidecar
+#    image: dbrepo-data-db-sidecar:latest
+#    build:
+#      context: ./dbrepo-data-db/sidecar
+#      network: host
+#    ports:
+#      - "3305:3305"
+#    environment:
+#      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
+#      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+#      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+#      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+#    volumes:
+#      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+#    healthcheck:
+#      test: curl -sSL 127.0.0.1:3305/health | jq .status | grep "UP" || exit 1
+#      <<: *healthcheck-params
 
   dbrepo-auth-db:
     restart: "no"

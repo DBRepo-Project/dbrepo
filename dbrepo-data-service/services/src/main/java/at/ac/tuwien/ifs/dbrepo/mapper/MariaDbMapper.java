@@ -586,7 +586,7 @@ public interface MariaDbMapper {
                 .append(table)
                 .append("\" SELECT * FROM \"")
                 .append(tmp)
-                .append(";");
+                .append("\";");
         log.trace("mapped insert statement: {}", statement);
         return statement.toString();
     }

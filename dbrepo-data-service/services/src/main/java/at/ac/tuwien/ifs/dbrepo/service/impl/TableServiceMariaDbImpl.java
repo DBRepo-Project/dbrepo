@@ -275,10 +275,13 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         long start = System.currentTimeMillis();
         try {
             /* import tuple */
+            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable, false))
+                            .execute();
+            log.debug("drop table {}.{}", database.getInternalName(), temporaryTable);
             connection.prepareStatement(mariaDbMapper.copyTableSchemaToRawQuery(table.getInternalName(), temporaryTable))
                     .execute();
             log.atDebug()
-                    .setMessage("copy table schema from " + table.getInternalName() + "." + database.getInternalName() + " into temporary table: " + temporaryTable + "." + database.getInternalName())
+                    .setMessage("copy table schema from " + table.getInternalName() + "." + database.getInternalName() + " into temporary table: " + database.getInternalName() + "." + temporaryTable)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_copy_schema")
                     .log();
@@ -297,7 +300,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .option("header", data.getHeader())
                     .jdbc(getSparkJdbcUrl(database), temporaryTable, properties);
             log.atDebug()
-                    .setMessage("write data into temporary table: " + temporaryTable + "." + database.getInternalName())
+                    .setMessage("write data into temporary table: " + database.getInternalName() + "." + temporaryTable)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_import_data")
                     .log();
@@ -315,7 +318,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                             table.getInternalName(), table.getColumns().stream().map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName).toList()))
                     .execute();
             log.atDebug()
-                    .setMessage("merge data from temporary table " + temporaryTable + "." + database.getInternalName() + " into table: " + table.getInternalName() + "." + database.getInternalName())
+                    .setMessage("merge data from temporary table " +  database.getInternalName() + "." + temporaryTable + " into table: " + database.getInternalName() + "." + table.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_merge_data")
                     .log();
@@ -328,12 +331,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } finally {
             /* delete temporary table */
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
-                            false))
-                    .execute();
-            log.debug("deleted temporary table: {}", temporaryTable);
+//            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
+//                            false))
+//                    .execute();
+//            log.debug("deleted temporary table: {}", temporaryTable);
             log.atDebug()
-                    .setMessage("delete temporary table: " + temporaryTable + "." + database.getInternalName())
+                    .setMessage("delete temporary table: " + database.getInternalName() + "." + temporaryTable)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_delete_schema")
                     .log();

@@ -26,6 +26,9 @@ public class Image {
     @NotBlank
     private String jdbcMethod;
 
+    @NotBlank
+    private String driverClass;
+
     @NotNull
     private List<DataType> dataTypes;
 

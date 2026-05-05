@@ -55,7 +55,7 @@
         <testcontainers.version>1.19.1</testcontainers.version>
         <jackson.version>2.15.2</jackson.version>
         <c3p0.version>0.10.2</c3p0.version>
-        <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
+        <c3p0-hibernate.version>7.3.3.Final</c3p0-hibernate.version>
         <aws-sdk.version>2.20.18</aws-sdk.version>
         <minio.version>8.5.7</minio.version>
         <guava.version>33.3.0-jre</guava.version>
