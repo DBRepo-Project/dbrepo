@@ -12,16 +12,16 @@ spring:
       password: "${CACHE_DB_PASSWORD:valkey}"
       username: "${CACHE_DB_USERNAME:default}"
   datasource:
-    url: "jdbc:mariadb://${METADATA_HOST:localhost}:${METADATA_PORT:3306}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS:}"
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: "${METADATA_USERNAME:root}"
+    url: "${METADATA_DB_URL:localhost}"
+    driverClassName: "${METADATA_DB_DRIVER:org.mariadb.jdbc.Driver}"
+    username: "${METADATA_DB_USERNAME:root}"
     password: "${METADATA_DB_PASSWORD:dbrepo}"
   jpa:
     show-sql: false
     open-in-view: false
     properties:
       hibernate:
-        default_schema: "${METADATA_DB:dbrepo}"
+        default_schema: "${METADATA_DB_SCHEMA:dbrepo}"
         jdbc:
           time_zone: UTC
   security:

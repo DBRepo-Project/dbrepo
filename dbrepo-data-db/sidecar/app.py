@@ -109,7 +109,7 @@ def import_csv(filename):
     s3_client = S3Client()
     response = s3_client.download_file(filename)
     if response is False:
-        return Response(), 400
+        return Response(), 500
     return Response(json.dumps(response)), 202
 
 
@@ -120,5 +120,5 @@ def import_csv(filename):
     s3_client = S3Client()
     response = s3_client.upload_file(filename)
     if response is False:
-        return Response(), 400
+        return Response(), 500
     return Response(), 202

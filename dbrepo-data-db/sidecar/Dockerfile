@@ -22,6 +22,6 @@ ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
 ENV S3_ACCESS_KEY_ID="seaweedfsadmin"
 ENV S3_SECRET_ACCESS_KEY="seaweedfsadmin"
 
-EXPOSE 3305
+EXPOSE 8080
 
-ENTRYPOINT [ "gunicorn", "--log-level", "DEBUG", "--workers", "4", "--bind", ":3305", "app:app" ]
+ENTRYPOINT [ "gunicorn", "--log-level", "DEBUG", "--workers", "4", "--bind", ":8080", "app:app" ]

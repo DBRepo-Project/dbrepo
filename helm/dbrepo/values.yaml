@@ -29,30 +29,6 @@ username: admin
 ## @param password The internal system password. This user is only used between the microservices and does not exist on paper.
 password: admin
 
-## @section Data Database
-
-datadb:
-  ## @param datadb.enabled Enable the Auth Service.
-  enabled: true
-  ## @skip datadb.host
-  host: data-db-rw
-  ## @skip datadb.fullnameOverride
-  fullnameOverride: data-db
-  ## @skip datadb.image
-  image: registry.datalab.tuwien.ac.at/dbrepo-nightly/postgresql:17.9-cloudnative-pg-rc.0
-  pooler:
-    ## @param datadb.pooler.enabled Enable the pgbouncer pooler.
-    enabled: true
-    ## @param datadb.pooler.replicaCount The number of cluster nodes
-    replicaCount: 3
-  appUser:
-    ## @param datadb.appUser.user The admin username.
-    user: dbrepo
-    ## @param datadb.appUser.password The admin password.
-    password: dbrepo
-  ## @param datadb.replicaCount The number of cluster nodes
-  replicaCount: 3
-
 ## @section Metadata Database
 
 metadatadb:
@@ -267,6 +243,68 @@ cachedb:
     ## @param cachedb.auth.password The Valkey password
     password: valkey
 
+## @section Data Database
+
+datadb:
+  ## @param datadb.enabled Enable the Auth Service.
+  enabled: true
+  ## @skip datadb.fullnameOverride
+  fullnameOverride: data-db
+  image:
+    ## @skip datadb.image.repository
+    repository: bitnamilegacy/mariadb-galera
+  ## @param datadb.host The hostname for the microservices.
+  host: data-db
+  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+  rootUser:
+    ## @param datadb.rootUser.user The root username.
+    user: root
+    ## @param datadb.rootUser.password The root user password.
+    password: dbrepo
+  db:
+    ## @param datadb.db.name The database name.
+    name: dbrepo
+    ## @param datadb.db.user The readonly username.
+    user: readonly
+    ## @param datadb.db.password The readonly password.
+    password: readonly
+  galera:
+    mariabackup:
+      ## @param datadb.galera.mariabackup.user The database backup username.
+      user: backup
+      ## @param datadb.galera.mariabackup.password The database backup user password
+      password: backup
+  extraVolumes:
+    - name: shared
+      persistentVolumeClaim:
+        claimName: data-db-shared
+  extraVolumeMounts:
+    - name: shared
+      mountPath: /shared
+  ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
+  metrics:
+    image:
+      ## @skip datadb.metrics.image.repository
+      repository: bitnamilegacy/mysqld-exporter
+    ## @skip datadb.metrics.enabled The Prometheus settings.
+    enabled: false
+  ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
+  replicaCount: 6
+  ## @param datadb.resourcesPreset The container resource preset
+  resources:
+    requests:
+      cpu: 50m
+      memory: 8Gi
+      ephemeral-storage: 1Gi
+    limits:
+      cpu: 1
+      memory: 32Gi
+      ephemeral-storage: 5Gi
+  persistence:
+    ## @param datadb.persistence.enabled Enable persistent storage.
+    enabled: false
+
 ## @section Search Database
 
 searchdb:
@@ -400,7 +438,7 @@ brokerservice:
 
 consumerservice:
   ## @param consumerservice.enabled Enable the Broker Service.
-  enabled: false
+  enabled: true
   image:
     ## @skip consumerservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.4
@@ -448,6 +486,61 @@ consumerservice:
     limits:
       cpu: 200m
       memory: 512Mi
+  ## @param consumerservice.replicaCount The number of replicas.
+  replicaCount: 2
+
+## @section Sidecar Service
+
+sidecarservice:
+  ## @param consumerservice.enabled Enable the Broker Service.
+  enabled: true
+  image:
+    ## @skip consumerservice.image.name
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-db-sidecar:1.13.4-rc.6
+  ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param consumerservice.podSecurityContext.enabled Enable pods' Security Context
+    enabled: true
+    ## @param consumerservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param consumerservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param consumerservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param consumerservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 1001
+  containerSecurityContext:
+    ## @param consumerservice.containerSecurityContext.enabled Enable containers' Security Context
+    enabled: true
+    ## @param consumerservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param consumerservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param consumerservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+    runAsGroup: 1001
+    ## @param consumerservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+    runAsNonRoot: true
+    ## @param consumerservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param consumerservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
+    capabilities:
+      ## @param consumerservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+    seccompProfile:
+      ## @param consumerservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param consumerservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources:
+    requests:
+      cpu: 50m
+      memory: 8Gi
+    limits:
+      cpu: '1'
+      memory: 8Gi
   ## @param consumerservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -546,7 +639,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-postgres-rc.5
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-sidecar-rc.1
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -1179,7 +1272,7 @@ metricdb:
 
 gatewayservice:
   ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
-  enabled: true
+  enabled: false
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
   image:

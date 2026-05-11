@@ -101,6 +101,9 @@ public interface TableService {
     void importDataset(Database database, Table table, ImportDto data) throws MalformedException, StorageNotFoundException,
             StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException;
 
+    void importSidecarDataset(Database database, Table table, ImportDto data) throws SQLException,
+            QueryMalformedException, RemoteUnavailableException, MetadataServiceException, ContainerNotFoundException;
+
     /**
      * Imports a dataset by metadata into the sidecar of the target database by given table.
      *

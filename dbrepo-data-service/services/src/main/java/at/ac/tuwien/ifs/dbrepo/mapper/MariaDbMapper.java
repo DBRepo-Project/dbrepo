@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
+import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
@@ -14,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.conf.ParamType;
@@ -192,6 +194,31 @@ public interface MariaDbMapper {
         final String statement = "CREATE DEFINER = 'root' PROCEDURE hash_query(IN normalized_query TEXT, OUT queryHash VARCHAR(64)) BEGIN DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; SET queryHash = (SELECT @hash); END;";
         log.trace("mapped create query store _store_query procedure statement: {}", statement);
         return statement;
+    }
+
+    default String importCsvIntoTable(S3Config s3Config, ImportDto data, String tableName, List<String> columns) {
+        final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '")
+                .append(s3Config.getSharedFileSystem())
+                .append("/")
+                .append(data.getLocation())
+                .append("' INTO TABLE ")
+                .append(tableName);
+        if (data.getSeparator() != null) {
+            statement.append(" FIELDS ENCLOSED BY '\"' TERMINATED BY '")
+                    .append(data.getSeparator())
+                    .append("'");
+        }
+        if (data.getLineTermination() != null) {
+            statement.append(" LINES TERMINATED BY '")
+                    .append(data.getLineTermination())
+                    .append("'");
+        }
+        if (data.getHeader()) {
+            statement.append(" IGNORE 1 LINES");
+        }
+        statement.append(";");
+        log.trace("mapped import csv into table statement: {}", statement);
+        return statement.toString();
     }
 
     default String queryStoreStoreQueryRawQuery() {
@@ -564,29 +591,30 @@ public interface MariaDbMapper {
         if (!force) {
             statement.append("IF EXISTS ");
         }
-        statement.append("\"")
-                .append(tableName)
-                .append("\";");
+        statement.append(tableName)
+                .append(";");
         log.trace("mapped drop table query: {}", statement);
         return statement.toString();
     }
 
     default String copyTableSchemaToRawQuery(String from, String to) {
-        final StringBuilder statement = new StringBuilder("CREATE TABLE \"")
+        final StringBuilder statement = new StringBuilder("CREATE OR REPLACE TABLE ")
                 .append(to)
-                .append("\" (LIKE \"")
+                .append(" LIKE ")
                 .append(from)
-                .append("\" INCLUDING ALL);");
+                .append(";");
         log.trace("mapped copy table schema statement: {}", statement);
         return statement.toString();
     }
 
     default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {
-        final StringBuilder statement = new StringBuilder("INSERT INTO \"")
+        final StringBuilder statement = new StringBuilder("INSERT INTO ")
                 .append(table)
-                .append("\" SELECT * FROM \"")
+                .append(" (")
+                .append(Strings.join(columns, ','))
+                .append(") SELECT * FROM ")
                 .append(tmp)
-                .append("\";");
+                .append(";");
         log.trace("mapped insert statement: {}", statement);
         return statement.toString();
     }

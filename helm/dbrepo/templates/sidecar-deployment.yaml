@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sidecar-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: sidecar-service
+    service: sidecar-service
+spec:
+  replicas: 2
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: sidecar-service
+      service: sidecar-service
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.sidecarservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.sidecarservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+      labels:
+        app: sidecar-service
+        service: sidecar-service
+    spec:
+      {{- if .Values.sidecarservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.sidecarservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: volume-permissions
+          image: busybox:1.37.0
+          command: ["sh", "-c", "chown -Rv 1001:1001 /shared"]
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+      containers:
+        - name: sidecar-service
+          image: {{ .Values.sidecarservice.image.name }}
+          imagePullPolicy: {{ .Values.sidecarservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.sidecarservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.sidecarservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+            - name: shared
+              mountPath: /shared
+          envFrom:
+            - secretRef:
+                name: data-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.sidecarservice.resources }}
+          resources: {{- toYaml .Values.sidecarservice.resources | nindent 12 }}
+          {{- else if ne .Values.sidecarservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.sidecarservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
+        - name: shared
+          persistentVolumeClaim:
+            claimName: data-db-shared

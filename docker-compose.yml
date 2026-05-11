@@ -48,6 +48,7 @@ services:
     volumes:
       - data-db-data:/bitnami/mariadb
       - ./dbrepo-data-db/1_grant-user.sql:/docker-entrypoint-initdb.d/1_grant-user.sql
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
       - "3307:3306"
     environment:
@@ -81,26 +82,26 @@ services:
     logging:
       driver: json-file
 
-#  dbrepo-data-db-sidecar:
-#    restart: "no"
-#    container_name: dbrepo-data-db-sidecar
-#    hostname: data-db-sidecar
-#    image: dbrepo-data-db-sidecar:latest
-#    build:
-#      context: ./dbrepo-data-db/sidecar
-#      network: host
-#    ports:
-#      - "3305:3305"
-#    environment:
-#      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
-#      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-#      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
-#      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
-#    volumes:
-#      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
-#    healthcheck:
-#      test: curl -sSL 127.0.0.1:3305/health | jq .status | grep "UP" || exit 1
-#      <<: *healthcheck-params
+  dbrepo-data-db-sidecar:
+    restart: "no"
+    container_name: dbrepo-data-db-sidecar
+    hostname: data-db-sidecar
+    image: dbrepo-data-db-sidecar:latest
+    build:
+      context: ./dbrepo-data-db/sidecar
+      network: host
+    environment:
+      FLASK_DEBUG: "true"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${S3_USER_ACCESS_KEY_ID:-seaweedfsuser}"
+      S3_SECRET_ACCESS_KEY: "${S3_USER_SECRET_ACCESS_KEY:-seaweedfsuser}"
+      S3_REGION: "${S3_REGION:-default}"
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
+    volumes:
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    healthcheck:
+      test: curl -sSL 127.0.0.1:8080/health | jq .status | grep "UP" || exit 1
+      <<: *healthcheck-params
 
   dbrepo-auth-db:
     restart: "no"
@@ -210,12 +211,9 @@ services:
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
-      METADATA_DB: "${METADATA_DB:-dbrepo}"
+      METADATA_DB_URL: "jdbc:mariadb://metadata-db:3306/dbrepo"
       METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
-      METADATA_HOST: "${METADATA_HOST:-metadata-db}"
-      METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
-      METADATA_PORT: "${METADATA_PORT:-3306}"
-      METADATA_USERNAME: root
+      METADATA_DB_USERNAME: root
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
@@ -603,6 +601,8 @@ services:
       <<: *healthcheck-params
     depends_on:
       dbrepo-data-db:
+        condition: service_healthy
+      dbrepo-data-db-sidecar:
         condition: service_healthy
     logging:
       driver: json-file

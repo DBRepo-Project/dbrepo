@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sidecar-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    service: sidecar-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    service: sidecar-service

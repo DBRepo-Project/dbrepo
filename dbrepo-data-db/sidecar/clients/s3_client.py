@@ -1,24 +1,25 @@
-import os
-import boto3
 import logging
+import os
 import sys
 
+import boto3
 from botocore.exceptions import ClientError
 
 
 class S3Client:
 
     def __init__(self):
-        endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
-        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
-        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
-        aws_region = os.getenv('S3_REGION', 'default')
+        self.endpoint_url = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
+        self.access_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
+        self.secret_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+        self.region = os.getenv('S3_REGION', 'default')
+        self.bucket = os.getenv('S3_BUCKET', 'dbrepo')
         logging.info(
-            f"retrieve file from S3, endpoint_url={endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden), aws_region={aws_region}")
-        self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
-                                   region_name=aws_region, aws_secret_access_key=aws_secret_access_key)
-        self.bucket_exists_or_exit("dbrepo-upload")
-        self.bucket_exists_or_exit("dbrepo-download")
+            f"retrieve file from S3, endpoint_url={self.endpoint_url}, access_access_key_id={self.access_access_key_id}, secret_secret_access_key=(hidden)")
+        self.client = boto3.client(service_name='s3', endpoint_url=self.endpoint_url,
+                                   aws_access_key_id=self.access_access_key_id,
+                                   aws_secret_access_key=self.secret_secret_access_key, region_name=self.region)
+        self.bucket_exists_or_exit(self.bucket)
 
     def upload_file(self, filename) -> bool:
         """
@@ -27,10 +28,10 @@ class S3Client:
         :param filename: The filename.
         :return: True if the file was uploaded.
         """
-        filepath = os.path.join("/tmp/", filename)
+        filepath = os.path.join("/shared/", filename)
         try:
-            self.client.upload_file(filepath, "dbrepo-download", filename)
-            logging.info(f"Uploaded .csv {filepath} with key {filename} into bucket dbrepo-download")
+            self.client.upload_file(filepath, self.bucket, filename)
+            logging.info(f"Uploaded .csv {filepath} with key {filename} into bucket {self.bucket}")
             return True
         except ClientError as e:
             logging.error(e)
@@ -43,11 +44,11 @@ class S3Client:
         :param filename: The filename.
         :return: True if the file was downloaded and saved.
         """
-        self.file_exists("dbrepo-upload", filename)
-        filepath = os.path.join("/tmp/", filename)
+        self.file_exists(self.bucket, filename)
+        dst = f"/shared/{filename}"
         try:
-            self.client.download_file("dbrepo-upload", filename, filepath)
-            logging.info(f"Downloaded .csv with key {filename} into {filepath} from bucket dbrepo-upload")
+            self.client.download_file(self.bucket, filename, dst)
+            logging.info(f"Downloaded .csv with key {filename} into {dst} from bucket {self.bucket}")
             return True
         except ClientError as e:
             logging.error(e)

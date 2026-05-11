@@ -1409,7 +1409,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_succeeds() throws TableNotFoundException, NotAllowedException, RemoteUnavailableException,
             MetadataServiceException, StorageNotFoundException, MalformedException, StorageUnavailableException,
             DatabaseUnavailableException, QueryMalformedException, SQLException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination(null)
@@ -1548,7 +1548,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
             StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1592,7 +1592,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_writeAllAccessForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, MetadataServiceException, StorageNotFoundException,
             MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1614,7 +1614,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_privateWriteAllForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, MetadataServiceException, StorageNotFoundException,
             MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1659,7 +1659,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void importDataset_private_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
             StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")

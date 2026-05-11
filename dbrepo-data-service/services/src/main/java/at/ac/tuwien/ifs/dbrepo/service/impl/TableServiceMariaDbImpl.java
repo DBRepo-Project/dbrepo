@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
+import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
@@ -11,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.gateway.SidecarGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
@@ -38,20 +40,23 @@ import java.util.*;
 @Service
 public class TableServiceMariaDbImpl extends DataConnector implements TableService {
 
+    private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
-    private final SubsetService subsetService;
     private final StorageService storageService;
     private final DataService computeService;
+    private final SidecarGateway sidecarGateway;
 
     @Autowired
-    public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                                   StorageService storageService, DataService computeService) {
+    public TableServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
+                                   StorageService storageService, DataService computeService,
+                                   SidecarGateway sidecarGateway) {
+        this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
-        this.subsetService = subsetService;
         this.storageService = storageService;
         this.computeService = computeService;
+        this.sidecarGateway = sidecarGateway;
     }
 
     @Override
@@ -275,9 +280,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         long start = System.currentTimeMillis();
         try {
             /* import tuple */
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable, false))
-                            .execute();
-            log.debug("drop table {}.{}", database.getInternalName(), temporaryTable);
             connection.prepareStatement(mariaDbMapper.copyTableSchemaToRawQuery(table.getInternalName(), temporaryTable))
                     .execute();
             log.atDebug()
@@ -318,7 +320,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                             table.getInternalName(), table.getColumns().stream().map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName).toList()))
                     .execute();
             log.atDebug()
-                    .setMessage("merge data from temporary table " +  database.getInternalName() + "." + temporaryTable + " into table: " + database.getInternalName() + "." + table.getInternalName())
+                    .setMessage("merge data from temporary table " + database.getInternalName() + "." + temporaryTable + " into table: " + database.getInternalName() + "." + table.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_merge_data")
                     .log();
@@ -331,10 +333,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } finally {
             /* delete temporary table */
             start = System.currentTimeMillis();
-//            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
-//                            false))
-//                    .execute();
-//            log.debug("deleted temporary table: {}", temporaryTable);
+            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
+                            false))
+                    .execute();
+            log.debug("deleted temporary table: {}", temporaryTable);
             log.atDebug()
                     .setMessage("delete temporary table: " + database.getInternalName() + "." + temporaryTable)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -344,6 +346,45 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         }
         storageService.deleteObject(data.getLocation());
         log.info("Imported dataset into table {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
+    @Override
+    public void importSidecarDataset(Database database, Table table, ImportDto data) throws SQLException,
+            QueryMalformedException, RemoteUnavailableException, MetadataServiceException, ContainerNotFoundException {
+        final List<String> columns = table.getColumns()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .toList();
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        long start = System.currentTimeMillis();
+        /* import tuple */
+        sidecarGateway.importCsv(data.getLocation());
+        log.atDebug()
+                .setMessage("import s3 location " + data.getLocation() + " into sidecar")
+                .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                .addKeyValue(Constants.ACTION, "import_from_csv")
+                .log();
+        try {
+            /* import tuple */
+            connection.prepareStatement(mariaDbMapper.importCsvIntoTable(s3Config, data, table.getInternalName(), columns))
+                    .execute();
+            log.atDebug()
+                    .setMessage("import csv location " + data.getLocation() + " into table: " + table.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "import_from_csv")
+                    .log();
+        } catch (SQLException e) {
+            log.atError()
+                    .setMessage("Failed to import data from s3 " + data.getLocation())
+                    .setCause(e)
+                    .log();
+            throw new QueryMalformedException("Failed to import data from s3: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        storageService.deleteObject(data.getLocation());
+        log.info("Imported csv into table {}.{}", database.getInternalName(), table.getInternalName());
     }
 
     @Override

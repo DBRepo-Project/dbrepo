@@ -8,9 +8,6 @@ dependencies:
 - name: mariadb-galera
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 13.2.7
-- name: mariadb-galera
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 13.2.7
 - name: rabbitmq
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 14.7.0
@@ -23,5 +20,5 @@ dependencies:
 - name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 5.0.6
-digest: sha256:09f372d0e4d1e9c354ee30aa0684bef7eb83609559b9f0db62353b59b0440d4b
-generated: "2026-05-03T10:23:26.173436+02:00"
+digest: sha256:d9b122c651efaa3f9777e5425091d3090857710cfb8d973b31337659755d76d5
+generated: "2026-05-06T10:45:10.159723357+02:00"

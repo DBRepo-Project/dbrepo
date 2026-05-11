@@ -36,6 +36,9 @@ public class S3Config {
     @Value("${duckdb.s3.useSsl}")
     private String s3UseSsl;
 
+    @Value("${dbrepo.sharedFileSystem}")
+    private String sharedFileSystem;
+
     @Bean
     public S3Client s3client() {
         final AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(

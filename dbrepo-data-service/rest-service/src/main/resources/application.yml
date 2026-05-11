@@ -93,6 +93,7 @@ dbrepo:
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
     authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
     computeService: "${COMPUTE_SERVICE_ENDPOINT:local[*]}"
+    sidecar: "${SIDECAR_ENDPOINT:http://data-db-sidecar:8080}"
   s3:
     bucket: "${S3_BUCKET:dbrepo}"
     region: "${S3_REGION:default}"
@@ -112,6 +113,7 @@ dbrepo:
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   baseUrl: "${BASE_URL:http://localhost}"
+  sharedFileSystem: "${SHARED_FILESYSTEM:/tmp}"
   spark:
     hadoop:
       fs:
