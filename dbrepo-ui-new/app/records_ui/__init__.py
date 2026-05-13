@@ -44,8 +44,8 @@ def show_record(db_id):
     database = repo.get_database(database_id=db_id)
     if len(database.views) > 0:
         view = repo.get_view(database_id=db_id, view_id=database.views[0].id)
-        view_data = repo.get_view_data(database_id=db_id, view_id=database.views[1].id, page=1, size=10).to_dict(
-            orient='records')
+        # view_data = repo.get_view_data(database_id=db_id, view_id=database.views[1].id, page=1, size=10).to_dict(
+        #     orient='records')
     else:
         view = None
         view_data = pd.DataFrame({"placeholder": []}).to_dict(orient="records")
@@ -57,7 +57,7 @@ def show_record(db_id):
         identifier = get_identifier_by_doi(database.identifiers, doi)
     # PLACEHOLDERS
     queries = []
-    #view_data = pd.DataFrame({"placeholder": []}).to_dict(orient="records")
+    view_data = pd.DataFrame({"placeholder": []}).to_dict(orient="records")
 
     authors_list = [{"literal": c.creator_name} for c in identifier.creators]
 
@@ -80,7 +80,7 @@ def show_view_record(database_id, view_id):
     view = repo.get_view(database_id=database_id, view_id=view_id)
    # view_data = repo.get_view_data(database_id=database_id, view_id=view_id, page=1, size=10).to_dict(orient='records')
     database = repo.get_database(database_id=database_id)
-    view_data = pd.DataFrame({"placeholder": []})
+    view_data = pd.DataFrame({"placeholder": []}).to_dict(orient="records")
 
     return render_template('view_records/detail.html', database=database, metadata=view,
                            data=view_data, type="view", page=1, total_pages=10)

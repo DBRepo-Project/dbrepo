@@ -1,12 +1,14 @@
 <section id="database_info" aria-label="database_info" class="info-box">
-    <h3>Metadata</h3>
+    <h3 class="ui medium top attached header mt-0">Metadata</h3>
+    <div class="ui segment bottom attached rdm-sidebar">
+    <dl class="details-list">
 
-    <div class="label">Columns</div>
-    <div class="value">{{ metadata.columns|length }}</div>
-    <br>
+        <dt class="label">Columns</dt>
+        <dd class="value">{{ metadata.columns|length }}</dd>
 
-    <div class="label">Rows</div>
-    <div class="value">{{ data|length }}</div>
-    <br>
+        <dt class="label">Rows</dt>
+        <dd class="value">{{ data|length }}</dd>
+    </dl>
+    </div>
 
 </section>

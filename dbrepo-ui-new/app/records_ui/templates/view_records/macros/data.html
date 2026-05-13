@@ -1,4 +1,5 @@
 {%- macro preview_info(table, table_data, page, total_pages) %}
+{% if table_data and table_data|length > 0 %}
     <table class="ui striped table files fluid open" id="preview_table">
     <thead>
             <tr>
@@ -42,11 +43,12 @@
 
   </div>
 </div>
+{% endif %}
 {%- endmacro %}
 
 {% macro preview_info_box(table, table_data, page, total_pages) %}
      <div class="ui accordion">
-        <div class="active title m-0">Dataset<i class="dropdown angle icon" aria-hidden="true"></i></div>
+        <div class="active table-title title m-0">Dataset<i class="dropdown angle icon" aria-hidden="true"></i></div>
 
         <div class="active content pt-0">
          {{ preview_info(table, table_data, page, total_pages) }}
@@ -55,7 +57,7 @@
 {%- endmacro %}
 
 {% macro schema_table(view) %}
-    <table class="ui striped table files fluid open" id="dataset_list">
+    <table class="ui striped table files open">
     <thead>
         <tr>
             <th>Name</th>
@@ -81,7 +83,7 @@
 
 {% macro view_schema_box(view) %}
     <div class="ui accordion">
-        <div class="active title m-0">Schema<i class="dropdown angle icon" aria-hidden="true"></i></div>
+        <div class="active table-title title m-0">Schema<i class="dropdown angle icon" aria-hidden="true"></i></div>
 
         <div class="active content pt-0">
          {{ schema_table(view) }}
