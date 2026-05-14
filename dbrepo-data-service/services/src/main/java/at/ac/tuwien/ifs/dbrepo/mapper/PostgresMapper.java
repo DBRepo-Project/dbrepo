@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
+import at.ac.tuwien.ifs.dbrepo.api.Datasource;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
@@ -15,6 +16,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.jooq.*;
 import org.jooq.Record;
@@ -849,7 +851,10 @@ public interface PostgresMapper {
                                 .forEach(column -> {
                                     columns.put(column.getId(), at.ac.tuwien.ifs.dbrepo.api.Column.builder()
                                             .internalName(column.getInternalName())
-                                            .datasourceName(table.getInternalName())
+                                            .datasource(Datasource.builder()
+                                                    .name(table.getInternalName())
+                                                    .alias("_" + DigestUtils.sha1Hex(table.getInternalName()))
+                                                    .build())
                                             .build());
                                 });
                     });
@@ -864,7 +869,10 @@ public interface PostgresMapper {
                                 .forEach(column -> {
                                     columns.put(column.getId(), at.ac.tuwien.ifs.dbrepo.api.Column.builder()
                                             .internalName(column.getInternalName())
-                                            .datasourceName(view.getInternalName())
+                                            .datasource(Datasource.builder()
+                                                    .name(view.getInternalName())
+                                                    .alias("_" + DigestUtils.sha1Hex(view.getInternalName()))
+                                                    .build())
                                             .build());
                                 });
                     });
@@ -872,19 +880,25 @@ public interface PostgresMapper {
         return columns;
     }
 
-    default Map<UUID, String> databaseToDatasourceKV(Database database, Instant timestamp) {
-        final Map<UUID, String> dataSources = new HashMap<>();
+    default Map<UUID, Datasource> databaseToDatasourceKV(Database database, Instant timestamp) {
+        final Map<UUID, Datasource> dataSources = new HashMap<>();
         if (database.getTables() != null) {
             database.getTables()
                     .forEach(table -> {
                         final String optionalSuffix = timestamp == null ? "" : "__as_of('" + sqlDateFormatter.format(timestamp) + "')";
-                        dataSources.put(table.getId(), table.getInternalName() + optionalSuffix);
+                        dataSources.put(table.getId(), Datasource.builder()
+                                .name(table.getInternalName() + optionalSuffix)
+                                .alias("_" + DigestUtils.sha1Hex(table.getInternalName()))
+                                .build());
                     });
         }
         if (database.getViews() != null) {
             database.getViews()
                     .forEach(view -> {
-                        dataSources.put(view.getId(), view.getInternalName());
+                        dataSources.put(view.getId(), Datasource.builder()
+                                .name(view.getInternalName())
+                                .alias("_" + DigestUtils.sha1Hex(view.getInternalName()))
+                                .build());
                     });
         }
         return dataSources;
@@ -931,33 +945,33 @@ public interface PostgresMapper {
         switch (operator) {
             case "=":
             case "<=>":
-                return field(name(column.getDatasourceName(), column.getInternalName())).eq(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).eq(data.getValue());
             case "<":
-                return field(name(column.getDatasourceName(), column.getInternalName())).lt(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).lt(data.getValue());
             case "<=":
-                return field(name(column.getDatasourceName(), column.getInternalName())).le(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).le(data.getValue());
             case ">":
-                return field(name(column.getDatasourceName(), column.getInternalName())).gt(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).gt(data.getValue());
             case ">=":
-                return field(name(column.getDatasourceName(), column.getInternalName())).ge(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).ge(data.getValue());
             case "!=":
-                return field(name(column.getDatasourceName(), column.getInternalName())).ne(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).ne(data.getValue());
             case "LIKE":
-                return field(name(column.getDatasourceName(), column.getInternalName())).like(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).like(data.getValue());
             case "NOT LIKE":
-                return field(name(column.getDatasourceName(), column.getInternalName())).notLike(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).notLike(data.getValue());
             case "IN":
-                return field(name(column.getDatasourceName(), column.getInternalName())).in(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).in(data.getValue());
             case "NOT IN":
-                return field(name(column.getDatasourceName(), column.getInternalName())).notIn(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).notIn(data.getValue());
             case "IS NOT NULL":
-                return field(name(column.getDatasourceName(), column.getInternalName())).isNotNull();
+                return field(name(column.getDatasource().getName(), column.getInternalName())).isNotNull();
             case "IS NULL":
-                return field(name(column.getDatasourceName(), column.getInternalName())).isNull();
+                return field(name(column.getDatasource().getName(), column.getInternalName())).isNull();
             case "REGEXP":
-                return field(name(column.getDatasourceName(), column.getInternalName())).likeRegex(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).likeRegex(data.getValue());
             case "NOT REGEXP":
-                return field(name(column.getDatasourceName(), column.getInternalName())).notLikeRegex(data.getValue());
+                return field(name(column.getDatasource().getName(), column.getInternalName())).notLikeRegex(data.getValue());
         }
         log.error("Failed to map operator: {}", operator);
         throw new IllegalArgumentException("Failed to map operator: " + operator);
@@ -969,12 +983,12 @@ public interface PostgresMapper {
         for (OrderDto order : data.getOrders()) {
             final at.ac.tuwien.ifs.dbrepo.api.Column column = columnIdToColumn(database, order.getColumnId());
             if (order.getDirection() == null) {
-                sort.add(field(name(column.getDatasourceName(), column.getInternalName())));
+                sort.add(field(name(column.getDatasource().getName(), column.getInternalName())));
                 continue;
             }
             switch (order.getDirection()) {
-                case ASC -> sort.add(field(name(column.getDatasourceName(), column.getInternalName())).asc());
-                case DESC -> sort.add(field(name(column.getDatasourceName(), column.getInternalName())).desc());
+                case ASC -> sort.add(field(name(column.getDatasource().getName(), column.getInternalName())).asc());
+                case DESC -> sort.add(field(name(column.getDatasource().getName(), column.getInternalName())).desc());
             }
         }
         return step.orderBy(sort);
@@ -1007,31 +1021,31 @@ public interface PostgresMapper {
                     Field<Object> field = field(name(entry.getValue().getInternalName()));
                     final Optional<SubsetColumnDto> optional = data.getColumns().stream().filter(column -> entry.getKey().equals(column.getId())).findFirst();
                     if (optional.isPresent() && optional.get().getAlias() != null) {
-                        log.trace("column {}.{}.{} is aliased: {}", database.getInternalName(), entry.getValue().getDatasourceName(), entry.getValue().getInternalName(), optional.get().getAlias());
+                        log.trace("column {}.{}.{} is aliased: {}", database.getInternalName(), entry.getValue().getDatasource().getName(), entry.getValue().getInternalName(), optional.get().getAlias());
                         field = field.as(name(optional.get().getAlias()));
                     }
                     return field;
                 })
                 .toList();
-        final List<Map.Entry<UUID, String>> tables = databaseToDatasourceKV(database, timestamp)
+        final List<Map.Entry<UUID, Datasource>> tables = databaseToDatasourceKV(database, timestamp)
                 .entrySet()
                 .stream()
                 .filter(entry -> data.getDatasourceIds().contains(entry.getKey()))
                 .toList();
         log.debug("subset selects from table(s): {}", tables.stream().map(Map.Entry::getValue).toList());
-        final int[] idx = new int[]{1};
         SelectJoinStep<Record> query = context.select(filteredColumns)
                 .from(tables.stream()
-                        .map(entry -> table(entry.getValue()))
+                        .map(entry -> table(entry.getValue().getName()).as(entry.getValue().getAlias()))
                         .toList());
-        final Map<UUID, String> datasources = databaseToDatasourceKV(database, timestamp);
+        final Map<UUID, Datasource> datasources = databaseToDatasourceKV(database, timestamp);
         if (data.getJoins() != null) {
             log.debug("subset joins: {}", data.getJoins().stream().map(j -> datasources.get(j.getDatasourceId())).toList());
             for (JoinDto join : data.getJoins()) {
                 for (ConditionalDto conditional : join.getConditionals()) {
-                    query = query.join(table(datasources.get(join.getDatasourceId())), joinTypeDtoToJoinType(join.getType()))
-                            .on(field(name(columns.get(conditional.getColumnId()).getDatasourceName(), columns.get(conditional.getColumnId()).getInternalName())).eq(
-                                    field(name(columns.get(conditional.getForeignColumnId()).getDatasourceName(), columns.get(conditional.getForeignColumnId()).getInternalName()))));
+                    final Datasource datasource = datasources.get(join.getDatasourceId());
+                    query = query.join(table(datasource.getName()).as(datasource.getAlias()), joinTypeDtoToJoinType(join.getType()))
+                            .on(field(name(columns.get(conditional.getColumnId()).getDatasource().getAlias(), columns.get(conditional.getColumnId()).getInternalName())).eq(
+                                    field(name(columns.get(conditional.getForeignColumnId()).getDatasource().getAlias(), columns.get(conditional.getForeignColumnId()).getInternalName()))));
                 }
             }
         }

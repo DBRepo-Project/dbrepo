@@ -51,7 +51,7 @@ datadb:
     ## @param datadb.appUser.password The admin password.
     password: dbrepo
   ## @param datadb.replicaCount The number of cluster nodes
-  replicaCount: 3
+  replicaCount: 6
 
 ## @section Metadata Database
 
@@ -409,7 +409,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-postgres-rc.0
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/metadata-service:1.13.4-postgres-rc.1
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -497,7 +497,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-postgres-rc.9
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-postgres-rc.13
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -534,6 +534,7 @@ dataservice:
     seccompProfile:
       ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  javaOpts: -XX:MaxRAMPercentage=80.0 -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false -Dio.netty.tryReflectionSetAccessible=true
   ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:

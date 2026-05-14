@@ -153,7 +153,7 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to update table statistics: not owner");
             throw new NotAllowedException("Failed to update table statistics: not owner");
         }
-        tableService.updateStatistics(table);
+//        tableService.updateStatistics(table);
         return ResponseEntity.accepted()
                 .build();
     }
