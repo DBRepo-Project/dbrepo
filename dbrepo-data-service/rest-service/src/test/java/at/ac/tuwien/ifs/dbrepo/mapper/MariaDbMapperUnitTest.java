@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -117,6 +118,33 @@ public class MariaDbMapperUnitTest extends BaseTest {
 
         /* test */
         assertEquals("select `weather`.`weather_aus`.`id`, `weather`.`sensor`.`id` as `sensor_id` from `sensor`, `weather_aus`", mariaDbMapper.subsetDtoToNormalizedQuery(context, DATABASE_1_CACHE, request));
+    }
+
+    @Test
+    public void defaultRawSelectQuery_primaryKeyOrdering_succeeds() {
+        final Instant timestamp = Instant.ofEpochSecond(1751363087);
+
+        /* test */
+        assertEquals("SELECT * FROM (SELECT * FROM `weather`.`weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-07-01 09:44:47.000000' as tbl) as tbl2 ORDER BY `tbl2`.`id` ASC, `tbl2`.`date` ASC LIMIT 10 OFFSET 0",
+                mariaDbMapper.defaultRawSelectQuery("weather", "weather_aus", timestamp, 0L, 10L, List.of("id", "date"), "asc"));
+    }
+
+    @Test
+    public void defaultRawSelectQuery_explicitOrdering_succeeds() {
+        final Instant timestamp = Instant.ofEpochSecond(1751363087);
+
+        /* test */
+        assertEquals("SELECT * FROM (SELECT * FROM `weather`.`weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-07-01 09:44:47.000000' as tbl) as tbl2 ORDER BY `tbl2`.`date` DESC LIMIT 10 OFFSET 20",
+                mariaDbMapper.defaultRawSelectQuery("weather", "weather_aus", timestamp, 2L, 10L, List.of("date"), "desc"));
+    }
+
+    @Test
+    public void defaultRawSelectQuery_unpaginatedOrdering_succeeds() {
+        final Instant timestamp = Instant.ofEpochSecond(1751363087);
+
+        /* test */
+        assertEquals("SELECT * FROM (SELECT * FROM `weather`.`weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-07-01 09:44:47.000000' as tbl) as tbl2 ORDER BY `tbl2`.`date` DESC",
+                mariaDbMapper.defaultRawSelectQuery("weather", "weather_aus", timestamp, null, null, List.of("date"), "desc"));
     }
 
 }

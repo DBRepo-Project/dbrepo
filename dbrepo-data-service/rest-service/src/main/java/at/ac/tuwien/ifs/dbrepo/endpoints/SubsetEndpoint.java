@@ -41,7 +41,6 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -386,7 +385,7 @@ public class SubsetEndpoint {
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Set<Map<String, Object>> body = dataMapper.datasetToJson(dataService.getSubsetAsJson(database, paginatedStatement));
+                    final List<Map<String, Object>> body = dataMapper.datasetToJson(dataService.getSubsetAsJson(database, paginatedStatement));
                     return ResponseEntity.status(statusCode)
                             .headers(headers)
                             .body(body);
