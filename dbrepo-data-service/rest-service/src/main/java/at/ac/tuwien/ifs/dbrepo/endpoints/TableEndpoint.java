@@ -566,7 +566,7 @@ public class TableEndpoint {
                                               @RequestHeader("Authorization") String authorization)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
             StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,
-            DatabaseUnavailableException, DatabaseNotFoundException, ContainerNotFoundException {
+            DatabaseUnavailableException, DatabaseNotFoundException, TableMalformedException {
         log.atDebug()
                 .setMessage("endpoint insert table data")
                 .addKeyValue("database_id", databaseId)
@@ -581,8 +581,8 @@ public class TableEndpoint {
             log.debug("line termination not present, default to {}", data.getLineTermination());
         }
         try {
-//            tableService.importDataset(database, table, data);
-            tableService.importSidecarDataset(database, table, data);
+            tableService.importDataset(database, table, data);
+//            tableService.importSidecarDataset(database, table, data);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

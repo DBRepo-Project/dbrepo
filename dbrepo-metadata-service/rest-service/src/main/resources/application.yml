@@ -12,7 +12,7 @@ spring:
       password: "${CACHE_DB_PASSWORD:valkey}"
       username: "${CACHE_DB_USERNAME:default}"
   datasource:
-    url: "${METADATA_DB_URL:localhost}"
+    url: "${METADATA_DB_URL:jdbc:mariadb://localhost:3306/dbrepo}"
     driverClassName: "${METADATA_DB_DRIVER:org.mariadb.jdbc.Driver}"
     username: "${METADATA_DB_USERNAME:root}"
     password: "${METADATA_DB_PASSWORD:dbrepo}"
