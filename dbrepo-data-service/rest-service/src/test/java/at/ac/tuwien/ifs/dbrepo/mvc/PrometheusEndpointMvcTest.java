@@ -122,7 +122,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
 
         /* mock */
         try {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "application/json", httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, "application/json", httpServletRequest, null);
         } catch (Exception e) {
             /* ignore */
         }

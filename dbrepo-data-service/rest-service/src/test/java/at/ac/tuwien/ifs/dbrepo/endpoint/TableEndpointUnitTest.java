@@ -310,20 +310,22 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
             DatabaseNotFoundException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
-            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, SQLException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
                 .thenReturn(TABLE_6_CACHE);
         when(metadataService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
+        when(tableService.inspect(DATABASE_2_CACHE, TABLE_6_CACHE.getInternalName()))
+                .thenReturn(TABLE_6_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
                 .thenReturn("id,firstname,lastname,birth,reminder");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
     }
@@ -347,7 +349,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));
@@ -367,7 +369,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
         });
     }
 
@@ -384,7 +386,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_4_PRINCIPAL);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_4_PRINCIPAL);
         });
     }
 
@@ -401,7 +403,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
         });
     }
 
@@ -421,7 +423,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
         });
     }
 
@@ -431,7 +433,66 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_private_succeeds(String name, AccessTypeDto type) throws DatabaseUnavailableException,
             TableNotFoundException, RemoteUnavailableException, PaginationException, MetadataServiceException,
             NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException, MalformedException,
-            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException,
+            SQLException {
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(tableService.inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName()))
+                .thenReturn(TABLE_1_DTO);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
+                .thenReturn("id,date,location,mintemp,rainfall");
+
+        /* test */
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void getData_defaultPrimaryKeySort_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
+            RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
+            DatabaseNotFoundException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, SQLException,
+            QueryMalformedException {
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(tableService.inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName()))
+                .thenReturn(TABLE_1_DTO);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
+                .thenReturn("id,date,location,mintemp,rainfall");
+        final List<String> expectedColumns = TABLE_1_CACHE.getColumns()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .toList();
+
+        /* test */
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(tableService).inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName());
+        verify(dataService).getSubsetAsJson(eq(DATABASE_1_CACHE),
+                contains("ORDER BY `tbl2`.`id` ASC"),
+                eq(expectedColumns));
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void getData_explicitSort_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
+            RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
+            DatabaseNotFoundException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, SQLException,
+            QueryMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -442,10 +503,40 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn("GET");
         when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
                 .thenReturn("id,date,location,mintemp,rainfall");
+        final List<String> expectedColumns = TABLE_1_CACHE.getColumns()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .toList();
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "date", "desc", MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(tableService, never()).inspect(any(Database.class), anyString());
+        verify(dataService).getSubsetAsJson(eq(DATABASE_1_CACHE),
+                contains("ORDER BY `tbl2`.`date` DESC"),
+                eq(expectedColumns));
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void getData_invalidSortColumn_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException {
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+
+        /* test */
+        assertThrows(ColumnNotFoundException.class, () -> {
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "missing_column", "asc", MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
+        });
+        verify(tableService, never()).inspect(any(Database.class), anyString());
+        verify(dataService, never()).getSubsetAsJson(any(Database.class), anyString());
+        verify(dataService, never()).getSubsetAsJson(any(Database.class), anyString(), anyList());
     }
 
     @Test
@@ -460,7 +551,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
         });
     }
 
@@ -1289,20 +1380,23 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_publicDataPrivateSchemaTextCsv_succeeds() throws TableNotFoundException, NotAllowedException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
             DatabaseUnavailableException, FormatNotAvailableException, PaginationException, MalformedException,
-            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
+            ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException,
+            SQLException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
                 .thenReturn(TABLE_6_CACHE);
         when(metadataService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
+        when(tableService.inspect(DATABASE_2_CACHE, TABLE_6_CACHE.getInternalName()))
+                .thenReturn(TABLE_6_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
                 .thenReturn("id,firstname,lastname,birth,reminder");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, "text/csv", httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, null, null, "text/csv", httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -1313,22 +1407,22 @@ public class TableEndpointUnitTest extends BaseTest {
             throws TableNotFoundException, NotAllowedException, RemoteUnavailableException, MetadataServiceException,
             DatabaseNotFoundException, DatabaseUnavailableException, FormatNotAvailableException, PaginationException,
             MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
-            AnalyseDataTypesException {
+            AnalyseDataTypesException, SQLException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_CACHE);
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_CACHE);
+        when(tableService.inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName()))
+                .thenReturn(TABLE_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
                 .thenReturn("id,date,location,mintemp,rainfall");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "text/csv", httpServletRequest, USER_2_PRINCIPAL);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, "text/csv", httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -1345,7 +1439,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "text/csv", httpServletRequest, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, "text/csv", httpServletRequest, null);
         });
     }
 

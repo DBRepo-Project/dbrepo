@@ -15,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLSyntaxErrorException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static scala.collection.JavaConverters.asScalaIteratorConverter;
@@ -208,6 +211,29 @@ public class DataServiceSparkImpl extends DataConnector implements DataService {
                 .addKeyValue(Constants.S3_KEY, key)
                 .log();
         return dataset;
+    }
+
+    @Override
+    public Dataset<Row> getSubsetAsJson(Database database, String query, List<String> columns)
+            throws QueryMalformedException, TableNotFoundException {
+        Dataset<Row> dataset = getSubsetAsJson(database, query);
+        if (columns == null || columns.isEmpty()) {
+            return dataset;
+        }
+        final Set<String> datasetColumns = new HashSet<>(Arrays.asList(dataset.columns()));
+        for (String column : columns) {
+            if (!datasetColumns.contains(column)) {
+                dataset = dataset.withColumn(column, functions.lit(null));
+            }
+        }
+        final List<Column> columnOrder = columns.stream()
+                .map(Column::new)
+                .toList();
+        log.atDebug()
+                .setMessage("reorder subset json columns")
+                .addKeyValue("columns", columns)
+                .log();
+        return dataset.select(columnOrder.toArray(new Column[0]));
     }
 
     @Override

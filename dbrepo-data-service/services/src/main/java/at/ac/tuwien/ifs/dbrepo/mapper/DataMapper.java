@@ -299,30 +299,15 @@ public interface DataMapper {
     }
 
     default String datasetToColumnNameHeader(Dataset<Row> data) {
-        final Map<Integer, String> columnNames = new HashMap<>();
-        Arrays.stream(data.logicalPlan()
-                        .producedAttributes()
-                        .mkString(",")
-                        .split(","))
-                .forEach(entry -> {
-                    final String[] part = entry.split("#");
-                    if (part[1].contains("L")) {
-                        columnNames.put(Integer.valueOf(part[1].split("L")[0]), part[0]);
-                        return;
-                    }
-                    columnNames.put(Integer.valueOf(part[1]), part[0]);
-                });
-        return String.join(",", columnNames.values()
-                .stream()
-                .toList());
+        return String.join(",", data.columns());
     }
 
-    default Set<Map<String, Object>> datasetToJson(Dataset<Row> dataset) throws MalformedException {
+    default List<Map<String, Object>> datasetToJson(Dataset<Row> dataset) throws MalformedException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final List<String> rows = dataset.toJSON()
                 .toJavaRDD()
                 .collect();
-        final Set<Map<String, Object>> json = new HashSet<>();
+        final List<Map<String, Object>> json = new ArrayList<>(rows.size());
         for (String row : rows) {
             try {
                 json.add(objectMapper.readValue(row, new TypeReference<>() {

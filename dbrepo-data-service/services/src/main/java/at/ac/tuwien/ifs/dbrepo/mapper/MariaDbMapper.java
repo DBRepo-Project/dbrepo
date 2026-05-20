@@ -861,7 +861,7 @@ public interface MariaDbMapper {
     }
 
     default String defaultRawSelectQuery(String databaseName, String tableOrViewName, Instant timestamp, Long page,
-                                         Long size) {
+                                         Long size, List<String> sortColumns, String sortDirection) {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM `")
                 .append(databaseName)
@@ -874,6 +874,20 @@ public interface MariaDbMapper {
                     .append("'");
         }
         statement.append(" as tbl");
+        statement.append(") as tbl2");
+        if (sortColumns != null && !sortColumns.isEmpty() && sortDirection != null) {
+            /* Keep sorting on the outer query so unpaginated exports preserve row order. */
+            final String orderByClause = sortColumns.stream()
+                    .map(columnName -> new StringBuilder("`tbl2`.`")
+                            .append(columnName)
+                            .append("`")
+                            .append(" ")
+                            .append(sortDirection.toUpperCase(Locale.ROOT))
+                            .toString())
+                    .collect(Collectors.joining(", "));
+            statement.append(" ORDER BY ")
+                    .append(orderByClause);
+        }
         /* pagination */
         if (size != null && page != null) {
             log.trace("pagination size/limit of {}", size);
@@ -883,7 +897,6 @@ public interface MariaDbMapper {
             statement.append(" OFFSET ")
                     .append(page * size);
         }
-        statement.append(") as tbl2");
         log.trace("mapped select query: {}", statement);
         return statement.toString();
     }
