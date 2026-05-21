@@ -221,6 +221,23 @@ public class ApiExceptionHandlerTest extends BaseTest {
         assertEquals("msg", response.getBody().getMessage());
     }
 
+    @Test
+    public void handle_ColumnNotFoundException_succeeds() {
+        final ColumnNotFoundException request = new ColumnNotFoundException("msg");
+
+        /* test */
+        final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(request);
+        assertNotNull(response);
+        assertNotNull(request.getClass().getDeclaredAnnotation(ResponseStatus.class).code());
+        final HttpStatus httpStatus = request.getClass().getDeclaredAnnotation(ResponseStatus.class).code();
+        Assertions.assertNotEquals(httpStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+        assertEquals(httpStatus, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getCode());
+        assertEquals(httpStatus, response.getBody().getStatus());
+        assertEquals("msg", response.getBody().getMessage());
+    }
+
 
     @Test
     public void handle_ContainerAlreadyExistsException_succeeds() {

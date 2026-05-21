@@ -88,6 +88,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ColumnNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(ColumnNotFoundException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.CONFLICT)
     @ExceptionHandler(ContainerAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerAlreadyExistsException e) {

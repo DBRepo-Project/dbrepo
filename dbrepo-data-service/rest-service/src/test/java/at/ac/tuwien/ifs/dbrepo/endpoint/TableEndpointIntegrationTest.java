@@ -34,10 +34,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -114,15 +112,40 @@ public class TableEndpointIntegrationTest extends BaseTest {
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, MediaType.APPLICATION_JSON_VALUE, httpServletRequest, USER_LOCAL_ADMIN_PRINCIPAL);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON_VALUE, httpServletRequest, USER_LOCAL_ADMIN_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        final List<Map<String, Object>> body = new LinkedList<>((Set<Map<String, Object>>) response.getBody());
+        final List<Map<String, Object>> body = (List<Map<String, Object>>) response.getBody();
         assertNotNull(body);
         assertEquals(3, body.size());
+        assertEquals(List.of(1, 2, 3), body.stream().map(row -> (Integer) row.get("id")).toList());
         assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", 13.4, "rainfall", 0.6), body.get(0));
         assertEquals(Map.of("id", 2, "date", "2008-12-02", "location", "Albury", "mintemp", 7.4, "rainfall", 0.0), body.get(1));
         assertEquals(Map.of("id", 3, "date", "2008-12-03", "location", "Albury", "mintemp", 12.9, "rainfall", 0.0), body.get(2));
+    }
+
+    @Test
+    public void getData_sortsByExplicitColumn() throws Exception {
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_CACHE);
+        when(metadataService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_CACHE);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+
+        /* test */
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "date", "desc", MediaType.APPLICATION_JSON_VALUE, httpServletRequest, USER_LOCAL_ADMIN_PRINCIPAL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        final List<Map<String, Object>> body = (List<Map<String, Object>>) response.getBody();
+        assertNotNull(body);
+        assertEquals(3, body.size());
+        assertEquals(List.of(3, 2, 1), body.stream().map(row -> (Integer) row.get("id")).toList());
+        assertEquals(Map.of("id", 3, "date", "2008-12-03", "location", "Albury", "mintemp", 12.9, "rainfall", 0.0), body.get(0));
+        assertEquals(Map.of("id", 2, "date", "2008-12-02", "location", "Albury", "mintemp", 7.4, "rainfall", 0.0), body.get(1));
+        assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", 13.4, "rainfall", 0.6), body.get(2));
     }
 
 }
