@@ -215,6 +215,8 @@ cachedb:
   flavor: valkey
   ## @param cachedb.endpoint The endpoint for the microservices
   endpoint: cache-db-primary
+  ## @param cachedb.port The port for the microservices.
+  port: 6379
   image:
     ## @skip cachedb.image.repository
     repository: bitnamilegacy/valkey
@@ -1174,7 +1176,7 @@ metricdb:
       repository: bitnamilegacy/prometheus
     rbac:
       ## @skip metricdb.server.rbac.create
-      create: false
+      create: true
     updateStrategy:
       ## @skip metricdb.server.updateStrategy.type
       type: Recreate

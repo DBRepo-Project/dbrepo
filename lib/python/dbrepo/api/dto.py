@@ -1109,6 +1109,8 @@ class Column(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
+    concept_uri: Optional[str] = None
+    unit_uri: Optional[str] = None
     enums: Optional[List[ColumnEnum]] = field(default_factory=list)
     sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
@@ -1136,6 +1138,8 @@ class ViewColumn(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
+    concept_uri: Optional[str] = None
+    unit_uri: Optional[str] = None
     enums: Optional[List[ColumnEnum]] = field(default_factory=list)
     sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
