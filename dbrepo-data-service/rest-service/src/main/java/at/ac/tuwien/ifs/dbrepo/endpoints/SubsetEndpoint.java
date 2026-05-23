@@ -31,6 +31,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -381,7 +383,8 @@ public class SubsetEndpoint {
                     accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers");
             final Map<String, ColumnAnalysisResultDto> schema = analyseService.determineDataTypes(database, query);
-            headers.set("X-Headers", String.join(",", schema.keySet()));
+            final List<String> responseColumns = List.copyOf(schema.keySet());
+            headers.set("X-Headers", String.join(",", responseColumns));
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
@@ -390,10 +393,12 @@ public class SubsetEndpoint {
                             .headers(headers)
                             .body(body);
                 case "text/csv":
+                    final Dataset<Row> dataset = dataService.getSubsetAsCsv(database, paginatedStatement);
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
+                            .contentType(org.springframework.http.MediaType.parseMediaType("text/csv"))
                             .headers(headers)
-                            .body(dataService.getSubsetAsCsv(database, paginatedStatement));
+                            .body(dataMapper.datasetToCsv(dataset, responseColumns));
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {
