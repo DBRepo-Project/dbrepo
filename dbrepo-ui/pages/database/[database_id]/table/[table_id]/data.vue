@@ -63,6 +63,7 @@
     <v-card
       rounded="0"
       variant="flat">
+      <!-- Pass PK column names so the generic results table can mark headers without reloading schema metadata. -->
       <QueryResults
         id="query-results"
         ref="queryResults"
@@ -70,6 +71,7 @@
         type="table"
         :select="canSelectTuples"
         :timestamp="lastReload.toISOString()"
+        :primary-key-column-names="primaryKeyColumns.map(column => column.internal_name)"
         @selection="updateSelect" />
     </v-card>
     <v-dialog
@@ -225,7 +227,7 @@ export default {
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
     primaryKeyColumns () {
-      if (!this.table) {
+      if (!this.table || !this.table.constraints) {
         return []
       }
       return this.table.constraints.primary_key.map(pk => pk.column)

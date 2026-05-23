@@ -83,11 +83,21 @@ export const useTableService = (): any => {
     })
   }
 
-  async function getData(databaseId: string, tableId: string, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
+  async function getData(
+    databaseId: string,
+    tableId: string,
+    page: number,
+    size: number,
+    timestamp: Date,
+    sortColumn?: string | null,
+    sortDirection?: string | null
+  ): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/v1/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size) })
+      axios.get<QueryResultDto>(`/api/v1/database/${databaseId}/table/${tableId}/data`, {
+        params: mapFilter(timestamp, page, size, sortColumn, sortDirection)
+      })
         .then((response) => {
           console.info('Got data for table')
           const result: QueryResultDto = {
@@ -270,14 +280,33 @@ export const useTableService = (): any => {
       .replace(/--+/g, '_')
   }
 
-  function mapFilter(timestamp: Date | null, page: number | null, size: number | null) {
-    if (timestamp === null) {
-      return {page, size}
+  function mapFilter(
+    timestamp: Date | null,
+    page: number | null,
+    size: number | null,
+    sortColumn?: string | null,
+    sortDirection?: string | null
+  ) {
+    const params: Record<string, Date | number | string> = {}
+
+    if (timestamp !== null) {
+      params.timestamp = timestamp
     }
-    if (page === null || size === null) {
-      return {timestamp}
+
+    if (page !== null && size !== null) {
+      params.page = page
+      params.size = size
     }
-    return {timestamp, page, size}
+
+    if (sortColumn) {
+      params.sortColumn = sortColumn
+    }
+
+    if (sortDirection) {
+      params.sortDirection = sortDirection
+    }
+
+    return params
   }
 
   return {
