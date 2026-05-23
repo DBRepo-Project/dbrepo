@@ -2,7 +2,7 @@
 import os
 from distutils.core import setup
 
-app_version = os.environ.get("APP_VERSION", "1.13.6")
+app_version = os.environ.get("APP_VERSION", "1.13.8")
 doc_version = os.environ.get("DOC_VERSION", "1.13")
 
 setup(name="dbrepo",

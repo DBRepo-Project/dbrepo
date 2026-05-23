@@ -1107,7 +1107,8 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "tableId", source = "table.id"),
             @Mapping(target = "databaseId", source = "table.database.id"),
-            @Mapping(target = "description", source = "description")
+            @Mapping(target = "description", source = "description"),
+            @Mapping(target = "unit", source = "unitUri")
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 

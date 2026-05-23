@@ -66,7 +66,7 @@ class RestClient:
             headers = dict()
             logging.debug(f'no headers set')
         if payload is not None:
-            payload = payload.model_dump()
+            payload = payload.model_dump(by_alias=True)
         auth = None
         if self.username is None and self.password is not None:
             headers["Authorization"] = f"Bearer {self.password}"
