@@ -247,7 +247,7 @@ cachedb:
 
 datadb:
   ## @param datadb.enabled Enable the Auth Service.
-  enabled: true
+  enabled: false
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
   image:
@@ -632,7 +632,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-mariadb-rc.0
+    name: registry.datalab.tuwien.ac.at/dbrepo-nightly/data-service:1.13.4-spark-mariadb-rc.3
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }

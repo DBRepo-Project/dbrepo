@@ -10,16 +10,14 @@ data:
   {{ toYaml . | nindent 2 }}
   {{- end }}
   {{ (.Files.Glob "files/01-setup-schema.sql").AsConfig | nindent 2 }}
-  {{- if .Values.datadb.enabled }}
   02-setup-data.sql: |-
     BEGIN;
     INSERT INTO `mdb_containers` (id, name, internal_name, image_id, host, port, ui_host, ui_port, privileged_username,
                                   privileged_password, readonly_username, readonly_password)
     VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203', 'mariadb-galera:11.3.2', 'mariadb_11_3_2',
-            'd79cb089-363c-488b-9717-649e44d8fcc5', 'data-db', 3306,
-            '{{ .Values.hostname }}', 3306, 'root',
-            'dbrepo', 'debug',
-            'debug');
+            'd79cb089-363c-488b-9717-649e44d8fcc5', 'dbpwp09903082.sysp0000.db1.skysql.com', 3306,
+            '{{ .Values.hostname }}', 3306, 'dbpwp09903082',
+            'xYkriW*YW9a61~9Jv8OyS', 'dbpwp09903082',
+            'xYkriW*YW9a61~9Jv8OyS');
     COMMIT;
-  {{- end }}
 {{- end }}
