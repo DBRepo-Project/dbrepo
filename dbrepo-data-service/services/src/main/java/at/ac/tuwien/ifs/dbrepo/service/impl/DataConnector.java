@@ -42,7 +42,7 @@ public abstract class DataConnector {
 
     public String getSparkJdbcUrl(Container container, String databaseName) {
         final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
-                .append("?sessionVariables=sql_mode='ANSI_QUOTES'");
+                .append("&sessionVariables=sql_mode='ANSI_QUOTES'");
         log.trace("mapped container to spark jdbc url: {}", sb);
         return sb.toString();
     }
@@ -62,6 +62,7 @@ public abstract class DataConnector {
             stringBuilder.append("/")
                     .append(databaseName);
         }
+        stringBuilder.append("?sslMode=trust");
         log.trace("mapped container to jdbc url: {}", stringBuilder);
         return stringBuilder.toString();
     }

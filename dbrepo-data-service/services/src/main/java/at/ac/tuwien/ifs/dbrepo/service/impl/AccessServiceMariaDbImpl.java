@@ -9,6 +9,8 @@ import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,6 +39,25 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         this.mariaDbMapper = mariaDbMapper;
     }
 
+    public String generateCommonLangPassword() {
+        String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
+        String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);
+        String numbers = RandomStringUtils.randomNumeric(2);
+        String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
+        String totalChars = RandomStringUtils.randomAlphanumeric(2);
+        String combinedChars = upperCaseLetters.concat(lowerCaseLetters)
+                .concat(numbers)
+                .concat(specialChar)
+                .concat(totalChars);
+        List<Character> pwdChars = combinedChars.chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toList());
+        Collections.shuffle(pwdChars);
+        return pwdChars.stream()
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
+    }
+
     @Override
     public void create(Database database, User user, AccessTypeDto access)
             throws SQLException, DatabaseMalformedException {
@@ -43,16 +67,17 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             /* create user if not exists */
             long start = System.currentTimeMillis();
             final PreparedStatement statement;
-            if (user.getPassword().startsWith("*")) {
-                log.trace("password is hashed: use normal query");
-                statement = connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery());
-            } else {
-                log.trace("password is not hashed: use raw query");
-                statement = connection.prepareStatement(mariaDbMapper.databaseCreateUserRawQuery());
-            }
+//            if (user.getPassword().startsWith("*")) {
+//                log.trace("password is hashed: use normal query");
+//                statement = connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery());
+//            } else {
+            log.trace("password is not hashed: use raw query");
+            statement = connection.prepareStatement(mariaDbMapper.databaseCreateUserRawQuery());
+//            }
             statement.setString(1, user.getUsername());
-            statement.setString(2, user.getPassword());
-            log.trace("1={}, 2={}", user.getUsername(), user.getPassword());
+            final String tmpPassword = generateCommonLangPassword();
+            statement.setString(2, tmpPassword);
+            log.trace("1={}, 2={}", user.getUsername(), tmpPassword);
             statement.execute();
             log.atDebug()
                     .setMessage("create user in database: " + database.getInternalName())
