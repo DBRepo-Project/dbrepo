@@ -12,12 +12,11 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class Column {
+public class Datasource {
 
     @NotBlank
-    private String internalName;
+    private String name;
 
-    @NotBlank
-    private Datasource datasource;
+    private String alias;
 
 }

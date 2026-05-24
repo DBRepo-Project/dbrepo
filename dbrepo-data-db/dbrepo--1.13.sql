@@ -27,7 +27,7 @@ END
 $$;
 
 -- procedure to store query
-CREATE PROCEDURE dbrepo.store_query(IN query TEXT, IN query_normalized TEXT, IN executed TIMESTAMP,
+CREATE OR REPLACE PROCEDURE dbrepo.store_query(IN query TEXT, IN query_normalized TEXT, IN executed TIMESTAMP,
                                     OUT query_id VARCHAR(36))
     LANGUAGE plpgsql AS
 $$
@@ -40,7 +40,7 @@ BEGIN
         RAISE EXCEPTION 'input cannot be null';
     END IF;
     CALL dbrepo.hash_query_statement(query_normalized, _query_hash);
-    CALL dbrepo.hash_query_result(query_normalized, _result_hash);
+    --CALL dbrepo.hash_query_result(query_normalized, _result_hash);
     IF _result_hash IS NULL THEN
         INSERT INTO dbrepo.queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash,
                                     result_number, executed)
@@ -76,15 +76,10 @@ CREATE PROCEDURE dbrepo.hash_query_result(IN query_normalized TEXT, OUT hash VAR
     LANGUAGE plpgsql AS
 $$
 DECLARE
-    _statement TEXT := concat('CREATE TEMPORARY TABLE result AS ', query_normalized);
+    _statement TEXT := concat('SELECT encode(digest(string_agg(encode(digest(t::text, ''sha256''), ''hex''), '''')::text, ''sha256''), ''hex'') FROM (', query_normalized, ') t');
 BEGIN
     DROP TABLE IF EXISTS result;
-    EXECUTE _statement;
-    SELECT replace(sha256(string_agg(concat_ws(',', (select string_agg(column_name::text, ',' ORDER BY column_name)
-                                                     FROM information_schema.columns
-                                                     WHERE table_name = 'result')), ',')::bytea)::text, '\x', '')
-    FROM result
-    INTO hash;
+    EXECUTE _statement    INTO hash;
 END;
 $$;
 

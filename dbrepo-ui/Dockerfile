@@ -3,7 +3,7 @@ FROM --platform=$BUILDPLATFORM oven/bun:1.2.21-alpine AS build
 
 WORKDIR /app
 
-COPY ./bun.lockb ./bun.lockb
+COPY ./bun.lock ./bun.lock
 COPY ./package.json ./package.json
 
 RUN bun install

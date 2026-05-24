@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.api.Result;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
@@ -555,7 +554,7 @@ public class TableEndpoint {
                                               @RequestHeader("Authorization") String authorization)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
             StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,
-            DatabaseUnavailableException, DatabaseNotFoundException, TableMalformedException {
+            DatabaseUnavailableException, DatabaseNotFoundException, TableMalformedException, ContainerNotFoundException {
         log.atDebug()
                 .setMessage("endpoint insert table data")
                 .addKeyValue("database_id", databaseId)
@@ -570,7 +569,9 @@ public class TableEndpoint {
             log.debug("line termination not present, default to {}", data.getLineTermination());
         }
         try {
-            tableService.importDataset(database, table, data);
+//            tableService.importDataset(database, table, data);
+//            tableService.imporSparkDataset(database, table, data);
+            tableService.importSidecarDataset(database, table, data);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

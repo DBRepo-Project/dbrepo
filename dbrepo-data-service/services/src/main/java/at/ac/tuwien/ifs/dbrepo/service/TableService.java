@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import io.micrometer.core.annotation.Timed;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -88,6 +89,11 @@ public interface TableService {
      */
     Long getCount(Database database, String tableName, Instant timestamp) throws SQLException, QueryMalformedException;
 
+    @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
+    void imporSparkDataset(Database database, Table table, ImportDto data) throws MalformedException,
+            SQLException, QueryMalformedException, StorageUnavailableException, TableMalformedException,
+            StorageNotFoundException;
+
     /**
      * Imports a dataset into the database by given table. By default, an <code>upsert</code> operation is performed
      * that updates duplicate values (identified by their primary key) or inserts values if no duplicate is detected.
@@ -103,6 +109,10 @@ public interface TableService {
      */
     void importDataset(Database database, Table table, ImportDto data) throws MalformedException, StorageNotFoundException,
             StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException;
+
+    @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
+    void importSidecarDataset(Database database, Table table, ImportDto data) throws SQLException,
+            QueryMalformedException, RemoteUnavailableException, MetadataServiceException, ContainerNotFoundException;
 
     /**
      * Imports a dataset by metadata into the sidecar of the target database by given table.

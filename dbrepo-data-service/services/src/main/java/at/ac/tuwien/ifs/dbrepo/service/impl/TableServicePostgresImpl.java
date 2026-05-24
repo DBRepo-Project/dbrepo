@@ -2,7 +2,6 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.config.DataDbConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
@@ -14,14 +13,19 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.gateway.SidecarGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.PostgresMapper;
+import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,15 +45,19 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
     private final DataDbConfig dataDbConfig;
     private final PostgresMapper postgresMapper;
     private final StorageService storageService;
+    private final DataService dataService;
+    private final SidecarGateway sidecarGateway;
 
     @Autowired
     public TableServicePostgresImpl(S3Config s3Config, DataMapper dataMapper, DataDbConfig dataDbConfig,
-                                    PostgresMapper postgresMapper, StorageService storageService) {
+                                    PostgresMapper postgresMapper, StorageService storageService, DataService dataService, SidecarGateway sidecarGateway) {
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.dataDbConfig = dataDbConfig;
         this.postgresMapper = postgresMapper;
         this.storageService = storageService;
+        this.dataService = dataService;
+        this.sidecarGateway = sidecarGateway;
     }
 
     @Override
@@ -111,7 +119,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             connection.prepareStatement(postgresMapper.tableCreateDtoToCreateTableRawQuery(data))
                     .execute();
             log.atDebug()
-                    .setMessage("created table: " + database.getInternalName() + "." + tableName)
+                    .setMessage("created table: " + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_table")
                     .log();
@@ -176,7 +184,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             connection.prepareStatement(postgresMapper.dropTableVersioningRawQuery(table.getInternalName()))
                     .execute();
             log.atDebug()
-                    .setMessage("delete table versioning: " + database.getInternalName() + "." + table.getInternalName())
+                    .setMessage("delete table versioning: " + table.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "delete_table_versioning")
                     .log();
@@ -184,7 +192,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             connection.prepareStatement(postgresMapper.dropTableVersioningRawQuery(table.getInternalName() + "_history"))
                     .execute();
             log.atDebug()
-                    .setMessage("delete history table: " + database.getInternalName() + "." + table.getInternalName() + "_history")
+                    .setMessage("delete history table: " + table.getInternalName() + "_history")
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "delete_history_table")
                     .log();
@@ -192,7 +200,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             connection.prepareStatement(postgresMapper.dropTableRawQuery(table.getInternalName()))
                     .execute();
             log.atDebug()
-                    .setMessage("delete table: " + database.getInternalName() + "." + table.getInternalName())
+                    .setMessage("delete table: " + table.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "delete_table")
                     .log();
@@ -266,6 +274,96 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         return queryResult;
     }
 
+    @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
+    @Override
+    public void imporSparkDataset(Database database, Table table, ImportDto data) throws MalformedException,
+            SQLException, QueryMalformedException, StorageUnavailableException, TableMalformedException,
+            StorageNotFoundException {
+        final List<String> columns = table.getColumns()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .toList();
+        final Dataset<Row> dataset = dataService.getCsv(columns, data.getLocation(),
+                String.valueOf(data.getSeparator()), data.getHeader());
+        final Properties properties = new Properties();
+        properties.setProperty("user", database.getContainer().getUsername());
+        properties.setProperty("password", database.getContainer().getPassword());
+        final String temporaryTable = table.getInternalName() + "_tmp";
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        long start = System.currentTimeMillis();
+        try {
+            /* import tuple */
+            connection.prepareStatement(postgresMapper.dropTableRawQuery(temporaryTable))
+                    .execute();
+            log.debug("drop table {} if it has existed", temporaryTable);
+            connection.prepareStatement(postgresMapper.copyTableSchemaToRawQuery(table.getInternalName(), temporaryTable))
+                    .execute();
+            log.atDebug()
+                    .setMessage("copy table schema from " + table.getInternalName() + " into temporary table: " + temporaryTable)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_copy_schema")
+                    .log();
+        } catch (SQLException e) {
+            log.atError()
+                    .setMessage("Failed to import data from temporary table " + temporaryTable)
+                    .setCause(e)
+                    .log();
+            throw new QueryMalformedException("Failed to import data: " + e.getMessage(), e);
+        }
+        log.debug("copied schema from target table {} to import table: {}", table.getInternalName(), temporaryTable);
+        try {
+            start = System.currentTimeMillis();
+            dataset.write()
+                    .mode(SaveMode.Overwrite)
+                    .option("header", data.getHeader())
+                    .jdbc(getSparkJdbcUrl(database), temporaryTable, properties);
+            log.atDebug()
+                    .setMessage("write data into temporary table: " + temporaryTable)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_import_data")
+                    .log();
+        } catch (Exception e) {
+            log.atError()
+                    .setMessage("Failed to write dataset: schema malformed")
+                    .setCause(e)
+                    .log();
+            throw new MalformedException("Failed to write dataset: schema malformed: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
+        }
+        try {
+            /* import tuple */
+            start = System.currentTimeMillis();
+            connection.prepareStatement(postgresMapper.temporaryTableToRawMergeQuery(temporaryTable,
+                            table.getInternalName(), table.getColumns().stream().map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName).toList()))
+                    .execute();
+            log.atDebug()
+                    .setMessage("merge data from temporary table " + temporaryTable + " into table: " + table.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_merge_data")
+                    .log();
+        } catch (SQLException e) {
+            log.atError()
+                    .setMessage("Failed to import data from temporary table " + temporaryTable)
+                    .setCause(e)
+                    .log();
+            throw new MalformedException("Failed to import tuple: " + e.getMessage(), e);
+        } finally {
+            /* delete temporary table */
+            start = System.currentTimeMillis();
+            connection.prepareStatement(postgresMapper.dropTableRawQuery(temporaryTable))
+                    .execute();
+            log.debug("deleted temporary table: {}", temporaryTable);
+            log.atDebug()
+                    .setMessage("delete temporary table: " + temporaryTable)
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_delete_schema")
+                    .log();
+            dataSource.close();
+        }
+        storageService.deleteObject(data.getLocation());
+        log.info("Imported dataset into table {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
     @Override
     @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
     public void importDataset(Database database, Table table, ImportDto data) throws SQLException,
@@ -298,6 +396,46 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
         }
         storageService.deleteObject(data.getLocation());
         log.info("Imported dataset into table {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
+    @Timed(value = "dbrepo_data_import_table_data", description = "Time spent importing the table data", histogram = true)
+    @Override
+    public void importSidecarDataset(Database database, Table table, ImportDto data) throws SQLException,
+            QueryMalformedException, RemoteUnavailableException, MetadataServiceException, ContainerNotFoundException {
+        final List<String> columns = table.getColumns()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .toList();
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        long start = System.currentTimeMillis();
+        /* import tuple */
+        sidecarGateway.importCsv(data.getLocation());
+        log.atDebug()
+                .setMessage("import s3 location " + data.getLocation() + " into sidecar")
+                .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                .addKeyValue(Constants.ACTION, "import_from_csv")
+                .log();
+        try {
+            /* import tuple */
+            connection.prepareStatement(postgresMapper.importCsvIntoTable(s3Config, data, table.getInternalName(), columns))
+                    .execute();
+            log.atDebug()
+                    .setMessage("import csv location " + data.getLocation() + " into table: " + table.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "import_from_csv")
+                    .log();
+        } catch (SQLException e) {
+            log.atError()
+                    .setMessage("Failed to import data from s3 " + data.getLocation())
+                    .setCause(e)
+                    .log();
+            throw new QueryMalformedException("Failed to import data from s3: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        storageService.deleteObject(data.getLocation());
+        log.info("Imported csv into table {}.{}", database.getInternalName(), table.getInternalName());
     }
 
     @Override
@@ -480,7 +618,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             log.trace("2={}", tableName);
             TableDto table = dataMapper.schemaResultSetToTable(database, statement1.executeQuery());
             log.atDebug()
-                    .setMessage("inspected table: " + database.getInternalName() + "." + tableName)
+                    .setMessage("inspected table: " + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_schema")
                     .log();
@@ -494,7 +632,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             log.trace("2={}", tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
             log.atDebug()
-                    .setMessage("inspect table columns: " + database.getInternalName() + "." + tableName)
+                    .setMessage("inspect table columns: " + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_columns")
                     .log();
@@ -506,7 +644,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             final ResultSet resultSet3 = connection.prepareStatement(postgresMapper.columnsCheckConstraintSelectRawQuery(tableName))
                     .executeQuery();
             log.atDebug()
-                    .setMessage("inspect table check constraints: " + database.getInternalName() + "." + tableName)
+                    .setMessage("inspect table check constraints: " + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_constraints_check")
                     .log();
@@ -525,7 +663,7 @@ public class TableServicePostgresImpl extends DataConnector implements TableServ
             log.trace("1={}", tableName);
             final ResultSet resultSet4 = statement4.executeQuery();
             log.atDebug()
-                    .setMessage("inspect table constraints: " + database.getInternalName() + "." + tableName)
+                    .setMessage("inspect table constraints: " + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_table_constraints")
                     .log();
