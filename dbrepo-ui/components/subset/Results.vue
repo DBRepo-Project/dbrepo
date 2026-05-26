@@ -3,7 +3,7 @@
     <v-data-table-server
       flat
       v-model="selection"
-      :headers="headers"
+      :headers="result.headers"
       :loading="loading || loadingCount || loadingExecute"
       :options="options"
       :items="result.rows"
@@ -12,7 +12,36 @@
       :show-select="select"
       return-object
       :items-per-page-options="footerProps.itemsPerPageOptions"
-      @update:options="updateOptions" />
+      @update:options="updateOptions">
+      <template
+        v-for="header in primaryKeyHeaders"
+        :key="header.key"
+        #[`header.${header.key}`]="{ column, isSorted, getSortIcon, sortBy }">
+        <div class="v-data-table-header__content">
+          <span class="d-inline-flex align-center ga-1">
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon
+                  v-bind="props"
+                  icon="mdi-key-variant"
+                  size="x-small" />
+              </template>
+              <span>{{ $t('pages.table.subpages.data.primary-key.hint') }}</span>
+            </v-tooltip>
+            <span>{{ column.title }}</span>
+          </span>
+          <v-icon
+            v-if="column.sortable"
+            class="v-data-table-header__sort-icon"
+            :icon="getSortIcon(column)" />
+          <div
+            v-if="isSorted(column) && sortBy.length > 1"
+            class="v-data-table-header__sort-badge">
+            {{ sortBy.findIndex(entry => entry.key === column.key) + 1 }}
+          </div>
+        </div>
+      </template>
+    </v-data-table-server>
   </div>
 </template>
 
@@ -30,6 +59,10 @@ export default {
     select: {
       type: Boolean,
       default: () => false
+    },
+    primaryKeyColumnNames: {
+      type: Array,
+      default: () => []
     },
     timestamp: {
       type: String,
@@ -49,7 +82,8 @@ export default {
       },
       options: {
         page: 1,
-        itemsPerPage: 10
+        itemsPerPage: 10,
+        sortBy: []
       },
       footerProps: {
         showFirstLastPage: true,
@@ -59,11 +93,8 @@ export default {
     }
   },
   computed: {
-    headers () {
-      if (this.result.headers.length !== 0) {
-        return this.result.headers
-      }
-      return []
+    primaryKeyHeaders () {
+      return this.result.headers.filter(header => header.isPrimaryKey)
     }
   },
   watch: {
@@ -108,7 +139,19 @@ export default {
           })
       } else if (this.type === 'table') {
         const tableService = useTableService()
-        tableService.getData(this.$route.params.database_id, id, (this.options.page - 1), this.options.itemsPerPage, timestamp ? timestamp : this.timestamp)
+        const activeSort = this.options.sortBy?.[0]
+        const sortColumn = activeSort?.key ?? null
+        const sortDirection = activeSort?.order ?? null
+
+        tableService.getData(
+          this.$route.params.database_id,
+          id,
+          (this.options.page - 1),
+          this.options.itemsPerPage,
+          timestamp ? timestamp : this.timestamp,
+          sortColumn,
+          sortDirection
+        )
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -216,18 +259,28 @@ export default {
     mapResults (data) {
       this.result.headers = data.headers.map((header) => {
         return {
+          key: header,
           title: header,
           value: header,
-          sortable: false
+          sortable: this.type === 'table',
+          isPrimaryKey: this.type === 'table' && this.primaryKeyColumnNames.includes(header)
         }
       })
       console.debug('query result', data)
       this.result.rows = data.result
     },
     updateOptions ({ page, itemsPerPage, sortBy }) {
-      this.options.page = page
-      this.options.itemsPerPage = itemsPerPage
-      this.reExecute(this.id)
+      const nextSortBy = this.type === 'table' && Array.isArray(sortBy) ? sortBy : []
+      const currentSort = this.options.sortBy?.[0] ?? null
+      const nextSort = nextSortBy[0] ?? null
+      const sortChanged = currentSort?.key !== nextSort?.key || currentSort?.order !== nextSort?.order
+
+      this.options = {
+        ...this.options,
+        page: sortChanged ? 1 : page,
+        itemsPerPage,
+        sortBy: nextSortBy
+      }
     },
     resetSelection () {
       this.selection = []
@@ -247,5 +300,13 @@ export default {
 
 .v-data-table {
   border-radius: 0;
+}
+
+.v-data-table :deep(tbody tr:nth-child(even) > td) {
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+:global(.v-theme--dark) .v-data-table :deep(tbody tr:nth-child(even) > td) {
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
 }
 </style>

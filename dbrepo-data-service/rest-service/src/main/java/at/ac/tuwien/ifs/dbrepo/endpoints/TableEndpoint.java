@@ -1,9 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -290,22 +290,25 @@ public class TableEndpoint {
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final List<String> responseColumns = table.getColumns()
-                            .stream()
-                            .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
-                            .toList();
-                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query, responseColumns);
+                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query,
+                            table.getColumns().stream()
+                                    .map(Column::getInternalName)
+                                    .toList());
                     headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset1));
                     return ResponseEntity.ok()
                             .headers(headers)
                             .body(dataMapper.datasetToJson(dataset1));
                 case MEDIA_TYPE_TEXT_CSV:
+                    final List<String> responseColumns = table.getColumns().stream()
+                            .map(Column::getInternalName)
+                            .toList();
                     final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
-                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset2));
+                    headers.set("X-Headers", String.join(",", responseColumns));
                     return ResponseEntity.status(HttpStatus.OK)
+                            .contentType(MediaType.parseMediaType(MEDIA_TYPE_TEXT_CSV))
                             .headers(headers)
-                            .body(dataset2);
+                            .body(dataMapper.datasetToCsv(dataset2, responseColumns));
                 default:
                     log.atError()
                             .setMessage("Invalid data format " + accept + " accepted")
