@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public class SubsetDto {
     @Schema(description = "The join(s) that are applied")
     private Set<JoinDto> joins;
 
-    private Set<FilterDto> filters;
+    private List<FilterDto> filters;
 
     private Set<OrderDto> orders;
 
