@@ -11,8 +11,6 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    labels:
-      - "dependencies"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
@@ -35,9 +33,10 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    labels:
-      - "dependencies"
     open-pull-requests-limit: 10
+    cooldown:
+      semver-minor-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "chore(deps)"
     ignore:
@@ -65,9 +64,10 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    labels:
-      - "dependencies"
     open-pull-requests-limit: 10
+    cooldown:
+      semver-minor-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "chore(deps)"
     ignore:
@@ -97,8 +97,6 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    labels:
-      - "dependencies"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
@@ -119,8 +117,6 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    labels:
-      - "dependencies"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
@@ -139,8 +135,6 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    labels:
-      - "dependencies"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
