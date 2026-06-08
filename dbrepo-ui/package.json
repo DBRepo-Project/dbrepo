@@ -46,7 +46,7 @@
     "vuetify": "^3.7.2"
   },
   "devDependencies": {
-    "@nuxtjs/i18n": "^8.1.1",
+    "@nuxtjs/i18n": "^10.4.0",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
     "@types/qs": "^6.9.12",
     "sass": "^1.71.0",
