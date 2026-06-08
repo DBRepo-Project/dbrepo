@@ -1,0 +1,43 @@
+name: "Change Request"
+description: "Request a change to existing functionality"
+labels: ["change"]
+body:
+  - type: textarea
+    id: changes
+    attributes:
+      label: Changes
+      description: Add a description of the task and describe what the task should include.
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: List any notes you collected that support the original task and include a screenshot if applicable.
+    validations:
+      required: false
+
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Assumptions
+      description: List any assumptions that you are aware of but still need to be reviewed.
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Describe how you think a completed task would look like or how it should work.
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks? (optional)
+      description: Potential risks and how to best mitigate them.
+    validations:
+      required: false
