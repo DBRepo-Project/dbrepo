@@ -38,7 +38,7 @@ icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/
 dependencies:
   - name: opensearch
     alias: searchdb
-    version: 1.4.0
+    version: 2.0.10
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: searchdb.enabled
   - name: keycloak

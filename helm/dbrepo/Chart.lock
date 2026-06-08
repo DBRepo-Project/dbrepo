@@ -1,7 +1,7 @@
 dependencies:
 - name: opensearch
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 1.4.0
+  version: 2.0.10
 - name: keycloak
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 25.2.0
@@ -32,5 +32,5 @@ dependencies:
 - name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 5.0.6
-digest: sha256:c242d9a70351f71a3adcbbbcdbadbed6bda3719a9442b255d703710411978f5b
-generated: "2025-11-10T08:59:27.685993972+01:00"
+digest: sha256:1bfd5307e60a086d094d00183cd73cc1175d6cf2162ccfc963bd35511319b46e
+generated: "2026-06-08T14:16:03.380076252Z"
