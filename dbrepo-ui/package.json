@@ -16,7 +16,7 @@
     "@f3ve/vue-markdown-it": "^0.2.3",
     "@fontsource/open-sans": "^5.0.24",
     "@mdi/font": "^7.4.47",
-    "@nuxtjs/robots": "^3.0.0",
+    "@nuxtjs/robots": "^6.0.9",
     "@nuxtjs/sitemap": "^5.2.0",
     "@pinia/nuxt": "^0.5.1",
     "ace-builds": "^1.32.6",
