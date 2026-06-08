@@ -249,7 +249,7 @@ public interface DataMapper {
     default List<ColumnAnalysisResultDto> structListToColumnAnalysisResultDtoList(String data)
             throws JsonProcessingException {
         log.trace("raw columns: {}", data);
-        final Pattern pattern = Pattern.compile("\\{name=([^,]+), type=([^}]+)");
+        final Pattern pattern = Pattern.compile("\\{name=(.*?), type=([^}]+)}");
         final Matcher matcher = pattern.matcher(data);
         final List<ColumnAnalysisResultDto> columns = new LinkedList<>();
         while (matcher.find()) {
@@ -299,30 +299,51 @@ public interface DataMapper {
     }
 
     default String datasetToColumnNameHeader(Dataset<Row> data) {
-        final Map<Integer, String> columnNames = new HashMap<>();
-        Arrays.stream(data.logicalPlan()
-                        .producedAttributes()
-                        .mkString(",")
-                        .split(","))
-                .forEach(entry -> {
-                    final String[] part = entry.split("#");
-                    if (part[1].contains("L")) {
-                        columnNames.put(Integer.valueOf(part[1].split("L")[0]), part[0]);
-                        return;
-                    }
-                    columnNames.put(Integer.valueOf(part[1]), part[0]);
-                });
-        return String.join(",", columnNames.values()
-                .stream()
-                .toList());
+        return String.join(",", data.columns());
     }
 
-    default Set<Map<String, Object>> datasetToJson(Dataset<Row> dataset) throws MalformedException {
+    default String datasetToCsv(Dataset<Row> dataset) {
+        return datasetToCsv(dataset, Arrays.asList(dataset.columns()));
+    }
+
+    default String datasetToCsv(Dataset<Row> dataset, List<String> headerColumns) {
+        final StringBuilder sb = new StringBuilder();
+        /* Callers may provide authoritative headers from metadata instead of trusting Spark's
+         * dataset column names, which can degrade to synthetic _cN values after CSV staging. */
+        sb.append(headerColumns.stream()
+                .map(this::escapeCsvField)
+                .collect(Collectors.joining(",")));
+        sb.append(System.lineSeparator());
+        final Iterator<Row> rows = dataset.toLocalIterator();
+        while (rows.hasNext()) {
+            sb.append(rowToCsv(rows.next()));
+            sb.append(System.lineSeparator());
+        }
+        return sb.toString();
+    }
+
+    private String rowToCsv(Row row) {
+        final List<String> fields = new ArrayList<>(row.size());
+        for (int i = 0; i < row.size(); i++) {
+            final Object value = row.isNullAt(i) ? null : row.get(i);
+            fields.add(escapeCsvField(value == null ? "" : String.valueOf(value)));
+        }
+        return String.join(",", fields);
+    }
+
+    private String escapeCsvField(String value) {
+        if (value.contains("\"") || value.contains(",") || value.contains("\n") || value.contains("\r")) {
+            return '"' + value.replace("\"", "\"\"") + '"';
+        }
+        return value;
+    }
+
+    default List<Map<String, Object>> datasetToJson(Dataset<Row> dataset) throws MalformedException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final List<String> rows = dataset.toJSON()
                 .toJavaRDD()
                 .collect();
-        final Set<Map<String, Object>> json = new HashSet<>();
+        final List<Map<String, Object>> json = new ArrayList<>(rows.size());
         for (String row : rows) {
             try {
                 json.add(objectMapper.readValue(row, new TypeReference<>() {

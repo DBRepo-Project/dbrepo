@@ -7,8 +7,8 @@ function clean () {
   docker $DOCKER_OPTS rm $(docker volume ls -q) || true
   echo "[DEBUG] Starting new environment ..."
   docker $DOCKER_OPTS compose up -d dbrepo-broker-service
-  echo "[DEBUG] Waiting 30s ..."
-  sleep 30
+  echo "[DEBUG] Waiting 60s ..."
+  sleep 60
 }
 
 # BeforeAll
@@ -16,15 +16,19 @@ clean
 
 # Test
 echo "[DEBUG] run test status_mqtt_succeeds"
-if ! docker $DOCKER_OPTS exec dbrepo-broker-service rabbitmqctl status | grep -q "Interface.*mqtt"; then
+RES=$(docker $DOCKER_OPTS exec dbrepo-broker-service rabbitmqctl status)
+if ! echo $RES | grep -q "Interface.*mqtt"; then
   echo "[ERROR] Node is not listening to MQTT port" > /dev/stderr
+  echo "[DEBUG] result: $RES"
   exit 1
 fi
 
 # Test
 echo "[DEBUG] run test mqtt_succeeds"
-if ! docker $DOCKER_OPTS exec dbrepo-broker-service rabbitmq-plugins is_enabled rabbitmq_mqtt | grep -q "rabbitmq_mqtt is enabled"; then
+RES=$(docker $DOCKER_OPTS exec dbrepo-broker-service rabbitmq-plugins is_enabled rabbitmq_mqtt)
+if ! echo $RES | grep -q "rabbitmq_mqtt is enabled"; then
   echo "[ERROR] Plugin rabbitmq_mqtt is not enabled" > /dev/stderr
+  echo "[DEBUG] result: $RES"
   exit 1
 fi
 

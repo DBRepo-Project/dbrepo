@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -56,6 +59,7 @@
         <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>
         <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
+        <jena.version>5.5.0</jena.version>
         <minio.version>8.5.7</minio.version>
         <redisson.version>3.52.0</redisson.version>
         <springdoc-openapi.version>2.8.5</springdoc-openapi.version>
@@ -64,7 +68,7 @@
             ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <CodeCacheSize>128m</CodeCacheSize>
-        <extraJavaTestArgs></extraJavaTestArgs>
+        <extraJavaTestArgs />
     </properties>
 
     <dependencies>
@@ -72,6 +76,11 @@
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
             <version>1.13.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>${jena.version}</version>
         </dependency>
         <!-- Spring -->
         <dependency>
@@ -335,7 +344,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!-- Note config is repeated in scalatest config -->
                 <configuration>
-                    <argLine>@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g
+                    <argLine
+                    >@{argLine} -ea -Xmx4g -Xss4m -XX:MaxMetaspaceSize=2g
                         -XX:ReservedCodeCacheSize=${CodeCacheSize}
                         ${extraJavaTestArgs}
                     </argLine>

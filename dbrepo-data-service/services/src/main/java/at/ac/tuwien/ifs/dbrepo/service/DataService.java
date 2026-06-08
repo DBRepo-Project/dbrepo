@@ -27,5 +27,8 @@ public interface DataService {
 
     Dataset<Row> getSubsetAsJson(Database database, String query) throws QueryMalformedException, TableNotFoundException;
 
+    Dataset<Row> getSubsetAsJson(Database database, String query, List<String> columns)
+            throws QueryMalformedException, TableNotFoundException;
+
     Dataset<Row> getSubsetAsCsv(Database database, String query) throws QueryMalformedException, TableNotFoundException;
 }

@@ -1,9 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -235,15 +235,18 @@ public class TableEndpoint {
                                      @RequestParam(required = false) Instant timestamp,
                                      @RequestParam(required = false) Long page,
                                      @RequestParam(required = false) Long size,
+                                     @RequestParam(required = false) String sortColumn,
+                                     @RequestParam(required = false) String sortDirection,
                                      @NotNull @RequestHeader("Accept") String accept,
                                      @NotNull HttpServletRequest request,
                                      Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException,
             FormatNotAvailableException, MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
-        log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, accept={}",
-                databaseId, tableId, timestamp, page, size, accept);
+        log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, sortColumn={}, sortDirection={}, accept={}",
+                databaseId, tableId, timestamp, page, size, sortColumn, sortDirection, accept);
         endpointValidator.validateDataParams(page, size);
+        endpointValidator.validateDataSortParams(sortColumn, sortDirection);
         /* parameters */
         if (page == null) {
             page = 0L;
@@ -277,25 +280,35 @@ public class TableEndpoint {
                         .headers(headers)
                         .build();
             }
+            final List<String> sortColumns = resolveSortColumns(database, table, sortColumn);
+            final String effectiveSortDirection = sortColumn == null ? "asc" : sortDirection;
             final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                     table.getInternalName(), timestamp,
                     accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : page,
-                    accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size);
+                    accept.equals(MEDIA_TYPE_TEXT_CSV) ? null : size,
+                    sortColumns, effectiveSortDirection);
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
+                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query,
+                            table.getColumns().stream()
+                                    .map(Column::getInternalName)
+                                    .toList());
                     headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset1));
                     return ResponseEntity.ok()
                             .headers(headers)
                             .body(dataMapper.datasetToJson(dataset1));
                 case MEDIA_TYPE_TEXT_CSV:
+                    final List<String> responseColumns = table.getColumns().stream()
+                            .map(Column::getInternalName)
+                            .toList();
                     final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
-                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset2));
+                    headers.set("X-Headers", String.join(",", responseColumns));
                     return ResponseEntity.status(HttpStatus.OK)
+                            .contentType(MediaType.parseMediaType(MEDIA_TYPE_TEXT_CSV))
                             .headers(headers)
-                            .body(dataset2);
+                            .body(dataMapper.datasetToCsv(dataset2, responseColumns));
                 default:
                     log.atError()
                             .setMessage("Invalid data format " + accept + " accepted")
@@ -307,6 +320,34 @@ public class TableEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
+    }
+
+    private List<String> resolveSortColumns(Database database, Table table, String sortColumn)
+            throws ColumnNotFoundException, SQLException, TableNotFoundException {
+        if (sortColumn != null) {
+            return List.of(validateSortColumn(table, sortColumn));
+        }
+        return resolvePrimaryKeySortColumns(database, table);
+    }
+
+    private String validateSortColumn(Table table, String sortColumn) throws ColumnNotFoundException {
+        return table.getColumns()
+                .stream()
+                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .filter(sortColumn::equals)
+                .findFirst()
+                .orElseThrow(() -> new ColumnNotFoundException("Failed to find column: " + sortColumn));
+    }
+
+    private List<String> resolvePrimaryKeySortColumns(Database database, Table table)
+            throws SQLException, TableNotFoundException {
+        final TableDto inspectedTable = tableService.inspect(database, table.getInternalName());
+        if (inspectedTable.getConstraints() == null || inspectedTable.getConstraints().getPrimaryKey() == null) {
+            return List.of();
+        }
+        return inspectedTable.getConstraints().getPrimaryKey().stream()
+                .map(primaryKey -> primaryKey.getColumn().getInternalName())
+                .toList();
     }
 
     @PostMapping("/{tableId}/data")

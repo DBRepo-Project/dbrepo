@@ -279,8 +279,6 @@ public class ViewEndpoint {
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Headers");
-            final String viewName = view.getQueryHash();
-            viewService.create(database, viewName, view.getQuery());
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
@@ -289,12 +287,18 @@ public class ViewEndpoint {
                             .headers(headers)
                             .body(dataMapper.datasetToJson(dataset1));
                 case "text/csv":
+                    final String viewName = view.getQueryHash();
+                    final ViewDto authoritativeView = viewService.create(database, viewName, view.getQuery());
+                    final List<String> responseColumns = authoritativeView.getColumns().stream()
+                            .map(column -> column.getInternalName())
+                            .toList();
                     final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
-                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset2)));
+                    headers.set("X-Headers", String.join(",", responseColumns));
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.ok()
+                            .contentType(MediaType.parseMediaType("text/csv"))
                             .headers(headers)
-                            .body(dataset2);
+                            .body(dataMapper.datasetToCsv(dataset2, responseColumns));
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

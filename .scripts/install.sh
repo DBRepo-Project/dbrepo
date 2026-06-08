@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # preset
-APP_VERSION="1.13.3"
+APP_VERSION="1.13.4"
 MIN_CPU=8
 MIN_RAM=10
 SKIP_CHECKS=${SKIP_CHECKS:-0}
