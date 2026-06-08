@@ -33,7 +33,7 @@ dependencies:
   repository: oci://registry-1.docker.io/bitnamicharts
   tags:
   - bitnami-common
-  version: 2.x.x
+  version: 2.40.0
 description: SeaweedFS is a simple and highly scalable distributed file system.
 home: https://bitnami.com
 icon: https://dyltqmyl993wv.cloudfront.net/assets/stacks/seaweedfs/img/seaweedfs-stack-220x234.png
