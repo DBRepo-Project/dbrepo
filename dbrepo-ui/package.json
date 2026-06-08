@@ -11,7 +11,7 @@
     "prod": "bun run .output/server/index.mjs"
   },
   "dependencies": {
-    "@artmizu/nuxt-prometheus": "^2.4.0",
+    "@artmizu/nuxt-prometheus": "^3.0.3",
     "@date-fns/utc": "^2.1.0",
     "@f3ve/vue-markdown-it": "^0.2.3",
     "@fontsource/open-sans": "^5.0.24",
