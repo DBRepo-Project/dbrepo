@@ -17,7 +17,7 @@
     "@fontsource/open-sans": "^5.0.24",
     "@mdi/font": "^7.4.47",
     "@nuxtjs/robots": "^3.0.0",
-    "@nuxtjs/sitemap": "^5.2.0",
+    "@nuxtjs/sitemap": "^8.0.15",
     "@pinia/nuxt": "^0.5.1",
     "ace-builds": "^1.32.6",
     "axios": "^1.6.7",
