@@ -28,7 +28,7 @@ COPY ./nuxt.config.ts ./nuxt.config.ts
 RUN bun run build
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM node:24-alpine AS runtime
+FROM --platform=$BUILDPLATFORM node:26-alpine AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""
