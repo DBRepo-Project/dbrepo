@@ -1,4 +1,5 @@
 version: 2
+
 updates:
   - package-ecosystem: "maven"
     directories:
@@ -9,12 +10,14 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
-      timezone: "Europe/Vienna"
-    labels:
-      - "dependencies"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
     groups:
       maven-minor-patch:
         patterns:
@@ -29,12 +32,17 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
-      timezone: "Europe/Vienna"
-    labels:
-      - "dependencies"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
+    cooldown:
+      semver-minor-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
     groups:
       npm-minor-patch:
         patterns:
@@ -55,12 +63,17 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
-      timezone: "Europe/Vienna"
-    labels:
-      - "dependencies"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
+    cooldown:
+      semver-minor-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
     groups:
       pip-minor-patch:
         patterns:
@@ -83,9 +96,7 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
-      timezone: "Europe/Vienna"
-    labels:
-      - "dependencies"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
@@ -105,9 +116,7 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
-      timezone: "Europe/Vienna"
-    labels:
-      - "dependencies"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
@@ -125,9 +134,7 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
-      timezone: "Europe/Vienna"
-    labels:
-      - "dependencies"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
