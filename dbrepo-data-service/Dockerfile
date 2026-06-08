@@ -18,7 +18,7 @@ COPY ./services ./services
 RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
-FROM --platform=$BUILDPLATFORM docker.io/bitnamilegacy/java:21 AS runtime
+FROM --platform=$BUILDPLATFORM docker.io/bitnamilegacy/java:24 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ENV DUCKDB_VERSION="1.2.2"
