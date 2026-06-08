@@ -1,0 +1,133 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directories:
+      - "/dbrepo-*-service"
+      - "/dbrepo-*-service/*"
+      - "/lib/java/dbrepo-core"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      maven-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/dbrepo-ui"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "pip"
+    directories:
+      - "/"
+      - "/dbrepo-dashboard-service"
+      - "/dbrepo-metadata-db/migration/16"
+      - "/dbrepo-metadata-db/migration/111"
+      - "/dbrepo-search-service"
+      - "/lib/python"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      pip-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/.jupyter"
+      - "/dbrepo-consumer-service"
+      - "/dbrepo-dashboard-service"
+      - "/dbrepo-data-service"
+      - "/dbrepo-metadata-service"
+      - "/dbrepo-search-service"
+      - "/dbrepo-storage-service/init"
+      - "/dbrepo-ui"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      docker-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "helm"
+    directories:
+      - "/helm/dbrepo"
+      - "/helm/seaweedfs"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      helm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
