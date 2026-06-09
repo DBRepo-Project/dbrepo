@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.14</version>
     </parent>
 
     <organization>
@@ -41,26 +41,26 @@
     <properties>
         <java.version>21</java.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <rabbitmq.version>5.20.0</rabbitmq.version>
-        <commons-io.version>2.17.0</commons-io.version>
-        <commons-validator.version>1.8.0</commons-validator.version>
-        <guava.version>33.0.0-jre</guava.version>
-        <jacoco.version>0.8.12</jacoco.version>
-        <jwt.version>4.3.0</jwt.version>
-        <c3p0.version>0.9.5.5</c3p0.version>
-        <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
+        <rabbitmq.version>5.31.0</rabbitmq.version>
+        <commons-io.version>2.22.0</commons-io.version>
+        <commons-validator.version>1.10.1</commons-validator.version>
+        <guava.version>33.6.0-jre</guava.version>
+        <jacoco.version>0.8.15</jacoco.version>
+        <jwt.version>4.5.2</jwt.version>
+        <c3p0.version>0.14.0</c3p0.version>
+        <c3p0-hibernate.version>6.6.53.Final</c3p0-hibernate.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
-        <testcontainers.version>1.19.1</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <jackson.version>2.15.2</jackson.version>
-        <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>
-        <aws-s3.version>2.25.23</aws-s3.version>
+        <keycloak-testcontainer.version>3.9.1</keycloak-testcontainer.version>
+        <aws-s3.version>2.46.6</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
-        <jena.version>5.5.0</jena.version>
+        <jena.version>5.6.0</jena.version>
         <minio.version>8.5.7</minio.version>
         <redisson.version>3.52.0</redisson.version>
-        <springdoc-openapi.version>2.8.5</springdoc-openapi.version>
-        <keycloak.version>26.0.4</keycloak.version>
+        <springdoc-openapi.version>2.8.17</springdoc-openapi.version>
+        <keycloak.version>26.0.9</keycloak.version>
         <sonar.coverage.jacoco.xmlReportPaths>
             ./report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
