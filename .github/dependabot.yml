@@ -3,8 +3,9 @@ version: 2
 updates:
   - package-ecosystem: "maven"
     directories:
-      - "/dbrepo-*-service"
-      - "/dbrepo-*-service/*"
+      - "/dbrepo-consumer-service"
+      - "/dbrepo-data-service"
+      - "/dbrepo-metadata-service"
       - "/lib/java/dbrepo-core"
     schedule:
       interval: "weekly"
