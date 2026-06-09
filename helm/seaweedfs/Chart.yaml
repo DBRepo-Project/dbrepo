@@ -28,7 +28,7 @@ dependencies:
   repository: oci://registry-1.docker.io/bitnamicharts
   tags:
   - seaweedfs-database
-  version: 16.x.x
+  version: 18.7.3
 - name: common
   repository: oci://registry-1.docker.io/bitnamicharts
   tags:
