@@ -53,6 +53,8 @@ Review does not replace contributor testing. Please make the review process easy
 
 ## Commits and branches
 
+DBRepo uses GitHub Flow. The `main` branch is the only long-lived branch and should always remain deployable. Create a short-lived branch for each change, open a pull request, and merge it back into `main` after review and passing checks.
+
 Use small, logical commits. Each commit should represent one complete step that builds and passes the relevant tests.
 
 DBRepo uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Format commit messages as:
