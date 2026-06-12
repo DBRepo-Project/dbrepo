@@ -42,12 +42,11 @@ When a vulnerability is confirmed, maintainers will coordinate with the reporter
 
 Maintainers are expected to follow secure development workflows:
 
-- protect the default branch
-- require changes through pull requests
-- review pull requests before merging
-- require relevant CI checks to pass before merging
-- enable two-factor authentication for accounts with write access
-- avoid committing secrets, credentials, or private keys
+- The default `main` branch is protected and requires changes through pull requests.
+- Pull requests must be reviewed by another maintainer and have at least one approving review before merging.
+- Pull requests must not be merged if the continuous integration workflows fail.
+- Maintainers with write access must enable two-factor authentication on GitHub.
+- Do not commit secrets, credentials, or private keys.
 
 ## Operator responsibility
 
