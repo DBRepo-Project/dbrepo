@@ -18,7 +18,7 @@ Operators of DBRepo instances are encouraged to subscribe to release notificatio
 
 Please do not report security vulnerabilities in public issues, pull requests, or discussions.
 
-Report vulnerabilities confidentially by email to [dbrepo@ulb.tu-darmstadt.de](mailto:dbrepo@ulb.tu-darmstadt.de).
+Report vulnerabilities confidentially through [GitHub private vulnerability reporting](https://github.com/DBRepo-Project/dbrepo/security/advisories/new) or by email to [dbrepo@ulb.tu-darmstadt.de](mailto:dbrepo@ulb.tu-darmstadt.de).
 
 Include as much of the following information as possible:
 
