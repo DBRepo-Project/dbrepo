@@ -14,18 +14,17 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 with:
 
 ```bash
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.13/install.sh | bash
+curl -sSL curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/refs/heads/main/.scripts/install.sh | bash
 ```
 
 ## Documentation
 
 Find a system description, component documentation and endpoint documentation
-online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/.
+online: [https://dbrepo.github.io](https://dbrepo.github.io).
 
 ## Development
 
-Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md) and
-contact [Prof. Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/) or [Martin Weise](https://ec.tuwien.ac.at/~weise/).
+Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md).
 
 ### Build
 
@@ -87,6 +86,7 @@ We want to thank the following organizations:
 * Bundesministerium für Bildung, Wissenschaft und Forschung (BMBWF) for funding during
   the [call](https://www.bmbwf.gv.at/Themen/HS-Uni/Aktuelles/Ausschreibung--Digitale-und-soziale-Transformation-in-der-Hochschulbildung-.html)
   "Digitale und soziale Transformation in der Hochschulbildung".
+* [Deutsche Forschungsgemeinschaft (DFG)](https://www.dfg.de/) for funding the [DBRepo aaS project](https://gepris.dfg.de/gepris/projekt/562333837).
 
 ## License
 
