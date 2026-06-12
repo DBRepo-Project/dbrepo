@@ -2,11 +2,11 @@
 
 DBRepo welcomes contributions from the community. Whether you report a bug, improve documentation, add tests, or work on a feature, your contribution helps improve the repository for data in databases.
 
-Please read this guide before starting work. It explains how we use GitHub issues and pull requests, how to set up a local development environment, and what we expect from contributions.
+Please read this guide before starting work. It explains how we use issues and pull requests, how to set up a local development environment, and what we expect from contributions.
 
 ## Code of conduct
 
-Be respectful, constructive, and professional in all project spaces. We want DBRepo to be a welcoming project for contributors with different backgrounds, experience levels, and institutional contexts.
+Be respectful, constructive, and professional in all project spaces. We want DBRepo to be a welcoming project for contributors with different backgrounds, experience levels, and institutional contexts. To achieve this, we ask all contributors and maintainers to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Development process
 
@@ -55,7 +55,7 @@ Review does not replace contributor testing. Please make the review process easy
 
 Use small, logical commits. Each commit should represent one complete step that builds and passes the relevant tests.
 
-DBRepo uses Conventional Commits. Format commit messages as:
+DBRepo uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Format commit messages as:
 
 ```text
 <type>(<scope>): <description>
@@ -99,7 +99,7 @@ Local development requires the following tools:
 - Node.js, npm, and Bun for UI work
 - Make
 
-On Debian 12, the base packages can be installed with:
+On Debian-based systems, the base packages can be installed with:
 
 ```shell
 apt install maven openjdk-21-jdk make nodejs npm
