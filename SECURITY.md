@@ -2,7 +2,7 @@
 
 ## Scope
 
-This policy describes how security vulnerabilities should be reported for DBRepo.
+Use this policy to report security vulnerabilities in DBRepo.
 
 It applies to the DBRepo source code, packaged libraries, container images, Helm charts, and deployment configuration maintained in this repository.
 
@@ -10,7 +10,7 @@ For vulnerabilities in third-party dependencies, local deployments, forks, plugi
 
 ## Supported versions
 
-Security fixes are provided for the latest stable DBRepo release line. Older releases generally do not receive security backports. The supported remediation for older deployments is to upgrade to a maintained release.
+We provide security fixes for the latest stable DBRepo release line. Older releases generally do not receive security backports. If you run an older release, upgrade to a maintained release.
 
 Operators of DBRepo instances are encouraged to subscribe to release notifications, review release notes, and keep deployments up to date.
 
@@ -34,9 +34,9 @@ We aim to acknowledge vulnerability reports within 5 working days and provide an
 
 ## Coordinated disclosure
 
-Please allow reasonable time for triage, remediation, release preparation, and operator notification before public disclosure.
+Give maintainers reasonable time to triage, fix, release, and notify operators before public disclosure.
 
-When a vulnerability is confirmed, maintainers will coordinate with the reporter on scope, remediation, release timing, and disclosure. Security fixes are usually published as part of a regular or patch release, depending on severity and urgency.
+When a vulnerability is confirmed, maintainers will confirm the scope, prepare a fix, plan the release, and coordinate disclosure with the reporter. Security fixes are usually published as part of a regular or patch release, depending on severity and urgency.
 
 ## Development practices
 

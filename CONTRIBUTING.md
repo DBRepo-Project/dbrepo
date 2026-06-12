@@ -1,12 +1,12 @@
 # Contributing to DBRepo
 
-DBRepo welcomes contributions from the community. Whether you report a bug, improve documentation, add tests, or work on a feature, your contribution helps improve the repository for data in databases.
+DBRepo welcomes bug reports, documentation improvements, tests, and code changes from the community.
 
-Please read this guide before starting work. It explains how we use issues and pull requests, how to set up a local development environment, and what we expect from contributions.
+This guide explains how to use issues and pull requests, set up a local environment, and prepare contributions for review.
 
 ## Code of conduct
 
-Be respectful, constructive, and professional in all project spaces. We want DBRepo to be a welcoming project for contributors with different backgrounds, experience levels, and institutional contexts. To achieve this, we ask all contributors and maintainers to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+Be respectful, constructive, and professional in all project spaces. Follow our [Code of Conduct](CODE_OF_CONDUCT.md) so DBRepo remains welcoming to contributors with different backgrounds and experience levels.
 
 ## Development process
 
@@ -38,7 +38,7 @@ Do not report security vulnerabilities in public issues. See [Security](#securit
 
 All code changes should be submitted as GitHub pull requests.
 
-Keep pull requests small and focused. A good pull request addresses one feature, bug fix, documentation update, or technical concern. Avoid bundling unrelated refactoring, formatting changes, dependency updates, or generated files with functional changes.
+Keep pull requests small and focused. A good pull request addresses one feature, bug fix, documentation update, or technical concern. Do not bundle unrelated refactoring, formatting, dependency updates, generated files, or functional changes.
 
 Each pull request should:
 
@@ -84,9 +84,9 @@ Do not mix unrelated cleanup with functional changes. If you notice another prob
 
 ## AI-assisted contributions
 
-AI-assisted coding is permitted, but contributors are responsible for everything they submit.
+AI-assisted coding is permitted, but you are responsible for every contribution you submit, including AI-assisted work.
 
-You must review, understand, test, and be able to explain AI-assisted changes. Submitting unverified AI output is not acceptable. If AI tooling was used substantially for a contribution, mention this in the pull request description, including the tools or models used when relevant.
+Review, understand, test, and be able to explain AI-assisted changes. Submitting unverified AI output is not acceptable. If AI tooling shaped a substantial part of the change, mention the tools or models in the pull request description.
 
 ## Development environment
 
@@ -143,7 +143,7 @@ make stop-dev
 
 We practice test-driven development and expect contributors to test their changes. New features and bug fixes should include automated tests where practical.
 
-Changes should maintain at least 80% code coverage for the affected component. Java-based services generate JaCoCo reports in the `report/site/` subdirectory. Python-based services use `coverage`, including the `.coverage` SQLite database and `coverage.txt` log file where applicable.
+Keep coverage at or above 80% for the affected component. Java services write JaCoCo reports to `report/site/`. Python services use `coverage` and may produce `.coverage` and `coverage.txt`.
 
 Run the tests relevant to your change before opening a pull request:
 
