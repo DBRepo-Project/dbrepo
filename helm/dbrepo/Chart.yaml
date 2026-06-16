@@ -88,6 +88,6 @@ dependencies:
     condition: dashboarddb.enabled
   - name: valkey
     alias: cachedb
-    version: 5.0.6
+    version: 6.1.9
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: cachedb.enabled
