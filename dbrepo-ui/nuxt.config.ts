@@ -116,7 +116,7 @@ export default defineNuxtConfig({
     },
     storage: {
       oidc: {
-        host: 'cache-db',
+        host: 'cache-db-primary',
         port: 6379,
         tls: false,
         base: 'oidc',

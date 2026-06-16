@@ -1,6 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ColumnNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ImageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -16,9 +22,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -51,6 +57,42 @@ public class MariaDbMapperUnitTest extends BaseTest {
 
         /* test */
         assertEquals(expected, mariaDbMapper.nameToInternalName(input));
+    }
+
+    @Test
+    public void tableCreateDtoToCreateTableRawQuery_descriptionWithForeignKey_succeeds() {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Weather Measurement")
+                .description("Measurements with station reference")
+                .isPublic(true)
+                .isSchemaPublic(true)
+                .columns(List.of(CreateTableColumnDto.builder()
+                                .name("measurement_id")
+                                .type(ColumnTypeDto.BIGINT)
+                                .nullAllowed(false)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("station_id")
+                                .type(ColumnTypeDto.BIGINT)
+                                .nullAllowed(false)
+                                .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .primaryKey(Set.of("measurement_id"))
+                        .foreignKeys(List.of(CreateForeignKeyDto.builder()
+                                .columns(List.of("station_id"))
+                                .referencedTable("Station")
+                                .referencedColumns(List.of("station_id"))
+                                .onDelete(ReferenceTypeDto.CASCADE)
+                                .onUpdate(ReferenceTypeDto.CASCADE)
+                                .build()))
+                        .uniques(List.of())
+                        .checks(Set.of())
+                        .build())
+                .build();
+
+        /* test */
+        assertEquals("CREATE TABLE `weather`.`weather_measurement` (`measurement_id` BIGINT(255) NOT NULL, `station_id` BIGINT(255) NOT NULL, PRIMARY KEY (`measurement_id`), FOREIGN KEY (`station_id`) REFERENCES `station` (`station_id`) ON DELETE CASCADE ON UPDATE CASCADE) WITH SYSTEM VERSIONING COMMENT \"Measurements with station reference\";",
+                mariaDbMapper.tableCreateDtoToCreateTableRawQuery("weather", request));
     }
 
     @Test
@@ -118,6 +160,85 @@ public class MariaDbMapperUnitTest extends BaseTest {
 
         /* test */
         assertEquals("select `weather`.`weather_aus`.`id`, `weather`.`sensor`.`id` as `sensor_id` from `sensor`, `weather_aus`", mariaDbMapper.subsetDtoToNormalizedQuery(context, DATABASE_1_CACHE, request));
+    }
+
+    @Test
+    public void subsetDtoToNormalizedQuery_multipleFilters_succeeds() throws ColumnNotFoundException, ImageNotFoundException {
+        final SubsetDto request = SubsetDto.builder()
+                .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_1_ID)))
+                .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_1_1_ID).build())))
+                .filters(List.of(FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_1_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("1")
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.AND)
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_3_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("Vienna")
+                                .build()))
+                .build();
+
+        /* test */
+        assertEquals("select `weather`.`weather_aus`.`id` from `weather_aus` where (`weather`.`weather_aus`.`id` = '1' and `weather`.`weather_aus`.`location` = 'Vienna')", mariaDbMapper.subsetDtoToNormalizedQuery(context, DATABASE_1_CACHE, request));
+    }
+
+    @Test
+    public void subsetDtoToNormalizedQuery_fiveFilters_succeeds() throws ColumnNotFoundException, ImageNotFoundException {
+        final SubsetDto request = SubsetDto.builder()
+                .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_1_ID)))
+                .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_1_1_ID).build())))
+                .filters(List.of(FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_1_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("1")
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.AND)
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_2_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("2024-01-01")
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.AND)
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_3_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("Vienna")
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.AND)
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_4_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("10")
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.AND)
+                                .build(),
+                        FilterDto.builder()
+                                .type(FilterTypeDto.WHERE)
+                                .columnId(COLUMN_1_5_ID)
+                                .operatorId(IMAGE_1_OPERATORS_2_ID)
+                                .value("0")
+                                .build()))
+                .build();
+
+        /* test */
+        assertEquals("select `weather`.`weather_aus`.`id` from `weather_aus` where (`weather`.`weather_aus`.`id` = '1' and `weather`.`weather_aus`.`date` = '2024-01-01' and `weather`.`weather_aus`.`location` = 'Vienna' and `weather`.`weather_aus`.`mintemp` = '10' and `weather`.`weather_aus`.`rainfall` = '0')", mariaDbMapper.subsetDtoToNormalizedQuery(context, DATABASE_1_CACHE, request));
     }
 
     @Test

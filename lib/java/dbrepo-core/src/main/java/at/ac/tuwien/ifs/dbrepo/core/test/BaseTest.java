@@ -2714,7 +2714,7 @@ public class BaseTest {
             .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_5_ID)))
             .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_9_2_ID).build(),
                     SubsetColumnDto.builder().id(COLUMN_9_3_ID).build())))
-            .filters(new LinkedHashSet<>(Set.of(FilterDto.builder()
+            .filters(new LinkedList<>(List.of(FilterDto.builder()
                     .columnId(COLUMN_9_1_ID)
                     .operatorId(IMAGE_1_OPERATORS_2_ID)
                     .value("Fuji")
@@ -3152,7 +3152,7 @@ public class BaseTest {
             .datasourceIds(new LinkedHashSet<>(Set.of(TABLE_5_ID)))
             .columns(new LinkedHashSet<>(Set.of(SubsetColumnDto.builder().id(COLUMN_8_1_ID).build(),
                     SubsetColumnDto.builder().id(COLUMN_8_2_ID).build())))
-            .filters(new LinkedHashSet<>(Set.of(FilterDto.builder()
+            .filters(new LinkedList<>(List.of(FilterDto.builder()
                     .columnId(COLUMN_8_2_ID)
                     .operatorId(IMAGE_1_OPERATORS_2_ID)
                     .value("0")

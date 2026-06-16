@@ -5,7 +5,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Annotated
 
-from pydantic import BaseModel, PlainSerializer
+from pydantic import BaseModel, PlainSerializer, model_validator
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -1109,6 +1109,8 @@ class Column(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
+    concept_uri: Optional[str] = None
+    unit_uri: Optional[str] = None
     enums: Optional[List[ColumnEnum]] = field(default_factory=list)
     sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
@@ -1119,6 +1121,19 @@ class Column(BaseModel):
     val_min: Optional[float] = None
     val_max: Optional[float] = None
     std_dev: Optional[float] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_semantic_fields(cls, data):
+        if isinstance(data, dict):
+            if "conceptUri" in data and "concept_uri" not in data:
+                data["concept_uri"] = data["conceptUri"]
+            if "unitUri" in data and "unit_uri" not in data:
+                data["unit_uri"] = data["unitUri"]
+            if isinstance(data.get("unit"), str):
+                data.setdefault("unit_uri", data["unit"])
+                data.pop("unit")
+        return data
 
 
 class ViewColumn(BaseModel):
@@ -1136,10 +1151,25 @@ class ViewColumn(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
+    concept_uri: Optional[str] = None
+    unit_uri: Optional[str] = None
     enums: Optional[List[ColumnEnum]] = field(default_factory=list)
     sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
     length: Optional[int] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_semantic_fields(cls, data):
+        if isinstance(data, dict):
+            if "conceptUri" in data and "concept_uri" not in data:
+                data["concept_uri"] = data["conceptUri"]
+            if "unitUri" in data and "unit_uri" not in data:
+                data["unit_uri"] = data["unitUri"]
+            if isinstance(data.get("unit"), str):
+                data.setdefault("unit_uri", data["unit"])
+                data.pop("unit")
+        return data
 
 
 class Table(BaseModel):

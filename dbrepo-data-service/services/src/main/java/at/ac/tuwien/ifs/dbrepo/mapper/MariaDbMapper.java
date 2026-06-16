@@ -478,12 +478,6 @@ public interface MariaDbMapper {
                                 .append(ck)
                                 .append(")"));
             }
-            if (data.getDescription() != null && !data.getDescription().isBlank()) {
-                /* create table comments */
-                stringBuilder.append(" COMMENT \"")
-                        .append(data.getDescription())
-                        .append("\"");
-            }
         }
         stringBuilder.append(") WITH SYSTEM VERSIONING");
         if (data.getDescription() != null && !data.getDescription().isBlank()) {
@@ -979,20 +973,25 @@ public interface MariaDbMapper {
             return step.where();
         }
         SelectConditionStep<Record> conditions = step.where();
-        FilterTypeDto next = null;
-        final int[] idx = new int[]{0};
+        FilterTypeDto connector = null;
+        boolean hasCondition = false;
         for (FilterDto filter : data.getFilters()) {
+            if (filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR)) {
+                connector = filter.getType();
+                continue;
+            }
             final at.ac.tuwien.ifs.dbrepo.api.Column column = columnIdToColumn(database, filter.getColumnId());
-            if (idx[0]++ == 0) {
+            if (!hasCondition) {
                 conditions = step.where(filterDtoToCondition(database, column, filter));
-            } else if (next != null) {
-                if (next.equals(FilterTypeDto.OR)) {
+                hasCondition = true;
+            } else if (connector != null) {
+                if (connector.equals(FilterTypeDto.OR)) {
                     conditions = conditions.or(filterDtoToCondition(database, column, filter));
-                } else if (next.equals(FilterTypeDto.AND)) {
+                } else if (connector.equals(FilterTypeDto.AND)) {
                     conditions = conditions.and(filterDtoToCondition(database, column, filter));
                 }
             }
-            next = filter.getType();
+            connector = null;
         }
         return conditions;
     }
