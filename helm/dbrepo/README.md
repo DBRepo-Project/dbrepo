@@ -73,21 +73,19 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Metadata Database
 
-| Name                                     | Description                                                                                                                             | Value                                                                  |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `metadatadb.enabled`                     | Enable the Metadata Database.                                                                                                           | `true`                                                                 |
-| `metadatadb.host`                        | The hostname for the microservices.                                                                                                     | `metadata-db`                                                          |
-| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
-| `metadatadb.rootUser.user`               | The root username.                                                                                                                      | `root`                                                                 |
-| `metadatadb.rootUser.password`           | The root user password.                                                                                                                 | `dbrepo`                                                               |
-| `metadatadb.db.name`                     | The database name.                                                                                                                      | `dbrepo`                                                               |
-| `metadatadb.galera.mariabackup.user`     | The database backup username.                                                                                                           | `backup`                                                               |
-| `metadatadb.galera.mariabackup.password` | The database backup user password                                                                                                       | `backup`                                                               |
-| `metadatadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                          | `""`                                                                   |
-| `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                        | `{}`                                                                   |
-| `metadatadb.resourcesPreset`             | The container resource preset                                                                                                           | `xlarge`                                                               |
-| `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                              | `true`                                                                 |
-| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                 | `3`                                                                    |
+| Name                              | Description                                                    | Value         |
+| --------------------------------- | -------------------------------------------------------------- | ------------- |
+| `metadatadb.enabled`              | Enable the Metadata Database.                                  | `true`        |
+| `metadatadb.host`                 | The hostname for the microservices.                            | `metadata-db` |
+| `metadatadb.rootUser.user`        | The root username.                                             | `root`        |
+| `metadatadb.rootUser.password`    | The root user password.                                        | `dbrepo`      |
+| `metadatadb.db.name`              | The database name.                                             | `dbrepo`      |
+| `metadatadb.replication.password` | The replication password                                       | `backup`      |
+| `metadatadb.jdbcExtraArgs`        | The extra arguments for JDBC connections in the microservices. | `""`          |
+| `metadatadb.resourcesPreset`      | The container resource preset                                  | `xlarge`      |
+| `metadatadb.persistence.enabled`  | Enable persistent storage.                                     | `true`        |
+| `metadatadb.persistence.size`     | Persistent storage size.                                       | `8Gi`         |
+| `metadatadb.replicaCount`         | The number of cluster nodes, should be uneven i.e. 2n+1        | `3`           |
 
 ### Dashboard Database Enable the Dashboard Database.
 
@@ -119,28 +117,26 @@ The command removes all the Kubernetes components associated with the chart and 
 | `cachedb.enabled`       | Enable the Cache Database.                                               | `true`             |
 | `cachedb.flavor`        | The provider flavor of the Cache Database for Redisson (as Java library) | `valkey`           |
 | `cachedb.endpoint`      | The endpoint for the microservices                                       | `cache-db-primary` |
+| `cachedb.port`          | The port for the microservices.                                          | `6379`             |
 | `cachedb.auth.password` | The Valkey password                                                      | `valkey`           |
 
 ### Data Database
 
-| Name                                 | Description                                                                                                                            | Value                                                                  |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `datadb.enabled`                     | Enable the Auth Service.                                                                                                               | `true`                                                                 |
-| `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
-| `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
-| `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
-| `datadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
-| `datadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
-| `datadb.db.user`                     | The readonly username.                                                                                                                 | `readonly`                                                             |
-| `datadb.db.password`                 | The readonly password.                                                                                                                 | `readonly`                                                             |
-| `datadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
-| `datadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
-| `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
-| `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
-| `datadb.resourcesPreset`             | The container resource preset                                                                                                          | `xlarge`                                                               |
-| `datadb.configurationConfigMap`      | The configmap name holding the `my.cnf` key that defines the mariadb configuration.                                                    | `data-db-config`                                                       |
-| `datadb.initdbScriptsConfigMap`      | The setup data to load into the database on first start.                                                                               | `data-db-scripts-config`                                               |
-| `datadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
+| Name                          | Description                                                    | Value      |
+| ----------------------------- | -------------------------------------------------------------- | ---------- |
+| `datadb.enabled`              | Enable the Auth Service.                                       | `true`     |
+| `datadb.host`                 | The hostname for the microservices.                            | `data-db`  |
+| `datadb.rootUser.user`        | The root username.                                             | `root`     |
+| `datadb.rootUser.password`    | The root user password.                                        | `dbrepo`   |
+| `datadb.db.name`              | The database name.                                             | `dbrepo`   |
+| `datadb.db.user`              | The readonly username.                                         | `readonly` |
+| `datadb.db.password`          | The readonly password.                                         | `readonly` |
+| `datadb.replication.password` | The database replication password                              | `backup`   |
+| `datadb.jdbcExtraArgs`        | The extra arguments for JDBC connections in the microservices. | `""`       |
+| `datadb.replicaCount`         | The number of cluster nodes, should be uneven i.e. 2n+1        | `3`        |
+| `datadb.resourcesPreset`      | The container resource preset                                  | `xlarge`   |
+| `datadb.persistence.enabled`  | Enable persistent storage.                                     | `true`     |
+| `datadb.persistence.size`     | Persistent storage size.                                       | `8Gi`      |
 
 ### Search Database
 
