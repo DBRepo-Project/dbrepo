@@ -55,11 +55,12 @@ metadatadb:
       repository: bitnamilegacy/mysqld-exporter
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
     enabled: true
+  ## @param metadatadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
   persistence:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
     enabled: true
-    ## @param metadatadb.persistence.enabled Size of persistent storage.
+    ## @param metadatadb.persistence.size Persistent storage size.
     size: 8Gi
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
@@ -246,7 +247,7 @@ datadb:
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true
-    ## @param datadb.persistence.enabled Size of persistent storage.
+    ## @param datadb.persistence.size Persistent storage size.
     size: 8Gi
 
 ## @section Search Database
