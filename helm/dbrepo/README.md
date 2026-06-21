@@ -23,17 +23,12 @@ curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-servic
 ## Prerequisites
 
 * Kubernetes 1.24+
+* MariaDB Community Operator 26+
 * Optional PV provisioner support in the underlying infrastructure (for persistence).
 * Optional ingress support in the underlying infrastructure:
   e.g. [NGINX](https://docs.nginx.com/nginx-ingress-controller/) (for the UI).
 * Optional certificate provisioner support in the underlying infrastructure:
   e.g. [cert-manager](https://cert-manager.io/) (for production use).
-
-## Database Configuration
-
-Note that the default configuration uses a lower memory bound (2GB) than the default MariaDB memory bound (4GB). We
-consequently decreased the `innodb_buffer_pool_size` to 1430MB (70% of the available memory). You need to increase this
-variable when you increase the available Pod memory for performance.
 
 ## Installing the Chart
 

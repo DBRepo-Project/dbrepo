@@ -1,0 +1,34 @@
+{{- if .Values.datadb.enabled }}
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: data-db-readonly-user
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  mariaDbRef:
+    name: data-db
+  name: {{ .Values.datadb.db.user }}
+  passwordSecretKeyRef:
+    name: data-db-secret
+    key: READONLY_USER_PASSWORD
+  host: "%"
+  cleanupPolicy: Delete
+  requeueInterval: 10h
+  retryInterval: 30s
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: data-db-readonly-grant
+spec:
+  mariaDbRef:
+    name: data-db
+  privileges:
+    - "SELECT"
+  database: "dbrepo"
+  table: "*"
+  username: {{ .Values.datadb.db.user }}
+  grantOption: true
+  host: "%"
+{{- end }}

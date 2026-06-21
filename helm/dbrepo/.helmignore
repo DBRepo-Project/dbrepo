@@ -23,3 +23,5 @@ tmpcharts-*
 *.tmproj
 # Changelog
 CHANGELOG.md
+# Other
+build/

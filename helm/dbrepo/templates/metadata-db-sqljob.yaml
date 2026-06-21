@@ -1,0 +1,36 @@
+{{- if .Values.metadatadb.enabled }}
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: SqlJob
+metadata:
+  name: 01-setup-schema
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  mariaDbRef:
+    name: metadata-db
+  username: {{ .Values.datadb.rootUser.user }}
+  passwordSecretKeyRef:
+    name: metadata-db-secret
+    key: METADATA_DB_PASSWORD
+  database: dbrepo
+  sqlConfigMapKeyRef:
+    name: metadata-db-config
+    key: 01-setup-schema.sql
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: SqlJob
+metadata:
+  name: 02-setup-data
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  mariaDbRef:
+    name: metadata-db
+  username: {{ .Values.datadb.rootUser.user }}
+  passwordSecretKeyRef:
+    name: metadata-db-secret
+    key: METADATA_DB_PASSWORD
+  database: dbrepo
+  sqlConfigMapKeyRef:
+    name: metadata-db-config
+    key: 02-setup-data.sql
+{{- end }}
