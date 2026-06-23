@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 defaults:
   run:
@@ -20,35 +21,48 @@ env:
   DOC_VERSION: '1.13'
   CHART_VERSION: '1.13.4'
   REGCLIENT_VERSION: '0.8.2'
+  DOCKERHUB_REGISTRY: 'docker.io'
+  DOCKERHUB_OCI_REGISTRY: 'registry-1.docker.io'
+  GHCR_REGISTRY: 'ghcr.io'
 
 jobs:
   release-images:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     env:
-      REPOSITORY_URL: ${{ secrets.CI_REGISTRY2_URL }}
+      REPOSITORY_URL: docker.io/dbrepo
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: corretto
-          java-version: '21'
-          cache: maven
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install tooling
+      - name: Login to GHCR
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build pipenv
-      - name: Login to registries
+          echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
+      - name: Login to Docker Hub
         run: |
-          echo '${{ secrets.CI_REGISTRY_PASSWORD }}' | docker login --username '${{ secrets.CI_REGISTRY_USER }}' --password-stdin '${{ secrets.CI_REGISTRY_URL }}'
-          echo '${{ secrets.CI_REGISTRY2_PASSWORD }}' | docker login --username '${{ secrets.CI_REGISTRY2_USER }}' --password-stdin '${{ secrets.CI_REGISTRY2_URL }}'
-      - name: Publish images
+          echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login --username '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin '${{ env.DOCKERHUB_REGISTRY }}'
+      - name: Pull tested images from GHCR
         run: |
-          bash ./.scripts/build-java-lib.sh
-          bash ./.scripts/build-python-lib.sh
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          GHCR_PREFIX="${GHCR_REGISTRY}/${OWNER_LC}/dbrepo"
+          SHA_TAG="sha-${GITHUB_SHA}"
+
+          for mapping in \
+            "dbrepo-consumer-service consumer-service" \
+            "dbrepo-dashboard-service dashboard-service" \
+            "dbrepo-dashboard-service-init dashboard-service-init" \
+            "dbrepo-data-service data-service" \
+            "dbrepo-metadata-service metadata-service" \
+            "dbrepo-search-service search-service" \
+            "dbrepo-search-service-init search-service-init" \
+            "dbrepo-storage-service-init storage-service-init" \
+            "dbrepo-ui ui" \
+            "starter-notebook starter-notebook"
+          do
+            set -- $mapping
+            docker pull "${GHCR_PREFIX}/$2:${SHA_TAG}"
+            docker tag "${GHCR_PREFIX}/$2:${SHA_TAG}" "$1:latest"
+          done
+      - name: Publish images to Docker Hub
+        run: |
           make release-images
           APP_VERSION=$DOC_VERSION make release-images
           make release-jupyter-image
@@ -64,10 +78,9 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/sigstore/helm-sigstore/main/scripts/install.sh | bash
           helm plugin install https://github.com/losisin/helm-values-schema-json.git
-      - name: Login to registries
+      - name: Login to Docker Hub OCI registry
         run: |
-          echo '${{ secrets.CI_REGISTRY_PASSWORD }}' | helm registry login --username '${{ secrets.CI_REGISTRY_USER }}' --password-stdin '${{ secrets.CI_REGISTRY_URL }}'
-          echo '${{ secrets.CI_REGISTRY2_PASSWORD }}' | helm registry login --username '${{ secrets.CI_REGISTRY2_USER }}' --password-stdin '${{ secrets.CI_REGISTRY2_URL }}'
+          echo '${{ secrets.DOCKERHUB_TOKEN }}' | helm registry login --username '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin '${{ env.DOCKERHUB_OCI_REGISTRY }}'
       - name: Prepare signing keys
         run: |
           echo '${{ secrets.CI_GPG_SECRING }}' | base64 -d > ~/secring.gpg
@@ -78,7 +91,7 @@ jobs:
           sed -ri "s/^(appVersion:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
           make build-helm
           helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build
-          helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ secrets.CI_REGISTRY2_URL }}/helm
+          helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.DOCKERHUB_OCI_REGISTRY }}/dbrepo/helm
           helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz
 
   release-libs:
@@ -111,7 +124,7 @@ jobs:
     if: startsWith(github.ref_name, 'release-')
     runs-on: ubuntu-latest
     env:
-      CI_REGISTRY2_URL: ${{ secrets.CI_REGISTRY2_URL }}
+      CI_REGISTRY2_URL: docker.io/dbrepo
     steps:
       - uses: actions/checkout@v4
       - name: Install regctl
