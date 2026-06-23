@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - 'release-*'
+    tags:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  APP_VERSION: '1.13.4'
+  DOC_VERSION: '1.13'
+  CHART_VERSION: '1.13.4'
+  REGCLIENT_VERSION: '0.8.2'
+
+jobs:
+  release-images:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    env:
+      REPOSITORY_URL: ${{ secrets.CI_REGISTRY2_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build pipenv
+      - name: Login to registries
+        run: |
+          echo '${{ secrets.CI_REGISTRY_PASSWORD }}' | docker login --username '${{ secrets.CI_REGISTRY_USER }}' --password-stdin '${{ secrets.CI_REGISTRY_URL }}'
+          echo '${{ secrets.CI_REGISTRY2_PASSWORD }}' | docker login --username '${{ secrets.CI_REGISTRY2_USER }}' --password-stdin '${{ secrets.CI_REGISTRY2_URL }}'
+      - name: Publish images
+        run: |
+          bash ./.scripts/build-java-lib.sh
+          bash ./.scripts/build-python-lib.sh
+          make release-images
+          APP_VERSION=$DOC_VERSION make release-images
+          make release-jupyter-image
+          APP_VERSION=$DOC_VERSION make release-jupyter-image
+
+  release-helm:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Install plugins
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/sigstore/helm-sigstore/main/scripts/install.sh | bash
+          helm plugin install https://github.com/losisin/helm-values-schema-json.git
+      - name: Login to registries
+        run: |
+          echo '${{ secrets.CI_REGISTRY_PASSWORD }}' | helm registry login --username '${{ secrets.CI_REGISTRY_USER }}' --password-stdin '${{ secrets.CI_REGISTRY_URL }}'
+          echo '${{ secrets.CI_REGISTRY2_PASSWORD }}' | helm registry login --username '${{ secrets.CI_REGISTRY2_USER }}' --password-stdin '${{ secrets.CI_REGISTRY2_URL }}'
+      - name: Prepare signing keys
+        run: |
+          echo '${{ secrets.CI_GPG_SECRING }}' | base64 -d > ~/secring.gpg
+          echo '${{ secrets.CI_GPG_PUBRING }}' | base64 -d > ~/pubring.gpg
+      - name: Publish chart
+        run: |
+          sed -ri "s/^(version:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
+          sed -ri "s/^(appVersion:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
+          make build-helm
+          helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build
+          helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ secrets.CI_REGISTRY2_URL }}/helm
+          helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz
+
+  release-libs:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Publish Python package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build pipenv twine
+          PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
+          echo '${{ secrets.CI_PIPYRC }}' | base64 -d > ./.pypirc
+          python -m build ./lib/python
+          python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*
+
+  verify-install-script:
+    if: startsWith(github.ref_name, 'release-')
+    runs-on: ubuntu-latest
+    env:
+      SKIP_CHECKS: '1'
+    steps:
+      - name: Verify install script
+        run: curl -sSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/release-${DOC_VERSION}/.scripts/install.sh | bash | grep 'Success!'
+
+  verify-images:
+    if: startsWith(github.ref_name, 'release-')
+    runs-on: ubuntu-latest
+    env:
+      CI_REGISTRY2_URL: ${{ secrets.CI_REGISTRY2_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install regctl
+        run: |
+          sudo curl -fsSL https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64 -o /usr/local/bin/regctl
+          sudo chmod +x /usr/local/bin/regctl
+      - name: Verify supported images
+        run: bash ./.gitlab/check-supported-images.sh
