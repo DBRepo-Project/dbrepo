@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -155,12 +156,12 @@ public class EndpointValidatorUnitTest extends BaseTest {
 
         /* mock */
         final SubsetDto request = validSubset()
-                .filters(new LinkedHashSet<>(Set.of(FilterDto.builder()
+                .filters(List.of(FilterDto.builder()
                         .type(FilterTypeDto.WHERE)
                         .columnId(null)
                         .operatorId(UUID.randomUUID())
                         .value("1")
-                        .build())))
+                        .build()))
                 .build();
 
         /* test */
