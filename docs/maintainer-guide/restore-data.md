@@ -96,7 +96,7 @@ chance of a fast incremental State Transfer (IST) for the other nodes.
 helm upgrade \
     --install \
     my-release \
-    "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" \
+    "oci://registry-1.docker.io/dbrepo/helm/dbrepo" \
     --namespace $NAMESPACE \
     --set datadb.rootUser.password=XXXX \
     --set datadb.galera.mariabackup.password=YYYY \
@@ -121,7 +121,7 @@ Then remove the forced bootstrapping.
 helm upgrade \
     --install \
     my-release \
-    "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" \
+    "oci://registry-1.docker.io/dbrepo/helm/dbrepo" \
     --namespace $NAMESPACE \
     --set datadb.rootUser.password=XXXX \
     --set datadb.galera.mariabackup.password=YYYY \

@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.10.0`](https://hub.docker.com/r/dbrepo/dashboard-service)
+    Image: [`docker.io/dbrepo/dashboard-service:1.10.0`](https://hub.docker.com/r/dbrepo/dashboard-service)
 
     * Health: `http://<container_ip>:8080/api/dashboard/health`
     * Prometheus: `http://<container_ip>:8080/metrics`
