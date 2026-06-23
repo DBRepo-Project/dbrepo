@@ -1,48 +1,63 @@
 #!/bin/bash
 DOCKER_OPTS="--log-level ERROR"
-S3CMD_OPTS="--config=/app/config/.s3cfg"
+S3CMD_CONFIG="$(pwd)/.s3cfg"
+S3CMD_OPTS="--config=${S3CMD_CONFIG}"
 
 export S3_ACCESS_KEY_ID="seaweedfsadmin"
 export S3_BUCKET="dbrepo"
 export S3_SECRET_ACCESS_KEY="seaweedfsadmin"
 export STORAGE_ENDPOINT="localhost:9000"
 
+function wait_for_init () {
+  local attempts=30
+  local status
+
+  while [[ $attempts -gt 0 ]]; do
+    status=$(docker inspect -f '{{.State.Status}}' dbrepo-storage-service-init 2>/dev/null || true)
+    if [[ "$status" == "exited" ]]; then
+      local exit_code
+      exit_code=$(docker inspect -f '{{.State.ExitCode}}' dbrepo-storage-service-init)
+      if [[ "$exit_code" -ne 0 ]]; then
+        docker logs dbrepo-storage-service-init
+        echo "[ERROR] storage init container exited with ${exit_code}" > /dev/stderr
+        exit 1
+      fi
+      return 0
+    fi
+    sleep 2
+    attempts=$((attempts - 1))
+  done
+
+  docker logs dbrepo-storage-service-init || true
+  echo "[ERROR] storage init container did not finish in time" > /dev/stderr
+  exit 1
+}
+
 function clean () {
   echo "[DEBUG] Shutting down environment ..."
-  docker $DOCKER_OPTS compose down
-  docker $DOCKER_OPTS rm $(docker volume ls -q) || true
-  echo "[DEBUG] Starting new environment ..."
-  docker $DOCKER_OPTS compose up -d dbrepo-storage-service-init
-  echo "[DEBUG] Waiting 10s ..."
-  sleep 10
+  docker $DOCKER_OPTS compose down -v --remove-orphans || true
+}
+
+function run_init () {
+  echo "[DEBUG] Starting storage init container ..."
+  docker $DOCKER_OPTS compose up -d --build --force-recreate dbrepo-storage-service-init
+  wait_for_init
 }
 
 # BeforeAll
 clean
 cat <<EOF > .s3cfg
-{
-  "identities": [
-    {
-      "name": "default",
-      "credentials": [
-        {
-          "accessKey": "$S3_ACCESS_KEY_ID",
-          "secretKey": "$S3_SECRET_ACCESS_KEY"
-        }
-      ],
-      "actions": [
-        "Read",
-        "Write",
-        "List"
-      ]
-    }
-  ]
-}
+access_key = ${S3_ACCESS_KEY_ID}
+secret_key = ${S3_SECRET_ACCESS_KEY}
+host_base = ${STORAGE_ENDPOINT}
+host_bucket = ${S3_BUCKET}
+use_https = False
+signature_v2 = False
 EOF
 
 # Test
 echo "[DEBUG] run test init_succeeds"
-bash ./dbrepo-storage-service/init/init.sh
+run_init
 if ! s3cmd $S3CMD_OPTS ls s3:// | grep -q "s3://${S3_BUCKET}"; then
   echo "[ERROR] Failed to find bucket s3://${S3_BUCKET}" > /dev/stderr
   exit 1
@@ -50,7 +65,7 @@ fi
 
 # Test
 echo "[DEBUG] run test init_idempotent_succeeds"
-bash ./dbrepo-storage-service/init/init.sh
+run_init
 if ! s3cmd $S3CMD_OPTS ls s3:// | grep -q "s3://${S3_BUCKET}"; then
   echo "[ERROR] Failed to find bucket s3://${S3_BUCKET}" > /dev/stderr
   exit 1
@@ -84,4 +99,5 @@ if [[ $RES -ne 1 ]]; then
 fi
 
 echo "[INFO] Finished successfully"
+clean
 exit 0
