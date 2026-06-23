@@ -77,18 +77,13 @@ jobs:
       - name: Login to GHCR OCI registry
         run: |
           echo '${{ github.token }}' | helm registry login --username '${{ github.actor }}' --password-stdin '${{ env.GHCR_REGISTRY }}'
-      - name: Prepare signing keys
-        run: |
-          echo '${{ secrets.CI_GPG_SECRING }}' | base64 -d > ~/secring.gpg
-          echo '${{ secrets.CI_GPG_PUBRING }}' | base64 -d > ~/pubring.gpg
       - name: Publish chart
         run: |
           sed -ri "s/^(version:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
           sed -ri "s/^(appVersion:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
           make build-helm
-          helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build
+          helm package ./helm/dbrepo --destination ./build
           helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.GHCR_HELM_PREFIX }}
-          helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz
 
   release-libs:
     if: startsWith(github.ref, 'refs/tags/')
