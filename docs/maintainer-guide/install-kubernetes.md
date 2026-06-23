@@ -12,7 +12,7 @@ for your deployment and update the variables, especially `hostname`.
 ```shell
 helm upgrade --install dbrepo \
   -n dbrepo \
-  "oci://registry-1.docker.io/dbrepo/helm/dbrepo" \
+  "oci://ghcr.io/dbrepo-project/helm/dbrepo" \
   --values ./values.yaml \
   --version "1.13.4" \
   --create-namespace \

@@ -34,5 +34,5 @@ release-jupyter-image: tag-jupyter-image
 
 .PHONY: release-helm
 release-helm: gen-helm-doc ## Release the DBRepo and DBRepo MariaDB Galera Helm charts.
-	helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://registry-1.docker.io/dbrepo/helm
-	helm push ./build/dbrepo-mariadb-galera-${CHART_VERSION}.tgz oci://registry-1.docker.io/dbrepo/helm
+	helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://ghcr.io/dbrepo-project/helm
+	helm push ./build/dbrepo-mariadb-galera-${CHART_VERSION}.tgz oci://ghcr.io/dbrepo-project/helm

@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/dbrepo/dashboard-service:1.10.0`](https://hub.docker.com/r/dbrepo/dashboard-service)
+    Image: [`ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.10.0`](https://github.com/orgs/DBRepo-Project/packages)
 
     * Health: `http://<container_ip>:8080/api/dashboard/health`
     * Prometheus: `http://<container_ip>:8080/metrics`

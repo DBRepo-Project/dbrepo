@@ -17,6 +17,8 @@ env:
   APP_VERSION: '1.13.4'
   DUCKDB_VERSION: '1.2.2'
   GHCR_REGISTRY: 'ghcr.io'
+  GHCR_NAMESPACE: 'dbrepo-project'
+  GHCR_IMAGE_PREFIX: 'ghcr.io/dbrepo-project/dbrepo'
 
 jobs:
   lint-compose:
@@ -207,8 +209,6 @@ jobs:
           make build-jupyter-image
       - name: Push SHA-tagged images to GHCR
         run: |
-          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
-          GHCR_PREFIX="${GHCR_REGISTRY}/${OWNER_LC}/dbrepo"
           SHA_TAG="sha-${GITHUB_SHA}"
 
           for mapping in \
@@ -224,6 +224,6 @@ jobs:
             "starter-notebook starter-notebook"
           do
             set -- $mapping
-            docker tag "$1:latest" "${GHCR_PREFIX}/$2:${SHA_TAG}"
-            docker push "${GHCR_PREFIX}/$2:${SHA_TAG}"
+            docker tag "$1:latest" "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
+            docker push "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
           done

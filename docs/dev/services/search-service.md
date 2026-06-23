@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/dbrepo/search-service:1.11.0`](https://hub.docker.com/r/dbrepo/search-service)
+    Image: [`ghcr.io/dbrepo-project/dbrepo/search-service:1.11.0`](https://github.com/orgs/DBRepo-Project/packages)
 
     * Health: `http://<container_ip>:8080/api/search/health`
     * Prometheus: `http://<container_ip>:8080/metrics`

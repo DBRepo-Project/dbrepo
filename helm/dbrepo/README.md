@@ -11,7 +11,7 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
-helm install my-release "oci://registry-1.docker.io/dbrepo/helm/dbrepo" --values ./overlay-values.yaml --version "1.13.4"
+helm install my-release "oci://ghcr.io/dbrepo-project/helm/dbrepo" --values ./overlay-values.yaml --version "1.13.4"
 ```
 
 You can auto-generate the `overlay-values.yaml` file with random secrets:
@@ -40,7 +40,7 @@ variable when you increase the available Pod memory for performance.
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://registry-1.docker.io/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.13.4"
+helm install my-release "oci://ghcr.io/dbrepo-project/helm/dbrepo" --values ./values.yaml --version "1.13.4"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the

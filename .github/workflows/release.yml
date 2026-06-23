@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: read
-  packages: read
+  packages: write
 
 defaults:
   run:
@@ -21,28 +21,24 @@ env:
   DOC_VERSION: '1.13'
   CHART_VERSION: '1.13.4'
   REGCLIENT_VERSION: '0.8.2'
-  DOCKERHUB_REGISTRY: 'docker.io'
-  DOCKERHUB_OCI_REGISTRY: 'registry-1.docker.io'
   GHCR_REGISTRY: 'ghcr.io'
+  GHCR_NAMESPACE: 'dbrepo-project'
+  GHCR_IMAGE_PREFIX: 'ghcr.io/dbrepo-project/dbrepo'
+  GHCR_HELM_PREFIX: 'ghcr.io/dbrepo-project/helm'
 
 jobs:
   release-images:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     env:
-      REPOSITORY_URL: docker.io/dbrepo
+      REPOSITORY_URL: ghcr.io/dbrepo-project/dbrepo
     steps:
       - uses: actions/checkout@v4
       - name: Login to GHCR
         run: |
           echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
-      - name: Login to Docker Hub
-        run: |
-          echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login --username '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin '${{ env.DOCKERHUB_REGISTRY }}'
       - name: Pull tested images from GHCR
         run: |
-          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
-          GHCR_PREFIX="${GHCR_REGISTRY}/${OWNER_LC}/dbrepo"
           SHA_TAG="sha-${GITHUB_SHA}"
 
           for mapping in \
@@ -58,10 +54,10 @@ jobs:
             "starter-notebook starter-notebook"
           do
             set -- $mapping
-            docker pull "${GHCR_PREFIX}/$2:${SHA_TAG}"
-            docker tag "${GHCR_PREFIX}/$2:${SHA_TAG}" "$1:latest"
+            docker pull "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
+            docker tag "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}" "$1:latest"
           done
-      - name: Publish images to Docker Hub
+      - name: Publish release tags to GHCR
         run: |
           make release-images
           APP_VERSION=$DOC_VERSION make release-images
@@ -78,9 +74,9 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/sigstore/helm-sigstore/main/scripts/install.sh | bash
           helm plugin install https://github.com/losisin/helm-values-schema-json.git
-      - name: Login to Docker Hub OCI registry
+      - name: Login to GHCR OCI registry
         run: |
-          echo '${{ secrets.DOCKERHUB_TOKEN }}' | helm registry login --username '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin '${{ env.DOCKERHUB_OCI_REGISTRY }}'
+          echo '${{ github.token }}' | helm registry login --username '${{ github.actor }}' --password-stdin '${{ env.GHCR_REGISTRY }}'
       - name: Prepare signing keys
         run: |
           echo '${{ secrets.CI_GPG_SECRING }}' | base64 -d > ~/secring.gpg
@@ -91,7 +87,7 @@ jobs:
           sed -ri "s/^(appVersion:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
           make build-helm
           helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/secring.gpg --destination ./build
-          helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.DOCKERHUB_OCI_REGISTRY }}/dbrepo/helm
+          helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.GHCR_HELM_PREFIX }}
           helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz
 
   release-libs:
@@ -124,9 +120,15 @@ jobs:
     if: startsWith(github.ref_name, 'release-')
     runs-on: ubuntu-latest
     env:
-      CI_REGISTRY2_URL: docker.io/dbrepo
+      APP_VERSION: '1.13.4'
+      SUPPORTED_VERSIONS: '1.13.0, 1.13.1, 1.13.2, 1.13.3, 1.13.4'
+      MAINTAINED_SERVICES: 'dashboard-service,dashboard-service-init,data-service,consumer-service,metadata-service,search-service,search-service-init,storage-service-init,ui'
+      CI_REGISTRY2_URL: ghcr.io/dbrepo-project/dbrepo
     steps:
       - uses: actions/checkout@v4
+      - name: Login to GHCR
+        run: |
+          echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
       - name: Install regctl
         run: |
           sudo curl -fsSL https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64 -o /usr/local/bin/regctl

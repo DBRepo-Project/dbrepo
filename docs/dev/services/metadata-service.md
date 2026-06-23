@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/dbrepo/metadata-service:1.11.0`](https://hub.docker.com/r/dbrepo/metadata-service)
+    Image: [`ghcr.io/dbrepo-project/dbrepo/metadata-service:1.11.0`](https://github.com/orgs/DBRepo-Project/packages)
 
     * Info: `http://<container_ip>:8080/actuator/info`
     * Health: `http://<container_ip>:8080/actuator/health`
@@ -58,7 +58,7 @@ To activate DOI minting, pass your DataCite Fabrica credentials in the environme
 ```yaml title="docker-compose.yml"
 services:
   dbrepo-metadata-service:
-    image: docker.io/dbrepo/metadata-service:1.11.0
+    image: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.11.0
     environment:
       spring_profiles_active: doi
       DATACITE_URL: https://api.datacite.org
