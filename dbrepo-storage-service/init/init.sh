@@ -18,9 +18,11 @@ S3CMD_OPTS="--config=/app/config/.s3cfg"
 
 function wait_for_storage () {
   local attempts=30
+  local host="${STORAGE_ENDPOINT%%:*}"
+  local port="${STORAGE_ENDPOINT##*:}"
 
   while [[ $attempts -gt 0 ]]; do
-    if s3cmd $S3CMD_OPTS ls >/dev/null 2>&1; then
+    if bash -c ">/dev/tcp/${host}/${port}" >/dev/null 2>&1; then
       return 0
     fi
     sleep 2
