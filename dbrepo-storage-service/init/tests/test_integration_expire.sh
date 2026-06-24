@@ -6,7 +6,7 @@ S3CMD_OPTS="--config=${S3CMD_CONFIG}"
 export S3_ACCESS_KEY_ID="seaweedfsadmin"
 export S3_BUCKET="dbrepo"
 export S3_SECRET_ACCESS_KEY="seaweedfsadmin"
-export STORAGE_ENDPOINT="localhost:9000"
+HOST_STORAGE_ENDPOINT="localhost:9000"
 
 function get_lifecycle_xml () {
   s3cmd $S3CMD_OPTS getlifecycle s3://${S3_BUCKET} | sed -n '/^</,$p'
@@ -58,7 +58,7 @@ clean
 cat <<EOF > .s3cfg
 access_key = ${S3_ACCESS_KEY_ID}
 secret_key = ${S3_SECRET_ACCESS_KEY}
-host_base = ${STORAGE_ENDPOINT}
+host_base = ${HOST_STORAGE_ENDPOINT}
 host_bucket = ${S3_BUCKET}
 use_https = False
 signature_v2 = False
