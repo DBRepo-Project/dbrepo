@@ -8,6 +8,15 @@ export S3_BUCKET="dbrepo"
 export S3_SECRET_ACCESS_KEY="seaweedfsadmin"
 export STORAGE_ENDPOINT="localhost:9000"
 
+function get_lifecycle_xml () {
+  s3cmd $S3CMD_OPTS getlifecycle s3://${S3_BUCKET} | sed -n '/^</,$p'
+}
+
+function lifecycle_xpath () {
+  local xpath="$1"
+  get_lifecycle_xml | xmllint --xpath "$xpath" -
+}
+
 function wait_for_init () {
   local attempts=30
   local status
@@ -73,8 +82,8 @@ fi
 
 # Test
 echo "[DEBUG] run test find_expiry_config_enabled_succeeds"
-XPATH="string(//Rule/Status/text())"
-RES=$(s3cmd $S3CMD_OPTS getlifecycle s3://${S3_BUCKET} | xmllint --xpath $XPATH -)
+XPATH="string((//*[local-name()='Rule']/*[local-name()='Status']/text())[1])"
+RES=$(lifecycle_xpath "$XPATH")
 if [[ $RES != "Enabled" ]]; then
   echo "[ERROR] Failed to find xpath $XPATH for bucket s3://${S3_BUCKET}" > /dev/stderr
   exit 1
@@ -82,8 +91,8 @@ fi
 
 # Test
 echo "[DEBUG] run test find_expiry_config_prefix_succeeds"
-XPATH="string(//Rule/Prefix/text())"
-RES=$(s3cmd $S3CMD_OPTS getlifecycle s3://${S3_BUCKET} | xmllint --xpath $XPATH -)
+XPATH="string((//*[local-name()='Rule']//*[local-name()='Prefix']/text())[1])"
+RES=$(lifecycle_xpath "$XPATH")
 if [[ $RES != "" ]]; then
   echo "[ERROR] Failed to find xpath $XPATH for bucket s3://${S3_BUCKET}" > /dev/stderr
   exit 1
@@ -91,8 +100,8 @@ fi
 
 # Test
 echo "[DEBUG] run test find_expiry_config_expiration_days_succeeds"
-XPATH="number(//Rule/Expiration/Days/text())"
-RES=$(s3cmd $S3CMD_OPTS getlifecycle s3://${S3_BUCKET} | xmllint --xpath $XPATH -)
+XPATH="number((//*[local-name()='Rule']/*[local-name()='Expiration']/*[local-name()='Days']/text())[1])"
+RES=$(lifecycle_xpath "$XPATH")
 if [[ $RES -ne 1 ]]; then
   echo "[ERROR] Failed to find xpath $XPATH for bucket s3://${S3_BUCKET}" > /dev/stderr
   exit 1
