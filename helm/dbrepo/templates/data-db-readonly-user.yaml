@@ -26,7 +26,7 @@ spec:
     name: data-db
   privileges:
     - "SELECT"
-  database: "dbrepo"
+  database: {{ .Values.datadb.db.name }}
   table: "*"
   username: {{ .Values.datadb.db.user }}
   grantOption: true

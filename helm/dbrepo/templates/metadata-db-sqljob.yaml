@@ -8,11 +8,11 @@ metadata:
 spec:
   mariaDbRef:
     name: metadata-db
-  username: {{ .Values.datadb.rootUser.user }}
+  username: {{ .Values.metadatadb.rootUser.user }}
   passwordSecretKeyRef:
     name: metadata-db-secret
     key: METADATA_DB_PASSWORD
-  database: dbrepo
+  database: {{ .Values.metadatadb.db.name }}
   sqlConfigMapKeyRef:
     name: metadata-db-config
     key: 01-setup-schema.sql
@@ -25,11 +25,11 @@ metadata:
 spec:
   mariaDbRef:
     name: metadata-db
-  username: {{ .Values.datadb.rootUser.user }}
+  username: {{ .Values.metadatadb.rootUser.user }}
   passwordSecretKeyRef:
     name: metadata-db-secret
     key: METADATA_DB_PASSWORD
-  database: dbrepo
+  database: {{ .Values.metadatadb.db.name }}
   sqlConfigMapKeyRef:
     name: metadata-db-config
     key: 02-setup-data.sql
