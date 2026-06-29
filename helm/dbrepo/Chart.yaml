@@ -83,7 +83,7 @@ dependencies:
     condition: metricdb.enabled
   - name: postgresql
     alias: dashboarddb
-    version: 16.1.0
+    version: 18.7.8
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: dashboarddb.enabled
   - name: valkey
