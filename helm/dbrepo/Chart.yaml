@@ -48,7 +48,7 @@ dependencies:
     condition: authservice.enabled
   - name: nginx
     alias: gatewayservice
-    version: 20.0.2
+    version: 25.0.11
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: gatewayservice.enabled
   - name: mariadb-galera
