@@ -18,7 +18,7 @@
     "@mdi/font": "^7.4.47",
     "@nuxtjs/robots": "^3.0.0",
     "@nuxtjs/sitemap": "^5.2.0",
-    "@pinia/nuxt": "^0.5.1",
+    "@pinia/nuxt": "^0.11.3",
     "ace-builds": "^1.32.6",
     "axios": "^1.6.7",
     "baseline-browser-mapping": "^2.10.15",
