@@ -24,7 +24,7 @@ jobs:
   lint-compose:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Install yq
         run: |
           sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64 -O /usr/local/bin/yq
@@ -80,7 +80,7 @@ jobs:
         ports:
           - 9000:9000
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: corretto
@@ -122,7 +122,7 @@ jobs:
             install_cmd: cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$APP_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv install --skip-lock --dev --system
             test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage report
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
@@ -142,7 +142,7 @@ jobs:
   ui:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.2.21'
@@ -166,7 +166,7 @@ jobs:
           - ./dbrepo-broker-service/tests/test_integration_feature_flags.sh
           - ./dbrepo-storage-service/init/tests/test_integration_expire.sh
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Install extra tooling
         if: matrix.script == './dbrepo-storage-service/init/tests/test_integration_expire.sh'
         run: |
@@ -185,7 +185,7 @@ jobs:
       - ui
       - docker-integration
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: corretto

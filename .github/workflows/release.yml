@@ -33,7 +33,7 @@ jobs:
     env:
       REPOSITORY_URL: ghcr.io/dbrepo-project/dbrepo
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Login to GHCR
         run: |
           echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
@@ -68,7 +68,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: azure/setup-helm@v4
       - name: Install plugins
         run: |
@@ -89,7 +89,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
@@ -120,7 +120,7 @@ jobs:
       MAINTAINED_SERVICES: 'dashboard-service,dashboard-service-init,data-service,consumer-service,metadata-service,search-service,search-service-init,storage-service-init,ui'
       CI_REGISTRY2_URL: ghcr.io/dbrepo-project/dbrepo
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Login to GHCR
         run: |
           echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
