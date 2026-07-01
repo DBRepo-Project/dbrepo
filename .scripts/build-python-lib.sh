@@ -1,6 +1,7 @@
 #!/bin/bash
 python3 -m venv venv
 source ./venv/bin/activate
+pip install --upgrade pip build setuptools wheel
 rm -rf ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbrepo-dashboard-service/lib/* ./dbrepo-dashboard-service/Pipfile.lock
 PIPENV_PIPFILE=./lib/python/Pipfile pipenv lock
 python3 -m build --sdist ./lib/python
