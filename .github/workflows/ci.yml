@@ -205,6 +205,9 @@ jobs:
         run: |
           bash ./.scripts/build-java-lib.sh
           bash ./.scripts/build-python-lib.sh
+          mkdir -p ./dbrepo-data-service/lib
+          gzip -c ./dbrepo-data-service/rest-service/lib/v${DUCKDB_VERSION}/linux_amd64/httpfs.duckdb_extension > ./dbrepo-data-service/lib/httpfs.duckdb_extension.gz
+          gzip -c ./dbrepo-data-service/rest-service/lib/v${DUCKDB_VERSION}/linux_amd64/mysql_scanner.duckdb_extension > ./dbrepo-data-service/lib/mysql_scanner.duckdb_extension.gz
           docker compose build
           make build-jupyter-image
       - name: Push SHA-tagged images to GHCR
