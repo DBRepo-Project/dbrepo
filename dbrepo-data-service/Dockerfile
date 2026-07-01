@@ -25,11 +25,10 @@ ENV DUCKDB_VERSION="1.2.2"
 
 WORKDIR /home/dbrepo/.duckdb/extensions/v${DUCKDB_VERSION}/linux_amd64
 
-COPY ./lib/httpfs.duckdb_extension.gz ./httpfs.duckdb_extension.gz
-COPY ./lib/mysql_scanner.duckdb_extension.gz ./mysql_scanner.duckdb_extension.gz
+COPY ./rest-service/lib/v${DUCKDB_VERSION}/linux_amd64/httpfs.duckdb_extension ./httpfs.duckdb_extension
+COPY ./rest-service/lib/v${DUCKDB_VERSION}/linux_amd64/mysql_scanner.duckdb_extension ./mysql_scanner.duckdb_extension
 
-RUN gunzip -r . && \
-    mkdir -p /var/log/app/service/data && \
+RUN mkdir -p /var/log/app/service/data && \
     chown -R 1001:1001 /var/log/app/service/data /home/dbrepo/.duckdb
 
 WORKDIR /app
