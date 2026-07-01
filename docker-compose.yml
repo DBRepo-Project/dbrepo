@@ -140,7 +140,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo-metadata-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/metadata-service:latest
     ports:
       - 9099:8080
     build:
@@ -210,7 +210,7 @@ services:
     restart: "no"
     container_name: dbrepo-consumer-service
     hostname: consumer-service
-    image: dbrepo-consumer-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/consumer-service:latest
     build:
       context: ./dbrepo-consumer-service
       network: host
@@ -314,7 +314,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: dbrepo-search-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/search-service:latest
     build:
       context: ./dbrepo-search-service
       network: host
@@ -339,7 +339,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo-ui:latest
+    image: ghcr.io/dbrepo-project/dbrepo/ui:latest
     build:
       context: ./dbrepo-ui
       args:
@@ -429,7 +429,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: dbrepo-search-service-init:latest
+    image: ghcr.io/dbrepo-project/dbrepo/search-service-init:latest
     build:
       context: ./dbrepo-search-service
       dockerfile: init.Dockerfile
@@ -453,7 +453,7 @@ services:
     restart: "no"
     init: true
     container_name: dbrepo-dashboard-service-init
-    image: dbrepo-dashboard-service-init:latest
+    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:latest
     build:
       context: ./dbrepo-dashboard-service
       dockerfile: init.Dockerfile
@@ -496,7 +496,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: dbrepo-storage-service-init:latest
+    image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:latest
     build:
       context: ./dbrepo-storage-service/init
       network: host
@@ -515,7 +515,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: dbrepo-data-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/data-service:latest
     build:
       context: ./dbrepo-data-service
       network: host
@@ -600,7 +600,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: dbrepo-dashboard-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service:latest
     build:
       context: ./dbrepo-dashboard-service
       network: host
