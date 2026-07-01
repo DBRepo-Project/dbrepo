@@ -108,6 +108,8 @@ jobs:
     env:
       SKIP_CHECKS: '1'
     steps:
+      - name: Resolve release line
+        run: echo "DOC_VERSION=${GITHUB_REF_NAME#release-}" >> "$GITHUB_ENV"
       - name: Verify install script
         run: curl -sSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/release-${DOC_VERSION}/.scripts/install.sh | bash | grep 'Success!'
 
@@ -115,12 +117,18 @@ jobs:
     if: startsWith(github.ref_name, 'release-')
     runs-on: ubuntu-latest
     env:
-      APP_VERSION: '1.13.4'
-      SUPPORTED_VERSIONS: '1.13.0, 1.13.1, 1.13.2, 1.13.3, 1.13.4'
       MAINTAINED_SERVICES: 'dashboard-service,dashboard-service-init,data-service,consumer-service,metadata-service,search-service,search-service-init,storage-service-init,ui'
       CI_REGISTRY2_URL: ghcr.io/dbrepo-project/dbrepo
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Resolve release versions
+        run: |
+          DOC_VERSION="${GITHUB_REF_NAME#release-}"
+          echo "DOC_VERSION=${DOC_VERSION}" >> "$GITHUB_ENV"
+          echo "APP_VERSION=$(make version)" >> "$GITHUB_ENV"
+          echo "SUPPORTED_VERSIONS=$(bash ./.scripts/get-supported-versions.sh "${DOC_VERSION}")" >> "$GITHUB_ENV"
       - name: Login to GHCR
         run: |
           echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
