@@ -10,6 +10,8 @@ from dbrepo.core.client.dashboard import DashboardServiceClient
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
 
+LOG_PATH = os.getenv("LOG_PATH", "/var/log/app/service/dashboard")
+
 # logging configuration
 dictConfig({
     'version': 1,
@@ -33,7 +35,7 @@ dictConfig({
         'file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'formatter': 'ecs',
-            'filename': '/var/log/app/service/dashboard/init.log',
+            'filename': f'{LOG_PATH}/init.log',
             'when': 'm',
             'interval': 1,
             'backupCount': 5,

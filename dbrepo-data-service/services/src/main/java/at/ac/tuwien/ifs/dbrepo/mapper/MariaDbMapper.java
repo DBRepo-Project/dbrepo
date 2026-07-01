@@ -478,12 +478,6 @@ public interface MariaDbMapper {
                                 .append(ck)
                                 .append(")"));
             }
-            if (data.getDescription() != null && !data.getDescription().isBlank()) {
-                /* create table comments */
-                stringBuilder.append(" COMMENT \"")
-                        .append(data.getDescription())
-                        .append("\"");
-            }
         }
         stringBuilder.append(") WITH SYSTEM VERSIONING");
         if (data.getDescription() != null && !data.getDescription().isBlank()) {
@@ -861,7 +855,7 @@ public interface MariaDbMapper {
     }
 
     default String defaultRawSelectQuery(String databaseName, String tableOrViewName, Instant timestamp, Long page,
-                                         Long size) {
+                                         Long size, List<String> sortColumns, String sortDirection) {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM `")
                 .append(databaseName)
@@ -874,6 +868,20 @@ public interface MariaDbMapper {
                     .append("'");
         }
         statement.append(" as tbl");
+        statement.append(") as tbl2");
+        if (sortColumns != null && !sortColumns.isEmpty() && sortDirection != null) {
+            /* Keep sorting on the outer query so unpaginated exports preserve row order. */
+            final String orderByClause = sortColumns.stream()
+                    .map(columnName -> new StringBuilder("`tbl2`.`")
+                            .append(columnName)
+                            .append("`")
+                            .append(" ")
+                            .append(sortDirection.toUpperCase(Locale.ROOT))
+                            .toString())
+                    .collect(Collectors.joining(", "));
+            statement.append(" ORDER BY ")
+                    .append(orderByClause);
+        }
         /* pagination */
         if (size != null && page != null) {
             log.trace("pagination size/limit of {}", size);
@@ -883,7 +891,6 @@ public interface MariaDbMapper {
             statement.append(" OFFSET ")
                     .append(page * size);
         }
-        statement.append(") as tbl2");
         log.trace("mapped select query: {}", statement);
         return statement.toString();
     }
@@ -966,20 +973,25 @@ public interface MariaDbMapper {
             return step.where();
         }
         SelectConditionStep<Record> conditions = step.where();
-        FilterTypeDto next = null;
-        final int[] idx = new int[]{0};
+        FilterTypeDto connector = null;
+        boolean hasCondition = false;
         for (FilterDto filter : data.getFilters()) {
+            if (filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR)) {
+                connector = filter.getType();
+                continue;
+            }
             final at.ac.tuwien.ifs.dbrepo.api.Column column = columnIdToColumn(database, filter.getColumnId());
-            if (idx[0]++ == 0) {
+            if (!hasCondition) {
                 conditions = step.where(filterDtoToCondition(database, column, filter));
-            } else if (next != null) {
-                if (next.equals(FilterTypeDto.OR)) {
+                hasCondition = true;
+            } else if (connector != null) {
+                if (connector.equals(FilterTypeDto.OR)) {
                     conditions = conditions.or(filterDtoToCondition(database, column, filter));
-                } else if (next.equals(FilterTypeDto.AND)) {
+                } else if (connector.equals(FilterTypeDto.AND)) {
                     conditions = conditions.and(filterDtoToCondition(database, column, filter));
                 }
             }
-            next = filter.getType();
+            connector = null;
         }
         return conditions;
     }

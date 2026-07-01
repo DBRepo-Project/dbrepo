@@ -984,6 +984,98 @@ class TableUnitTest(unittest.TestCase):
                                                   concept_uri="http://dbpedia.org/page/Category:Precipitation")
             self.assertEqual(exp, response)
 
+    def test_update_table_column_uri_fields_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            exp = Column(id="2f30858d-b47b-4068-9028-fb0524ddf6cb",
+                         ord=0,
+                         name="ID",
+                         database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                         table_id="b3230b86-4743-498d-9015-3fad58049692",
+                         internal_name="id",
+                         type=ColumnType.BIGINT,
+                         concept_uri="https://w3id.org/sosa/ObservableProperty",
+                         unit_uri="http://qudt.org/vocab/unit/DEG_C",
+                         is_null_allowed=False)
+            # mock
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/column/758da021-f809-4d87-a866-9d4664a039dc',
+                json=exp.model_dump(),
+                status_code=202)
+            # test
+            client = RestClient(username="a", password="b")
+            response = client.update_table_column(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                                  table_id="b3230b86-4743-498d-9015-3fad58049692",
+                                                  column_id="758da021-f809-4d87-a866-9d4664a039dc",
+                                                  unit_uri="http://qudt.org/vocab/unit/DEG_C",
+                                                  concept_uri="https://w3id.org/sosa/ObservableProperty")
+            self.assertEqual({
+                "concept_uri": "https://w3id.org/sosa/ObservableProperty",
+                "unit_uri": "http://qudt.org/vocab/unit/DEG_C"
+            }, mock.request_history[0].json())
+            self.assertEqual(exp, response)
+            self.assertEqual("https://w3id.org/sosa/ObservableProperty", response.concept_uri)
+            self.assertEqual("http://qudt.org/vocab/unit/DEG_C", response.unit_uri)
+
+    def test_update_table_column_empty_body_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            exp = Column(id="758da021-f809-4d87-a866-9d4664a039dc",
+                         ord=0,
+                         name="ID",
+                         database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                         table_id="b3230b86-4743-498d-9015-3fad58049692",
+                         internal_name="id",
+                         type=ColumnType.BIGINT,
+                         concept_uri="https://w3id.org/sosa/ObservableProperty",
+                         unit_uri="http://qudt.org/vocab/unit/DEG_C",
+                         is_null_allowed=False)
+            table = Table(id="b3230b86-4743-498d-9015-3fad58049692",
+                          database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                          name="Test",
+                          owner=UserBrief(username="a"),
+                          columns=[exp],
+                          constraints=Constraints(uniques=[], foreign_keys=[], checks=[], primary_key=[]),
+                          internal_name="test",
+                          is_versioned=True,
+                          queue_name="queue",
+                          routing_key="routing",
+                          is_public=True,
+                          is_schema_public=True)
+            # mock
+            mock.put(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/column/758da021-f809-4d87-a866-9d4664a039dc',
+                text="",
+                status_code=202)
+            mock.get(
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692',
+                json=table.model_dump(),
+                status_code=200)
+            # test
+            client = RestClient(username="a", password="b")
+            response = client.update_table_column(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                                  table_id="b3230b86-4743-498d-9015-3fad58049692",
+                                                  column_id="758da021-f809-4d87-a866-9d4664a039dc",
+                                                  unit_uri="http://qudt.org/vocab/unit/DEG_C",
+                                                  concept_uri="https://w3id.org/sosa/ObservableProperty")
+            self.assertEqual(exp, response)
+
+    def test_column_unit_string_maps_to_unit_uri(self):
+        response = Column.model_validate({
+            "id": "2f30858d-b47b-4068-9028-fb0524ddf6cb",
+            "ord": 0,
+            "name": "ID",
+            "database_id": "6bd39359-b154-456d-b9c2-caa516a45732",
+            "table_id": "b3230b86-4743-498d-9015-3fad58049692",
+            "internal_name": "id",
+            "type": ColumnType.BIGINT,
+            "unit": "http://qudt.org/vocab/unit/DEG_C",
+            "conceptUri": "https://w3id.org/sosa/ObservableProperty",
+            "is_null_allowed": False
+        })
+
+        self.assertIsNone(response.unit)
+        self.assertEqual("http://qudt.org/vocab/unit/DEG_C", response.unit_uri)
+        self.assertEqual("https://w3id.org/sosa/ObservableProperty", response.concept_uri)
+
     def test_update_table_column_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock

@@ -1,0 +1,232 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master, dev, 'release-*']
+
+permissions:
+  contents: read
+  packages: write
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  APP_VERSION: '1.13.4'
+  DUCKDB_VERSION: '1.2.2'
+  GHCR_REGISTRY: 'ghcr.io'
+  GHCR_NAMESPACE: 'dbrepo-project'
+  GHCR_IMAGE_PREFIX: 'ghcr.io/dbrepo-project/dbrepo'
+
+jobs:
+  lint-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install yq
+        run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+      - name: Check compose parity
+        run: |
+          diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)
+          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-db
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-service
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-broker-service
+          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-dashboard-service
+          bash .scripts/check-service.sh dbrepo-data-db
+          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-data-db-metrics
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-data-service
+          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-gateway-service
+          IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-identity-service
+          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db
+          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db-metrics
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metadata-service
+          IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metric-db
+          bash .scripts/check-service.sh dbrepo-search-db
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-search-service
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-search-service-init
+          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-storage-service
+          IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-storage-service-init
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-dashboard-service-init
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-ui
+
+  java-services:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: consumer-service
+            pom: ./dbrepo-consumer-service/pom.xml
+            lib_dir: ./dbrepo-consumer-service/lib/
+          - name: metadata-service
+            pom: ./dbrepo-metadata-service/pom.xml
+            lib_dir: ./dbrepo-metadata-service/lib/
+          - name: data-service
+            pom: ./dbrepo-data-service/pom.xml
+            lib_dir: ./dbrepo-data-service/lib/
+            minio: true
+    env:
+      SPRING_PROFILES_ACTIVE: ci
+    services:
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: seaweedfsadmin
+          MINIO_ROOT_PASSWORD: seaweedfsadmin
+        ports:
+          - 9000:9000
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: '21'
+          cache: maven
+      - name: Map minio hostname
+        if: matrix.minio
+        run: echo '127.0.0.1 minio' | sudo tee -a /etc/hosts
+      - name: Build shared Java library
+        run: |
+          mvn -f ./lib/java/dbrepo-core/pom.xml clean package install -DskipTests
+          mvn deploy:deploy-file -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:${{ matrix.lib_dir }} -DrepositoryId=maven-repository -DupdateReleaseInfo=true
+      - name: Analyze dependencies
+        run: mvn -f ${{ matrix.pom }} dependency:analyze
+      - name: Build service
+        run: mvn -f ${{ matrix.pom }} -q clean package -DskipTests
+      - name: Prepare DuckDB extensions
+        if: matrix.name == 'data-service'
+        run: |
+          mkdir -p ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+          gunzip -rf ./dbrepo-data-service/lib
+          mv ./dbrepo-data-service/lib/* ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+      - name: Run tests
+        run: mvn -f ${{ matrix.pom }} clean test verify
+
+  python-services:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: python-lib
+            install_cmd: PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
+            test_cmd: cd ./lib/python && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage report
+          - name: search-service
+            install_cmd: cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$APP_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv install --skip-lock --dev --system
+            test_cmd: mkdir -p "$PWD/.logs/search" && export LOG_PATH="$PWD/.logs/search" && cd ./dbrepo-search-service && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage report
+          - name: dashboard-service
+            install_cmd: cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$APP_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv install --skip-lock --dev --system
+            test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage report
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build pipenv coverage pytest
+      - name: Build shared Python library
+        run: |
+          python -m build --sdist ./lib/python
+          python -m build --wheel ./lib/python
+      - name: Install dependencies
+        run: ${{ matrix.install_cmd }}
+      - name: Run tests
+        run: ${{ matrix.test_cmd }}
+
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.2.21'
+      - name: Build UI
+        run: |
+          bun install --cwd ./dbrepo-ui
+          bun run --cwd ./dbrepo-ui build
+      - name: Run UI smoke test
+        run: |
+          docker compose build dbrepo-ui
+          docker run --name dbrepo-ui -e NODE_OPTIONS=--max_old_space_size=256 -p 3000:3000 -d dbrepo-ui:latest
+          sleep 30
+          ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh
+
+  docker-integration:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        script:
+          - ./dbrepo-broker-service/tests/test_integration_feature_flags.sh
+          - ./dbrepo-storage-service/init/tests/test_integration_expire.sh
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install extra tooling
+        if: matrix.script == './dbrepo-storage-service/init/tests/test_integration_expire.sh'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y s3cmd libxml2-utils
+      - name: Run integration test
+        run: bash ${{ matrix.script }}
+
+  publish-ghcr-images:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs:
+      - lint-compose
+      - java-services
+      - python-services
+      - ui
+      - docker-integration
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build pipenv
+      - name: Login to GHCR
+        run: |
+          echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
+      - name: Build releasable images
+        run: |
+          bash ./.scripts/build-java-lib.sh
+          bash ./.scripts/build-python-lib.sh
+          mkdir -p ./dbrepo-data-service/lib
+          gzip -c ./dbrepo-data-service/rest-service/lib/v${DUCKDB_VERSION}/linux_amd64/httpfs.duckdb_extension > ./dbrepo-data-service/lib/httpfs.duckdb_extension.gz
+          gzip -c ./dbrepo-data-service/rest-service/lib/v${DUCKDB_VERSION}/linux_amd64/mysql_scanner.duckdb_extension > ./dbrepo-data-service/lib/mysql_scanner.duckdb_extension.gz
+          docker compose build
+          make build-jupyter-image
+      - name: Push SHA-tagged images to GHCR
+        run: |
+          SHA_TAG="sha-${GITHUB_SHA}"
+
+          for mapping in \
+            "dbrepo-consumer-service consumer-service" \
+            "dbrepo-dashboard-service dashboard-service" \
+            "dbrepo-dashboard-service-init dashboard-service-init" \
+            "dbrepo-data-service data-service" \
+            "dbrepo-metadata-service metadata-service" \
+            "dbrepo-search-service search-service" \
+            "dbrepo-search-service-init search-service-init" \
+            "dbrepo-storage-service-init storage-service-init" \
+            "dbrepo-ui ui" \
+            "starter-notebook starter-notebook"
+          do
+            set -- $mapping
+            docker tag "$1:latest" "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
+            docker push "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
+          done

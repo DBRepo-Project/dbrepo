@@ -11,6 +11,8 @@ from dbrepo.core.client.search import SearchServiceClient
 level = os.getenv("LOG_LEVEL", "DEBUG").upper()
 logging.basicConfig(level=level)
 
+LOG_PATH = os.getenv("LOG_PATH", "/var/log/app/service/search")
+
 # logging configuration
 dictConfig({
     'version': 1,
@@ -34,7 +36,7 @@ dictConfig({
         'file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'formatter': 'ecs',
-            'filename': '/var/log/app/service/search/init.log',
+            'filename': f'{LOG_PATH}/init.log',
             'when': 'm',
             'interval': 1,
             'backupCount': 5,

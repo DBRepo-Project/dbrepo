@@ -20,6 +20,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 from logging.config import dictConfig
 
+LOG_PATH = os.getenv("LOG_PATH", "/var/log/app/service/dashboard")
+
 # logging configuration
 dictConfig({
     'version': 1,
@@ -43,7 +45,7 @@ dictConfig({
         'file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'formatter': 'ecs',
-            'filename': '/var/log/app/service/dashboard/app.log',
+            'filename': f'{LOG_PATH}/app.log',
             'when': 'm',
             'interval': 1,
             'backupCount': 5,

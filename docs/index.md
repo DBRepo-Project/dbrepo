@@ -8,7 +8,7 @@ author: Martin Weise
 [![CI/CD Coverage](/infrastructures/dbrepo/1.13/images/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![Latest Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![PyPI Library version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/){ tabindex=-1 }
-[![Image Pulls](/infrastructures/dbrepo/1.13/images/pulls.svg)](https://registry.datalab.tuwien.ac.at/api/v2.0/projects/dbrepo/repositories/data-service){ tabindex=-1 }
+[![Image Pulls](/infrastructures/dbrepo/1.13/images/pulls.svg)](https://github.com/orgs/DBRepo-Project/packages){ tabindex=-1 }
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 
