@@ -1,16 +1,18 @@
 ##@ Release
 
+GHCR_IMAGE_PREFIX ?= ghcr.io/dbrepo-project/dbrepo
+
 .PHONY: tag-images
 tag-images: build-images ## Tag the docker images.
-	docker tag dbrepo-consumer-service:latest "${REPOSITORY_URL}/consumer-service:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-dashboard-service:latest "${REPOSITORY_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-dashboard-service-init:latest "${REPOSITORY_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-data-service:latest "${REPOSITORY_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-metadata-service:latest "${REPOSITORY_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-search-service:latest "${REPOSITORY_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-search-service-init:latest "${REPOSITORY_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
-	docker tag dbrepo-ui:latest "${REPOSITORY_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/consumer-service:latest "${REPOSITORY_URL}/consumer-service:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/dashboard-service:latest "${REPOSITORY_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/dashboard-service-init:latest "${REPOSITORY_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/data-service:latest "${REPOSITORY_URL}/data-service:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/metadata-service:latest "${REPOSITORY_URL}/metadata-service:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/search-service:latest "${REPOSITORY_URL}/search-service:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/search-service-init:latest "${REPOSITORY_URL}/search-service-init:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/storage-service-init:latest "${REPOSITORY_URL}/storage-service-init:${APP_VERSION}${BUILD_VERSION}"
+	docker tag ${GHCR_IMAGE_PREFIX}/ui:latest "${REPOSITORY_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
 
 .PHONY: tag-jupyter-image
 tag-jupyter-image: build-jupyter-image
