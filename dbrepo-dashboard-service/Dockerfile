@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM python:3.11-alpine3.21
+FROM --platform=$BUILDPLATFORM python:3.11-alpine3.23
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 RUN apk add --no-cache \
