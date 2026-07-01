@@ -38,20 +38,20 @@ jobs:
           IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-dashboard-service
           bash .scripts/check-service.sh dbrepo-data-db
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-data-db-metrics
-          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-data-service
+          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-data-service
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-gateway-service
           IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-identity-service
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db-metrics
-          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metadata-service
+          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metadata-service
           IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metric-db
           bash .scripts/check-service.sh dbrepo-search-db
-          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-search-service
-          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-search-service-init
+          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-search-service
+          bash .scripts/check-service.sh dbrepo-search-service-init
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-storage-service
-          IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-storage-service-init
-          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-dashboard-service-init
-          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-ui
+          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-storage-service-init
+          bash .scripts/check-service.sh dbrepo-dashboard-service-init
+          bash .scripts/check-service.sh dbrepo-ui
 
   java-services:
     runs-on: ubuntu-latest
@@ -153,7 +153,7 @@ jobs:
       - name: Run UI smoke test
         run: |
           docker compose build dbrepo-ui
-          docker run --name dbrepo-ui -e NODE_OPTIONS=--max_old_space_size=256 -p 3000:3000 -d dbrepo-ui:latest
+          docker run --name dbrepo-ui -e NODE_OPTIONS=--max_old_space_size=256 -p 3000:3000 -d ${GHCR_IMAGE_PREFIX}/ui:latest
           sleep 30
           ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh
 
@@ -215,15 +215,15 @@ jobs:
           SHA_TAG="sha-${GITHUB_SHA}"
 
           for mapping in \
-            "dbrepo-consumer-service consumer-service" \
-            "dbrepo-dashboard-service dashboard-service" \
-            "dbrepo-dashboard-service-init dashboard-service-init" \
-            "dbrepo-data-service data-service" \
-            "dbrepo-metadata-service metadata-service" \
-            "dbrepo-search-service search-service" \
-            "dbrepo-search-service-init search-service-init" \
-            "dbrepo-storage-service-init storage-service-init" \
-            "dbrepo-ui ui" \
+            "${GHCR_IMAGE_PREFIX}/consumer-service consumer-service" \
+            "${GHCR_IMAGE_PREFIX}/dashboard-service dashboard-service" \
+            "${GHCR_IMAGE_PREFIX}/dashboard-service-init dashboard-service-init" \
+            "${GHCR_IMAGE_PREFIX}/data-service data-service" \
+            "${GHCR_IMAGE_PREFIX}/metadata-service metadata-service" \
+            "${GHCR_IMAGE_PREFIX}/search-service search-service" \
+            "${GHCR_IMAGE_PREFIX}/search-service-init search-service-init" \
+            "${GHCR_IMAGE_PREFIX}/storage-service-init storage-service-init" \
+            "${GHCR_IMAGE_PREFIX}/ui ui" \
             "starter-notebook starter-notebook"
           do
             set -- $mapping
