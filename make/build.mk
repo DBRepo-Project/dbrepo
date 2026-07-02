@@ -1,7 +1,7 @@
 ##@ Build
 
 .PHONY: build-images
-build-images: build-java-lib build-python-lib ## Build Docker images.
+build-images: build-java-lib build-python-lib build-duckdb-lib ## Build Docker images.
 	docker compose build
 
 .PHONY: build-jupyter-image
@@ -19,6 +19,10 @@ build-ui: ## Build the UI.
 .PHONY: build-python-lib
 build-python-lib: ## Build the Python Library.
 	bash ./.scripts/build-python-lib.sh
+
+.PHONY: build-duckdb-lib
+build-duckdb-lib: ## Build the DuckDB Extensions.
+	bash ./.scripts/build-duckdb-lib.sh
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.
