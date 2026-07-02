@@ -138,7 +138,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: docker.io/bitnamilegacy/keycloak:${KEYCLOAK_VERSION}
+    image: registry.datalab.tuwien.ac.at/bitnami/keycloak:${KEYCLOAK_VERSION}
     volumes:
       - ./dbrepo-auth-service/master-realm.json:/opt/bitnami/keycloak/data/import/master-realm.json
       - ./dbrepo-auth-service/dbrepo-realm.json:/opt/bitnami/keycloak/data/import/dbrepo-realm.json
