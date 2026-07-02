@@ -125,10 +125,11 @@ jobs:
           fetch-depth: 0
       - name: Resolve release versions
         run: |
+          APP_VERSION="$(make version)"
           DOC_VERSION="${GITHUB_REF_NAME#release-}"
           echo "DOC_VERSION=${DOC_VERSION}" >> "$GITHUB_ENV"
-          echo "APP_VERSION=$(make version)" >> "$GITHUB_ENV"
-          echo "SUPPORTED_VERSIONS=$(bash ./.scripts/get-supported-versions.sh "${DOC_VERSION}")" >> "$GITHUB_ENV"
+          echo "APP_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
+          echo "SUPPORTED_VERSIONS=$(bash ./.scripts/get-supported-versions.sh "${APP_VERSION}")" >> "$GITHUB_ENV"
       - name: Login to GHCR
         run: |
           echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
