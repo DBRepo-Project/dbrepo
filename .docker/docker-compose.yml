@@ -178,7 +178,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: ghcr.io/dbrepo-project/dbrepo/metadata-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/metadata-service:${APP_VERSION}
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
@@ -243,7 +243,7 @@ services:
     restart: "no"
     container_name: dbrepo-consumer-service
     hostname: consumer-service
-    image: ghcr.io/dbrepo-project/dbrepo/consumer-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/consumer-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -343,7 +343,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: ghcr.io/dbrepo-project/dbrepo/search-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/search-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -365,7 +365,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: ghcr.io/dbrepo-project/dbrepo/ui:latest
+    image: ghcr.io/dbrepo-project/dbrepo/ui:${APP_VERSION}
     environment:
       NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost:8080}/realms/dbrepo"
@@ -446,7 +446,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: ghcr.io/dbrepo-project/dbrepo/search-service-init:latest
+    image: ghcr.io/dbrepo-project/dbrepo/search-service-init:${APP_VERSION}
     environment:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -466,7 +466,7 @@ services:
     restart: "no"
     init: true
     container_name: dbrepo-dashboard-service-init
-    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:latest
+    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:${APP_VERSION}
     environment:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -519,7 +519,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:latest
+    image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:${APP_VERSION}
     environment:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ACCESS_KEY_ID: "${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}"
@@ -535,7 +535,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: ghcr.io/dbrepo-project/dbrepo/data-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/data-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -617,7 +617,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service:latest
+    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service:${APP_VERSION}
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"

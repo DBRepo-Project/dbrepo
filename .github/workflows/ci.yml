@@ -33,25 +33,25 @@ jobs:
         run: |
           diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)
           IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-db
-          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-service
+          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-service
           IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-broker-service
-          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-dashboard-service
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-dashboard-service
           bash .scripts/check-service.sh dbrepo-data-db
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-data-db-metrics
-          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-data-service
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-data-service
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-gateway-service
           IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-identity-service
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db-metrics
-          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metadata-service
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metadata-service
           IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metric-db
           bash .scripts/check-service.sh dbrepo-search-db
-          IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-search-service
-          bash .scripts/check-service.sh dbrepo-search-service-init
+          IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-search-service
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-search-service-init
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-storage-service
-          IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-storage-service-init
-          bash .scripts/check-service.sh dbrepo-dashboard-service-init
-          bash .scripts/check-service.sh dbrepo-ui
+          IGNORE_IMAGE=1 IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-storage-service-init
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-dashboard-service-init
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-ui
 
   java-services:
     runs-on: ubuntu-latest
