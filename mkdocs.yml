@@ -82,6 +82,7 @@ nav:
         - Repository: dev/services/ui.md
     - Changelog: dev/changelog.md
     - Contributing: dev/contributing.md
+    - Release Process: dev/release.md
   - publications.md
   - contact.md
 extra_css:
