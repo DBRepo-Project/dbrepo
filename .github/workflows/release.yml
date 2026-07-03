@@ -72,7 +72,7 @@ jobs:
       - uses: azure/setup-helm@v4
       - name: Install plugins
         run: |
-          helm plugin install https://github.com/sigstore/helm-sigstore
+          helm plugin install --verify=false https://github.com/sigstore/helm-sigstore
           helm plugin install --verify=false https://github.com/losisin/helm-values-schema-json.git
       - name: Login to GHCR OCI registry
         run: |
