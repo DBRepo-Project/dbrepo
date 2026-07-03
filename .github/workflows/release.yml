@@ -17,7 +17,7 @@ defaults:
     shell: bash
 
 env:
-  APP_VERSION: '1.13.4'
+  APP_VERSION: '1.14.0'
   DOC_VERSION: '1.14'
   CHART_VERSION: '1.14.0'
   REGCLIENT_VERSION: '0.8.2'

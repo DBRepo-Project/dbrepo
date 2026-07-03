@@ -3,7 +3,7 @@
 .PHONY: bump
 bump: ## Bump all versions except Python lib. Usage: make bump VERSION=X.Y.Z [CHART=X.Y.Z] [OLD=X.Y.Z]
 	@if [ -z "$(VERSION)" ]; then echo "Usage: make bump VERSION=X.Y.Z [CHART=X.Y.Z] [OLD=X.Y.Z]"; exit 1; fi
-	bash ./.scripts/bump-version.sh "$(OLD)" "$(VERSION)" "$(CHART)"
+	bash ./.scripts/bump-version.sh $(if $(OLD),$(OLD)) "$(VERSION)" "$(CHART)"
 
 .PHONY: bump-python
 bump-python: ## Bump Python library version. Usage: make bump-python VERSION=X.Y.Z

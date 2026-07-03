@@ -11,13 +11,13 @@ sample [
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
-helm install my-release "oci://ghcr.io/dbrepo-project/helm/dbrepo" --values ./overlay-values.yaml --version "1.13.4"
+helm install my-release "oci://ghcr.io/dbrepo-project/helm/dbrepo" --values ./overlay-values.yaml --version "1.14.0"
 ```
 
 You can auto-generate the `overlay-values.yaml` file with random secrets:
 
 ```shell
-curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/v1.13.4/helm/dbrepo/gen-overlay-values.sh | bash
+curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/v1.14.0/helm/dbrepo/gen-overlay-values.sh | bash
 ```
 
 ## Prerequisites
@@ -40,7 +40,7 @@ variable when you increase the available Pod memory for performance.
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://ghcr.io/dbrepo-project/helm/dbrepo" --values ./values.yaml --version "1.13.4"
+helm install my-release "oci://ghcr.io/dbrepo-project/helm/dbrepo" --values ./values.yaml --version "1.14.0"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the

@@ -39,6 +39,16 @@ else
   usage
 fi
 
+# If OLD_VERSION is empty (e.g. OLD="" from Makefile), fall back to CUR_APP
+if [[ -z "${OLD_VERSION:-}" ]]; then
+  OLD_VERSION="${CUR_APP}"
+fi
+
+# If NEW_CHART is empty (e.g. CHART="" from Makefile), default to NEW_VERSION
+if [[ -z "${NEW_CHART:-}" ]]; then
+  NEW_CHART="${NEW_VERSION}"
+fi
+
 if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "ERROR: Version must be in X.Y.Z format (e.g., 1.14.0)"
   exit 1
