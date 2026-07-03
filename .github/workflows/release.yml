@@ -73,7 +73,7 @@ jobs:
       - name: Install plugins
         run: |
           helm plugin install https://github.com/sigstore/helm-sigstore
-          helm plugin install https://github.com/losisin/helm-values-schema-json.git
+          helm plugin install --verify=false https://github.com/losisin/helm-values-schema-json.git
       - name: Login to GHCR OCI registry
         run: |
           echo '${{ github.token }}' | helm registry login --username '${{ github.actor }}' --password-stdin '${{ env.GHCR_REGISTRY }}'
