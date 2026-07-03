@@ -69,11 +69,11 @@
             :text="commit"
             size="x-small"
             prepend-icon="mdi-source-commit"
-            :href="`https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/${commit}`" />
+            :href="`https://github.com/DBRepo-Project/dbrepo/commit/${commit}`" />
           <v-btn
             variant="plain"
             prepend-icon="mdi-tag"
-            :href="`https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${version}`"
+            :href="`https://dbrepo-project.github.io/dbrepo/${version}`"
             :text="version"
             size="x-small" />
         </div>

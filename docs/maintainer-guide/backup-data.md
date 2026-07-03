@@ -10,8 +10,8 @@ author: Martin Weise
 ## TL;DR
 
 This page explains how to perform regular backups of MariaDB Galera (
-i.e. [Data Database](/infrastructures/dbrepo/1.13/dev/services/data-db/)
-and [Metadata Database](/infrastructures/dbrepo/1.13/dev/services/metadata-db/)) so they can be recovered at a later
+i.e. [Data Database](/dbrepo/1.13/dev/services/data-db/)
+and [Metadata Database](/dbrepo/1.13/dev/services/metadata-db/)) so they can be recovered at a later
 point in time.
 
 ## Full Backup

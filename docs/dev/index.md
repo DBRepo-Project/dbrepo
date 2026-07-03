@@ -7,7 +7,7 @@ Development of DBRepo.
 ## Architecture Diagram
 
 <figure markdown>
-![image](/infrastructures/dbrepo/1.13/images/architecture.svg)
+![image](/dbrepo/1.13/images/architecture.svg)
 <figcaption>Figure 1: Microservice architecture of DBRepo.</figcaption>
 </figure>
 

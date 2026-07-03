@@ -14,7 +14,7 @@ defaults:
     shell: bash
 
 env:
-  APP_VERSION: '1.13.4'
+  APP_VERSION: '1.14.0'
   DUCKDB_VERSION: '1.2.2'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'

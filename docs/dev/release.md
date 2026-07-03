@@ -8,7 +8,7 @@ This document describes how to create a new release of DBRepo.
 
 ## Overview
 
-Releases follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html) with the format `vX.Y.Z`. The release is cut from a `release-X.Y` branch. The CI/CD pipeline (GitHub Actions + GitLab CI) handles building and publishing Docker images, Helm charts, and the Python library.
+Releases follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html) with the format `vX.Y.Z`. The release is cut from a `release-X.Y` branch. The CI/CD pipeline (GitHub Actions) handles building and publishing Docker images, Helm charts, and the Python library.
 
 Release branches: `release-X.Y` (e.g., `release-1.14`)
 Tags: `vX.Y.Z` (e.g., `v1.14.0`)
@@ -155,7 +155,7 @@ After the tag is pushed, deploy the docs for the new version:
 make gen-dbrepo-doc
 ```
 
-This updates the [documentation site](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/) with the new version.
+This updates the [documentation site](https://dbrepo-project.github.io/dbrepo/) with the new version.
 
 ## Release candidates
 
@@ -201,6 +201,5 @@ git push origin v1.13.6
 |---|---|---|
 | `release-images` | Tags | Builds and pushes Docker images |
 | `release-helm` | Tags | Signs and pushes Helm chart |
-| `release-docs` | `release-*` branches | Deploys documentation via SSH |
 | `release-libs` | Tags | Publishes Python library to PyPI |
 | `verify-*` | `release-*` branches | Tests install script and verifies images |

@@ -196,7 +196,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/"
+        "url": "https://dbrepo-project.github.io/dbrepo/1.13/"
     },
     "servers": [
         {

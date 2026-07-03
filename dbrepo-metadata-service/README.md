@@ -18,7 +18,7 @@ mvn -pl rest-service clean test verify
 ```
 
 Or run only unit tests 
-in [`KeycloakGatewayUnitTest.java`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/dbrepo-metadata-service/rest-service/src/test/java/at/tuwien/gateway/BrokerServiceGatewayTest.java):
+in [`KeycloakGatewayUnitTest.java`](https://github.com/DBRepo-Project/dbrepo/blob/master/dbrepo-metadata-service/rest-service/src/test/java/at/tuwien/gateway/BrokerServiceGatewayTest.java):
 
 ```bash
 mvn -pl rest-service -Dtest="KeycloakGatewayUnitTest" clean test

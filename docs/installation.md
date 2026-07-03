@@ -11,7 +11,7 @@ author: Martin Weise
 If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo with:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/release-1.10/install.sh | bash
 ```
 
 !!! bug "Default installation security disclaimer"
@@ -35,7 +35,7 @@ SSL/TLS certificate is recommended. Follow the [secure installation](#secure-ins
 Execute the installation script to download only the environment and save it to `dist`.
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/install.sh | DOWNLOAD_ONLY=1 bash
+curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/release-1.10/install.sh | DOWNLOAD_ONLY=1 bash
 ```
 
 ### Static Configuration
@@ -51,7 +51,7 @@ Only set the `BASE_URL` environment variable in `.env` when your hostname is **n
 
 ### Runtime Configuration
 
-The [Auth Service](/infrastructures/dbrepo/1.13/api/auth-service) can be configured easily when DBRepo is running. Start DBRepo temporarily:
+The [Auth Service](/dbrepo/1.13/api/auth-service) can be configured easily when DBRepo is running. Start DBRepo temporarily:
 
 ```shell
 docker compose up -d
@@ -63,7 +63,7 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 :material-numeric-3-circle-outline:.
 
 <figure markdown>
-![Keycloka identitiy provider list](/infrastructures/dbrepo/1.13/images/screenshots/auth-service-ldap-1.png){ .img-border }
+![Keycloka identitiy provider list](/dbrepo/1.13/images/screenshots/auth-service-ldap-1.png){ .img-border }
 </figure>
 
 If you plan to change the default admin username (c.f. Figure 2), modify the Bind DN :material-numeric-1-circle-outline:
@@ -71,13 +71,13 @@ but this is optional. Change the Bind credentials to the desired password :mater
 the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
 <figure markdown>
-![Keycloak identity provider settings](/infrastructures/dbrepo/1.13/images/screenshots/auth-service-ldap-2.png){ .img-border }
+![Keycloak identity provider settings](/dbrepo/1.13/images/screenshots/auth-service-ldap-2.png){ .img-border }
 </figure>
 
 Update the client secret of the `dbrepo-client`:
 
 ```bash
-curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.10/.scripts/reg-client-secret.sh" | bash
+curl -sSL "https://raw.githubusercontent.com/DBRepo-Project/dbrepo/release-1.10/.scripts/reg-client-secret.sh" | bash
 ```
    
 Also, update the JWT key according to the 
@@ -169,11 +169,11 @@ Please be warned that the default configuration is not intended for public deplo
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
 
-Next, create a [user account](/infrastructures/dbrepo/1.13/api/#create-user-account) and 
-then [create a database](/infrastructures/dbrepo/1.13/api/#create-database) to [import a dataset](/infrastructures/dbrepo/1.13/api/#import-dataset).
+Next, create a [user account](/dbrepo/1.13/api/#create-user-account) and 
+then [create a database](/dbrepo/1.13/api/#create-database) to [import a dataset](/dbrepo/1.13/api/#import-dataset).
 
 ## Limitations
 
 !!! info "Alternative Deployments"
 
-    Alternatively, you can also deploy DBRepo with [Kubernetes](/infrastructures/dbrepo/1.13/kubernetes) in your virtual machine instead.
+    Alternatively, you can also deploy DBRepo with [Kubernetes](/dbrepo/1.13/kubernetes) in your virtual machine instead.

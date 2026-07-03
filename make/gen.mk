@@ -15,8 +15,8 @@ gen-helm-doc: build-helm ## Generate Helm documentation and schema
 	readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
 
 .PHONY: gen-dbrepo-doc
-gen-docs-doc: ## Generate DBRepo documentation.
-	mike deploy $DOC_VERSION latest
+gen-docs-doc: ## Generate DBRepo documentation and deploy to GitHub Pages.
+	mike deploy --push $DOC_VERSION latest
 	mike set-default latest
 
 .PHONY: gen-python-doc

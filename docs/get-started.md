@@ -39,14 +39,14 @@ We maintain a rapid prototype deployment option through Docker Compose (v2.17.0 
 core infrastructure and a single Docker container for all user-generated databases.
 
 Download the
-latest [`docker-compose.yml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/docker-compose.prod.yml),
+latest [`docker-compose.yml`](https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/docker-compose.prod.yml),
 nginx reverse proxy
-conf [`dbrepo.conf`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo.conf)
-and [`.env`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.env.unix.example):
+conf [`dbrepo.conf`](https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/dbrepo.conf)
+and [`.env`](https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/.env.unix.example):
 
-    curl -o docker-compose.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/docker-compose.prod.yml
-    curl -o dbrepo.conf https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo.conf
-    curl -o .env https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.env.unix.example
+    curl -o docker-compose.yml https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/docker-compose.prod.yml
+    curl -o dbrepo.conf https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/dbrepo.conf
+    curl -o .env https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/.env.unix.example
 
 Increase the virtual memory max swap limit for OpenSearch to at least 262144 on the *host machine* according
 to [the official manual](https://opensearch.org/docs/1.0/opensearch/install/important-settings/), you need *sudo*

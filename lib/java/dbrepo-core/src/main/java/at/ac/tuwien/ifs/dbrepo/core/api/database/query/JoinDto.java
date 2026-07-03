@@ -21,7 +21,7 @@ import java.util.UUID;
 public class JoinDto {
 
     @NotNull
-    @Schema(description = "The type of join", example = "inner", externalDocs = @ExternalDocumentation(url = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/user-guide/create-subset/"))
+    @Schema(description = "The type of join", example = "inner", externalDocs = @ExternalDocumentation(url = "https://dbrepo-project.github.io/dbrepo/1.12/user-guide/create-subset/"))
     private JoinTypeDto type;
 
     @NotNull

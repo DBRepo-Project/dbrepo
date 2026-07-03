@@ -17,9 +17,9 @@ defaults:
     shell: bash
 
 env:
-  APP_VERSION: '1.13.4'
+  APP_VERSION: '1.14.0'
   DOC_VERSION: '1.14'
-  CHART_VERSION: '1.14.0'
+  CHART_VERSION: ''
   REGCLIENT_VERSION: '0.8.2'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'
@@ -101,6 +101,26 @@ jobs:
           echo '${{ secrets.CI_PIPYRC }}' | base64 -d > ./.pypirc
           python -m build ./lib/python
           python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*
+
+  release-docs:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install mkdocs-material mkdocs-mike pygments
+      - name: Deploy docs to GitHub Pages
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          mike deploy --push "$DOC_VERSION" latest
 
   verify-install-script:
     if: startsWith(github.ref_name, 'release-')

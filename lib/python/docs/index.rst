@@ -11,7 +11,7 @@ provides an object-oriented API as well as low-level access to DBRepo services.
 Quickstart
 ----------
 
-Find the Quickstart guide on the `DBRepo Website <https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.9/user-guide/quickstart/>`_.
+Find the Quickstart guide on the `DBRepo Website <https://dbrepo-project.github.io/dbrepo/1.9/user-guide/quickstart/>`_.
 
 AMQP API
 --------

@@ -20,23 +20,23 @@ author: Martin Weise
 
 ## Overview
 
-This service communicates between the Search Database and the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui)
+This service communicates between the Search Database and the [User Interface](/dbrepo/1.13/dev/services/ui)
 to allow structured search of databases, tables, columns, users, identifiers, views, semantic concepts &amp; units of 
 measurements used in databases.
 
 <figure markdown>
-![Built-in search](/infrastructures/dbrepo/1.13/images/screenshots/feature-search.png)
+![Built-in search](/dbrepo/1.13/images/screenshots/feature-search.png)
 </figure>
 
 ## Index
 
 There is only one
-index [`database`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-search-db/init/indices/database.json)
+index [`database`](https://raw.githubusercontent.com/DBRepo-Project/dbrepo/dev/dbrepo-search-db/init/indices/database.json)
 that holds all the metadata information which is mirrored from 
-the [Metadata Database](/infrastructures/dbrepo/1.13/dev/services/metadata-db).
+the [Metadata Database](/dbrepo/1.13/dev/services/metadata-db).
 
 <figure markdown>
-![Mirroring statistical properties in Metadata Database and Search Database](/infrastructures/dbrepo/1.13/images/statistics-mirror.png)
+![Mirroring statistical properties in Metadata Database and Search Database](/dbrepo/1.13/images/statistics-mirror.png)
 </figure>
 
 ## Faceted Browsing
@@ -44,7 +44,7 @@ the [Metadata Database](/infrastructures/dbrepo/1.13/dev/services/metadata-db).
 This service enables the frontend to search the `database` index with eight different *types* of desired results
 (database, table, column, view, identifier, user, concept, unit) and their *facets*.
 
-For example, the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui/) allows for the search of databases that contain a certain
+For example, the [User Interface](/dbrepo/1.13/dev/services/ui/) allows for the search of databases that contain a certain
 semantic concept (provided as URI, e.g.
 temperature [http://www.wikidata.org/entity/Q11466](http://www.wikidata.org/entity/Q11466)) and unit of measurement
 (provided as URI, e.g. degree
@@ -55,7 +55,7 @@ Celsius [http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Reduce dependencies for Java-based services to resolve a bug where Spring runs into problems with verifying OAuth
   tokens.
 * Fixed the storage of the [`nuxt-oidc-auth`](https://nuxt.com/modules/nuxt-oidc-auth) module in the UI to share the
-  session secrets in the [Cache Database](/infrastructures/dbrepo/1.13/dev/services/cache-db/).
+  session secrets in the [Cache Database](/dbrepo/1.13/dev/services/cache-db/).
 
 ### Features
 
@@ -509,7 +509,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Features
 
-* Added [Dashboard Service](/infrastructures/dbrepo/1.13/api/dashboard-service/) and monitoring in default setup.
+* Added [Dashboard Service](/dbrepo/1.13/api/dashboard-service/) and monitoring in default setup.
 
 #### Changes
 

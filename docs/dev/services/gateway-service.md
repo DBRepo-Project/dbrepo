@@ -42,13 +42,13 @@ If your TLS private key as a password, you need to specify it in the `dbrepo.con
 ### Connection Timeouts
 
 The reverse proxy has a defined timeout of 90 seconds on all requests (these are also enforced in the 
-[User Interface](/infrastructures/dbrepo/1.13/dev/services/ui) using the [`axios`](https://www.npmjs.com/package/axios) 
+[User Interface](/dbrepo/1.13/dev/services/ui) using the [`axios`](https://www.npmjs.com/package/axios) 
 module). For large databases these timeouts may need to be increased, e.g. the timeout for creating subsets is by 
 default already increased to 600 seconds.
 
 ### User Interface
 
-To serve the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui/) under different port than `80`, change the port
+To serve the [User Interface](/dbrepo/1.13/dev/services/ui/) under different port than `80`, change the port
 mapping in
 the `docker-compose.yml` to e.g. port `8000`:
 
@@ -103,13 +103,13 @@ scrape_configs:
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security
 
 1. Enable TLS encryption by downloading
-   the [`dbrepo.conf`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-gateway-service/dbrepo.conf)
+   the [`dbrepo.conf`](https://raw.githubusercontent.com/DBRepo-Project/dbrepo/master/dbrepo-gateway-service/dbrepo.conf)
    and editing the *server* block to include your TLS certificate (with trust chain) `fullchain.pem` and TLS private key
    `privkey.pem` (PEM-encoded).
 

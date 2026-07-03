@@ -13,7 +13,7 @@ author: Martin Weise
 Clone the source code repository and build the container images:
 
 ```shell
-git clone git@gitlab.phaidra.org:fair-data-austria-db-repository/fda-services.git && \
+git clone git@github.com:DBRepo-Project/dbrepo.git && \
 git checkout release-1.10 && \
 make build-java-lib build-images
 ```
@@ -52,7 +52,7 @@ Utility tools to run the build commands:
 Clone the source code repository:
 
 ```shell
-git clone git@gitlab.phaidra.org:fair-data-austria-db-repository/fda-services.git && \
+git clone git@github.com:DBRepo-Project/dbrepo.git && \
 git checkout release-1.10
 ```
 

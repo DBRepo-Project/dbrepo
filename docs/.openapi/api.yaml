@@ -8,7 +8,7 @@ info:
     accessed publicly. Have a look at
 
     the [source
-    code](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+    code](https://github.com/DBRepo-Project/dbrepo)
     for non-public endpoints
 
     that are used between the services themselves.
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/'
+  url: 'https://dbrepo-project.github.io/dbrepo/1.13/'
 paths:
   '/api/v1/database/{databaseId}/view/{viewId}/data':
     get:
@@ -4026,7 +4026,7 @@ components:
           example: inner
           externalDocs:
             url: >-
-              https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.12/user-guide/create-subset/
+              https://dbrepo-project.github.io/dbrepo/1.12/user-guide/create-subset/
         conditionals:
           type: array
           items:

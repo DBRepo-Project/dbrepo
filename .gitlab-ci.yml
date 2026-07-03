@@ -14,7 +14,7 @@ variables:
   DOC_VERSION: "1.14"
   APP_VERSION: "1.14.4"
   DUCKDB_VERSION: "1.2.2"
-  CHART_VERSION: "1.14.0"
+  CHART_VERSION: ""
   SUPPORTED_VERSIONS: "1.14.0, 1.14.1, 1.14.2, 1.14.3, 1.14.4"
   SUPPORTED_ARCH: "linux/amd64"
   MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
@@ -645,46 +645,6 @@ release-helm:
   script:
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
     - "helm sigstore upload --keyring ~/secring.gpg ./build/dbrepo-${CHART_VERSION}.tgz"
-
-release-docs:
-  stage: release
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  only:
-    - /^release-.*/
-  needs:
-    - build-python-lib
-  dependencies:
-    - build-python-lib
-  before_script:
-    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
-    - "pip install pipenv furo sphinx ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz"
-    - "pipenv install --dev --system --deploy"
-    - "mkdir -p ./final/${DOC_VERSION}/rest"
-    - "mkdir -p ./final/${APP_VERSION}"
-    - git config --global user.name "$CI_TECH_LEAD_NAME"
-    - git config --global user.email "$CI_TECH_LEAD_EMAIL"
-  script:
-    - "make gen-python-doc gen-docs-doc package-config"
-    - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
-    - "cp ./docs/.openapi/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # openapi
-    - "cp ./docs/.openapi/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # openapi
-    - "cp ./docs/.openapi/custom.css ./final/${DOC_VERSION}/rest/custom.css" # openapi
-    - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
-    - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
-    - "cp ./docs/index.html.tpl ./final/index.html" # redirect patch docs
-    - "cp ./docs/*.pdf ./final/"
-    - sed -i "s/DOC_VERSION/$DOC_VERSION/g" ./final/index.html
-    - "bash ./.gitlab/gen-badge.sh"
-    - eval $(ssh-agent -s)
-    - "mkdir -p /root/.ssh"
-    - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
-    - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
-    - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
-    - tar czf ./final.tar.gz ./final
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa ./docs/index.html.tpl $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
-    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final"'
 
 release-libs:
   stage: release

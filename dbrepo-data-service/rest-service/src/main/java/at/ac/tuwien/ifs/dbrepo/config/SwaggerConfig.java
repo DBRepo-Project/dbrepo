@@ -34,7 +34,7 @@ public class SwaggerConfig {
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .externalDocs(new ExternalDocumentation()
                         .description("Sourcecode Documentation")
-                        .url("https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/" + version + "/"))
+                        .url("https://dbrepo-project.github.io/dbrepo/" + version + "/"))
                 .servers(List.of(new Server()
                                 .description("Development instance")
                                 .url("http://localhost"),

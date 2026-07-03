@@ -6,7 +6,7 @@ author: Martin Weise
 
 To install DBRepo in your existing cluster, download the
 sample [
-`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.10/helm/dbrepo/values.yaml)
+`values.yaml`](https://github.com/DBRepo-Project/dbrepo/blob/release-1.10/helm/dbrepo/values.yaml)
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
@@ -47,10 +47,10 @@ services: '40'
 ## Limitations
 
 1. The entire Helm deployment is rootless (=`runAsNonRoot=true`) except for
-   the [Storage Service](/infrastructures/dbrepo/1.13/api/storage-service) which still requires a root user.
+   the [Storage Service](/dbrepo/1.13/api/storage-service) which still requires a root user.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!

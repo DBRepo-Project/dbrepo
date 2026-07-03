@@ -1,6 +1,6 @@
 # DBRepo Python Library
 
-Official client library for [DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.3/), a database
+Official client library for [DBRepo](https://dbrepo-project.github.io/dbrepo/1.4.3/), a database
 repository to support research based
 on [requests](https://pypi.org/project/requests/), [pydantic](https://pypi.org/project/pydantic/) 
 and [pika](https://pypi.org/project/pika/).
@@ -63,17 +63,17 @@ df = df.set_index(['some_column', 'some_other_column'])
 ## Supported Features & Best-Practices
 
 - Manage user
-  account ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/#create-user-account))
+  account ([docs](https://dbrepo-project.github.io/dbrepo/1.6/api/#create-user-account))
 - Manage
-  databases ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/usage-overview/#create-database))
+  databases ([docs](https://dbrepo-project.github.io/dbrepo/1.6/usage-overview/#create-database))
 - Manage database access &
-  visibility ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/#create-database))
+  visibility ([docs](https://dbrepo-project.github.io/dbrepo/1.6/api/#create-database))
 - Import
-  dataset ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/#import-dataset))
+  dataset ([docs](https://dbrepo-project.github.io/dbrepo/1.6/api/#import-dataset))
 - Create persistent
-  identifiers ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/#assign-database-pid))
+  identifiers ([docs](https://dbrepo-project.github.io/dbrepo/1.6/api/#assign-database-pid))
 - Execute
-  queries ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/#export-subset))
+  queries ([docs](https://dbrepo-project.github.io/dbrepo/1.6/api/#export-subset))
 - Get data from tables/views/subsets
 
 ## Configure

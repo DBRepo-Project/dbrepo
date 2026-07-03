@@ -2,7 +2,7 @@
 
 DOC_VERSION ?= 1.14
 APP_VERSION ?= 1.14.0
-CHART_VERSION ?= 1.14.0
+CHART_VERSION ?= 
 REPOSITORY_URL ?= ghcr.io/dbrepo-project/dbrepo
 
 .PHONY: all

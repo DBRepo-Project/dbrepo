@@ -2,13 +2,13 @@
 author: Martin Weise
 ---
 
-Please check the [guide](/infrastructures/dbrepo/1.13/maintainer-guide/backup-data/) on how to perform a backup first.
+Please check the [guide](/dbrepo/1.13/maintainer-guide/backup-data/) on how to perform a backup first.
 
 ## TL;DR
 
 This page explains how to restore from a backup of a MariaDB Galera (
-i.e. [Data Database](/infrastructures/dbrepo/1.13/dev/services/data-db/)
-and [Metadata Database](/infrastructures/dbrepo/1.13/dev/services/metadata-db/)).
+i.e. [Data Database](/dbrepo/1.13/dev/services/data-db/)
+and [Metadata Database](/dbrepo/1.13/dev/services/metadata-db/)).
 
 ## Restore Data
 

@@ -19,7 +19,7 @@ author: Martin Weise
 
 The Data Database contains the research data. In the default configuration, only one database of this type is deployed.
 Any number of MariaDB ata databases can be integrated into DBRepo, even non-empty databases. The database needs to be
-registered in the Metadata Database to be visible in the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui) and usable from e.g. the Python
+registered in the Metadata Database to be visible in the [User Interface](/dbrepo/1.13/dev/services/ui) and usable from e.g. the Python
 Library.
 
 ## Data
@@ -32,8 +32,8 @@ set extra flags.
 ## Backup & Restore
 
 Please refer to our detailed documentation to perform 
-a [full backup](/infrastructures/dbrepo/1.13/maintainer-guide/backup-data/) 
-and [restore](/infrastructures/dbrepo/1.13/maintainer-guide/restore-data/).
+a [full backup](/dbrepo/1.13/maintainer-guide/backup-data/) 
+and [restore](/dbrepo/1.13/maintainer-guide/restore-data/).
 
 ## Limitations
 
@@ -42,7 +42,7 @@ and [restore](/infrastructures/dbrepo/1.13/maintainer-guide/restore-data/).
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

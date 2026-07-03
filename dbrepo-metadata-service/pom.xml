@@ -18,7 +18,7 @@
 
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>metadata-service</artifactId>
-    <version>1.13.4</version>
+    <version>1.14.0</version>
 
     <packaging>pom</packaging>
     <modules>
@@ -29,7 +29,7 @@
         <module>services</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/</url>
+    <url>https://dbrepo-project.github.io/dbrepo/1.13/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -72,7 +72,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.13.4</version>
+            <version>1.14.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>

@@ -19,19 +19,19 @@ author: Martin Weise
 
 ## Overview
 
-By default, users are created using the [User Interface](/infrastructures/dbrepo/1.13/dev/services/ui) and the sign-up
+By default, users are created using the [User Interface](/dbrepo/1.13/dev/services/ui) and the sign-up
 page
 in the User Interface. This creates a new user in Keycloak. The user identity is then managed by the Auth Service. Only
 a very small subset of immutable properties (id, username) is mirrored in
-the [Metadata Database](/infrastructures/dbrepo/1.13/dev/services/metadata-db) for faster access.
+the [Metadata Database](/dbrepo/1.13/dev/services/metadata-db) for faster access.
 
 ## Identities
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.5
 
 Identities are managed via LDAP through
-the [Identity Service](/infrastructures/dbrepo/1.13/dev/services/identity-service).
-Users can register themselves through the [Auth service](/infrastructures/dbrepo/1.13/dev/services/auth-service) or via
+the [Identity Service](/dbrepo/1.13/dev/services/identity-service).
+Users can register themselves through the [Auth service](/dbrepo/1.13/dev/services/auth-service) or via
 the Auth Service admin user (`admin:admin` by default). The recommended workflow is:
 
 1. Login to the Auth Service as **Admin** and in the dbrepo realm navigate to **Users**
@@ -47,7 +47,7 @@ The REST API supports three kinds of authentication:
 * Internal Authentication: limited to a local system user that is only used between services (i.e. *never* publicly)
 
 <figure markdown>
-![Auth](/infrastructures/dbrepo/1.13/images/authentication.svg)
+![Auth](/dbrepo/1.13/images/authentication.svg)
 <figcaption>Figure 1: Authentication Mechanisms in DBRepo</figcaption>
 </figure>
 
@@ -75,7 +75,7 @@ specific action in the services. For example: the `create-database` role authori
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Redirect Notice</title>
-    <meta http-equiv="Refresh" content="0; url='/infrastructures/dbrepo/DOC_VERSION/'" />
+    <meta http-equiv="Refresh" content="0; url='/dbrepo/DOC_VERSION/'" />
 </head>
 <body>
 <h1>Redirect Notice</h1>
@@ -12,7 +12,7 @@
     available at:
 </p>
 <p>
-    <a href="/infrastructures/dbrepo/DOC_VERSION/">/infrastructures/dbrepo/DOC_VERSION/</a>
+    <a href="/dbrepo/DOC_VERSION/">/dbrepo/DOC_VERSION/</a>
 </p>
 </body>
 </html>

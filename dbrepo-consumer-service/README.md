@@ -18,7 +18,7 @@ mvn -pl rest-service clean test verify
 ```
 
 Or run only tests 
-in [`DatabaseServiceIntegrationTest.java`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/dbrepo-consumer-service/rest-service/src/test/java/at/tuwien/service/DatabaseServiceIntegrationTest.java):
+in [`DatabaseServiceIntegrationTest.java`](https://github.com/DBRepo-Project/dbrepo/blob/master/dbrepo-consumer-service/rest-service/src/test/java/at/tuwien/service/DatabaseServiceIntegrationTest.java):
 
 ```bash
 mvn -pl rest-service -Dtest="DatabaseServiceIntegrationTest" clean test
