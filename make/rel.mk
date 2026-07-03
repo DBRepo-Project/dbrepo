@@ -11,7 +11,7 @@ bump-python: ## Bump Python library version. Usage: make bump-python VERSION=X.Y
 	bash ./.scripts/bump-python-version.sh "$(VERSION)"
 
 .PHONY: tag-images
-tag-images: build-images ## Tag the docker images.
+tag-images: ## Tag the docker images.
 	docker tag dbrepo-consumer-service:latest "${REPOSITORY_URL}/consumer-service:${APP_VERSION}${BUILD_VERSION}"
 	docker tag dbrepo-dashboard-service:latest "${REPOSITORY_URL}/dashboard-service:${APP_VERSION}${BUILD_VERSION}"
 	docker tag dbrepo-dashboard-service-init:latest "${REPOSITORY_URL}/dashboard-service-init:${APP_VERSION}${BUILD_VERSION}"
@@ -23,7 +23,7 @@ tag-images: build-images ## Tag the docker images.
 	docker tag dbrepo-ui:latest "${REPOSITORY_URL}/ui:${APP_VERSION}${BUILD_VERSION}"
 
 .PHONY: tag-jupyter-image
-tag-jupyter-image: build-jupyter-image
+tag-jupyter-image:
 	docker tag starter-notebook:latest "${REPOSITORY_URL}/starter-notebook:${APP_VERSION}${BUILD_VERSION}"
 
 .PHONY: release-images
