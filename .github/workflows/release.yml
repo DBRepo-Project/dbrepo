@@ -18,8 +18,8 @@ defaults:
 
 env:
   APP_VERSION: '1.13.4'
-  DOC_VERSION: '1.13'
-  CHART_VERSION: '1.13.4'
+  DOC_VERSION: '1.14'
+  CHART_VERSION: '1.14.0'
   REGCLIENT_VERSION: '0.8.2'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'
