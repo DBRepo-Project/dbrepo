@@ -230,3 +230,20 @@ jobs:
             docker tag "$1:latest" "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
             docker push "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
           done
+      - name: Set package visibility to public
+        run: |
+          for name in \
+            "dbrepo%2Fconsumer-service" \
+            "dbrepo%2Fdashboard-service" \
+            "dbrepo%2Fdashboard-service-init" \
+            "dbrepo%2Fdata-service" \
+            "dbrepo%2Fmetadata-service" \
+            "dbrepo%2Fsearch-service" \
+            "dbrepo%2Fsearch-service-init" \
+            "dbrepo%2Fstorage-service-init" \
+            "dbrepo%2Fui" \
+            "dbrepo%2Fstarter-notebook"
+          do
+            gh api -X PATCH "/orgs/${GHCR_NAMESPACE}/packages/container/${name}/visibility" \
+              -f visibility=public 2>/dev/null || true
+          done
