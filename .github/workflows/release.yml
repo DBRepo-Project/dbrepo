@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 defaults:
@@ -63,6 +63,61 @@ jobs:
           APP_VERSION=$DOC_VERSION make release-images
           make release-jupyter-image
           APP_VERSION=$DOC_VERSION make release-jupyter-image
+      - name: Update GitHub Release with Docker image links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          cat > /tmp/docker-images.md <<-EOF
+          ## Docker Images
+
+          All images are available on [GitHub Container Registry](https://github.com/orgs/DBRepo-Project/packages?repo_name=dbrepo):
+
+          | Service | Image |
+          |---|---|
+          | consumer-service | \`ghcr.io/dbrepo-project/dbrepo/consumer-service:${VERSION}\` |
+          | dashboard-service | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service:${VERSION}\` |
+          | dashboard-service-init | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:${VERSION}\` |
+          | data-service | \`ghcr.io/dbrepo-project/dbrepo/data-service:${VERSION}\` |
+          | metadata-service | \`ghcr.io/dbrepo-project/dbrepo/metadata-service:${VERSION}\` |
+          | search-service | \`ghcr.io/dbrepo-project/dbrepo/search-service:${VERSION}\` |
+          | search-service-init | \`ghcr.io/dbrepo-project/dbrepo/search-service-init:${VERSION}\` |
+          | storage-service-init | \`ghcr.io/dbrepo-project/dbrepo/storage-service-init:${VERSION}\` |
+          | ui | \`ghcr.io/dbrepo-project/dbrepo/ui:${VERSION}\` |
+          | starter-notebook | \`ghcr.io/dbrepo-project/dbrepo/starter-notebook:${VERSION}\` |
+
+          Also available:
+          - **Helm chart**: \`oci://ghcr.io/dbrepo-project/helm/dbrepo:${VERSION}\`
+          - **Python library**: [dbrepo on PyPI](https://pypi.org/project/dbrepo/)
+          EOF
+
+          gh release view "$GITHUB_REF_NAME" --json body --jq .body > /tmp/existing-body.txt 2>/dev/null || true
+          if [ -s /tmp/existing-body.txt ]; then
+            printf '%s\n\n%s' "$(cat /tmp/existing-body.txt)" "$(cat /tmp/docker-images.md)" > /tmp/combined.md
+          else
+            cp /tmp/docker-images.md /tmp/combined.md
+          fi
+          gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/combined.md
+      - name: Set package visibility to public
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for name in \
+            "dbrepo%2Fconsumer-service" \
+            "dbrepo%2Fdashboard-service" \
+            "dbrepo%2Fdashboard-service-init" \
+            "dbrepo%2Fdata-service" \
+            "dbrepo%2Fmetadata-service" \
+            "dbrepo%2Fsearch-service" \
+            "dbrepo%2Fsearch-service-init" \
+            "dbrepo%2Fstorage-service-init" \
+            "dbrepo%2Fui" \
+            "dbrepo%2Fstarter-notebook"
+          do
+            gh api -X PATCH "/orgs/${GHCR_NAMESPACE}/packages/container/${name}/visibility" \
+              -f visibility=public 2>/dev/null || true
+          done
 
   release-helm:
     if: startsWith(github.ref, 'refs/tags/')
