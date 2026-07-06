@@ -43,7 +43,7 @@ make build-python-lib
 Build the docker images:
 
 ```shell
-docker compose build
+make build-images
 ```
 
 ### Run
