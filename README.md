@@ -1,6 +1,6 @@
-[![CI/CD Status](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![CI/CD Status](https://github.com/DBRepo-Project/dbrepo/actions/workflows/ci.yml/badge.svg)](https://github.com/DBRepo-Project/dbrepo/actions/workflows/ci.yml)
 [![CI/CD Coverage](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
-[![Latest Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![Latest Release](https://img.shields.io/github/release/dbrepo-project/dbrepo.svg?style=flat)](https://github.com/DBRepo-Project/dbrepo/releases/latest)
 [![PyPI Library version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/)
 [![Image Pulls](https://img.shields.io/docker/pulls/dbrepo/data-service?style=flat)](https://hub.docker.com/u/dbrepo)
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo)
