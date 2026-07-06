@@ -4,7 +4,7 @@
 [![PyPI Library version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/)
 [![Image Pulls](https://img.shields.io/docker/pulls/dbrepo/data-service?style=flat)](https://hub.docker.com/u/dbrepo)
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo)
-![GitHub License](https://img.shields.io/github/license/dbrepo-project/dbrepo)
+[![GitHub License](https://img.shields.io/github/license/dbrepo-project/dbrepo)](https://github.com/DBRepo-Project/dbrepo/blob/main/LICENSE)
 
 <img src="./dbrepo-ui/public/logo.png" width="200" alt="DBRepo &mdash; Repository for Data in Databases" />
 
