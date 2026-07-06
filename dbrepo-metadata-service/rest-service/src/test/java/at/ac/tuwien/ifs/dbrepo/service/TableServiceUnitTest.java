@@ -21,13 +21,16 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.metadata.ColumnDependencyRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.ForeignKeyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -50,6 +53,12 @@ public class TableServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private DatabaseRepository databaseRepository;
+
+    @MockitoBean
+    private ForeignKeyRepository foreignKeyRepository;
+
+    @MockitoBean
+    private ColumnDependencyRepository columnDependencyRepository;
 
     @MockitoBean
     private SearchServiceGateway searchServiceGateway;
@@ -730,11 +739,23 @@ public class TableServiceUnitTest extends BaseTest {
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_1_ID);
+        when(foreignKeyRepository.deleteReferencesByTableId(TABLE_1_ID))
+                .thenReturn(1);
+        when(foreignKeyRepository.deleteByTableId(TABLE_1_ID))
+                .thenReturn(1);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.deleteTable(TABLE_1);
+
+        final InOrder inOrder = inOrder(foreignKeyRepository, dataServiceGateway);
+        inOrder.verify(foreignKeyRepository)
+                .deleteReferencesByTableId(TABLE_1_ID);
+        inOrder.verify(foreignKeyRepository)
+                .deleteByTableId(TABLE_1_ID);
+        inOrder.verify(dataServiceGateway)
+                .deleteTable(DATABASE_1_ID, TABLE_1_ID);
     }
 
     @Test
@@ -749,6 +770,10 @@ public class TableServiceUnitTest extends BaseTest {
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
+        when(foreignKeyRepository.deleteReferencesByTableId(TABLE_4_ID))
+                .thenReturn(0);
+        when(foreignKeyRepository.deleteByTableId(TABLE_4_ID))
+                .thenReturn(0);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
@@ -781,11 +806,19 @@ public class TableServiceUnitTest extends BaseTest {
         doThrow(TableNotFoundException.class)
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
+        when(foreignKeyRepository.deleteReferencesByTableId(TABLE_4_ID))
+                .thenReturn(1);
+        when(foreignKeyRepository.deleteByTableId(TABLE_4_ID))
+                .thenReturn(1);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.deleteTable(TABLE_4);
+        verify(foreignKeyRepository)
+                .deleteReferencesByTableId(TABLE_4_ID);
+        verify(foreignKeyRepository)
+                .deleteByTableId(TABLE_4_ID);
     }
 
 }

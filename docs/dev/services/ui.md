@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.11.0`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`ghcr.io/dbrepo-project/dbrepo/ui:1.11.0`](https://github.com/orgs/DBRepo-Project/packages)
 
     * Ports: 3000/tcp
 

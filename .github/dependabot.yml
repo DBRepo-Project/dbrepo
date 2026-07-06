@@ -1,3 +1,5 @@
+# Scheduled Dependabot runs are disabled by setting open-pull-requests-limit: 0.
+# To reenable them, restore each open-pull-requests-limit value to 10.
 version: 2
 
 updates:
@@ -12,7 +14,7 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "chore(deps)"
     ignore:
@@ -34,7 +36,7 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     cooldown:
       semver-minor-days: 7
       semver-patch-days: 3
@@ -65,7 +67,7 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     cooldown:
       semver-minor-days: 7
       semver-patch-days: 3
@@ -98,7 +100,7 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -118,7 +120,7 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -136,6 +138,6 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "chore(deps)"

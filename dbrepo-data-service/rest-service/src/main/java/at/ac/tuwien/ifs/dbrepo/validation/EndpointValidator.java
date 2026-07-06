@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.security.Principal;
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -88,21 +88,27 @@ public class EndpointValidator {
             }
         }
         if (subset.getFilters() != null) {
-            final Set<FilterDto> filters = subset.getFilters();
-            FilterTypeDto previous = null;
-            final int[] idx = new int[]{0};
+            final List<FilterDto> filters = subset.getFilters();
+            boolean expectWhere = true;
             for (FilterDto filter : filters) {
-                if (filter == null || filter.getType() == null || filter.getColumnId() == null || filter.getOperatorId() == null) {
+                if (filter == null || filter.getType() == null) {
                     log.error("Failed to validate subset: incomplete filter");
                     throw new QueryMalformedException("Failed to validate subset: incomplete filter");
                 }
-                if ((idx[0] == 0 && !filter.getType().equals(FilterTypeDto.WHERE)) ||
-                        (idx[0] > 0 && !previous.equals(FilterTypeDto.WHERE) && (filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR)))) {
-                    log.error("Failed to validate subset: invalid specification, must be where-[(and|or)-where] but is: {}-{}", previous, filter);
+                final boolean connector = filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR);
+                if ((expectWhere && !filter.getType().equals(FilterTypeDto.WHERE)) || (!expectWhere && !connector)) {
+                    log.error("Failed to validate subset: invalid specification, must be where-[(and|or)-where] but is: {}", filter);
                     throw new QueryMalformedException("Failed to validate subset: invalid specification, must be where-[(and|or)-where]");
                 }
-                previous = filter.getType();
-                idx[0]++;
+                if (filter.getType().equals(FilterTypeDto.WHERE) && (filter.getColumnId() == null || filter.getOperatorId() == null)) {
+                    log.error("Failed to validate subset: incomplete filter");
+                    throw new QueryMalformedException("Failed to validate subset: incomplete filter");
+                }
+                expectWhere = connector;
+            }
+            if (expectWhere && !filters.isEmpty()) {
+                log.error("Failed to validate subset: invalid specification, must be where-[(and|or)-where] but ends with a connector");
+                throw new QueryMalformedException("Failed to validate subset: invalid specification, must be where-[(and|or)-where]");
             }
         }
     }

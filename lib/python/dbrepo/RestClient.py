@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from io import BytesIO
+from uuid import uuid4
 
 import requests
 from pandas import DataFrame
@@ -65,7 +66,7 @@ class RestClient:
             headers = dict()
             logging.debug(f'no headers set')
         if payload is not None:
-            payload = payload.model_dump()
+            payload = payload.model_dump(by_alias=True)
         auth = None
         if self.username is None and self.password is not None:
             headers["Authorization"] = f"Bearer {self.password}"
@@ -929,14 +930,20 @@ class RestClient:
         """
         buffer = BytesIO()
         dataframe.to_csv(path_or_buf=buffer, header=True, index=False)
+        filename = f'{uuid4()}.csv'
         url = f'/api/v1/upload'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 files={'file': ('dataframe.csv', buffer.getvalue())})
-        if response.status_code == 201:
-            body = response.json()
-            return UploadResponse.model_validate(body).s3_key
+                                 files={'file': (filename, buffer.getvalue())})
+        if response.status_code in (201, 204):
+            s3_key = response.headers.get('X-S3-Key') or response.headers.get('x-s3-key')
+            if s3_key:
+                return s3_key
+            if response.content:
+                body = response.json()
+                return UploadResponse.model_validate(body).s3_key
+            raise ResponseCodeError('Failed to upload: missing X-S3-Key header and response body')
         raise ResponseCodeError(f'Failed to upload: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+                                f'201 (CREATED) or 204 (NO CONTENT): {response.text}')
 
     def import_table_data(self, database_id: str, table_id: str, dataframe: DataFrame) -> None:
         """
@@ -1968,8 +1975,14 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True,
                                  payload=UpdateColumn(concept_uri=concept_uri, unit_uri=unit_uri))
         if response.status_code == 202:
-            body = response.json()
-            return Column.model_validate(body)
+            if response.text.strip():
+                body = response.json()
+                return Column.model_validate(body)
+            table = self.get_table(database_id=database_id, table_id=table_id)
+            for column in table.columns:
+                if column.id == column_id:
+                    return column
+            raise NotExistsError(f'Failed to update column: column not found after update')
         if response.status_code == 400:
             raise MalformedError(f'Failed to update column: {response.text}')
         if response.status_code == 403:
