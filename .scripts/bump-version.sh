@@ -49,6 +49,11 @@ if [[ -z "${NEW_CHART:-}" ]]; then
   NEW_CHART="${NEW_VERSION}"
 fi
 
+if [[ -z "${CUR_APP:-}" || -z "${CUR_CHART:-}" ]]; then
+  echo "ERROR: Could not read APP_VERSION or CHART_VERSION from Makefile"
+  exit 1
+fi
+
 if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "ERROR: Version must be in X.Y.Z format (e.g., 1.14.0)"
   exit 1
@@ -89,13 +94,13 @@ sed -i "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" lib/java/dbrepo-core/po
 
 # --- 4. Helm chart ---
 echo "[4/7] helm/dbrepo"
-sed -i "s|:${CUR_CHART}|:${NEW_CHART}|g" helm/dbrepo/Chart.yaml
+sed -i "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${CUR_CHART}|\1:${NEW_CHART}|g" helm/dbrepo/Chart.yaml
 sed -i "s/version: \"${CUR_CHART}\"/version: \"${NEW_CHART}\"/" helm/dbrepo/Chart.yaml
 sed -i "s/appVersion: \"${CUR_APP}\"/appVersion: \"${NEW_VERSION}\"/" helm/dbrepo/Chart.yaml
 sed -i "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" helm/dbrepo/Chart.yaml
 
-sed -i "s|:${CUR_CHART}|:${NEW_CHART}|g" helm/dbrepo/values.yaml
-sed -i "s|:${CUR_CHART}|:${NEW_CHART}|g" helm/dbrepo/overlay-values.yaml
+sed -i "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${CUR_CHART}|\1:${NEW_CHART}|g" helm/dbrepo/values.yaml
+sed -i "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${CUR_CHART}|\1:${NEW_CHART}|g" helm/dbrepo/overlay-values.yaml
 sed -i "s|raw/v${OLD_VERSION}/|raw/v${NEW_VERSION}/|" helm/dbrepo/gen-overlay-values.sh
 
 # --- 5. Scripts ---

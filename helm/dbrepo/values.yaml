@@ -1,420 +1,420 @@
 # Copyright the DBRepo developers
-# SPDX-License-Identifier:1.14.0 APACHE-2.0
+# SPDX-License-Identifier: APACHE-2.0
 
 ## @section Global parameters
 
-global:1.14.0
+global:
   ## Compatibility adaptations for Kubernetes platforms
-  compatibility:1.14.0
+  compatibility:
     ##  Compatibility adaptations for Openshift
-    openshift:1.14.0
-      ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC:1.14.0 remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values:1.14.0 auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
-      adaptSecurityContext:1.14.0 auto
-  security:1.14.0
+    openshift:
+      ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
+      adaptSecurityContext: auto
+  security:
     ## @param global.security.allowInsecureImages Allows skipping image verification, needed for bitnamilegacy
-    allowInsecureImages:1.14.0 true
+    allowInsecureImages: true
   ## @param global.storageClass Global StorageClass for Persistent Volume(s)
-  storageClass:1.14.0 ""
+  storageClass: ""
 
 ## @section Common parameters
 
 ## @param hostname The hostname.
-hostname:1.14.0 example.com
+hostname: example.com
 ## @param strategyType The image pull
-strategyType:1.14.0 RollingUpdate
+strategyType: RollingUpdate
 ## @param clusterDomain The cluster domain.
-clusterDomain:1.14.0 cluster.local
+clusterDomain: cluster.local
 ## @param username The internal system username. This user is only used between the microservices and does not exist on paper.
-username:1.14.0 admin
+username: admin
 ## @param password The internal system password. This user is only used between the microservices and does not exist on paper.
-password:1.14.0 admin
+password: admin
 
 ## @section Metadata Database
 
-metadatadb:1.14.0
+metadatadb:
   ## @param metadatadb.enabled Enable the Metadata Database.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip metadatadb.fullnameOverride
-  fullnameOverride:1.14.0 metadata-db
-  image:1.14.0
+  fullnameOverride: metadata-db
+  image:
     ## @skip metadatadb.image.repository
-    repository:1.14.0 bitnamilegacy/mariadb-galera
+    repository: bitnamilegacy/mariadb-galera
   ## @param metadatadb.host The hostname for the microservices.
-  host:1.14.0 metadata-db
-  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https:1.14.0//www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/api/data-db/#data
-  extraFlags:1.14.0 "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-  rootUser:1.14.0
+  host: metadata-db
+  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.14/api/data-db/#data
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+  rootUser:
     ## @param metadatadb.rootUser.user The root username.
-    user:1.14.0 root
+    user: root
     ## @param metadatadb.rootUser.password The root user password.
-    password:1.14.0 dbrepo
-  db:1.14.0
+    password: dbrepo
+  db:
     ## @param metadatadb.db.name The database name.
-    name:1.14.0 dbrepo
-  galera:1.14.0
-    mariabackup:1.14.0
+    name: dbrepo
+  galera:
+    mariabackup:
       ## @param metadatadb.galera.mariabackup.user The database backup username.
-      user:1.14.0 backup
+      user: backup
       ## @param metadatadb.galera.mariabackup.password The database backup user password
-      password:1.14.0 backup
+      password: backup
   ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
-  jdbcExtraArgs:1.14.0 ""
-  metrics:1.14.0
-    image:1.14.0
+  jdbcExtraArgs: ""
+  metrics:
+    image:
       ## @skip metadatadb.metrics.image.repository
-      repository:1.14.0 bitnamilegacy/mysqld-exporter
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
-    enabled:1.14.0 true
+    enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
-  initdbScriptsConfigMap:1.14.0 metadata-db-config
+  initdbScriptsConfigMap: metadata-db-config
   ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
-  extraInitDbScripts:1.14.0 { }
-  #    03-additional-data.sql:1.14.0 |
+  extraInitDbScripts: { }
+  #    03-additional-data.sql: |
   #      BEGIN;
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
   ## @param metadatadb.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "xlarge"
-  persistence:1.14.0
+  resourcesPreset: "xlarge"
+  persistence:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
-    enabled:1.14.0 true
+    enabled: true
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount:1.14.0 3
+  replicaCount: 3
 
 ## @section Dashboard Database Enable the Dashboard Database.
 
-dashboarddb:1.14.0
+dashboarddb:
   ## @param dashboarddb.enabled
-  enabled:1.14.0 true
+  enabled: true
   ## @skip dashboarddb.fullnameOverride
-  fullnameOverride:1.14.0 dashboard-db
-  image:1.14.0
+  fullnameOverride: dashboard-db
+  image:
     ## @skip dashboarddb.image.repository
-    repository:1.14.0 bitnamilegacy/postgresql
-  volumePermissions:1.14.0
-    image:1.14.0
+    repository: bitnamilegacy/postgresql
+  volumePermissions:
+    image:
       ## @skip dashboarddb.volumePermissions.image.repository
-      repository:1.14.0 bitnamilegacy/os-shell
+      repository: bitnamilegacy/os-shell
   ## @param dashboarddb.host The hostname for the microservices.
-  host:1.14.0 dashboard-db:1.14.05432
-  metrics:1.14.0
-    image:1.14.0
+  host: dashboard-db:5432
+  metrics:
+    image:
       ## @skip dashboarddb.metrics.image.repository
-      repository:1.14.0 bitnamilegacy/postgres-exporter
+      repository: bitnamilegacy/postgres-exporter
     ## @skip dashboarddb.metrics.enabled
-    enabled:1.14.0 true
+    enabled: true
   ## @skip dashboarddb.primary
-  primary:1.14.0
-    resources:1.14.0
-      requests:1.14.0
-        cpu:1.14.0 500m
-        memory:1.14.0 512Mi
-      limits:1.14.0
-        cpu:1.14.0 "1"
-        memory:1.14.0 1Gi
-  auth:1.14.0
+  primary:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+  auth:
     ## @param dashboarddb.auth.database The dashboard database name.
-    database:1.14.0 grafana
+    database: grafana
     ## @param dashboarddb.auth.username The dashboard database username.
-    username:1.14.0 grafana
+    username: grafana
     ## @param dashboarddb.auth.password The dashboard database user password.
-    password:1.14.0 dbrepo
+    password: dbrepo
 
 ## @section Auth Service
 
-authservice:1.14.0
+authservice:
   ## @param authservice.enabled Enable the Auth Service.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip authservice.fullnameOverride
-  fullnameOverride:1.14.0 auth-service
-  image:1.14.0
+  fullnameOverride: auth-service
+  image:
     ## @skip authservice.image.registry
-    registry:1.14.0 docker.io
+    registry: docker.io
     ## @skip authservice.image.repository
-    repository:1.14.0 bitnami/keycloak
+    repository: bitnami/keycloak
     ## @skip authservice.image.tag
-    tag:1.14.0 26.4.4
+    tag: 26.4.4
   ## @param authservice.endpoint The hostname for the microservices.
-  endpoint:1.14.0 http:1.14.0//auth-service
+  endpoint: http://auth-service
   ## @skip authservice.extraStartupArgs
-  extraStartupArgs:1.14.0 --import-realm
+  extraStartupArgs: --import-realm
   ## @skip authservice.proxyHeaders
-  proxyHeaders:1.14.0 xforwarded
+  proxyHeaders: xforwarded
   ## @param authservice.issuerUri Custom issuer URI, if empty a combination of `$hostname/realms/dbrepo` is used.
-  issuerUri:1.14.0 ""
+  issuerUri: ""
   ## @param authservice.jwkUri Custom JWK URI, if empty a combination of `$hostname/realms/dbrepo/protocol/openid-connect/certs` is used.
-  jwkUri:1.14.0 ""
-  auth:1.14.0
+  jwkUri: ""
+  auth:
     ## @skip authservice.auth.adminUser
-    adminUser:1.14.0 admin
+    adminUser: admin
     ## @skip authservice.auth.adminPassword
-    adminPassword:1.14.0 admin
+    adminPassword: admin
   ## @skip authservice.postgresql
-  postgresql:1.14.0
-    enabled:1.14.0 true
-    image:1.14.0
+  postgresql:
+    enabled: true
+    image:
       ## @skip authservice.postgresql.image.repository
-      repository:1.14.0 bitnamilegacy/postgresql
-    volumePermissions:1.14.0
-      image:1.14.0
+      repository: bitnamilegacy/postgresql
+    volumePermissions:
+      image:
         ## @skip authservice.postgresql.volumePermissions.image.repository
-        repository:1.14.0 bitnamilegacy/os-shell
-    metrics:1.14.0
-      image:1.14.0
+        repository: bitnamilegacy/os-shell
+    metrics:
+      image:
         ## @skip authservice.postgresql.metrics.image.repository
-        repository:1.14.0 bitnamilegacy/postgres-exporter
-    fullnameOverride:1.14.0 auth-db
-    auth:1.14.0
-      postgresPassword:1.14.0 postgres
+        repository: bitnamilegacy/postgres-exporter
+    fullnameOverride: auth-db
+    auth:
+      postgresPassword: postgres
   ## @param authservice.resourcesPreset The container resource presets
-  resourcesPreset:1.14.0 "small"
-  jwt:1.14.0
+  resourcesPreset: "small"
+  jwt:
     ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
-    pubkey:1.14.0 "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
-  metrics:1.14.0
+    pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
+  metrics:
     ## @skip authservice.metrics.enabled
-    enabled:1.14.0 true
-  client:1.14.0
+    enabled: true
+  client:
     ## @param authservice.client.id The client id for the microservices.
-    id:1.14.0 dbrepo-client
+    id: dbrepo-client
     ## @param authservice.client.secret The client secret for the microservices.
-    secret:1.14.0 MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+    secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   ## @skip authservice.initdbScripts
-  keycloakConfigCli:1.14.0
-    image:1.14.0
+  keycloakConfigCli:
+    image:
       ## @skip authservice.keycloakConfigCli.image.repository
-      repository:1.14.0 bitnamilegacy/keycloak-config-cli
+      repository: bitnamilegacy/keycloak-config-cli
     ## @skip authservice.keycloakConfigCli.existingConfigmap
-    existingConfigmap:1.14.0 auth-service-config
+    existingConfigmap: auth-service-config
   ## @skip authservice.extraEnvVarsSecret
-  extraEnvVarsSecret:1.14.0 auth-service-secret
+  extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
-  extraVolumes:1.14.0
-    - name:1.14.0 import
-      configMap:1.14.0
-        name:1.14.0 auth-service-config
-    - name:1.14.0 logging
-      emptyDir:1.14.0 { }
+  extraVolumes:
+    - name: import
+      configMap:
+        name: auth-service-config
+    - name: logging
+      emptyDir: { }
   ## @skip authservice.extraVolumeMounts
-  extraVolumeMounts:1.14.0
-    - name:1.14.0 import
-      mountPath:1.14.0 /opt/bitnami/keycloak/data/import
-    - name:1.14.0 logging
-      mountPath:1.14.0 /var/log/app/service/auth
+  extraVolumeMounts:
+    - name: import
+      mountPath: /opt/bitnami/keycloak/data/import
+    - name: logging
+      mountPath: /var/log/app/service/auth
   ## @skip authservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
 
 ## @sectionn Cache Database
 
-cachedb:1.14.0
+cachedb:
   ## @param cachedb.enabled Enable the Cache Database.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip cachedb.fullnameOverride
-  fullnameOverride:1.14.0 cache-db
+  fullnameOverride: cache-db
   ## @skip cachedb.architecture
-  architecture:1.14.0 standalone
+  architecture: standalone
   ## @param cachedb.flavor The provider flavor of the Cache Database for Redisson (as Java library)
-  ## ref https:1.14.0//redisson.pro/docs/configuration/
-  ## one of the following:1.14.0
+  ## ref https://redisson.pro/docs/configuration/
+  ## one of the following:
   ##   "redis" for Redis connection
   ##   "valkey" for Valkey connection
   ##   "valkeys" for Valkey SSL connection
   ##   "rediss" for Redis SSL connection
-  flavor:1.14.0 valkey
+  flavor: valkey
   ## @param cachedb.endpoint The endpoint for the microservices
-  endpoint:1.14.0 cache-db-primary
+  endpoint: cache-db-primary
   ## @param cachedb.port The port for the microservices.
-  port:1.14.0 6379
-  image:1.14.0
+  port: 6379
+  image:
     ## @skip cachedb.image.repository
-    repository:1.14.0 bitnamilegacy/valkey
-  auth:1.14.0
+    repository: bitnamilegacy/valkey
+  auth:
     ## @param cachedb.auth.password The Valkey password
-    password:1.14.0 valkey
+    password: valkey
 
 ## @section Data Database
 
-datadb:1.14.0
+datadb:
   ## @param datadb.enabled Enable the Auth Service.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip datadb.fullnameOverride
-  fullnameOverride:1.14.0 data-db
-  image:1.14.0
+  fullnameOverride: data-db
+  image:
     ## @skip datadb.image.repository
-    repository:1.14.0 bitnamilegacy/mariadb-galera
+    repository: bitnamilegacy/mariadb-galera
   ## @param datadb.host The hostname for the microservices.
-  host:1.14.0 data-db
-  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https:1.14.0//www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
-  extraFlags:1.14.0 "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-  rootUser:1.14.0
+  host: data-db
+  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.14/api/data-db/#data
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+  rootUser:
     ## @param datadb.rootUser.user The root username.
-    user:1.14.0 root
+    user: root
     ## @param datadb.rootUser.password The root user password.
-    password:1.14.0 dbrepo
-  db:1.14.0
+    password: dbrepo
+  db:
     ## @param datadb.db.name The database name.
-    name:1.14.0 dbrepo
+    name: dbrepo
     ## @param datadb.db.user The readonly username.
-    user:1.14.0 readonly
+    user: readonly
     ## @param datadb.db.password The readonly password.
-    password:1.14.0 readonly
-  galera:1.14.0
-    mariabackup:1.14.0
+    password: readonly
+  galera:
+    mariabackup:
       ## @param datadb.galera.mariabackup.user The database backup username.
-      user:1.14.0 backup
+      user: backup
       ## @param datadb.galera.mariabackup.password The database backup user password
-      password:1.14.0 backup
+      password: backup
   ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
-  jdbcExtraArgs:1.14.0 ""
-  metrics:1.14.0
-    image:1.14.0
+  jdbcExtraArgs: ""
+  metrics:
+    image:
       ## @skip datadb.metrics.image.repository
-      repository:1.14.0 bitnamilegacy/mysqld-exporter
+      repository: bitnamilegacy/mysqld-exporter
     ## @skip datadb.metrics.enabled The Prometheus settings.
-    enabled:1.14.0 true
+    enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount:1.14.0 3
+  replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "xlarge"
+  resourcesPreset: "xlarge"
   ## @param datadb.configurationConfigMap The configmap name holding the `my.cnf` key that defines the mariadb configuration.
-  configurationConfigMap:1.14.0 "data-db-config"
+  configurationConfigMap: "data-db-config"
   ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
-  initdbScriptsConfigMap:1.14.0 "data-db-scripts-config"
-  persistence:1.14.0
+  initdbScriptsConfigMap: "data-db-scripts-config"
+  persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
-    enabled:1.14.0 true
+    enabled: true
 
 ## @section Search Database
 
-searchdb:1.14.0
+searchdb:
   ## @param searchdb.enabled Enable the Data datadb.
-  enabled:1.14.0 true
-  image:1.14.0
+  enabled: true
+  image:
     ## @skip searchdb.image.repository
-    repository:1.14.0 bitnamilegacy/opensearch
+    repository: bitnamilegacy/opensearch
   ## @skip searchdb.fullnameOverride
-  fullnameOverride:1.14.0 search-db
+  fullnameOverride: search-db
   ## @skip searchdb.servicenameOverride
-  servicenameOverride:1.14.0 search-db
+  servicenameOverride: search-db
   ## @param searchdb.host The hostname for the microservices.
-  host:1.14.0 search-db
+  host: search-db
   ## @param searchdb.port The port for the microservices.
-  port:1.14.0 9200
-  ingest:1.14.0
+  port: 9200
+  ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
-    enabled:1.14.0 false
-  security:1.14.0
+    enabled: false
+  security:
     ## @skip searchdb.security.enabled
-    enabled:1.14.0 false
-  dashboards:1.14.0
-    image:1.14.0
+    enabled: false
+  dashboards:
+    image:
       ## @skip searchdb.dashboards.image.repository
-      repository:1.14.0 bitnamilegacy/opensearch-dashboards
-  sysctlImage:1.14.0
+      repository: bitnamilegacy/opensearch-dashboards
+  sysctlImage:
     ## @skip searchdb.sysctlImage.repository
-    repository:1.14.0 bitnamilegacy/os-shell
-  snapshots:1.14.0
-    image:1.14.0
+    repository: bitnamilegacy/os-shell
+  snapshots:
+    image:
       ## @skip searchdb.snapshots.image.repository
-      repository:1.14.0 bitnamilegacy/os-shell
+      repository: bitnamilegacy/os-shell
   ## @param searchdb.clusterName The cluster name.
-  clusterName:1.14.0 search-db
+  clusterName: search-db
 
 ## @section Broker Service
 
-brokerservice:1.14.0
+brokerservice:
   ## @param brokerservice.enabled Enable the Broker Service.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip brokerservice.fullnameOverride
-  fullnameOverride:1.14.0 broker-service
-  image:1.14.0
+  fullnameOverride: broker-service
+  image:
     ## @skip brokerservice.image.repository
-    repository:1.14.0 bitnamilegacy/rabbitmq
-  metrics:1.14.0
+    repository: bitnamilegacy/rabbitmq
+  metrics:
     ## @skip brokerservice.metrics.enabled
-    enabled:1.14.0 true
+    enabled: true
   ## @param brokerservice.endpoint The management api endpoint for the microservices.
-  endpoint:1.14.0 http:1.14.0//broker-service:1.14.015672
+  endpoint: http://broker-service:15672
   ## @param brokerservice.host The hostname for the microservices.
-  host:1.14.0 broker-service
+  host: broker-service
   ## @param brokerservice.port The port for the microservices.
-  port:1.14.0 5672
+  port: 5672
   ## @param brokerservice.virtualHost The default virtual host name.
-  virtualHost:1.14.0 dbrepo
+  virtualHost: dbrepo
   ## @param brokerservice.queueName The default queue name.
-  queueName:1.14.0 dbrepo
+  queueName: dbrepo
   ## @param brokerservice.exchangeName The default exchange name.
-  exchangeName:1.14.0 dbrepo
+  exchangeName: dbrepo
   ## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
-  routingKey:1.14.0 dbrepo.#
+  routingKey: dbrepo.#
   ## @param brokerservice.connectionTimeout The connection timeout in ms.
-  connectionTimeout:1.14.0 60000
-  ldap:1.14.0
+  connectionTimeout: 60000
+  ldap:
     ## @skip brokerservice.ldap.enabled
-    enabled:1.14.0 true
+    enabled: true
     ## @skip brokerservice.ldap.authorisationEnabled
-    authorisationEnabled:1.14.0 true
+    authorisationEnabled: true
     ## @skip brokerservice.ldap.servers
-    servers:1.14.0
+    servers:
       - identity-service
     ## @skip brokerservice.ldap.port
-    port:1.14.0 1389
+    port: 1389
     ## @param brokerservice.ldap.binddn The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`.
-    binddn:1.14.0 cn=admin,dc=dbrepo,dc=at
+    binddn: cn=admin,dc=dbrepo,dc=at
     ## @param brokerservice.ldap.bindpw The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.
-    bindpw:1.14.0 admin
+    bindpw: admin
     ## @param brokerservice.ldap.uidField The field containing the user id.
-    uidField:1.14.0 uid
+    uidField: uid
     ## @param brokerservice.ldap.basedn The base domain name containing the users.
-    basedn:1.14.0 dc=dbrepo,dc=at
+    basedn: dc=dbrepo,dc=at
     ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
-    userDnPattern:1.14.0 ${username}
-  auth:1.14.0
+    userDnPattern: ${username}
+  auth:
     ## @skip brokerservice.auth.username
-    username:1.14.0 admin
+    username: admin
     ## @skip brokerservice.auth.password
-    password:1.14.0 admin
+    password: admin
     ## @param brokerservice.auth.passwordHash
-    ## ref https:1.14.0//www.rabbitmq.com/docs/passwords
-    passwordHash:1.14.0 iKGI3TYZWTFemooqE1zwAu/fkbUB9AgVSiFGt3iwDZRNPpZc
-    tls:1.14.0
+    ## ref https://www.rabbitmq.com/docs/passwords
+    passwordHash: iKGI3TYZWTFemooqE1zwAu/fkbUB9AgVSiFGt3iwDZRNPpZc
+    tls:
       ## @param brokerservice.auth.tls.enabled Enable TLS support
-      enabled:1.14.0 false
+      enabled: false
       ## @param brokerservice.auth.tls.existingSecretFullChain If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`
-      existingSecretFullChain:1.14.0 false
+      existingSecretFullChain: false
       ## @param brokerservice.auth.tls.existingSecret Existing secret with certificate content
-      existingSecret:1.14.0 ingress-cert
-  rbac:1.14.0
+      existingSecret: ingress-cert
+  rbac:
     ## @skip brokerservice.rbac.create
-    create:1.14.0 true
+    create: true
   ## @skip brokerservice.advancedConfigurationExistingSecret
-  advancedConfigurationExistingSecret:1.14.0 broker-service-secret
+  advancedConfigurationExistingSecret: broker-service-secret
   ## @skip brokerservice.loadDefinition
-  loadDefinition:1.14.0
-    enabled:1.14.0 true
-    existingSecret:1.14.0 broker-service-secret
+  loadDefinition:
+    enabled: true
+    existingSecret: broker-service-secret
   ## @param brokerservice.extraPlugins The list of plugins to be activated.
-  extraPlugins:1.14.0 rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
+  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
   ## @skip brokerservice.extraContainerPorts The list of extra container ports to be exposed
-  extraContainerPorts:1.14.0
-    - name:1.14.0 mqtt
-      containerPort:1.14.0 1883
-  service:1.14.0
+  extraContainerPorts:
+    - name: mqtt
+      containerPort: 1883
+  service:
     ## @skip brokerservice.service.extraPorts
-    extraPorts:1.14.0
-      - name:1.14.0 mqtt
-        port:1.14.0 1883
-        targetPort:1.14.0 1883
-    # loadBalancerIP:1.14.0
+    extraPorts:
+      - name: mqtt
+        port: 1883
+        targetPort: 1883
+    # loadBalancerIP:
   ## @skip brokerservice.logs
-  logs:1.14.0 ""
+  logs: ""
   ## @param brokerservice.extraConfiguration The extra configuration for MQTT
-  extraConfiguration:1.14.0 |
+  extraConfiguration: |
     # user
     default_vhost = dbrepo
     log.connection.level = warning
-    # https:1.14.0//www.rabbitmq.com/docs/logging#log-message-categories
+    # https://www.rabbitmq.com/docs/logging#log-message-categories
     log.console = true
     log.console.level = debug
     log.file = /opt/bitnami/rabbitmq/var/log/rabbitmq/app.log
@@ -426,862 +426,865 @@ brokerservice:1.14.0
     mqtt.exchange = dbrepo
     mqtt.prefetch = 10
   ## @skip brokerservice.resources
-  resources:1.14.0
-    requests:1.14.0
-      cpu:1.14.0 500m
-      memory:1.14.0 512Mi
-    limits:1.14.0
-      cpu:1.14.0 "1"
-      memory:1.14.0 1Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
   ## @param brokerservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 3
+  replicaCount: 3
 
 ## @section Consumer Service
 
-consumerservice:1.14.0
+consumerservice:
   ## @param consumerservice.enabled Enable the Broker Service.
-  enabled:1.14.0 true
-  image:1.14.0
+  enabled: true
+  image:
     ## @skip consumerservice.image.name
-    name:1.14.0 ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.0
   ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param consumerservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param consumerservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param consumerservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param consumerservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param consumerservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 1001
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param consumerservice.containerSecurityContext.enabled Enable containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param consumerservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param consumerservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param consumerservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 1001
+    runAsGroup: 1001
     ## @param consumerservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param consumerservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param consumerservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 false
-    capabilities:1.14.0
+    readOnlyRootFilesystem: false
+    capabilities:
       ## @param consumerservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
-    seccompProfile:1.14.0
+      drop: [ "ALL" ]
+    seccompProfile:
       ## @param consumerservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param consumerservice.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "small"
+  resourcesPreset: "small"
   ## @param consumerservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @param consumerservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
 
 ## @section Metadata Service
 
-metadataservice:1.14.0
+metadataservice:
   ## @param metadataservice.enabled Enable the Broker Service.
-  enabled:1.14.0 true
-  image:1.14.0
+  enabled: true
+  image:
     ## @skip metadataservice.image.name
-    name:1.14.0 ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param metadataservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param metadataservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param metadataservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param metadataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 1001
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param metadataservice.containerSecurityContext.enabled Enable containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param metadataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param metadataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param metadataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 1001
+    runAsGroup: 1001
     ## @param metadataservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param metadataservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param metadataservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 false
-    capabilities:1.14.0
+    readOnlyRootFilesystem: false
+    capabilities:
       ## @param metadataservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
-    seccompProfile:1.14.0
+      drop: [ "ALL" ]
+    seccompProfile:
       ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param metadataservice.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "small"
+  resourcesPreset: "small"
   ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
-  endpoint:1.14.0 http:1.14.0//metadata-service
-  crossref:1.14.0
+  endpoint: http://metadata-service
+  crossref:
     ## @param metadataservice.crossref.endpoint The CrossRef endpoint.
-    endpoint:1.14.0 http:1.14.0//data.crossref.org
-  ror:1.14.0
+    endpoint: http://data.crossref.org
+  ror:
     ## @param metadataservice.ror.endpoint The ROR endpoint.
-    endpoint:1.14.0 https:1.14.0//api.ror.org
-  admin:1.14.0
+    endpoint: https://api.ror.org
+  admin:
     ## @param metadataservice.admin.email The OAI-PMH exposed e-mail for contacting the metadata records responsible person.
-    email:1.14.0 noreply@example.com
+    email: noreply@example.com
   ## @param metadataservice.deletedRecord The OAI-PMH exposed delete policy.
-  deletedRecord:1.14.0 permanent
+  deletedRecord: permanent
   ## @param metadataservice.repositoryName The OAI-PMH exposed repository name.
-  repositoryName:1.14.0 Database Repository
+  repositoryName: Database Repository
   ## @param metadataservice.granularity The OAI-PMH exposed record granularity.
-  granularity:1.14.0 YYYY-MM-DDThh:1.14.0mm:1.14.0ssZ
-  datacite:1.14.0
+  granularity: YYYY-MM-DDThh:mm:ssZ
+  datacite:
     ## @param metadataservice.datacite.enabled If set to true, the service mints DOIs instead of local PIDs.
-    enabled:1.14.0 false
+    enabled: false
     ## @param metadataservice.datacite.url The DataCite api endpoint url.
-    url:1.14.0 https:1.14.0//api.datacite.org
+    url: https://api.datacite.org
     ## @param metadataservice.datacite.prefix The DataCite prefix.
-    prefix:1.14.0 ""
+    prefix: ""
     ## @param metadataservice.datacite.username The DataCite api username.
-    username:1.14.0 ""
+    username: ""
     ## @param metadataservice.datacite.password The DataCite api user password.
-    password:1.14.0 ""
-  sparql:1.14.0
+    password: ""
+  sparql:
     ## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
-    connectionTimeout:1.14.0 10000
-  s3:1.14.0
+    connectionTimeout: 10000
+  s3:
     ## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint:1.14.0 http:1.14.0//storage-service-s3:1.14.08333
+    endpoint: http://storage-service-s3:8333
     ## @skip metadataservice.s3.bucket
-    bucket:1.14.0 dbrepo
-    auth:1.14.0
+    bucket: dbrepo
+    auth:
       ## @param metadataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId:1.14.0 seaweedfsuser
+      accessKeyId: seaweedfsuser
       ## @param metadataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey:1.14.0 seaweedfsuser
+      secretAccessKey: seaweedfsuser
   ## @param metadataservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
 
 ## @section Data Service
 
-dataservice:1.14.0
+dataservice:
   ## @param dataservice.enabled Enable the Broker Service.
-  enabled:1.14.0 true
-  ## @param dataservice.endpoint Absolute URL to the data service in the form of http:1.14.0//host:1.14.0port
-  endpoint:1.14.0 http:1.14.0//data-service
-  image:1.14.0
+  enabled: true
+  ## @param dataservice.endpoint Absolute URL to the data service in the form of http://host:port
+  endpoint: http://data-service
+  image:
     ## @skip dataservice.image.name
-    name:1.14.0 ghcr.io/dbrepo-project/dbrepo/data-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.0
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param dataservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param dataservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param dataservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param dataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 1001
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param dataservice.containerSecurityContext.enabled Enable the containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param dataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param dataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param dataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 1001
+    runAsGroup: 1001
     ## @param dataservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param dataservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param dataservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 false
-    capabilities:1.14.0
+    readOnlyRootFilesystem: false
+    capabilities:
       ## @param dataservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
-    seccompProfile:1.14.0
+      drop: [ "ALL" ]
+    seccompProfile:
       ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param dataservice.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "large"
+  resourcesPreset: "large"
   ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @skip dataservice.resources
-  grant:1.14.0
+  grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
-    read:1.14.0 SELECT, EXECUTE
+    read: SELECT, EXECUTE
     ## @param dataservice.grant.write The default database permissions for users with write access.
-    write:1.14.0 SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
-  rabbitmq:1.14.0
+    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
+  rabbitmq:
     ## @param dataservice.rabbitmq.consumerConcurrentMin The minimal number of RabbitMQ consumers.
-    consumerConcurrentMin:1.14.0 2
+    consumerConcurrentMin: 2
     ## @param dataservice.rabbitmq.consumerConcurrentMax The maximal number of RabbitMQ consumers.
-    consumerConcurrentMax:1.14.0 6
+    consumerConcurrentMax: 6
     ## @param dataservice.rabbitmq.requeueRejected If set to true, rejected tuples will be re-queued.
-    requeueRejected:1.14.0 false
-    consumer:1.14.0
+    requeueRejected: false
+    consumer:
       ## @param dataservice.rabbitmq.consumer.username The username for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.users`.
-      username:1.14.0 admin
+      username: admin
       ## @param dataservice.rabbitmq.consumer.password The user password for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.userPasswords`.
-      password:1.14.0 admin
-  s3:1.14.0
+      password: admin
+  s3:
     ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint:1.14.0 http:1.14.0//storage-service-s3:1.14.08333
+    endpoint: http://storage-service-s3:8333
     ## @param dataservice.s3.bucket The S3 bucket name.
-    bucket:1.14.0 dbrepo
-    auth:1.14.0
+    bucket: dbrepo
+    auth:
       ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint access key id.
-      accessKeyId:1.14.0 seaweedfsuser
+      accessKeyId: seaweedfsuser
       ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
-      secretAccessKey:1.14.0 seaweedfsuser
+      secretAccessKey: seaweedfsuser
   ## @param dataservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
 
 ## @section Search Service
 
-searchservice:1.14.0
+searchservice:
   ## @param searchservice.enabled Enable the Broker Service.
-  enabled:1.14.0 true
-  ## @param searchservice.endpoint Absolute URL to the search service in the form of http:1.14.0//host:1.14.0port
-  endpoint:1.14.0 http:1.14.0//search-service
-  image:1.14.0
+  enabled: true
+  ## @param searchservice.endpoint Absolute URL to the search service in the form of http://host:port
+  endpoint: http://search-service
+  image:
     ## @skip searchservice.image.name
-    name:1.14.0 ghcr.io/dbrepo-project/dbrepo/search-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.0
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param searchservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param searchservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param searchservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param searchservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 1001
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param searchservice.containerSecurityContext.enabled Enable the containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param searchservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param searchservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param searchservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 1001
+    runAsGroup: 1001
     ## @param searchservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param searchservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param searchservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 true
-    capabilities:1.14.0
+    readOnlyRootFilesystem: true
+    capabilities:
       ## @param searchservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
-    seccompProfile:1.14.0
+      drop: [ "ALL" ]
+    seccompProfile:
       ## @param searchservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param searchservice.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "micro"
+  resourcesPreset: "micro"
   ## @param searchservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
-  setupJob:1.14.0
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
+  setupJob:
     ## @param searchservice.setupJob.enabled Enable the setup job that syncs missing databases from the Metadata Database into the Search Database.
-    enabled:1.14.0 true
+    enabled: true
     ## @param searchservice.setupJob.schedule The interval duration when the cronjob is executed.
-    schedule:1.14.0 "@midnight"
-    image:1.14.0
+    schedule: "@midnight"
+    image:
       ## @skip searchservice.setupJob.image.name
-      name:1.14.0 ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.0
+      name: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.0
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset:1.14.0 "nano"
+    resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources:1.14.0 { }
-    ##   requests:1.14.0
-    ##     cpu:1.14.0 250m
-    ##     memory:1.14.0 64Mi
-    ##   limits:1.14.0
-    ##     cpu:1.14.0 500m
-    ##     memory:1.14.0 1024Mi
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
     ## @param searchservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
 
 ## @section Storage Service
 
-storageservice:1.14.0
+storageservice:
   ## @param storageservice.enabled Enable the Storage Service.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip storageservice.fullnameOverride
-  fullnameOverride:1.14.0 storage-service
-  mariadb:1.14.0
+  fullnameOverride: storage-service
+  mariadb:
     ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
-    enabled:1.14.0 true
-    image:1.14.0
+    enabled: true
+    image:
       ## @skip storageservice.mariadb.image.repository
-      repository:1.14.0 bitnamilegacy/mariadb
+      repository: bitnamilegacy/mariadb
     ## @skip storageservice.mariadb.fullnameOverride
-    fullnameOverride:1.14.0 storage-db
-    auth:1.14.0
+    fullnameOverride: storage-db
+    auth:
       ## @param storageservice.mariadb.auth.rootPassword The password for the root user.
-      rootPassword:1.14.0 seaweedfsfiler
-  postgresql:1.14.0
+      rootPassword: seaweedfsfiler
+  postgresql:
     ## @skip storageservice.postgresql.enabled
-    enabled:1.14.0 false
-  master:1.14.0
-    metrics:1.14.0
+    enabled: false
+  master:
+    metrics:
       ## @skip storageservice.master.metrics.enabled
-      enabled:1.14.0 true
-  filer:1.14.0
+      enabled: true
+  filer:
     ## @param storageservice.filer.enabled Cannot use the filer in the standard component since it's incompatible with OpenShift
-    enabled:1.14.0 true
-  volume:1.14.0
+    enabled: true
+  volume:
     ## @skip storageservice.volume.enabled
-    enabled:1.14.0 true
-  s3:1.14.0
+    enabled: true
+  s3:
     ## @skip storageservice.s3.enabled
-    enabled:1.14.0 true
+    enabled: true
     ## @param storageservice.s3.bucket The S3-bucket name.
-    bucket:1.14.0 dbrepo
-    auth:1.14.0
+    bucket: dbrepo
+    auth:
       ## @param storageservice.s3.auth.enabled Enable the S3 service.
-      enabled:1.14.0 true
+      enabled: true
       ## @param storageservice.s3.auth.adminAccessKeyId The S3 access key id for the admin user. In some systems this is named `username`.
-      adminAccessKeyId:1.14.0 seaweedfsadmin
+      adminAccessKeyId: seaweedfsadmin
       ## @param storageservice.s3.auth.adminSecretAccessKey The S3 secret access key for the admin user. In some systems this is named `password`.
-      adminSecretAccessKey:1.14.0 seaweedfsadmin
+      adminSecretAccessKey: seaweedfsadmin
       ## @param storageservice.s3.auth.defaultAccessKeyId The S3 access key id for the default user that can only read and write.
-      defaultAccessKeyId:1.14.0 seaweedfsuser
+      defaultAccessKeyId: seaweedfsuser
       ## @param storageservice.s3.auth.defaultSecretAccessKey The S3 secret access key for the default user that can only read and write.
-      defaultSecretAccessKey:1.14.0 seaweedfsuser
-  setupJob:1.14.0
+      defaultSecretAccessKey: seaweedfsuser
+  setupJob:
     ## @param storageservice.setupJob.enabled Enable the setup job that creates the bucket in the s3 endpoint.
-    enabled:1.14.0 true
-    image:1.14.0
+    enabled: true
+    image:
       ## @skip storageservice.setupJob.image.name
-      name:1.14.0 ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
-    s3:1.14.0
+      name: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
+    s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
-      endpoint:1.14.0 http:1.14.0//storage-service-s3:1.14.08333
-    containerSecurityContext:1.14.0
+      endpoint: http://storage-service-s3:8333
+    containerSecurityContext:
       ## @param storageservice.setupJob.containerSecurityContext.enabled Enable the containers' Security Context
-      enabled:1.14.0 true
+      enabled: true
       ## @param storageservice.setupJob.containerSecurityContext.seLinuxOptions Set SELinux options in container
-      seLinuxOptions:1.14.0 { }
+      seLinuxOptions: { }
       ## @param storageservice.setupJob.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-      runAsUser:1.14.0 1001
+      runAsUser: 1001
       ## @param storageservice.setupJob.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-      runAsGroup:1.14.0 0
+      runAsGroup: 0
       ## @param storageservice.setupJob.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-      runAsNonRoot:1.14.0 true
+      runAsNonRoot: true
       ## @param storageservice.setupJob.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-      allowPrivilegeEscalation:1.14.0 false
+      allowPrivilegeEscalation: false
       ## @param storageservice.setupJob.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-      readOnlyRootFilesystem:1.14.0 false
-      capabilities:1.14.0
+      readOnlyRootFilesystem: false
+      capabilities:
         ## @param storageservice.setupJob.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-        drop:1.14.0 [ "ALL" ]
+        drop: [ "ALL" ]
         ## @param storageservice.setupJob.containerSecurityContext.capabilities.add Set container's Security Context runAsNonRoot
-        add:1.14.0 [ "NET_BIND_SERVICE" ]
-      seccompProfile:1.14.0
+        add: [ "NET_BIND_SERVICE" ]
+      seccompProfile:
         ## @param storageservice.setupJob.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-        type:1.14.0 "RuntimeDefault"
+        type: "RuntimeDefault"
     ## @param storageservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset:1.14.0 "nano"
+    resourcesPreset: "nano"
     ## @param storageservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources:1.14.0 { }
-    ##   requests:1.14.0
-    ##     cpu:1.14.0 250m
-    ##     memory:1.14.0 64Mi
-    ##   limits:1.14.0
-    ##     cpu:1.14.0 500m
-    ##     memory:1.14.0 1024Mi
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
 
 ## @section Identity Service
 
-identityservice:1.14.0
+identityservice:
   ## @param identityservice.enabled Enable the Identity Service.
-  enabled:1.14.0 true
-  image:1.14.0
+  enabled: true
+  image:
     ## @skip identityservice.image.name
-    name:1.14.0 docker.io/bitnamilegacy/openldap:1.14.02.6.8-debian-12-r1
-  global:1.14.0
+    name: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
+  global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
-    ldapDomain:1.14.0 dc=dbrepo,dc=at
+    ldapDomain: dc=dbrepo,dc=at
     ## @param identityservice.global.adminUser The admin username that is used to bind.
-    adminUser:1.14.0 admin
+    adminUser: admin
     ## @param identityservice.global.adminPassword The admin user password that is used to bind.
-    adminPassword:1.14.0 admin
+    adminPassword: admin
     ## @skip identityservice.global.configUserEnabled
-    configUserEnabled:1.14.0 false
+    configUserEnabled: false
   ## @param identityservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param identityservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param identityservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param identityservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param identityservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param identityservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 1001
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param identityservice.containerSecurityContext.enabled Enable the containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param identityservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param identityservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param identityservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 0
+    runAsGroup: 0
     ## @param identityservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param identityservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param identityservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 false
-    capabilities:1.14.0
+    readOnlyRootFilesystem: false
+    capabilities:
       ## @param identityservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
+      drop: [ "ALL" ]
       ## @param identityservice.containerSecurityContext.capabilities.add Set container's Security Context runAsNonRoot
-      add:1.14.0 [ "NET_BIND_SERVICE" ]
-    seccompProfile:1.14.0
+      add: [ "NET_BIND_SERVICE" ]
+    seccompProfile:
       ## @param identityservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param identityservice.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "nano"
+  resourcesPreset: "nano"
   ## @param identityservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @param identityservice.endpoint The identity service endpoint.
-  endpoint:1.14.0 ldap:1.14.0//identity-service:1.14.01389
+  endpoint: ldap://identity-service:1389
   ## @skip identityservice.customSchemaFiles
-  customSchemaFiles:1.14.0
-    00-memberof.ldif:1.14.0 |-
-      dn:1.14.0 cn=module,cn=config
-      cn:1.14.0 module
-      objectClass:1.14.0 olcModuleList
-      olcModuleLoad:1.14.0 memberof
-      olcModulePath:1.14.0 /opt/bitnami/openldap/lib/openldap
+  customSchemaFiles:
+    00-memberof.ldif: |-
+      dn: cn=module,cn=config
+      cn: module
+      objectClass: olcModuleList
+      olcModuleLoad: memberof
+      olcModulePath: /opt/bitnami/openldap/lib/openldap
 
-      dn:1.14.0 olcOverlay=memberof,olcDatabase={2}mdb,cn=config
-      changetype:1.14.0 add
-      objectClass:1.14.0 olcOverlayConfig
-      objectClass:1.14.0 olcMemberOf
-      olcOverlay:1.14.0 memberof
-      olcMemberOfRefint:1.14.0 TRUE
-  persistence:1.14.0
+      dn: olcOverlay=memberof,olcDatabase={2}mdb,cn=config
+      changetype: add
+      objectClass: olcOverlayConfig
+      objectClass: olcMemberOf
+      olcOverlay: memberof
+      olcMemberOfRefint: TRUE
+  persistence:
     ## @param identityservice.persistence.enabled If set to true, a PVC will be created.
-    enabled:1.14.0 true
+    enabled: true
 
 ## @section User Interface
 
-ui:1.14.0
+ui:
   ## @param ui.enabled Enable the Broker Service.
-  enabled:1.14.0 true
-  image:1.14.0
+  enabled: true
+  image:
     ## @skip ui.image.name
-    name:1.14.0 ghcr.io/dbrepo-project/dbrepo/ui:1.14.0
-  ## https:1.14.0//stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
-  oidc:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/ui:1.14.0
+  ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
+  oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
-    authSessionSecret:1.14.0 qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
+    authSessionSecret: qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
     ## @param ui.oidc.sessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
-    sessionSecret:1.14.0 TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
-    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name:1.14.0 'AES-GCM', length:1.14.0 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
-    tokenKey:1.14.0 data:1.14.0;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
+    sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
+    ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
+    tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
   ## @param ui.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param ui.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param ui.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param ui.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param ui.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param ui.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 1001
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param ui.containerSecurityContext.enabled Enable the containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param ui.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param ui.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param ui.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 1001
+    runAsGroup: 1001
     ## @param ui.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param ui.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param ui.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 false
-    capabilities:1.14.0
+    readOnlyRootFilesystem: false
+    capabilities:
       ## @param ui.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
-    seccompProfile:1.14.0
+      drop: [ "ALL" ]
+    seccompProfile:
       ## @param ui.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param ui.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "micro"
+  resourcesPreset: "micro"
   ## @param ui.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @skip ui.resources
-  public:1.14.0
-    about:1.14.0
+  public:
+    about:
       ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and markdown content will be rendered.
-      content:1.14.0 ""
-    terms:1.14.0
+      content: ""
+    terms:
       ## @param ui.public.terms.content The content of the /terms page. If not empty, the page will be displayed and markdown content will be rendered.
-      content:1.14.0 ""
-    policies:1.14.0
+      content: ""
+    policies:
       ## @param ui.public.policies.content The content of the /policies page. If not empty, the page will be displayed and markdown content will be rendered.
-      content:1.14.0 ""
-    api:1.14.0
-      ## @param ui.public.api.client The endpoint for the client api. Defaults to `https:1.14.0//<gateway>`.
-      client:1.14.0 ""
-      ## @param ui.public.api.server The endpoint for the server api. Defaults to `https:1.14.0//<gateway>`.
-      server:1.14.0 ""
-    dashboard:1.14.0
-      ## @param ui.public.dashboard.url The url for the dashboard. Defaults to `https:1.14.0//<gateway>/dashboard`.
-      url:1.14.0 ""
-    upload:1.14.0
-      ## @param ui.public.upload.client The endpoint for the upload client. Defaults to `https:1.14.0//<gateway>/api/upload/files`.
-      client:1.14.0 ""
+      content: ""
+    api:
+      ## @param ui.public.api.client The endpoint for the client api. Defaults to `https://<gateway>`.
+      client: ""
+      ## @param ui.public.api.server The endpoint for the server api. Defaults to `https://<gateway>`.
+      server: ""
+    dashboard:
+      ## @param ui.public.dashboard.url The url for the dashboard. Defaults to `https://<gateway>/dashboard`.
+      url: ""
+    upload:
+      ## @param ui.public.upload.client The endpoint for the upload client. Defaults to `https://<gateway>/api/upload/files`.
+      client: ""
     ## @param ui.public.title The user interface title.
-    title:1.14.0 "Database Repository"
+    title: "Database Repository"
     ## @param ui.public.logo The user interface logo.
-    logo:1.14.0 "/logo.svg"
+    logo: "/logo.svg"
     ## @param ui.public.icon The user interface icon.
-    icon:1.14.0 "/favicon.ico"
+    icon: "/favicon.ico"
     ## @param ui.public.touch The user interface apple touch icon.
-    touch:1.14.0 "/apple-touch-icon.png"
-    broker:1.14.0
+    touch: "/apple-touch-icon.png"
+    broker:
       ## @param ui.public.broker.host The displayed broker hostname.
-      host:1.14.0 example.com
+      host: dbrepo.ulb.tu-darmstadt.de
       ## @skip ui.public.broker.connections The array of connections that should be displayed in the frontend.
-      connections:1.14.0
-        - protocol:1.14.0 "amqp"
-          port:1.14.0 "5672"
-          encrypted:1.14.0 false
-        - protocol:1.14.0 "mqtt"
-          port:1.14.0 "1883"
-          encrypted:1.14.0 false
+      connections:
+        - protocol: "amqp"
+          port: "5672"
+          encrypted: false
+        - protocol: "mqtt"
+          port: "1883"
+          encrypted: false
       ## @param ui.public.broker.extra Extra metadata displayed.
-      extra:1.14.0 ""
-    database:1.14.0
+      extra: ""
+    database:
       ## @param ui.public.database.extra Extra metadata displayed.
-      extra:1.14.0 ""
-    pid:1.14.0
-      default:1.14.0
+      extra: ""
+    pid:
+      default:
         ## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
-        publisher:1.14.0 "Example University"
-    doi:1.14.0
+        publisher: "Universitäts- und Landesbibliothek Darmstadt"
+    doi:
       ## @param ui.public.doi.enabled Enable the display that DOIs are minted.
-      enabled:1.14.0 false
+      enabled: false
       ## @param ui.public.doi.endpoint The DOI proxy.
-      endpoint:1.14.0 https:1.14.0//doi.org
+      endpoint: https://doi.org
   ## @param ui.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
   ## @skip ui.extraVolumes
-  extraVolumes:1.14.0 [ ]
-  #  - name:1.14.0 images-map
-  #    configMap:1.14.0
-  #      name:1.14.0 ui-config
+  extraVolumes: []
+  #  - name: images-map
+  #    configMap:
+  #      name: ui-config
   ## @skip ui.extraVolumeMounts
-  extraVolumeMounts:1.14.0 [ ]
-  #  - name:1.14.0 images-map
-  #    mountPath:1.14.0 /static/logo.svg
-  #    subPath:1.14.0 logo.svg
+  extraVolumeMounts: []
+  #  - name: images-map
+  #    mountPath: /static/logo.svg
+  #    subPath: logo.svg
 
 ## @section Dashboard Service
 
-dashboardservice:1.14.0
+dashboardservice:
   ## @param dashboardservice.enabled Enable the Dashboard Service.
-  enabled:1.14.0 true
-  image:1.14.0
+  enabled: true
+  image:
     ## @skip dashboardservice.image.name
-    name:1.14.0 ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.0
   ## @param dashboardservice.endpoint The endpoint for the microservices.
-  endpoint:1.14.0 http:1.14.0//dashboard-service
+  endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations:1.14.0 { }
-  ## ref:1.14.0 https:1.14.0//kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext:1.14.0
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
     ## @param dashboardservice.podSecurityContext.enabled Enable pods' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param dashboardservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
-    fsGroupChangePolicy:1.14.0 Always
+    fsGroupChangePolicy: Always
     ## @param dashboardservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
-    sysctls:1.14.0 [ ]
+    sysctls: [ ]
     ## @param dashboardservice.podSecurityContext.supplementalGroups Set filesystem extra groups
-    supplementalGroups:1.14.0 [ ]
+    supplementalGroups: [ ]
     ## @param dashboardservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup:1.14.0 0
-  containerSecurityContext:1.14.0
+    fsGroup: 1001
+  containerSecurityContext:
     ## @param dashboardservice.containerSecurityContext.enabled Enable containers' Security Context
-    enabled:1.14.0 true
+    enabled: true
     ## @param dashboardservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions:1.14.0 { }
+    seLinuxOptions: { }
     ## @param dashboardservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
-    runAsUser:1.14.0 1001
+    runAsUser: 1001
     ## @param dashboardservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
-    runAsGroup:1.14.0 1001
+    runAsGroup: 1001
     ## @param dashboardservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
-    runAsNonRoot:1.14.0 true
+    runAsNonRoot: true
     ## @param dashboardservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
-    allowPrivilegeEscalation:1.14.0 false
+    allowPrivilegeEscalation: false
     ## @param dashboardservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
-    readOnlyRootFilesystem:1.14.0 false
-    capabilities:1.14.0
+    readOnlyRootFilesystem: false
+    capabilities:
       ## @param dashboardservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
-      drop:1.14.0 [ "ALL" ]
-    seccompProfile:1.14.0
+      drop: [ "ALL" ]
+    seccompProfile:
       ## @param dashboardservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
-      type:1.14.0 "RuntimeDefault"
+      type: "RuntimeDefault"
   ## @param dashboardservice.resourcesPreset The container resource preset
-  resourcesPreset:1.14.0 "micro"
+  resourcesPreset: "micro"
   ## @param dashboardservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources:1.14.0 { }
-  ##   requests:1.14.0
-  ##     cpu:1.14.0 250m
-  ##     memory:1.14.0 64Mi
-  ##   limits:1.14.0
-  ##     cpu:1.14.0 500m
-  ##     memory:1.14.0 1024Mi
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
+  ## @skip dashboardservice.resources
+  grafana:
+    ## @param dashboardservice.grafana.adminPassword The Grafana admin password.
+    adminPassword: dbrepo
+    ## @param dashboardservice.grafana.plugins The Grafana plugins that should be preloaded.
+    plugins: ""
+    ## @param dashboardservice.grafana.notifiers The Grafana notifiers that should be configured.
+    notifiers: ""
+    ## @param dashboardservice.grafana.dashboardsConfigMaps The list of ConfigMaps that contain dashboard definitions.
+    dashboardsConfigMaps: dashboard-service-config
+    ## @param dashboardservice.grafana.smtpHost The Grafana SMTP host.
+    smtpHost: ""
+    ## @param dashboardservice.grafana.smtpUser The Grafana SMTP user.
+    smtpUser: ""
+    ## @param dashboardservice.grafana.smtpPassword The Grafana SMTP password.
+    smtpPassword: ""
+    ## @param dashboardservice.grafana.smtpSkipVerify The Grafana SMTP skip verify.
+    smtpSkipVerify: true
+    ## @param dashboardservice.grafana.fromAddress The Grafana SMTP from address.
+    fromAddress: ""
+    ## @param dashboardservice.grafana.fromName The Grafana SMTP from name.
+    fromName: ""
+  initContainer:
+    image:
+      ## @skip dashboardservice.initContainer.image.name
+      name: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.0
+    ## @param dashboardservice.initContainer.resourcesPreset The container resource preset
+    resourcesPreset: "nano"
+    ## @param dashboardservice.initContainer.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources: { }
+  ## @param dashboardservice.datasource The Grafana datasource.
+  datasource: prometheus
   ## @param dashboardservice.replicaCount The number of replicas.
-  setupJob:1.14.0
-    ## @param dashboardservice.setupJob.enabled Enable the setup job that creates dashboards for existing databases in the Dashboard UI.
-    enabled:1.14.0 true
-    image:1.14.0
-      ## @skip dashboardservice.setupJob.image.name
-      name:1.14.0 ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.0
-    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
-    resourcesPreset:1.14.0 "nano"
-    ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    resources:1.14.0 { }
-    ##   requests:1.14.0
-    ##     cpu:1.14.0 250m
-    ##     memory:1.14.0 64Mi
-    ##   limits:1.14.0
-    ##     cpu:1.14.0 500m
-    ##     memory:1.14.0 1024Mi
-  ## @param dashboardservice.replicaCount The number of replicas.
-  replicaCount:1.14.0 2
+  replicaCount: 2
 
 ## @section Dashboard UI
 
-dashboardui:1.14.0
+dashboardui:
   ## @param dashboardui.enabled Enable the Dashboard UI.
-  enabled:1.14.0 true
+  enabled: true
   ## @skip dashboardui.fullnameOverride
-  fullnameOverride:1.14.0 dashboard-ui
-  image:1.14.0
+  fullnameOverride: dashboard-ui
+  image:
     ## @skip dashboardui.image.repository
-    repository:1.14.0 bitnamilegacy/grafana
-  admin:1.14.0
-    ## @skip dashboardui.admin.user
-    user:1.14.0 "admin"
-    ## @skip dashboardui.admin.password
-    password:1.14.0 "admin"
-  metrics:1.14.0
-    ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
-    enabled:1.14.0 true
-  ## @param dashboardui.endpoint The endpoint for the microservices.
-  endpoint:1.14.0 http:1.14.0//dashboard-ui:1.14.03000
-  datasources:1.14.0
-    ## @skip dashboardui.datasources.secretName
-    secretName:1.14.0 dashboard-ui-datasources-secret
-  dashboardsProvider:1.14.0
-    ## @skip dashboardui.dashboardsProvider.enabled
-    enabled:1.14.0 true
-  grafana:1.14.0
-    updateStrategy:1.14.0
-      ## @skip dashboardui.grafana.updateStrategy.type
-      type:1.14.0 Recreate
-    ## @skip dashboardui.grafana.extraEnvVarsSecret
-    extraEnvVarsSecret:1.14.0 dashboard-ui-secret
-    ## @param dashboardui.grafana.replicaCount The number of replicas.
-    replicaCount:1.14.0 2
-  persistence:1.14.0
-    ## @skip dashboardui.persistence.enabled
-    enabled:1.14.0 false
+    repository: bitnamilegacy/grafana
+  ## @skip dashboardui.admin
+  admin:
+    ## @param dashboardui.admin.existingSecret The existing secret with the Grafana admin credentials.
+    existingSecret: dashboard-service-secret
+    ## @param dashboardui.admin.userKey The key in the existing secret that contains the Grafana admin username.
+    userKey: admin-user
+    ## @param dashboardui.admin.passwordKey The key in the existing secret that contains the Grafana admin password.
+    passwordKey: admin-password
+  ## @skip dashboardui.smtp
+  smtp:
+    ## @param dashboardui.smtp.existingSecret The existing secret containing SMTP credentials.
+    existingSecret: dashboard-service-secret
+  ## @skip dashboardui.plugins
+  plugins: []
+  ## @skip dashboardui.dashboardProviders
+  dashboardProviders: {}
+  ## @skip dashboardui.dashboardsConfigMaps
+  dashboardsConfigMaps:
+    - configMapName: dashboard-service-config
+      fileName: dashboards.json
+  ## @skip dashboardui.notifiers
+  notifiers: {}
+  ## @skip dashboardui.datasources
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://metric-db-kube-prometheus-prometheus:9090
+          access: proxy
+          isDefault: true
+  ## @param dashboardui.replicaCount The number of replicas.
+  replicaCount: 2
 
-## @section Metric Service
+## @section Metric Database
 
-metricdb:1.14.0
-  ## @param metricdb.enabled Enable the Metric Service.
-  enabled:1.14.0 true
+metricdb:
+  ## @param metricdb.enabled Enable the Metric Database.
+  enabled: true
   ## @skip metricdb.fullnameOverride
-  fullnameOverride:1.14.0 metric-db
-  ## @param metricdb.endpoint The endpoint for microservices.
-  endpoint:1.14.0 http:1.14.0//metric-db-server
-  alertmanager:1.14.0
-    ## @skip metricdb.alertmanager.enabled
-    enabled:1.14.0 false
-  server:1.14.0
-    image:1.14.0
-      ## @skip metricdb.server.image.repository
-      repository:1.14.0 bitnamilegacy/prometheus
-    rbac:1.14.0
-      ## @skip metricdb.server.rbac.create
-      create:1.14.0 true
-    updateStrategy:1.14.0
-      ## @skip metricdb.server.updateStrategy.type
-      type:1.14.0 Recreate
-    service:1.14.0
-      ## @skip metricdb.server.service.type
-      type:1.14.0 ClusterIP
-    persistence:1.14.0
-      ## @skip metricdb.server.persistence.enabled
-      enabled:1.14.0 true
-    ## @skip metricdb.server.extraScrapeConfigs
-    extraScrapeConfigs:1.14.0
-      - job_name:1.14.0 'actuator scrape'
-        metrics_path:1.14.0 '/actuator/prometheus'
-        static_configs:1.14.0
-          - targets:1.14.0
-              - data-service
-              - metadata-service
-      - job_name:1.14.0 'metrics scrape'
-        metrics_path:1.14.0 '/metrics'
-        static_configs:1.14.0
-          - targets:1.14.0
-              - analyse-service
-              - auth-service-metrics:1.14.09000
-              - broker-service:1.14.09419
-              - dashboard-db-metrics:1.14.09187
-              - dashboard-service
-              - data-db-metrics:1.14.09104
-              - metadata-db-metrics:1.14.09104
-              - search-service
-              - storage-service-master-metrics:1.14.09327
-              - ui:1.14.03000
-      - job_name:1.14.0 'realm scrape'
-        metrics_path:1.14.0 '/realms/dbrepo/metrics'
-        static_configs:1.14.0
-          - targets:1.14.0
-              - auth-service-metrics:1.14.08080
+  fullnameOverride: metric-db
+  ## @skip metricdb.kube-state-metrics
+  kube-state-metrics:
+    enabled: false
+  ## @skip metricdb.prometheus-node-exporter
+  prometheus-node-exporter:
+    enabled: false
+  ## @skip metricdb.prometheus-pushgateway
+  prometheus-pushgateway:
+    enabled: false
+  ## @skip metricdb.networkPolicy
+  networkPolicy:
+    enabled: false
+  ## @param metricdb.replicaCount The number of replicas.
+  replicaCount: 1
 
 ## @section Gateway Service
 
-gatewayservice:1.14.0
-  ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
-  enabled:1.14.0 true
+gatewayservice:
+  ## @param gatewayservice.enabled Enable the Gateway Service.
+  enabled: true
   ## @skip gatewayservice.fullnameOverride
-  fullnameOverride:1.14.0 gateway-service
-  image:1.14.0
+  fullnameOverride: gateway-service
+  image:
     ## @skip gatewayservice.image.repository
-    repository:1.14.0 bitnamilegacy/nginx
-  service:1.14.0
-    ## @param gatewayservice.service.type The service type.
-    type:1.14.0 ClusterIP
-  metrics:1.14.0
-    ## @param gatewayservice.metrics.enabled Enable the Prometheus metrics sidecar.
-    enabled:1.14.0 false
-  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
-  existingServerBlockConfigmap:1.14.0 gateway-service-setup
-  ## @skip gatewayservice.extraVolumes
-  extraVolumes:1.14.0
-    - name:1.14.0 logging
-      emptyDir:1.14.0 { }
-  ## @skip gatewayservice.extraVolumeMounts
-  extraVolumeMounts:1.14.0
-    - name:1.14.0 logging
-      mountPath:1.14.0 /var/log/nginx
-  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
-  replicaCount:1.14.0 3
+    repository: bitnamilegacy/nginx
+  ## @param gatewayservice.corsAllowOrigin The allowed CORS origins.
+  corsAllowOrigin: ""
+  ## @param gatewayservice.corsAllowMethods The allowed CORS request methods.
+  corsAllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  ## @param gatewayservice.corsAllowHeaders The allowed CORS request headers.
+  corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+  ## @param gatewayservice.extraEnv The extra Nginx environment variable
+  extraEnv: ""
+  ## @param gatewayservice.extraEnvValue The extra Nginx environment value
+  extraEnvValue: ""
+  tls:
+    ## @param gatewayservice.tls.enabled Enable TLS support
+    enabled: false
+    ## @param gatewayservice.tls.auto Generated certificates
+    auto: false
+    ## @param gatewayservice.tls.existingSecret Existing secret with certificate content
+    existingSecret: ingress-cert
+  ## @skip gatewayservice.resourcesPreset
+  resourcesPreset: "nano"
+  ## @param gatewayservice.replicaCount The number of replicas.
+  replicaCount: 2
+  ## @skip gatewayservice.containerPorts
+  containerPorts:
+    - name: http
+      containerPort: 8080
+    - name: https
+      containerPort: 8443
 
-## @section Analytics Service
+## @section Compute Service
 
-computeservice:1.14.0
-  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
-  endpoint:1.14.0 local[*]
-
-
-## @section Ingress
-
-ingress:1.14.0
-  ## @param ingress.enabled Enable the ingress.
-  enabled:1.14.0 false
-  ## @param ingress.className The ingress class name.
-  className:1.14.0 nginx
-  tls:1.14.0
-    ## @param ingress.tls.enabled Enable the ingress.
-    enabled:1.14.0 true
-    ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
-    secretName:1.14.0 ingress-cert
-  ## @skip ingress.annotations The ingress rules for proxying requests directly to services.
-  ## @example
-  ## annotations:1.14.0
-  ##   cert-manager.io/cluster-issuer:1.14.0 letsencrypt-cluster-issuer
-  ##   nginx.ingress.kubernetes.io/proxy-body-size:1.14.0 2G
-  annotations:1.14.0 { }
+computeservice:
+  ## @param computeservice.enabled Enable the Compute Service.
+  enabled: true
+  ## @skip computeservice.fullnameOverride
+  fullnameOverride: compute-service
+  image:
+    ## @skip computeservice.image.repository
+    repository: bitnamilegacy/nginx
+  ## @param computeservice.extraEnv The extra Nginx environment variable
+  extraEnv: ""
+  ## @param computeservice.extraEnvValue The extra Nginx environment value
+  extraEnvValue: ""
+  tls:
+    ## @param computeservice.tls.enabled Enable TLS support
+    enabled: false
+    ## @param computeservice.tls.auto Generated certificates
+    auto: false
+    ## @param computeservice.tls.existingSecret Existing secret with certificate content
+    existingSecret: ingress-cert
+  ## @param computeservice.resourcesPreset The container resource preset
+  resourcesPreset: "nano"
+  ## @param computeservice.serverName The server name for the compute cluster.
+  serverName: compute
+  ## @param computeservice.replicaCount The number of replicas.
+  replicaCount: 2
+  ## @skip computeservice.containerPorts
+  containerPorts:
+    - name: http
+      containerPort: 8081
