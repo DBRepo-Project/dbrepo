@@ -20,7 +20,7 @@ curl -sSL curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/refs
 ## Documentation
 
 Find a system description, component documentation and endpoint documentation
-online: [https://dbrepo.github.io](https://dbrepo.github.io).
+online: [https://dbrepo-project.github.io/dbrepo-docs](https://dbrepo-project.github.io/dbrepo-docs).
 
 ## Development
 
