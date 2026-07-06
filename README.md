@@ -14,7 +14,7 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 with:
 
 ```bash
-curl -sSL curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/refs/heads/main/.scripts/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/refs/heads/main/.scripts/install.sh | bash
 ```
 
 ## Documentation
