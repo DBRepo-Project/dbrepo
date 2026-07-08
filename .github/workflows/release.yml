@@ -140,7 +140,7 @@ jobs:
           helm package ./helm/dbrepo --destination ./build
           helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.GHCR_HELM_PREFIX }}
 
-  release-libs:
+  build-libs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -148,14 +148,37 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Publish Python package
+      - name: Build Python package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build pipenv twine
+          python -m pip install build pipenv
           PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
-          echo '${{ secrets.CI_PIPYRC }}' | base64 -d > ./.pypirc
-          python -m build ./lib/python
-          python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*
+          python -m build ./lib/python --outdir ./dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: ./dist/*
+          if-no-files-found: error
+
+  release-libs:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-libs
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/dbrepo
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: ./dist
+      - name: Publish Python package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ./dist
 
   verify-install-script:
     if: startsWith(github.ref_name, 'release-')
