@@ -29,6 +29,7 @@ RUN bun run build
 
 ###### SECOND STAGE ######
 FROM --platform=$BUILDPLATFORM node:24-alpine AS runtime
+LABEL org.opencontainers.image.source="https://github.com/DBRepo-Project/dbrepo"
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""

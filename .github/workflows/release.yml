@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 defaults:
@@ -17,9 +17,9 @@ defaults:
     shell: bash
 
 env:
-  APP_VERSION: '1.13.4'
-  DOC_VERSION: '1.13'
-  CHART_VERSION: '1.13.4'
+  APP_VERSION: '1.14.0'
+  DOC_VERSION: '1.14'
+  CHART_VERSION: '1.14.0'
   REGCLIENT_VERSION: '0.8.2'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'
@@ -63,6 +63,42 @@ jobs:
           APP_VERSION=$DOC_VERSION make release-images
           make release-jupyter-image
           APP_VERSION=$DOC_VERSION make release-jupyter-image
+      - name: Update GitHub Release with Docker image links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          cat > /tmp/docker-images.md <<-EOF
+          ## Docker Images
+
+          All images are available on [GitHub Container Registry](https://github.com/orgs/DBRepo-Project/packages?repo_name=dbrepo):
+
+          | Service | Image |
+          |---|---|
+          | consumer-service | \`ghcr.io/dbrepo-project/dbrepo/consumer-service:${VERSION}\` |
+          | dashboard-service | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service:${VERSION}\` |
+          | dashboard-service-init | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:${VERSION}\` |
+          | data-service | \`ghcr.io/dbrepo-project/dbrepo/data-service:${VERSION}\` |
+          | metadata-service | \`ghcr.io/dbrepo-project/dbrepo/metadata-service:${VERSION}\` |
+          | search-service | \`ghcr.io/dbrepo-project/dbrepo/search-service:${VERSION}\` |
+          | search-service-init | \`ghcr.io/dbrepo-project/dbrepo/search-service-init:${VERSION}\` |
+          | storage-service-init | \`ghcr.io/dbrepo-project/dbrepo/storage-service-init:${VERSION}\` |
+          | ui | \`ghcr.io/dbrepo-project/dbrepo/ui:${VERSION}\` |
+          | starter-notebook | \`ghcr.io/dbrepo-project/dbrepo/starter-notebook:${VERSION}\` |
+
+          Also available:
+          - **Helm chart**: \`oci://ghcr.io/dbrepo-project/helm/dbrepo:${VERSION}\`
+          - **Python library**: [dbrepo on PyPI](https://pypi.org/project/dbrepo/)
+          EOF
+
+          gh release view "$GITHUB_REF_NAME" --json body --jq .body > /tmp/existing-body.txt 2>/dev/null || true
+          if [ -s /tmp/existing-body.txt ]; then
+            printf '%s\n\n%s' "$(cat /tmp/existing-body.txt)" "$(cat /tmp/docker-images.md)" > /tmp/combined.md
+          else
+            cp /tmp/docker-images.md /tmp/combined.md
+          fi
+          gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/combined.md
 
   release-helm:
     if: startsWith(github.ref, 'refs/tags/')
@@ -72,8 +108,8 @@ jobs:
       - uses: azure/setup-helm@v4
       - name: Install plugins
         run: |
-          curl -fsSL https://raw.githubusercontent.com/sigstore/helm-sigstore/main/scripts/install.sh | bash
-          helm plugin install https://github.com/losisin/helm-values-schema-json.git
+          helm plugin install --verify=false https://github.com/sigstore/helm-sigstore
+          helm plugin install --verify=false https://github.com/losisin/helm-values-schema-json.git
       - name: Login to GHCR OCI registry
         run: |
           echo '${{ github.token }}' | helm registry login --username '${{ github.actor }}' --password-stdin '${{ env.GHCR_REGISTRY }}'
@@ -84,23 +120,6 @@ jobs:
           make build-helm
           helm package ./helm/dbrepo --destination ./build
           helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.GHCR_HELM_PREFIX }}
-
-  release-libs:
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.11'
-      - name: Publish Python package
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build pipenv twine
-          PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
-          echo '${{ secrets.CI_PIPYRC }}' | base64 -d > ./.pypirc
-          python -m build ./lib/python
-          python -m twine upload --config-file ./.pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*
 
   verify-install-script:
     if: startsWith(github.ref_name, 'release-')

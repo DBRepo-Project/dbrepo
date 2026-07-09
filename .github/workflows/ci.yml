@@ -14,7 +14,7 @@ defaults:
     shell: bash
 
 env:
-  APP_VERSION: '1.13.4'
+  APP_VERSION: '1.14.0'
   DUCKDB_VERSION: '1.2.2'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'
@@ -116,10 +116,10 @@ jobs:
             install_cmd: PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
             test_cmd: cd ./lib/python && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage report
           - name: search-service
-            install_cmd: cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$APP_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv install --skip-lock --dev --system
+            install_cmd: PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])") && cp ./lib/python/dist/dbrepo-$PYTHON_LIB_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$PYTHON_LIB_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv install --skip-lock --dev --system
             test_cmd: mkdir -p "$PWD/.logs/search" && export LOG_PATH="$PWD/.logs/search" && cd ./dbrepo-search-service && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage report
           - name: dashboard-service
-            install_cmd: cp ./lib/python/dist/dbrepo-$APP_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$APP_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv install --skip-lock --dev --system
+            install_cmd: PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])") && cp ./lib/python/dist/dbrepo-$PYTHON_LIB_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$PYTHON_LIB_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv install --skip-lock --dev --system
             test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage report
     steps:
       - uses: actions/checkout@v5
@@ -229,4 +229,21 @@ jobs:
             set -- $mapping
             docker tag "$1:latest" "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
             docker push "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
+          done
+      - name: Set package visibility to public
+        run: |
+          for name in \
+            "dbrepo%2Fconsumer-service" \
+            "dbrepo%2Fdashboard-service" \
+            "dbrepo%2Fdashboard-service-init" \
+            "dbrepo%2Fdata-service" \
+            "dbrepo%2Fmetadata-service" \
+            "dbrepo%2Fsearch-service" \
+            "dbrepo%2Fsearch-service-init" \
+            "dbrepo%2Fstorage-service-init" \
+            "dbrepo%2Fui" \
+            "dbrepo%2Fstarter-notebook"
+          do
+            gh api -X PATCH "/orgs/${GHCR_NAMESPACE}/packages/container/${name}/visibility" \
+              -f visibility=public 2>/dev/null || true
           done

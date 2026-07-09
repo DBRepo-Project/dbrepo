@@ -18,11 +18,11 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>dbrepo-core</artifactId>
     <name>dbrepo-core</name>
-    <version>1.13.4</version>
+    <version>1.14.0</version>
 
     <description>Core library for DBRepo</description>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.13/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.14/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>

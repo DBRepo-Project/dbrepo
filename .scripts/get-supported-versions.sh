@@ -21,9 +21,4 @@ versions="$(
     | awk 'NR == 1 { printf "%s", $0; next } { printf ", %s", $0 } END { print "" }'
 )"
 
-if [[ -z "${versions}" ]]; then
-  echo "[ERROR] Failed to resolve supported versions for release line ${release_line}." >&2
-  exit 1
-fi
-
 printf '%s\n' "${versions}"
