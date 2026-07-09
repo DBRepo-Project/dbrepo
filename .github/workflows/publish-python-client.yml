@@ -1,12 +1,6 @@
 name: Publish Python client
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "lib/python/**"
-      - ".github/workflows/publish-python-client.yml"
   workflow_dispatch:
 
 permissions:
