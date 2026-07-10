@@ -1,0 +1,160 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - 'release-*'
+    tags:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  APP_VERSION: '1.14.0'
+  DOC_VERSION: '1.14'
+  CHART_VERSION: '1.14.0'
+  REGCLIENT_VERSION: '0.8.2'
+  GHCR_REGISTRY: 'ghcr.io'
+  GHCR_NAMESPACE: 'dbrepo-project'
+  GHCR_IMAGE_PREFIX: 'ghcr.io/dbrepo-project/dbrepo'
+  GHCR_HELM_PREFIX: 'ghcr.io/dbrepo-project/helm'
+
+jobs:
+  release-images:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    env:
+      REPOSITORY_URL: ghcr.io/dbrepo-project/dbrepo
+    steps:
+      - uses: actions/checkout@v5
+      - name: Login to GHCR
+        run: |
+          echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
+      - name: Pull tested images from GHCR
+        run: |
+          SHA_TAG="sha-${GITHUB_SHA}"
+
+          for mapping in \
+            "dbrepo-consumer-service consumer-service" \
+            "dbrepo-dashboard-service dashboard-service" \
+            "dbrepo-dashboard-service-init dashboard-service-init" \
+            "dbrepo-data-service data-service" \
+            "dbrepo-metadata-service metadata-service" \
+            "dbrepo-search-service search-service" \
+            "dbrepo-search-service-init search-service-init" \
+            "dbrepo-storage-service-init storage-service-init" \
+            "dbrepo-ui ui" \
+            "starter-notebook starter-notebook"
+          do
+            set -- $mapping
+            docker pull "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}"
+            docker tag "${GHCR_IMAGE_PREFIX}/$2:${SHA_TAG}" "$1:latest"
+          done
+      - name: Publish release tags to GHCR
+        run: |
+          make release-images
+          APP_VERSION=$DOC_VERSION make release-images
+          make release-jupyter-image
+          APP_VERSION=$DOC_VERSION make release-jupyter-image
+      - name: Update GitHub Release with Docker image links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          cat > /tmp/docker-images.md <<-EOF
+          ## Docker Images
+
+          All images are available on [GitHub Container Registry](https://github.com/orgs/DBRepo-Project/packages?repo_name=dbrepo):
+
+          | Service | Image |
+          |---|---|
+          | consumer-service | \`ghcr.io/dbrepo-project/dbrepo/consumer-service:${VERSION}\` |
+          | dashboard-service | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service:${VERSION}\` |
+          | dashboard-service-init | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:${VERSION}\` |
+          | data-service | \`ghcr.io/dbrepo-project/dbrepo/data-service:${VERSION}\` |
+          | metadata-service | \`ghcr.io/dbrepo-project/dbrepo/metadata-service:${VERSION}\` |
+          | search-service | \`ghcr.io/dbrepo-project/dbrepo/search-service:${VERSION}\` |
+          | search-service-init | \`ghcr.io/dbrepo-project/dbrepo/search-service-init:${VERSION}\` |
+          | storage-service-init | \`ghcr.io/dbrepo-project/dbrepo/storage-service-init:${VERSION}\` |
+          | ui | \`ghcr.io/dbrepo-project/dbrepo/ui:${VERSION}\` |
+          | starter-notebook | \`ghcr.io/dbrepo-project/dbrepo/starter-notebook:${VERSION}\` |
+
+          Also available:
+          - **Helm chart**: \`oci://ghcr.io/dbrepo-project/helm/dbrepo:${VERSION}\`
+          - **Python library**: [dbrepo on PyPI](https://pypi.org/project/dbrepo/)
+          EOF
+
+          gh release view "$GITHUB_REF_NAME" --json body --jq .body > /tmp/existing-body.txt 2>/dev/null || true
+          if [ -s /tmp/existing-body.txt ]; then
+            printf '%s\n\n%s' "$(cat /tmp/existing-body.txt)" "$(cat /tmp/docker-images.md)" > /tmp/combined.md
+          else
+            cp /tmp/docker-images.md /tmp/combined.md
+          fi
+          gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/combined.md
+
+  release-helm:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: azure/setup-helm@v4
+      - name: Install plugins
+        run: |
+          helm plugin install --verify=false https://github.com/sigstore/helm-sigstore
+          helm plugin install --verify=false https://github.com/losisin/helm-values-schema-json.git
+      - name: Login to GHCR OCI registry
+        run: |
+          echo '${{ github.token }}' | helm registry login --username '${{ github.actor }}' --password-stdin '${{ env.GHCR_REGISTRY }}'
+      - name: Publish chart
+        run: |
+          sed -ri "s/^(version:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
+          sed -ri "s/^(appVersion:\s*).*/\1\"${APP_VERSION}\"/" ./helm/dbrepo/Chart.yaml
+          make build-helm
+          helm package ./helm/dbrepo --destination ./build
+          helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${{ env.GHCR_HELM_PREFIX }}
+
+  verify-install-script:
+    if: startsWith(github.ref_name, 'release-')
+    runs-on: ubuntu-latest
+    env:
+      SKIP_CHECKS: '1'
+    steps:
+      - name: Resolve release line
+        run: echo "DOC_VERSION=${GITHUB_REF_NAME#release-}" >> "$GITHUB_ENV"
+      - name: Verify install script
+        run: curl -sSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/release-${DOC_VERSION}/.scripts/install.sh | bash | grep 'Success!'
+
+  verify-images:
+    if: startsWith(github.ref_name, 'release-')
+    runs-on: ubuntu-latest
+    env:
+      MAINTAINED_SERVICES: 'dashboard-service,dashboard-service-init,data-service,consumer-service,metadata-service,search-service,search-service-init,storage-service-init,ui'
+      CI_REGISTRY2_URL: ghcr.io/dbrepo-project/dbrepo
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Resolve release versions
+        run: |
+          APP_VERSION="$(make version)"
+          DOC_VERSION="${GITHUB_REF_NAME#release-}"
+          echo "DOC_VERSION=${DOC_VERSION}" >> "$GITHUB_ENV"
+          echo "APP_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
+          echo "SUPPORTED_VERSIONS=$(bash ./.scripts/get-supported-versions.sh "${APP_VERSION}")" >> "$GITHUB_ENV"
+      - name: Login to GHCR
+        run: |
+          echo '${{ github.token }}' | docker login '${{ env.GHCR_REGISTRY }}' --username '${{ github.actor }}' --password-stdin
+      - name: Install regctl
+        run: |
+          sudo curl -fsSL https://github.com/regclient/regclient/releases/download/v${REGCLIENT_VERSION}/regctl-linux-amd64 -o /usr/local/bin/regctl
+          sudo chmod +x /usr/local/bin/regctl
+      - name: Verify supported images
+        run: bash ./.gitlab/check-supported-images.sh

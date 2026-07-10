@@ -338,9 +338,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:1f7c7b09702efd30c60c463433f9d8d6006adeb32248ecfc4d0f169d867c506b"
+                "sha256:0d1fb8ba4f7a288e4c1821a40ff292f3a9d85a3739e3157d985e6e55a4d3440e"
             ],
-            "path": "./lib/dbrepo-1.13.5.tar.gz"
+            "path": "./lib/dbrepo-1.14.0.tar.gz"
         },
         "ecs-logging": {
             "hashes": [

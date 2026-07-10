@@ -113,7 +113,7 @@ authservice:
   fullnameOverride: auth-service
   image:
     ## @skip authservice.image.registry
-    registry: registry.datalab.tuwien.ac.at
+    registry: docker.io
     ## @skip authservice.image.repository
     repository: bitnami/keycloak
     ## @skip authservice.image.tag
@@ -408,7 +408,7 @@ consumerservice:
   enabled: true
   image:
     ## @skip consumerservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/consumer-service:1.13.4
+    name: ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.0
   ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -465,7 +465,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.13.4
+    name: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.0
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -565,7 +565,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.13.4
+    name: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.0
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -652,7 +652,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.13.4
+    name: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.0
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -706,7 +706,7 @@ searchservice:
     schedule: "@midnight"
     image:
       ## @skip searchservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.13.4
+      name: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.0
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -772,7 +772,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.13.4
+      name: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -903,7 +903,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.13.4
+    name: ghcr.io/dbrepo-project/dbrepo/ui:1.14.0
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -990,7 +990,7 @@ ui:
     touch: "/apple-touch-icon.png"
     broker:
       ## @param ui.public.broker.host The displayed broker hostname.
-      host: example.com
+      host: dbrepo.ulb.tu-darmstadt.de
       ## @skip ui.public.broker.connections The array of connections that should be displayed in the frontend.
       connections:
         - protocol: "amqp"
@@ -1007,7 +1007,7 @@ ui:
     pid:
       default:
         ## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
-        publisher: "Example University"
+        publisher: "Universitäts- und Landesbibliothek Darmstadt"
     doi:
       ## @param ui.public.doi.enabled Enable the display that DOIs are minted.
       enabled: false
@@ -1016,12 +1016,12 @@ ui:
   ## @param ui.replicaCount The number of replicas.
   replicaCount: 2
   ## @skip ui.extraVolumes
-  extraVolumes: [ ]
+  extraVolumes: []
   #  - name: images-map
   #    configMap:
   #      name: ui-config
   ## @skip ui.extraVolumeMounts
-  extraVolumeMounts: [ ]
+  extraVolumeMounts: []
   #  - name: images-map
   #    mountPath: /static/logo.svg
   #    subPath: logo.svg
@@ -1033,7 +1033,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.13.4
+    name: ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.0
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1050,7 +1050,7 @@ dashboardservice:
     ## @param dashboardservice.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
     ## @param dashboardservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup: 0
+    fsGroup: 1001
   containerSecurityContext:
     ## @param dashboardservice.containerSecurityContext.enabled Enable containers' Security Context
     enabled: true
@@ -1082,23 +1082,38 @@ dashboardservice:
   ##   limits:
   ##     cpu: 500m
   ##     memory: 1024Mi
-  ## @param dashboardservice.replicaCount The number of replicas.
-  setupJob:
-    ## @param dashboardservice.setupJob.enabled Enable the setup job that creates dashboards for existing databases in the Dashboard UI.
-    enabled: true
+  ## @skip dashboardservice.resources
+  grafana:
+    ## @param dashboardservice.grafana.adminPassword The Grafana admin password.
+    adminPassword: dbrepo
+    ## @param dashboardservice.grafana.plugins The Grafana plugins that should be preloaded.
+    plugins: ""
+    ## @param dashboardservice.grafana.notifiers The Grafana notifiers that should be configured.
+    notifiers: ""
+    ## @param dashboardservice.grafana.dashboardsConfigMaps The list of ConfigMaps that contain dashboard definitions.
+    dashboardsConfigMaps: dashboard-service-config
+    ## @param dashboardservice.grafana.smtpHost The Grafana SMTP host.
+    smtpHost: ""
+    ## @param dashboardservice.grafana.smtpUser The Grafana SMTP user.
+    smtpUser: ""
+    ## @param dashboardservice.grafana.smtpPassword The Grafana SMTP password.
+    smtpPassword: ""
+    ## @param dashboardservice.grafana.smtpSkipVerify The Grafana SMTP skip verify.
+    smtpSkipVerify: true
+    ## @param dashboardservice.grafana.fromAddress The Grafana SMTP from address.
+    fromAddress: ""
+    ## @param dashboardservice.grafana.fromName The Grafana SMTP from name.
+    fromName: ""
+  initContainer:
     image:
-      ## @skip dashboardservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service-init:1.13.4
-    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
+      ## @skip dashboardservice.initContainer.image.name
+      name: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.0
+    ## @param dashboardservice.initContainer.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param dashboardservice.initContainer.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
-    ##   requests:
-    ##     cpu: 250m
-    ##     memory: 64Mi
-    ##   limits:
-    ##     cpu: 500m
-    ##     memory: 1024Mi
+  ## @param dashboardservice.datasource The Grafana datasource.
+  datasource: prometheus
   ## @param dashboardservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -1112,141 +1127,129 @@ dashboardui:
   image:
     ## @skip dashboardui.image.repository
     repository: bitnamilegacy/grafana
+  ## @skip dashboardui.admin
   admin:
-    ## @skip dashboardui.admin.user
-    user: "admin"
-    ## @skip dashboardui.admin.password
-    password: "admin"
-  metrics:
-    ## @param dashboardui.metrics.enabled Enable the metrics sidecar.
-    enabled: true
-  ## @param dashboardui.endpoint The endpoint for the microservices.
-  endpoint: http://dashboard-ui:3000
+    ## @param dashboardui.admin.existingSecret The existing secret with the Grafana admin credentials.
+    existingSecret: dashboard-service-secret
+    ## @param dashboardui.admin.userKey The key in the existing secret that contains the Grafana admin username.
+    userKey: admin-user
+    ## @param dashboardui.admin.passwordKey The key in the existing secret that contains the Grafana admin password.
+    passwordKey: admin-password
+  ## @skip dashboardui.smtp
+  smtp:
+    ## @param dashboardui.smtp.existingSecret The existing secret containing SMTP credentials.
+    existingSecret: dashboard-service-secret
+  ## @skip dashboardui.plugins
+  plugins: []
+  ## @skip dashboardui.dashboardProviders
+  dashboardProviders: {}
+  ## @skip dashboardui.dashboardsConfigMaps
+  dashboardsConfigMaps:
+    - configMapName: dashboard-service-config
+      fileName: dashboards.json
+  ## @skip dashboardui.notifiers
+  notifiers: {}
+  ## @skip dashboardui.datasources
   datasources:
-    ## @skip dashboardui.datasources.secretName
-    secretName: dashboard-ui-datasources-secret
-  dashboardsProvider:
-    ## @skip dashboardui.dashboardsProvider.enabled
-    enabled: true
-  grafana:
-    updateStrategy:
-      ## @skip dashboardui.grafana.updateStrategy.type
-      type: Recreate
-    ## @skip dashboardui.grafana.extraEnvVarsSecret
-    extraEnvVarsSecret: dashboard-ui-secret
-    ## @param dashboardui.grafana.replicaCount The number of replicas.
-    replicaCount: 2
-  persistence:
-    ## @skip dashboardui.persistence.enabled
-    enabled: false
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://metric-db-kube-prometheus-prometheus:9090
+          access: proxy
+          isDefault: true
+  ## @param dashboardui.replicaCount The number of replicas.
+  replicaCount: 2
 
-## @section Metric Service
+## @section Metric Database
 
 metricdb:
-  ## @param metricdb.enabled Enable the Metric Service.
+  ## @param metricdb.enabled Enable the Metric Database.
   enabled: true
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
-  ## @param metricdb.endpoint The endpoint for microservices.
-  endpoint: http://metric-db-server
-  alertmanager:
-    ## @skip metricdb.alertmanager.enabled
+  ## @skip metricdb.kube-state-metrics
+  kube-state-metrics:
     enabled: false
-  server:
-    image:
-      ## @skip metricdb.server.image.repository
-      repository: bitnamilegacy/prometheus
-    rbac:
-      ## @skip metricdb.server.rbac.create
-      create: true
-    updateStrategy:
-      ## @skip metricdb.server.updateStrategy.type
-      type: Recreate
-    service:
-      ## @skip metricdb.server.service.type
-      type: ClusterIP
-    persistence:
-      ## @skip metricdb.server.persistence.enabled
-      enabled: true
-    ## @skip metricdb.server.extraScrapeConfigs
-    extraScrapeConfigs:
-      - job_name: 'actuator scrape'
-        metrics_path: '/actuator/prometheus'
-        static_configs:
-          - targets:
-              - data-service
-              - metadata-service
-      - job_name: 'metrics scrape'
-        metrics_path: '/metrics'
-        static_configs:
-          - targets:
-              - analyse-service
-              - auth-service-metrics:9000
-              - broker-service:9419
-              - dashboard-db-metrics:9187
-              - dashboard-service
-              - data-db-metrics:9104
-              - metadata-db-metrics:9104
-              - search-service
-              - storage-service-master-metrics:9327
-              - ui:3000
-      - job_name: 'realm scrape'
-        metrics_path: '/realms/dbrepo/metrics'
-        static_configs:
-          - targets:
-              - auth-service-metrics:8080
+  ## @skip metricdb.prometheus-node-exporter
+  prometheus-node-exporter:
+    enabled: false
+  ## @skip metricdb.prometheus-pushgateway
+  prometheus-pushgateway:
+    enabled: false
+  ## @skip metricdb.networkPolicy
+  networkPolicy:
+    enabled: false
+  ## @param metricdb.replicaCount The number of replicas.
+  replicaCount: 1
 
 ## @section Gateway Service
 
 gatewayservice:
-  ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
+  ## @param gatewayservice.enabled Enable the Gateway Service.
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
   image:
     ## @skip gatewayservice.image.repository
     repository: bitnamilegacy/nginx
-  service:
-    ## @param gatewayservice.service.type The service type.
-    type: ClusterIP
-  metrics:
-    ## @param gatewayservice.metrics.enabled Enable the Prometheus metrics sidecar.
+  ## @param gatewayservice.corsAllowOrigin The allowed CORS origins.
+  corsAllowOrigin: ""
+  ## @param gatewayservice.corsAllowMethods The allowed CORS request methods.
+  corsAllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  ## @param gatewayservice.corsAllowHeaders The allowed CORS request headers.
+  corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+  ## @param gatewayservice.extraEnv The extra Nginx environment variable
+  extraEnv: ""
+  ## @param gatewayservice.extraEnvValue The extra Nginx environment value
+  extraEnvValue: ""
+  tls:
+    ## @param gatewayservice.tls.enabled Enable TLS support
     enabled: false
-  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
-  existingServerBlockConfigmap: gateway-service-setup
-  ## @skip gatewayservice.extraVolumes
-  extraVolumes:
-    - name: logging
-      emptyDir: { }
-  ## @skip gatewayservice.extraVolumeMounts
-  extraVolumeMounts:
-    - name: logging
-      mountPath: /var/log/nginx
-  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
-  replicaCount: 3
+    ## @param gatewayservice.tls.auto Generated certificates
+    auto: false
+    ## @param gatewayservice.tls.existingSecret Existing secret with certificate content
+    existingSecret: ingress-cert
+  ## @skip gatewayservice.resourcesPreset
+  resourcesPreset: "nano"
+  ## @param gatewayservice.replicaCount The number of replicas.
+  replicaCount: 2
+  ## @skip gatewayservice.containerPorts
+  containerPorts:
+    - name: http
+      containerPort: 8080
+    - name: https
+      containerPort: 8443
 
-## @section Analytics Service
+## @section Compute Service
 
 computeservice:
-  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
-  endpoint: local[*]
-
-
-## @section Ingress
-
-ingress:
-  ## @param ingress.enabled Enable the ingress.
-  enabled: false
-  ## @param ingress.className The ingress class name.
-  className: nginx
+  ## @param computeservice.enabled Enable the Compute Service.
+  enabled: true
+  ## @skip computeservice.fullnameOverride
+  fullnameOverride: compute-service
+  image:
+    ## @skip computeservice.image.repository
+    repository: bitnamilegacy/nginx
+  ## @param computeservice.extraEnv The extra Nginx environment variable
+  extraEnv: ""
+  ## @param computeservice.extraEnvValue The extra Nginx environment value
+  extraEnvValue: ""
   tls:
-    ## @param ingress.tls.enabled Enable the ingress.
-    enabled: true
-    ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
-    secretName: ingress-cert
-  ## @skip ingress.annotations The ingress rules for proxying requests directly to services.
-  ## @example
-  ## annotations:
-  ##   cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-  ##   nginx.ingress.kubernetes.io/proxy-body-size: 2G
-  annotations: { }
+    ## @param computeservice.tls.enabled Enable TLS support
+    enabled: false
+    ## @param computeservice.tls.auto Generated certificates
+    auto: false
+    ## @param computeservice.tls.existingSecret Existing secret with certificate content
+    existingSecret: ingress-cert
+  ## @param computeservice.resourcesPreset The container resource preset
+  resourcesPreset: "nano"
+  ## @param computeservice.serverName The server name for the compute cluster.
+  serverName: compute
+  ## @param computeservice.replicaCount The number of replicas.
+  replicaCount: 2
+  ## @skip computeservice.containerPorts
+  containerPorts:
+    - name: http
+      containerPort: 8081

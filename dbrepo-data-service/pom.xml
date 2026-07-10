@@ -16,7 +16,7 @@
     <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
     <artifactId>data-service</artifactId>
     <name>data-service</name>
-    <version>1.13.4</version>
+    <version>1.14.0</version>
 
     <description>Service that manages the data</description>
 
@@ -100,7 +100,7 @@
         <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
-            <version>1.13.4</version>
+            <version>1.14.0</version>
         </dependency>
         <!-- Spring -->
         <dependency>
