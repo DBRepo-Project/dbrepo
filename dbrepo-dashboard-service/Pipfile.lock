@@ -338,8 +338,7 @@
                 "sha256:28eeef18df66d57d37d4a56c12b348eb0176dd804cc397f6a5cb6b024ef7645f",
                 "sha256:3b3960df5009812926c8960af3728f10c556dd3ecb7b521bf6f1dfb082ea4e7a"
             ],
-            "markers": "python_version >= '3.11'",
-            "path": "./lib/dbrepo-1.13.4.tar.gz"
+            "path": "./lib/dbrepo-1.14.0.tar.gz"
         },
         "ecs-logging": {
             "hashes": [

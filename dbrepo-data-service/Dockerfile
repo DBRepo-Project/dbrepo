@@ -20,6 +20,7 @@ RUN mvn -q clean package -DskipTests
 ###### SECOND STAGE ######
 FROM --platform=$BUILDPLATFORM docker.io/bitnamilegacy/java:21 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
+LABEL org.opencontainers.image.source="https://github.com/DBRepo-Project/dbrepo"
 
 ENV DUCKDB_VERSION="1.2.2"
 

@@ -1,10 +1,7 @@
 #!/bin/bash
 echo "Starting registry check ..."
 
-if [[ -z $SUPPORTED_VERSIONS ]]; then
-  echo "[ERROR] Missing environment variable SUPPORTED_VERSIONS" > /dev/stderr
-  exit 1
-elif [[ -z $MAINTAINED_SERVICES ]]; then
+if [[ -z $MAINTAINED_SERVICES ]]; then
   echo "[ERROR] Missing environment variable MAINTAINED_SERVICES" > /dev/stderr
   exit 1
 elif [[ -z $CI_REGISTRY2_URL ]]; then
@@ -14,6 +11,11 @@ fi
 
 VERSIONS=(${SUPPORTED_VERSIONS//,/ })
 SERVICES=(${MAINTAINED_SERVICES//,/ })
+
+if [[ ${#VERSIONS[@]} -eq 0 ]]; then
+  echo "[INFO] No supported versions to check. Skipping."
+  exit 0
+fi
 
 for SERVICE in "${SERVICES[@]}"; do
   TAGS=$(regctl tag ls "${CI_REGISTRY2_URL}/${SERVICE}")

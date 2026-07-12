@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM --platform=$BUILDPLATFORM oven/bun:1.2.21-alpine AS build
+FROM --platform=$BUILDPLATFORM oven/bun:1.3.14-alpine AS build
 
 WORKDIR /app
 
@@ -29,6 +29,7 @@ RUN bun run build
 
 ###### SECOND STAGE ######
 FROM --platform=$BUILDPLATFORM node:24-alpine AS runtime
+LABEL org.opencontainers.image.source="https://github.com/DBRepo-Project/dbrepo"
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""

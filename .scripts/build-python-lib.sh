@@ -6,7 +6,8 @@ rm -rf ./dbrepo-search-service/lib/* ./dbrepo-search-service/Pipfile.lock ./dbre
 PIPENV_PIPFILE=./lib/python/Pipfile pipenv lock
 python3 -m build --sdist ./lib/python
 python3 -m build --wheel ./lib/python
-cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib
+PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])")
+cp -r ./lib/python/dist/dbrepo-${PYTHON_LIB_VERSION}* ./dbrepo-search-service/lib
 PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv lock
-cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-dashboard-service/lib
+cp -r ./lib/python/dist/dbrepo-${PYTHON_LIB_VERSION}* ./dbrepo-dashboard-service/lib
 PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv lock

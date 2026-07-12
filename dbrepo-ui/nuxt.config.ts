@@ -1,6 +1,10 @@
 import vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 
 const proxy: any = {}
+const publicAuthBase = (process.env.BASE_URL || 'http://localhost').replace(/\/$/, '')
+const internalAuthBase = (process.env.AUTH_SERVICE_ENDPOINT || (process.env.NODE_ENV === 'development'
+  ? 'http://localhost:8080'
+  : 'http://auth-service:8080')).replace(/\/$/, '')
 
 /* proxies the backend calls, >>NOT<< the frontend calls */
 if (process.env.NODE_ENV === 'development') {
@@ -17,9 +21,12 @@ if (process.env.NODE_ENV === 'development') {
   process.env.NUXT_PUBLIC_API_SERVER = api
   process.env.NUXT_STORAGE_OIDC_HOST = 'localhost'
   process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL = api + '/realms/dbrepo'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL = api + '/realms/dbrepo/protocol/openid-connect/auth'
   process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID = 'dbrepo-client'
   process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET = 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
   process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI = api + ':3001/auth/keycloak/callback'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL = internalAuthBase + '/realms/dbrepo/protocol/openid-connect/token'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL = internalAuthBase + '/realms/dbrepo/protocol/openid-connect/userinfo'
 }
 
 /**
@@ -149,11 +156,19 @@ export default defineNuxtConfig({
     providers: {
       keycloak: {
         audience: 'account',
-        baseUrl: 'http://localhost:8080/realms/dbrepo',
+        baseUrl: `${publicAuthBase}/realms/dbrepo`,
         clientId: 'dbrepo-client',
         clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
-        redirectUri: 'http://localhost/auth/keycloak/callback',
-        logoutRedirectUri: 'http://localhost',
+        redirectUri: `${publicAuthBase}/auth/keycloak/callback`,
+        logoutRedirectUri: publicAuthBase,
+        authorizationUrl: `${publicAuthBase}/realms/dbrepo/protocol/openid-connect/auth`,
+        tokenUrl: `${internalAuthBase}/realms/dbrepo/protocol/openid-connect/token`,
+        userInfoUrl: `${internalAuthBase}/realms/dbrepo/protocol/openid-connect/userinfo`,
+        logoutUrl: `${publicAuthBase}/realms/dbrepo/protocol/openid-connect/logout`,
+        openIdConfiguration: {
+          issuer: `${publicAuthBase}/realms/dbrepo`,
+          jwks_uri: `${internalAuthBase}/realms/dbrepo/protocol/openid-connect/certs`,
+        },
         exposeAccessToken: true,
         optionalClaims: ['realm_access'],
       },
