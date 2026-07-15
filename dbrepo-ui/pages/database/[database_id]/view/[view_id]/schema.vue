@@ -32,15 +32,15 @@
         <template v-slot:item.column_concept="{ item }">
           <a
             v-if="hasConcept(item)"
-            :href="item.concept.uri">
-            {{ item.concept.name ? item.concept.name : item.concept.uri }}
+            :href="conceptUri(item)">
+            {{ conceptLabel(item) }}
           </a>
         </template>
         <template v-slot:item.column_unit="{ item }">
           <a
             v-if="hasUnit(item)"
-            :href="item.unit.uri">
-            {{ item.unit.name ? item.unit.name : item.unit.uri }}
+            :href="unitUri(item)">
+            {{ unitLabel(item) }}
           </a>
         </template>
       </v-data-table>
@@ -161,10 +161,22 @@ export default {
       return null
     },
     hasUnit (item) {
-      return item.unit && 'uri' in item.unit
+      return !!this.unitUri(item)
     },
     hasConcept (item) {
-      return item.concept && 'uri' in item.concept
+      return !!this.conceptUri(item)
+    },
+    conceptUri (item) {
+      return item.concept?.uri || item.concept_uri || null
+    },
+    unitUri (item) {
+      return item.unit?.uri || item.unit_uri || null
+    },
+    conceptLabel (item) {
+      return item.concept?.name || this.conceptUri(item)
+    },
+    unitLabel (item) {
+      return item.unit?.name || this.unitUri(item)
     }
   }
 }
