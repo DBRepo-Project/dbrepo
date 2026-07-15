@@ -342,11 +342,11 @@ export default {
       this.concept.uri = null
       this.unit.uri = null
       this.description = null
-      if (this.column.unit) {
-        this.unit.uri = this.column.unit.uri
+      if (this.column.unit?.uri || this.column.unit_uri) {
+        this.unit.uri = this.column.unit?.uri || this.column.unit_uri
       }
-      if (this.column.concept) {
-        this.concept.uri = this.column.concept.uri
+      if (this.column.concept?.uri || this.column.concept_uri) {
+        this.concept.uri = this.column.concept?.uri || this.column.concept_uri
       }
       if (this.column.description) {
         this.description = this.column.description

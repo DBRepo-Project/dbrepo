@@ -31,13 +31,13 @@
         </template>
         <template v-slot:item.column_concept="{ item }">
           <a
-            v-if="item.concept && !canAssignSemanticInformation"
-            :href="item.concept.uri"
+            v-if="conceptUri(item) && !canAssignSemanticInformation"
+            :href="conceptUri(item)"
             v-bind="props">
-            {{ item.concept.uri }}
+            {{ conceptUri(item) }}
           </a>
           <v-tooltip
-            v-if="item.concept && !canAssignSemanticInformation && tooltip(item, 'concept')"
+            v-if="conceptUri(item) && !canAssignSemanticInformation && tooltip(item, 'concept')"
             :text="tooltip(item, 'concept')">
             <template
               v-slot:activator="{ props }">
@@ -50,7 +50,7 @@
           </v-tooltip>
           <v-text-field
             v-if="canAssignSemanticInformation"
-            :model-value="item.concept?.uri"
+            :model-value="conceptUri(item)"
             readonly
             variant="plain">
             <template
@@ -66,13 +66,13 @@
         </template>
         <template v-slot:item.column_unit="{ item }">
           <a
-            v-if="item.unit && !canAssignSemanticInformation"
-            :href="item.unit.uri"
+            v-if="unitUri(item) && !canAssignSemanticInformation"
+            :href="unitUri(item)"
             v-bind="props">
-            {{ item.unit.uri }}
+            {{ unitUri(item) }}
           </a>
           <v-tooltip
-            v-if="item.unit && !canAssignSemanticInformation && tooltip(item, 'unit')"
+            v-if="unitUri(item) && !canAssignSemanticInformation && tooltip(item, 'unit')"
             :text="tooltip(item, 'unit')">
             <template
               v-slot:activator="{ props }">
@@ -85,7 +85,7 @@
           </v-tooltip>
           <v-text-field
             v-if="canAssignSemanticInformation"
-            :model-value="item.unit?.uri"
+            :model-value="unitUri(item)"
             readonly
             variant="plain">
             <template
@@ -315,10 +315,16 @@ export default {
       return null
     },
     hasUnit (item) {
-      return item.unit && 'uri' in item.unit
+      return !!this.unitUri(item)
     },
     hasConcept (item) {
-      return item.concept && 'uri' in item.concept
+      return !!this.conceptUri(item)
+    },
+    conceptUri (item) {
+      return item.concept?.uri || item.concept_uri || null
+    },
+    unitUri (item) {
+      return item.unit?.uri || item.unit_uri || null
     },
     pick (item) {
       this.column = item
