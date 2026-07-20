@@ -1174,6 +1174,7 @@ public interface MetadataMapper {
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
     @Mappings({
+            @Mapping(target = "contactPerson", source = "contact"),
             @Mapping(target = "ownedBy", source = "owner.username")
     })
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
