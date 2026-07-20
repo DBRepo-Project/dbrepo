@@ -503,14 +503,16 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "select_tables")
                     .log();
+            final List<Table> knownTables = Optional.ofNullable(database.getTables())
+                    .orElseGet(List::of);
             while (resultSet1.next()) {
                 final String tableName = resultSet1.getString(1);
-                if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
+                if (knownTables.stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
                     log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), tableName);
                     continue;
                 }
                 final TableDto table = inspect(database, tableName);
-                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(tableName))) {
+                if (knownTables.stream().noneMatch(t -> t.getInternalName().equals(tableName))) {
                     tables.add(table);
                 }
             }
