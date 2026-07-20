@@ -180,8 +180,6 @@ public class MetadataMapperUnitTest extends BaseTest {
 
     @Test
     public void tableDtoToTable_mapsOwnerUsername() {
-
-        /* test */
         final Table response = metadataMapper.tableDtoToTable(TABLE_1_DTO);
         assertEquals(USER_1_USERNAME, response.getOwnedBy());
     }
