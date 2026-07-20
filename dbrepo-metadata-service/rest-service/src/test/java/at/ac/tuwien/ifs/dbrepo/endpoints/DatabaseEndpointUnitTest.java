@@ -196,6 +196,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getContactPerson());
+        assertEquals(USER_1_USERNAME, response.getBody().getContactPerson().getUsername());
     }
 
     @Test
@@ -216,6 +218,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getContactPerson());
+        assertEquals(USER_1_USERNAME, response.getBody().getContactPerson().getUsername());
     }
 
     @Test

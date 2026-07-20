@@ -1,5 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.mapper;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
@@ -182,6 +184,16 @@ public class MetadataMapperUnitTest extends BaseTest {
     public void tableDtoToTable_mapsOwnerUsername() {
         final Table response = metadataMapper.tableDtoToTable(TABLE_1_DTO);
         assertEquals(USER_1_USERNAME, response.getOwnedBy());
+    }
+
+    @Test
+    public void databaseDtoToDatabaseBriefDto_mapsContact() {
+        final DatabaseDto database = metadataMapper.databaseToDatabaseDto(DATABASE_1);
+
+        final DatabaseBriefDto response = metadataMapper.databaseDtoToDatabaseBriefDto(database);
+
+        assertNotNull(response.getContactPerson());
+        assertEquals(USER_1_USERNAME, response.getContactPerson().getUsername());
     }
 
     @Test
