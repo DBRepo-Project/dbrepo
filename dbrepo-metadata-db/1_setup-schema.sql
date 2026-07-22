@@ -123,6 +123,48 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     UNIQUE (`tID`, `internal_name`)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `mdb_concepts`
+(
+    id          VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    uri         TEXT         NOT NULL,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     TIMESTAMP    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (`id`),
+    UNIQUE (uri(200))
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `mdb_units`
+(
+    id          VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    uri         TEXT         NOT NULL,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     TIMESTAMP    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (`id`),
+    UNIQUE (uri(200))
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
+(
+    id      VARCHAR(36) NOT NULL DEFAULT UUID(),
+    cID     VARCHAR(36) NOT NULL,
+    created TIMESTAMP   NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id, cid),
+    FOREIGN KEY (`id`) REFERENCES mdb_concepts (`id`),
+    FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `mdb_columns_units`
+(
+    id      VARCHAR(36) NOT NULL DEFAULT UUID(),
+    cID     VARCHAR(36) NOT NULL,
+    created TIMESTAMP   NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id, cID),
+    FOREIGN KEY (id) REFERENCES mdb_units (id),
+    FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
     id        VARCHAR(36)  NOT NULL DEFAULT UUID(),

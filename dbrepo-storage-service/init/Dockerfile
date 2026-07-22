@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM docker.io/python:3.11-alpine3.21 AS runtime
+FROM --platform=$BUILDPLATFORM docker.io/python:3.11-alpine3.23 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 LABEL org.opencontainers.image.source="https://github.com/DBRepo-Project/dbrepo"
 
