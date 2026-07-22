@@ -167,6 +167,17 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+    primary:
+      ## @skip authservice.postgresql.primary.resources
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+          ephemeral-storage: 50Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+          ephemeral-storage: 2Gi
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   jwt:

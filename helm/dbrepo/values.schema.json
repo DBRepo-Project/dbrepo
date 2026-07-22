@@ -168,6 +168,17 @@
                                 }
                             }
                         },
+                        "primary": {
+                            "type": "object",
+                            "properties": {
+                                "resourcesPreset": {
+                                    "type": "string"
+                                },
+                                "resources": {
+                                    "type": "object"
+                                }
+                            }
+                        },
                         "volumePermissions": {
                             "type": "object",
                             "properties": {
