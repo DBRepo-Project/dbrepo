@@ -46,7 +46,7 @@ fi
 
 # environment
 echo "[🚀] Gathering environment for version ${APP_VERSION} ..."
-curl -ksSL -o ./dist.tar.gz "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
+curl -ksSL -o ./dist.tar.gz "https://github.com/DBRepo-Project/dbrepo/archive/refs/tags/${APP_VERSION}.tar.gz"
 tar xzfv ./dist.tar.gz
 
 if [[ $DOWNLOAD_ONLY -eq 1 ]]; then
@@ -70,4 +70,4 @@ echo "Then start the local deployment with:"
 echo ""
 echo "  docker compose up -d"
 echo ""
-echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/installation/#next-steps"
+echo "Read about next steps online: https://dbrepo-project.github.io/dbrepo-docs/${APP_VERSION}/installation/#next-steps"
