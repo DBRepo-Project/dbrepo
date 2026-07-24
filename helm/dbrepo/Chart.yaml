@@ -4,21 +4,21 @@ annotations:
     - name: openldap
       image: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
     - name: metadata-service
-      image: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.1
     - name: data-service
-      image: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.1
     - name: search-service
-      image: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.1
     - name: search-service-init
-      image: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.1
     - name: storage-service-init
-      image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.1
     - name: storage-service-init
-      image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.1
     - name: ui
-      image: ghcr.io/dbrepo-project/dbrepo/ui:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/ui:1.14.1
     - name: dashboard-service-init
-      image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.0
+      image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.1
   licenses: Apache-2.0
 apiVersion: v2
 name: dbrepo
@@ -26,8 +26,8 @@ description: Helm Chart for installing DBRepo
 sources:
   - https://github.com/DBRepo-Project/dbrepo
 type: application
-version: "1.14.0"
-appVersion: "1.14.0"
+version: "1.14.1"
+appVersion: "1.14.1"
 keywords:
   - dbrepo
 maintainers:

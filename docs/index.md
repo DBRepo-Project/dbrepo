@@ -11,7 +11,7 @@ author: Martin Weise
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 [![GitHub License](https://img.shields.io/github/license/DBRepo-Project/dbrepo?style=flat&cacheSeconds=3600)](https://github.com/DBRepo-Project/dbrepo){ tabindex=-1 }
 
-Documentation for version: [v1.14.0](https://github.com/DBRepo-Project/dbrepo/releases). 
+Documentation for version: [v1.14.1](https://github.com/DBRepo-Project/dbrepo/releases).
 
 DBRepo is an open-source database repository that cover the data life cycle supporting data evolution, 
 -citation and -versioning. It implements the query store of the [RDA WGDC](https://doi.org/10.1162/99608f92.be565013) on

@@ -6,11 +6,11 @@
     <parent>
         <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
         <artifactId>metadata-service</artifactId>
-        <version>1.14.0</version>
+        <version>1.14.1</version>
     </parent>
 
     <name>repositories</name>
     <artifactId>repositories</artifactId>
-    <version>1.14.0</version>
+    <version>1.14.1</version>
 
 </project>

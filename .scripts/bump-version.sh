@@ -18,10 +18,18 @@ usage() {
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
+sed_in_place() {
+  if sed --version >/dev/null 2>&1; then
+    sed -i "$@"
+  else
+    sed -i '' "$@"
+  fi
+}
+
 # Read current versions from Makefile
-CUR_DOC="$(grep -oP '^DOC_VERSION \?= \K.*' Makefile)"
-CUR_APP="$(grep -oP '^APP_VERSION \?= \K.*' Makefile)"
-CUR_CHART="$(grep -oP '^CHART_VERSION \?= \K.*' Makefile)"
+CUR_DOC="$(awk '$1 == "DOC_VERSION" && $2 == "?=" { print $3; exit }' Makefile)"
+CUR_APP="$(awk '$1 == "APP_VERSION" && $2 == "?=" { print $3; exit }' Makefile)"
+CUR_CHART="$(awk '$1 == "CHART_VERSION" && $2 == "?=" { print $3; exit }' Makefile)"
 
 if [[ $# -eq 1 ]]; then
   NEW_VERSION="$1"
@@ -70,44 +78,47 @@ echo ""
 
 # --- 1. Makefile ---
 echo "[1/7] Makefile"
-sed -i "s/^DOC_VERSION ?= ${CUR_DOC}/DOC_VERSION ?= ${DOC_VERSION}/" Makefile
-sed -i "s/^APP_VERSION ?= ${CUR_APP}/APP_VERSION ?= ${NEW_VERSION}/" Makefile
-sed -i "s/^CHART_VERSION ?= ${CUR_CHART}/CHART_VERSION ?= ${NEW_CHART}/" Makefile
+sed_in_place "s/^DOC_VERSION ?= ${CUR_DOC}/DOC_VERSION ?= ${DOC_VERSION}/" Makefile
+sed_in_place "s/^APP_VERSION ?= ${CUR_APP}/APP_VERSION ?= ${NEW_VERSION}/" Makefile
+sed_in_place "s/^CHART_VERSION ?= ${CUR_CHART}/CHART_VERSION ?= ${NEW_CHART}/" Makefile
 
 # --- 2. CI / release configs ---
 echo "[2/7] GitHub Actions and GitLab CI"
 for f in .github/workflows/release.yml .github/workflows/ci.yml; do
-  sed -i "s/APP_VERSION: '${OLD_VERSION}'/APP_VERSION: '${NEW_VERSION}'/" "$f"
-  sed -i "s/DOC_VERSION: '${CUR_DOC}'/DOC_VERSION: '${DOC_VERSION}'/" "$f"
-  sed -i "s/CHART_VERSION: '${CUR_CHART}'/CHART_VERSION: '${NEW_CHART}'/" "$f"
+  sed_in_place "s/APP_VERSION: '${OLD_VERSION}'/APP_VERSION: '${NEW_VERSION}'/" "$f"
+  sed_in_place "s/DOC_VERSION: '${CUR_DOC}'/DOC_VERSION: '${DOC_VERSION}'/" "$f"
+  sed_in_place "s/CHART_VERSION: '${CUR_CHART}'/CHART_VERSION: '${NEW_CHART}'/" "$f"
 done
 
-sed -i "s/DOC_VERSION: \"${CUR_DOC}\"/DOC_VERSION: \"${DOC_VERSION}\"/" .gitlab-ci.yml
-sed -i "s/APP_VERSION: \"${OLD_VERSION}\"/APP_VERSION: \"${NEW_VERSION}\"/" .gitlab-ci.yml
-sed -i "s/CHART_VERSION: \"${CUR_CHART}\"/CHART_VERSION: \"${NEW_CHART}\"/" .gitlab-ci.yml
-sed -i "s/${CUR_DOC}\./${DOC_VERSION}./g" .gitlab-ci.yml
+sed_in_place "s/^  DOC_VERSION: \".*\"/  DOC_VERSION: \"${DOC_VERSION}\"/" .gitlab-ci.yml
+sed_in_place "s/^  APP_VERSION: \".*\"/  APP_VERSION: \"${NEW_VERSION}\"/" .gitlab-ci.yml
+sed_in_place "s/^  CHART_VERSION: \".*\"/  CHART_VERSION: \"${NEW_CHART}\"/" .gitlab-ci.yml
+sed_in_place "s/${CUR_DOC}\./${DOC_VERSION}./g" .gitlab-ci.yml
 
 # --- 3. Java core library ---
 echo "[3/7] lib/java/dbrepo-core"
-sed -i "s|<version>${OLD_VERSION}</version>|<version>${NEW_VERSION}</version>|" lib/java/dbrepo-core/pom.xml
-sed -i "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" lib/java/dbrepo-core/pom.xml
+sed_in_place "s|<version>${OLD_VERSION}</version>|<version>${NEW_VERSION}</version>|" lib/java/dbrepo-core/pom.xml
+sed_in_place "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" lib/java/dbrepo-core/pom.xml
 
 # --- 4. Helm chart ---
 echo "[4/7] helm/dbrepo"
-sed -i "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${CUR_CHART}|\1:${NEW_CHART}|g" helm/dbrepo/Chart.yaml
-sed -i "s/version: \"${CUR_CHART}\"/version: \"${NEW_CHART}\"/" helm/dbrepo/Chart.yaml
-sed -i "s/appVersion: \"${CUR_APP}\"/appVersion: \"${NEW_VERSION}\"/" helm/dbrepo/Chart.yaml
-sed -i "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" helm/dbrepo/Chart.yaml
+sed_in_place "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${OLD_VERSION}|\1:${NEW_VERSION}|g" helm/dbrepo/Chart.yaml
+sed_in_place "s/version: \"${CUR_CHART}\"/version: \"${NEW_CHART}\"/" helm/dbrepo/Chart.yaml
+sed_in_place "s/appVersion: \"${CUR_APP}\"/appVersion: \"${NEW_VERSION}\"/" helm/dbrepo/Chart.yaml
+sed_in_place "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" helm/dbrepo/Chart.yaml
 
-sed -i "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${CUR_CHART}|\1:${NEW_CHART}|g" helm/dbrepo/values.yaml
-sed -i "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${CUR_CHART}|\1:${NEW_CHART}|g" helm/dbrepo/overlay-values.yaml
-sed -i "s|raw/v${OLD_VERSION}/|raw/v${NEW_VERSION}/|" helm/dbrepo/gen-overlay-values.sh
+sed_in_place "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${OLD_VERSION}|\1:${NEW_VERSION}|g" helm/dbrepo/values.yaml
+if [[ -f helm/dbrepo/overlay-values.yaml ]]; then
+  sed_in_place "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${OLD_VERSION}|\1:${NEW_VERSION}|g" helm/dbrepo/overlay-values.yaml
+fi
+sed_in_place "s|raw/v${OLD_VERSION}/|raw/v${NEW_VERSION}/|" helm/dbrepo/gen-overlay-values.sh
+sed_in_place "s|\(ghcr\.io/dbrepo-project/dbrepo/[^:]*\):${OLD_VERSION}|\1:${NEW_VERSION}|g" .docker/docker-compose.yml
 
 # --- 5. Scripts ---
 echo "[5/7] .scripts"
-sed -i "s/APP_VERSION=\"${OLD_VERSION}\"/APP_VERSION=\"${NEW_VERSION}\"/" .scripts/install.sh
-sed -i "s|dbrepo-core-${OLD_VERSION}|dbrepo-core-${NEW_VERSION}|g" .scripts/build-java-lib.sh
-sed -i "s|-Dversion=${OLD_VERSION}|-Dversion=${NEW_VERSION}|g" .scripts/build-java-lib.sh
+sed_in_place "s/APP_VERSION=\"${OLD_VERSION}\"/APP_VERSION=\"${NEW_VERSION}\"/" .scripts/install.sh
+sed_in_place "s|dbrepo-core-${OLD_VERSION}|dbrepo-core-${NEW_VERSION}|g" .scripts/build-java-lib.sh
+sed_in_place "s|-Dversion=${OLD_VERSION}|-Dversion=${NEW_VERSION}|g" .scripts/build-java-lib.sh
 
 # --- 6. versions.json ---
 echo "[6/7] versions.json"
@@ -115,6 +126,7 @@ python3 -c "
 import json
 with open('versions.json') as f:
     data = json.load(f)
+data = [entry for entry in data if entry.get('version') != '${DOC_VERSION}']
 for entry in data:
     if 'latest' in entry.get('aliases', []):
         entry['aliases'] = []
@@ -126,17 +138,31 @@ with open('versions.json', 'w') as f:
 
 # --- 7. mkdocs.yml + Python doc URLs + Service POM files ---
 echo "[7/7] mkdocs.yml, Python doc URLs, and service POM files"
-sed -i "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" mkdocs.yml
-sed -i "s|cover_subtitle: Documentation for version v${CUR_APP}|cover_subtitle: Documentation for version v${NEW_VERSION}|" mkdocs.yml
-sed -i "s|dbrepo_v${CUR_APP}\\.pdf|dbrepo_v${NEW_VERSION}.pdf|" mkdocs.yml
-sed -i "s|default: ${CUR_DOC}|default: ${DOC_VERSION}|" mkdocs.yml
+sed_in_place "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" mkdocs.yml
+sed_in_place "s|cover_subtitle: Documentation for version v${CUR_APP}|cover_subtitle: Documentation for version v${NEW_VERSION}|" mkdocs.yml
+sed_in_place "s|dbrepo_v${CUR_APP}\\.pdf|dbrepo_v${NEW_VERSION}.pdf|" mkdocs.yml
+sed_in_place "s|default: ${CUR_DOC}|default: ${DOC_VERSION}|" mkdocs.yml
+
+for f in \
+  docs/.openapi/api.base.yaml \
+  docs/.openapi/api.yaml \
+  docs/index.md \
+  docs/kubernetes.md \
+  docs/maintainer-guide/install-kubernetes.md \
+  docs/user-guide/index.md \
+  helm/dbrepo/README.md
+do
+  sed_in_place "s/${OLD_VERSION}/${NEW_VERSION}/g" "$f"
+done
 
 # Python doc URLs (but NOT the Python lib version — handled by bump-python)
-sed -i "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" lib/python/pyproject.toml
-sed -i "s/doc_version = os.environ.get(\"DOC_VERSION\", \"${CUR_DOC}\")/doc_version = os.environ.get(\"DOC_VERSION\", \"${DOC_VERSION}\")/" lib/python/setup.py
+sed_in_place "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" lib/python/pyproject.toml
+sed_in_place "s/doc_version = os.environ.get(\"DOC_VERSION\", \"${CUR_DOC}\")/doc_version = os.environ.get(\"DOC_VERSION\", \"${DOC_VERSION}\")/" lib/python/setup.py
 
 for svc in dbrepo-consumer-service dbrepo-data-service dbrepo-metadata-service; do
-  find "$svc" -name pom.xml -exec sed -i "s|<version>${OLD_VERSION}</version>|<version>${NEW_VERSION}</version>|g" {} +
+  while IFS= read -r -d '' pom; do
+    sed_in_place "s|<version>${OLD_VERSION}</version>|<version>${NEW_VERSION}</version>|g" "$pom"
+  done < <(find "$svc" -name pom.xml -print0)
 done
 
 echo ""

@@ -4,7 +4,7 @@ if ! command -v rabbitmqadmin >/dev/null 2>&1; then
   echo "FATAL: rabbitmqadmin not found - install from https://github.com/rabbitmq/rabbitmqadmin-ng/releases"
   exit 1
 fi
-curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/v1.14.0/helm/dbrepo/values.yaml > $OUTPUT_FILE
+curl -fsSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/v1.14.1/helm/dbrepo/values.yaml > $OUTPUT_FILE
 yq e -i ".password=\"$(openssl rand -hex 16)\"" $OUTPUT_FILE
 yq e -i ".metadatadb.rootUser.password=\"$(openssl rand -hex 16)\"" $OUTPUT_FILE
 yq e -i ".metadatadb.galera.mariabackup.password=\"$(openssl rand -hex 16)\"" $OUTPUT_FILE
