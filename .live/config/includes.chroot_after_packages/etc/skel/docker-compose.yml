@@ -186,6 +186,7 @@ services:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
@@ -361,7 +362,9 @@ services:
     hostname: ui
     image: ghcr.io/dbrepo-project/dbrepo/ui:${APP_VERSION}
     environment:
-      NUXT_NITRO_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
+      NUXT_STORAGE_OIDC_HOST: "${CACHE_DB_HOST:-cache-db}"
+      NUXT_STORAGE_OIDC_USERNAME: "${CACHE_DB_USERNAME:-default}"
+      NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       NUXT_OIDC_AUTH_SESSION_SECRET: "${OIDC_AUTH_SESSION_SECRET:-d1f_1oEZsiMCEzdt-KqYUQI14WJc4coCw87kwTGS9ZJrWnk_}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
@@ -370,8 +373,8 @@ services:
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-http://localhost}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/logout"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/token"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/userinfo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/token"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/userinfo"
       NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:-T1eUAWRG3A7UAfLKBP1vc-ydKa4xIJR4k_0JIeG7m8EG9zri}"
       NUXT_OIDC_TOKEN_KEY: "${OIDC_TOKEN_KEY:-data:;base64,aOy1Sqlm3S41V824iZg+nuTDmEOv9QZuCGPB5I3oX48=}"
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
@@ -533,6 +536,7 @@ services:
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
+      OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"

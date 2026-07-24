@@ -158,8 +158,8 @@ services:
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost:8080}"
-      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost:8080}"
+      KEYCLOAK_HOSTNAME: "${BASE_URL:-http://localhost}"
+      KEYCLOAK_HOSTNAME_ADMIN: "${BASE_URL:-http://localhost}"
       KEYCLOAK_PROXY_HEADERS: "forwarded"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
@@ -178,7 +178,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.1
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
@@ -186,6 +186,7 @@ services:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
@@ -243,7 +244,7 @@ services:
     restart: "no"
     container_name: dbrepo-consumer-service
     hostname: consumer-service
-    image: ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.1
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -343,7 +344,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.1
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -365,14 +366,20 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: ghcr.io/dbrepo-project/dbrepo/ui:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/ui:1.14.1
     environment:
+      NUXT_STORAGE_OIDC_HOST: "${CACHE_DB_HOST:-cache-db}"
+      NUXT_STORAGE_OIDC_USERNAME: "${CACHE_DB_USERNAME:-default}"
       NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost:8080}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-http://localhost}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/token"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/userinfo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/logout"
       NUXT_OIDC_TOKEN_KEY: "${OIDC_TOKEN_KEY:-data:;base64,aOy1Sqlm3S41V824iZg+nuTDmEOv9QZuCGPB5I3oX48=}"
       NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:-T1eUAWRG3A7UAfLKBP1vc-ydKa4xIJR4k_0JIeG7m8EG9zri}"
       NUXT_OIDC_AUTH_SESSION_SECRET: "${NUXT_OIDC_AUTH_SESSION_SECRET:-P2g0Yb8G0bE_0pRAy5AayM5Yr7OmnIIrnsYqyud6JD6_L4FI}"
@@ -446,7 +453,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.1
     environment:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -466,7 +473,7 @@ services:
     restart: "no"
     init: true
     container_name: dbrepo-dashboard-service-init
-    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.1
     environment:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -519,7 +526,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.1
     environment:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ACCESS_KEY_ID: "${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}"
@@ -535,13 +542,14 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.1
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       AUTH_SERVICE_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
+      OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"
@@ -617,7 +625,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.0
+    image: ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.1
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"

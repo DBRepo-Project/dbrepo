@@ -14,7 +14,7 @@ helm upgrade --install dbrepo \
   -n dbrepo \
   "oci://ghcr.io/dbrepo-project/helm/dbrepo" \
   --values ./values.yaml \
-  --version "1.14.0" \
+  --version "1.14.1" \
   --create-namespace \
   --cleanup-on-fail
 ```

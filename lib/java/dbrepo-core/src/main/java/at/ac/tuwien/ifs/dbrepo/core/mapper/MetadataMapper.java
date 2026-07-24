@@ -989,6 +989,7 @@ public interface MetadataMapper {
     Unique uniqueDtoToUnique(UniqueDto data);
 
     @Mappings({
+            @Mapping(target = "ownedBy", source = "owner.username"),
             @Mapping(target = "tdbid", source = "databaseId"),
             @Mapping(target = "database", ignore = true)
     })
@@ -1173,6 +1174,7 @@ public interface MetadataMapper {
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
     @Mappings({
+            @Mapping(target = "contactPerson", source = "contact"),
             @Mapping(target = "ownedBy", source = "owner.username")
     })
     DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);

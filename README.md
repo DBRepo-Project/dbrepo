@@ -1,10 +1,10 @@
-[![CI/CD Status](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
-[![CI/CD Coverage](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
-[![Latest Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![CI Status](https://github.com/DBRepo-Project/dbrepo/actions/workflows/ci.yml/badge.svg)](https://github.com/DBRepo-Project/dbrepo/actions/workflows/ci.yml)
+[![CD Status](https://github.com/DBRepo-Project/dbrepo/actions/workflows/release.yml/badge.svg)](https://github.com/DBRepo-Project/dbrepo/actions/workflows/release.yml)
+[![Latest Release](https://img.shields.io/github/release/dbrepo-project/dbrepo.svg?style=flat)](https://github.com/DBRepo-Project/dbrepo/releases/latest)
 [![PyPI Library version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/)
 [![Image Pulls](https://img.shields.io/docker/pulls/dbrepo/data-service?style=flat)](https://hub.docker.com/u/dbrepo)
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo)
-[![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![GitHub License](https://img.shields.io/github/license/DBRepo-Project/dbrepo.svg?cacheSeconds=3600)](https://github.com/DBRepo-Project/dbrepo/blob/main/LICENSE)
 
 <img src="./dbrepo-ui/public/logo.png" width="200" alt="DBRepo &mdash; Repository for Data in Databases" />
 
@@ -14,18 +14,17 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 with:
 
 ```bash
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.13/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DBRepo-Project/dbrepo/refs/heads/main/.scripts/install.sh | bash
 ```
 
 ## Documentation
 
 Find a system description, component documentation and endpoint documentation
-online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/.
+online: [https://dbrepo-project.github.io/dbrepo-docs](https://dbrepo-project.github.io/dbrepo-docs).
 
 ## Development
 
-Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md) and
-contact [Prof. Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/) or [Martin Weise](https://ec.tuwien.ac.at/~weise/).
+Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md).
 
 ### Build
 
@@ -44,7 +43,7 @@ make build-python-lib
 Build the docker images:
 
 ```shell
-docker compose build
+make build-images
 ```
 
 ### Run
@@ -87,6 +86,7 @@ We want to thank the following organizations:
 * Bundesministerium für Bildung, Wissenschaft und Forschung (BMBWF) for funding during
   the [call](https://www.bmbwf.gv.at/Themen/HS-Uni/Aktuelles/Ausschreibung--Digitale-und-soziale-Transformation-in-der-Hochschulbildung-.html)
   "Digitale und soziale Transformation in der Hochschulbildung".
+* [Deutsche Forschungsgemeinschaft (DFG)](https://www.dfg.de/) for funding the [DBRepo aaS project](https://gepris.dfg.de/gepris/projekt/562333837).
 
 ## License
 

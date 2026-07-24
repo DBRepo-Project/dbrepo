@@ -167,6 +167,17 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+    primary:
+      ## @skip authservice.postgresql.primary.resources
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+          ephemeral-storage: 50Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+          ephemeral-storage: 2Gi
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   jwt:
@@ -443,7 +454,7 @@ consumerservice:
   enabled: true
   image:
     ## @skip consumerservice.image.name
-    name: ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/consumer-service:1.14.1
   ## @param consumerservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -500,7 +511,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.1
   ## @param metadataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -600,7 +611,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.1
   ## @param dataservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -687,7 +698,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/search-service:1.14.1
   ## @param searchservice.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -741,7 +752,7 @@ searchservice:
     schedule: "@midnight"
     image:
       ## @skip searchservice.setupJob.image.name
-      name: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.0
+      name: ghcr.io/dbrepo-project/dbrepo/search-service-init:1.14.1
     ## @param searchservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -807,7 +818,7 @@ storageservice:
     enabled: true
     image:
       ## @skip storageservice.setupJob.image.name
-      name: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.0
+      name: ghcr.io/dbrepo-project/dbrepo/storage-service-init:1.14.1
     s3:
       ## @param storageservice.setupJob.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -938,7 +949,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: ghcr.io/dbrepo-project/dbrepo/ui:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/ui:1.14.1
   ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
@@ -1068,7 +1079,7 @@ dashboardservice:
   enabled: true
   image:
     ## @skip dashboardservice.image.name
-    name: ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.0
+    name: ghcr.io/dbrepo-project/dbrepo/dashboard-service:1.14.1
   ## @param dashboardservice.endpoint The endpoint for the microservices.
   endpoint: http://dashboard-service
   ## @param dashboardservice.podAnnotations the pod annotations. Evaluated as a template
@@ -1142,7 +1153,7 @@ dashboardservice:
   initContainer:
     image:
       ## @skip dashboardservice.initContainer.image.name
-      name: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.0
+      name: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.1
     ## @param dashboardservice.initContainer.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param dashboardservice.initContainer.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
