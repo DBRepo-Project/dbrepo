@@ -1,0 +1,34 @@
+{{- if .Values.metadatadb.enabled }}
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: metadata-db
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  rootPasswordSecretKeyRef:
+    name: metadata-db-secret
+    key: METADATA_DB_PASSWORD
+  storage:
+    size: {{ .Values.metadatadb.persistence.size }}
+  replicas: {{ .Values.metadatadb.replicaCount }}
+  replication:
+    # Enable semi-synchronous replication.
+    enabled: true
+    primary:
+      # Whether the operator should automatically perform primary failover.
+      autoFailover: true
+      # Duration before performing primary failover.
+      autoFailoverDelay: 0s
+      # Trigger a switchover by declaring the desired primary index.
+      # podIndex: 0
+    replica:
+      # Password for the replication user used by the replicas to connect to the primary.
+      replPasswordSecretKeyRef:
+        name: metadata-db-secret
+        key: METADATA_DB_REPL_PASSWORD
+  metrics:
+    enabled: true
+  tls:
+    enabled: false
+{{- end }}

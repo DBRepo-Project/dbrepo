@@ -6,9 +6,6 @@ metadata:
   name: metadata-db-config
   namespace: {{ include "common.names.namespace" . | quote }}
 data:
-  {{- with .Values.metadatadb.extraInitDbScripts }}
-  {{ toYaml . | nindent 2 }}
-  {{- end }}
   {{ (.Files.Glob "files/01-setup-schema.sql").AsConfig | nindent 2 }}
   {{- if .Values.datadb.enabled }}
   02-setup-data.sql: |-
@@ -16,10 +13,9 @@ data:
     INSERT INTO `mdb_containers` (id, name, internal_name, image_id, host, port, ui_host, ui_port, privileged_username,
                                   privileged_password, readonly_username, readonly_password)
     VALUES ('6cfb3b8e-1792-4e46-871a-f3d103527203', 'mariadb-galera:11.3.2', 'mariadb_11_3_2',
-            'd79cb089-363c-488b-9717-649e44d8fcc5', 'data-db', {{ .Values.datadb.containerPorts.mysql  }},
-            '{{ .Values.hostname }}', {{ .Values.datadb.containerPorts.mysql  }}, '{{ .Values.datadb.rootUser.user }}',
-            '{{ .Values.datadb.rootUser.password }}', '{{ .Values.datadb.db.user }}',
-            '{{ .Values.datadb.db.password }}');
+            'd79cb089-363c-488b-9717-649e44d8fcc5', 'data-db', 3306, '{{ .Values.hostname }}', 3306,
+            '{{ .Values.datadb.rootUser.user }}', '{{ .Values.datadb.rootUser.password }}',
+            '{{ .Values.datadb.db.user }}', '{{ .Values.datadb.db.password }}');
     COMMIT;
   {{- end }}
 {{- end }}

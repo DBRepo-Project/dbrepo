@@ -34,15 +34,8 @@ password: admin
 metadatadb:
   ## @param metadatadb.enabled Enable the Metadata Database.
   enabled: true
-  ## @skip metadatadb.fullnameOverride
-  fullnameOverride: metadata-db
-  image:
-    ## @skip metadatadb.image.repository
-    repository: bitnamilegacy/mariadb-galera
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
-  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.14/api/data-db/#data
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param metadatadb.rootUser.user The root username.
     user: root
@@ -51,12 +44,9 @@ metadatadb:
   db:
     ## @param metadatadb.db.name The database name.
     name: dbrepo
-  galera:
-    mariabackup:
-      ## @param metadatadb.galera.mariabackup.user The database backup username.
-      user: backup
-      ## @param metadatadb.galera.mariabackup.password The database backup user password
-      password: backup
+  replication:
+    ## @param metadatadb.replication.password The replication password
+    password: backup
   ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
@@ -65,20 +55,13 @@ metadatadb:
       repository: bitnamilegacy/mysqld-exporter
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
     enabled: true
-  ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
-  initdbScriptsConfigMap: metadata-db-config
-  ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
-  extraInitDbScripts: { }
-  #    03-additional-data.sql: |
-  #      BEGIN;
-  #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
-  #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
-  #      COMMIT;
   ## @param metadatadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
   persistence:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
     enabled: true
+    ## @param metadatadb.persistence.size Persistent storage size.
+    size: 8Gi
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
 
@@ -249,15 +232,8 @@ cachedb:
 datadb:
   ## @param datadb.enabled Enable the Auth Service.
   enabled: true
-  ## @skip datadb.fullnameOverride
-  fullnameOverride: data-db
-  image:
-    ## @skip datadb.image.repository
-    repository: bitnamilegacy/mariadb-galera
   ## @param datadb.host The hostname for the microservices.
   host: data-db
-  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.14/api/data-db/#data
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param datadb.rootUser.user The root username.
     user: root
@@ -270,31 +246,20 @@ datadb:
     user: readonly
     ## @param datadb.db.password The readonly password.
     password: readonly
-  galera:
-    mariabackup:
-      ## @param datadb.galera.mariabackup.user The database backup username.
-      user: backup
-      ## @param datadb.galera.mariabackup.password The database backup user password
-      password: backup
+  replication:
+    ## @param datadb.replication.password The database replication password
+    password: backup
   ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
-  metrics:
-    image:
-      ## @skip datadb.metrics.image.repository
-      repository: bitnamilegacy/mysqld-exporter
-    ## @skip datadb.metrics.enabled The Prometheus settings.
-    enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
   ## @param datadb.resourcesPreset The container resource preset
   resourcesPreset: "xlarge"
-  ## @param datadb.configurationConfigMap The configmap name holding the `my.cnf` key that defines the mariadb configuration.
-  configurationConfigMap: "data-db-config"
-  ## @param datadb.initdbScriptsConfigMap The setup data to load into the database on first start.
-  initdbScriptsConfigMap: "data-db-scripts-config"
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true
+    ## @param datadb.persistence.size Persistent storage size.
+    size: 8Gi
 
 ## @section Search Database
 
