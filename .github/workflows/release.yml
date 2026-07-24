@@ -17,9 +17,9 @@ defaults:
     shell: bash
 
 env:
-  APP_VERSION: '1.14.0'
+  APP_VERSION: '1.14.1'
   DOC_VERSION: '1.14'
-  CHART_VERSION: '1.14.0'
+  CHART_VERSION: '1.14.1'
   REGCLIENT_VERSION: '0.8.2'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'

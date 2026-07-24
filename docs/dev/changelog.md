@@ -7,6 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.14.1](https://github.com/DBRepo-Project/dbrepo/releases/tag/v1.14.1) - 2026-07-24
+
+### Fixes
+
+* Configure the Cache Database port explicitly for the Data Service in the Helm chart
+  in [#93](https://github.com/DBRepo-Project/dbrepo/pull/93).
+* Fix the download location used by the installation script
+  in [#91](https://github.com/DBRepo-Project/dbrepo/pull/91).
+* Preserve metadata contacts and table ownership when refreshing metadata.
+* Handle databases with null table collections during data exploration.
+* Add the missing concept and unit tables to the Metadata Database schema.
+* Use internal OIDC endpoints in Kubernetes and correct the Docker OIDC callback configuration.
+* Correct the display of schema semantic URIs.
+
+### Changes
+
+* Increase the Kubernetes resource limits for the Keycloak database.
+* Prepare DuckDB extensions before building service images.
+* Publish the Python client through a separate manually triggered GitHub workflow.
+
 ## [v1.13.4](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.13.4) - 2026-04-09
 
 ### Fixes
