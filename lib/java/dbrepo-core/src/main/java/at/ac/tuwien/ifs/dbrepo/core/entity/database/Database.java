@@ -105,10 +105,20 @@ public class Database implements Serializable {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isDashboardEnabled;
 
+    @Column(name = "creation_location")
+    private String creationLocation;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "LONGBLOB")
     private byte[] image;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "mdb_databases_replica_urls",
+            joinColumns = @JoinColumn(name = "database_id")
+    )
+    private List<ReplicaLocation> replicaUrls = new LinkedList<>();
 
     @EqualsAndHashCode.Exclude
     @CreatedDate

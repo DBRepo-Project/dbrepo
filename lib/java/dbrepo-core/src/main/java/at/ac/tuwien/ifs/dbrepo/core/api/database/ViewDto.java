@@ -68,6 +68,10 @@ public class ViewDto {
     @Schema(description = "The sha256-hash of the query", example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
 
+    @JsonProperty("creation_location")
+    @Schema(description = "The site where the view was initially created", example = "http://localhost:8080", nullable = true)
+    private String creationLocation;
+
     @NotNull
     private UserBriefDto owner;
 

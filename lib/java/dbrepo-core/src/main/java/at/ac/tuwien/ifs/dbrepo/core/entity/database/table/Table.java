@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.core.entity.database.table;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
@@ -99,8 +100,18 @@ public class Table {
     @Column(name = "max_data_length")
     private Long maxDataLength;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "mdb_tables_replica_urls",
+            joinColumns = @JoinColumn(name = "table_id")
+    )
+    private List<ReplicaTableLocation> replicaUrls = new LinkedList<>();
+
     @Column(name = "avg_row_length")
     private Long avgRowLength;
+
+    @Column(name = "creation_location")
+    private String creationLocation;
 
     @OrderBy("ordinalPosition")
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -126,4 +137,3 @@ public class Table {
     }
 
 }
-

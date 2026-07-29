@@ -46,4 +46,8 @@ public class CreateTableDto {
 
     @NotNull
     private CreateTableConstraintsDto constraints;
+
+    @JsonProperty("creation_location")
+    @Schema(description = "The site where the table was initially created", example = "http://localhost:8080", nullable = true)
+    private String creationLocation;
 }

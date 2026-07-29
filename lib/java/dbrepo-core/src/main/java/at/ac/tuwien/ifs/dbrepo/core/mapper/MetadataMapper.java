@@ -334,9 +334,24 @@ public interface MetadataMapper {
             @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/v1/database/\" + database.getId() + \"/image\" : null)"),
             @Mapping(target = "accesses", expression = "java(database.getAccesses().stream().map(a -> databaseAccessToDatabaseAccessDto(a)).toList())"),
             @Mapping(target = "contact", expression = "java(UserBriefDto.builder().username(database.getContactPerson()).build())"),
-            @Mapping(target = "owner", expression = "java(UserBriefDto.builder().username(database.getOwnedBy()).build())")
+            @Mapping(target = "owner", expression = "java(UserBriefDto.builder().username(database.getOwnedBy()).build())"),
+            @Mapping(target = "replicaUrls", source = "replicaUrls", qualifiedByName = "replicaLocationListToMap")
     })
     DatabaseDto databaseToDatabaseDto(Database database);
+
+    @Named("replicaLocationListToMap")
+    default Map<String, UUID> replicaLocationListToMap(List<ReplicaLocation> replicaLocations) {
+        if (replicaLocations == null) {
+            return new LinkedHashMap<>();
+        }
+        return replicaLocations.stream()
+                .filter(replicaLocation -> replicaLocation.getUrl() != null)
+                .collect(
+                        LinkedHashMap::new,
+                        (replicaUrlToId, replicaLocation) -> replicaUrlToId.put(replicaLocation.getUrl(), replicaLocation.getReplicaDatabaseId()),
+                        Map::putAll
+                );
+    }
 
     @Mappings({
             @Mapping(target = "types", expression = "java(DataCiteDoiTypes.DATASET)")
@@ -928,6 +943,8 @@ public interface MetadataMapper {
         table.setMaxDataLength(data.getMaxDataLength());
         table.setDataLength(data.getDataLength());
         table.setNumRows(data.getNumRows());
+        table.setCreationLocation(data.getCreationLocation());
+        table.setReplicaUrls(replicaTableLocationListToMap(data.getReplicaUrls()));
         if (table.getConstraints() != null) {
             table.getConstraints()
                     .getPrimaryKey()
@@ -973,6 +990,34 @@ public interface MetadataMapper {
         return table;
     }
 
+    @Named("replicaTableLocationListToMap")
+    default Map<String, UUID> replicaTableLocationListToMap(List<ReplicaTableLocation> replicaLocations) {
+        if (replicaLocations == null) {
+            return new LinkedHashMap<>();
+        }
+        return replicaLocations.stream()
+                .filter(replicaLocation -> replicaLocation.getUrl() != null)
+                .collect(
+                        LinkedHashMap::new,
+                        (replicaUrlToId, replicaLocation) -> replicaUrlToId.put(replicaLocation.getUrl(), replicaLocation.getReplicaTableId()),
+                        Map::putAll
+                );
+    }
+
+    @Named("mapToReplicaTableLocationList")
+    default List<ReplicaTableLocation> mapToReplicaTableLocationList(Map<String, UUID> replicaUrlToId) {
+        if (replicaUrlToId == null) {
+            return new LinkedList<>();
+        }
+        return replicaUrlToId.entrySet()
+                .stream()
+                .map(entry -> ReplicaTableLocation.builder()
+                        .url(entry.getKey())
+                        .replicaTableId(entry.getValue())
+                        .build())
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
+
     @Mappings({
             @Mapping(target = "foreignKey", ignore = true),
     })
@@ -991,7 +1036,8 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "ownedBy", source = "owner.username"),
             @Mapping(target = "tdbid", source = "databaseId"),
-            @Mapping(target = "database", ignore = true)
+            @Mapping(target = "database", ignore = true),
+            @Mapping(target = "replicaUrls", source = "replicaUrls", qualifiedByName = "mapToReplicaTableLocationList")
     })
     Table tableDtoToTable(TableDto data);
 

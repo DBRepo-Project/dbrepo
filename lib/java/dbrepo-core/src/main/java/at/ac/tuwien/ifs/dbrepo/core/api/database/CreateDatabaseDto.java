@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -37,5 +38,13 @@ public class CreateDatabaseDto {
     @JsonProperty("is_schema_public")
     @Schema(description = "The insights; if true, The schema will be displayed publicly and is searchable", example = "true")
     private Boolean isSchemaPublic;
+
+    @JsonProperty("replica_urls")
+    @Schema(description = "Replica site URLs", example = "[\"https://replica1.example.com\", \"https://replica2.example.com\"]", nullable = true)
+    private List<String> replicaUrls;
+
+    @JsonProperty("creation_location")
+    @Schema(description = "The site where the database was initially created", example = "http://localhost:8080", nullable = true)
+    private String creationLocation;
 
 }

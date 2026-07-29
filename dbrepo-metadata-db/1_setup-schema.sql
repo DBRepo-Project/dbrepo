@@ -65,10 +65,23 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     image                 LONGBLOB,
     owned_by              VARCHAR(255) NOT NULL,
     contact_person        VARCHAR(255) NOT NULL,
+    creation_location     VARCHAR(255),
     created               TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified         TIMESTAMP,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`cid`) REFERENCES mdb_containers (`id`)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `mdb_databases_replica_urls`
+(
+    `database_id`         CHAR(36) NOT NULL,
+    `replica_url`         TEXT     NOT NULL,
+    `replica_database_id` CHAR(36) DEFAULT NULL,
+    PRIMARY KEY (`database_id`, `replica_url`(255)),
+    CONSTRAINT `fk_mdb_databases_replica_urls_database`
+        FOREIGN KEY (`database_id`)
+        REFERENCES `mdb_databases` (`id`)
+        ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
@@ -84,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     data_length      BIGINT,
     max_data_length  BIGINT,
     avg_row_length   BIGINT,
+    creation_location VARCHAR(255),
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     versioned        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_public        BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -94,6 +108,18 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     UNIQUE (`tDBID`, `internal_name`),
     FOREIGN KEY (`tDBID`) REFERENCES mdb_databases (`id`)
 ) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `mdb_tables_replica_urls`
+(
+    `table_id`         VARCHAR(36) NOT NULL,
+    `replica_table_id` VARCHAR(36) DEFAULT NULL,
+    `replica_url`      TEXT        NOT NULL,
+    PRIMARY KEY (`table_id`, `replica_url`(255)),
+    CONSTRAINT `fk_mdb_tables_replica_urls_table`
+        FOREIGN KEY (`table_id`)
+        REFERENCES `mdb_tables` (`id`)
+        ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
@@ -260,6 +286,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
     Public           BOOLEAN      NOT NULL DEFAULT TRUE,
     is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
     InitialView      BOOLEAN      NOT NULL,
+    creation_location VARCHAR(255),
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
     owned_by         VARCHAR(255) NOT NULL,
