@@ -458,6 +458,14 @@
         "computeservice": {
             "type": "object",
             "properties": {
+                "containerPorts": {
+                    "type": "object",
+                    "properties": {
+                        "http": {
+                            "type": "integer"
+                        }
+                    }
+                },
                 "endpoint": {
                     "type": "string"
                 }
@@ -750,6 +758,9 @@
                 "setupJob": {
                     "type": "object",
                     "properties": {
+                        "backoffLimit": {
+                            "type": "integer"
+                        },
                         "enabled": {
                             "type": "boolean"
                         },
@@ -757,6 +768,9 @@
                             "type": "object",
                             "properties": {
                                 "name": {
+                                    "type": "string"
+                                },
+                                "pullPolicy": {
                                     "type": "string"
                                 }
                             }
@@ -766,6 +780,9 @@
                         },
                         "resourcesPreset": {
                             "type": "string"
+                        },
+                        "ttlSecondsAfterFinished": {
+                            "type": "integer"
                         }
                     }
                 }
@@ -1255,6 +1272,17 @@
                 },
                 "fullnameOverride": {
                     "type": "string"
+                },
+                "containerPorts": {
+                    "type": "object",
+                    "properties": {
+                        "http": {
+                            "type": "integer"
+                        },
+                        "https": {
+                            "type": "integer"
+                        }
+                    }
                 },
                 "image": {
                     "type": "object",

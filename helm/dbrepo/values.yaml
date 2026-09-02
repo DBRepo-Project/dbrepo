@@ -29,6 +29,21 @@ username: admin
 ## @param password The internal system password. This user is only used between the microservices and does not exist on paper.
 password: admin
 
+## @section Ingress
+
+ingress:
+  ## @param ingress.enabled Enable the DBRepo ingress.
+  enabled: false
+  ## @param ingress.className The ingress class name.
+  className: ""
+  ## @param ingress.annotations The ingress annotations.
+  annotations: { }
+  tls:
+    ## @param ingress.tls.enabled Enable ingress TLS.
+    enabled: false
+    ## @param ingress.tls.secretName Existing secret with certificate content.
+    secretName: ingress-cert
+
 ## @section Metadata Database
 
 metadatadb:
@@ -1209,13 +1224,21 @@ dashboardservice:
     fromAddress: ""
     ## @param dashboardservice.grafana.fromName The Grafana SMTP from name.
     fromName: ""
-  initContainer:
+  setupJob:
+    ## @param dashboardservice.setupJob.enabled Enable the setup job that configures Grafana.
+    enabled: true
+    ## @param dashboardservice.setupJob.backoffLimit The number of retries before the setup job is marked failed.
+    backoffLimit: 10
+    ## @param dashboardservice.setupJob.ttlSecondsAfterFinished The time before cleaning up the finished setup job.
+    ttlSecondsAfterFinished: 100
     image:
-      ## @skip dashboardservice.initContainer.image.name
+      ## @skip dashboardservice.setupJob.image.name
       name: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.1
-    ## @param dashboardservice.initContainer.resourcesPreset The container resource preset
+      ## @param dashboardservice.setupJob.image.pullPolicy The image pull policy.
+      pullPolicy: IfNotPresent
+    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param dashboardservice.initContainer.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
   ## @param dashboardservice.datasource The Grafana datasource.
   datasource: prometheus
@@ -1322,10 +1345,8 @@ gatewayservice:
   replicaCount: 2
   ## @skip gatewayservice.containerPorts
   containerPorts:
-    - name: http
-      containerPort: 8080
-    - name: https
-      containerPort: 8443
+    http: 8080
+    https: 8443
 
 ## @section Compute Service
 
@@ -1356,5 +1377,4 @@ computeservice:
   replicaCount: 2
   ## @skip computeservice.containerPorts
   containerPorts:
-    - name: http
-      containerPort: 8081
+    http: 8081
