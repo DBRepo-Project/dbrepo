@@ -1,0 +1,19 @@
+{{- if .Values.replicationservice.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: replication-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    service: replication-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "replication-service"
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    service: replication-service
+{{- end }}

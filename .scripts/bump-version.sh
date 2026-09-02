@@ -159,7 +159,7 @@ done
 sed_in_place "s|/dbrepo/${CUR_DOC}/|/dbrepo/${DOC_VERSION}/|g" lib/python/pyproject.toml
 sed_in_place "s/doc_version = os.environ.get(\"DOC_VERSION\", \"${CUR_DOC}\")/doc_version = os.environ.get(\"DOC_VERSION\", \"${DOC_VERSION}\")/" lib/python/setup.py
 
-for svc in dbrepo-consumer-service dbrepo-data-service dbrepo-metadata-service; do
+for svc in dbrepo-consumer-service dbrepo-data-service dbrepo-metadata-service dbrepo-replication-service; do
   while IFS= read -r -d '' pom; do
     sed_in_place "s|<version>${OLD_VERSION}</version>|<version>${NEW_VERSION}</version>|g" "$pom"
   done < <(find "$svc" -name pom.xml -print0)

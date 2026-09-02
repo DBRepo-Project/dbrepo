@@ -8,6 +8,7 @@ updates:
       - "/dbrepo-consumer-service"
       - "/dbrepo-data-service"
       - "/dbrepo-metadata-service"
+      - "/dbrepo-replication-service"
       - "/lib/java/dbrepo-core"
     schedule:
       interval: "weekly"
@@ -92,6 +93,7 @@ updates:
       - "/dbrepo-dashboard-service"
       - "/dbrepo-data-service"
       - "/dbrepo-metadata-service"
+      - "/dbrepo-replication-service"
       - "/dbrepo-search-service"
       - "/dbrepo-storage-service/init"
       - "/dbrepo-ui"

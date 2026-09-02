@@ -5,6 +5,8 @@ annotations:
       image: docker.io/bitnamilegacy/openldap:2.6.8-debian-12-r1
     - name: metadata-service
       image: ghcr.io/dbrepo-project/dbrepo/metadata-service:1.14.1
+    - name: replication-service
+      image: ghcr.io/dbrepo-project/dbrepo/replication-service:1.14.1
     - name: data-service
       image: ghcr.io/dbrepo-project/dbrepo/data-service:1.14.1
     - name: search-service

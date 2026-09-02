@@ -17,7 +17,7 @@ variables:
   CHART_VERSION: "1.14.1"
   SUPPORTED_VERSIONS: "1.14.0, 1.14.1, 1.14.2, 1.14.3, 1.14.4"
   SUPPORTED_ARCH: "linux/amd64"
-  MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, search-service, search-service-init, storage-service-init, ui"
+  MAINTAINED_SERVICES: "dashboard-service, dashboard-service-init, data-service, consumer-service, metadata-service, replication-service, search-service, search-service-init, storage-service-init, ui"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -76,6 +76,7 @@ lint-docker-compose:
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db-metrics'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-replication-service'"
     - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
     - "bash .scripts/check-service.sh 'dbrepo-search-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
@@ -170,6 +171,18 @@ lint-consumer-service:
     - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-consumer-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
   script:
     - mvn -f ./dbrepo-consumer-service/pom.xml dependency:analyze
+
+lint-replication-service:
+  image: docker.io/maven:3-amazoncorretto-${JAVA_VERSION}
+  stage: lint
+  only:
+    - merge_requests
+    - master
+  before_script:
+    - "mvn -f ./lib/java/dbrepo-core/pom.xml clean package install $MAVEN_OPTS -DskipTests"
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-replication-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+  script:
+    - mvn -f ./dbrepo-replication-service/pom.xml dependency:analyze
 
 lint-helm-files:
   image: docker.io/alpine:${ALPINE_VERSION}
@@ -292,6 +305,29 @@ build-data-service:
       - ./dbrepo-data-service/services/target/generated-sources
     expire_in: 1 days
 
+build-replication-service:
+  image: maven:3-amazoncorretto-${JAVA_VERSION}
+  stage: build
+  only:
+    - merge_requests
+    - master
+  needs:
+    - build-java-lib
+    - lint-replication-service
+  dependencies:
+    - build-java-lib
+    - lint-replication-service
+  before_script:
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-replication-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+  script:
+    - "mvn -f ./dbrepo-replication-service/pom.xml -q clean package $MAVEN_OPTS -DskipTests"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-replication-service/rest-service/target/classes
+      - ./dbrepo-replication-service/services/target/classes
+    expire_in: 1 days
+
 build-ui:
   image: oven/bun:${BUN_VERSION}-alpine
   stage: build
@@ -358,6 +394,7 @@ build-images:
     - "mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-consumer-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
     - "mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-data-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
     - "mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-metadata-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+    - "mvn deploy:deploy-file -q -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-replication-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - "docker compose build"
@@ -459,6 +496,27 @@ test-data-service:
     reports:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
+
+test-replication-service:
+  image: maven:3-amazoncorretto-${JAVA_VERSION}
+  stage: test
+  only:
+    - merge_requests
+    - master
+  needs:
+    - build-java-lib
+    - build-replication-service
+  dependencies:
+    - build-java-lib
+  before_script:
+    - "mvn deploy:deploy-file $MAVEN_OPTS -Dfile=./lib/java/dbrepo-core/target/dbrepo-core-$APP_VERSION.jar -DgroupId=at.ac.tuwien.ifs.dbrepo -DartifactId=dbrepo-core -Dversion=$APP_VERSION -Dpackaging=jar -Durl=file:./dbrepo-replication-service/lib/ -DrepositoryId=maven-repository -DupdateReleaseInfo=true"
+  script:
+    - "mvn -f ./dbrepo-replication-service/pom.xml clean test verify $MAVEN_OPTS"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-replication-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
 
 test-search-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}

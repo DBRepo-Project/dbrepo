@@ -689,6 +689,65 @@ dataservice:
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
+## @section Replication Service
+
+replicationservice:
+  ## @param replicationservice.enabled Enable the Replication Service.
+  enabled: true
+  ## @param replicationservice.endpoint Absolute URL to the replication service in the form of http://host:port
+  endpoint: http://replication-service
+  image:
+    ## @skip replicationservice.image.name
+    name: ghcr.io/dbrepo-project/dbrepo/replication-service:1.14.1
+  ## @param replicationservice.podAnnotations the pod annotations. Evaluated as a template
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param replicationservice.podSecurityContext.enabled Enable pods' Security Context
+    enabled: true
+    ## @param replicationservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param replicationservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param replicationservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param replicationservice.podSecurityContext.fsGroup Set pod's Security Context fsGroup
+    fsGroup: 1001
+  containerSecurityContext:
+    ## @param replicationservice.containerSecurityContext.enabled Enable containers' Security Context
+    enabled: true
+    ## @param replicationservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param replicationservice.containerSecurityContext.runAsUser Set containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param replicationservice.containerSecurityContext.runAsGroup Set containers' Security Context runAsGroup
+    runAsGroup: 1001
+    ## @param replicationservice.containerSecurityContext.runAsNonRoot Set container's Security Context runAsNonRoot
+    runAsNonRoot: true
+    ## @param replicationservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param replicationservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
+    capabilities:
+      ## @param replicationservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+    seccompProfile:
+      ## @param replicationservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param replicationservice.resourcesPreset The container resource preset
+  resourcesPreset: "small"
+  ## @param replicationservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
+  ## @param replicationservice.replicaCount The number of replicas.
+  replicaCount: 2
+
 ## @section Search Service
 
 searchservice:

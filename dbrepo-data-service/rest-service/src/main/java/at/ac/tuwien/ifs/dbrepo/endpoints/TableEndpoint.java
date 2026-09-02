@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
@@ -15,6 +16,7 @@ import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
@@ -62,6 +64,7 @@ public class TableEndpoint {
     private final AnalyseService analyseService;
     private final MetadataService metadataService;
     private final ReplicationService replicationService;
+    private final ReplicationTimestampService replicationTimestampService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
@@ -70,8 +73,8 @@ public class TableEndpoint {
     @Autowired
     public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
-                         ReplicationService replicationService, EndpointValidator endpointValidator,
-                         MetadataServiceGateway metadataServiceGateway) {
+                         ReplicationService replicationService, ReplicationTimestampService replicationTimestampService,
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.tableService = tableService;
@@ -79,6 +82,7 @@ public class TableEndpoint {
         this.analyseService = analyseService;
         this.metadataService = metadataService;
         this.replicationService = replicationService;
+        this.replicationTimestampService = replicationTimestampService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -435,6 +439,24 @@ public class TableEndpoint {
         return keys;
     }
 
+    private void validateTimestampBatch(List<TupleReplicationTimestampDto> timestamps, boolean requireRowEnd)
+            throws TableMalformedException {
+        if (timestamps == null || timestamps.isEmpty()) {
+            throw new TableMalformedException("Replication timestamp payload is empty");
+        }
+        for (TupleReplicationTimestampDto timestamp : timestamps) {
+            if (timestamp.getSiteUrl() == null || timestamp.getSiteUrl().isBlank()
+                    || timestamp.getReplicationId() == null || timestamp.getReplicationId().isBlank()
+                    || timestamp.getDatabaseId() == null || timestamp.getTableId() == null
+                    || timestamp.getRowStart() == null) {
+                throw new TableMalformedException("Replication timestamp payload is malformed");
+            }
+            if (requireRowEnd && timestamp.getRowEnd() == null) {
+                throw new TableMalformedException("Replication timestamp payload is missing rowEnd");
+            }
+        }
+    }
+
     @PostMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_create")
@@ -702,6 +724,132 @@ public class TableEndpoint {
             final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table,
                     tupleDeleteFromReplicationPayload(table, data));
             return ResponseEntity.ok(deleted);
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/{tableId}/timestamps")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replication_timestamps_create")
+    @Operation(summary = "Insert replication timestamps",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Inserted replication timestamps",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication timestamp payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or data database",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Map<String, Object>> receiveReplicationTimestamps(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @Valid @RequestBody List<TupleReplicationTimestampDto> timestamps)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint insert replication timestamps, databaseId={}, tableId={}, count={}", databaseId, tableId,
+                timestamps != null ? timestamps.size() : 0);
+        final Database database = metadataService.getDatabase(databaseId);
+        metadataService.getTable(databaseId, tableId);
+        validateTimestampBatch(timestamps, false);
+        try {
+            replicationTimestampService.saveTimestamps(database, timestamps);
+            return ResponseEntity.ok(Map.of("processed", timestamps.size()));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PutMapping("/{tableId}/timestamps")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replication_timestamps_update")
+    @Operation(summary = "Update replication timestamps",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Updated replication timestamps",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication timestamp payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or data database",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Map<String, Object>> updateReplicationTimestamps(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @Valid @RequestBody List<TupleReplicationTimestampDto> timestamps)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint update replication timestamps, databaseId={}, tableId={}, count={}", databaseId, tableId,
+                timestamps != null ? timestamps.size() : 0);
+        final Database database = metadataService.getDatabase(databaseId);
+        metadataService.getTable(databaseId, tableId);
+        validateTimestampBatch(timestamps, false);
+        try {
+            replicationTimestampService.closeAndSaveTimestamps(database, timestamps);
+            return ResponseEntity.ok(Map.of("processed", timestamps.size()));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PatchMapping("/{tableId}/timestamps")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replication_timestamps_close")
+    @Operation(summary = "Close replication timestamps",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Closed replication timestamps",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication timestamp payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or data database",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Map<String, Object>> closeReplicationTimestamps(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @Valid @RequestBody List<TupleReplicationTimestampDto> timestamps)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint close replication timestamps, databaseId={}, tableId={}, count={}", databaseId, tableId,
+                timestamps != null ? timestamps.size() : 0);
+        final Database database = metadataService.getDatabase(databaseId);
+        metadataService.getTable(databaseId, tableId);
+        validateTimestampBatch(timestamps, true);
+        try {
+            replicationTimestampService.updateTimestampRowEnds(database, timestamps);
+            return ResponseEntity.ok(Map.of("processed", timestamps.size()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

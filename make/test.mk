@@ -8,6 +8,10 @@ test-data-service: ## Test the Data Service.
 test-metadata-service: ## Test the Metadata Service.
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
+.PHONY: test-replication-service
+test-replication-service: ## Test the Replication Service.
+	mvn -f ./dbrepo-replication-service/pom.xml clean test verify
+
 .PHONY: test-analyse-service
 test-analyse-service: ## Test the Analyse Service.
 	bash ./dbrepo-analyse-service/test.sh

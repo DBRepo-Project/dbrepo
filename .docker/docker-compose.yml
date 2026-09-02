@@ -210,6 +210,7 @@ services:
       METADATA_PORT: "${METADATA_PORT:-3306}"
       METADATA_USERNAME: root
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
+      REPLICATION_SERVICE_ENDPOINT: "${REPLICATION_SERVICE_ENDPOINT:-http://replication-service:8080}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
       S3_ACCESS_KEY_ID: "${S3_USER_ACCESS_KEY_ID:-seaweedfsuser}"
@@ -236,6 +237,32 @@ services:
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-cache-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-replication-service:
+    restart: "no"
+    container_name: dbrepo-replication-service
+    hostname: replication-service
+    image: ghcr.io/dbrepo-project/dbrepo/replication-service:1.14.1
+    ports:
+      - 9098:8080
+    environment:
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      DATA_SERVICE_ENDPOINT: "${DATA_SERVICE_ENDPOINT:-http://data-service:8080}"
+      LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
+      LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
+      METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
+    healthcheck:
+      test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
+      <<: *healthcheck-params
+    depends_on:
+      dbrepo-data-service:
+        condition: service_healthy
+      dbrepo-metadata-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -573,6 +600,7 @@ services:
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
+      REPLICATION_SERVICE_ENDPOINT: "${REPLICATION_SERVICE_ENDPOINT:-http://replication-service:8080}"
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
       S3_ACCESS_KEY_ID: "${S3_USER_ACCESS_KEY_ID:-seaweedfsuser}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"

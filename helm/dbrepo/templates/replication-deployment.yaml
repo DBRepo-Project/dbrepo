@@ -1,0 +1,72 @@
+{{- if .Values.replicationservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: replication-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: replication-service
+    service: replication-service
+spec:
+  replicas: {{ .Values.replicationservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: replication-service
+      service: replication-service
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.replicationservice.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.replicationservice.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+      labels:
+        app: replication-service
+        service: replication-service
+    spec:
+      {{- if .Values.replicationservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.replicationservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: replication-service
+          image: {{ .Values.replicationservice.image.name }}
+          imagePullPolicy: {{ .Values.replicationservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.replicationservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.replicationservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /var/log/app/service/replication
+          envFrom:
+            - secretRef:
+                name: replication-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/actuator/health/readiness | grep 'UP' || exit 1"
+            initialDelaySeconds: 150
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.replicationservice.resources }}
+          resources: {{- toYaml .Values.replicationservice.resources | nindent 12 }}
+          {{- else if ne .Values.replicationservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.replicationservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: { }
+{{- end }}

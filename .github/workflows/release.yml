@@ -47,6 +47,7 @@ jobs:
             "dbrepo-dashboard-service-init dashboard-service-init" \
             "dbrepo-data-service data-service" \
             "dbrepo-metadata-service metadata-service" \
+            "dbrepo-replication-service replication-service" \
             "dbrepo-search-service search-service" \
             "dbrepo-search-service-init search-service-init" \
             "dbrepo-storage-service-init storage-service-init" \
@@ -81,6 +82,7 @@ jobs:
           | dashboard-service-init | \`ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:${VERSION}\` |
           | data-service | \`ghcr.io/dbrepo-project/dbrepo/data-service:${VERSION}\` |
           | metadata-service | \`ghcr.io/dbrepo-project/dbrepo/metadata-service:${VERSION}\` |
+          | replication-service | \`ghcr.io/dbrepo-project/dbrepo/replication-service:${VERSION}\` |
           | search-service | \`ghcr.io/dbrepo-project/dbrepo/search-service:${VERSION}\` |
           | search-service-init | \`ghcr.io/dbrepo-project/dbrepo/search-service-init:${VERSION}\` |
           | storage-service-init | \`ghcr.io/dbrepo-project/dbrepo/storage-service-init:${VERSION}\` |
@@ -136,7 +138,7 @@ jobs:
     if: startsWith(github.ref_name, 'release-')
     runs-on: ubuntu-latest
     env:
-      MAINTAINED_SERVICES: 'dashboard-service,dashboard-service-init,data-service,consumer-service,metadata-service,search-service,search-service-init,storage-service-init,ui'
+      MAINTAINED_SERVICES: 'dashboard-service,dashboard-service-init,data-service,consumer-service,metadata-service,replication-service,search-service,search-service-init,storage-service-init,ui'
       CI_REGISTRY2_URL: ghcr.io/dbrepo-project/dbrepo
     steps:
       - uses: actions/checkout@v5

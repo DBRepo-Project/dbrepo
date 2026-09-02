@@ -1,0 +1,45 @@
+application:
+  title: DBRepo
+  version: '@project.version@'
+spring:
+  application:
+    name: replication-service
+  main:
+    banner-mode: off
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
+server:
+  port: 8080
+  max-http-request-header-size: 64KB
+logging:
+  file:
+    name: /var/log/app/service/replication/app.log
+  level:
+    root: "${LOG_ROOT_LEVEL:warn}"
+    at.ac.tuwien.ifs.dbrepo.: "${LOG_APPLICATION_LEVEL:info}"
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+  pattern:
+    console: "%d %highlight(%-5level) %msg%n"
+  structured:
+    format:
+      file: ecs
+dbrepo:
+  endpoints:
+    dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
+    metadataService: "${METADATA_SERVICE_ENDPOINT:http://metadata-service:8080}"
+  system:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
+  baseUrl: "${BASE_URL:http://localhost}"

@@ -44,6 +44,7 @@ jobs:
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db
           IGNORE_VOLUMES=1 bash .scripts/check-service.sh dbrepo-metadata-db-metrics
           IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metadata-service
+          IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-replication-service
           IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-metric-db
           bash .scripts/check-service.sh dbrepo-search-db
           IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-search-service
@@ -69,6 +70,9 @@ jobs:
             pom: ./dbrepo-data-service/pom.xml
             lib_dir: ./dbrepo-data-service/lib/
             minio: true
+          - name: replication-service
+            pom: ./dbrepo-replication-service/pom.xml
+            lib_dir: ./dbrepo-replication-service/lib/
     env:
       SPRING_PROFILES_ACTIVE: ci
     services:
@@ -218,6 +222,7 @@ jobs:
             "dbrepo-dashboard-service-init dashboard-service-init" \
             "dbrepo-data-service data-service" \
             "dbrepo-metadata-service metadata-service" \
+            "dbrepo-replication-service replication-service" \
             "dbrepo-search-service search-service" \
             "dbrepo-search-service-init search-service-init" \
             "dbrepo-storage-service-init storage-service-init" \
@@ -236,6 +241,7 @@ jobs:
             "dbrepo%2Fdashboard-service-init" \
             "dbrepo%2Fdata-service" \
             "dbrepo%2Fmetadata-service" \
+            "dbrepo%2Freplication-service" \
             "dbrepo%2Fsearch-service" \
             "dbrepo%2Fsearch-service-init" \
             "dbrepo%2Fstorage-service-init" \
