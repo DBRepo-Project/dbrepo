@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -43,6 +44,10 @@ public class Table {
 
     @NotNull
     private List<Column> columns;
+
+    private Map<String, UUID> replicaUrls;
+
+    private String creationLocation;
 
     @TimeToLive
     private Long exp;

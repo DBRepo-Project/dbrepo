@@ -157,6 +157,43 @@ public class ViewEndpoint {
         }
     }
 
+    @PostMapping("/replicated")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Create replicated view",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created replicated view",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ViewDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "View schema is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<ViewDto> createReplicated(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                    @RequestBody Map<String, String> payload)
+            throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
+            ViewMalformedException, MetadataServiceException {
+        log.debug("endpoint create replicated view, databaseId={}, internalName={}", databaseId,
+                payload.get("internalName"));
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(viewService.createReplicated(database, payload.get("internalName"), payload.get("query")));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
     @DeleteMapping("/{viewId}")
     @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Delete view",

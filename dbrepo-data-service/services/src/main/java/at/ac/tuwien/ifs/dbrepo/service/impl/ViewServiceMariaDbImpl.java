@@ -49,11 +49,22 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
     @Override
     public ViewDto create(Database database, String viewName, String query) throws SQLException,
             ViewMalformedException {
+        return createView(database, viewName, mariaDbMapper.nameToInternalName(viewName), query);
+    }
+
+    @Override
+    public ViewDto createReplicated(Database database, String internalName, String query) throws SQLException,
+            ViewMalformedException {
+        return createView(database, internalName, internalName, query);
+    }
+
+    private ViewDto createView(Database database, String viewName, String internalName, String query) throws SQLException,
+            ViewMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         ViewDto view = ViewDto.builder()
                 .name(viewName)
-                .internalName(mariaDbMapper.nameToInternalName(viewName))
+                .internalName(internalName)
                 .query(query)
                 .queryHash(Hashing.sha256()
                         .hashString(query, StandardCharsets.UTF_8)

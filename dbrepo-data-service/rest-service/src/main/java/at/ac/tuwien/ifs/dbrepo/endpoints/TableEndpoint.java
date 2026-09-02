@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
@@ -13,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
@@ -42,6 +44,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -58,6 +61,7 @@ public class TableEndpoint {
     private final MariaDbMapper mariaDbMapper;
     private final AnalyseService analyseService;
     private final MetadataService metadataService;
+    private final ReplicationService replicationService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
@@ -66,13 +70,15 @@ public class TableEndpoint {
     @Autowired
     public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                         ReplicationService replicationService, EndpointValidator endpointValidator,
+                         MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.analyseService = analyseService;
         this.metadataService = metadataService;
+        this.replicationService = replicationService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -350,6 +356,85 @@ public class TableEndpoint {
                 .toList();
     }
 
+    private boolean hasReplicaLocations(Database database, Table table) {
+        return hasReplicaLocations(database.getReplicaUrls()) || hasReplicaLocations(table.getReplicaUrls());
+    }
+
+    private boolean hasReplicaLocations(Map<String, UUID> replicaUrls) {
+        return replicaUrls != null && !replicaUrls.isEmpty();
+    }
+
+    private TupleDto tupleFromReplicationPayload(Table table, DataReplicationDto data) throws TableMalformedException {
+        final Map<String, Object> values = tupleData(data);
+        requireReplicationKey(table, values);
+        final Map<String, Object> tuple = new LinkedHashMap<>();
+        table.getColumns()
+                .stream()
+                .map(Column::getInternalName)
+                .filter(values::containsKey)
+                .forEach(column -> tuple.put(column, values.get(column)));
+        return TupleDto.builder()
+                .data(tuple)
+                .build();
+    }
+
+    private TupleUpdateDto tupleUpdateFromReplicationPayload(Table table, DataReplicationDto data)
+            throws TableMalformedException {
+        final Map<String, Object> values = tupleData(data);
+        final Object replicationKey = requireReplicationKey(table, values);
+        final Map<String, Object> tuple = new LinkedHashMap<>();
+        table.getColumns()
+                .stream()
+                .map(Column::getInternalName)
+                .filter(column -> !"replication_key".equals(column))
+                .filter(values::containsKey)
+                .forEach(column -> tuple.put(column, values.get(column)));
+        if (tuple.isEmpty()) {
+            throw new TableMalformedException("Replication payload is missing tuple data");
+        }
+        return TupleUpdateDto.builder()
+                .keys(replicationKeyKeys(replicationKey))
+                .data(tuple)
+                .build();
+    }
+
+    private TupleDeleteDto tupleDeleteFromReplicationPayload(Table table, DataReplicationDto data)
+            throws TableMalformedException {
+        final Object replicationKey = requireReplicationKey(table, tupleData(data));
+        return TupleDeleteDto.builder()
+                .keys(replicationKeyKeys(replicationKey))
+                .build();
+    }
+
+    private Map<String, Object> tupleData(DataReplicationDto data) throws TableMalformedException {
+        if (data == null || data.getTuple() == null || data.getTuple().getData() == null) {
+            throw new TableMalformedException("Replication payload is missing tuple data");
+        }
+        return data.getTuple()
+                .getData();
+    }
+
+    private Object requireReplicationKey(Table table, Map<String, Object> values) throws TableMalformedException {
+        final boolean hasReplicationKeyColumn = table.getColumns() != null && table.getColumns()
+                .stream()
+                .map(Column::getInternalName)
+                .anyMatch("replication_key"::equals);
+        if (!hasReplicationKeyColumn) {
+            throw new TableMalformedException("Table is missing the replication_key column");
+        }
+        final Object replicationKey = values.get("replication_key");
+        if (replicationKey == null) {
+            throw new TableMalformedException("Replication payload is missing the replication_key value");
+        }
+        return replicationKey;
+    }
+
+    private Map<String, Object> replicationKeyKeys(Object replicationKey) {
+        final Map<String, Object> keys = new LinkedHashMap<>();
+        keys.put("replication_key", replicationKey);
+        return keys;
+    }
+
     @PostMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_create")
@@ -384,9 +469,57 @@ public class TableEndpoint {
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         try {
-            tableService.createTuple(database, table, data);
+            if (hasReplicaLocations(database, table)) {
+                final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table, data);
+                replicationService.replicateTuple(created, database, table);
+            } else {
+                tableService.createTuple(database, table, data);
+            }
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_data_replicate_create")
+    @Operation(summary = "Insert replicated tuple",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created replicated table data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TupleWithTimestampsDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replicated table data is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database or blob in storage service",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or storage service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TupleWithTimestampsDto> insertTupleForReplication(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @Valid @RequestBody DataReplicationDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException,
+            MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint insert replicated table data, databaseId={}, tableId={}", databaseId, tableId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table,
+                    tupleFromReplicationPayload(table, data));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(created);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -428,9 +561,56 @@ public class TableEndpoint {
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         try {
-            tableService.updateTuple(database, table, data);
+            if (hasReplicaLocations(database, table)) {
+                final TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table, data);
+                replicationService.replicateTupleUpdate(updated, database, table);
+            } else {
+                tableService.updateTuple(database, table, data);
+            }
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PutMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_data_replicate_update")
+    @Operation(summary = "Update replicated tuple",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Updated replicated table data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TupleWithTimestampsDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replicated table data is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database or blob in storage service",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or storage service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TupleWithTimestampsDto> updateTupleForReplication(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @Valid @RequestBody DataReplicationDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException,
+            MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint update replicated table data, databaseId={}, tableId={}", databaseId, tableId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            final TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table,
+                    tupleUpdateFromReplicationPayload(table, data));
+            return ResponseEntity.ok(updated);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -472,9 +652,56 @@ public class TableEndpoint {
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         try {
-            tableService.deleteTuple(database, table, data);
+            if (hasReplicaLocations(database, table)) {
+                final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table, data);
+                replicationService.replicateTupleDelete(deleted, database, table);
+            } else {
+                tableService.deleteTuple(database, table, data);
+            }
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @DeleteMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_data_replicate_delete")
+    @Operation(summary = "Delete replicated tuple",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Deleted replicated table data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TupleWithTimestampsDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replicated table data is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database or blob in storage service",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or storage service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TupleWithTimestampsDto> deleteTupleForReplication(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @Valid @RequestBody DataReplicationDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException,
+            MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint delete replicated table data, databaseId={}, tableId={}", databaseId, tableId);
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table,
+                    tupleDeleteFromReplicationPayload(table, data));
+            return ResponseEntity.ok(deleted);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

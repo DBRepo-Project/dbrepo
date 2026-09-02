@@ -20,6 +20,9 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.analyseService}")
     private String analyseEndpoint;
 
+    @Value("${dbrepo.endpoints.replicationService}")
+    private String replicationEndpoint;
+
     @Value("${dbrepo.system.username}")
     private String systemUsername;
 
@@ -30,6 +33,15 @@ public class GatewayConfig {
     public RestTemplate metadataServiceRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
+        restTemplate.getInterceptors()
+                .add(new BasicRequestInterceptor(this));
+        return restTemplate;
+    }
+
+    @Bean("replicationRestTemplate")
+    public RestTemplate replicationRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(replicationEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));
         return restTemplate;

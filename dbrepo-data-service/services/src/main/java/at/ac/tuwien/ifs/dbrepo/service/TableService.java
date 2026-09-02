@@ -130,6 +130,22 @@ public interface TableService {
             TableMalformedException, StorageUnavailableException, StorageNotFoundException;
 
     /**
+     * Creates a tuple and returns the stored tuple with MariaDB system-versioning timestamps.
+     *
+     * @param table The table.
+     * @param data  The tuple.
+     * @return The stored tuple with replication timestamps.
+     * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException     The create or read-back query is malformed.
+     * @throws TableMalformedException     The tuple is malformed and does not fit the table schema.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
+     */
+    TupleWithTimestampsDto createTupleWithTimestamps(Database database, Table table, TupleDto data)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException;
+
+    /**
      * Updates a tuple in a table.
      *
      * @param table The table.
@@ -142,6 +158,38 @@ public interface TableService {
      */
     void updateTuple(Database database, Table table, TupleUpdateDto data) throws SQLException, QueryMalformedException,
             TableMalformedException, StorageUnavailableException, StorageNotFoundException;
+
+    /**
+     * Updates a tuple and returns the stored tuple with MariaDB system-versioning timestamps.
+     *
+     * @param table The table.
+     * @param data  The tuple update.
+     * @return The stored tuple with replication timestamps.
+     * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException     The update or read-back query is malformed.
+     * @throws TableMalformedException     The tuple is malformed and does not fit the table schema.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
+     */
+    TupleWithTimestampsDto updateTupleWithTimestamps(Database database, Table table, TupleUpdateDto data)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException;
+
+    /**
+     * Deletes a tuple and returns the deleted version with MariaDB system-versioning timestamps.
+     *
+     * @param table The table.
+     * @param data  The tuple delete keys.
+     * @return The deleted tuple with replication timestamps.
+     * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException     The delete or read-back query is malformed.
+     * @throws TableMalformedException     The tuple is malformed and does not fit the table schema.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
+     */
+    TupleWithTimestampsDto deleteTupleWithTimestamps(Database database, Table table, TupleDeleteDto data)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException;
 
     /**
      * Get table schemas from the information_schema in the data database.

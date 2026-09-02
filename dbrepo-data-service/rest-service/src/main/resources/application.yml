@@ -93,6 +93,7 @@ dbrepo:
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
     authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
     computeService: "${COMPUTE_SERVICE_ENDPOINT:local[*]}"
+    replicationService: "${REPLICATION_SERVICE_ENDPOINT:http://replication-service:8080}"
   s3:
     bucket: "${S3_BUCKET:dbrepo}"
     region: "${S3_REGION:default}"

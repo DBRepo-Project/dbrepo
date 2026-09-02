@@ -49,6 +49,19 @@ public interface ViewService {
             ViewMalformedException;
 
     /**
+     * Creates a replicated view while preserving the original internal view name from the source site.
+     *
+     * @param database     The data database object.
+     * @param internalName The original internal view name.
+     * @param query        The view query.
+     * @return The generated view.
+     * @throws SQLException           The connection to the data database was unsuccessful.
+     * @throws ViewMalformedException The view is malformed.
+     */
+    ViewDto createReplicated(Database database, String internalName, String query) throws SQLException,
+            ViewMalformedException;
+
+    /**
      * Gets the metadata schema for a given database.
      *
      * @param database The database.

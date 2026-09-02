@@ -1042,7 +1042,8 @@ public interface MetadataMapper {
     Table tableDtoToTable(TableDto data);
 
     @Mappings({
-            @Mapping(target = "subsets", ignore = true)
+            @Mapping(target = "subsets", ignore = true),
+            @Mapping(target = "replicaUrls", source = "replicaUrls", qualifiedByName = "replicaLocationListToMap")
     })
     at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database databaseToDatabaseCache(Database data);
 
