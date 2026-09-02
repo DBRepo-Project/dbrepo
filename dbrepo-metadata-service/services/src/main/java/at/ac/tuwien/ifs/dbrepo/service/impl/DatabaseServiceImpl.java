@@ -4,6 +4,8 @@ import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
@@ -24,6 +26,7 @@ import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,6 +46,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public DatabaseServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
@@ -102,6 +109,15 @@ public class DatabaseServiceImpl implements DatabaseService {
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
+        return create(container, data, owner, null);
+    }
+
+    @Override
+    @Transactional
+    public Database create(Container container, CreateDatabaseDto data, UserDto owner, UUID creationId)
+            throws DataServiceException, SearchServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
+            DashboardServiceConnectionException {
         final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -116,6 +132,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
                 .identifiers(new LinkedList<>())
+                .replicaUrls(replicaLocations(data, creationId))
+                .creationLocation(data.getCreationLocation() == null ? baseUrl : data.getCreationLocation())
                 .build();
         /* create in data database */
         dataServiceGateway.createDatabase(at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto.builder()
@@ -144,6 +162,19 @@ public class DatabaseServiceImpl implements DatabaseService {
         searchServiceGateway.update(database);
         log.info("Created database with id {}", database.getId());
         return database;
+    }
+
+    private List<ReplicaLocation> replicaLocations(CreateDatabaseDto data, UUID creationId) {
+        if (data.getReplicaUrls() == null) {
+            return new LinkedList<>();
+        }
+        return data.getReplicaUrls()
+                .stream()
+                .map(url -> ReplicaLocation.builder()
+                        .url(url)
+                        .replicaDatabaseId(url.equals(data.getCreationLocation()) ? creationId : null)
+                        .build())
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -371,6 +402,41 @@ public class DatabaseServiceImpl implements DatabaseService {
         searchServiceGateway.update(database);
         log.info("Updated view metadata of database with id {} & search database", database.getId());
         return database;
+    }
+
+    @Override
+    @Transactional
+    public Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data)
+            throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            MalformedException {
+        final Database database = findById(databaseId);
+        final Optional<ReplicaLocation> replicaLocation = database.getReplicaUrls()
+                .stream()
+                .filter(location -> location.getUrl().equals(data.getReplicaUrl()))
+                .findFirst();
+        if (replicaLocation.isEmpty()) {
+            log.error("Failed to find replica URL {} for database {}", data.getReplicaUrl(), databaseId);
+            throw new MalformedException("Failed to find replica URL for database");
+        }
+        replicaLocation.get()
+                .setReplicaDatabaseId(data.getReplicaDatabaseId());
+        final Database updatedDatabase = databaseRepository.save(database);
+        databaseCacheRepository.deleteById(updatedDatabase.getId());
+        searchServiceGateway.update(updatedDatabase);
+        log.info("Updated replica database id for database {}", updatedDatabase.getId());
+        return updatedDatabase;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LocalDatabaseIdDto findLocalDatabaseIdByReplicaDatabaseId(UUID replicaDatabaseId)
+            throws DatabaseNotFoundException {
+        final Optional<Database> database = databaseRepository.findByReplicaDatabaseId(replicaDatabaseId);
+        if (database.isEmpty()) {
+            log.error("Failed to find database with replica database id {}", replicaDatabaseId);
+            throw new DatabaseNotFoundException("Failed to find database with replica database id " + replicaDatabaseId);
+        }
+        return new LocalDatabaseIdDto(database.get().getId(), replicaDatabaseId);
     }
 
 }

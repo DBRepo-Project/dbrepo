@@ -1,11 +1,16 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -13,6 +18,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
@@ -35,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,15 +58,18 @@ public class TableEndpoint extends RestEndpoint {
     private final DatabaseService databaseService;
     private final DashboardService dashboardService;
     private final EndpointValidator endpointValidator;
+    private final ReplicationService replicationService;
 
     @Autowired
     public TableEndpoint(TableService tableService, MetadataMapper metadataMapper, DatabaseService databaseService,
-                         DashboardService dashboardService, EndpointValidator endpointValidator) {
+                         DashboardService dashboardService, EndpointValidator endpointValidator,
+                         ReplicationService replicationService) {
         this.tableService = tableService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.dashboardService = dashboardService;
         this.endpointValidator = endpointValidator;
+        this.replicationService = replicationService;
     }
 
     @GetMapping
@@ -250,8 +260,70 @@ public class TableEndpoint extends RestEndpoint {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
+        ensureReplicationKeyColumn(database, data);
         endpointValidator.validateColumnCreateConstraints(data);
         final Table table = tableService.createTable(database, data, principal);
+        if (replicationService != null && data.getCreationLocation() == null && hasReplicaLocations(database)) {
+            try {
+                replicationService.replicateTable(data, databaseId, new ArrayList<>(database.getReplicaUrls()),
+                        table.getId());
+            } catch (Exception e) {
+                log.error("Failed to trigger replication for table {} in database {}: {}", table.getId(), databaseId,
+                        e.getMessage(), e);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(metadataMapper.tableToTableBriefDto(table));
+    }
+
+    @PostMapping("/replicate")
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replicate")
+    @Operation(summary = "Replicate table creation",
+            description = "Creates a table from a replication notification.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Replicated table successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication table payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Replication table creation is forbidden",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database, table, access, user, ontology, or semantic entity could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "409",
+                    description = "Table already exists",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to downstream service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Downstream service returned an error",
+                    content = {@Content})
+    })
+    public ResponseEntity<TableBriefDto> replicate(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                   @NotNull @Valid @RequestBody TableNotificationDto notification,
+                                                   Principal principal)
+            throws NotAllowedException, MalformedException, DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, TableNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException,
+            OntologyNotFoundException, SemanticEntityNotFoundException, DashboardServiceException,
+            DashboardServiceConnectionException {
+        if (notification.getCreateTableDto() == null) {
+            throw new MalformedException("Replication table payload is missing");
+        }
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.createTable(database, notification.getCreateTableDto(), principal,
+                notification.getCreationId());
+        dashboardService.update(table.getDatabase());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.tableToTableBriefDto(table));
     }
@@ -399,6 +471,95 @@ public class TableEndpoint extends RestEndpoint {
         dashboardService.update(databaseService.findById(databaseId));
         return ResponseEntity.accepted()
                 .build();
+    }
+
+    @PutMapping("/{tableId}/replication-url")
+    @Transactional
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replication_url_update")
+    @Operation(summary = "Update table replication URL",
+            description = "Updates a table replica URL with the remote table id.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated table replication URL successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication URL update payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or table could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Search service returned an error",
+                    content = {@Content})
+    })
+    public ResponseEntity<TableBriefDto> updateReplicationUrl(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                              @NotNull @PathVariable("tableId") UUID tableId,
+                                                              @NotNull @Valid @RequestBody TableUpdateReplicationUrlDto data)
+            throws DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        log.debug("endpoint update table replication URL, databaseId={}, tableId={}, replicaUrl={}", databaseId,
+                tableId, data.getReplicaUrl());
+        final Database database = databaseService.findById(databaseId);
+        tableService.findById(database, tableId);
+        final Table table = tableService.updateReplicationUrl(tableId, data);
+        return ResponseEntity.accepted()
+                .body(metadataMapper.tableToTableBriefDto(table));
+    }
+
+    @GetMapping("/replica/{replicaTableId}/local-id")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_replica_to_local_id")
+    @Operation(summary = "Find local table id by replica table id",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Local table id found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LocalTableIdDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table with replica table id could not be found",
+                    content = {@Content})
+    })
+    public ResponseEntity<LocalTableIdDto> findLocalTableIdByReplicaTableId(
+            @NotNull @PathVariable("replicaTableId") UUID replicaTableId) throws TableNotFoundException {
+        log.debug("endpoint find local table id by replica table id, replicaTableId={}", replicaTableId);
+        return ResponseEntity.ok(tableService.findLocalTableIdByReplicaTableId(replicaTableId));
+    }
+
+    private void ensureReplicationKeyColumn(Database database, CreateTableDto data) {
+        if (data.getCreationLocation() != null || !hasReplicaLocations(database) || data.getColumns() == null) {
+            return;
+        }
+        final boolean hasReplicationKey = data.getColumns()
+                .stream()
+                .anyMatch(column -> "replication_key".equals(metadataMapper.nameToInternalName(column.getName())));
+        if (hasReplicationKey) {
+            return;
+        }
+        final List<CreateTableColumnDto> columns = new ArrayList<>(data.getColumns());
+        columns.add(CreateTableColumnDto.builder()
+                .name("replication_key")
+                .type(ColumnTypeDto.VARCHAR)
+                .size(36L)
+                .nullAllowed(false)
+                .description("Replication key")
+                .build());
+        data.setColumns(columns);
+    }
+
+    private boolean hasReplicaLocations(Database database) {
+        return database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty();
     }
 
 }

@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
@@ -51,6 +52,10 @@ public interface ViewService {
     View create(Database database, String ownedBy, CreateViewDto data) throws MalformedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, ColumnNotFoundException;
+
+    View createReplicated(Database database, String ownedBy, ViewDto data) throws DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException,
+            DataServiceException;
 
     /**
      * Updates the view in the metadata database and search service.

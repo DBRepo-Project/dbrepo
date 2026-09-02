@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
@@ -11,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
@@ -47,14 +49,16 @@ public class ViewEndpoint extends RestEndpoint {
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final DashboardService dashboardService;
+    private final ReplicationService replicationService;
 
     @Autowired
     public ViewEndpoint(ViewService viewService, MetadataMapper metadataMapper, DatabaseService databaseService,
-                        DashboardService dashboardService) {
+                        DashboardService dashboardService, ReplicationService replicationService) {
         this.viewService = viewService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.dashboardService = dashboardService;
+        this.replicationService = replicationService;
     }
 
     @GetMapping
@@ -82,6 +86,50 @@ public class ViewEndpoint extends RestEndpoint {
                 .stream()
                 .map(metadataMapper::viewToViewBriefDto)
                 .collect(Collectors.toList()));
+    }
+
+    @PostMapping("/replicate")
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_view_replicate")
+    @Operation(summary = "Replicate view creation",
+            description = "Creates a view from a replication notification.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Replicated view successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ViewBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication view payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to downstream service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Downstream service returned an error",
+                    content = {@Content})
+    })
+    public ResponseEntity<ViewBriefDto> replicate(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                  @NotNull @Valid @RequestBody ViewNotificationDto notification,
+                                                  Principal principal) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException,
+            MalformedException {
+        if (notification.getViewDto() == null) {
+            throw new MalformedException("Replication view payload is missing");
+        }
+        final Database database = databaseService.findById(databaseId);
+        final View view = viewService.createReplicated(database, AuthUtil.getUsername(principal),
+                notification.getViewDto());
+        dashboardService.update(view.getDatabase());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(metadataMapper.viewToViewBriefDto(view));
     }
 
     @PostMapping
@@ -137,6 +185,14 @@ public class ViewEndpoint extends RestEndpoint {
         }
         final View view = viewService.create(database, AuthUtil.getUsername(principal), data);
         dashboardService.update(view.getDatabase());
+        if (replicationService != null && hasReplicaLocations(database)) {
+            try {
+                replicationService.replicateView(view);
+            } catch (Exception e) {
+                log.error("Failed to trigger replication for view {} in database {}: {}", view.getId(), databaseId,
+                        e.getMessage(), e);
+            }
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.viewToViewBriefDto(view));
     }
@@ -278,6 +334,10 @@ public class ViewEndpoint extends RestEndpoint {
         dashboardService.update(view1.getDatabase());
         return ResponseEntity.accepted()
                 .body(metadataMapper.viewToViewBriefDto(view1));
+    }
+
+    private boolean hasReplicaLocations(Database database) {
+        return database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty();
     }
 
 }

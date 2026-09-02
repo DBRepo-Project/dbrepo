@@ -15,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.service.ViewService;
 import com.google.common.hash.Hashing;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,9 @@ public class ViewServiceImpl implements ViewService {
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public ViewServiceImpl(MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
@@ -91,6 +95,7 @@ public class ViewServiceImpl implements ViewService {
                 .isInitialView(false)
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isPublic(data.getIsPublic())
+                .creationLocation(baseUrl)
                 .build();
         /* create in data service */
         data.setName(view.getInternalName());
@@ -122,6 +127,45 @@ public class ViewServiceImpl implements ViewService {
         searchServiceGateway.update(database);
         log.info("Created view with id {}", optional.get().getId());
         return optional.get();
+    }
+
+    @Override
+    @Transactional
+    public View createReplicated(Database database, String ownedBy, ViewDto data) throws DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException,
+            DataServiceException {
+        final View view = View.builder()
+                .id(data.getId())
+                .database(database)
+                .name(data.getName())
+                .internalName(data.getInternalName())
+                .ownedBy(ownedBy)
+                .identifiers(new LinkedList<>())
+                .columns(new LinkedList<>())
+                .isInitialView(Boolean.TRUE.equals(data.getIsInitialView()))
+                .isSchemaPublic(data.getIsSchemaPublic())
+                .isPublic(data.getIsPublic())
+                .creationLocation(data.getCreationLocation())
+                .build();
+        final ViewDto rawView = dataServiceGateway.createViewRaw(database.getId(), view.getInternalName(),
+                data.getQuery());
+        view.setColumns(rawView.getColumns()
+                .stream()
+                .map(metadataMapper::viewColumnDtoToViewColumn)
+                .toList());
+        view.getColumns()
+                .forEach(column -> column.setView(view));
+        view.setQuery(rawView.getQuery());
+        view.setQueryHash(Hashing.sha256()
+                .hashString(rawView.getQuery(), StandardCharsets.UTF_8)
+                .toString());
+        database.getViews()
+                .add(view);
+        final Database saved = databaseRepository.save(database);
+        databaseCacheRepository.deleteById(saved.getId());
+        searchServiceGateway.update(saved);
+        log.info("Created replicated view with id {}", view.getId());
+        return view;
     }
 
     @Override

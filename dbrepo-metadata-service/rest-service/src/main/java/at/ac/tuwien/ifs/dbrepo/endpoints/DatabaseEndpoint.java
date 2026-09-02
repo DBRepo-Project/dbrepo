@@ -2,6 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -22,6 +24,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,6 +33,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -46,17 +50,28 @@ public class DatabaseEndpoint extends RestEndpoint {
     private final DatabaseService databaseService;
     private final ContainerService containerService;
     private final DashboardService dashboardService;
+    private final ReplicationService replicationService;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
+
+    @Value("${dbrepo.system.username}")
+    private String systemUsername;
+
+    @Value("${dbrepo.system.password}")
+    private String systemPassword;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService,
-                            DashboardService dashboardService) {
+                            DashboardService dashboardService, ReplicationService replicationService) {
         this.userService = userService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.containerService = containerService;
         this.dashboardService = dashboardService;
+        this.replicationService = replicationService;
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -163,6 +178,65 @@ public class DatabaseEndpoint extends RestEndpoint {
         log.debug("found user: {}", owner);
         final Database database = databaseService.create(container, data, owner);
         /* find in dashboard service */
+        final CreateDashboardResponseDto dashboard = dashboardService.create(database);
+        database.setDashboardUid(dashboard.getUid());
+        if (replicationService != null && data.getCreationLocation() == null && hasReplicaUrls(data)) {
+            try {
+                replicationService.replicateDatabase(data, database.getId());
+            } catch (Exception e) {
+                log.error("Failed to trigger replication for database {}: {}", database.getId(), e.getMessage(), e);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(metadataMapper.databaseToDatabaseBriefDto(database));
+    }
+
+    @PostMapping("/replicate")
+    @Transactional(rollbackFor = Exception.class)
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_database_replicate")
+    @Operation(summary = "Replicate database creation",
+            description = "Creates a database from a replication notification.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Replicated database successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication database payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container or database could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "423",
+                    description = "Container database quota exceeded",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to downstream service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Downstream service returned an error",
+                    content = {@Content})
+    })
+    public ResponseEntity<DatabaseBriefDto> replicate(@Valid @RequestBody DatabaseNotificationDto notification)
+            throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
+            ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException,
+            MalformedException {
+        if (notification.getCreateDatabaseDto() == null) {
+            throw new MalformedException("Replication database payload is missing");
+        }
+        final CreateDatabaseDto data = notification.getCreateDatabaseDto();
+        replaceLocalReplicaUrlWithCreationLocation(data);
+        final Container container = containerService.find(data.getCid());
+        if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
+            log.error("Failed to replicate database: quota of {} exceeded", container.getQuota());
+            throw new ContainerQuotaException("Failed to replicate database: quota of " + container.getQuota() + " exceeded");
+        }
+        final Database database = databaseService.create(container, data, systemUser(), notification.getCreationId());
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -455,6 +529,94 @@ public class DatabaseEndpoint extends RestEndpoint {
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
                 .body(dto);
+    }
+
+    @PutMapping("/{databaseId}/replication-url")
+    @Transactional
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_database_replication_url_update")
+    @Operation(summary = "Update database replication URL",
+            description = "Updates a database replica URL with the remote database id.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated database replication URL successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication URL update payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Search service returned an error",
+                    content = {@Content})
+    })
+    public ResponseEntity<DatabaseBriefDto> updateReplicationUrl(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                                 @Valid @RequestBody DatabaseUpdateReplicationUrlDto data)
+            throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            MalformedException {
+        log.debug("endpoint update database replication URL, databaseId={}, replicaUrl={}", databaseId,
+                data.getReplicaUrl());
+        final Database database = databaseService.updateReplicationUrl(databaseId, data);
+        return ResponseEntity.accepted()
+                .body(metadataMapper.databaseToDatabaseBriefDto(database));
+    }
+
+    @GetMapping("/replica/{replicaDatabaseId}/local-id")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_database_replica_to_local_id")
+    @Operation(summary = "Find local database id by replica database id",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Local database id found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LocalDatabaseIdDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database with replica database id could not be found",
+                    content = {@Content})
+    })
+    public ResponseEntity<LocalDatabaseIdDto> findLocalDatabaseIdByReplicaDatabaseId(
+            @NotNull @PathVariable("replicaDatabaseId") UUID replicaDatabaseId) throws DatabaseNotFoundException {
+        log.debug("endpoint find local database id by replica database id, replicaDatabaseId={}", replicaDatabaseId);
+        return ResponseEntity.ok(databaseService.findLocalDatabaseIdByReplicaDatabaseId(replicaDatabaseId));
+    }
+
+    private boolean hasReplicaUrls(CreateDatabaseDto data) {
+        return data.getReplicaUrls() != null && !data.getReplicaUrls().isEmpty();
+    }
+
+    private void replaceLocalReplicaUrlWithCreationLocation(CreateDatabaseDto data) {
+        if (data.getReplicaUrls() == null || data.getCreationLocation() == null) {
+            return;
+        }
+        data.setReplicaUrls(data.getReplicaUrls()
+                .stream()
+                .map(replicaUrl -> replicaUrl.equals(baseUrl) ? data.getCreationLocation() : replicaUrl)
+                .toList());
+    }
+
+    private UserDto systemUser() {
+        return UserDto.builder()
+                .id(UUID.nameUUIDFromBytes(("dbrepo-system:" + systemUsername).getBytes(StandardCharsets.UTF_8)))
+                .username(systemUsername)
+                .password(systemPassword)
+                .attributes(UserAttributesDto.builder()
+                        .mariadbPassword(systemPassword)
+                        .theme("light")
+                        .language("en")
+                        .build())
+                .build();
     }
 
 }

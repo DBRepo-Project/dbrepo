@@ -3,12 +3,15 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
@@ -21,10 +24,12 @@ import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.metadata.ColumnDependencyRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.ForeignKeyRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.TableRepository;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,14 +50,18 @@ public class TableServiceImpl implements TableService {
     private final DatabaseRepository databaseRepository;
     private final ColumnDependencyRepository columnDependencyRepository;
     private final ForeignKeyRepository foreignKeyRepository;
+    private final TableRepository tableRepository;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public TableServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
                             ColumnDependencyRepository columnDependencyRepository,
-                            ForeignKeyRepository foreignKeyRepository,
+                            ForeignKeyRepository foreignKeyRepository, TableRepository tableRepository,
                             SearchServiceGateway searchServiceGateway,
                             DatabaseCacheRepository databaseCacheRepository) {
         this.rabbitConfig = rabbitConfig;
@@ -60,6 +70,7 @@ public class TableServiceImpl implements TableService {
         this.databaseRepository = databaseRepository;
         this.columnDependencyRepository = columnDependencyRepository;
         this.foreignKeyRepository = foreignKeyRepository;
+        this.tableRepository = tableRepository;
         this.searchServiceGateway = searchServiceGateway;
         this.databaseCacheRepository = databaseCacheRepository;
     }
@@ -97,6 +108,15 @@ public class TableServiceImpl implements TableService {
     public Table createTable(Database database, CreateTableDto data, Principal principal) throws DataServiceException,
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException {
+        return createTable(database, data, principal, null);
+    }
+
+    @Override
+    @Transactional
+    public Table createTable(Database database, CreateTableDto data, Principal principal, UUID creationId)
+            throws DataServiceException, DataServiceConnectionException, TableNotFoundException,
+            DatabaseNotFoundException, TableExistsException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
         final Table table = Table.builder()
                 .isVersioned(true)
                 .name(data.getName())
@@ -112,6 +132,8 @@ public class TableServiceImpl implements TableService {
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
+                .replicaUrls(replicaTableLocations(database, data, creationId))
+                .creationLocation(data.getCreationLocation() == null ? baseUrl : data.getCreationLocation())
                 .build();
         try {
             /* set the ordinal position for the columns */
@@ -178,6 +200,19 @@ public class TableServiceImpl implements TableService {
         searchServiceGateway.update(entity);
         log.info("Created table with id {}", optional.get().getId());
         return optional.get();
+    }
+
+    private List<ReplicaTableLocation> replicaTableLocations(Database database, CreateTableDto data, UUID creationId) {
+        if (database.getReplicaUrls() == null) {
+            return new LinkedList<>();
+        }
+        return database.getReplicaUrls()
+                .stream()
+                .map(location -> ReplicaTableLocation.builder()
+                        .url(location.getUrl())
+                        .replicaTableId(location.getUrl().equals(data.getCreationLocation()) ? creationId : null)
+                        .build())
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -332,6 +367,44 @@ public class TableServiceImpl implements TableService {
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated statistics for the table and {} column(s)", table.getColumns().size());
+    }
+
+    @Override
+    @Transactional
+    public Table updateReplicationUrl(UUID tableId, TableUpdateReplicationUrlDto data) throws TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DatabaseNotFoundException,
+            MalformedException {
+        final Optional<Table> table = tableRepository.findById(tableId);
+        if (table.isEmpty()) {
+            log.error("Failed to find table with id {}", tableId);
+            throw new TableNotFoundException("Failed to find table with id " + tableId);
+        }
+        final Optional<ReplicaTableLocation> replicaLocation = table.get().getReplicaUrls()
+                .stream()
+                .filter(location -> location.getUrl().equals(data.getReplicaUrl()))
+                .findFirst();
+        if (replicaLocation.isEmpty()) {
+            log.error("Failed to find replica URL {} for table {}", data.getReplicaUrl(), tableId);
+            throw new MalformedException("Failed to find replica URL for table");
+        }
+        replicaLocation.get()
+                .setReplicaTableId(data.getReplicaTableId());
+        final Database database = databaseRepository.save(table.get().getDatabase());
+        databaseCacheRepository.deleteById(database.getId());
+        searchServiceGateway.update(database);
+        log.info("Updated replica table id for table {}", tableId);
+        return table.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LocalTableIdDto findLocalTableIdByReplicaTableId(UUID replicaTableId) throws TableNotFoundException {
+        final Optional<Table> table = tableRepository.findByReplicaTableId(replicaTableId);
+        if (table.isEmpty()) {
+            log.error("Failed to find table with replica table id {}", replicaTableId);
+            throw new TableNotFoundException("Failed to find table with replica table id " + replicaTableId);
+        }
+        return new LocalTableIdDto(table.get().getId(), replicaTableId);
     }
 
 }

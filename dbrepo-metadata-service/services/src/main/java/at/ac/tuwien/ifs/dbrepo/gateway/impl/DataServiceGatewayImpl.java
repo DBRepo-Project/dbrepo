@@ -266,6 +266,35 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
+    public ViewDto createViewRaw(UUID databaseId, String internalName, String query)
+            throws DataServiceConnectionException, DataServiceException {
+        final ResponseEntity<ViewDto> response;
+        final String path = "/api/v1/database/" + databaseId + "/view/replicated";
+        log.trace("create replicated view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
+        try {
+            record CreateReplicatedViewDto(String internalName, String query) {
+            }
+            response = restTemplate.exchange(path, HttpMethod.POST,
+                    new HttpEntity<>(new CreateReplicatedViewDto(internalName, query)), ViewDto.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to create replicated view: {}", e.getMessage());
+            throw new DataServiceConnectionException("Failed to create replicated view: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to create replicated view: {}", e.getMessage());
+            throw new DataServiceException("Failed to create replicated view: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
+            log.error("Failed to create replicated view: wrong http code: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to create replicated view: wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to create replicated view: empty body: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to create replicated view: empty body: " + response.getStatusCode());
+        }
+        return response.getBody();
+    }
+
+    @Override
     public void deleteView(UUID databaseId, UUID viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException {
         final ResponseEntity<Void> response;

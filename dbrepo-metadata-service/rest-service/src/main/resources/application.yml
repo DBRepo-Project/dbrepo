@@ -86,6 +86,7 @@ dbrepo:
     dashboardService: "${DASHBOARD_SERVICE_ENDPOINT:http://dashboard-service:8080}"
     doiService: "${DOI_ENDPOINT:https://doi.org}"
     dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
+    replicationService: "${REPLICATION_SERVICE_ENDPOINT:http://replication-service:8080}"
     rorService: "${ROR_ENDPOINT:https://api.ror.org}"
     searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
     storageService: "${S3_ENDPOINT:http://storage-service:9000}"

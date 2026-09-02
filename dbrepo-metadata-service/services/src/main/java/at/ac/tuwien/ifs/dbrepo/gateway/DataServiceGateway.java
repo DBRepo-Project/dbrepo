@@ -120,6 +120,19 @@ public interface DataServiceGateway {
             ColumnNotFoundException;
 
     /**
+     * Creates a replicated view in the given database with its original internal name and query.
+     *
+     * @param databaseId   The database id.
+     * @param internalName The original internal view name.
+     * @param query        The original view query.
+     * @return The created view, if successful.
+     * @throws DataServiceConnectionException The connection to the data service could not be established.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     */
+    ViewDto createViewRaw(UUID databaseId, String internalName, String query)
+            throws DataServiceConnectionException, DataServiceException;
+
+    /**
      * Deletes a given view in the given database.
      *
      * @param databaseId The database id.

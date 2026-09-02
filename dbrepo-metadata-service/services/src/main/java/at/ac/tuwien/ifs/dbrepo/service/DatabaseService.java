@@ -2,6 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -90,6 +92,11 @@ public interface DatabaseService {
      * @throws DashboardServiceConnectionException The connection to the dashboard service could not be established.
      */
     Database create(Container container, CreateDatabaseDto createDto, UserDto user)
+            throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
+            DashboardServiceConnectionException;
+
+    Database create(Container container, CreateDatabaseDto createDto, UserDto user, UUID creationId)
             throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException;
@@ -190,4 +197,9 @@ public interface DatabaseService {
     Database updateViewMetadata(Database database) throws DatabaseNotFoundException, DataServiceException,
             SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException,
             ViewNotFoundException;
+
+    Database updateReplicationUrl(UUID databaseId, DatabaseUpdateReplicationUrlDto data) throws DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, MalformedException;
+
+    LocalDatabaseIdDto findLocalDatabaseIdByReplicaDatabaseId(UUID replicaDatabaseId) throws DatabaseNotFoundException;
 }

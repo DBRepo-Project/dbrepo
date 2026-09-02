@@ -1,7 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -60,6 +62,12 @@ public interface TableService {
             DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException;
+
+    Table createTable(Database database, CreateTableDto createDto, Principal principal, UUID creationId)
+            throws TableNotFoundException, DataServiceException, DataServiceConnectionException,
+            UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
+            SemanticEntityNotFoundException;
 
     /**
      * Deletes a given table from the database in the metadata database and data database.
@@ -135,4 +143,9 @@ public interface TableService {
     void updateStatistics(Table table) throws SearchServiceException, DatabaseNotFoundException,
             SearchServiceConnectionException, MalformedException, TableNotFoundException, DataServiceException,
             DataServiceConnectionException;
+
+    Table updateReplicationUrl(UUID tableId, TableUpdateReplicationUrlDto data) throws TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DatabaseNotFoundException, MalformedException;
+
+    LocalTableIdDto findLocalTableIdByReplicaTableId(UUID replicaTableId) throws TableNotFoundException;
 }
