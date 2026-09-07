@@ -200,6 +200,11 @@ public class DatabaseEndpoint extends RestEndpoint {
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Replicated database already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "201",
                     description = "Replicated database successfully",
                     content = {@Content(
@@ -226,8 +231,16 @@ public class DatabaseEndpoint extends RestEndpoint {
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException,
             MalformedException {
-        if (notification.getCreateDatabaseDto() == null) {
+        if (notification == null || notification.getCreateDatabaseDto() == null) {
             throw new MalformedException("Replication database payload is missing");
+        }
+        if (notification.getCreationId() == null) {
+            throw new MalformedException("Replication database creation id is missing");
+        }
+        final Database existing = findExistingReplicatedDatabase(notification.getCreationId());
+        if (existing != null) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(metadataMapper.databaseToDatabaseBriefDto(existing));
         }
         final CreateDatabaseDto data = notification.getCreateDatabaseDto();
         replaceLocalReplicaUrlWithCreationLocation(data);
@@ -241,6 +254,15 @@ public class DatabaseEndpoint extends RestEndpoint {
         database.setDashboardUid(dashboard.getUid());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));
+    }
+
+    private Database findExistingReplicatedDatabase(UUID creationId) {
+        try {
+            final LocalDatabaseIdDto localId = databaseService.findLocalDatabaseIdByReplicaDatabaseId(creationId);
+            return databaseService.findById(localId.getLocalDatabaseId());
+        } catch (DatabaseNotFoundException e) {
+            return null;
+        }
     }
 
     @PutMapping("/{databaseId}/metadata/table")
