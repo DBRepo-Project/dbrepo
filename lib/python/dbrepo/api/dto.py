@@ -43,6 +43,16 @@ class CreateDatabase(BaseModel):
     replica_urls: Optional[List[str]] = None
 
 
+class UpdateDatabaseReplicationUrl(BaseModel):
+    replica_url: str
+    replica_database_id: str
+
+
+class UpdateTableReplicationUrl(BaseModel):
+    replica_url: str
+    replica_table_id: str
+
+
 class UpdateView(BaseModel):
     is_public: bool
     is_schema_public: bool

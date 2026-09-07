@@ -311,6 +311,49 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create database: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
+    def update_database_replication_url(self, database_id: str, replica_url: str,
+                                        replica_database_id: str) -> DatabaseBrief:
+        """
+        Update a configured database replica URL with the remote database id.
+
+        :param database_id: The local database id.
+        :param replica_url: The configured replica site API URL.
+        :param replica_database_id: The remote database id at the replica site.
+
+        :returns: The updated database, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises MalformedError: If the replica URL is not configured on the database.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database does not exist.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
+        :raises ServiceError: If something went wrong with obtaining the information in the search service.
+        :raises ResponseCodeError: If something went wrong with the update.
+        """
+        url = f'/api/v1/database/{database_id}/replication-url'
+        response = self._wrapper(method="put", url=url, force_auth=True,
+                                 payload=UpdateDatabaseReplicationUrl(replica_url=replica_url,
+                                                                      replica_database_id=replica_database_id))
+        if response.status_code == 202:
+            body = response.json()
+            return DatabaseBrief.model_validate(body)
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to update database replication URL: {response.text}')
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to update database replication URL: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to update database replication URL: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to update database replication URL: not found')
+        if response.status_code == 502:
+            raise ServiceConnectionError(
+                f'Failed to update database replication URL: failed to establish connection to search service')
+        if response.status_code == 503:
+            raise ServiceError(f'Failed to update database replication URL: failed to update in search service')
+        raise ResponseCodeError(
+            f'Failed to update database replication URL: response code: {response.status_code} is not '
+            f'202 (ACCEPTED): {response.text}')
+
     def create_container(self, name: str, host: str, image_id: str, privileged_username: str, privileged_password: str,
                          port: int = None, ui_host: str = None, ui_port: int = None) -> Container:
         """
@@ -556,6 +599,50 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to synchronise table replication: response code: {response.status_code} is not '
             f'200 (OK): {response.text}')
+
+    def update_table_replication_url(self, database_id: str, table_id: str, replica_url: str,
+                                     replica_table_id: str) -> TableBrief:
+        """
+        Update a configured table replica URL with the remote table id.
+
+        :param database_id: The local database id.
+        :param table_id: The local table id.
+        :param replica_url: The configured replica site API URL.
+        :param replica_table_id: The remote table id at the replica site.
+
+        :returns: The updated table, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises MalformedError: If the replica URL is not configured on the table.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database or table does not exist.
+        :raises ServiceConnectionError: If something went wrong with the connection to the search service.
+        :raises ServiceError: If something went wrong with obtaining the information in the search service.
+        :raises ResponseCodeError: If something went wrong with the update.
+        """
+        url = f'/api/v1/database/{database_id}/table/{table_id}/replication-url'
+        response = self._wrapper(method="put", url=url, force_auth=True,
+                                 payload=UpdateTableReplicationUrl(replica_url=replica_url,
+                                                                   replica_table_id=replica_table_id))
+        if response.status_code == 202:
+            body = response.json()
+            return TableBrief.model_validate(body)
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to update table replication URL: {response.text}')
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to update table replication URL: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to update table replication URL: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to update table replication URL: not found')
+        if response.status_code == 502:
+            raise ServiceConnectionError(
+                f'Failed to update table replication URL: failed to establish connection to search service')
+        if response.status_code == 503:
+            raise ServiceError(f'Failed to update table replication URL: failed to update in search service')
+        raise ResponseCodeError(
+            f'Failed to update table replication URL: response code: {response.status_code} is not '
+            f'202 (ACCEPTED): {response.text}')
 
     def get_metadata_replication_outbox(self) -> List[MetadataReplicationOutboxEntry]:
         """

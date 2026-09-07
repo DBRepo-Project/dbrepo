@@ -3,6 +3,7 @@ import unittest
 import requests_mock
 
 from dbrepo.RestClient import RestClient
+from dbrepo.api.dto import UserBrief
 from dbrepo.api.exceptions import AuthenticationError, ForbiddenError, MalformedError, NotExistsError
 
 
@@ -145,6 +146,83 @@ class ReplicationUnitTest(unittest.TestCase):
                 RestClient(username="system", password="secret").synchronise_table_replication(
                     database_id=database_id,
                     table_id=table_id)
+
+    def test_update_database_replication_url_succeeds(self):
+        database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        replica_database_id = 'c47b41a3-6106-42c2-bfe5-2d5460987924'
+        payload = {
+            'id': database_id,
+            'name': 'test',
+            'owned_by': '8638c043-5145-4be8-a3e4-4b79991b0a16',
+            'contact': UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise').model_dump(),
+            'internal_name': 'test_abcd',
+            'is_public': True,
+            'is_schema_public': True
+        }
+        with requests_mock.Mocker() as mock:
+            mock.put(f'/api/v1/database/{database_id}/replication-url', json=payload, status_code=202)
+
+            response = RestClient(username="system", password="secret").update_database_replication_url(
+                database_id=database_id,
+                replica_url='https://site-b.example',
+                replica_database_id=replica_database_id)
+
+            self.assertEqual(database_id, response.id)
+            self.assertEqual('https://site-b.example', mock.last_request.json()['replica_url'])
+            self.assertEqual(replica_database_id, mock.last_request.json()['replica_database_id'])
+
+    def test_update_database_replication_url_400_fails(self):
+        database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        with requests_mock.Mocker() as mock:
+            mock.put(f'/api/v1/database/{database_id}/replication-url', status_code=400)
+
+            with self.assertRaises(MalformedError):
+                RestClient(username="system", password="secret").update_database_replication_url(
+                    database_id=database_id,
+                    replica_url='https://site-b.example',
+                    replica_database_id='c47b41a3-6106-42c2-bfe5-2d5460987924')
+
+    def test_update_table_replication_url_succeeds(self):
+        database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        table_id = 'd39a0f4d-502c-47dc-b0f2-9089d8e9c935'
+        replica_table_id = '50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7'
+        payload = {
+            'id': table_id,
+            'database_id': database_id,
+            'name': 'measurements',
+            'description': None,
+            'internal_name': 'measurements',
+            'is_versioned': True,
+            'is_public': True,
+            'is_schema_public': True,
+            'owned_by': '8638c043-5145-4be8-a3e4-4b79991b0a16'
+        }
+        with requests_mock.Mocker() as mock:
+            mock.put(f'/api/v1/database/{database_id}/table/{table_id}/replication-url', json=payload,
+                     status_code=202)
+
+            response = RestClient(username="system", password="secret").update_table_replication_url(
+                database_id=database_id,
+                table_id=table_id,
+                replica_url='https://site-b.example',
+                replica_table_id=replica_table_id)
+
+            self.assertEqual(table_id, response.id)
+            self.assertEqual('https://site-b.example', mock.last_request.json()['replica_url'])
+            self.assertEqual(replica_table_id, mock.last_request.json()['replica_table_id'])
+
+    def test_update_table_replication_url_404_fails(self):
+        database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        table_id = 'd39a0f4d-502c-47dc-b0f2-9089d8e9c935'
+        with requests_mock.Mocker() as mock:
+            mock.put(f'/api/v1/database/{database_id}/table/{table_id}/replication-url', status_code=404)
+
+            with self.assertRaises(NotExistsError):
+                RestClient(username="system", password="secret").update_table_replication_url(
+                    database_id=database_id,
+                    table_id=table_id,
+                    replica_url='https://site-b.example',
+                    replica_table_id='50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7')
 
     def test_get_metadata_replication_outbox_succeeds(self):
         entry_id = '50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7'
