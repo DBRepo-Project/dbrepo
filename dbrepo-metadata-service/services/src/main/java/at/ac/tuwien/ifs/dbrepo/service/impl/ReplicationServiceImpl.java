@@ -7,17 +7,16 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
+import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationOutbox;
+import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationType;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationNotificationDispatcher;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationNotificationOutboxService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,44 +25,42 @@ import java.util.UUID;
 @Service
 public class ReplicationServiceImpl implements ReplicationService {
 
-    private final RestTemplate replicationRestTemplate;
     private final MetadataMapper metadataMapper;
+    private final ReplicationNotificationOutboxService outboxService;
+    private final ReplicationNotificationDispatcher dispatcher;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
-    public ReplicationServiceImpl(@Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate,
-                                  MetadataMapper metadataMapper) {
-        this.replicationRestTemplate = replicationRestTemplate;
+    public ReplicationServiceImpl(MetadataMapper metadataMapper, ReplicationNotificationOutboxService outboxService,
+                                  ReplicationNotificationDispatcher dispatcher) {
         this.metadataMapper = metadataMapper;
+        this.outboxService = outboxService;
+        this.dispatcher = dispatcher;
     }
 
     @Override
-    @Async
     public void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId) {
         try {
-            waitForCreateTransaction();
             createDatabaseDto.setCreationLocation(baseUrl);
             final DatabaseNotificationDto notification = DatabaseNotificationDto.builder()
                     .createDatabaseDto(createDatabaseDto)
                     .creationId(creationId)
                     .build();
-            final ResponseEntity<Void> response = replicationRestTemplate.exchange("/api/replication/database",
-                    HttpMethod.POST, new HttpEntity<>(notification), Void.class);
-            log.info("Sent database replication notification for database {}: {}", creationId,
-                    response.getStatusCode());
+            final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                    ReplicationNotificationType.DATABASE_CREATE, HttpMethod.POST, "/api/replication/database",
+                    notification, creationId);
+            dispatcher.dispatchAsync(entry.getId());
         } catch (Exception e) {
-            log.error("Failed to send database replication notification for database {}: {}", creationId,
+            log.error("Failed to enqueue database replication notification for database {}: {}", creationId,
                     e.getMessage(), e);
         }
     }
 
     @Override
-    @Async
     public void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas,
                                UUID creationId) {
         try {
-            waitForCreateTransaction();
             createTableDto.setCreationLocation(baseUrl);
             final TableNotificationDto notification = TableNotificationDto.builder()
                     .databaseId(databaseId)
@@ -71,43 +68,48 @@ public class ReplicationServiceImpl implements ReplicationService {
                     .createTableDto(createTableDto)
                     .replicas(replicas)
                     .build();
-            final ResponseEntity<Void> response = replicationRestTemplate.exchange("/api/replication/table",
-                    HttpMethod.POST, new HttpEntity<>(notification), Void.class);
-            log.info("Sent table replication notification for table {} in database {}: {}", creationId, databaseId,
-                    response.getStatusCode());
+            final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                    ReplicationNotificationType.TABLE_CREATE, HttpMethod.POST, "/api/replication/table",
+                    notification, creationId);
+            dispatcher.dispatchAsync(entry.getId());
         } catch (Exception e) {
-            log.error("Failed to send table replication notification for table {} in database {}: {}", creationId,
+            log.error("Failed to enqueue table replication notification for table {} in database {}: {}", creationId,
                     databaseId, e.getMessage(), e);
         }
     }
 
     @Override
-    @Async
     public void replicateView(View view) {
         try {
-            waitForCreateTransaction();
             final ViewNotificationDto notification = ViewNotificationDto.builder()
                     .databaseId(view.getDatabase().getId())
                     .creationId(view.getId())
                     .viewDto(metadataMapper.viewToViewDto(view))
                     .replicas(view.getDatabase().getReplicaUrls())
                     .build();
-            final ResponseEntity<Void> response = replicationRestTemplate.exchange("/api/replication/view",
-                    HttpMethod.POST, new HttpEntity<>(notification), Void.class);
-            log.info("Sent view replication notification for view {} in database {}: {}", view.getId(),
-                    view.getDatabase().getId(), response.getStatusCode());
+            final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                    ReplicationNotificationType.VIEW_CREATE, HttpMethod.POST, "/api/replication/view",
+                    notification, view.getId());
+            dispatcher.dispatchAsync(entry.getId());
         } catch (Exception e) {
-            log.error("Failed to send view replication notification for view {}: {}", view.getId(), e.getMessage(), e);
+            log.error("Failed to enqueue view replication notification for view {}: {}", view.getId(), e.getMessage(),
+                    e);
         }
     }
 
-    private void waitForCreateTransaction() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Replication notification interrupted", e);
-        }
+    @Override
+    public List<ReplicationNotificationOutbox> findOutboxEntries() {
+        return outboxService.findAll();
+    }
+
+    @Override
+    public int retryDueOutboxEntries() {
+        return dispatcher.dispatchDue();
+    }
+
+    @Override
+    public boolean retryOutboxEntry(UUID id) {
+        return dispatcher.dispatch(id);
     }
 
 }

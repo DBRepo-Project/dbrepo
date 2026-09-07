@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
+import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationOutbox;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,5 +17,11 @@ public interface ReplicationService {
                         UUID creationId);
 
     void replicateView(View view);
+
+    List<ReplicationNotificationOutbox> findOutboxEntries();
+
+    int retryDueOutboxEntries();
+
+    boolean retryOutboxEntry(UUID id);
 
 }
