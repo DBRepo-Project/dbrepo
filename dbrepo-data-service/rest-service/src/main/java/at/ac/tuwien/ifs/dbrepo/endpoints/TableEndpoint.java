@@ -995,6 +995,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());

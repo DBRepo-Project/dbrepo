@@ -1806,6 +1806,32 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
+    public void importDataset_secondarySite_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, StorageNotFoundException, MalformedException,
+            StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException {
+        final ImportDto request = ImportDto.builder()
+                .header(true)
+                .lineTermination("\\n")
+                .location("deadbeef")
+                .build();
+        final Database secondaryDatabase = secondaryReplicaDatabase();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(secondaryDatabase);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        });
+        verify(tableService, never()).importDataset(any(Database.class), any(Table.class), any(ImportDto.class));
+        verify(metadataServiceGateway, never()).updateTableStatistics(any(UUID.class), any(UUID.class), anyString());
+    }
+
+    @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_privateWriteAllForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, MetadataServiceException, StorageNotFoundException,
