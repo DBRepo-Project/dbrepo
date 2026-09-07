@@ -63,6 +63,24 @@
                 persistent-hint />
             </v-col>
           </v-row>
+          <v-row dense>
+            <v-col>
+              <v-combobox
+                v-model="replicaUrls"
+                name="replicaUrls"
+                :variant="inputVariant"
+                :label="$t('pages.database.subpages.create.replication.label')"
+                :hint="$t('pages.database.subpages.create.replication.hint')"
+                persistent-hint
+                :placeholder="$t('pages.database.subpages.create.replication.placeholder')"
+                multiple
+                chips
+                closable-chips
+                clearable
+                :items="[]"
+                :rules="[v => validReplicaUrls(v) || $t('validation.url')]" />
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -98,6 +116,7 @@ export default {
       engine: null,
       draft: true,
       name: null,
+      replicaUrls: [],
       engines: [],
       visibilityOptions: [
         {
@@ -164,7 +183,14 @@ export default {
     create () {
       this.loading = true
       const databaseService = useDatabaseService()
-      databaseService.create({ name: this.name, container_id: this.engine.id, is_public: !this.draft, is_schema_public: !this.draft })
+      const replicaUrls = this.replicaUrls
+        .map(url => url.trim())
+        .filter(url => url.length > 0)
+      const payload = { name: this.name, container_id: this.engine.id, is_public: !this.draft, is_schema_public: !this.draft }
+      if (replicaUrls.length > 0) {
+        payload.replica_urls = replicaUrls
+      }
+      databaseService.create(payload)
         .then(async (database) => {
           await this.$router.push(`/database/${database.id}/info`)
           this.loading = false
@@ -181,6 +207,23 @@ export default {
     },
     compareContainerUtilization (container, other) {
       return Math.round(container.count / container.quota) < Math.round(other.count / other.quota)
+    },
+    validReplicaUrls (urls) {
+      if (!urls || urls.length === 0) {
+        return true
+      }
+      return urls.every(url => this.validReplicaUrl(url))
+    },
+    validReplicaUrl (value) {
+      if (!value || value.trim().length === 0) {
+        return false
+      }
+      try {
+        const url = new URL(value.trim())
+        return ['http:', 'https:'].includes(url.protocol)
+      } catch {
+        return false
+      }
     },
     notEmpty
   }

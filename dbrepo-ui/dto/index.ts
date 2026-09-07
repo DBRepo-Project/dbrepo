@@ -19,6 +19,8 @@ interface DatabaseDto {
   tables: TableDto[];
   views: ViewDto[];
   exchange_type: string | null;
+  replica_urls?: Record<string, string> | null;
+  creation_location?: string | null;
 }
 
 interface UploadResponseDto {
@@ -29,6 +31,8 @@ interface DatabaseCreateDto {
   name: string;
   container_id: string;
   is_public: boolean;
+  is_schema_public: boolean;
+  replica_urls?: string[];
 }
 
 interface hasReadAccessDatabaseAccessDto {
@@ -143,6 +147,8 @@ interface TableDto {
   data_length: number;
   max_data_length: number;
   avg_row_length: number;
+  replica_urls?: Record<string, string> | null;
+  creation_location?: string | null;
 }
 
 interface ForeignKeyDto {

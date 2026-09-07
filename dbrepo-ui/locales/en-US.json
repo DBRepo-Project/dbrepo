@@ -729,6 +729,11 @@
             "label": "Engine",
             "hint": "Required"
           },
+          "replication": {
+            "label": "Replica URLs",
+            "hint": "Optional target site API URLs",
+            "placeholder": "https://site-b.example"
+          },
           "submit": {
             "text": "Create"
           },
@@ -1613,6 +1618,7 @@
   "validation": {
     "required": "Required field",
     "integer": "Greater or equal to zero",
+    "url": "Must be a valid URL",
     "max-length": "Maximum length is: ",
     "day": "Invalid day",
     "min": "Value too small",
