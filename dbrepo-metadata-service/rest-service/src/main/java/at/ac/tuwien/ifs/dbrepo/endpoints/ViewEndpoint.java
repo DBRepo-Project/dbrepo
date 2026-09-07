@@ -97,6 +97,11 @@ public class ViewEndpoint extends RestEndpoint {
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Replicated view already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ViewBriefDto.class))}),
             @ApiResponse(responseCode = "201",
                     description = "Replicated view successfully",
                     content = {@Content(
@@ -121,15 +126,36 @@ public class ViewEndpoint extends RestEndpoint {
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException,
             MalformedException {
-        if (notification.getViewDto() == null) {
+        if (notification == null || notification.getViewDto() == null) {
             throw new MalformedException("Replication view payload is missing");
         }
+        if (notification.getCreationId() == null) {
+            throw new MalformedException("Replication view creation id is missing");
+        }
         final Database database = databaseService.findById(databaseId);
+        final View existing = findExistingReplicatedView(database, notification.getCreationId());
+        if (existing != null) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(metadataMapper.viewToViewBriefDto(existing));
+        }
+        if (notification.getViewDto().getId() == null) {
+            notification.getViewDto().setId(notification.getCreationId());
+        } else if (!notification.getCreationId().equals(notification.getViewDto().getId())) {
+            throw new MalformedException("Replication view id does not match creation id");
+        }
         final View view = viewService.createReplicated(database, AuthUtil.getUsername(principal),
                 notification.getViewDto());
         dashboardService.update(view.getDatabase());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.viewToViewBriefDto(view));
+    }
+
+    private View findExistingReplicatedView(Database database, UUID creationId) {
+        try {
+            return viewService.findById(database, creationId);
+        } catch (ViewNotFoundException e) {
+            return null;
+        }
     }
 
     @PostMapping
