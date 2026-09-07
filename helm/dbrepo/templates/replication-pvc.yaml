@@ -1,0 +1,22 @@
+{{- if and .Values.replicationservice.enabled .Values.replicationservice.persistence.enabled (not .Values.replicationservice.persistence.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: replication-service-outbox
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: replication-service
+    service: replication-service
+spec:
+  accessModes:
+    {{- range .Values.replicationservice.persistence.accessModes }}
+    - {{ . | quote }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.replicationservice.persistence.size | quote }}
+  {{- if .Values.replicationservice.persistence.storageClass }}
+  storageClassName: {{ .Values.replicationservice.persistence.storageClass | quote }}
+  {{- end }}
+{{- end }}

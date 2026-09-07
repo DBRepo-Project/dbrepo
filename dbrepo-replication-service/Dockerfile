@@ -19,8 +19,8 @@ LABEL org.opencontainers.image.source="https://github.com/DBRepo-Project/dbrepo"
 
 WORKDIR /app
 
-RUN mkdir -p /var/log/app/service/replication && \
-    chown -R 1001:1001 /var/log/app/service/replication
+RUN mkdir -p /var/log/app/service/replication /var/lib/dbrepo/replication && \
+    chown -R 1001:1001 /var/log/app/service/replication /var/lib/dbrepo/replication
 
 RUN adduser dbrepo --uid 1001 && \
     chown -R 1001:1001 /app

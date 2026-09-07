@@ -760,8 +760,33 @@ replicationservice:
   ##   limits:
   ##     cpu: 500m
   ##     memory: 1024Mi
+  outbox:
+    ## @param replicationservice.outbox.path File path for the durable replication retry outbox.
+    path: /var/lib/dbrepo/replication/outbox.json
+    ## @param replicationservice.outbox.retryDelayMs Scheduler delay in milliseconds for due outbox retries.
+    retryDelayMs: 30000
+    ## @param replicationservice.outbox.retryDelaySeconds Base retry backoff in seconds.
+    retryDelaySeconds: 30
+    ## @param replicationservice.outbox.maxRetryDelaySeconds Maximum retry backoff in seconds.
+    maxRetryDelaySeconds: 900
+    ## @param replicationservice.outbox.maxAttempts Maximum attempts before an outbox entry is marked failed.
+    maxAttempts: 20
+    ## @param replicationservice.outbox.batchSize Maximum due entries retried per scheduler run.
+    batchSize: 25
+  persistence:
+    ## @param replicationservice.persistence.enabled Enable persistent storage for the replication outbox.
+    enabled: true
+    ## @param replicationservice.persistence.existingClaim Existing PersistentVolumeClaim for the replication outbox.
+    existingClaim: ""
+    ## @param replicationservice.persistence.storageClass Storage class for the replication outbox PersistentVolumeClaim.
+    storageClass: ""
+    ## @param replicationservice.persistence.accessModes Access modes for the replication outbox PersistentVolumeClaim.
+    accessModes:
+      - ReadWriteOnce
+    ## @param replicationservice.persistence.size Size of the replication outbox PersistentVolumeClaim.
+    size: 1Gi
   ## @param replicationservice.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
 
 ## @section Search Service
 

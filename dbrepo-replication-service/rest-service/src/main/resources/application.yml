@@ -43,3 +43,12 @@ dbrepo:
     username: "${SYSTEM_USERNAME:admin}"
     password: "${SYSTEM_PASSWORD:admin}"
   baseUrl: "${BASE_URL:http://localhost}"
+  replication:
+    outbox:
+      enabled: "${REPLICATION_OUTBOX_ENABLED:true}"
+      path: "${REPLICATION_OUTBOX_PATH:/var/lib/dbrepo/replication/outbox.json}"
+      retryDelayMs: "${REPLICATION_OUTBOX_RETRY_DELAY_MS:30000}"
+      retryDelaySeconds: "${REPLICATION_OUTBOX_RETRY_DELAY_SECONDS:30}"
+      maxRetryDelaySeconds: "${REPLICATION_OUTBOX_MAX_RETRY_DELAY_SECONDS:900}"
+      maxAttempts: "${REPLICATION_OUTBOX_MAX_ATTEMPTS:20}"
+      batchSize: "${REPLICATION_OUTBOX_BATCH_SIZE:25}"
