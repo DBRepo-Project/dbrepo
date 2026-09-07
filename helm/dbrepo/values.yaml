@@ -614,6 +614,19 @@ metadataservice:
       accessKeyId: seaweedfsuser
       ## @param metadataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
       secretAccessKey: seaweedfsuser
+  notificationOutbox:
+    ## @param metadataservice.notificationOutbox.enabled Enable metadata replication notification retries.
+    enabled: true
+    ## @param metadataservice.notificationOutbox.retryDelayMs Scheduler delay in milliseconds for due replication notification retries.
+    retryDelayMs: 30000
+    ## @param metadataservice.notificationOutbox.retryDelaySeconds Base retry backoff in seconds.
+    retryDelaySeconds: 30
+    ## @param metadataservice.notificationOutbox.maxRetryDelaySeconds Maximum retry backoff in seconds.
+    maxRetryDelaySeconds: 900
+    ## @param metadataservice.notificationOutbox.maxAttempts Maximum attempts before a notification outbox entry is marked failed.
+    maxAttempts: 20
+    ## @param metadataservice.notificationOutbox.batchSize Maximum due entries dispatched per scheduler run.
+    batchSize: 25
   ## @param metadataservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -702,6 +715,8 @@ dataservice:
       ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
       secretAccessKey: seaweedfsuser
   tupleOutbox:
+    ## @param dataservice.tupleOutbox.enabled Enable tuple replication notification retries.
+    enabled: true
     ## @param dataservice.tupleOutbox.retryDelayMs Scheduler delay in milliseconds for due tuple replication retries.
     retryDelayMs: 30000
     ## @param dataservice.tupleOutbox.retryDelaySeconds Base retry backoff in seconds.
