@@ -575,6 +575,45 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void getReplicationData_succeeds() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException,
+            TableMalformedException, DatabaseUnavailableException, PaginationException {
+        final ReplicationSynchronisationDataDto dto = ReplicationSynchronisationDataDto.builder()
+                .tuples(List.of(TupleWithTimestampsDto.builder()
+                        .data(Map.of("replication_key", "key-1"))
+                        .replicationKey("key-1")
+                        .insertedAt(Instant.now())
+                        .build()))
+                .build();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
+        when(tableService.getReplicationData(eq(DATABASE_3_CACHE), eq(TABLE_8_CACHE), eq(0L), eq(100L),
+                anyString()))
+                .thenReturn(dto);
+
+        /* test */
+        final ResponseEntity<ReplicationSynchronisationDataDto> response = tableEndpoint.getReplicationData(
+                DATABASE_3_ID, TABLE_8_ID, null, null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertSame(dto, response.getBody());
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
+    public void getReplicationData_noRole_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            tableEndpoint.getReplicationData(DATABASE_3_ID, TABLE_8_ID, null, null);
+        });
+    }
+
+    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insertRawTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,

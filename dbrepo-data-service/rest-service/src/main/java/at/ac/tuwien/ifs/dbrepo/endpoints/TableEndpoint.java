@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -69,6 +70,9 @@ public class TableEndpoint {
     private final MetadataServiceGateway metadataServiceGateway;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
@@ -454,6 +458,55 @@ public class TableEndpoint {
             if (requireRowEnd && timestamp.getRowEnd() == null) {
                 throw new TableMalformedException("Replication timestamp payload is missing rowEnd");
             }
+        }
+    }
+
+    @GetMapping("/{tableId}/data/replicate")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_data_replicate_export")
+    @Operation(summary = "Export replicated table data",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Exported replicated table data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ReplicationSynchronisationDataDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Replication export request is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service or data database",
+                    content = {@Content}),
+    })
+    public ResponseEntity<ReplicationSynchronisationDataDto> getReplicationData(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @NotNull @PathVariable("tableId") UUID tableId,
+            @RequestParam(required = false) Long page,
+            @RequestParam(required = false) Long size)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, MetadataServiceException, DatabaseNotFoundException,
+            PaginationException {
+        log.debug("endpoint export replicated table data, databaseId={}, tableId={}, page={}, size={}", databaseId,
+                tableId, page, size);
+        endpointValidator.validateDataParams(page, size);
+        if (page == null) {
+            page = 0L;
+        }
+        if (size == null) {
+            size = 100L;
+        }
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            return ResponseEntity.ok(tableService.getReplicationData(database, table, page, size, baseUrl));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
     }
 

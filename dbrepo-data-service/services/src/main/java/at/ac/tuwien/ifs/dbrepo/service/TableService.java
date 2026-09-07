@@ -192,6 +192,23 @@ public interface TableService {
             StorageNotFoundException;
 
     /**
+     * Pages current table tuples for replication bootstrap, including source-side versioning timestamps.
+     *
+     * @param database The data database object.
+     * @param table    The table object.
+     * @param page     The zero-based page number.
+     * @param size     The page size.
+     * @param siteUrl  The source site URL.
+     * @return The replication bootstrap data page.
+     * @throws SQLException            Failed to connect to the database.
+     * @throws QueryMalformedException The select query is malformed, likely due to a bug in the application.
+     * @throws TableMalformedException The table is missing the replication key column.
+     */
+    ReplicationSynchronisationDataDto getReplicationData(Database database, Table table, long page, long size,
+                                                         String siteUrl)
+            throws SQLException, QueryMalformedException, TableMalformedException;
+
+    /**
      * Get table schemas from the information_schema in the data database.
      *
      * @param database The data database  object.

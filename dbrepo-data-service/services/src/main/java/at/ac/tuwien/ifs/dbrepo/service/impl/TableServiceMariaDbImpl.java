@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
@@ -636,6 +637,67 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_get_replication_data", description = "Time spent paging table data for replication bootstrap", histogram = true)
+    public ReplicationSynchronisationDataDto getReplicationData(Database database, Table table, long page, long size,
+                                                               String siteUrl)
+            throws SQLException, QueryMalformedException, TableMalformedException {
+        requireReplicationKeyColumn(table);
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            final long start = System.currentTimeMillis();
+            final List<String> columns = table.getColumns()
+                    .stream()
+                    .map(Column::getInternalName)
+                    .distinct()
+                    .toList();
+            final PreparedStatement statement = connection.prepareStatement(replicationDataSelectQuery(database,
+                    table, columns));
+            statement.setLong(1, size);
+            statement.setLong(2, page * size);
+            final ResultSet resultSet = statement.executeQuery();
+            final List<TupleWithTimestampsDto> tuples = new ArrayList<>();
+            final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
+            while (resultSet.next()) {
+                final TupleWithTimestampsDto tuple = tupleWithTimestamps(resultSet, columns);
+                if (tuple.getReplicationKey() == null || tuple.getReplicationKey().isBlank()) {
+                    throw new QueryMalformedException("Replication data contains tuple without replication_key");
+                }
+                tuples.add(tuple);
+                timestamps.add(TupleReplicationTimestampDto.builder()
+                        .siteUrl(normalizeSiteUrl(siteUrl))
+                        .replicationId(tuple.getReplicationKey())
+                        .databaseId(database.getId())
+                        .tableId(table.getId())
+                        .rowStart(tuple.getInsertedAt())
+                        .rowEnd(tuple.getDeletedAt())
+                        .build());
+            }
+            log.atDebug()
+                    .setMessage("get replication data: " + table.getInternalName() + "."
+                            + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, "table_get_replication_data")
+                    .log();
+            connection.commit();
+            log.info("Found {} replication tuple(s) in table {}.{}", tuples.size(), database.getInternalName(),
+                    table.getInternalName());
+            return ReplicationSynchronisationDataDto.builder()
+                    .tuples(tuples)
+                    .replicationTimestamps(timestamps)
+                    .build();
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to find replication data from table {}.{}: {}", database.getInternalName(),
+                    table.getInternalName(), e.getMessage());
+            throw new QueryMalformedException("Failed to find replication data from table "
+                    + database.getInternalName() + "." + table.getInternalName() + ": " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
     public List<TableDto> explore(Database database) throws SQLException, TableNotFoundException,
             DatabaseMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -817,6 +879,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         return values;
     }
 
+    private void requireReplicationKeyColumn(Table table) throws TableMalformedException {
+        if (!hasColumn(table, "replication_key")) {
+            throw new TableMalformedException("Table is missing the replication_key column");
+        }
+    }
+
     private TupleWithTimestampsDto selectTupleWithTimestamps(Connection connection, Database database, Table table,
                                                             Map<String, Object> keys)
             throws SQLException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
@@ -865,6 +933,25 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         if (!resultSet.next()) {
             throw new QueryMalformedException("Failed to select tuple with timestamps");
         }
+        return tupleWithTimestamps(resultSet, columns);
+    }
+
+    private String replicationDataSelectQuery(Database database, Table table, List<String> columns) {
+        final StringBuilder query = new StringBuilder("SELECT ");
+        final int[] columnIndex = new int[]{0};
+        columns.forEach(column -> query.append(columnIndex[0]++ == 0 ? "" : ", ")
+                .append("`")
+                .append(column)
+                .append("`"));
+        query.append(", ROW_START AS inserted_at, ROW_END AS deleted_at FROM `")
+                .append(database.getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("` ORDER BY `replication_key` ASC LIMIT ? OFFSET ?;");
+        return query.toString();
+    }
+
+    private TupleWithTimestampsDto tupleWithTimestamps(ResultSet resultSet, List<String> columns) throws SQLException {
         final Map<String, Object> data = new LinkedHashMap<>();
         for (String column : columns) {
             data.put(column, resultSet.getObject(column));
@@ -877,6 +964,17 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 .deletedAt(deletedAt)
                 .replicationKey(data.get("replication_key") != null ? String.valueOf(data.get("replication_key")) : null)
                 .build();
+    }
+
+    private String normalizeSiteUrl(String siteUrl) {
+        if (siteUrl == null) {
+            return null;
+        }
+        String normalized = siteUrl.trim();
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 
     private Instant timestampToInstant(Object value) {
