@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
@@ -17,6 +18,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
+import at.ac.tuwien.ifs.dbrepo.service.DataSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxEntry;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxOperationType;
@@ -247,6 +249,42 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
+    public DataSynchronisationResult synchroniseData(UUID databaseId, UUID tableId, int pageSize) {
+        if (pageSize <= 0) {
+            throw new IllegalArgumentException("Page size must be positive");
+        }
+        final DatabaseDto database = fetchDatabase(databaseId);
+        final TableDto table = fetchTable(databaseId, tableId);
+        int page = 0;
+        int pages = 0;
+        int tuples = 0;
+        int replicaWrites = 0;
+        while (true) {
+            final ReplicationSynchronisationDataDto data = fetchReplicationData(databaseId, tableId, page, pageSize);
+            final List<TupleWithTimestampsDto> pageTuples = data.getTuples() == null ? List.of() : data.getTuples();
+            if (pageTuples.isEmpty()) {
+                break;
+            }
+            pages++;
+            tuples += pageTuples.size();
+            for (TupleWithTimestampsDto tuple : pageTuples) {
+                replicaWrites += replicateData(DataReplicationDto.builder()
+                        .database(database)
+                        .table(table)
+                        .tuple(tuple)
+                        .build(), HttpMethod.POST);
+            }
+            if (pageTuples.size() < pageSize) {
+                break;
+            }
+            page++;
+        }
+        log.info("Synchronized {} tuple(s) from {} page(s) for table {}.{} to {} replica(s)", tuples, pages,
+                databaseId, tableId, replicaWrites);
+        return new DataSynchronisationResult(pages, tuples, replicaWrites);
+    }
+
+    @Override
     public List<ReplicationOutboxEntry> findOutboxEntries() {
         return outboxService.findAll();
     }
@@ -374,6 +412,27 @@ public class ReplicationServiceImpl implements ReplicationService {
             throw new IllegalStateException(operation + " returned " + response.getStatusCode());
         }
         return response.getBody();
+    }
+
+    private DatabaseDto fetchDatabase(UUID databaseId) {
+        final ResponseEntity<DatabaseDto> response = metadataServiceRestTemplate.exchange("/api/v1/database/"
+                + databaseId, HttpMethod.GET, HttpEntity.EMPTY, DatabaseDto.class);
+        return requireBody(response, "database lookup");
+    }
+
+    private TableDto fetchTable(UUID databaseId, UUID tableId) {
+        final ResponseEntity<TableDto> response = metadataServiceRestTemplate.exchange("/api/v1/database/"
+                + databaseId + "/table/" + tableId, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
+        return requireBody(response, "table lookup");
+    }
+
+    private ReplicationSynchronisationDataDto fetchReplicationData(UUID databaseId, UUID tableId, int page,
+                                                                   int pageSize) {
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId
+                + "/data/replicate?page=" + page + "&size=" + pageSize;
+        final ResponseEntity<ReplicationSynchronisationDataDto> response = dataServiceRestTemplate.exchange(path,
+                HttpMethod.GET, HttpEntity.EMPTY, ReplicationSynchronisationDataDto.class);
+        return requireBody(response, "replication data export");
     }
 
     private TupleWithTimestampsDto replicateRemoteData(String replicaUrl, UUID remoteDatabaseId, UUID remoteTableId,

@@ -20,6 +20,8 @@ public interface ReplicationService {
 
     int replicateData(DataReplicationDto request, HttpMethod method);
 
+    DataSynchronisationResult synchroniseData(UUID databaseId, UUID tableId, int pageSize);
+
     List<ReplicationOutboxEntry> findOutboxEntries();
 
     int retryDueOutboxEntries();
