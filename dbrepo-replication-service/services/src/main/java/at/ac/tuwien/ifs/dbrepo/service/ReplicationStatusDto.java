@@ -5,5 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record ReplicationStatusDto(
         @JsonProperty("health") ReplicationHealthDto health,
-        @JsonProperty("outbox") ReplicationOutboxSummaryDto outbox) {
+        @JsonProperty("outbox") ReplicationOutboxSummaryDto outbox,
+        @JsonProperty("outboxes") ReplicationOutboxStatusDto outboxes) {
 }

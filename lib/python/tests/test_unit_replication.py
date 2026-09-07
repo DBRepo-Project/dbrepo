@@ -37,6 +37,31 @@ class ReplicationUnitTest(unittest.TestCase):
                 'succeeded': 2,
                 'oldest_pending_at': '2026-09-07T10:00:00Z',
                 'next_attempt_at': '2026-09-07T10:05:00Z'
+            },
+            'outboxes': {
+                'replication_service': {
+                    'total': 3,
+                    'pending': 1,
+                    'failed': 0,
+                    'succeeded': 2,
+                    'oldest_pending_at': '2026-09-07T10:00:00Z',
+                    'next_attempt_at': '2026-09-07T10:05:00Z',
+                    'available': True
+                },
+                'metadata_service': {
+                    'total': 0,
+                    'pending': 0,
+                    'failed': 0,
+                    'succeeded': 0,
+                    'available': True
+                },
+                'data_service': {
+                    'total': 0,
+                    'pending': 0,
+                    'failed': 0,
+                    'succeeded': 0,
+                    'available': True
+                }
             }
         }
         with requests_mock.Mocker() as mock:
@@ -47,6 +72,7 @@ class ReplicationUnitTest(unittest.TestCase):
             self.assertEqual('UP', response.health.status)
             self.assertEqual('metadata-service', response.health.metadata_service.name)
             self.assertEqual(1, response.outbox.pending)
+            self.assertEqual(0, response.outboxes.metadata_service.total)
             self.assertEqual(2026, response.outbox.oldest_pending_at.year)
 
     def test_get_replication_status_requires_authentication(self):

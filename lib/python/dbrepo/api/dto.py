@@ -100,11 +100,20 @@ class ReplicationOutboxSummary(BaseModel):
     succeeded: int
     oldest_pending_at: Optional[datetime.datetime] = None
     next_attempt_at: Optional[datetime.datetime] = None
+    available: Optional[bool] = None
+    error: Optional[str] = None
+
+
+class ReplicationOutboxStatus(BaseModel):
+    replication_service: ReplicationOutboxSummary
+    metadata_service: ReplicationOutboxSummary
+    data_service: ReplicationOutboxSummary
 
 
 class ReplicationStatus(BaseModel):
     health: ReplicationHealth
     outbox: ReplicationOutboxSummary
+    outboxes: Optional[ReplicationOutboxStatus] = None
 
 
 class MetadataReplicationOutboxEntry(BaseModel):
