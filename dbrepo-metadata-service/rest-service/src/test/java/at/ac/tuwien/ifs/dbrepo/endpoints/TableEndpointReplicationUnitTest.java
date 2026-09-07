@@ -1,10 +1,12 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.LocalTableIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -28,9 +30,12 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -103,5 +108,62 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
                 .stream()
                 .anyMatch(unique -> unique.equals(List.of("replication_key"))));
         verify(replicationService).replicateTable(eq(request), eq(DATABASE_3_ID), anyList(), eq(TABLE_1.getId()));
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"system"})
+    public void replicate_existingReplica_returnsExistingTable() throws UserNotFoundException,
+            SearchServiceException, NotAllowedException, SemanticEntityNotFoundException, TableNotFoundException,
+            DataServiceConnectionException, MalformedException, DataServiceException, DatabaseNotFoundException,
+            AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException,
+            DashboardServiceException, DashboardServiceConnectionException {
+        final UUID creationId = UUID.randomUUID();
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("ID")
+                        .type(ColumnTypeDto.BIGINT)
+                        .nullAllowed(false)
+                        .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .uniques(List.of())
+                        .build())
+                .creationLocation("http://local.test")
+                .build();
+        final TableNotificationDto notification = TableNotificationDto.builder()
+                .creationId(creationId)
+                .createTableDto(request)
+                .build();
+
+        when(databaseService.findById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3);
+        when(tableService.findLocalTableIdByReplicaTableId(creationId))
+                .thenReturn(new LocalTableIdDto(TABLE_1_ID, creationId));
+        when(tableService.findById(DATABASE_3, TABLE_1_ID))
+                .thenReturn(TABLE_1);
+
+        final ResponseEntity<TableBriefDto> response = tableEndpoint.replicate(DATABASE_3_ID, notification,
+                USER_1_PRINCIPAL);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(TABLE_1_ID, response.getBody().getId());
+        verify(tableService, never()).createTable(eq(DATABASE_3), any(CreateTableDto.class), eq(USER_1_PRINCIPAL),
+                eq(creationId));
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"system"})
+    public void replicate_missingCreationId_fails() throws DatabaseNotFoundException {
+        final TableNotificationDto notification = TableNotificationDto.builder()
+                .createTableDto(CreateTableDto.builder()
+                        .name("Some Table")
+                        .build())
+                .build();
+
+        assertThrows(MalformedException.class, () -> {
+            tableEndpoint.replicate(DATABASE_3_ID, notification, USER_1_PRINCIPAL);
+        });
+        verify(databaseService, never()).findById(DATABASE_3_ID);
     }
 }

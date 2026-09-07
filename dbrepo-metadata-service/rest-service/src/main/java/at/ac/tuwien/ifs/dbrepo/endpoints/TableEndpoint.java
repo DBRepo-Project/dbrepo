@@ -285,6 +285,11 @@ public class TableEndpoint extends RestEndpoint {
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Replicated table already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto.class))}),
             @ApiResponse(responseCode = "201",
                     description = "Replicated table successfully",
                     content = {@Content(
@@ -317,15 +322,32 @@ public class TableEndpoint extends RestEndpoint {
             TableExistsException, SearchServiceException, SearchServiceConnectionException,
             OntologyNotFoundException, SemanticEntityNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {
-        if (notification.getCreateTableDto() == null) {
+        if (notification == null || notification.getCreateTableDto() == null) {
             throw new MalformedException("Replication table payload is missing");
         }
+        if (notification.getCreationId() == null) {
+            throw new MalformedException("Replication table creation id is missing");
+        }
         final Database database = databaseService.findById(databaseId);
+        final Table existing = findExistingReplicatedTable(database, notification.getCreationId());
+        if (existing != null) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(metadataMapper.tableToTableBriefDto(existing));
+        }
         final Table table = tableService.createTable(database, notification.getCreateTableDto(), principal,
                 notification.getCreationId());
         dashboardService.update(table.getDatabase());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.tableToTableBriefDto(table));
+    }
+
+    private Table findExistingReplicatedTable(Database database, UUID creationId) {
+        try {
+            final LocalTableIdDto localId = tableService.findLocalTableIdByReplicaTableId(creationId);
+            return tableService.findById(database, localId.getLocalTableId());
+        } catch (DatabaseNotFoundException | TableNotFoundException e) {
+            return null;
+        }
     }
 
     @PutMapping("/{tableId}")
