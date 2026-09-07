@@ -32,6 +32,11 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
         final TupleReplicationOutboxEntry entry = service.enqueue(database, table, HttpMethod.POST,
                 DataReplicationDto.builder().build());
 
+        final List<TupleReplicationOutboxEntry> entries = service.findAll(database);
+        assertEquals(1, entries.size());
+        assertEquals(entry.getId(), entries.get(0).getId());
+        assertEquals(TupleReplicationOutboxStatus.PENDING, entries.get(0).getStatus());
+
         final List<TupleReplicationOutboxEntry> claimed = service.claimDue(database, 10, Duration.ofMinutes(5));
         assertEquals(1, claimed.size());
         assertEquals(entry.getId(), claimed.get(0).getId());

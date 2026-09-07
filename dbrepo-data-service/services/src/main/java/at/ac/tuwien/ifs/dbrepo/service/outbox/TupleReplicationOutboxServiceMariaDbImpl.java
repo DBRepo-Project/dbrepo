@@ -84,6 +84,17 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
     }
 
     @Override
+    public List<TupleReplicationOutboxEntry> findAll(Database database) throws SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        try (Connection connection = dataSource.getConnection()) {
+            ensureTableExists(connection);
+            return findAll(connection);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
     public Optional<TupleReplicationOutboxEntry> claim(Database database, UUID id, Duration processingTimeout)
             throws SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -224,6 +235,22 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             }
         }
         return Optional.empty();
+    }
+
+    private List<TupleReplicationOutboxEntry> findAll(Connection connection) throws SQLException {
+        final String statement = """
+                SELECT %s
+                FROM tuple_replication_notification_outbox
+                ORDER BY created ASC
+                """.formatted(SELECT_COLUMNS);
+        final List<TupleReplicationOutboxEntry> entries = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                entries.add(map(resultSet));
+            }
+        }
+        return entries;
     }
 
     private List<TupleReplicationOutboxEntry> findDue(Connection connection, int limit, Instant now,

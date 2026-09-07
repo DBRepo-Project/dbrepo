@@ -16,6 +16,8 @@ public interface TupleReplicationOutboxService {
     TupleReplicationOutboxEntry enqueue(Database database, Table table, HttpMethod method, DataReplicationDto payload)
             throws SQLException;
 
+    List<TupleReplicationOutboxEntry> findAll(Database database) throws SQLException;
+
     Optional<TupleReplicationOutboxEntry> claim(Database database, UUID id, Duration processingTimeout)
             throws SQLException;
 

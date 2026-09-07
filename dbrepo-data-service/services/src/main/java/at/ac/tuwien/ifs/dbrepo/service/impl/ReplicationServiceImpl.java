@@ -18,8 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -47,6 +49,21 @@ public class ReplicationServiceImpl implements ReplicationService {
     @Override
     public void replicateTupleDelete(TupleWithTimestampsDto tuple, Database database, Table table) {
         send(tuple, database, table, HttpMethod.DELETE);
+    }
+
+    @Override
+    public List<TupleReplicationOutboxEntry> findOutboxEntries(Database database) throws SQLException {
+        return outboxService.findAll(database);
+    }
+
+    @Override
+    public int retryDueOutboxEntries(Database database) {
+        return dispatcher.dispatchDue(database);
+    }
+
+    @Override
+    public boolean retryOutboxEntry(Database database, UUID id) {
+        return dispatcher.dispatch(database, id);
     }
 
     private void send(TupleWithTimestampsDto tuple, Database database, Table table, HttpMethod method) {

@@ -71,7 +71,7 @@ public class TupleReplicationNotificationDispatcher {
         return sent;
     }
 
-    private int dispatchDue(Database database) {
+    public int dispatchDue(Database database) {
         int sent = 0;
         try {
             for (TupleReplicationOutboxEntry entry : outboxService.claimDue(database, batchSize,
