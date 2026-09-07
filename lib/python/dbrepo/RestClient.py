@@ -354,6 +354,33 @@ class RestClient:
             f'Failed to update database replication URL: response code: {response.status_code} is not '
             f'202 (ACCEPTED): {response.text}')
 
+    def find_local_database_id_by_replica_database_id(self, replica_database_id: str) -> LocalDatabaseId:
+        """
+        Find the local database id for a known replica database id.
+
+        :param replica_database_id: The replica database id.
+
+        :returns: The local and replica database id pair, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the replica database id is unknown.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/v1/database/replica/{replica_database_id}/local-id'
+        response = self._wrapper(method="get", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return LocalDatabaseId.model_validate(body)
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to find local database id: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to find local database id: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to find local database id: not found')
+        raise ResponseCodeError(f'Failed to find local database id: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
     def create_container(self, name: str, host: str, image_id: str, privileged_username: str, privileged_password: str,
                          port: int = None, ui_host: str = None, ui_port: int = None) -> Container:
         """
@@ -643,6 +670,34 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update table replication URL: response code: {response.status_code} is not '
             f'202 (ACCEPTED): {response.text}')
+
+    def find_local_table_id_by_replica_table_id(self, database_id: str, replica_table_id: str) -> LocalTableId:
+        """
+        Find the local table id for a known replica table id.
+
+        :param database_id: The local database id.
+        :param replica_table_id: The replica table id.
+
+        :returns: The local and replica table id pair, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the replica table id is unknown.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/v1/database/{database_id}/table/replica/{replica_table_id}/local-id'
+        response = self._wrapper(method="get", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return LocalTableId.model_validate(body)
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to find local table id: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to find local table id: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to find local table id: not found')
+        raise ResponseCodeError(f'Failed to find local table id: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
 
     def get_metadata_replication_outbox(self) -> List[MetadataReplicationOutboxEntry]:
         """

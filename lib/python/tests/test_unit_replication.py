@@ -182,6 +182,31 @@ class ReplicationUnitTest(unittest.TestCase):
                     replica_url='https://site-b.example',
                     replica_database_id='c47b41a3-6106-42c2-bfe5-2d5460987924')
 
+    def test_find_local_database_id_by_replica_database_id_succeeds(self):
+        local_database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        replica_database_id = 'c47b41a3-6106-42c2-bfe5-2d5460987924'
+        payload = {
+            'localDatabaseId': local_database_id,
+            'replicaDatabaseId': replica_database_id
+        }
+        with requests_mock.Mocker() as mock:
+            mock.get(f'/api/v1/database/replica/{replica_database_id}/local-id', json=payload)
+
+            response = RestClient(username="system", password="secret").find_local_database_id_by_replica_database_id(
+                replica_database_id=replica_database_id)
+
+            self.assertEqual(local_database_id, response.local_database_id)
+            self.assertEqual(replica_database_id, response.replica_database_id)
+
+    def test_find_local_database_id_by_replica_database_id_404_fails(self):
+        replica_database_id = 'c47b41a3-6106-42c2-bfe5-2d5460987924'
+        with requests_mock.Mocker() as mock:
+            mock.get(f'/api/v1/database/replica/{replica_database_id}/local-id', status_code=404)
+
+            with self.assertRaises(NotExistsError):
+                RestClient(username="system", password="secret").find_local_database_id_by_replica_database_id(
+                    replica_database_id=replica_database_id)
+
     def test_update_table_replication_url_succeeds(self):
         database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
         table_id = 'd39a0f4d-502c-47dc-b0f2-9089d8e9c935'
@@ -223,6 +248,35 @@ class ReplicationUnitTest(unittest.TestCase):
                     table_id=table_id,
                     replica_url='https://site-b.example',
                     replica_table_id='50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7')
+
+    def test_find_local_table_id_by_replica_table_id_succeeds(self):
+        database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        local_table_id = 'd39a0f4d-502c-47dc-b0f2-9089d8e9c935'
+        replica_table_id = '50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7'
+        payload = {
+            'localTableId': local_table_id,
+            'replicaTableId': replica_table_id
+        }
+        with requests_mock.Mocker() as mock:
+            mock.get(f'/api/v1/database/{database_id}/table/replica/{replica_table_id}/local-id', json=payload)
+
+            response = RestClient(username="system", password="secret").find_local_table_id_by_replica_table_id(
+                database_id=database_id,
+                replica_table_id=replica_table_id)
+
+            self.assertEqual(local_table_id, response.local_table_id)
+            self.assertEqual(replica_table_id, response.replica_table_id)
+
+    def test_find_local_table_id_by_replica_table_id_404_fails(self):
+        database_id = '6bd39359-b154-456d-b9c2-caa516a45732'
+        replica_table_id = '50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7'
+        with requests_mock.Mocker() as mock:
+            mock.get(f'/api/v1/database/{database_id}/table/replica/{replica_table_id}/local-id', status_code=404)
+
+            with self.assertRaises(NotExistsError):
+                RestClient(username="system", password="secret").find_local_table_id_by_replica_table_id(
+                    database_id=database_id,
+                    replica_table_id=replica_table_id)
 
     def test_get_metadata_replication_outbox_succeeds(self):
         entry_id = '50da1d4e-8ad9-4eb9-a1d1-43c2c5e582b7'

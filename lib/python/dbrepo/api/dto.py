@@ -53,6 +53,36 @@ class UpdateTableReplicationUrl(BaseModel):
     replica_table_id: str
 
 
+class LocalDatabaseId(BaseModel):
+    local_database_id: str
+    replica_database_id: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_fields(cls, data):
+        if isinstance(data, dict):
+            if "localDatabaseId" in data and "local_database_id" not in data:
+                data["local_database_id"] = data["localDatabaseId"]
+            if "replicaDatabaseId" in data and "replica_database_id" not in data:
+                data["replica_database_id"] = data["replicaDatabaseId"]
+        return data
+
+
+class LocalTableId(BaseModel):
+    local_table_id: str
+    replica_table_id: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_fields(cls, data):
+        if isinstance(data, dict):
+            if "localTableId" in data and "local_table_id" not in data:
+                data["local_table_id"] = data["localTableId"]
+            if "replicaTableId" in data and "replica_table_id" not in data:
+                data["replica_table_id"] = data["replicaTableId"]
+        return data
+
+
 class UpdateView(BaseModel):
     is_public: bool
     is_schema_public: bool
