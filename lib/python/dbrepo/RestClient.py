@@ -469,6 +469,94 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database schema: response code: {response.status_code} is not 200 (OK)')
 
+    def get_replication_status(self) -> ReplicationStatus:
+        """
+        Get replication dependency health and local outbox backlog.
+
+        :returns: The replication status, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/replication/status'
+        response = self._wrapper(method="get", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return ReplicationStatus.model_validate(body)
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to get replication status: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get replication status: not allowed')
+        raise ResponseCodeError(f'Failed to get replication status: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def synchronise_database_replication(self, database_id: str, page_size: int = 100) -> DatabaseSynchronisationResult:
+        """
+        Synchronise existing tuples for all replicated tables in a database to configured replica sites.
+
+        :param database_id: The database id.
+        :param page_size: The page size used when reading source tuples. Optional. Default: `100`.
+
+        :returns: The database synchronisation result, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises MalformedError: If the page size or request was rejected by the service.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database does not exist.
+        :raises ResponseCodeError: If something went wrong with the synchronisation.
+        """
+        url = f'/api/replication/data/synchronise/database/{database_id}'
+        response = self._wrapper(method="post", url=url, params=[('pageSize', page_size)], force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return DatabaseSynchronisationResult.model_validate(body)
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to synchronise database replication: {response.text}')
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to synchronise database replication: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to synchronise database replication: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to synchronise database replication: not found')
+        raise ResponseCodeError(
+            f'Failed to synchronise database replication: response code: {response.status_code} is not '
+            f'200 (OK): {response.text}')
+
+    def synchronise_table_replication(self, database_id: str, table_id: str,
+                                      page_size: int = 100) -> DataSynchronisationResult:
+        """
+        Synchronise existing table tuples to configured replica sites.
+
+        :param database_id: The database id.
+        :param table_id: The table id.
+        :param page_size: The page size used when reading source tuples. Optional. Default: `100`.
+
+        :returns: The table synchronisation result, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises MalformedError: If the page size or request was rejected by the service.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database or table does not exist.
+        :raises ResponseCodeError: If something went wrong with the synchronisation.
+        """
+        url = f'/api/replication/data/synchronise/database/{database_id}/table/{table_id}'
+        response = self._wrapper(method="post", url=url, params=[('pageSize', page_size)], force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return DataSynchronisationResult.model_validate(body)
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to synchronise table replication: {response.text}')
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to synchronise table replication: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to synchronise table replication: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to synchronise table replication: not found')
+        raise ResponseCodeError(
+            f'Failed to synchronise table replication: response code: {response.status_code} is not '
+            f'200 (OK): {response.text}')
+
     def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool, dataframe: DataFrame,
                      description: str = None, with_data: bool = True) -> TableBrief:
         """

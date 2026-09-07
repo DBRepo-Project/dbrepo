@@ -48,6 +48,65 @@ class UpdateView(BaseModel):
     is_schema_public: bool
 
 
+class DataSynchronisationResult(BaseModel):
+    status: str
+    pages: int
+    tuples: int
+    replica_writes: int
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_replica_writes(cls, data):
+        if isinstance(data, dict) and "replicaWrites" in data and "replica_writes" not in data:
+            data["replica_writes"] = data["replicaWrites"]
+        return data
+
+
+class DatabaseSynchronisationResult(BaseModel):
+    status: str
+    tables: int
+    pages: int
+    tuples: int
+    replica_writes: int
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_replica_writes(cls, data):
+        if isinstance(data, dict) and "replicaWrites" in data and "replica_writes" not in data:
+            data["replica_writes"] = data["replicaWrites"]
+        return data
+
+
+class ReplicationServiceHealth(BaseModel):
+    name: Optional[str] = None
+    status: str
+    http_status: Optional[int] = None
+    duration_ms: Optional[int] = None
+    error: Optional[str] = None
+
+
+class ReplicationHealth(BaseModel):
+    status: str
+    metadata_service: ReplicationServiceHealth
+    data_service: ReplicationServiceHealth
+    replication_service: ReplicationServiceHealth
+    broker: Optional[ReplicationServiceHealth] = None
+
+
+class ReplicationOutboxSummary(BaseModel):
+    total: int
+    pending: int
+    failed: int
+    succeeded: int
+    oldest_pending_at: Optional[datetime.datetime] = None
+    next_attempt_at: Optional[datetime.datetime] = None
+
+
+class ReplicationStatus(BaseModel):
+    health: ReplicationHealth
+    outbox: ReplicationOutboxSummary
+
+
 class CreateContainer(BaseModel):
     name: str
     host: str
