@@ -268,7 +268,7 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def create_database(self, name: str, container_id: str, is_public: bool = True,
-                        is_schema_public: bool = True) -> Database:
+                        is_schema_public: bool = True, replica_urls: List[str] = None) -> Database:
         """
         Create a databases in a container with the given container id.
 
@@ -276,6 +276,7 @@ class RestClient:
         :param container_id: The container id.
         :param is_public: The visibility of the data. If set to `True` the data will be publicly visible. Optional. Default: `True`.
         :param is_schema_public: The visibility of the schema metadata. If set to `True` the schema metadata will be publicly visible. Optional. Default: `True`.
+        :param replica_urls: Replica site API URLs that should receive replicated metadata and data. Optional.
 
         :returns: The database, if successful.
 
@@ -290,7 +291,8 @@ class RestClient:
         url = f'/api/v1/database'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateDatabase(name=name, container_id=container_id, is_public=is_public,
-                                                        is_schema_public=is_schema_public))
+                                                        is_schema_public=is_schema_public,
+                                                        replica_urls=replica_urls))
         if response.status_code == 201:
             body = response.json()
             return Database.model_validate(body)

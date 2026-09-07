@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from dataclasses import field
 from enum import Enum
-from typing import List, Optional, Annotated
+from typing import Dict, List, Optional, Annotated
 
 from pydantic import BaseModel, PlainSerializer, model_validator
 
@@ -40,6 +40,7 @@ class CreateDatabase(BaseModel):
     container_id: str
     is_public: bool
     is_schema_public: bool
+    replica_urls: Optional[List[str]] = None
 
 
 class UpdateView(BaseModel):
@@ -1192,6 +1193,8 @@ class Table(BaseModel):
     data_length: Optional[int] = None
     max_data_length: Optional[int] = None
     avg_row_length: Optional[int] = None
+    replica_urls: Optional[Dict[str, str]] = None
+    creation_location: Optional[str] = None
 
 
 class DatabaseBrief(BaseModel):
@@ -1227,6 +1230,8 @@ class Database(BaseModel):
     description: Optional[str] = None
     dashboard_uid: Optional[str] = None
     exchange_name: Optional[str] = None
+    replica_urls: Optional[Dict[str, str]] = None
+    creation_location: Optional[str] = None
 
 
 class Unique(BaseModel):

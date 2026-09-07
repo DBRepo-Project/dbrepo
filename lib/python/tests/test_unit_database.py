@@ -157,6 +157,46 @@ class DatabaseUnitTest(unittest.TestCase):
                                                                               is_public=True)
             self.assertEqual(response.name, 'test')
 
+    def test_create_database_with_replica_urls_succeeds(self):
+        exp = Database(
+            id="6bd39359-b154-456d-b9c2-caa516a45732",
+            name='test',
+            owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+            contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+            exchange_name='dbrepo',
+            internal_name='test_abcd',
+            is_public=True,
+            is_schema_public=True,
+            is_dashboard_enabled=True,
+            container=ContainerBrief(
+                id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
+                name='MariaDB Galera 11.1.3',
+                internal_name='mariadb',
+                image=ImageBrief(
+                    id="b104648b-54d2-4d72-9834-8e0e6d428b39",
+                    name='mariadb',
+                    version='11.2.2',
+                    default=True)
+            ),
+            replica_urls={
+                'https://site-b.example': 'c47b41a3-6106-42c2-bfe5-2d5460987924'
+            },
+            creation_location='https://site-a.example'
+        )
+        with requests_mock.Mocker() as mock:
+            mock.post('/api/v1/database', json=exp.model_dump(), status_code=201)
+
+            response = RestClient(username="a", password="b").create_database(
+                name='test',
+                container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
+                is_public=True,
+                replica_urls=['https://site-b.example']
+            )
+
+            self.assertEqual(['https://site-b.example'], mock.last_request.json()['replica_urls'])
+            self.assertEqual(exp.replica_urls, response.replica_urls)
+            self.assertEqual(exp.creation_location, response.creation_location)
+
     def test_create_database_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
