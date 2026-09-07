@@ -557,6 +557,159 @@ class RestClient:
             f'Failed to synchronise table replication: response code: {response.status_code} is not '
             f'200 (OK): {response.text}')
 
+    def get_metadata_replication_outbox(self) -> List[MetadataReplicationOutboxEntry]:
+        """
+        List persisted metadata replication notifications and their retry state.
+
+        :returns: List of metadata replication outbox entries, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/metadata/replication/outbox'
+        response = self._wrapper(method="get", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[MetadataReplicationOutboxEntry]).validate_python(body)
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to get metadata replication outbox: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get metadata replication outbox: not allowed')
+        raise ResponseCodeError(
+            f'Failed to get metadata replication outbox: response code: {response.status_code} is not '
+            f'200 (OK): {response.text}')
+
+    def retry_metadata_replication_outbox(self) -> int:
+        """
+        Retry all due metadata replication notifications.
+
+        :returns: Number of retried entries, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises ResponseCodeError: If something went wrong with the retry.
+        """
+        url = f'/api/metadata/replication/outbox/retry'
+        response = self._wrapper(method="post", url=url, force_auth=True)
+        if response.status_code == 200:
+            return int(response.json().get('retried'))
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to retry metadata replication outbox: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to retry metadata replication outbox: not allowed')
+        raise ResponseCodeError(
+            f'Failed to retry metadata replication outbox: response code: {response.status_code} is not '
+            f'200 (OK): {response.text}')
+
+    def retry_metadata_replication_outbox_entry(self, entry_id: str) -> bool:
+        """
+        Retry one metadata replication notification by id.
+
+        :param entry_id: The metadata replication outbox entry id.
+
+        :returns: Whether the entry was retried.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the outbox entry does not exist.
+        :raises ResponseCodeError: If something went wrong with the retry.
+        """
+        url = f'/api/metadata/replication/outbox/{entry_id}/retry'
+        response = self._wrapper(method="post", url=url, force_auth=True)
+        if response.status_code == 200:
+            return bool(response.json().get('retried'))
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to retry metadata replication outbox entry: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to retry metadata replication outbox entry: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to retry metadata replication outbox entry: not found')
+        raise ResponseCodeError(
+            f'Failed to retry metadata replication outbox entry: response code: {response.status_code} is not '
+            f'200 (OK): {response.text}')
+
+    def get_data_replication_outbox(self, database_id: str) -> List[DataReplicationOutboxEntry]:
+        """
+        List persisted tuple replication notifications and their retry state for a database.
+
+        :param database_id: The database id.
+
+        :returns: List of data replication outbox entries, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/v1/database/{database_id}/replication/outbox'
+        response = self._wrapper(method="get", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[DataReplicationOutboxEntry]).validate_python(body)
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to get data replication outbox: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get data replication outbox: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get data replication outbox: not found')
+        raise ResponseCodeError(f'Failed to get data replication outbox: response code: {response.status_code} '
+                                f'is not 200 (OK): {response.text}')
+
+    def retry_data_replication_outbox(self, database_id: str) -> int:
+        """
+        Retry all due tuple replication notifications for a database.
+
+        :param database_id: The database id.
+
+        :returns: Number of retried entries, if successful.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database does not exist.
+        :raises ResponseCodeError: If something went wrong with the retry.
+        """
+        url = f'/api/v1/database/{database_id}/replication/outbox/retry'
+        response = self._wrapper(method="post", url=url, force_auth=True)
+        if response.status_code == 200:
+            return int(response.json().get('retried'))
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to retry data replication outbox: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to retry data replication outbox: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to retry data replication outbox: not found')
+        raise ResponseCodeError(f'Failed to retry data replication outbox: response code: {response.status_code} '
+                                f'is not 200 (OK): {response.text}')
+
+    def retry_data_replication_outbox_entry(self, database_id: str, entry_id: str) -> bool:
+        """
+        Retry one tuple replication notification by id.
+
+        :param database_id: The database id.
+        :param entry_id: The data replication outbox entry id.
+
+        :returns: Whether the entry was retried.
+
+        :raises AuthenticationError: If authentication failed or is missing.
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the database or outbox entry does not exist.
+        :raises ResponseCodeError: If something went wrong with the retry.
+        """
+        url = f'/api/v1/database/{database_id}/replication/outbox/{entry_id}/retry'
+        response = self._wrapper(method="post", url=url, force_auth=True)
+        if response.status_code == 200:
+            return bool(response.json().get('retried'))
+        if response.status_code == 401:
+            raise AuthenticationError(f'Failed to retry data replication outbox entry: authentication failed')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to retry data replication outbox entry: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to retry data replication outbox entry: not found')
+        raise ResponseCodeError(
+            f'Failed to retry data replication outbox entry: response code: {response.status_code} is not '
+            f'200 (OK): {response.text}')
+
     def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool, dataframe: DataFrame,
                      description: str = None, with_data: bool = True) -> TableBrief:
         """

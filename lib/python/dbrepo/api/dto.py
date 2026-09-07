@@ -107,6 +107,70 @@ class ReplicationStatus(BaseModel):
     outbox: ReplicationOutboxSummary
 
 
+class MetadataReplicationOutboxEntry(BaseModel):
+    id: str
+    notification_type: str
+    status: str
+    http_method: str
+    path: str
+    aggregate_id: Optional[str] = None
+    payload: str
+    attempts: int
+    last_error: Optional[str] = None
+    created: Optional[datetime.datetime] = None
+    last_modified: Optional[datetime.datetime] = None
+    next_attempt_at: Optional[datetime.datetime] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_fields(cls, data):
+        if isinstance(data, dict):
+            field_map = {
+                "notificationType": "notification_type",
+                "httpMethod": "http_method",
+                "aggregateId": "aggregate_id",
+                "lastError": "last_error",
+                "lastModified": "last_modified",
+                "nextAttemptAt": "next_attempt_at",
+            }
+            for source, target in field_map.items():
+                if source in data and target not in data:
+                    data[target] = data[source]
+        return data
+
+
+class DataReplicationOutboxEntry(BaseModel):
+    id: str
+    database_id: str
+    table_id: str
+    http_method: str
+    payload_json: str
+    status: str
+    attempts: int
+    last_error: Optional[str] = None
+    created: Optional[datetime.datetime] = None
+    last_modified: Optional[datetime.datetime] = None
+    next_attempt_at: Optional[datetime.datetime] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_fields(cls, data):
+        if isinstance(data, dict):
+            field_map = {
+                "databaseId": "database_id",
+                "tableId": "table_id",
+                "httpMethod": "http_method",
+                "payloadJson": "payload_json",
+                "lastError": "last_error",
+                "lastModified": "last_modified",
+                "nextAttemptAt": "next_attempt_at",
+            }
+            for source, target in field_map.items():
+                if source in data and target not in data:
+                    data[target] = data[source]
+        return data
+
+
 class CreateContainer(BaseModel):
     name: str
     host: str
