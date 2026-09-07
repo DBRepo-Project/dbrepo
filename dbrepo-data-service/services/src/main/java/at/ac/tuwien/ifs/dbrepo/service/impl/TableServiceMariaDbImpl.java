@@ -503,6 +503,34 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     @Override
+    @Timed(value = "dbrepo_data_upsert_tuple_with_timestamps", description = "Time spent upserting a table tuple with replication timestamps", histogram = true)
+    public TupleWithTimestampsDto upsertTupleWithTimestamps(Database database, Table table, TupleDto data)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException {
+        log.trace("upsert tuple with timestamps: {}", data);
+        ensureReplicationKey(table, data);
+        final Object replicationKey = data.getData().get("replication_key");
+        final Optional<TupleWithTimestampsDto> existing = findCurrentTupleWithTimestamps(database, table,
+                replicationKeyLookup(replicationKey));
+        if (existing.isPresent()) {
+            return updateReplicationTupleWithTimestamps(database, table, data, existing.get());
+        }
+        try {
+            return createTupleWithTimestamps(database, table, data);
+        } catch (QueryMalformedException e) {
+            if (!isDuplicateKey(e)) {
+                throw e;
+            }
+            final Optional<TupleWithTimestampsDto> duplicate = findCurrentTupleWithTimestamps(database, table,
+                    replicationKeyLookup(replicationKey));
+            if (duplicate.isEmpty()) {
+                throw e;
+            }
+            return updateReplicationTupleWithTimestamps(database, table, data, duplicate.get());
+        }
+    }
+
+    @Override
     @Timed(value = "dbrepo_data_update_tuple", description = "Time spent updating a table tuple", histogram = true)
     public void updateTuple(Database database, Table table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
@@ -879,6 +907,65 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         return values;
     }
 
+    private Map<String, Object> replicationKeyLookup(Object replicationKey) {
+        final Map<String, Object> keys = new LinkedHashMap<>();
+        keys.put("replication_key", replicationKey);
+        return keys;
+    }
+
+    private TupleWithTimestampsDto updateReplicationTupleWithTimestamps(Database database, Table table, TupleDto data,
+                                                                       TupleWithTimestampsDto existing)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException {
+        final Map<String, Object> update = new LinkedHashMap<>(data.getData());
+        update.remove("replication_key");
+        if (update.isEmpty()) {
+            return existing;
+        }
+        return updateTupleWithTimestamps(database, table, TupleUpdateDto.builder()
+                .keys(replicationKeyLookup(data.getData().get("replication_key")))
+                .data(update)
+                .build());
+    }
+
+    private Optional<TupleWithTimestampsDto> findCurrentTupleWithTimestamps(Database database, Table table,
+                                                                           Map<String, Object> keys)
+            throws SQLException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            final Optional<TupleWithTimestampsDto> tuple = selectCurrentTupleWithTimestamps(connection, database, table,
+                    keys);
+            connection.commit();
+            return tuple;
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to select current tuple with timestamps from table {}.{}: {}",
+                    database.getInternalName(), table.getInternalName(), e.getMessage());
+            throw new QueryMalformedException("Failed to select current tuple with timestamps from table "
+                    + database.getInternalName() + "." + table.getInternalName() + ": " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    private boolean isDuplicateKey(Throwable e) {
+        Throwable current = e;
+        while (current != null) {
+            if (current instanceof SQLException sqlException
+                    && ("23000".equals(sqlException.getSQLState()) || sqlException.getErrorCode() == 1062)) {
+                return true;
+            }
+            final String message = current.getMessage();
+            if (message != null && message.toLowerCase().contains("duplicate")
+                    && message.toLowerCase().contains("key")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
     private void requireReplicationKeyColumn(Table table) throws TableMalformedException {
         if (!hasColumn(table, "replication_key")) {
             throw new TableMalformedException("Table is missing the replication_key column");
@@ -934,6 +1021,57 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             throw new QueryMalformedException("Failed to select tuple with timestamps");
         }
         return tupleWithTimestamps(resultSet, columns);
+    }
+
+    private Optional<TupleWithTimestampsDto> selectCurrentTupleWithTimestamps(Connection connection, Database database,
+                                                                             Table table, Map<String, Object> keys)
+            throws SQLException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
+        if (keys == null || keys.isEmpty()) {
+            throw new QueryMalformedException("Failed to select tuple with timestamps: no lookup keys provided");
+        }
+        final List<String> columns = table.getColumns()
+                .stream()
+                .map(Column::getInternalName)
+                .distinct()
+                .toList();
+        final StringBuilder query = new StringBuilder("SELECT ");
+        final int[] columnIndex = new int[]{0};
+        columns.forEach(column -> query.append(columnIndex[0]++ == 0 ? "" : ", ")
+                .append("`")
+                .append(column)
+                .append("`"));
+        query.append(", ROW_START AS inserted_at, ROW_END AS deleted_at FROM `")
+                .append(database.getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("` WHERE ");
+        final int[] keyIndex = new int[]{0};
+        keys.forEach((key, value) -> {
+            query.append(keyIndex[0]++ == 0 ? "" : " AND ")
+                    .append("`")
+                    .append(key)
+                    .append("`");
+            if (value == null) {
+                query.append(" IS NULL");
+            } else {
+                query.append(" = ?");
+            }
+        });
+        query.append(" ORDER BY ROW_START DESC LIMIT 1;");
+        final PreparedStatement statement = connection.prepareStatement(query.toString());
+        int bind = 1;
+        for (Map.Entry<String, Object> entry : keys.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+            mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                    getColumnType(table.getColumns(), entry.getKey()), bind++, entry.getKey(), entry.getValue());
+        }
+        final ResultSet resultSet = statement.executeQuery();
+        if (!resultSet.next()) {
+            return Optional.empty();
+        }
+        return Optional.of(tupleWithTimestamps(resultSet, columns));
     }
 
     private String replicationDataSelectQuery(Database database, Table table, List<String> columns) {

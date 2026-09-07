@@ -592,7 +592,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         try {
-            final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table,
+            final TupleWithTimestampsDto created = tableService.upsertTupleWithTimestamps(database, table,
                     tupleFromReplicationPayload(table, data));
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(created);

@@ -544,18 +544,35 @@ public class TableEndpoint extends RestEndpoint {
         final boolean hasReplicationKey = data.getColumns()
                 .stream()
                 .anyMatch(column -> "replication_key".equals(metadataMapper.nameToInternalName(column.getName())));
-        if (hasReplicationKey) {
+        if (!hasReplicationKey) {
+            final List<CreateTableColumnDto> columns = new ArrayList<>(data.getColumns());
+            columns.add(CreateTableColumnDto.builder()
+                    .name("replication_key")
+                    .type(ColumnTypeDto.VARCHAR)
+                    .size(36L)
+                    .nullAllowed(false)
+                    .description("Replication key")
+                    .build());
+            data.setColumns(columns);
+        }
+        ensureReplicationKeyUnique(data);
+    }
+
+    private void ensureReplicationKeyUnique(CreateTableDto data) {
+        if (data.getConstraints() == null) {
             return;
         }
-        final List<CreateTableColumnDto> columns = new ArrayList<>(data.getColumns());
-        columns.add(CreateTableColumnDto.builder()
-                .name("replication_key")
-                .type(ColumnTypeDto.VARCHAR)
-                .size(36L)
-                .nullAllowed(false)
-                .description("Replication key")
-                .build());
-        data.setColumns(columns);
+        final List<List<String>> uniques = data.getConstraints().getUniques() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(data.getConstraints().getUniques());
+        final boolean hasReplicationKeyUnique = uniques.stream()
+                .anyMatch(unique -> unique != null && unique.size() == 1 && unique.get(0) != null
+                        && "replication_key".equals(metadataMapper.nameToInternalName(unique.get(0))));
+        if (hasReplicationKeyUnique) {
+            return;
+        }
+        uniques.add(List.of("replication_key"));
+        data.getConstraints().setUniques(uniques);
     }
 
     private boolean hasReplicaLocations(Database database) {

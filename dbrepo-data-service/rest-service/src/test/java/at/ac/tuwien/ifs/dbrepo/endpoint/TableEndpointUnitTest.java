@@ -3,6 +3,9 @@ package at.ac.tuwien.ifs.dbrepo.endpoint;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -32,6 +35,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +108,22 @@ public class TableEndpointUnitTest extends BaseTest {
                 .subsets(DATABASE_3_CACHE.getSubsets())
                 .replicaUrls(Map.of("http://localhost", DATABASE_3_ID))
                 .creationLocation("http://primary.example")
+                .build();
+    }
+
+    private Table replicatedTable() {
+        final List<Column> columns = new ArrayList<>(TABLE_8_CACHE.getColumns());
+        columns.add(Column.builder()
+                .internalName("replication_key")
+                .columnType(ColumnType.VARCHAR)
+                .build());
+        return Table.builder()
+                .id(TABLE_8_CACHE.getId())
+                .internalName(TABLE_8_CACHE.getInternalName())
+                .isPublic(TABLE_8_CACHE.getIsPublic())
+                .isSchemaPublic(TABLE_8_CACHE.getIsSchemaPublic())
+                .ownedBy(TABLE_8_CACHE.getOwnedBy())
+                .columns(columns)
                 .build();
     }
 
@@ -611,6 +631,43 @@ public class TableEndpointUnitTest extends BaseTest {
         assertThrows(AccessDeniedException.class, () -> {
             tableEndpoint.getReplicationData(DATABASE_3_ID, TABLE_8_ID, null, null);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void insertTupleForReplication_upserts() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException,
+            TableMalformedException, StorageUnavailableException, StorageNotFoundException,
+            DatabaseUnavailableException {
+        final Table table = replicatedTable();
+        final DataReplicationDto request = DataReplicationDto.builder()
+                .tuple(TupleWithTimestampsDto.builder()
+                        .data(Map.of("replication_key", "key-1", COLUMN_8_1_INTERNAL_NAME, 1L))
+                        .replicationKey("key-1")
+                        .build())
+                .build();
+        final TupleWithTimestampsDto stored = TupleWithTimestampsDto.builder()
+                .data(Map.of("replication_key", "key-1", COLUMN_8_1_INTERNAL_NAME, 1L))
+                .replicationKey("key-1")
+                .insertedAt(Instant.now())
+                .build();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(table);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
+        when(tableService.upsertTupleWithTimestamps(eq(DATABASE_3_CACHE), eq(table), any(TupleDto.class)))
+                .thenReturn(stored);
+
+        /* test */
+        final ResponseEntity<TupleWithTimestampsDto> response = tableEndpoint.insertTupleForReplication(DATABASE_3_ID,
+                TABLE_8_ID, request);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertSame(stored, response.getBody());
+        verify(tableService).upsertTupleWithTimestamps(eq(DATABASE_3_CACHE), eq(table), any(TupleDto.class));
+        verify(tableService, never()).createTupleWithTimestamps(any(Database.class), any(Table.class),
+                any(TupleDto.class));
     }
 
     @Test

@@ -146,6 +146,22 @@ public interface TableService {
             StorageNotFoundException;
 
     /**
+     * Creates or updates a tuple by replication key and returns the stored tuple with timestamps.
+     *
+     * @param table The table.
+     * @param data  The tuple.
+     * @return The stored tuple with replication timestamps.
+     * @throws SQLException                Failed to connect to the database.
+     * @throws QueryMalformedException     The create, update, or read-back query is malformed.
+     * @throws TableMalformedException     The tuple is malformed and does not fit the table schema.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
+     */
+    TupleWithTimestampsDto upsertTupleWithTimestamps(Database database, Table table, TupleDto data)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException;
+
+    /**
      * Updates a tuple in a table.
      *
      * @param table The table.
