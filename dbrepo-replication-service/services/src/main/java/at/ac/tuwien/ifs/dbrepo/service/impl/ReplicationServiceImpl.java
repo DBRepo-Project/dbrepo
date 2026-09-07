@@ -19,6 +19,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.service.DataSynchronisationResult;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxEntry;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxOperationType;
@@ -249,18 +250,49 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public DataSynchronisationResult synchroniseData(UUID databaseId, UUID tableId, int pageSize) {
-        if (pageSize <= 0) {
-            throw new IllegalArgumentException("Page size must be positive");
+    public DatabaseSynchronisationResult synchroniseDatabase(UUID databaseId, int pageSize) {
+        requirePositivePageSize(pageSize);
+        final DatabaseDto database = fetchDatabase(databaseId);
+        if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
+            log.info("Skip database data synchronization: missing replica URLs for database {}", databaseId);
+            return new DatabaseSynchronisationResult(0, 0, 0, 0);
         }
+        final List<TableDto> tables = database.getTables() == null ? List.of() : database.getTables();
+        int tableCount = 0;
+        int pages = 0;
+        int tuples = 0;
+        int replicaWrites = 0;
+        for (TableDto table : tables) {
+            if (table == null || table.getId() == null || table.getReplicaUrls() == null
+                    || table.getReplicaUrls().isEmpty()) {
+                continue;
+            }
+            tableCount++;
+            final DataSynchronisationResult tableResult = synchroniseData(database, table, pageSize);
+            pages += tableResult.pages();
+            tuples += tableResult.tuples();
+            replicaWrites += tableResult.replicaWrites();
+        }
+        log.info("Synchronized {} replicated table(s), {} tuple(s) from {} page(s) for database {} to {} replica(s)",
+                tableCount, tuples, pages, databaseId, replicaWrites);
+        return new DatabaseSynchronisationResult(tableCount, pages, tuples, replicaWrites);
+    }
+
+    @Override
+    public DataSynchronisationResult synchroniseData(UUID databaseId, UUID tableId, int pageSize) {
+        requirePositivePageSize(pageSize);
         final DatabaseDto database = fetchDatabase(databaseId);
         final TableDto table = fetchTable(databaseId, tableId);
+        return synchroniseData(database, table, pageSize);
+    }
+
+    private DataSynchronisationResult synchroniseData(DatabaseDto database, TableDto table, int pageSize) {
         int page = 0;
         int pages = 0;
         int tuples = 0;
         int replicaWrites = 0;
         while (true) {
-            final ReplicationSynchronisationDataDto data = fetchReplicationData(databaseId, tableId, page, pageSize);
+            final ReplicationSynchronisationDataDto data = fetchReplicationData(database.getId(), table.getId(), page, pageSize);
             final List<TupleWithTimestampsDto> pageTuples = data.getTuples() == null ? List.of() : data.getTuples();
             if (pageTuples.isEmpty()) {
                 break;
@@ -280,8 +312,14 @@ public class ReplicationServiceImpl implements ReplicationService {
             page++;
         }
         log.info("Synchronized {} tuple(s) from {} page(s) for table {}.{} to {} replica(s)", tuples, pages,
-                databaseId, tableId, replicaWrites);
+                database.getId(), table.getId(), replicaWrites);
         return new DataSynchronisationResult(pages, tuples, replicaWrites);
+    }
+
+    private void requirePositivePageSize(int pageSize) {
+        if (pageSize <= 0) {
+            throw new IllegalArgumentException("Page size must be positive");
+        }
     }
 
     @Override

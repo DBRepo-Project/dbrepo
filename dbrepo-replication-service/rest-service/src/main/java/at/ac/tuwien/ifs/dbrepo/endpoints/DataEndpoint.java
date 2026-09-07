@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.service.DataSynchronisationResult;
+import at.ac.tuwien.ifs.dbrepo.service.DatabaseSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,6 +66,27 @@ public class DataEndpoint {
     public ResponseEntity<Map<String, Object>> replicateDelete(@Valid @RequestBody DataReplicationDto request) {
         final int replicas = replicationService.replicateData(request, HttpMethod.DELETE);
         return ResponseEntity.ok(Map.of("status", "accepted", "replicas", replicas));
+    }
+
+    @PostMapping("/synchronise/database/{databaseId}")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_replication_database_data_synchronise")
+    @Operation(summary = "Synchronise replicated database data",
+            description = "Synchronises existing tuples for all replicated tables in a database to configured replica sites.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    public ResponseEntity<Map<String, Object>> synchroniseDatabase(@PathVariable("databaseId") UUID databaseId,
+                                                                   @RequestParam(defaultValue = "100") int pageSize) {
+        if (pageSize <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page size must be positive");
+        }
+        final DatabaseSynchronisationResult result = replicationService.synchroniseDatabase(databaseId, pageSize);
+        return ResponseEntity.ok(Map.of(
+                "status", "completed",
+                "tables", result.tables(),
+                "pages", result.pages(),
+                "tuples", result.tuples(),
+                "replicaWrites", result.replicaWrites()));
     }
 
     @PostMapping("/synchronise/database/{databaseId}/table/{tableId}")
