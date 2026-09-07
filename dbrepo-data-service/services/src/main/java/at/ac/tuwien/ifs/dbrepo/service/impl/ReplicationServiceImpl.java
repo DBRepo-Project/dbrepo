@@ -11,13 +11,12 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
+import at.ac.tuwien.ifs.dbrepo.service.TupleReplicationNotificationDispatcher;
+import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxEntry;
+import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -26,10 +25,13 @@ import java.util.List;
 @Service
 public class ReplicationServiceImpl implements ReplicationService {
 
-    private final RestTemplate replicationRestTemplate;
+    private final TupleReplicationOutboxService outboxService;
+    private final TupleReplicationNotificationDispatcher dispatcher;
 
-    public ReplicationServiceImpl(@Qualifier("replicationRestTemplate") RestTemplate replicationRestTemplate) {
-        this.replicationRestTemplate = replicationRestTemplate;
+    public ReplicationServiceImpl(TupleReplicationOutboxService outboxService,
+                                  TupleReplicationNotificationDispatcher dispatcher) {
+        this.outboxService = outboxService;
+        this.dispatcher = dispatcher;
     }
 
     @Override
@@ -59,12 +61,10 @@ public class ReplicationServiceImpl implements ReplicationService {
                     .database(toDatabaseDto(database))
                     .table(toTableDto(database, table))
                     .build();
-            final ResponseEntity<Void> response = replicationRestTemplate.exchange("/api/replication/data",
-                    method, new HttpEntity<>(request), Void.class);
-            log.info("Sent {} tuple replication for {}.{} key {}: {}", method, database.getInternalName(),
-                    table.getInternalName(), tuple.getReplicationKey(), response.getStatusCode());
+            final TupleReplicationOutboxEntry entry = outboxService.enqueue(database, table, method, request);
+            dispatcher.dispatchAsync(database, entry.getId());
         } catch (Exception e) {
-            log.error("Failed to send {} tuple replication for {}.{} key {}: {}", method,
+            log.error("Failed to enqueue {} tuple replication for {}.{} key {}: {}", method,
                     database.getInternalName(), table.getInternalName(), tuple.getReplicationKey(), e.getMessage(),
                     e);
         }

@@ -113,6 +113,15 @@ dbrepo:
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   baseUrl: "${BASE_URL:http://localhost}"
+  replication:
+    tupleOutbox:
+      enabled: "${TUPLE_REPLICATION_OUTBOX_ENABLED:true}"
+      retryDelayMs: "${TUPLE_REPLICATION_OUTBOX_RETRY_DELAY_MS:30000}"
+      retryDelaySeconds: "${TUPLE_REPLICATION_OUTBOX_RETRY_DELAY_SECONDS:30}"
+      maxRetryDelaySeconds: "${TUPLE_REPLICATION_OUTBOX_MAX_RETRY_DELAY_SECONDS:900}"
+      maxAttempts: "${TUPLE_REPLICATION_OUTBOX_MAX_ATTEMPTS:20}"
+      batchSize: "${TUPLE_REPLICATION_OUTBOX_BATCH_SIZE:25}"
+      processingTimeoutSeconds: "${TUPLE_REPLICATION_OUTBOX_PROCESSING_TIMEOUT_SECONDS:300}"
   spark:
     hadoop:
       fs:

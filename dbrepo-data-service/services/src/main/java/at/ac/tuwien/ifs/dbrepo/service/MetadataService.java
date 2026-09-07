@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface MetadataService {
@@ -18,6 +19,9 @@ public interface MetadataService {
      * @throws MetadataServiceException   The metadata service could not process the request.
      */
     Database getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException;
+
+    List<Database> getDatabases() throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**

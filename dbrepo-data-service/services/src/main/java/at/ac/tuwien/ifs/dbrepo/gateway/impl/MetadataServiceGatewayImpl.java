@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.ContainerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.container.image.ImageDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
@@ -15,6 +16,7 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -147,6 +149,34 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         database.getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
         database.getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         return database;
+    }
+
+    @Override
+    public List<DatabaseBriefDto> getDatabases() throws RemoteUnavailableException, MetadataServiceException {
+        final ResponseEntity<List<DatabaseBriefDto>> response;
+        final String url = "/api/v1/database";
+        log.debug("get databases from metadata service: {}", url);
+        try {
+            response = metadataServiceRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
+                    new ParameterizedTypeReference<>() {
+                    });
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to list databases: {}", e.getMessage());
+            throw new RemoteUnavailableException("Failed to list databases: " + e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            log.error("Failed to list databases: {}", e.getMessage());
+            throw new MetadataServiceException("Failed to list databases: " + e.getMessage(), e);
+        }
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to list databases: service responded unsuccessful: {}", response.getStatusCode());
+            throw new MetadataServiceException("Failed to list databases: service responded unsuccessful: "
+                    + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to list databases: body is empty");
+            throw new MetadataServiceException("Failed to list databases: body is empty");
+        }
+        return response.getBody();
     }
 
     @Override

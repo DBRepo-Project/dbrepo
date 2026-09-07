@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,6 +58,16 @@ public class MetadataServiceImpl implements MetadataService {
         final Database database = metadataServiceGateway.getDatabaseById(id);
         database.setExp(cacheConfig.getTtl());
         return databaseRepository.save(database);
+    }
+
+    @Override
+    public List<Database> getDatabases() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException {
+        final List<Database> databases = new ArrayList<>();
+        for (var database : metadataServiceGateway.getDatabases()) {
+            databases.add(getDatabase(database.getId()));
+        }
+        return databases;
     }
 
     @Override

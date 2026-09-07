@@ -4,8 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
+@EnableAsync
+@EnableScheduling
 @SpringBootApplication
 @EnableRedisRepositories(basePackages = {"at.ac.tuwien.ifs.dbrepo.cache"})
 public class DataServiceApplication {

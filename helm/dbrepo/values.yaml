@@ -701,6 +701,19 @@ dataservice:
       accessKeyId: seaweedfsuser
       ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint secret access key.
       secretAccessKey: seaweedfsuser
+  tupleOutbox:
+    ## @param dataservice.tupleOutbox.retryDelayMs Scheduler delay in milliseconds for due tuple replication retries.
+    retryDelayMs: 30000
+    ## @param dataservice.tupleOutbox.retryDelaySeconds Base retry backoff in seconds.
+    retryDelaySeconds: 30
+    ## @param dataservice.tupleOutbox.maxRetryDelaySeconds Maximum retry backoff in seconds.
+    maxRetryDelaySeconds: 900
+    ## @param dataservice.tupleOutbox.maxAttempts Maximum attempts before a tuple outbox entry is marked failed.
+    maxAttempts: 20
+    ## @param dataservice.tupleOutbox.batchSize Maximum due entries claimed per database and scheduler run.
+    batchSize: 25
+    ## @param dataservice.tupleOutbox.processingTimeoutSeconds Seconds before an in-progress tuple outbox entry can be claimed again.
+    processingTimeoutSeconds: 300
   ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 

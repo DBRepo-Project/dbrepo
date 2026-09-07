@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.gateway;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import jakarta.validation.constraints.NotNull;
@@ -45,6 +46,8 @@ public interface MetadataServiceGateway {
      */
     Database getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
+
+    List<DatabaseBriefDto> getDatabases() throws RemoteUnavailableException, MetadataServiceException;
 
     /**
      * Get a table with given database id and table id from the metadata service.
