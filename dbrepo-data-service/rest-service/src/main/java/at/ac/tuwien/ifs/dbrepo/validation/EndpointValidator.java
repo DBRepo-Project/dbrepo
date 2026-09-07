@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.PaginationException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -23,6 +24,9 @@ import java.util.List;
 @Slf4j
 @Component
 public class EndpointValidator {
+
+    @Value("${dbrepo.baseUrl}")
+    private String baseUrl;
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
         log.trace("validate data params, page={}, size={}", page, size);
@@ -146,6 +150,35 @@ public class EndpointValidator {
             log.error("No write access found for user {} to database: {}", AuthUtil.getUsername(principal), database.getInternalName());
             throw new NotAllowedException("No write access found");
         }
+    }
+
+    public void validatePrimaryWriteLocation(Database database, Table table, Principal principal)
+            throws NotAllowedException {
+        if (principal != null && AuthUtil.isSystem(principal)) {
+            return;
+        }
+        final String creationLocation = StringUtils.hasText(database.getCreationLocation())
+                ? database.getCreationLocation()
+                : table.getCreationLocation();
+        if (!StringUtils.hasText(creationLocation)) {
+            return;
+        }
+        if (!normalizeSiteUrl(baseUrl).equals(normalizeSiteUrl(creationLocation))) {
+            log.error("Write not allowed on secondary site: local site={}, creation location={}", baseUrl,
+                    creationLocation);
+            throw new NotAllowedException("Write not allowed on secondary site");
+        }
+    }
+
+    private String normalizeSiteUrl(String url) {
+        if (!StringUtils.hasText(url)) {
+            return "";
+        }
+        String normalized = url.trim();
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 
 

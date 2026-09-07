@@ -34,6 +34,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -86,6 +87,24 @@ public class TableEndpointUnitTest extends BaseTest {
                 Arguments.arguments("write_own", AccessTypeDto.WRITE_OWN),
                 Arguments.arguments("write_all", AccessTypeDto.WRITE_ALL)
         );
+    }
+
+    private Database secondaryReplicaDatabase() {
+        return Database.builder()
+                .id(DATABASE_3_CACHE.getId())
+                .internalName(DATABASE_3_CACHE.getInternalName())
+                .isPublic(DATABASE_3_CACHE.getIsPublic())
+                .isSchemaPublic(DATABASE_3_CACHE.getIsSchemaPublic())
+                .isDashboardEnabled(DATABASE_3_CACHE.getIsDashboardEnabled())
+                .container(DATABASE_3_CACHE.getContainer())
+                .ownedBy(DATABASE_3_CACHE.getOwnedBy())
+                .accesses(DATABASE_3_CACHE.getAccesses())
+                .tables(DATABASE_3_CACHE.getTables())
+                .views(DATABASE_3_CACHE.getViews())
+                .subsets(DATABASE_3_CACHE.getSubsets())
+                .replicaUrls(Map.of("http://localhost", DATABASE_3_ID))
+                .creationLocation("http://primary.example")
+                .build();
     }
 
     @Test
@@ -750,6 +769,33 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
+    public void insertRawTuple_secondarySite_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException,
+            TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        final TupleDto request = TupleDto.builder()
+                .data(new HashMap<>() {{
+                    put(COLUMN_8_1_INTERNAL_NAME, 7L);
+                    put(COLUMN_8_2_INTERNAL_NAME, 23.0);
+                }})
+                .build();
+        final Database secondaryDatabase = secondaryReplicaDatabase();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(secondaryDatabase);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        });
+        verify(tableService, never()).createTuple(any(Database.class), any(Table.class), any(TupleDto.class));
+        verify(tableService, never()).createTupleWithTimestamps(any(Database.class), any(Table.class), any(TupleDto.class));
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
             SQLException, MetadataServiceException, DatabaseNotFoundException, StorageUnavailableException,
@@ -1055,6 +1101,36 @@ public class TableEndpointUnitTest extends BaseTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
+    public void updateTuple_secondarySite_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException,
+            TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        final TupleUpdateDto request = TupleUpdateDto.builder()
+                .keys(new HashMap<>() {{
+                    put(COLUMN_8_1_INTERNAL_NAME, 6L);
+                }})
+                .data(new HashMap<>() {{
+                    put(COLUMN_8_1_INTERNAL_NAME, 6L);
+                    put(COLUMN_8_2_INTERNAL_NAME, 23.0);
+                }})
+                .build();
+        final Database secondaryDatabase = secondaryReplicaDatabase();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(secondaryDatabase);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        });
+        verify(tableService, never()).updateTuple(any(Database.class), any(Table.class), any(TupleUpdateDto.class));
+        verify(tableService, never()).updateTupleWithTimestamps(any(Database.class), any(Table.class), any(TupleUpdateDto.class));
+    }
+
+    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
@@ -1252,6 +1328,32 @@ public class TableEndpointUnitTest extends BaseTest {
         /* test */
         final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
+    public void deleteTuple_secondarySite_fails() throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException,
+            TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        final TupleDeleteDto request = TupleDeleteDto.builder()
+                .keys(new HashMap<>() {{
+                    put(COLUMN_8_1_INTERNAL_NAME, 6L);
+                }})
+                .build();
+        final Database secondaryDatabase = secondaryReplicaDatabase();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(secondaryDatabase);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        });
+        verify(tableService, never()).deleteTuple(any(Database.class), any(Table.class), any(TupleDeleteDto.class));
+        verify(tableService, never()).deleteTupleWithTimestamps(any(Database.class), any(Table.class), any(TupleDeleteDto.class));
     }
 
     @Test

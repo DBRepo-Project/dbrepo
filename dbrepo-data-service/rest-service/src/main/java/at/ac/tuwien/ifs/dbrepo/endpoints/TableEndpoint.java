@@ -490,6 +490,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         try {
             if (hasReplicaLocations(database, table)) {
                 final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table, data);
@@ -582,6 +583,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         try {
             if (hasReplicaLocations(database, table)) {
                 final TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table, data);
@@ -673,6 +675,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         try {
             if (hasReplicaLocations(database, table)) {
                 final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table, data);
