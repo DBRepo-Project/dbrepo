@@ -90,7 +90,7 @@ public class ViewEndpoint extends RestEndpoint {
 
     @PostMapping("/replicate")
     @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_view_replicate")
     @Operation(summary = "Replicate view creation",
             description = "Creates a view from a replication notification.",

@@ -1,6 +1,5 @@
 package at.ac.tuwien.ifs.dbrepo.auth;
 
-import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
@@ -15,10 +14,12 @@ import java.util.List;
 @Slf4j
 public class BasicRequestInterceptor implements ClientHttpRequestInterceptor {
 
-    private final GatewayConfig gatewayConfig;
+    private final String username;
+    private final String password;
 
-    public BasicRequestInterceptor(GatewayConfig gatewayConfig) {
-        this.gatewayConfig = gatewayConfig;
+    public BasicRequestInterceptor(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     @Override
@@ -29,8 +30,8 @@ public class BasicRequestInterceptor implements ClientHttpRequestInterceptor {
             headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         }
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBasicAuth(gatewayConfig.getSystemUsername(), gatewayConfig.getSystemPassword());
-        log.trace("set basic auth for internal user: {}", gatewayConfig.getSystemUsername());
+        headers.setBasicAuth(username, password);
+        log.trace("set basic auth for service user: {}", username);
         return execution.execute(request, body);
     }
 }

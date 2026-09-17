@@ -193,7 +193,7 @@ public class DatabaseEndpoint extends RestEndpoint {
 
     @PostMapping("/replicate")
     @Transactional(rollbackFor = Exception.class)
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_database_replicate")
     @Operation(summary = "Replicate database creation",
             description = "Creates a database from a replication notification.",
@@ -555,7 +555,7 @@ public class DatabaseEndpoint extends RestEndpoint {
 
     @PutMapping("/{databaseId}/replication-url")
     @Transactional
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_database_replication_url_update")
     @Operation(summary = "Update database replication URL",
             description = "Updates a database replica URL with the remote database id.",
@@ -593,7 +593,7 @@ public class DatabaseEndpoint extends RestEndpoint {
 
     @GetMapping("/replica/{replicaDatabaseId}/local-id")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_database_replica_to_local_id")
     @Operation(summary = "Find local database id by replica database id",
             security = {@SecurityRequirement(name = "basicAuth")},

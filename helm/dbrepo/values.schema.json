@@ -1134,6 +1134,17 @@
         "replicationservice": {
             "type": "object",
             "properties": {
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "username": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "containerSecurityContext": {
                     "type": "object",
                     "properties": {

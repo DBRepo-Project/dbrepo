@@ -50,6 +50,8 @@ dbrepo:
     password: "${SYSTEM_PASSWORD:admin}"
   baseUrl: "${BASE_URL:http://localhost}"
   replication:
+    username: "${REPLICATION_USERNAME:replication}"
+    password: "${REPLICATION_PASSWORD:replication}"
     outbox:
       enabled: "${REPLICATION_OUTBOX_ENABLED:true}"
       path: "${REPLICATION_OUTBOX_PATH:/var/lib/dbrepo/replication/outbox.json}"

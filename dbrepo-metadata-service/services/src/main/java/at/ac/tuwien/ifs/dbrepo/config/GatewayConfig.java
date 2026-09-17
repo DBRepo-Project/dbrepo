@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,11 +56,24 @@ public class GatewayConfig {
     @Value("${dbrepo.system.password}")
     private String systemPassword;
 
+    @Value("${dbrepo.replication.username}")
+    private String replicationUsername;
+
+    @Value("${dbrepo.replication.password}")
+    private String replicationPassword;
+
     private final CredentialService credentialService;
 
     @Autowired
     public GatewayConfig(CredentialService credentialService) {
         this.credentialService = credentialService;
+    }
+
+    @PostConstruct
+    void validateServiceUsers() {
+        if (systemUsername.equals(replicationUsername)) {
+            throw new IllegalStateException("Replication username must differ from system username");
+        }
     }
 
     @Bean("brokerRestTemplate")

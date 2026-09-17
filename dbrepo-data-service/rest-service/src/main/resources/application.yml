@@ -114,6 +114,8 @@ dbrepo:
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   baseUrl: "${BASE_URL:http://localhost}"
   replication:
+    username: "${REPLICATION_USERNAME:replication}"
+    password: "${REPLICATION_PASSWORD:replication}"
     tupleOutbox:
       enabled: "${TUPLE_REPLICATION_OUTBOX_ENABLED:true}"
       retryDelayMs: "${TUPLE_REPLICATION_OUTBOX_RETRY_DELAY_MS:30000}"

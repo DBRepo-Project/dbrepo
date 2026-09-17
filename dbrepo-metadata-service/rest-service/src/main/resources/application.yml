@@ -115,6 +115,8 @@ dbrepo:
   queueName: "${BROKER_QUEUE_NAME:dbrepo}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   replication:
+    username: "${REPLICATION_USERNAME:replication}"
+    password: "${REPLICATION_PASSWORD:replication}"
     notificationOutbox:
       enabled: "${REPLICATION_NOTIFICATION_OUTBOX_ENABLED:true}"
       retryDelayMs: "${REPLICATION_NOTIFICATION_OUTBOX_RETRY_DELAY_MS:30000}"

@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,12 +28,25 @@ public class GatewayConfig {
     @Value("${dbrepo.system.password}")
     private String systemPassword;
 
+    @Value("${dbrepo.replication.username}")
+    private String replicationUsername;
+
+    @Value("${dbrepo.replication.password}")
+    private String replicationPassword;
+
+    @PostConstruct
+    void validateServiceUsers() {
+        if (systemUsername.equals(replicationUsername)) {
+            throw new IllegalStateException("Replication username must differ from system username");
+        }
+    }
+
     @Bean("metadataServiceRestTemplate")
     public RestTemplate metadataServiceRestTemplate() {
         final RestTemplate restTemplate = timeoutRestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataServiceEndpoint));
         restTemplate.getInterceptors()
-                .add(new BasicRequestInterceptor(this));
+                .add(new BasicRequestInterceptor(systemUsername, systemPassword));
         return restTemplate;
     }
 
@@ -41,7 +55,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = timeoutRestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataServiceEndpoint));
         restTemplate.getInterceptors()
-                .add(new BasicRequestInterceptor(this));
+                .add(new BasicRequestInterceptor(systemUsername, systemPassword));
         return restTemplate;
     }
 
@@ -49,7 +63,7 @@ public class GatewayConfig {
     public RestTemplate externalReplicationRestTemplate() {
         final RestTemplate restTemplate = timeoutRestTemplate();
         restTemplate.getInterceptors()
-                .add(new BasicRequestInterceptor(this));
+                .add(new BasicRequestInterceptor(replicationUsername, replicationPassword));
         return restTemplate;
     }
 

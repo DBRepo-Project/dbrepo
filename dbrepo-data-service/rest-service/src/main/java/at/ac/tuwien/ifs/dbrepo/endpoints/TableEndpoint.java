@@ -560,7 +560,7 @@ public class TableEndpoint {
     }
 
     @PostMapping("/{tableId}/data/replicate")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_data_replicate_create")
     @Operation(summary = "Insert replicated tuple",
             security = {@SecurityRequirement(name = "basicAuth")},
@@ -653,7 +653,7 @@ public class TableEndpoint {
     }
 
     @PutMapping("/{tableId}/data/replicate")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_data_replicate_update")
     @Operation(summary = "Update replicated tuple",
             security = {@SecurityRequirement(name = "basicAuth")},
@@ -745,7 +745,7 @@ public class TableEndpoint {
     }
 
     @DeleteMapping("/{tableId}/data/replicate")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_data_replicate_delete")
     @Operation(summary = "Delete replicated tuple",
             security = {@SecurityRequirement(name = "basicAuth")},
@@ -787,7 +787,7 @@ public class TableEndpoint {
     }
 
     @PostMapping("/{tableId}/timestamps")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_replication_timestamps_create")
     @Operation(summary = "Insert replication timestamps",
             security = {@SecurityRequirement(name = "basicAuth")},
@@ -829,7 +829,7 @@ public class TableEndpoint {
     }
 
     @PutMapping("/{tableId}/timestamps")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_replication_timestamps_update")
     @Operation(summary = "Update replication timestamps",
             security = {@SecurityRequirement(name = "basicAuth")},
@@ -871,7 +871,7 @@ public class TableEndpoint {
     }
 
     @PatchMapping("/{tableId}/timestamps")
-    @PreAuthorize("hasAuthority('system')")
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_replication_timestamps_close")
     @Operation(summary = "Close replication timestamps",
             security = {@SecurityRequirement(name = "basicAuth")},

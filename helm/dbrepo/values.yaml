@@ -739,6 +739,11 @@ replicationservice:
   enabled: true
   ## @param replicationservice.endpoint Absolute URL to the replication service in the form of http://host:port
   endpoint: http://replication-service
+  auth:
+    ## @param replicationservice.auth.username Shared username used exclusively for cross-site replication.
+    username: replication
+    ## @param replicationservice.auth.password Shared password used exclusively for cross-site replication. Override in production.
+    password: replication
   image:
     ## @skip replicationservice.image.name
     name: ghcr.io/dbrepo-project/dbrepo/replication-service:1.14.1
