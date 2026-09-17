@@ -471,6 +471,8 @@ services:
         condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
+      dbrepo-replication-service:
+        condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy
       dbrepo-dashboard-service:
