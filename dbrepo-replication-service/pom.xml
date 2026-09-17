@@ -106,7 +106,7 @@
     <repositories>
         <repository>
             <id>dbrepo-maven-repo</id>
-            <url>file:///${project.basedir}/lib</url>
+            <url>file:///${maven.multiModuleProjectDirectory}/lib</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
