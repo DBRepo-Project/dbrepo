@@ -37,6 +37,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <keycloak.version>26.0.4</keycloak.version>
         <springdoc-openapi.version>2.8.5</springdoc-openapi.version>
         <jacoco.version>0.8.12</jacoco.version>
         <sonar.coverage.jacoco.xmlReportPaths>
@@ -90,6 +91,11 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-core</artifactId>
+            <version>${keycloak.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
