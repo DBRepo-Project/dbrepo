@@ -91,6 +91,7 @@ services:
       POSTGRESQL_DATABASE: "${DASHBOARD_DB_NAME:-grafana}"
       POSTGRESQL_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
+      PGPASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
     healthcheck:
       test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
       <<: *healthcheck-params
