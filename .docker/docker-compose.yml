@@ -254,6 +254,8 @@ services:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
+      OAUTH_ISSUER_URI: "${OAUTH_ISSUER_URI:-http://localhost/realms/dbrepo}"
+      OAUTH_JWK_SET_URI: "${OAUTH_JWK_SET_URI:-http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:

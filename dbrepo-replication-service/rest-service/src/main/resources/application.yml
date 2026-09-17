@@ -4,6 +4,12 @@ application:
 spring:
   application:
     name: replication-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "${OAUTH_ISSUER_URI:http://localhost:8080/realms/dbrepo}"
+          jwk-set-uri: "${OAUTH_JWK_SET_URI:http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
   main:
     banner-mode: off
 management:

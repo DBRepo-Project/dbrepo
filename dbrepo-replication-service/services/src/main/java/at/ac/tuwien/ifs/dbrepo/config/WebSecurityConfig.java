@@ -1,11 +1,13 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.auth.BasicAuthenticationProvider;
+import at.ac.tuwien.ifs.dbrepo.auth.BearerAuthenticationProvider;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,6 +15,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.ExpressionJwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
@@ -21,6 +25,12 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 @EnableWebSecurity
 @EnableMethodSecurity
 @SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        bearerFormat = "JWT",
+        scheme = "bearer"
+)
+@SecurityScheme(
         name = "basicAuth",
         type = SecuritySchemeType.HTTP,
         scheme = "basic"
@@ -28,7 +38,8 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 public class WebSecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, BasicAuthenticationProvider basicAuthenticationProvider)
+    public SecurityFilterChain filterChain(HttpSecurity http, BasicAuthenticationProvider basicAuthenticationProvider,
+                                           BearerAuthenticationProvider bearerAuthenticationProvider)
             throws Exception {
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
@@ -47,12 +58,27 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated());
         http.httpBasic(Customizer.withDefaults())
                 .authenticationManager(authentication -> {
+                    if (bearerAuthenticationProvider.supports(authentication.getClass())) {
+                        return bearerAuthenticationProvider.authenticate(authentication);
+                    }
                     if (basicAuthenticationProvider.supports(authentication.getClass())) {
                         return basicAuthenticationProvider.authenticate(authentication);
                     }
                     throw new BadCredentialsException("Unsupported authentication type: " + authentication.getClass());
                 });
+        http.oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(configurer -> configurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        final ExpressionJwtGrantedAuthoritiesConverter converter = new ExpressionJwtGrantedAuthoritiesConverter(
+                new SpelExpressionParser().parseRaw("[realm_access][roles]"));
+        converter.setAuthorityPrefix("");
+        final JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(converter);
+        return jwtAuthenticationConverter;
     }
 
 }
