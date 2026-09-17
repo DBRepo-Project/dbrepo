@@ -158,8 +158,12 @@ services:
       OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
+      BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
+      BROKER_PASSWORD: ${BROKER_SERVICE_PASSWORD:-admin}
+      BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
+      BROKER_USERNAME: ${BROKER_SERVICE_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
