@@ -44,7 +44,7 @@ services:
       driver: json-file
 
   dbrepo-metadata-db:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
     image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
@@ -68,7 +68,7 @@ services:
       driver: json-file
 
   dbrepo-data-db:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-data-db
     hostname: data-db
     image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
@@ -90,7 +90,7 @@ services:
       driver: json-file
 
   dbrepo-auth-db:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-auth-db
     hostname: auth-db
     image: docker.io/bitnamilegacy/postgresql:17.0.0
@@ -108,7 +108,7 @@ services:
       driver: json-file
 
   dbrepo-dashboard-db:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-dashboard-db
     hostname: dashboard-db
     image: docker.io/bitnamilegacy/postgresql:17.0.0
@@ -126,7 +126,7 @@ services:
       driver: json-file
 
   dbrepo-auth-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-auth-service
     hostname: auth-service
     image: registry.datalab.tuwien.ac.at/bitnami/keycloak:26.4.4
@@ -166,7 +166,7 @@ services:
       driver: json-file
 
   dbrepo-metadata-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
     image: dbrepo-metadata-service:latest
@@ -250,7 +250,7 @@ services:
       driver: json-file
 
   dbrepo-replication-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-replication-service
     hostname: replication-service
     image: dbrepo-replication-service:latest
@@ -286,7 +286,7 @@ services:
       driver: json-file
 
   dbrepo-consumer-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-consumer-service
     hostname: consumer-service
     image: dbrepo-consumer-service:latest
@@ -327,7 +327,7 @@ services:
       driver: json-file
 
   dbrepo-cache-db:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-cache-db
     hostname: cache-db
     image: docker.io/valkey/valkey:8
@@ -347,7 +347,7 @@ services:
       driver: json-file
 
   dbrepo-broker-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: docker.io/bitnamilegacy/rabbitmq:3.13.7
@@ -375,7 +375,7 @@ services:
       driver: json-file
 
   dbrepo-search-db:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-search-db
     hostname: search-db
     image: docker.io/bitnamilegacy/opensearch:2.18.0
@@ -390,7 +390,7 @@ services:
       driver: json-file
 
   dbrepo-search-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-search-service
     hostname: search-service
     image: dbrepo-search-service:latest
@@ -415,7 +415,7 @@ services:
       driver: json-file
 
   dbrepo-ui:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-ui
     hostname: ui
     image: dbrepo-ui:latest
@@ -458,7 +458,7 @@ services:
       driver: json-file
 
   dbrepo-gateway-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
     image: docker.io/nginx:1.28
@@ -488,7 +488,7 @@ services:
       driver: json-file
 
   dbrepo-identity-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-identity-service
     hostname: identity-service
     image: docker.io/bitnamilegacy/openldap:2.6.8
@@ -562,7 +562,7 @@ services:
       driver: json-file
 
   dbrepo-storage-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-storage-service
     hostname: storage-service
     image: docker.io/chrislusf/seaweedfs:4.13
@@ -599,7 +599,7 @@ services:
       driver: json-file
 
   dbrepo-data-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-data-service
     hostname: data-service
     image: dbrepo-data-service:latest
@@ -664,7 +664,7 @@ services:
       driver: json-file
 
   dbrepo-dashboard-ui:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
     image: docker.io/bitnamilegacy/grafana:11.4.0
@@ -695,7 +695,7 @@ services:
       driver: json-file
 
   dbrepo-dashboard-service:
-    restart: "no"
+    restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
     image: dbrepo-dashboard-service:latest
