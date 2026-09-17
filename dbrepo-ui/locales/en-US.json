@@ -29,6 +29,7 @@
     "account": "Account",
     "profile": "Profile",
     "dashboard": "Dashboard",
+    "replication": "Replication",
     "import": "Import Data",
     "delete": "Delete",
     "recommend": "Recommend",
@@ -1613,6 +1614,62 @@
         "version": "History",
         "subtitle": "Provide data to be directly inserted into the dataset"
       }
+    }
+  },
+  "replication": {
+    "title": "Replication",
+    "updated": "Updated {time}",
+    "forbidden": "Administrator access is required",
+    "error": "Replication operation failed",
+    "retryQueued": "Replication retry completed",
+    "health": {
+      "title": "Service health",
+      "unknown": "UNKNOWN",
+      "unavailable": "Unavailable",
+      "noResponse": "No response"
+    },
+    "backlog": {
+      "title": "Replication backlog"
+    },
+    "sources": {
+      "replication": "Replication service",
+      "metadata": "Metadata service",
+      "data": "Data service",
+      "broker": "Message broker"
+    },
+    "columns": {
+      "source": "Source",
+      "total": "Total",
+      "pending": "Pending",
+      "failed": "Failed",
+      "succeeded": "Succeeded",
+      "nextAttempt": "Next attempt",
+      "operation": "Operation",
+      "target": "Target",
+      "status": "Status",
+      "attempts": "Attempts",
+      "path": "Path",
+      "method": "Method",
+      "table": "Table"
+    },
+    "synchronisation": {
+      "title": "Synchronisation",
+      "database": "Database",
+      "table": "Table",
+      "pageSize": "Page size",
+      "databaseResult": "Synchronised {tables} tables and {tuples} tuples in {pages} pages with {replicaWrites} replica writes.",
+      "tableResult": "Synchronised {tuples} tuples in {pages} pages with {replicaWrites} replica writes."
+    },
+    "outboxes": {
+      "title": "Outbox entries",
+      "selectDatabase": "Select a replicated database to inspect its data outbox."
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "retry": "Retry entry",
+      "retryAll": "Retry pending entries",
+      "synchroniseDatabase": "Synchronise database",
+      "synchroniseTable": "Synchronise table"
     }
   },
   "validation": {

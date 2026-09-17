@@ -37,6 +37,11 @@
           prepend-icon="mdi-share-variant"
           :title="$t('navigation.semantics')" />
         <v-list-item
+          v-if="canManageReplication"
+          to="/replication"
+          prepend-icon="mdi-database-sync"
+          :title="$t('navigation.replication')" />
+        <v-list-item
           v-if="$config.public.policies.content"
           to="/policies"
           prepend-icon="mdi-sprout"
@@ -292,6 +297,9 @@ export default {
         return false
       }
       return this.roles.includes('list-ontologies')
+    },
+    canManageReplication () {
+      return this.roles && this.roles.includes('system')
     },
     logo () {
       return this.$config.public.logo

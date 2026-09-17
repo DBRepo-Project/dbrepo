@@ -817,3 +817,103 @@ interface QueryBuildResultDto {
   raw: string | null;
   formatted: string | null;
 }
+
+interface ReplicationServiceHealthDto {
+  name: string;
+  status: string;
+  http_status: number | null;
+  duration_ms: number | null;
+  error: string | null;
+}
+
+interface ReplicationHealthDto {
+  status: string;
+  metadata_service: ReplicationServiceHealthDto;
+  data_service: ReplicationServiceHealthDto;
+  replication_service: ReplicationServiceHealthDto;
+  broker: ReplicationServiceHealthDto;
+}
+
+interface ReplicationOutboxSummaryDto {
+  total: number;
+  pending: number;
+  failed: number;
+  succeeded: number;
+  oldest_pending_at: string | null;
+  next_attempt_at: string | null;
+  available: boolean;
+  error: string | null;
+}
+
+interface ReplicationOutboxStatusDto {
+  replication_service: ReplicationOutboxSummaryDto;
+  metadata_service: ReplicationOutboxSummaryDto;
+  data_service: ReplicationOutboxSummaryDto;
+}
+
+interface ReplicationStatusDto {
+  health: ReplicationHealthDto;
+  outbox: ReplicationOutboxSummaryDto;
+  outboxes: ReplicationOutboxStatusDto;
+}
+
+interface ReplicationOutboxEntryDto {
+  id: string;
+  operationType: string;
+  status: string;
+  targetSiteUrl: string;
+  httpMethod: string;
+  localDatabaseId: string | null;
+  localTableId: string | null;
+  attempts: number;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+  nextAttemptAt: string | null;
+}
+
+interface MetadataReplicationOutboxEntryDto {
+  id: string;
+  notificationType: string;
+  status: string;
+  httpMethod: string;
+  path: string;
+  aggregateId: string | null;
+  attempts: number;
+  lastError: string | null;
+  created: string;
+  lastModified: string | null;
+  nextAttemptAt: string | null;
+}
+
+interface DataReplicationOutboxEntryDto {
+  id: string;
+  databaseId: string;
+  tableId: string;
+  httpMethod: string;
+  status: string;
+  attempts: number;
+  lastError: string | null;
+  created: string;
+  lastModified: string | null;
+  nextAttemptAt: string | null;
+}
+
+interface ReplicationRetryResultDto {
+  retried: number | boolean;
+}
+
+interface DatabaseSynchronisationResultDto {
+  status: string;
+  tables: number;
+  pages: number;
+  tuples: number;
+  replicaWrites: number;
+}
+
+interface TableSynchronisationResultDto {
+  status: string;
+  pages: number;
+  tuples: number;
+  replicaWrites: number;
+}
