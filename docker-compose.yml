@@ -14,8 +14,35 @@ volumes:
   dashboard-db-data:
   metric-db-data:
   replication-service-outbox:
+  edge-service-data:
+  edge-service-config:
 
 services:
+  dbrepo-edge-service:
+    profiles:
+      - tls
+    restart: unless-stopped
+    container_name: dbrepo-edge-service
+    hostname: edge-service
+    image: docker.io/library/caddy:2.10.2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      TLS_HOSTNAME: "${TLS_HOSTNAME:-localhost}"
+    volumes:
+      - ./dbrepo-gateway-service/Caddyfile:/etc/caddy/Caddyfile:ro
+      - edge-service-data:/data
+      - edge-service-config:/config
+    depends_on:
+      dbrepo-gateway-service:
+        condition: service_healthy
+    healthcheck:
+      test: wget -q --spider http://127.0.0.1:2019/config/
+      <<: *healthcheck-params
+    logging:
+      driver: json-file
+
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
@@ -436,7 +463,7 @@ services:
     hostname: gateway-service
     image: docker.io/nginx:1.28
     ports:
-      - "80:8080"
+      - "${GATEWAY_HTTP_BIND:-80}:8080"
     volumes:
       - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/dbrepo.conf:ro
     depends_on:
