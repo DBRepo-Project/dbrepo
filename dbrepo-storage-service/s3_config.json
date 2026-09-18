@@ -4,8 +4,8 @@
       "name": "default",
       "credentials": [
         {
-          "accessKey": "seaweedfsuser",
-          "secretKey": "seaweedfsuser"
+          "accessKey": "7e8f7b652dac5d902f97bfd31f8bb4fa",
+          "secretKey": "92053980624d2ce4e4e6803709c5c2ef"
         }
       ],
       "actions": [
@@ -18,8 +18,8 @@
       "name": "admin",
       "credentials": [
         {
-          "accessKey": "seaweedfsadmin",
-          "secretKey": "seaweedfsadmin"
+          "accessKey": "617b64e8f910c2481f33cec71a24a957",
+          "secretKey": "05e0068770511c63413e7af19a334368"
         }
       ],
       "actions": [
