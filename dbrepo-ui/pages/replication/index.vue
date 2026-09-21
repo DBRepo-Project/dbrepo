@@ -207,6 +207,69 @@
 
       <section
         class="mt-8"
+        aria-labelledby="replication-access">
+        <div class="d-flex align-center mb-3">
+          <h2
+            id="replication-access"
+            class="text-h6">
+            {{ $t('replication.access.title') }}
+          </h2>
+          <v-spacer />
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="pendingAccess.length > 0 ? 'warning' : 'success'">
+            {{ pendingAccess.length }}
+          </v-chip>
+        </div>
+        <v-alert
+          v-if="pendingAccess.length === 0"
+          type="success"
+          variant="tonal"
+          :text="$t('replication.access.empty')" />
+        <v-data-table
+          v-else
+          :headers="accessHeaders"
+          :items="pendingAccess"
+          :loading="loadingAccess"
+          item-value="database_id"
+          density="comfortable">
+          <template #item.origin="{item}">
+            <div>{{ item.creation_location }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.origin_owner?.username || $t('replication.access.legacy') }}
+            </div>
+          </template>
+          <template #item.localUser="{item}">
+            <v-select
+              v-model="accessMappings[item.database_id]"
+              :items="users"
+              item-title="username"
+              item-value="username"
+              density="compact"
+              variant="outlined"
+              hide-details
+              :label="$t('replication.access.localUser')" />
+          </template>
+          <template #item.status="{item}">
+            <v-chip size="x-small" variant="tonal" color="warning">{{ item.status }}</v-chip>
+          </template>
+          <template #item.actions="{item}">
+            <v-btn
+              icon="mdi-account-check"
+              size="small"
+              variant="text"
+              :loading="mappingAccessId === item.database_id"
+              :disabled="!accessMappings[item.database_id]"
+              @click="mapReplicationAccess(item)">
+              <v-tooltip activator="parent">{{ $t('replication.actions.mapAccess') }}</v-tooltip>
+            </v-btn>
+          </template>
+        </v-data-table>
+      </section>
+
+      <section
+        class="mt-8"
         aria-labelledby="replication-outboxes">
         <div class="d-flex align-center mb-2">
           <h2
@@ -315,11 +378,16 @@ export default {
       replicationOutbox: [],
       metadataOutbox: [],
       dataOutbox: [],
+      pendingAccess: [],
+      users: [],
+      accessMappings: {},
+      mappingAccessId: null,
       activeOutbox: 'replication',
       synchronisationResult: null,
       loading: false,
       loadingDatabases: false,
       loadingOutboxes: false,
+      loadingAccess: false,
       synchronisingDatabase: false,
       synchronisingTable: false,
       retryingAll: false,
@@ -383,6 +451,15 @@ export default {
         {title: this.$t('replication.columns.nextAttempt'), key: 'nextAttemptAt'},
         {title: '', key: 'actions', sortable: false, align: 'end'}
       ]
+    },
+    accessHeaders () {
+      return [
+        {title: this.$t('replication.columns.database'), key: 'database_name'},
+        {title: this.$t('replication.columns.origin'), key: 'origin'},
+        {title: this.$t('replication.columns.localUser'), key: 'localUser', sortable: false},
+        {title: this.$t('replication.columns.status'), key: 'status'},
+        {title: '', key: 'actions', sortable: false, align: 'end'}
+      ]
     }
   },
   watch: {
@@ -435,19 +512,24 @@ export default {
       this.loading = true
       this.loadingDatabases = true
       this.loadingOutboxes = true
+      this.loadingAccess = true
       const replicationService = useReplicationService()
       const databaseService = useDatabaseService()
       try {
-        const [status, databases, replicationOutbox, metadataOutbox] = await Promise.all([
+        const [status, databases, replicationOutbox, metadataOutbox, pendingAccess, users] = await Promise.all([
           replicationService.findStatus(),
           databaseService.findAll(),
           replicationService.findReplicationOutbox(),
-          replicationService.findMetadataOutbox()
+          replicationService.findMetadataOutbox(),
+          replicationService.findPendingAccess(),
+          useUserService().findAll()
         ])
         this.status = status
         this.databases = databases
         this.replicationOutbox = replicationOutbox
         this.metadataOutbox = metadataOutbox
+        this.pendingAccess = pendingAccess
+        this.users = users
         if (this.selectedDatabaseId) {
           await this.loadDataOutbox()
         }
@@ -458,6 +540,7 @@ export default {
         this.loading = false
         this.loadingDatabases = false
         this.loadingOutboxes = false
+        this.loadingAccess = false
       }
     },
     async loadDataOutbox () {
@@ -532,6 +615,23 @@ export default {
         await this.refreshAll()
       } catch (error) {
         this.showError(error)
+      }
+    },
+    async mapReplicationAccess (item) {
+      const localUsername = this.accessMappings[item.database_id]
+      if (!localUsername) {
+        return
+      }
+      this.mappingAccessId = item.database_id
+      try {
+        await useReplicationService().mapAccess(item.database_id, localUsername)
+        useToastInstance().success(this.$t('replication.access.mapped', {username: localUsername}))
+        delete this.accessMappings[item.database_id]
+        await this.refreshAll()
+      } catch (error) {
+        this.showError(error)
+      } finally {
+        this.mappingAccessId = null
       }
     }
   }

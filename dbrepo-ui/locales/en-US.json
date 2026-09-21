@@ -1650,7 +1650,17 @@
       "attempts": "Attempts",
       "path": "Path",
       "method": "Method",
-      "table": "Table"
+      "table": "Table",
+      "database": "Database",
+      "origin": "Origin owner",
+      "localUser": "Local user"
+    },
+    "access": {
+      "title": "Pending replica access",
+      "empty": "All target replicas have a mapped local owner.",
+      "legacy": "Origin identity unavailable",
+      "localUser": "Select local user",
+      "mapped": "Replica access mapped to {username}."
     },
     "synchronisation": {
       "title": "Synchronisation",
@@ -1669,7 +1679,8 @@
       "retry": "Retry entry",
       "retryAll": "Retry pending entries",
       "synchroniseDatabase": "Synchronise database",
-      "synchroniseTable": "Synchronise table"
+      "synchroniseTable": "Synchronise table",
+      "mapAccess": "Map replica access"
     }
   },
   "validation": {

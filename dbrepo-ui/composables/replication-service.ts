@@ -78,6 +78,19 @@ export const useReplicationService = (): any => {
     ))
   }
 
+  async function findPendingAccess (): Promise<ReplicationAccessDto[]> {
+    const axios = useAxiosInstance()
+    return request(() => axios.get<ReplicationAccessDto[]>('/api/v1/database/replication-access/pending'))
+  }
+
+  async function mapAccess (databaseId: string, localUsername: string): Promise<ReplicationAccessDto> {
+    const axios = useAxiosInstance()
+    return request(() => axios.put<ReplicationAccessDto>(
+      `/api/v1/database/${databaseId}/replication-access`,
+      {local_username: localUsername}
+    ))
+  }
+
   return {
     findStatus,
     findReplicationOutbox,
@@ -90,6 +103,8 @@ export const useReplicationService = (): any => {
     retryDataOutbox,
     retryDataOutboxEntry,
     synchroniseDatabase,
-    synchroniseTable
+    synchroniseTable,
+    findPendingAccess,
+    mapAccess
   }
 }

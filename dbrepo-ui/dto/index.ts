@@ -35,6 +35,22 @@ interface DatabaseCreateDto {
   replica_urls?: string[];
 }
 
+interface ReplicationOwnerDto {
+  site_url: string;
+  issuer: string;
+  subject: string;
+  username: string;
+}
+
+interface ReplicationAccessDto {
+  database_id: string;
+  database_name: string;
+  creation_location: string;
+  origin_owner: ReplicationOwnerDto | null;
+  status: 'PENDING' | 'MAPPED';
+  local_username: string | null;
+}
+
 interface hasReadAccessDatabaseAccessDto {
   user: UserDto;
   type: string;
