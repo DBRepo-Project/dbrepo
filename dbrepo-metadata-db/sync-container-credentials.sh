@@ -9,19 +9,19 @@ to_hex() {
   printf '%s' "$1" | od -An -tx1 | tr -d ' \n'
 }
 
-MARIADB_PWD="$DATA_DB_PASSWORD" "$client" \
+MYSQL_PWD="$DATA_DB_PASSWORD" "$client" \
   --host=data-db \
   --port=3306 \
   --user=root \
   --execute='SELECT 1' >/dev/null
 
-MARIADB_PWD="$READONLY_PASSWORD" "$client" \
+MYSQL_PWD="$READONLY_PASSWORD" "$client" \
   --host=data-db \
   --port=3306 \
   --user="$READONLY_USERNAME" \
   --execute='SELECT 1' >/dev/null
 
-container_count="$(MARIADB_PWD="$METADATA_DB_PASSWORD" "$client" \
+container_count="$(MYSQL_PWD="$METADATA_DB_PASSWORD" "$client" \
   --host=metadata-db \
   --port=3306 \
   --user=root \
@@ -39,7 +39,7 @@ data_password_hex="$(to_hex "$DATA_DB_PASSWORD")"
 readonly_username_hex="$(to_hex "$READONLY_USERNAME")"
 readonly_password_hex="$(to_hex "$READONLY_PASSWORD")"
 
-MARIADB_PWD="$METADATA_DB_PASSWORD" "$client" \
+MYSQL_PWD="$METADATA_DB_PASSWORD" "$client" \
   --host=metadata-db \
   --port=3306 \
   --user=root \
