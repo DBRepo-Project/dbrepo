@@ -3,11 +3,15 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.service.ContainerService;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationAccessService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.UserService;
@@ -27,11 +31,14 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.ArgumentCaptor;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -54,6 +61,9 @@ public class DatabaseEndpointReplicationUnitTest extends BaseTest {
 
     @MockitoBean
     private ReplicationService replicationService;
+
+    @MockitoBean
+    private ReplicationAccessService replicationAccessService;
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
@@ -111,5 +121,50 @@ public class DatabaseEndpointReplicationUnitTest extends BaseTest {
             databaseEndpoint.replicate(notification);
         });
         verify(containerService, never()).find(any(UUID.class));
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"replication"})
+    public void replicate_newReplica_usesDedicatedReplicationUserAndInitializesAccess() throws Exception {
+        final UUID creationId = UUID.randomUUID();
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
+                .cid(CONTAINER_1_ID)
+                .name(DATABASE_1.getName())
+                .isPublic(false)
+                .isSchemaPublic(false)
+                .creationLocation("https://origin.example")
+                .replicaUrls(List.of("http://localhost"))
+                .build();
+        final ReplicationOwnerDto owner = ReplicationOwnerDto.builder()
+                .siteUrl("https://origin.example")
+                .issuer("https://identity.example/realms/dbrepo")
+                .subject(USER_1_ID.toString())
+                .username(USER_1_USERNAME)
+                .build();
+        final DatabaseNotificationDto notification = DatabaseNotificationDto.builder()
+                .creationId(creationId)
+                .createDatabaseDto(request)
+                .owner(owner)
+                .build();
+
+        doThrow(new DatabaseNotFoundException("not found"))
+                .when(databaseService).findLocalDatabaseIdByReplicaDatabaseId(creationId);
+        when(containerService.find(CONTAINER_1_ID)).thenReturn(CONTAINER_1);
+        when(databaseService.create(eq(CONTAINER_1), eq(request), any(UserDto.class), eq(creationId)))
+                .thenReturn(DATABASE_1);
+        when(dashboardService.create(DATABASE_1)).thenReturn(CreateDashboardResponseDto.builder()
+                .uid(DATABASE_1_DASHBOARD_UID)
+                .build());
+        when(replicationAccessService.initialize(DATABASE_1, owner)).thenReturn(DATABASE_1);
+
+        final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.replicate(notification);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        final ArgumentCaptor<UserDto> userCaptor = ArgumentCaptor.forClass(UserDto.class);
+        verify(databaseService).create(eq(CONTAINER_1), eq(request), userCaptor.capture(), eq(creationId));
+        assertEquals("replication", userCaptor.getValue().getUsername());
+        assertNotEquals("admin", userCaptor.getValue().getUsername());
+        assertEquals("replication", userCaptor.getValue().getAttributes().getMariadbPassword());
+        verify(replicationAccessService).initialize(DATABASE_1, owner);
     }
 }

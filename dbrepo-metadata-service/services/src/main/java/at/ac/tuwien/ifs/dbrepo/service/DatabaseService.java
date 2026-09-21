@@ -4,9 +4,11 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicationAccessStatus;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import org.springframework.stereotype.Service;
 
@@ -137,6 +139,10 @@ public interface DatabaseService {
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
     Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException;
+
+    Database modifyReplicationAccess(Database database, ReplicationOwnerDto owner, ReplicationAccessStatus status,
+                                     String localUsername) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;
 
     /**

@@ -3,6 +3,8 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationAccessMappingDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserAttributesDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
@@ -51,20 +53,22 @@ public class DatabaseEndpoint extends RestEndpoint {
     private final ContainerService containerService;
     private final DashboardService dashboardService;
     private final ReplicationService replicationService;
+    private final ReplicationAccessService replicationAccessService;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
-    @Value("${dbrepo.system.username}")
-    private String systemUsername;
+    @Value("${dbrepo.replication.username}")
+    private String replicationUsername;
 
-    @Value("${dbrepo.system.password}")
-    private String systemPassword;
+    @Value("${dbrepo.replication.password}")
+    private String replicationPassword;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService,
-                            DashboardService dashboardService, ReplicationService replicationService) {
+                            DashboardService dashboardService, ReplicationService replicationService,
+                            ReplicationAccessService replicationAccessService) {
         this.userService = userService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
@@ -72,6 +76,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         this.containerService = containerService;
         this.dashboardService = dashboardService;
         this.replicationService = replicationService;
+        this.replicationAccessService = replicationAccessService;
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -182,7 +187,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         database.setDashboardUid(dashboard.getUid());
         if (replicationService != null && data.getCreationLocation() == null && hasReplicaUrls(data)) {
             try {
-                replicationService.replicateDatabase(data, database.getId());
+                replicationService.replicateDatabase(data, database.getId(), owner);
             } catch (Exception e) {
                 log.error("Failed to trigger replication for database {}: {}", database.getId(), e.getMessage(), e);
             }
@@ -249,9 +254,10 @@ public class DatabaseEndpoint extends RestEndpoint {
             log.error("Failed to replicate database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to replicate database: quota of " + container.getQuota() + " exceeded");
         }
-        final Database database = databaseService.create(container, data, systemUser(), notification.getCreationId());
+        Database database = databaseService.create(container, data, replicationUser(), notification.getCreationId());
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
+        database = replicationAccessService.initialize(database, notification.getOwner());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));
     }
@@ -614,6 +620,29 @@ public class DatabaseEndpoint extends RestEndpoint {
         return ResponseEntity.ok(databaseService.findLocalDatabaseIdByReplicaDatabaseId(replicaDatabaseId));
     }
 
+    @GetMapping("/replication-access/pending")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "List target replicas with pending user access",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<List<ReplicationAccessDto>> findPendingReplicationAccess() {
+        return ResponseEntity.ok(replicationAccessService.findPending());
+    }
+
+    @PutMapping("/{databaseId}/replication-access")
+    @Transactional(rollbackFor = Exception.class)
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Map a target replica owner to a local user",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<ReplicationAccessDto> mapReplicationAccess(
+            @NotNull @PathVariable("databaseId") UUID databaseId,
+            @Valid @RequestBody ReplicationAccessMappingDto data) throws DatabaseNotFoundException,
+            UserNotFoundException, NotAllowedException, DataServiceException, DataServiceConnectionException,
+            SearchServiceException, SearchServiceConnectionException {
+        return ResponseEntity.accepted()
+                .body(replicationAccessService.map(databaseService.findById(databaseId), data.getLocalUsername()));
+    }
+
     private boolean hasReplicaUrls(CreateDatabaseDto data) {
         return data.getReplicaUrls() != null && !data.getReplicaUrls().isEmpty();
     }
@@ -628,13 +657,14 @@ public class DatabaseEndpoint extends RestEndpoint {
                 .toList());
     }
 
-    private UserDto systemUser() {
+    private UserDto replicationUser() {
         return UserDto.builder()
-                .id(UUID.nameUUIDFromBytes(("dbrepo-system:" + systemUsername).getBytes(StandardCharsets.UTF_8)))
-                .username(systemUsername)
-                .password(systemPassword)
+                .id(UUID.nameUUIDFromBytes(("dbrepo-replication:" + replicationUsername)
+                        .getBytes(StandardCharsets.UTF_8)))
+                .username(replicationUsername)
+                .password(replicationPassword)
                 .attributes(UserAttributesDto.builder()
-                        .mariadbPassword(systemPassword)
+                        .mariadbPassword(replicationPassword)
                         .theme("light")
                         .language("en")
                         .build())

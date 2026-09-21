@@ -3,8 +3,10 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationOutbox;
@@ -32,6 +34,9 @@ public class ReplicationServiceImpl implements ReplicationService {
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuer;
+
     public ReplicationServiceImpl(MetadataMapper metadataMapper, ReplicationNotificationOutboxService outboxService,
                                   ReplicationNotificationDispatcher dispatcher) {
         this.metadataMapper = metadataMapper;
@@ -40,12 +45,18 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId) {
+    public void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId, UserDto owner) {
         try {
             createDatabaseDto.setCreationLocation(baseUrl);
             final DatabaseNotificationDto notification = DatabaseNotificationDto.builder()
                     .createDatabaseDto(createDatabaseDto)
                     .creationId(creationId)
+                    .owner(ReplicationOwnerDto.builder()
+                            .siteUrl(baseUrl)
+                            .issuer(issuer)
+                            .subject(owner.getId().toString())
+                            .username(owner.getUsername())
+                            .build())
                     .build();
             final ReplicationNotificationOutbox entry = outboxService.enqueue(
                     ReplicationNotificationType.DATABASE_CREATE, HttpMethod.POST, "/api/replication/database",

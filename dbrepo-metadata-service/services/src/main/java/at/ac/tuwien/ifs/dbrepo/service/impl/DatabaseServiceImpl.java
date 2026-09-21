@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto
 import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
@@ -227,6 +228,31 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* save in search service */
         searchServiceGateway.update(database);
         log.info("Updated database owner of database with id {}", database);
+        return database;
+    }
+
+    @Override
+    @Transactional
+    public Database modifyReplicationAccess(Database database, ReplicationOwnerDto owner,
+                                            ReplicationAccessStatus status, String localUsername)
+            throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        if (owner != null) {
+            database.setOriginOwnerSite(owner.getSiteUrl());
+            database.setOriginOwnerIssuer(owner.getIssuer());
+            database.setOriginOwnerSubject(owner.getSubject());
+            database.setOriginOwnerUsername(owner.getUsername());
+        }
+        database.setReplicationAccessStatus(status);
+        database.setReplicationLocalUsername(localUsername);
+        if (status == ReplicationAccessStatus.MAPPED && localUsername != null) {
+            database.setOwnedBy(localUsername);
+            database.setContactPerson(localUsername);
+        }
+        database = databaseRepository.save(database);
+        databaseCacheRepository.deleteById(database.getId());
+        if (status == ReplicationAccessStatus.MAPPED) {
+            searchServiceGateway.update(database);
+        }
         return database;
     }
 
