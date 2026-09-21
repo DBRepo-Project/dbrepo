@@ -67,28 +67,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-metadata-db-credentials:
-    restart: "no"
-    init: true
-    container_name: dbrepo-metadata-db-credentials
-    image: docker.io/bitnamilegacy/mariadb-galera:11.3.2
-    environment:
-      DATA_DB_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
-      METADATA_DB: "${METADATA_DB:-dbrepo}"
-      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
-      READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
-      READONLY_PASSWORD: "${READONLY_PASSWORD:-readonly}"
-    volumes:
-      - ./dbrepo-metadata-db/sync-container-credentials.sh:/opt/dbrepo/sync-container-credentials.sh:ro
-    command: ["/bin/bash", "/opt/dbrepo/sync-container-credentials.sh"]
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-data-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-data-db:
     restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-data-db
@@ -266,8 +244,6 @@ services:
         condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
-      dbrepo-metadata-db-credentials:
-        condition: service_completed_successfully
       dbrepo-cache-db:
         condition: service_healthy
     logging:
