@@ -108,6 +108,25 @@ public class Database implements Serializable {
     @Column(name = "creation_location")
     private String creationLocation;
 
+    @Column(name = "origin_owner_site")
+    private String originOwnerSite;
+
+    @Column(name = "origin_owner_issuer")
+    private String originOwnerIssuer;
+
+    @Column(name = "origin_owner_subject")
+    private String originOwnerSubject;
+
+    @Column(name = "origin_owner_username")
+    private String originOwnerUsername;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "replication_access_status", length = 32)
+    private ReplicationAccessStatus replicationAccessStatus;
+
+    @Column(name = "replication_local_username")
+    private String replicationLocalUsername;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "LONGBLOB")
