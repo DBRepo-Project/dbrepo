@@ -1365,7 +1365,7 @@ class Table(BaseModel):
     data_length: Optional[int] = None
     max_data_length: Optional[int] = None
     avg_row_length: Optional[int] = None
-    replica_urls: Optional[Dict[str, str]] = None
+    replica_urls: Optional[Dict[str, Optional[str]]] = None
     creation_location: Optional[str] = None
 
 
@@ -1402,7 +1402,7 @@ class Database(BaseModel):
     description: Optional[str] = None
     dashboard_uid: Optional[str] = None
     exchange_name: Optional[str] = None
-    replica_urls: Optional[Dict[str, str]] = None
+    replica_urls: Optional[Dict[str, Optional[str]]] = None
     creation_location: Optional[str] = None
 
 

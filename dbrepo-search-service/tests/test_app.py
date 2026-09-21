@@ -123,6 +123,17 @@ class JwtTest(unittest.TestCase):
                                        data=req.model_dump_json())
             self.assertEqual(202, response.status_code)
 
+    def test_update_database_with_pending_replica_succeeds(self):
+        replicated = req.model_copy(update={
+            'replica_urls': {'https://site-b.example': None}
+        })
+        with app.test_client() as test_client:
+            response = test_client.put(f'/api/v1/search/database/{replicated.id}',
+                                       headers={'Authorization': f'Bearer {self.token(["system"])}',
+                                                'Content-Type': 'application/json'},
+                                       data=replicated.model_dump_json())
+            self.assertEqual(202, response.status_code)
+
     def test_get_fields_succeeds(self):
         with app.test_client() as test_client:
             # test
