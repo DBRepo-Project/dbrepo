@@ -265,7 +265,7 @@ services:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
-      OAUTH_ISSUER_URI: "${OAUTH_ISSUER_URI:-http://localhost/realms/dbrepo}"
+      OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       OAUTH_JWK_SET_URI: "${OAUTH_JWK_SET_URI:-http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
       REPLICATION_OUTBOX_PATH: "${REPLICATION_OUTBOX_PATH:-/var/lib/dbrepo/replication/outbox.json}"
       REPLICATION_USERNAME: "${REPLICATION_USERNAME:-replication}"
