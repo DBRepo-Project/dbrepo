@@ -34,6 +34,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,6 +60,9 @@ public class TableEndpoint extends RestEndpoint {
     private final DashboardService dashboardService;
     private final EndpointValidator endpointValidator;
     private final ReplicationService replicationService;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public TableEndpoint(TableService tableService, MetadataMapper metadataMapper, DatabaseService databaseService,
@@ -488,11 +492,40 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to delete table: identifier already associated");
             throw new NotAllowedException("Failed to delete table: identifier already associated");
         }
+        if (!isPrimaryTable(table)) {
+            throw new NotAllowedException("Replicated tables are read-only on secondary sites");
+        }
+        if (replicationService != null && hasResolvedReplicaLocations(database, table)) {
+            replicationService.replicateTableDelete(database, table);
+        }
         /* delete table */
         tableService.deleteTable(table);
         dashboardService.update(databaseService.findById(databaseId));
         return ResponseEntity.accepted()
                 .build();
+    }
+
+    @DeleteMapping("/{tableId}/replicate")
+    @Transactional
+    @PreAuthorize("hasAnyAuthority('system', 'replication')")
+    @Observed(name = "dbrepo_table_delete_replica")
+    @Operation(summary = "Delete replicated table", hidden = true,
+            security = {@SecurityRequirement(name = "basicAuth")})
+    public ResponseEntity<Void> deleteReplica(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                              @NotNull @PathVariable("tableId") UUID tableId)
+            throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
+            DashboardServiceConnectionException {
+        final Database database = databaseService.findById(databaseId);
+        final Table table;
+        try {
+            table = tableService.findById(database, tableId);
+        } catch (TableNotFoundException e) {
+            return ResponseEntity.noContent().build();
+        }
+        tableService.deleteTable(table);
+        dashboardService.update(databaseService.findById(databaseId));
+        return ResponseEntity.accepted().build();
     }
 
     @PutMapping("/{tableId}/replication-url")
@@ -599,6 +632,25 @@ public class TableEndpoint extends RestEndpoint {
 
     private boolean hasReplicaLocations(Database database) {
         return database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty();
+    }
+
+    private boolean hasResolvedReplicaLocations(Database database, Table table) {
+        return hasReplicaLocations(database) && table.getReplicaUrls() != null && table.getReplicaUrls()
+                .stream()
+                .anyMatch(replica -> replica.getUrl() != null && replica.getReplicaTableId() != null);
+    }
+
+    private boolean isPrimaryTable(Table table) {
+        return table.getCreationLocation() == null || table.getCreationLocation().isBlank()
+                || normalizedSite(table.getCreationLocation()).equals(normalizedSite(baseUrl));
+    }
+
+    private String normalizedSite(String url) {
+        String normalized = url == null ? "" : url.trim();
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 
 }

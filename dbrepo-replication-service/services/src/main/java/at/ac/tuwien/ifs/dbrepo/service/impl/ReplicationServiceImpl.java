@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrl
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
@@ -32,6 +33,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -162,6 +164,35 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
         synchronizeTableReplicaIds(siteDatabaseIds, siteTableIds);
         return siteTableIds.size() - 1;
+    }
+
+    @Override
+    public int replicateTableDelete(TableDeleteNotificationDto notification) {
+        if (notification == null || notification.getDatabaseReplicaIds() == null
+                || notification.getTableReplicaIds() == null) {
+            log.info("Skip table deletion replication: missing replica mappings");
+            return 0;
+        }
+        int successful = 0;
+        for (Map.Entry<String, UUID> tableReplica : notification.getTableReplicaIds().entrySet()) {
+            final String targetSiteUrl = site(tableReplica.getKey());
+            final UUID remoteTableId = tableReplica.getValue();
+            final UUID remoteDatabaseId = replicaId(notification.getDatabaseReplicaIds(), targetSiteUrl);
+            if (isLocalSite(targetSiteUrl) || remoteDatabaseId == null || remoteTableId == null) {
+                continue;
+            }
+            try {
+                deleteRemoteTable(targetSiteUrl, remoteDatabaseId, remoteTableId);
+                successful++;
+            } catch (Exception e) {
+                log.error("Failed to replicate table deletion {} to {}: {}", notification.getTableId(),
+                        targetSiteUrl, e.getMessage(), e);
+                enqueueFailure(ReplicationOutboxOperationType.TABLE_DELETE, targetSiteUrl, HttpMethod.DELETE,
+                        notification, notification.getDatabaseId(), notification.getTableId(), remoteDatabaseId,
+                        remoteTableId, e.getMessage());
+            }
+        }
+        return successful;
     }
 
     @Override
@@ -372,6 +403,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             case DATABASE_CREATE -> retryDatabaseCreate(entry);
             case DATABASE_REPLICA_SYNC -> retryDatabaseReplicaSync(entry);
             case TABLE_CREATE -> retryTableCreate(entry);
+            case TABLE_DELETE -> retryTableDelete(entry);
             case TABLE_REPLICA_SYNC -> retryTableReplicaSync(entry);
             case VIEW_CREATE -> retryViewCreate(entry);
             case DATA_CREATE, DATA_UPDATE, DATA_DELETE -> retryData(entry);
@@ -423,6 +455,10 @@ public class ReplicationServiceImpl implements ReplicationService {
         final TableUpdateReplicationUrlDto payload = readPayload(entry, TableUpdateReplicationUrlDto.class);
         updateTableReplica(entry.getTargetSiteUrl(), entry.getLocalDatabaseId(), entry.getLocalTableId(),
                 payload.getReplicaUrl(), payload.getReplicaTableId());
+    }
+
+    private void retryTableDelete(ReplicationOutboxEntry entry) {
+        deleteRemoteTable(entry.getTargetSiteUrl(), entry.getRemoteDatabaseId(), entry.getRemoteTableId());
     }
 
     private void retryViewCreate(ReplicationOutboxEntry entry) throws JsonProcessingException {
@@ -488,6 +524,25 @@ public class ReplicationServiceImpl implements ReplicationService {
         final ResponseEntity<TupleWithTimestampsDto> response = externalReplicationRestTemplate.exchange(path, method,
                 new HttpEntity<>(request), TupleWithTimestampsDto.class);
         return requireBody(response, "tuple replication retry");
+    }
+
+    private void deleteRemoteTable(String targetSiteUrl, UUID remoteDatabaseId, UUID remoteTableId) {
+        final String path = site(targetSiteUrl) + "/api/v1/database/" + remoteDatabaseId + "/table/"
+                + remoteTableId + "/replicate";
+        try {
+            externalReplicationRestTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.info("Replicated table {} is already absent on {}", remoteTableId, targetSiteUrl);
+        }
+    }
+
+    private UUID replicaId(Map<String, UUID> replicaIds, String siteUrl) {
+        return replicaIds.entrySet()
+                .stream()
+                .filter(entry -> site(entry.getKey()).equals(siteUrl))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     private Map<String, UUID> databaseReplicaIds(UUID localDatabaseId) {

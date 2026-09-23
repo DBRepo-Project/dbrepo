@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxEntry;
@@ -15,6 +16,8 @@ public interface ReplicationService {
     int replicateDatabase(DatabaseNotificationDto notification);
 
     int replicateTable(TableNotificationDto notification);
+
+    int replicateTableDelete(TableDeleteNotificationDto notification);
 
     int replicateView(ViewNotificationDto notification);
 

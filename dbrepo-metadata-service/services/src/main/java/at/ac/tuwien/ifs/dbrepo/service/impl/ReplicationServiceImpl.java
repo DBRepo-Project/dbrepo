@@ -4,11 +4,14 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationOutbox;
 import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationType;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
@@ -21,7 +24,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -87,6 +92,28 @@ public class ReplicationServiceImpl implements ReplicationService {
             log.error("Failed to enqueue table replication notification for table {} in database {}: {}", creationId,
                     databaseId, e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void replicateTableDelete(Database database, Table table) {
+        final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
+                .databaseId(database.getId())
+                .tableId(table.getId())
+                .databaseReplicaIds(database.getReplicaUrls()
+                        .stream()
+                        .filter(replica -> replica.getUrl() != null && replica.getReplicaDatabaseId() != null)
+                        .collect(Collectors.toMap(ReplicaLocation::getUrl, ReplicaLocation::getReplicaDatabaseId,
+                                (first, ignored) -> first)))
+                .tableReplicaIds(table.getReplicaUrls()
+                        .stream()
+                        .filter(replica -> replica.getUrl() != null && replica.getReplicaTableId() != null)
+                        .collect(Collectors.toMap(replica -> replica.getUrl(), replica -> replica.getReplicaTableId(),
+                                (first, ignored) -> first)))
+                .build();
+        final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                ReplicationNotificationType.TABLE_DELETE, HttpMethod.DELETE, "/api/replication/table",
+                notification, table.getId());
+        dispatcher.dispatchAsync(entry.getId());
     }
 
     @Override

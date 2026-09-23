@@ -4,17 +4,24 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.DataSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseSynchronisationResult;
+import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxOperationType;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -228,5 +235,88 @@ public class ReplicationServiceImplUnitTest {
         assertThrows(IllegalArgumentException.class, () -> service.synchroniseData(databaseId, tableId, 100));
         verify(metadataRestTemplate, never()).exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId),
                 eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class));
+    }
+
+    @Test
+    public void replicateTableDelete_usesResolvedRemoteIds() {
+        final RestTemplate externalRestTemplate = mock(RestTemplate.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+                mock(RestTemplate.class), externalRestTemplate, new ObjectMapper().findAndRegisterModules(),
+                mock(ReplicationOutboxService.class));
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final UUID databaseId = UUID.randomUUID();
+        final UUID tableId = UUID.randomUUID();
+        final UUID remoteDatabaseId = UUID.randomUUID();
+        final UUID remoteTableId = UUID.randomUUID();
+        final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
+                .databaseId(databaseId)
+                .tableId(tableId)
+                .databaseReplicaIds(Map.of("http://remote.test/", remoteDatabaseId))
+                .tableReplicaIds(Map.of("http://remote.test", remoteTableId))
+                .build();
+
+        final int replicated = service.replicateTableDelete(notification);
+
+        assertEquals(1, replicated);
+        verify(externalRestTemplate).exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
+                        + "/table/" + remoteTableId + "/replicate"), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY),
+                eq(Void.class));
+    }
+
+    @Test
+    public void replicateTableDelete_unavailableTargetEnqueuesRetry() {
+        final RestTemplate externalRestTemplate = mock(RestTemplate.class);
+        final ReplicationOutboxService outboxService = mock(ReplicationOutboxService.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+                mock(RestTemplate.class), externalRestTemplate, new ObjectMapper().findAndRegisterModules(),
+                outboxService);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final UUID databaseId = UUID.randomUUID();
+        final UUID tableId = UUID.randomUUID();
+        final UUID remoteDatabaseId = UUID.randomUUID();
+        final UUID remoteTableId = UUID.randomUUID();
+        final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
+                .databaseId(databaseId)
+                .tableId(tableId)
+                .databaseReplicaIds(Map.of("http://remote.test", remoteDatabaseId))
+                .tableReplicaIds(Map.of("http://remote.test", remoteTableId))
+                .build();
+        when(externalRestTemplate.exchange(any(String.class), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY),
+                eq(Void.class))).thenThrow(new ResourceAccessException("offline"));
+
+        final int replicated = service.replicateTableDelete(notification);
+
+        assertEquals(0, replicated);
+        verify(outboxService).enqueue(eq(ReplicationOutboxOperationType.TABLE_DELETE),
+                eq("http://remote.test"), eq(HttpMethod.DELETE), eq(notification), eq(databaseId), eq(tableId),
+                eq(remoteDatabaseId), eq(remoteTableId), eq("offline"));
+    }
+
+    @Test
+    public void replicateTableDelete_missingTargetIsSuccessful() {
+        final RestTemplate externalRestTemplate = mock(RestTemplate.class);
+        final ReplicationOutboxService outboxService = mock(ReplicationOutboxService.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+                mock(RestTemplate.class), externalRestTemplate, new ObjectMapper().findAndRegisterModules(),
+                outboxService);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final UUID databaseId = UUID.randomUUID();
+        final UUID tableId = UUID.randomUUID();
+        final UUID remoteDatabaseId = UUID.randomUUID();
+        final UUID remoteTableId = UUID.randomUUID();
+        final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
+                .databaseId(databaseId)
+                .tableId(tableId)
+                .databaseReplicaIds(Map.of("http://remote.test", remoteDatabaseId))
+                .tableReplicaIds(Map.of("http://remote.test", remoteTableId))
+                .build();
+        when(externalRestTemplate.exchange(any(String.class), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY),
+                eq(Void.class))).thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found",
+                HttpHeaders.EMPTY, new byte[0], StandardCharsets.UTF_8));
+
+        final int replicated = service.replicateTableDelete(notification);
+
+        assertEquals(1, replicated);
+        verify(outboxService, never()).enqueue(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 }

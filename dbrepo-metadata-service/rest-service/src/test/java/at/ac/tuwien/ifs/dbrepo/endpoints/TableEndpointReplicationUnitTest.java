@@ -9,9 +9,12 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableCo
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaTableLocation;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
+import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -25,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,6 +62,9 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
 
     @MockitoBean
     private ReplicationService replicationService;
+
+    @MockitoBean
+    private DashboardService dashboardService;
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -165,5 +173,87 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
             tableEndpoint.replicate(DATABASE_3_ID, notification, USER_1_PRINCIPAL);
         });
         verify(databaseService, never()).findById(DATABASE_3_ID);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table"})
+    public void delete_primaryReplicatedTable_enqueuesBeforeLocalDelete() throws Exception {
+        final UUID remoteDatabaseId = UUID.randomUUID();
+        final UUID remoteTableId = UUID.randomUUID();
+        final Database database = Database.builder()
+                .id(DATABASE_3_ID)
+                .replicaUrls(List.of(ReplicaLocation.builder()
+                        .url("http://replica.test")
+                        .replicaDatabaseId(remoteDatabaseId)
+                        .build()))
+                .build();
+        final Table table = Table.builder()
+                .id(TABLE_1_ID)
+                .ownedBy(USER_1_USERNAME)
+                .creationLocation("http://local.test")
+                .identifiers(List.of())
+                .replicaUrls(List.of(ReplicaTableLocation.builder()
+                        .url("http://replica.test")
+                        .replicaTableId(remoteTableId)
+                        .build()))
+                .build();
+        ReflectionTestUtils.setField(tableEndpoint, "baseUrl", "http://local.test");
+        when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
+
+        final ResponseEntity<Void> response = tableEndpoint.delete(DATABASE_3_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        final org.mockito.InOrder order = inOrder(replicationService, tableService);
+        order.verify(replicationService).replicateTableDelete(database, table);
+        order.verify(tableService).deleteTable(table);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table"})
+    public void delete_secondaryReplicatedTable_fails() throws Exception {
+        final Database database = Database.builder().id(DATABASE_3_ID).build();
+        final Table table = Table.builder()
+                .id(TABLE_1_ID)
+                .ownedBy(USER_1_USERNAME)
+                .creationLocation("http://primary.test")
+                .identifiers(List.of())
+                .build();
+        ReflectionTestUtils.setField(tableEndpoint, "baseUrl", "http://local.test");
+        when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
+
+        assertThrows(NotAllowedException.class,
+                () -> tableEndpoint.delete(DATABASE_3_ID, TABLE_1_ID, USER_1_PRINCIPAL));
+        verify(tableService, never()).deleteTable(table);
+    }
+
+    @Test
+    @WithMockUser(username = "replication", authorities = {"replication"})
+    public void deleteReplica_existingTable_deletesLocallyWithoutFanOut() throws Exception {
+        final Database database = Database.builder().id(DATABASE_3_ID).build();
+        final Table table = Table.builder().id(TABLE_1_ID).build();
+        when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
+
+        final ResponseEntity<Void> response = tableEndpoint.deleteReplica(DATABASE_3_ID, TABLE_1_ID);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        verify(tableService).deleteTable(table);
+        verify(replicationService, never()).replicateTableDelete(any(), any());
+    }
+
+    @Test
+    @WithMockUser(username = "replication", authorities = {"replication"})
+    public void deleteReplica_missingTable_isIdempotent() throws Exception {
+        final Database database = Database.builder().id(DATABASE_3_ID).build();
+        when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(tableService.findById(database, TABLE_1_ID))
+                .thenThrow(new TableNotFoundException("already deleted"));
+
+        final ResponseEntity<Void> response = tableEndpoint.deleteReplica(DATABASE_3_ID, TABLE_1_ID);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(tableService, never()).deleteTable(any());
     }
 }
