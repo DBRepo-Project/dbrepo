@@ -23,6 +23,8 @@ public interface ReplicationAccessService {
             NotAllowedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException;
 
+    List<ReplicationAccessDto> findAll();
+
     List<ReplicationAccessDto> findPending();
 
 }

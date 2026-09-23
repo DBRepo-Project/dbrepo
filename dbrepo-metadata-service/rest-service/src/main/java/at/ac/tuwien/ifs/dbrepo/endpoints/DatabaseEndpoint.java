@@ -620,6 +620,15 @@ public class DatabaseEndpoint extends RestEndpoint {
         return ResponseEntity.ok(databaseService.findLocalDatabaseIdByReplicaDatabaseId(replicaDatabaseId));
     }
 
+    @GetMapping("/replication-access")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "List target replica user access",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<List<ReplicationAccessDto>> findReplicationAccess() {
+        return ResponseEntity.ok(replicationAccessService.findAll());
+    }
+
     @GetMapping("/replication-access/pending")
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('system')")

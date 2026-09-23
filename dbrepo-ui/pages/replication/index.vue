@@ -33,6 +33,9 @@
             class="text-h6">
             {{ $t('replication.health.title') }}
           </h2>
+          <v-icon icon="mdi-information-outline" size="small" class="ml-2 text-medium-emphasis">
+            <v-tooltip activator="parent">{{ $t('replication.health.help') }}</v-tooltip>
+          </v-icon>
           <v-spacer />
           <v-chip
             v-if="status"
@@ -81,11 +84,12 @@
       <section
         class="mt-8"
         aria-labelledby="replication-backlog">
-        <h2
-          id="replication-backlog"
-          class="text-h6 mb-3">
-          {{ $t('replication.backlog.title') }}
-        </h2>
+        <div class="d-flex align-center mb-3">
+          <h2 id="replication-backlog" class="text-h6">{{ $t('replication.backlog.title') }}</h2>
+          <v-icon icon="mdi-information-outline" size="small" class="ml-2 text-medium-emphasis">
+            <v-tooltip activator="parent">{{ $t('replication.backlog.help') }}</v-tooltip>
+          </v-icon>
+        </div>
         <v-table
           density="comfortable"
           class="border-sm rounded-sm">
@@ -130,11 +134,12 @@
       <section
         class="mt-8"
         aria-labelledby="replication-sync">
-        <h2
-          id="replication-sync"
-          class="text-h6 mb-3">
-          {{ $t('replication.synchronisation.title') }}
-        </h2>
+        <div class="d-flex align-center mb-3">
+          <h2 id="replication-sync" class="text-h6">{{ $t('replication.synchronisation.title') }}</h2>
+          <v-icon icon="mdi-information-outline" size="small" class="ml-2 text-medium-emphasis">
+            <v-tooltip activator="parent">{{ $t('replication.synchronisation.help') }}</v-tooltip>
+          </v-icon>
+        </div>
         <v-row align="start">
           <v-col
             cols="12"
@@ -214,23 +219,27 @@
             class="text-h6">
             {{ $t('replication.access.title') }}
           </h2>
+          <v-icon icon="mdi-information-outline" size="small" class="ml-2 text-medium-emphasis">
+            <v-tooltip activator="parent">{{ $t('replication.access.help') }}</v-tooltip>
+          </v-icon>
           <v-spacer />
           <v-chip
             size="small"
             variant="tonal"
-            :color="pendingAccess.length > 0 ? 'warning' : 'success'">
-            {{ pendingAccess.length }}
+            :color="pendingAccessCount > 0 ? 'warning' : 'success'">
+            {{ pendingAccessCount }}
+            <v-tooltip activator="parent">{{ $t('replication.access.pendingCount', {count: pendingAccessCount}) }}</v-tooltip>
           </v-chip>
         </div>
         <v-alert
-          v-if="pendingAccess.length === 0"
-          type="success"
+          v-if="replicaAccess.length === 0"
+          type="info"
           variant="tonal"
           :text="$t('replication.access.empty')" />
         <v-data-table
           v-else
           :headers="accessHeaders"
-          :items="pendingAccess"
+          :items="replicaAccess"
           :loading="loadingAccess"
           item-value="database_id"
           density="comfortable">
@@ -252,7 +261,7 @@
               :label="$t('replication.access.localUser')" />
           </template>
           <template #item.status="{item}">
-            <v-chip size="x-small" variant="tonal" color="warning">{{ item.status }}</v-chip>
+            <v-chip size="x-small" variant="tonal" :color="statusColor(item.status)">{{ item.status }}</v-chip>
           </template>
           <template #item.actions="{item}">
             <v-btn
@@ -261,9 +270,9 @@
               size="small"
               variant="tonal"
               :loading="mappingAccessId === item.database_id"
-              :disabled="!accessMappings[item.database_id]"
+              :disabled="!accessMappings[item.database_id] || accessMappings[item.database_id] === item.local_username"
               @click="mapReplicationAccess(item)">
-              {{ $t('replication.actions.mapAccess') }}
+              {{ $t(item.local_username ? 'replication.actions.changeAccess' : 'replication.actions.assignAccess') }}
             </v-btn>
           </template>
         </v-data-table>
@@ -278,6 +287,9 @@
             class="text-h6">
             {{ $t('replication.outboxes.title') }}
           </h2>
+          <v-icon icon="mdi-information-outline" size="small" class="ml-2 text-medium-emphasis">
+            <v-tooltip activator="parent">{{ $t('replication.outboxes.help') }}</v-tooltip>
+          </v-icon>
           <v-spacer />
           <v-btn
             icon="mdi-replay"
@@ -379,7 +391,7 @@ export default {
       replicationOutbox: [],
       metadataOutbox: [],
       dataOutbox: [],
-      pendingAccess: [],
+      replicaAccess: [],
       users: [],
       accessMappings: {},
       mappingAccessId: null,
@@ -407,6 +419,9 @@ export default {
     },
     replicatedDatabases () {
       return this.databases.filter(database => database.replica_urls && Object.keys(database.replica_urls).length > 0)
+    },
+    pendingAccessCount () {
+      return this.replicaAccess.filter(access => access.status === 'PENDING').length
     },
     healthServices () {
       return [
@@ -517,20 +532,23 @@ export default {
       const replicationService = useReplicationService()
       const databaseService = useDatabaseService()
       try {
-        const [status, databases, replicationOutbox, metadataOutbox, pendingAccess, users] = await Promise.all([
+        const [status, databases, replicationOutbox, metadataOutbox, replicaAccess, users] = await Promise.all([
           replicationService.findStatus(),
           databaseService.findAll(),
           replicationService.findReplicationOutbox(),
           replicationService.findMetadataOutbox(),
-          replicationService.findPendingAccess(),
+          replicationService.findAccess(),
           useUserService().findAll()
         ])
         this.status = status
         this.databases = databases
         this.replicationOutbox = replicationOutbox
         this.metadataOutbox = metadataOutbox
-        this.pendingAccess = pendingAccess
+        this.replicaAccess = replicaAccess
         this.users = users
+        this.accessMappings = Object.fromEntries(
+          replicaAccess.map(access => [access.database_id, access.local_username])
+        )
         if (this.selectedDatabaseId) {
           await this.loadDataOutbox()
         }
@@ -627,7 +645,6 @@ export default {
       try {
         await useReplicationService().mapAccess(item.database_id, localUsername)
         useToastInstance().success(this.$t('replication.access.mapped', {username: localUsername}))
-        delete this.accessMappings[item.database_id]
         await this.refreshAll()
       } catch (error) {
         this.showError(error)

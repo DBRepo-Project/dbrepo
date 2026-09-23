@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicationAccessStatus;
+import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DataServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DataServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseNotFoundException;
@@ -94,13 +95,20 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReplicationAccessDto> findPending() {
+    public List<ReplicationAccessDto> findAll() {
         return databaseService.findAll()
                 .stream()
                 .filter(this::isTargetReplica)
-                .filter(database -> database.getReplicationAccessStatus() == null
-                        || database.getReplicationAccessStatus() == ReplicationAccessStatus.PENDING)
                 .map(this::dto)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReplicationAccessDto> findPending() {
+        return findAll()
+                .stream()
+                .filter(access -> access.getStatus() == ReplicationAccessStatus.PENDING)
                 .toList();
     }
 
@@ -112,6 +120,15 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
                 .anyMatch(access -> access.getUsername().equals(localOwner.getUsername()));
         if (!hasAccess) {
             accessService.create(database, localOwner.getUsername(), AccessTypeDto.WRITE_ALL);
+        }
+        final String previousUsername = database.getReplicationLocalUsername();
+        if (previousUsername != null && !previousUsername.equals(localOwner.getUsername())) {
+            try {
+                accessService.delete(database, previousUsername);
+            } catch (AccessNotFoundException e) {
+                log.debug("Previous local owner {} no longer has access to replicated database {}",
+                        previousUsername, database.getId());
+            }
         }
         return databaseService.modifyReplicationAccess(database, originOwner, ReplicationAccessStatus.MAPPED,
                 localOwner.getUsername());

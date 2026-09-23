@@ -38,6 +38,17 @@ public class ReplicationIdentityServiceImpl implements ReplicationIdentityServic
         if (!complete(owner)) {
             return Optional.empty();
         }
+        final Optional<ReplicationIdentityMapping> mapping = repository
+                .findByOriginSiteAndOriginIssuerAndOriginSubject(
+                        normalize(owner.getSiteUrl()), normalize(owner.getIssuer()), owner.getSubject());
+        if (mapping.isPresent()) {
+            try {
+                return Optional.of(userService.findByUsername(mapping.get().getLocalUsername()));
+            } catch (UserNotFoundException | NotAllowedException e) {
+                log.warn("Mapped replication user {} no longer exists", mapping.get().getLocalUsername());
+                return Optional.empty();
+            }
+        }
         if (normalize(owner.getIssuer()).equals(normalize(localIssuer))) {
             try {
                 return Optional.of(userService.findById(UUID.fromString(owner.getSubject())));
@@ -45,16 +56,7 @@ public class ReplicationIdentityServiceImpl implements ReplicationIdentityServic
                 log.debug("Origin owner subject {} is not a local user", owner.getSubject());
             }
         }
-        return repository.findByOriginSiteAndOriginIssuerAndOriginSubject(
-                        normalize(owner.getSiteUrl()), normalize(owner.getIssuer()), owner.getSubject())
-                .flatMap(mapping -> {
-                    try {
-                        return Optional.of(userService.findByUsername(mapping.getLocalUsername()));
-                    } catch (UserNotFoundException | NotAllowedException e) {
-                        log.warn("Mapped replication user {} no longer exists", mapping.getLocalUsername());
-                        return Optional.empty();
-                    }
-                });
+        return Optional.empty();
     }
 
     @Override
@@ -68,8 +70,10 @@ public class ReplicationIdentityServiceImpl implements ReplicationIdentityServic
         final Optional<ReplicationIdentityMapping> existing = repository
                 .findByOriginSiteAndOriginIssuerAndOriginSubject(site, issuer, owner.getSubject());
         if (existing.isPresent()) {
-            if (!existing.get().getLocalUsername().equals(localUsername)) {
-                throw new NotAllowedException("Origin identity is already mapped to another local user");
+            final ReplicationIdentityMapping mapping = existing.get();
+            if (!mapping.getLocalUsername().equals(localUsername)) {
+                mapping.setLocalUsername(localUsername);
+                repository.save(mapping);
             }
             return;
         }

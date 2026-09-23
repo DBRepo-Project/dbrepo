@@ -137,6 +137,49 @@ public class ReplicationAccessServiceUnitTest {
     }
 
     @Test
+    public void map_mappedReplica_transfersAccessToNewLocalOwner() throws Exception {
+        final Database database = targetReplica();
+        database.setReplicationAccessStatus(ReplicationAccessStatus.MAPPED);
+        database.setReplicationLocalUsername("alice");
+        database.getAccesses().add(DatabaseAccess.builder()
+                .database(database)
+                .hdbid(database.getId())
+                .username("alice")
+                .build());
+        final UserDto localUser = UserDto.builder().id(UUID.randomUUID()).username("bob").build();
+        when(userService.findByUsername("bob")).thenReturn(localUser);
+        when(databaseService.modifyReplicationAccess(database, null, ReplicationAccessStatus.MAPPED, "bob"))
+                .thenAnswer(invocation -> {
+                    database.setReplicationLocalUsername("bob");
+                    return database;
+                });
+
+        final ReplicationAccessDto result = service.map(database, "bob");
+
+        assertEquals("bob", result.getLocalUsername());
+        verify(accessService).create(database, "bob", AccessTypeDto.WRITE_ALL);
+        verify(accessService).delete(database, "alice");
+    }
+
+    @Test
+    public void findAll_includesPendingAndMappedTargetReplicas() {
+        final Database pendingTarget = targetReplica();
+        final Database mappedTarget = targetReplica();
+        mappedTarget.setId(UUID.randomUUID());
+        mappedTarget.setReplicationAccessStatus(ReplicationAccessStatus.MAPPED);
+        mappedTarget.setReplicationLocalUsername("alice");
+        final Database local = targetReplica();
+        local.setCreationLocation("https://target.example");
+        when(databaseService.findAll()).thenReturn(List.of(local, mappedTarget, pendingTarget));
+
+        final List<ReplicationAccessDto> result = service.findAll();
+
+        assertEquals(2, result.size());
+        assertEquals("alice", result.getFirst().getLocalUsername());
+        assertEquals(ReplicationAccessStatus.PENDING, result.get(1).getStatus());
+    }
+
+    @Test
     public void findPending_includesLegacyTargetAndExcludesLocalAndMappedReplicas() {
         final Database legacyTarget = targetReplica();
         final Database local = targetReplica();

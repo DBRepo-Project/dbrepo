@@ -1624,12 +1624,14 @@
     "retryQueued": "Replication retry completed",
     "health": {
       "title": "Service health",
+      "help": "Current reachability and response time of the services involved in replication.",
       "unknown": "UNKNOWN",
       "unavailable": "Unavailable",
       "noResponse": "No response"
     },
     "backlog": {
-      "title": "Replication backlog"
+      "title": "Replication backlog",
+      "help": "Summary of durable operations waiting for delivery, retrying, failed, or completed."
     },
     "sources": {
       "replication": "Replication service",
@@ -1656,14 +1658,17 @@
       "localUser": "Local user"
     },
     "access": {
-      "title": "Pending replica access",
-      "empty": "All target replicas have a mapped local owner.",
+      "title": "Replica access",
+      "help": "Assign the local owner of each incoming replica. Changing an owner also changes the default mapping for future replicas from the same origin identity.",
+      "empty": "No incoming replicas are registered on this site.",
+      "pendingCount": "{count} replicas need a local owner",
       "legacy": "Origin identity unavailable",
       "localUser": "Select local user",
-      "mapped": "Replica access mapped to {username}."
+      "mapped": "Replica owner saved as {username}."
     },
     "synchronisation": {
       "title": "Synchronisation",
+      "help": "Manually catch up a replicated database or table after an outage. Normal replication does not require this action.",
       "database": "Database",
       "table": "Table",
       "pageSize": "Page size",
@@ -1672,6 +1677,7 @@
     },
     "outboxes": {
       "title": "Outbox entries",
+      "help": "Inspect durable replication operations and retry entries that did not complete automatically.",
       "selectDatabase": "Select a replicated database to inspect its data outbox."
     },
     "actions": {
@@ -1680,7 +1686,8 @@
       "retryAll": "Retry pending entries",
       "synchroniseDatabase": "Synchronise database",
       "synchroniseTable": "Synchronise table",
-      "mapAccess": "Map replica access"
+      "assignAccess": "Assign owner",
+      "changeAccess": "Change owner"
     }
   },
   "validation": {

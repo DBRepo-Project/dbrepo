@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -52,8 +51,28 @@ public class ReplicationIdentityServiceUnitTest {
 
         assertTrue(result.isPresent());
         assertEquals("alice", result.get().getUsername());
-        verify(repository, never()).findByOriginSiteAndOriginIssuerAndOriginSubject(
+        verify(repository).findByOriginSiteAndOriginIssuerAndOriginSubject(
                 "https://origin.example", "https://identity.example/realms/dbrepo", subject.toString());
+    }
+
+    @Test
+    public void resolve_explicitMappingOverridesSameIssuerUser() throws Exception {
+        final String subject = UUID.randomUUID().toString();
+        final ReplicationIdentityMapping mapping = ReplicationIdentityMapping.builder()
+                .localUsername("bob")
+                .build();
+        when(repository.findByOriginSiteAndOriginIssuerAndOriginSubject(
+                "https://origin.example", "https://identity.example/realms/dbrepo", subject))
+                .thenReturn(Optional.of(mapping));
+        when(userService.findByUsername("bob"))
+                .thenReturn(UserDto.builder().username("bob").build());
+
+        final Optional<UserDto> result = service.resolve(owner("https://origin.example", subject,
+                "https://identity.example/realms/dbrepo"));
+
+        assertTrue(result.isPresent());
+        assertEquals("bob", result.get().getUsername());
+        verify(userService, never()).findById(UUID.fromString(subject));
     }
 
     @Test
@@ -98,17 +117,20 @@ public class ReplicationIdentityServiceUnitTest {
     }
 
     @Test
-    public void map_existingIdentityToDifferentUser_fails() {
+    public void map_existingIdentityToDifferentUser_updatesMapping() throws Exception {
         final String subject = UUID.randomUUID().toString();
+        final ReplicationIdentityMapping mapping = ReplicationIdentityMapping.builder()
+                .localUsername("alice")
+                .build();
         when(repository.findByOriginSiteAndOriginIssuerAndOriginSubject(
                 "https://origin.example", "https://remote-identity.example/realms/dbrepo", subject))
-                .thenReturn(Optional.of(ReplicationIdentityMapping.builder()
-                        .localUsername("alice")
-                        .build()));
+                .thenReturn(Optional.of(mapping));
 
-        assertThrows(NotAllowedException.class, () -> service.map(owner("https://origin.example", subject,
-                "https://remote-identity.example/realms/dbrepo"), "bob"));
-        verify(repository, never()).save(org.mockito.ArgumentMatchers.any());
+        service.map(owner("https://origin.example", subject,
+                "https://remote-identity.example/realms/dbrepo"), "bob");
+
+        assertEquals("bob", mapping.getLocalUsername());
+        verify(repository).save(mapping);
     }
 
     private ReplicationOwnerDto owner(String site, String subject, String issuer) {
