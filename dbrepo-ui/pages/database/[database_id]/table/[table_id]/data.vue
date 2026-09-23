@@ -114,7 +114,7 @@ const { loggedIn } = useOidcAuth()
 <script>
 import TableHistory from '@/components/table/TableHistory.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import { formatTimestamp } from '@/utils'
+import { formatTimestamp, isSecondaryReplica } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import BlobDownload from '@/components/table/BlobDownload.vue'
@@ -246,32 +246,35 @@ export default {
       return userService.hasReadAccess(this.access)
     },
     canAddTuple () {
-      if (!this.roles) {
+      if (this.secondaryReplica || !this.roles) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canSelectTuples () {
-      if (!this.roles) {
+      if (this.secondaryReplica || !this.roles) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
-      if (!this.roles || this.selection === null || this.selection.length !== 1) {
+      if (this.secondaryReplica || !this.roles || this.selection === null || this.selection.length !== 1) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
-      if (!this.roles || this.selection === null || this.selection.length < 1) {
+      if (this.secondaryReplica || !this.roles || this.selection === null || this.selection.length < 1) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('delete-table-data')
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     }
   },
   watch: {
@@ -427,4 +430,3 @@ export default {
   }
 }
 </script>
-

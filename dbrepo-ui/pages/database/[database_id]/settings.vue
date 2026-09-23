@@ -292,6 +292,7 @@
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -411,19 +412,19 @@ export default {
       return this.modifyVisibility.is_public === this.database.is_public && this.modifyVisibility.is_schema_public === this.database.is_schema_public && this.modifyVisibility.is_dashboard_enabled === this.database.is_dashboard_enabled
     },
     canModifyVisibility () {
-      if (!this.roles) {
+      if (this.secondaryReplica || !this.roles) {
         return false
       }
       return this.roles.includes('modify-database-visibility')
     },
     canModifyOwnership () {
-      if (!this.roles) {
+      if (this.secondaryReplica || !this.roles) {
         return false
       }
       return this.roles.includes('modify-database-owner')
     },
     canUpdateScheme () {
-      if (!this.roles) {
+      if (this.secondaryReplica || !this.roles) {
         return false
       }
       return this.roles.includes('find-database')
@@ -441,10 +442,13 @@ export default {
       return this.roles.includes('create-database-access')
     },
     canModifyImage () {
-      if (!this.roles) {
+      if (this.secondaryReplica || !this.roles) {
         return false
       }
       return this.roles.includes('modify-database-image')
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     canViewSettings () {
       if (!this.database || !this.cacheUser) {

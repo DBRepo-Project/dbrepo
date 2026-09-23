@@ -191,7 +191,7 @@
 
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
-import { notEmpty } from '@/utils'
+import { isSecondaryReplica, notEmpty } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -268,7 +268,7 @@ export default {
       return this.cacheStore.getRoles
     },
     canCreateTable () {
-      if (!this.roles) {
+      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.roles) {
         return false
       }
       return this.roles.includes('create-table')

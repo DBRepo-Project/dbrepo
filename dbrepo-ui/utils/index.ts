@@ -11,6 +11,14 @@ export function notEmpty(str: string) {
   return str.trim().length > 0
 }
 
+export function isSecondaryReplica(database: { creation_location?: string | null } | null, currentSite: string) {
+  if (!database?.creation_location || !currentSite) {
+    return false
+  }
+  const normalize = (url: string) => url.trim().replace(/\/+$/, '')
+  return normalize(database.creation_location) !== normalize(currentSite)
+}
+
 export function max(str: string, len: number) {
   if (str === null) {
     return false

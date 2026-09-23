@@ -220,7 +220,7 @@
 
   <script>
 import TableSchema from '@/components/table/TableSchema.vue'
-import { notEmpty } from '@/utils'
+import { isSecondaryReplica, notEmpty } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -306,7 +306,7 @@ export default {
     }
   },
   mounted () {
-    if (!this.database) {
+    if (!this.database || !this.canInsertTableData) {
       return
     }
     this.tableCreate.is_public = this.database.is_public
@@ -345,7 +345,7 @@ export default {
         .includes(tableService.tableNameToInternalName(this.tableCreate.name))
     },
     canInsertTableData() {
-      if (!this.roles) {
+      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.roles) {
         return false
       }
       return this.roles.includes('insert-table-data')

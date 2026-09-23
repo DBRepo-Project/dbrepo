@@ -180,6 +180,7 @@ const { loggedIn } = useOidcAuth()
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -265,7 +266,7 @@ export default {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
     },
     canAssignSemanticInformation () {
-      if (!this.cacheUser || !this.roles) {
+      if (this.secondaryReplica || !this.cacheUser || !this.roles) {
         return false
       }
       if (this.roles.includes('modify-foreign-table-column-semantics')) {
@@ -275,6 +276,9 @@ export default {
         return false
       }
       return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.username === this.cacheUser.preferred_username)
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

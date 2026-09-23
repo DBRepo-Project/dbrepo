@@ -9,6 +9,7 @@
 <script>
 import Builder from '@/components/subset/Builder.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -42,11 +43,14 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    database () {
+      return this.cacheStore.getDatabase
+    },
     roles () {
       return this.cacheStore.getRoles
     },
     canCreateView () {
-      if (!this.roles || !this.roles.includes('create-database-view')) {
+      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.roles || !this.roles.includes('create-database-view')) {
         return false
       }
       const userService = useUserService()

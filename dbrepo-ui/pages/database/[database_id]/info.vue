@@ -212,7 +212,7 @@ import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
+import { formatTimestampUTCLabel, isSecondaryReplica, sizeToHumanLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -323,6 +323,9 @@ export default {
       if (!this.access) {
         return
       }
+      if (isSecondaryReplica(this.database, this.$config.public.api.client)) {
+        return { text: this.$t('pages.database.subpages.access.read') }
+      }
       switch (this.access.type) {
         case 'read':
           return { text: this.$t('pages.database.subpages.access.read') }
@@ -393,4 +396,3 @@ export default {
   }
 }
 </script>
-

@@ -93,6 +93,7 @@
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -176,23 +177,26 @@ export default {
       return this.view.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateVisibility () {
-      if (!this.roles || !this.cacheUser || !this.view) {
+      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
         return false
       }
       return this.roles.includes('modify-view-visibility') && this.view.owner.username === this.cacheUser.preferred_username
     },
     canDeleteView () {
-      if (!this.roles || !this.cacheUser || !this.view) {
+      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
         return false
       }
       return this.roles.includes('delete-database-view') && this.view.owner.username === this.cacheUser.preferred_username
     },
     canViewSettings () {
-      if (!this.view || !this.access || !this.cacheUser) {
+      if (this.secondaryReplica || !this.view || !this.access || !this.cacheUser) {
         return false
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access) && this.view.owner.username === this.cacheUser.preferred_username
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

@@ -11,6 +11,7 @@
 <script>
 import Persist from '@/components/identifier/Persist.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -57,7 +58,7 @@ export default {
       return this.database.owner.username === this.cacheUser.preferred_username
     },
     canPersistIdentifier () {
-      if (!this.database || !this.roles || !this.cacheUser || !this.access) {
+      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.database || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {

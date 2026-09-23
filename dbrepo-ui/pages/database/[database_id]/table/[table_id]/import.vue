@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="canInsertTableData">
     <v-toolbar
       v-if="hasReadAccess"
       flat>
@@ -39,6 +39,7 @@
 <script>
 import TableImport from '@/components/table/TableImport.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -82,6 +83,9 @@ export default {
     table () {
       return this.cacheStore.getTable
     },
+    database () {
+      return this.cacheStore.getDatabase
+    },
     roles () {
       return this.cacheStore.getRoles
     },
@@ -101,7 +105,7 @@ export default {
       return this.$t('pages.table.import.title') + ' ' + this.table.name
     },
     canInsertTableData () {
-      if (!this.table || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data') || !this.hasReadAccess) {
+      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.table || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data') || !this.hasReadAccess) {
         return false
       }
       const userService = useUserService()

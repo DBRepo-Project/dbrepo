@@ -114,6 +114,7 @@
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 import { max } from '@/utils'
 
 export default {
@@ -201,14 +202,14 @@ export default {
       return this.table.description !== this.modify.description
     },
     canUpdateTable () {
-      if (!this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {
+      if (this.secondaryReplica || !this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {
         return false
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access) && this.table.owner.username === this.cacheUser.preferred_username
     },
     canDropTable () {
-      if (!this.roles || !this.table || !this.cacheUser) {
+      if (this.secondaryReplica || !this.roles || !this.table || !this.cacheUser) {
         return false
       }
       if (this.roles.includes('delete-foreign-table')) {
@@ -219,6 +220,9 @@ export default {
       console.debug('===> roles.includes', this.roles.includes('delete-table'))
       console.debug('===> table.identifiers.length', this.table.identifiers.length)
       return tableService.isOwner(this.table, this.cacheUser) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

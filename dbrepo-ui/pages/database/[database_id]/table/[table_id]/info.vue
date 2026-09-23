@@ -151,7 +151,7 @@ import Select from '@/components/identifier/Select.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { useCacheStore } from '@/stores/cache.js'
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -235,6 +235,9 @@ export default {
       return userService.hasReadAccess(this.access)
     },
     canWrite () {
+      if (isSecondaryReplica(this.database, this.$config.public.api.client)) {
+        return false
+      }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser)
     },

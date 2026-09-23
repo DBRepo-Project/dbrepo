@@ -100,6 +100,7 @@ const config = useRuntimeConfig()
 <script>
 import { useCacheStore } from '@/stores/cache.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -136,7 +137,7 @@ export default {
       return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     },
     canCreateIdentifier () {
-      if (!this.roles || !this.access) {
+      if (this.secondaryReplica || !this.roles || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
@@ -166,13 +167,13 @@ export default {
       return this.hasReadAccess
     },
     canCreateView () {
-      if (!this.cacheUser || !this.isOwner || !this.roles || !this.access) {
+      if (this.secondaryReplica || !this.cacheUser || !this.isOwner || !this.roles || !this.access) {
         return false
       }
       return this.roles.includes('create-database-view')
     },
     canCreateTable () {
-      if (!this.cacheUser || !this.hasWriteAccess || !this.roles) {
+      if (this.secondaryReplica || !this.cacheUser || !this.hasWriteAccess || !this.roles) {
         return false
       }
       return this.roles.includes('create-table')
@@ -200,6 +201,9 @@ export default {
         return false
       }
       return this.database.owner.username === this.cacheUser.preferred_username
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()

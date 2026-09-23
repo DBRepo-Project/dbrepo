@@ -68,6 +68,7 @@
 import { useCacheStore } from '@/stores/cache.js'
 import CreateOntology from '@/components/dialogs/CreateOntology.vue'
 import ViewVisibility from '@/components/dialogs/ViewVisibility.vue'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   components: {
@@ -128,13 +129,13 @@ export default {
       return this.hasReadAccess || this.view.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canViewSettings () {
-      if (!this.cacheUser || !this.view) {
+      if (this.secondaryReplica || !this.cacheUser || !this.view) {
         return false
       }
       return this.view.owner.username === this.cacheUser.preferred_username
     },
     canCreatePid () {
-      if (!this.roles || !this.cacheUser || !this.view) {
+      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
         return false
       }
       const cacheUserService = useUserService()
@@ -157,6 +158,9 @@ export default {
         return true
       }
       return this.hasReadAccess
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     identifiers () {
       if (!this.view) {
