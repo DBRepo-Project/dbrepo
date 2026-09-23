@@ -51,16 +51,6 @@ dependencies:
     version: 20.0.2
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: gatewayservice.enabled
-  - name: mariadb-galera
-    alias: datadb
-    version: 13.2.7
-    repository: oci://registry-1.docker.io/bitnamicharts
-    condition: datadb.enabled
-  - name: mariadb-galera
-    alias: metadatadb
-    version: 13.2.7
-    repository: oci://registry-1.docker.io/bitnamicharts
-    condition: metadatadb.enabled
   - name: rabbitmq
     alias: brokerservice
     version: 14.7.0

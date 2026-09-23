@@ -1,0 +1,14 @@
+{{- if .Values.metadatadb.enabled }}
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: dbrepo
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  name: {{ .Values.metadatadb.db.name }}
+  mariaDbRef:
+    name: metadata-db
+  characterSet: utf8
+  collate: utf8_general_ci
+{{- end }}

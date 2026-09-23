@@ -449,6 +449,9 @@
                             "type": "string"
                         }
                     }
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },
@@ -858,9 +861,6 @@
         "datadb": {
             "type": "object",
             "properties": {
-                "configurationConfigMap": {
-                    "type": "string"
-                },
                 "db": {
                     "type": "object",
                     "properties": {
@@ -878,71 +878,33 @@
                 "enabled": {
                     "type": "boolean"
                 },
-                "extraFlags": {
-                    "type": "string"
-                },
-                "fullnameOverride": {
-                    "type": "string"
-                },
-                "galera": {
-                    "type": "object",
-                    "properties": {
-                        "mariabackup": {
-                            "type": "object",
-                            "properties": {
-                                "password": {
-                                    "type": "string"
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
                 "host": {
-                    "type": "string"
-                },
-                "image": {
-                    "type": "object",
-                    "properties": {
-                        "repository": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "initdbScriptsConfigMap": {
                     "type": "string"
                 },
                 "jdbcExtraArgs": {
                     "type": "string"
-                },
-                "metrics": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "repository": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
                 },
                 "persistence": {
                     "type": "object",
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "size": {
+                            "type": "string"
                         }
                     }
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "replication": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "resourcesPreset": {
                     "type": "string"
@@ -1386,43 +1348,7 @@
                 "enabled": {
                     "type": "boolean"
                 },
-                "extraFlags": {
-                    "type": "string"
-                },
-                "extraInitDbScripts": {
-                    "type": "object"
-                },
-                "fullnameOverride": {
-                    "type": "string"
-                },
-                "galera": {
-                    "type": "object",
-                    "properties": {
-                        "mariabackup": {
-                            "type": "object",
-                            "properties": {
-                                "password": {
-                                    "type": "string"
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
                 "host": {
-                    "type": "string"
-                },
-                "image": {
-                    "type": "object",
-                    "properties": {
-                        "repository": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "initdbScriptsConfigMap": {
                     "type": "string"
                 },
                 "jdbcExtraArgs": {
@@ -1449,11 +1375,22 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "size": {
+                            "type": "string"
                         }
                     }
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "replication": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "resourcesPreset": {
                     "type": "string"
