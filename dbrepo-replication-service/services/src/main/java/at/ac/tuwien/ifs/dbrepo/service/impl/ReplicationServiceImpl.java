@@ -253,6 +253,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     public DatabaseSynchronisationResult synchroniseDatabase(UUID databaseId, int pageSize) {
         requirePositivePageSize(pageSize);
         final DatabaseDto database = fetchDatabase(databaseId);
+        requirePrimaryDatabase(database);
         if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
             log.info("Skip database data synchronization: missing replica URLs for database {}", databaseId);
             return new DatabaseSynchronisationResult(0, 0, 0, 0);
@@ -282,6 +283,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     public DataSynchronisationResult synchroniseData(UUID databaseId, UUID tableId, int pageSize) {
         requirePositivePageSize(pageSize);
         final DatabaseDto database = fetchDatabase(databaseId);
+        requirePrimaryDatabase(database);
         final TableDto table = fetchTable(databaseId, tableId);
         return synchroniseData(database, table, pageSize);
     }
@@ -319,6 +321,12 @@ public class ReplicationServiceImpl implements ReplicationService {
     private void requirePositivePageSize(int pageSize) {
         if (pageSize <= 0) {
             throw new IllegalArgumentException("Page size must be positive");
+        }
+    }
+
+    private void requirePrimaryDatabase(DatabaseDto database) {
+        if (!site(database.getCreationLocation()).isEmpty() && !isLocalSite(database.getCreationLocation())) {
+            throw new IllegalArgumentException("Synchronisation can only be started on the primary site");
         }
     }
 

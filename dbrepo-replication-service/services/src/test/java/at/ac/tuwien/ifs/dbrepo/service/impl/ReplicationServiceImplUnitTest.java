@@ -45,6 +45,7 @@ public class ReplicationServiceImplUnitTest {
         final UUID remoteTableId = UUID.randomUUID();
         final DatabaseDto database = DatabaseDto.builder()
                 .id(databaseId)
+                .creationLocation("http://local.test")
                 .replicaUrls(Map.of("http://remote.test", remoteDatabaseId))
                 .build();
         final TableDto table = TableDto.builder()
@@ -118,6 +119,7 @@ public class ReplicationServiceImplUnitTest {
                 .build();
         final DatabaseDto database = DatabaseDto.builder()
                 .id(databaseId)
+                .creationLocation("http://local.test")
                 .tables(List.of(replicatedTable, localOnlyTable))
                 .replicaUrls(Map.of("http://remote.test", remoteDatabaseId))
                 .build();
@@ -184,5 +186,47 @@ public class ReplicationServiceImplUnitTest {
         assertThrows(IllegalArgumentException.class, () -> {
             service.synchroniseData(UUID.randomUUID(), UUID.randomUUID(), 0);
         });
+    }
+
+    @Test
+    public void synchroniseDatabase_secondaryReplica_fails() {
+        final RestTemplate metadataRestTemplate = mock(RestTemplate.class);
+        final RestTemplate dataRestTemplate = mock(RestTemplate.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(metadataRestTemplate, dataRestTemplate,
+                mock(RestTemplate.class), new ObjectMapper().findAndRegisterModules(),
+                mock(ReplicationOutboxService.class));
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final UUID databaseId = UUID.randomUUID();
+        when(metadataRestTemplate.exchange(eq("/api/v1/database/" + databaseId), eq(HttpMethod.GET),
+                eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+                .thenReturn(ResponseEntity.ok(DatabaseDto.builder()
+                        .id(databaseId)
+                        .creationLocation("http://primary.test")
+                        .build()));
+
+        assertThrows(IllegalArgumentException.class, () -> service.synchroniseDatabase(databaseId, 100));
+        verify(dataRestTemplate, never()).exchange(any(String.class), any(HttpMethod.class), any(HttpEntity.class),
+                eq(ReplicationSynchronisationDataDto.class));
+    }
+
+    @Test
+    public void synchroniseData_secondaryReplica_fails() {
+        final RestTemplate metadataRestTemplate = mock(RestTemplate.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(metadataRestTemplate,
+                mock(RestTemplate.class), mock(RestTemplate.class), new ObjectMapper().findAndRegisterModules(),
+                mock(ReplicationOutboxService.class));
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final UUID databaseId = UUID.randomUUID();
+        final UUID tableId = UUID.randomUUID();
+        when(metadataRestTemplate.exchange(eq("/api/v1/database/" + databaseId), eq(HttpMethod.GET),
+                eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+                .thenReturn(ResponseEntity.ok(DatabaseDto.builder()
+                        .id(databaseId)
+                        .creationLocation("http://primary.test")
+                        .build()));
+
+        assertThrows(IllegalArgumentException.class, () -> service.synchroniseData(databaseId, tableId, 100));
+        verify(metadataRestTemplate, never()).exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId),
+                eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class));
     }
 }

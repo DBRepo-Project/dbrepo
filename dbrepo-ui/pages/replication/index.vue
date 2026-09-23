@@ -149,6 +149,7 @@
               :items="replicatedDatabases"
               item-title="name"
               item-value="id"
+              :no-data-text="$t('replication.synchronisation.empty')"
               :label="$t('replication.synchronisation.database')"
               variant="outlined"
               hide-details="auto"
@@ -377,6 +378,7 @@
 
 <script>
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   data () {
@@ -418,7 +420,10 @@ export default {
       return Number.isInteger(this.pageSize) && this.pageSize > 0 && this.pageSize <= 1000
     },
     replicatedDatabases () {
-      return this.databases.filter(database => database.replica_urls && Object.keys(database.replica_urls).length > 0)
+      return this.databases.filter(database =>
+        !isSecondaryReplica(database, this.$config.public.api.client) &&
+        database.replica_urls && Object.keys(database.replica_urls).length > 0
+      )
     },
     pendingAccessCount () {
       return this.replicaAccess.filter(access => access.status === 'PENDING').length

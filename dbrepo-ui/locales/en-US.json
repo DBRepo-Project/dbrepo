@@ -1668,7 +1668,8 @@
     },
     "synchronisation": {
       "title": "Synchronisation",
-      "help": "Manually catch up a replicated database or table after an outage. Normal replication does not require this action.",
+      "help": "Manually replay a primary database or table to its configured replicas after an outage. Normal replication does not require this action.",
+      "empty": "No primary replicated databases are available on this site.",
       "database": "Database",
       "table": "Table",
       "pageSize": "Page size",

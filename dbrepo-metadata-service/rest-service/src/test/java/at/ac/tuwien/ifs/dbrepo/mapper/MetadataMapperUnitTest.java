@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
@@ -23,6 +25,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -194,6 +199,26 @@ public class MetadataMapperUnitTest extends BaseTest {
 
         assertNotNull(response.getContactPerson());
         assertEquals(USER_1_USERNAME, response.getContactPerson().getUsername());
+    }
+
+    @Test
+    public void databaseToDatabaseBriefDto_mapsReplicationTopology() {
+        final UUID replicaId = UUID.randomUUID();
+        final Database database = Database.builder()
+                .id(UUID.randomUUID())
+                .contactPerson(USER_1_USERNAME)
+                .ownedBy(USER_1_USERNAME)
+                .creationLocation("https://primary.example")
+                .replicaUrls(List.of(ReplicaLocation.builder()
+                        .url("https://replica.example")
+                        .replicaDatabaseId(replicaId)
+                        .build()))
+                .build();
+
+        final DatabaseBriefDto response = metadataMapper.databaseToDatabaseBriefDto(database);
+
+        assertEquals("https://primary.example", response.getCreationLocation());
+        assertEquals(Map.of("https://replica.example", replicaId), response.getReplicaUrls());
     }
 
     @Test

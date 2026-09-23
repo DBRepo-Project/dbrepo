@@ -1228,6 +1228,7 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "contactPerson", expression = "java(UserBriefDto.builder().username(data.getContactPerson()).build())"),
+            @Mapping(target = "replicaUrls", source = "replicaUrls", qualifiedByName = "replicaLocationListToMap")
     })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 

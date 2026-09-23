@@ -80,7 +80,12 @@ public class DataEndpoint {
         if (pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page size must be positive");
         }
-        final DatabaseSynchronisationResult result = replicationService.synchroniseDatabase(databaseId, pageSize);
+        final DatabaseSynchronisationResult result;
+        try {
+            result = replicationService.synchroniseDatabase(databaseId, pageSize);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
         return ResponseEntity.ok(Map.of(
                 "status", "completed",
                 "tables", result.tables(),
@@ -102,7 +107,12 @@ public class DataEndpoint {
         if (pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page size must be positive");
         }
-        final DataSynchronisationResult result = replicationService.synchroniseData(databaseId, tableId, pageSize);
+        final DataSynchronisationResult result;
+        try {
+            result = replicationService.synchroniseData(databaseId, tableId, pageSize);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
         return ResponseEntity.ok(Map.of(
                 "status", "completed",
                 "pages", result.pages(),
