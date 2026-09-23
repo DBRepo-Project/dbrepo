@@ -256,13 +256,14 @@
           </template>
           <template #item.actions="{item}">
             <v-btn
-              icon="mdi-account-check"
+              prepend-icon="mdi-account-check"
+              color="primary"
               size="small"
-              variant="text"
+              variant="tonal"
               :loading="mappingAccessId === item.database_id"
               :disabled="!accessMappings[item.database_id]"
               @click="mapReplicationAccess(item)">
-              <v-tooltip activator="parent">{{ $t('replication.actions.mapAccess') }}</v-tooltip>
+              {{ $t('replication.actions.mapAccess') }}
             </v-btn>
           </template>
         </v-data-table>
