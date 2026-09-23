@@ -194,6 +194,11 @@ SECRET_PATH="./dbrepo-metadata-db"
 if [[ $INSTALL_SCRIPT -eq 1 ]]; then
   SECRET_PATH="./config"
 fi
+cat <<EOF > "$SECRET_PATH/metrics.cnf"
+[client]
+user=readonly
+password=$READONLY_PASSWORD
+EOF
 cat <<EOF > $SECRET_PATH/2_setup-data.sql
 BEGIN;
 INSERT INTO \`mdb_containers\` (id, name, internal_name, image_id, host, port, ui_host, ui_port, privileged_username,
