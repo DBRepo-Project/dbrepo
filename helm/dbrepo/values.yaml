@@ -200,6 +200,25 @@ authservice:
     existingConfigmap: auth-service-config
   ## @skip authservice.extraEnvVarsSecret
   extraEnvVarsSecret: auth-service-secret
+  ## @skip authservice.customReadinessProbe
+  customReadinessProbe:
+    exec:
+      command:
+        - /bin/bash
+        - -ec
+        - |
+          curl --fail --silent --show-error \
+            "http://127.0.0.1:${KC_HTTP_PORT:-8080}${KC_HTTP_RELATIVE_PATH:-/}realms/master" \
+            >/dev/null
+          address="${IDENTITY_SERVICE_ENDPOINT#*://}"
+          host="${address%:*}"
+          port="${address##*:}"
+          true >"/dev/tcp/${host}/${port}"
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+    successThreshold: 1
   ## @skip authservice.extraVolumes
   extraVolumes:
     - name: import
