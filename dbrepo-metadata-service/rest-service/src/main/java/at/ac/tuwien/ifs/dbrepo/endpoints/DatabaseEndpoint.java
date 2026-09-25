@@ -438,10 +438,19 @@ public class DatabaseEndpoint extends RestEndpoint {
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 Principal principal) throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, UserNotFoundException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = filterDatabase(databaseService.findById(databaseId), principal);
         final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
+        dto.getAccesses().forEach(a -> {
+                try {
+                        a.setUser(metadataMapper.userDtoToUserBriefDto(userService.findByUsername(a.getUsername())));
+                } catch (UserNotFoundException | NotAllowedException e) {
+                        e.printStackTrace();
+                }
+        });
+        dto.setOwner(metadataMapper.userDtoToUserBriefDto(userService.findByUsername(dto.getOwner().getUsername())));
+        dto.setContact(metadataMapper.userDtoToUserBriefDto(userService.findByUsername(dto.getContact().getUsername())));
         final HttpHeaders headers = new HttpHeaders();
         if (AuthUtil.isSystem(principal)) {
             log.trace("attach privileged credential information");
@@ -456,5 +465,4 @@ public class DatabaseEndpoint extends RestEndpoint {
                 .headers(headers)
                 .body(dto);
     }
-
 }
