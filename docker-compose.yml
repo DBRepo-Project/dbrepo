@@ -25,7 +25,7 @@ services:
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
       - ./dbrepo-metadata-db/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
-      - "${METADATA_DB_HOST_PORT:-13306}:3306"
+      - "${METADATA_DB_HOST_PORT:-3306}:3306"
     environment:
       MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepo}"
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"

@@ -4,8 +4,8 @@
       "name": "default",
       "credentials": [
         {
-          "accessKey": "7e8f7b652dac5d902f97bfd31f8bb4fa",
-          "secretKey": "92053980624d2ce4e4e6803709c5c2ef"
+          "accessKey": "5891fb124311c3c602a7a22e8e9fc8ad",
+          "secretKey": "d51c599c14b2254f2f62cef4ad025b84"
         }
       ],
       "actions": [
@@ -18,8 +18,8 @@
       "name": "admin",
       "credentials": [
         {
-          "accessKey": "617b64e8f910c2481f33cec71a24a957",
-          "secretKey": "05e0068770511c63413e7af19a334368"
+          "accessKey": "0956504ef2acbf495d44a7e3a6121734",
+          "secretKey": "c06a28b281ce5054506c494d0932bfef"
         }
       ],
       "actions": [
