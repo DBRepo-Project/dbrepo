@@ -577,7 +577,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void findById_anonymousPublicSchemaNoAccess_succeeds() throws NotAllowedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, UserNotFoundException {
 
         /* test */
         final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_2_ID, DATABASE_2, null);
@@ -591,7 +591,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void findById_privateSchemaNoAccessInternalUser_succeeds() throws NotAllowedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, UserNotFoundException {
 
         /* test */
         final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_3_ID, DATABASE_3, USER_LOCAL_ADMIN_PRINCIPAL);
@@ -605,7 +605,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void findById_privateSchemaPrivateDataNoAccessInternalUser_succeeds() throws NotAllowedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, UserNotFoundException {
 
         /* test */
         final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
@@ -638,7 +638,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findById_ownerSeesAccessRights_succeeds() throws DatabaseNotFoundException, NotAllowedException {
+    public void findById_ownerSeesAccessRights_succeeds() throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -655,7 +655,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void findById_hiddenAccessRights_succeeds() throws DatabaseNotFoundException, NotAllowedException {
+    public void findById_hiddenAccessRights_succeeds() throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -672,7 +672,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findById_hiddenAccessRightsSeesOwn_succeeds() throws DatabaseNotFoundException, NotAllowedException {
+    public void findById_hiddenAccessRightsSeesOwn_succeeds() throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -709,7 +709,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
-    public void findById_system_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void findById_system_succeeds() throws NotAllowedException, DatabaseNotFoundException, UserNotFoundException {
 
         /* test */
         final ResponseEntity<DatabaseDto> response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
@@ -829,7 +829,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     }
 
     public ResponseEntity<DatabaseDto> findById_generic(UUID databaseId, Database database, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException {
 
         /* mock */
         if (database != null) {
