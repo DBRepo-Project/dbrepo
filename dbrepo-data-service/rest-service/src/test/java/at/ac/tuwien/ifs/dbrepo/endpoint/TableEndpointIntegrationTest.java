@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoint;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
+import at.ac.tuwien.ifs.dbrepo.config.SeaweedFsContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.TableEndpoint;
 import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
@@ -28,7 +29,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
-import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -79,11 +80,11 @@ public class TableEndpointIntegrationTest extends BaseTest {
     private static RedisContainerConfig.CustomRedisContainer redisContainer = RedisContainerConfig.getContainer();
 
     @Container
-    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);
+    private static final GenericContainer<?> seaweedfsContainer = SeaweedFsContainerConfig.getContainer();
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", minIOContainer::getS3URL);
+        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", () -> SeaweedFsContainerConfig.getEndpoint(seaweedfsContainer));
     }
 
     @BeforeEach

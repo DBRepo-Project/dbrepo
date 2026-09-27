@@ -56,7 +56,6 @@
         <c3p0.version>0.10.2</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <aws-sdk.version>2.20.18</aws-sdk.version>
-        <minio.version>8.5.7</minio.version>
         <guava.version>33.3.0-jre</guava.version>
         <spark.version>4.0.0</spark.version>
         <keycloak.version>26.0.4</keycloak.version>
@@ -304,12 +303,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mariadb</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>minio</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>

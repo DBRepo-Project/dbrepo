@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
+import at.ac.tuwien.ifs.dbrepo.config.SeaweedFsContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
@@ -17,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -50,11 +51,11 @@ public class StorageServiceIntegrationTest extends BaseTest {
     private S3Config s3Config;
 
     @Container
-    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);
+    private static final GenericContainer<?> seaweedfsContainer = SeaweedFsContainerConfig.getContainer();
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", minIOContainer::getS3URL);
+        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", () -> SeaweedFsContainerConfig.getEndpoint(seaweedfsContainer));
     }
 
     @BeforeAll
@@ -95,7 +96,7 @@ public class StorageServiceIntegrationTest extends BaseTest {
     public void getObject_bucket_fails() {
 
         /* test */
-        assertThrows(StorageUnavailableException.class, () -> {
+        assertThrows(StorageNotFoundException.class, () -> {
             storageService.getObject("i_do_not_exist", "s3key");
         });
     }
