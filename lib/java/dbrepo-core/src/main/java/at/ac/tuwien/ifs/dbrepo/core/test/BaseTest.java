@@ -136,7 +136,7 @@ public class BaseTest {
 
     public final static SimpleDateFormat MARIADB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
+    public final static String SEAWEEDFS_IMAGE = "chrislusf/seaweedfs:4.13";
     public final static String MARIADB_IMAGE = "bitnamilegacy/mariadb:11.3.2";
     public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
     public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.4.4";
