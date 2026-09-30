@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -50,6 +51,7 @@ public class UserServiceUnitTest extends BaseTest {
         final UserDto response = userService.findByUsername(USER_1_USERNAME);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
+        assertEquals(USER_1_QUALIFIED_NAME, response.getQualifiedName());
     }
 
     @Test
@@ -65,6 +67,7 @@ public class UserServiceUnitTest extends BaseTest {
         final UserDto response = userService.findById(USER_1_ID);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
+        assertEquals(USER_1_QUALIFIED_NAME, response.getQualifiedName());
     }
 
     @Test

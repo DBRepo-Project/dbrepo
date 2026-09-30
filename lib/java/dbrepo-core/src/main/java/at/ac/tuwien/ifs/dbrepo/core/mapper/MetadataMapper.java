@@ -242,6 +242,10 @@ public interface MetadataMapper {
                 .username(data.getUsername())
                 .firstname(data.getFirstName())
                 .lastname(data.getLastName())
+                .name(String.format("%s %s", data.getFirstName(), data.getLastName()))
+                .qualifiedName(data.getFirstName() != null && data.getLastName() != null ?
+                                String.format("%s %s — @%s", data.getFirstName(), data.getLastName(), data.getUsername()) :
+                                String.format("@%s", data.getUsername()))
                 .attributes(UserAttributesDto.builder()
                         .theme(attributeToValue("theme", data.getAttributes()))
                         .affiliation(attributeToValue("affiliation", data.getAttributes()))
