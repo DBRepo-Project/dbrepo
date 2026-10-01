@@ -10,10 +10,10 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
@@ -31,12 +31,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.security.Principal;
 import java.sql.SQLException;
@@ -51,7 +50,6 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/subset")
 public class SubsetEndpoint {
 
-    private final DataMapper dataMapper;
     private final DataService dataService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
@@ -62,11 +60,10 @@ public class SubsetEndpoint {
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetEndpoint(DataMapper dataMapper, DataService dataService, MariaDbMapper mariaDbMapper,
+    public SubsetEndpoint(DataService dataService, MariaDbMapper mariaDbMapper,
                           SubsetService subsetService, AnalyseService analyseService, MetadataMapper metadataMapper,
                           MetadataService metadataService, EndpointValidator endpointValidator,
                           MetadataServiceGateway metadataServiceGateway) {
-        this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
@@ -223,7 +220,7 @@ public class SubsetEndpoint {
                     description = "Failed to communicate with database",
                     content = {@Content}),
     })
-    public ResponseEntity<?> create(@NotNull @PathVariable("databaseId") UUID databaseId,
+    public ResponseEntity<StreamingResponseBody> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                     @Valid @RequestBody SubsetDto data,
                                     Principal principal,
                                     @NotNull HttpServletRequest request,
@@ -320,7 +317,7 @@ public class SubsetEndpoint {
                     description = "Failed to communicate with database",
                     content = {@Content}),
     })
-    public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+    public ResponseEntity<StreamingResponseBody> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
                                      @NotNull @PathVariable("subsetId") UUID subsetId,
                                      Principal principal,
                                      @NotNull @RequestHeader("Accept") String accept,
@@ -388,17 +385,18 @@ public class SubsetEndpoint {
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final List<Map<String, Object>> body = dataMapper.datasetToJson(dataService.getSubsetAsJson(database, paginatedStatement));
+                    final QueryResultStream result1 = dataService.query(database, paginatedStatement);
                     return ResponseEntity.status(statusCode)
+                            .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                             .headers(headers)
-                            .body(body);
+                            .body(result1::writeJson);
                 case "text/csv":
-                    final Dataset<Row> dataset = dataService.getSubsetAsCsv(database, paginatedStatement);
+                    final QueryResultStream result2 = dataService.query(database, paginatedStatement);
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
                             .contentType(org.springframework.http.MediaType.parseMediaType("text/csv"))
                             .headers(headers)
-                            .body(dataMapper.datasetToCsv(dataset, responseColumns));
+                            .body(out -> result2.writeCsv(out, responseColumns));
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

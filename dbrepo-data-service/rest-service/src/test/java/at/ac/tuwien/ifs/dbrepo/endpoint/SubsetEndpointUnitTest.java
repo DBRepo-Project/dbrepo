@@ -10,12 +10,10 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.SubsetEndpoint;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
+import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -72,8 +70,6 @@ public class SubsetEndpointUnitTest extends BaseTest {
     @MockitoBean
     private DataService dataService;
 
-    @MockitoBean
-    private DataMapper dataMapper;
 
     @Autowired
     private SubsetEndpoint subsetEndpoint;
@@ -302,6 +298,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryExecutionException, MalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -334,7 +332,6 @@ public class SubsetEndpointUnitTest extends BaseTest {
             SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
             AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
-        final Dataset<Row> mockDataset = Mockito.mock(Dataset.class);
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -345,8 +342,6 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(Database.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_CACHE);
-        when(dataService.getSubsetAsJson(any(Database.class), anyString()))
-                .thenReturn(mockDataset);
         when(viewService.create(any(Database.class), anyString(), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
         when(viewService.inspect(any(Database.class), anyString()))
@@ -357,8 +352,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn("POST");
         when(analyseService.determineDataTypes(DATABASE_3_CACHE, QUERY_5_DTO))
                 .thenReturn(QUERY_5_ANALYSIS_MAP_DTO);
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
@@ -395,6 +390,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_4_ID))
                 .thenReturn(DATABASE_4_CACHE);
         when(subsetService.findById(eq(DATABASE_4_CACHE), any(UUID.class)))
@@ -425,6 +422,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -485,6 +484,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
@@ -546,6 +547,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
