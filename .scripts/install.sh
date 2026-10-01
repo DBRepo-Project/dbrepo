@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # preset
-APP_VERSION="1.14.1"
+APP_VERSION="${APP_VERSION:-1.14.1}"
 MIN_CPU=8
 MIN_RAM=10
 SKIP_CHECKS=${SKIP_CHECKS:-0}
@@ -10,8 +12,7 @@ DOWNLOAD_ONLY=${DOWNLOAD_ONLY:-0}
 # checks
 if [[ $SKIP_CHECKS -eq 0 ]] && [[ $DOWNLOAD_ONLY -ne 1 ]]; then
   echo "[✨] Startup check ..."
-  docker info > /dev/null
-  if [[ $? -ne 0 ]]; then
+  if ! docker info > /dev/null; then
     echo "Docker is not installed (or accessible in bash) on your system:"
     echo ""
     echo "  - install docker from https://docs.docker.com/desktop/install/linux-install/"
@@ -46,8 +47,10 @@ fi
 
 # environment
 echo "[🚀] Gathering environment for version ${APP_VERSION} ..."
-curl -ksSL -o ./dist.tar.gz "https://github.com/DBRepo-Project/dbrepo/archive/refs/tags/${APP_VERSION}.tar.gz"
-tar xzfv ./dist.tar.gz
+curl -fsSL -o ./dist.tar.gz "https://github.com/DBRepo-Project/dbrepo/releases/download/v${APP_VERSION}/dist.tar.gz"
+tar xzf ./dist.tar.gz
+test -f ./docker-compose.yml
+test -f ./config/gen-secrets.sh
 
 if [[ $DOWNLOAD_ONLY -eq 1 ]]; then
   echo "[🎉] Successfully downloaded environment!"
