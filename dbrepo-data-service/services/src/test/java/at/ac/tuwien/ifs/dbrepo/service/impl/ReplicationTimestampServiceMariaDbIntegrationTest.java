@@ -7,12 +7,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -42,8 +45,10 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
             """;
     private final Database database = Database.builder().id(UUID.randomUUID()).internalName(SCHEMA).build();
     private final ReplicationTimestampServiceMariaDbImpl service = spy(new ReplicationTimestampServiceMariaDbImpl());
+    private final ComboPooledDataSource pool = mock(ComboPooledDataSource.class);
     private String url;
     private String password;
+    private String serviceTimeZone = "+00:00";
 
     @BeforeEach
     void setup() throws Exception {
@@ -56,8 +61,13 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
             connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS " + SCHEMA);
         }
         sql("DROP TABLE IF EXISTS tuple_replication_timestamps");
-        final ComboPooledDataSource pool = mock(ComboPooledDataSource.class);
-        when(pool.getConnection()).thenAnswer(invocation -> connection());
+        when(pool.getConnection()).thenAnswer(invocation -> {
+            final Connection connection = connection();
+            try (var statement = connection.createStatement()) {
+                statement.execute("SET time_zone='" + serviceTimeZone + "'");
+            }
+            return connection;
+        });
         doReturn(pool).when(service).getDataSource(any(Database.class));
     }
 
@@ -81,6 +91,7 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
         service.saveTimestamps(database, List.of(timestamp("probe", START, null)));
         assertEquals(surviving, rows("WHERE replication_id='legacy'"));
         assertEquals(List.of("site_url", "replication_id", "database_id", "table_id", "row_start"), primaryKey());
+        assertFullOriginSchema();
         assertEquals(2, rows("").size(), "Only the surviving legacy row and the supplied probe may exist");
 
         final var sameTableDifferentDatabase = timestamp("legacy", START, NEXT);
@@ -218,6 +229,178 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
         assertEquals(1, rows("").size());
     }
 
+    @Test
+    void migratesFiveColumnPrefixKeyAndDistinguishesLongOriginsWithIdenticalPrefixes() throws Exception {
+        sql(LEGACY_SCHEMA.replace("replication_id, row_start", "replication_id, database_id, table_id, row_start"));
+        // Four valid DNS labels totaling 253 characters; both origins share their first 255 characters.
+        final String common = "https://" + ("a".repeat(63) + ".").repeat(3) + "b".repeat(60);
+        final String first = common + "c";
+        final String second = common + "d";
+        assertEquals(261, first.length());
+        assertEquals(first.substring(0, 255), second.substring(0, 255));
+        insertLegacy(first, "long-origin");
+        final List<String> before = rows("");
+        service.saveTimestamps(database, List.of(timestamp("probe", START, null)));
+        assertEquals(before, rows("WHERE replication_id='long-origin'"));
+        assertFullOriginSchema();
+
+        final var a = timestamp("long-origin", START, null);
+        a.setSiteUrl(first);
+        final var b = timestamp("long-origin", START, NEXT);
+        b.setSiteUrl(second);
+        service.saveTimestamps(database, List.of(a, b));
+        assertEquals(2, rows("WHERE replication_id='long-origin'").size());
+        assertTrue(rows("").contains(before.getFirst()), "The legacy origin and closed interval must remain unchanged");
+        final List<String> after = rows("");
+        service.saveTimestamps(database, List.of(b, a));
+        assertEquals(after, rows(""));
+    }
+
+    @Test
+    void invalidLegacyOriginsLeaveBothRecognizedSchemasAndEvidenceUntouched() throws Exception {
+        for (boolean fiveColumns : List.of(false, true)) {
+            for (String site : List.of("https://" + "a".repeat(505), "https://\u00e9.example",
+                    "https://origin.example/path", "https://ORIGIN.example", "https://origin.example/",
+                    "https://origin.example:443", "https://" + "a".repeat(64) + ".example")) {
+                sql("DROP TABLE IF EXISTS tuple_replication_timestamps");
+                sql(fiveColumns ? LEGACY_SCHEMA.replace("replication_id, row_start",
+                        "replication_id, database_id, table_id, row_start") : LEGACY_SCHEMA);
+                insertLegacy(site, "invalid-origin");
+                final List<String> before = rows("");
+                final String schema = schema();
+                final SQLException failure = assertThrows(SQLException.class,
+                        () -> service.saveTimestamps(database, List.of(timestamp("probe", START, null))));
+                assertTrue(failure.getMessage().contains("canonical ASCII replication origin"));
+                assertEquals(before, rows(""));
+                assertEquals(schema, schema(), "Validation must fail before ALTER, without normalizing or truncating");
+            }
+        }
+    }
+
+    @Test
+    void fullKeyWithUnexpectedOriginColumnFailsClosed() throws Exception {
+        sql(LEGACY_SCHEMA.replace("site_url TEXT", "site_url VARCHAR(512) CHARACTER SET ascii COLLATE ascii_general_ci")
+                .replace("site_url(255), replication_id, row_start", "site_url, replication_id, database_id, table_id, row_start"));
+        insertLegacy("https://origin.example", "legacy");
+        final List<String> before = rows("");
+        final String schema = schema();
+        final SQLException failure = assertThrows(SQLException.class,
+                () -> service.saveTimestamps(database, List.of(timestamp("probe", START, null))));
+        assertTrue(failure.getMessage().contains("Unrecognized timestamp origin column"));
+        assertEquals(before, rows(""));
+        assertEquals(schema, schema());
+    }
+
+    @Test
+    void migrationLocksOutLegacyWritersBetweenValidationAndAlter() throws Exception {
+        sql(LEGACY_SCHEMA);
+        insertLegacy("https://origin.example", "legacy");
+        final List<String> before = rows("");
+        try (var connection = connection()) {
+            final Connection migrating = spy(connection);
+            doAnswer(invocation -> {
+                // An old writer must not sneak a truncating or noncanonical value past the preflight scan.
+                try (var writer = connection(); var statement = writer.createStatement()) {
+                    statement.execute("SET lock_wait_timeout=1");
+                    final SQLException failure = assertThrows(SQLException.class, () -> statement.executeUpdate("""
+                            INSERT INTO tuple_replication_timestamps VALUES
+                            ('https://invalid.example/path', 'racing-writer', 'source-db', 'source-table',
+                             '2026-10-03 12:00:00.000001', NULL)
+                            """));
+                    assertEquals(1205, failure.getErrorCode(), "The writer must time out on the migration's table lock");
+                }
+                return connection.prepareStatement(invocation.getArgument(0));
+            }).when(migrating).prepareStatement(startsWith("ALTER TABLE"));
+            when(pool.getConnection()).thenReturn(migrating);
+            service.saveTimestamps(database, List.of(timestamp("probe", START, null)));
+        }
+        assertEquals(before, rows("WHERE replication_id='legacy'"));
+        assertEquals(2, rows("").size());
+        assertFullOriginSchema();
+    }
+
+    @Test
+    void migrationAndAllOperationsPreserveInstantsAcrossNonUtcJvmAndSessionTimeZones() throws Exception {
+        sql(LEGACY_SCHEMA);
+        insertLegacy("https://origin.example", "legacy");
+        final List<String> before = rows("");
+        final TimeZone original = TimeZone.getDefault();
+        try {
+            serviceTimeZone = "-07:00";
+            for (String zone : List.of("Asia/Kathmandu", "Pacific/Honolulu")) {
+                TimeZone.setDefault(TimeZone.getTimeZone(zone));
+                service.saveTimestamps(database, List.of(timestamp("zone", START, null)));
+                service.closeAndSaveTimestamps(database, List.of(timestamp("zone", NEXT, null)));
+                service.updateTimestampRowEnds(database, List.of(timestamp("zone", NEXT, END)));
+                service.saveTimestamps(database, List.of(timestamp("zone", START, null), timestamp("zone", NEXT, null)));
+                assertEquals(NEXT, end("zone", START));
+                assertEquals(END, end("zone", NEXT));
+                assertEquals(before, rows("WHERE replication_id='legacy'"));
+                try (var connection = connection(); var statement = connection.createStatement();
+                     var result = statement.executeQuery("""
+                             SELECT row_start, row_end, UNIX_TIMESTAMP(row_start), UNIX_TIMESTAMP(row_end)
+                             FROM tuple_replication_timestamps WHERE replication_id='zone' ORDER BY row_start
+                             """)) {
+                    for (Instant start : List.of(START, NEXT)) {
+                        assertTrue(result.next());
+                        final Instant end = start.equals(START) ? NEXT : END;
+                        final Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                        assertEquals(start, result.getTimestamp(1, utc).toInstant());
+                        assertEquals(end, result.getTimestamp(2, utc).toInstant());
+                        assertEquals(0, epoch(start).compareTo(result.getBigDecimal(3)));
+                        assertEquals(0, epoch(end).compareTo(result.getBigDecimal(4)));
+                    }
+                    assertFalse(result.next());
+                }
+            }
+        } finally {
+            TimeZone.setDefault(original);
+        }
+    }
+
+    private BigDecimal epoch(Instant instant) {
+        return BigDecimal.valueOf(instant.getEpochSecond()).add(BigDecimal.valueOf(instant.getNano(), 9));
+    }
+
+    private void insertLegacy(String site, String key) throws SQLException {
+        try (var connection = connection(); var statement = connection.prepareStatement("""
+                INSERT INTO tuple_replication_timestamps VALUES
+                    (?, ?, ?, ?, '2026-10-03 12:00:00.000001', '2026-10-03 12:00:02.000001')
+                """)) {
+            statement.setString(1, site);
+            statement.setString(2, key);
+            statement.setString(3, DATABASE.toString());
+            statement.setString(4, TABLE.toString());
+            statement.executeUpdate();
+        }
+    }
+
+    private String schema() throws SQLException {
+        try (var connection = connection(); var statement = connection.createStatement();
+             var result = statement.executeQuery("SHOW CREATE TABLE tuple_replication_timestamps")) {
+            assertTrue(result.next());
+            return result.getString(2);
+        }
+    }
+
+    private void assertFullOriginSchema() throws SQLException {
+        try (var connection = connection(); var statement = connection.createStatement();
+             var result = statement.executeQuery("""
+                     SELECT c.COLUMN_TYPE, c.CHARACTER_SET_NAME, c.COLLATION_NAME, s.SUB_PART
+                     FROM information_schema.COLUMNS c JOIN information_schema.STATISTICS s
+                         ON s.TABLE_SCHEMA=c.TABLE_SCHEMA AND s.TABLE_NAME=c.TABLE_NAME AND s.COLUMN_NAME=c.COLUMN_NAME
+                     WHERE c.TABLE_SCHEMA=DATABASE() AND c.TABLE_NAME='tuple_replication_timestamps'
+                         AND c.COLUMN_NAME='site_url' AND s.INDEX_NAME='PRIMARY'
+                     """)) {
+            assertTrue(result.next());
+            assertEquals("varchar(512)", result.getString(1));
+            assertEquals("ascii", result.getString(2));
+            assertEquals("ascii_bin", result.getString(3));
+            assertNull(result.getString(4), "The entire origin must be indexed");
+            assertFalse(result.next());
+        }
+    }
+
     private void deliver(String method, TupleReplicationTimestampDto... timestamps) throws SQLException {
         switch (method) {
             case "POST" -> service.saveTimestamps(database, List.of(timestamps));
@@ -281,10 +464,11 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
                 SELECT row_end FROM tuple_replication_timestamps WHERE replication_id=? AND row_start=?
                 """)) {
             statement.setString(1, key);
-            statement.setTimestamp(2, java.sql.Timestamp.from(start));
+            final Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            statement.setTimestamp(2, java.sql.Timestamp.from(start), utc);
             try (var result = statement.executeQuery()) {
                 assertTrue(result.next());
-                final Instant end = result.getTimestamp(1).toInstant();
+                final Instant end = result.getTimestamp(1, utc).toInstant();
                 assertFalse(result.next());
                 return end;
             }
