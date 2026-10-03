@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.HistorySnapshotDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
@@ -12,6 +13,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.service.HistorySnapshotService;
+import at.ac.tuwien.ifs.dbrepo.service.HistorySnapshotCodec;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -20,12 +23,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -100,6 +106,132 @@ public class ReplicationInboxService extends DataConnector {
         } finally {
             pool.close();
         }
+    }
+
+    public HistorySnapshotDto.Receipt reconcile(Database database, Table table, UUID snapshotId,
+                                                HistorySnapshotService snapshots) throws SQLException, IOException {
+        try (var pool = getDataSource(database); Connection connection = pool.getConnection()) {
+            prepare(connection);
+            requireInnoDb(connection, table.getInternalName(), "tuple_replication_inbox", "tuple_replication_heads",
+                    "tuple_replication_table_heads");
+        }
+        return snapshots.reconcileImport(database, table, snapshotId, (connection, targetDatabase, targetTable, envelope) -> {
+            final var manifest = envelope.manifest();
+            try {
+                final long baseline = lockTableHead(connection, table, manifest.sourceDatabaseId(), manifest.sourceTableId());
+                if (manifest.boundary() < baseline) {
+                    throw new SQLException("Snapshot would regress the installed table baseline");
+                }
+                String after = null;
+                while (true) {
+                    final var keys = snapshots.readCurrentKeys(connection, snapshotId, after, HistorySnapshotCodec.MAX_CHUNK_ROWS);
+                    if (keys.isEmpty()) break;
+                    long chunkIndex = -1;
+                    List<HistorySnapshotDto.Row> rows = List.of();
+                    for (var key : keys) {
+                        if (chunkIndex != key.chunkIndex()) {
+                            rows = HistorySnapshotCodec.rows(snapshots.readChunk(connection, snapshotId, key.chunkIndex()), manifest.columns());
+                            chunkIndex = key.chunkIndex();
+                        }
+                        final var row = rows.get(key.rowIndex());
+                        final var event = snapshotEvent(manifest, key.replicationKey(), HistorySnapshotCodec.data(manifest, row));
+                        lockHead(connection, table, event);
+                        if (head(connection, table, event) <= manifest.boundary()) {
+                            if (!matchesCurrent(connection, table, event.getTuple().getData())) {
+                                mutate(connection, database, table, event, HttpMethod.PUT);
+                            }
+                            advance(connection, table, event);
+                        }
+                    }
+                    after = keys.getLast().replicationKey();
+                }
+                // Keyset pages stay bounded; the table fence excludes concurrent delivery until publication.
+                after = null;
+                while (true) {
+                    final List<String> keys = currentKeys(connection, table, after);
+                    if (keys.isEmpty()) break;
+                    for (String key : keys) {
+                        if (!snapshots.containsCurrentKey(connection, snapshotId, key)) {
+                            final var event = snapshotEvent(manifest, key, Map.of("replication_key", key));
+                            lockHead(connection, table, event);
+                            if (head(connection, table, event) <= manifest.boundary()) {
+                                mutate(connection, database, table, event, HttpMethod.DELETE);
+                                advance(connection, table, event);
+                            }
+                        }
+                    }
+                    after = keys.getLast();
+                }
+                try (var update = connection.prepareStatement(
+                        "UPDATE tuple_replication_table_heads SET event_sequence=? WHERE table_id=?")) {
+                    update.setLong(1, manifest.boundary());
+                    update.setString(2, table.getId().toString());
+                    update.executeUpdate();
+                }
+            } catch (TableMalformedException | StorageUnavailableException | StorageNotFoundException e) {
+                throw new SQLException("Failed to reconcile snapshot current state", e);
+            }
+        });
+    }
+
+    public HistorySnapshotDto.Checkpoint checkpoint(Database database, Table table, HistorySnapshotService snapshots)
+            throws SQLException {
+        final var baseline = snapshots.targetCheckpoint(database, table);
+        try (var pool = getDataSource(database); Connection connection = pool.getConnection()) {
+            prepare(connection);
+            try (var statement = connection.prepareStatement("""
+                    SELECT i.event_sequence, i.event_id FROM tuple_replication_inbox i
+                    JOIN tuple_replication_table_heads h ON h.table_id=i.table_id
+                        AND h.source_database_id=i.source_database_id AND h.source_table_id=i.source_table_id
+                    WHERE i.table_id=? ORDER BY i.event_sequence DESC LIMIT 1
+                    """)) {
+                statement.setString(1, table.getId().toString());
+                try (var row = statement.executeQuery()) {
+                    if (!row.next()) return baseline;
+                    final long sequence = row.getLong(1);
+                    final UUID eventId = UUID.fromString(row.getString(2));
+                    if (baseline != null && baseline.boundary() == sequence && !eventId.equals(baseline.eventId())) {
+                        throw new SQLException("Snapshot and received journal have conflicting restore witnesses");
+                    }
+                    return baseline != null && baseline.boundary() >= sequence ? baseline
+                            : new HistorySnapshotDto.Checkpoint(baseline == null ? null : baseline.epoch(), sequence, eventId);
+                }
+            }
+        }
+    }
+
+    private DataReplicationDto snapshotEvent(HistorySnapshotDto.Manifest manifest, String key, Map<String, Object> values) {
+        return DataReplicationDto.builder().eventSequence(manifest.boundary())
+                .database(at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto.builder().id(manifest.sourceDatabaseId()).build())
+                .table(at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto.builder().id(manifest.sourceTableId()).build())
+                .tuple(TupleWithTimestampsDto.builder().replicationKey(key).data(values).build()).build();
+    }
+
+    private boolean matchesCurrent(Connection connection, Table table, Map<String, Object> values)
+            throws SQLException, StorageUnavailableException, StorageNotFoundException {
+        final String predicates = table.getColumns().stream().map(column -> switch (column.getColumnType()) {
+                    case CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET ->
+                            "BINARY " + quote(column.getInternalName()) + " <=> BINARY ?";
+                    default -> quote(column.getInternalName()) + " <=> ?";
+                })
+                .collect(java.util.stream.Collectors.joining(" AND "));
+        try (var statement = connection.prepareStatement("SELECT 1 FROM " + quote(table.getInternalName()) + " WHERE " + predicates)) {
+            int index = 1;
+            for (Column column : table.getColumns()) {
+                bind(statement, index++, column, values.get(column.getInternalName()));
+            }
+            try (var row = statement.executeQuery()) { return row.next(); }
+        }
+    }
+
+    private List<String> currentKeys(Connection connection, Table table, String after) throws SQLException {
+        final List<String> keys = new ArrayList<>();
+        try (var statement = connection.prepareStatement("SELECT replication_key FROM " + quote(table.getInternalName())
+                + (after == null ? "" : " WHERE BINARY replication_key > ?") + " ORDER BY BINARY replication_key LIMIT 256")) {
+            if (after != null) statement.setString(1, after);
+            try (var rows = statement.executeQuery()) { while (rows.next()) keys.add(rows.getString(1)); }
+        }
+        return keys;
     }
 
     private void validate(Database database, Table table, DataReplicationDto event, HttpMethod method)
@@ -279,6 +411,16 @@ public class ReplicationInboxService extends DataConnector {
             throws SQLException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         final String key = event.getTuple().getReplicationKey();
         final TupleWithTimestampsDto previous = select(connection, table, key, false);
+        if (previous != null) {
+            // A regressed SQL clock must not collapse an existing native history period.
+            try (var clock = connection.prepareStatement("SELECT 1 FROM " + quote(table.getInternalName())
+                    + " WHERE replication_key=? AND ROW_START >= CURRENT_TIMESTAMP(6)")) {
+                clock.setString(1, key);
+                try (var future = clock.executeQuery()) {
+                    if (future.next()) throw new SQLException("Replica SQL clock has not passed the current row version", "40001");
+                }
+            }
+        }
         if (HttpMethod.DELETE.equals(method)) {
             if (previous == null) {
                 return absent(event);

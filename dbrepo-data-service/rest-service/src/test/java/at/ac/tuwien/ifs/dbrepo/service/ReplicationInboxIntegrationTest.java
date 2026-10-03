@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.HistorySnapshotDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -29,6 +30,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
 
 @EnabledIfEnvironmentVariable(named = "REPLICA_SQL_TEST_PORT", matches = "[0-9]+")
 class ReplicationInboxIntegrationTest {
@@ -103,6 +106,19 @@ class ReplicationInboxIntegrationTest {
     }
 
     @Test
+    void aRegressedSqlClockCannotDestroyThePreviousNativeVersion() throws Exception {
+        try (var connection = connection()) {
+            connection.createStatement().execute("SET timestamp=UNIX_TIMESTAMP()+3600");
+            connection.createStatement().execute("INSERT INTO samples VALUES ('future', 1, NULL)");
+        }
+        assertThrows(SQLException.class, () -> apply(event(1, "future", "2"), HttpMethod.PUT));
+        assertThrows(SQLException.class, () -> apply(event(2, "future", "1"), HttpMethod.DELETE));
+        assertEquals(1, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(1, count("samples WHERE sample_value=1"));
+        assertEquals(0, count("tuple_replication_inbox"));
+    }
+
+    @Test
     void deleteBeforeInsertCreatesDurableTombstone() throws Exception {
         final var deletion = event(3, "a", "2");
         assertFalse(apply(deletion, HttpMethod.DELETE).getApplied());
@@ -127,6 +143,98 @@ class ReplicationInboxIntegrationTest {
         assertEquals(3, count("tuple_replication_inbox"));
         assertTrue(apply(event(6, "absent-from-baseline", "6"), HttpMethod.POST).getApplied());
         assertEquals(2, count("samples"));
+    }
+
+    @Test
+    void snapshotReconcilesCurrentRowsWithoutRewritingNewerEventsOrNativeHistory() throws Exception {
+        apply(event(1, "a", "1"), HttpMethod.POST);
+        apply(event(2, "removed", "2"), HttpMethod.POST);
+        apply(event(11, "newer", "11"), HttpMethod.POST);
+        final UUID snapshot = UUID.randomUUID();
+        final HistorySnapshotService snapshots = snapshot(snapshot, 10, Map.of("a", "2", "missing", "3", "newer", "3"));
+
+        assertTrue(receiver.reconcile(database, table, snapshot, snapshots).currentReconciled());
+        assertEquals(3, count("samples"));
+        assertEquals(1, count("samples WHERE replication_key='a' AND sample_value=2"));
+        assertEquals(1, count("samples WHERE replication_key='newer' AND sample_value=11"));
+        assertEquals(1, count("samples WHERE replication_key='missing' AND sample_value=3"));
+        assertEquals(5, count("samples FOR SYSTEM_TIME ALL"));
+        receiver.reconcile(database, table, snapshot, snapshots);
+        assertEquals(5, count("samples FOR SYSTEM_TIME ALL"));
+        assertFalse(apply(event(3, "removed", "3"), HttpMethod.POST).getApplied());
+        assertEquals(0, count("samples WHERE replication_key='removed'"));
+    }
+
+    @Test
+    void failedSnapshotFencePublicationRollsBackEveryCurrentRowMutation() throws Exception {
+        apply(event(1, "a", "1"), HttpMethod.POST);
+        apply(event(2, "removed", "2"), HttpMethod.POST);
+        try (var connection = connection()) {
+            connection.createStatement().execute("CREATE TRIGGER fail_snapshot BEFORE UPDATE ON tuple_replication_table_heads "
+                    + "FOR EACH ROW BEGIN IF NEW.event_sequence <> OLD.event_sequence THEN "
+                    + "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='injected snapshot fence failure'; END IF; END");
+        }
+        final UUID snapshot = UUID.randomUUID();
+        assertThrows(SQLException.class, () -> receiver.reconcile(database, table, snapshot,
+                snapshot(snapshot, 10, Map.of("a", "2", "missing", "3"))));
+        assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(1, count("samples WHERE replication_key='a' AND sample_value=1"));
+        assertEquals(1, count("samples WHERE replication_key='removed'"));
+        assertEquals(0, count("tuple_replication_table_heads WHERE event_sequence<>0"));
+    }
+
+    @Test
+    void restoreWitnessIncludesNewerReceivedEventsEvenBeforeTheFirstSnapshot() throws Exception {
+        final var event = event(12, "a", "12");
+        apply(event, HttpMethod.POST);
+        final HistorySnapshotService snapshots = mock(HistorySnapshotService.class);
+        var checkpoint = receiver.checkpoint(database, table, snapshots);
+        assertEquals(12, checkpoint.boundary());
+        assertEquals(event.getEventId(), checkpoint.eventId());
+        assertNull(checkpoint.epoch());
+        final UUID epoch = UUID.randomUUID();
+        when(snapshots.targetCheckpoint(database, table)).thenReturn(new HistorySnapshotDto.Checkpoint(epoch, 10, UUID.randomUUID()));
+        assertEquals(epoch, receiver.checkpoint(database, table, snapshots).epoch());
+        when(snapshots.targetCheckpoint(database, table)).thenReturn(new HistorySnapshotDto.Checkpoint(epoch, 12, UUID.randomUUID()));
+        assertThrows(SQLException.class, () -> receiver.checkpoint(database, table, snapshots));
+    }
+
+    private HistorySnapshotService snapshot(UUID id, long boundary, Map<String, String> values) throws Exception {
+        final HistorySnapshotService snapshots = mock(HistorySnapshotService.class);
+        final List<HistorySnapshotDto.Column> columns = List.of(
+                new HistorySnapshotDto.Column("replication_key", java.sql.Types.VARCHAR, "VARCHAR", 36, 0, false, false, "utf8mb4_bin"),
+                new HistorySnapshotDto.Column("sample_value", java.sql.Types.DECIMAL, "DECIMAL", 38, 16, true, true, null),
+                new HistorySnapshotDto.Column("data_blob", java.sql.Types.BLOB, "LONGBLOB", 0, 0, true, false, null));
+        final var rows = values.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(entry ->
+                new HistorySnapshotDto.Row(entry.getKey(), "2026-01-01 00:00:00.000001", "2038-01-19 03:14:07.999999", true,
+                        java.util.Arrays.asList(entry.getKey(), entry.getValue(), null))).toList();
+        final byte[] payload = HistorySnapshotCodec.encode(rows);
+        final var chunk = new HistorySnapshotDto.Chunk(id, 0, HistorySnapshotCodec.sha256(payload), payload);
+        final var manifest = new HistorySnapshotDto.Manifest(1, id, "https://origin.example", sourceDatabase, sourceTable,
+                UUID.randomUUID(), boundary, UUID.randomUUID(), 0, null, columns, 256, 4194304, 1,
+                rows.size(), rows.size(), "history", "keys");
+        final var envelope = new HistorySnapshotDto.Envelope(manifest, "manifest");
+        final var keys = java.util.stream.IntStream.range(0, rows.size())
+                .mapToObj(index -> new HistorySnapshotDto.CurrentKey(rows.get(index).replicationKey(), 0, index)).toList();
+        when(snapshots.readCurrentKeys(any(), eq(id), any(), anyInt())).thenReturn(List.of());
+        when(snapshots.readCurrentKeys(any(), eq(id), isNull(), anyInt())).thenReturn(keys);
+        when(snapshots.readChunk(any(Connection.class), eq(id), eq(0L))).thenReturn(chunk);
+        when(snapshots.containsCurrentKey(any(), eq(id), anyString())).thenAnswer(call -> values.containsKey(call.getArgument(2)));
+        when(snapshots.reconcileImport(eq(database), eq(table), eq(id), any())).thenAnswer(call -> {
+            try (var connection = connection()) {
+                connection.createStatement().execute("SET time_zone='+00:00'");
+                connection.setAutoCommit(false);
+                try {
+                    ((HistorySnapshotService.SnapshotReconciler) call.getArgument(3)).apply(connection, database, table, envelope);
+                    connection.commit();
+                    return new HistorySnapshotDto.Receipt(id, table.getId(), "RECONCILED", boundary, 0, "manifest", true, true);
+                } catch (Exception failure) {
+                    connection.rollback();
+                    throw failure;
+                }
+            }
+        });
+        return snapshots;
     }
 
     @Test
