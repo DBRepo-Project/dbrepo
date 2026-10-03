@@ -1,4 +1,13 @@
-# Data Service
+# Consumer Service
+
+## Delivery Reliability
+
+The consumer forwards broker tuples to the normal data-service insert endpoint. Deploy the broker retention policy
+**before** starting this consumer version. See [the rollout and recovery procedure](../dbrepo-broker-service/CONSUMER-RELIABILITY.md)
+for retry classification, parking-queue installation, verification and the at-least-once limitations.
+
+The Docker-free regression tests are `DataServiceGatewayUnitTest` and `RabbitListenerUnitTest` in `amqp-service`.
+The latter starts the actual Spring listener container with a mocked AMQP channel and checks ACK/NACK behavior.
 
 ## Build
 

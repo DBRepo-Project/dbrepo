@@ -79,6 +79,7 @@ dbrepo:
   baseUrl: "${BASE_URL:http://localhost}"
   minConcurrent: "${MIN_CONCURRENT_CONSUMERS:2}"
   maxConcurrent: "${MAX_CONCURRENT_CONSUMERS:6}"
-  requeueRejected: ${REQUEUE_REJECTED:false}
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
+  dataConnectTimeout: ${DATA_CONNECT_TIMEOUT:5000}
+  dataReadTimeout: ${DATA_READ_TIMEOUT:30000}
