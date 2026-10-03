@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -769,9 +770,7 @@ public interface MariaDbMapper {
                 .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : " AND ")
                         .append("`")
                         .append(key)
-                        .append("` ")
-                        .append(data.getKeys().get(key) == null ? "IS" : "=")
-                        .append(" ?"));
+                        .append("` <=> ?"));
         log.trace("mapped delete tuple query {}", statement);
         return statement.toString();
     }
@@ -918,7 +917,7 @@ public interface MariaDbMapper {
                     statement.setNull(idx, Types.DECIMAL);
                     break;
                 }
-                statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
+                statement.setBigDecimal(idx, new BigDecimal(String.valueOf(value)));
                 break;
             case FLOAT:
                 if (value == null) {
