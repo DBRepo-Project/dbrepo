@@ -12,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
@@ -25,8 +26,8 @@ import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SaveMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpMethod;
 
@@ -49,6 +50,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private final StorageService storageService;
     private final DataService computeService;
     private final ReplicationService replicationService;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SubsetService subsetService,
@@ -254,92 +258,79 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     public void importDataset(Database database, Table table, ImportDto data) throws MalformedException,
             SQLException, QueryMalformedException, StorageUnavailableException, TableMalformedException,
             StorageNotFoundException {
+        if (ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
+                || ReplicationSites.isReplica(table.getCreationLocation(), baseUrl)) {
+            throw new QueryMalformedException("Cannot import a dataset into a remote read-only table");
+        }
+        final boolean replicate = replicationService.isEnabled(database, table);
+        if (replicate) {
+            requireReplicationKeyColumn(table);
+        }
         final List<String> columns = table.getColumns()
                 .stream()
-                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
+                .map(Column::getInternalName)
                 .toList();
-        final Dataset<Row> dataset = computeService.getCsv(columns, data.getLocation(),
-                String.valueOf(data.getSeparator()), data.getHeader());
-        final Properties properties = new Properties();
-        properties.setProperty("user", database.getContainer().getUsername());
-        properties.setProperty("password", database.getContainer().getPassword());
-        final String temporaryTable = table.getInternalName() + "_tmp";
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        long start = System.currentTimeMillis();
-        try {
-            /* import tuple */
-            connection.prepareStatement(mariaDbMapper.copyTableSchemaToRawQuery(table.getInternalName(), temporaryTable))
-                    .execute();
-            connection.commit();
-            log.atDebug()
-                    .setMessage("copy table schema from " + table.getInternalName() + "." + database.getInternalName() + " into temporary table: " + temporaryTable + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_copy_schema")
-                    .log();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.atError()
-                    .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
-                    .setCause(e)
-                    .log();
-            throw new QueryMalformedException("Failed to import data: " + e.getMessage(), e);
-        }
-        log.debug("copied schema from target table {} to import table: {}", table.getInternalName(), temporaryTable);
-        try {
-            start = System.currentTimeMillis();
-            dataset.write()
-                    .mode(SaveMode.Overwrite)
-                    .option("header", data.getHeader())
-                    .jdbc(getSparkJdbcUrl(database), temporaryTable, properties);
-            log.atDebug()
-                    .setMessage("write data into temporary table: " + temporaryTable + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_import_data")
-                    .log();
-        } catch (Exception e) {
-            log.atError()
-                    .setMessage("Failed to write dataset: schema malformed")
-                    .setCause(e)
-                    .log();
-            throw new MalformedException("Failed to write dataset: schema malformed: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
-        }
-        try {
-            /* import tuple */
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.temporaryTableToRawMergeQuery(temporaryTable,
-                            table.getInternalName(), table.getColumns().stream().map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName).toList()))
-                    .execute();
-            connection.commit();
-            log.atDebug()
-                    .setMessage("merge data from temporary table " + temporaryTable + "." + database.getInternalName() + " into table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_merge_data")
-                    .log();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.atError()
-                    .setMessage("Failed to import data from temporary table " + database.getInternalName() + "." + temporaryTable)
-                    .setCause(e)
-                    .log();
-            throw new MalformedException("Failed to import tuple: " + e.getMessage(), e);
-        } finally {
-            /* delete temporary table */
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(), temporaryTable,
-                            false))
-                    .execute();
-            log.debug("deleted temporary table: {}", temporaryTable);
-            connection.commit();
-            log.atDebug()
-                    .setMessage("delete temporary table: " + temporaryTable + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_delete_schema")
-                    .log();
-            dataSource.close();
+        final Dataset<Row> dataset = importCsv(columns, data);
+        final String[] csvColumns = dataset.columns();
+        final Map<String, Object> values = new LinkedHashMap<>();
+        columns.forEach(column -> values.put(column, null));
+        final TupleDto tuple = TupleDto.builder().data(values).build();
+        try (ComboPooledDataSource dataSource = getDataSource(database);
+             Connection connection = dataSource.getConnection()) {
+            replicationService.prepare(connection, database, table);
+            connection.setAutoCommit(false);
+            try (PreparedStatement statement = connection.prepareStatement(
+                    mariaDbMapper.tupleToRawCreateQuery(database.getInternalName(), table, tuple))) {
+                // Stream Spark partitions; no shared staging table or per-row commits.
+                final Iterator<Row> rows = dataset.toLocalIterator();
+                while (rows.hasNext()) {
+                    final Row row = rows.next();
+                    values.replaceAll((column, value) -> null);
+                    for (int index = 0; index < csvColumns.length; index++) {
+                        values.put(csvColumns[index], row.get(index));
+                    }
+                    ensureReplicationKey(table, tuple);
+                    int index = 1;
+                    for (Object value : values.values()) {
+                        // Retain INSERT SELECT's database-side conversion of CSV text, including BLOB literals.
+                        statement.setObject(index++, value);
+                    }
+                    statement.executeUpdate();
+                    if (replicate) {
+                        replicationService.enqueue(connection, selectTupleWithTimestamps(connection, database, table,
+                                replicationKeyLookup(values.get("replication_key"))), database, table, HttpMethod.POST);
+                    }
+                }
+                connection.commit();
+            } catch (QueryMalformedException | StorageUnavailableException | StorageNotFoundException e) {
+                connection.rollback();
+                throw e;
+            } catch (Exception e) {
+                connection.rollback();
+                throw new MalformedException("Failed to import dataset: " + e.getMessage(), e);
+            }
         }
         storageService.deleteObject(data.getLocation());
         log.info("Imported dataset into table {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
+    private Dataset<Row> importCsv(List<String> columns, ImportDto data) throws StorageNotFoundException,
+            StorageUnavailableException, MalformedException, TableMalformedException {
+        try {
+            return computeService.getCsv(columns, data.getLocation(), String.valueOf(data.getSeparator()), data.getHeader());
+        } catch (MalformedException | StorageUnavailableException e) {
+            // Spark 4's column-count AnalysisException is wrapped as a storage error by getCsv.
+            if (e instanceof StorageUnavailableException
+                    && (e.getMessage() == null || !e.getMessage().contains("[ASSIGNMENT_ARITY_MISMATCH]"))) {
+                throw e;
+            }
+            if (!columns.contains("replication_key")) {
+                throw new MalformedException("CSV columns do not match the table: " + e.getMessage(), e);
+            }
+            // getCsv validates the positional column count before any target data is written.
+            final List<String> withoutKey = columns.stream().filter(column -> !"replication_key".equals(column)).toList();
+            return importCsv(withoutKey, data);
+        }
     }
 
     @Override
@@ -1066,20 +1057,22 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             }
         });
         query.append(" ORDER BY ROW_START DESC LIMIT 1;");
-        final PreparedStatement statement = connection.prepareStatement(query.toString());
-        int bind = 1;
-        for (Map.Entry<String, Object> entry : keys.entrySet()) {
-            if (entry.getValue() == null) {
-                continue;
+        try (PreparedStatement statement = connection.prepareStatement(query.toString())) {
+            int bind = 1;
+            for (Map.Entry<String, Object> entry : keys.entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
+                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                        getColumnType(table.getColumns(), entry.getKey()), bind++, entry.getKey(), entry.getValue());
             }
-            mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
-                    getColumnType(table.getColumns(), entry.getKey()), bind++, entry.getKey(), entry.getValue());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new QueryMalformedException("Failed to select tuple with timestamps");
+                }
+                return tupleWithTimestamps(resultSet, columns);
+            }
         }
-        final ResultSet resultSet = statement.executeQuery();
-        if (!resultSet.next()) {
-            throw new QueryMalformedException("Failed to select tuple with timestamps");
-        }
-        return tupleWithTimestamps(resultSet, columns);
     }
 
     private Optional<TupleWithTimestampsDto> selectCurrentTupleWithTimestamps(Connection connection, Database database,
@@ -1151,7 +1144,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private TupleWithTimestampsDto tupleWithTimestamps(ResultSet resultSet, List<String> columns) throws SQLException {
         final Map<String, Object> data = new LinkedHashMap<>();
         for (String column : columns) {
-            data.put(column, resultSet.getObject(column));
+            final Object value = resultSet.getObject(column);
+            data.put(column, value instanceof java.sql.Blob ? resultSet.getBytes(column) : value);
         }
         final Instant insertedAt = timestampToInstant(resultSet.getObject("inserted_at"));
         final Instant deletedAt = normaliseRowEnd(timestampToInstant(resultSet.getObject("deleted_at")));
