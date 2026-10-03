@@ -46,23 +46,20 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     private final MetadataMapper metadataMapper;
     private final SubsetCacheRepository subsetRepository;
     private final MetadataServiceGateway metadataServiceGateway;
-    private SubsetReplicationService subsetReplication;
-
-    @Autowired
-    public void setSubsetReplication(SubsetReplicationService subsetReplication) {
-        this.subsetReplication = subsetReplication;
-    }
+    private final SubsetReplicationService subsetReplication;
 
     @Autowired
     public SubsetServiceMariaDbImpl(DSLContext context, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
                                     MetadataMapper metadataMapper, SubsetCacheRepository subsetRepository,
-                                    MetadataServiceGateway metadataServiceGateway) {
+                                    MetadataServiceGateway metadataServiceGateway,
+                                    SubsetReplicationService subsetReplication) {
         this.context = context;
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
         this.subsetRepository = subsetRepository;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.subsetReplication = java.util.Objects.requireNonNull(subsetReplication, "Subset replication is required");
     }
 
     @Override
@@ -239,7 +236,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         final Connection connection = dataSource.getConnection();
         try {
             /* insert query into query store */
-            if (subsetReplication != null) subsetReplication.prepare(connection, database, null);
+            subsetReplication.prepare(connection, database, null);
             final long start = System.currentTimeMillis();
             final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
             if (username != null) {
@@ -279,7 +276,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             QueryStorePersistException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
-            if (subsetReplication != null) subsetReplication.prepare(connection, database, null);
+            subsetReplication.prepare(connection, database, null);
             connection.setAutoCommit(false);
             try {
                 try (PreparedStatement statement = connection.prepareStatement(
@@ -287,7 +284,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     statement.setString(1, subsetId.toString());
                     try (ResultSet row = statement.executeQuery()) {
                         if (!row.next()) throw new SQLException("Subset does not exist");
-                        if (subsetReplication != null) subsetReplication.requireLocalOrigin(row.getString(1));
+                        subsetReplication.requireLocalOrigin(row.getString(1));
                     }
                 }
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -298,7 +295,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     statement.setBoolean(1, persist);
                     statement.setString(2, subsetId.toString());
                     statement.setBoolean(3, persist);
-                    if (statement.executeUpdate() > 0 && subsetReplication != null) {
+                    if (statement.executeUpdate() > 0) {
                         subsetReplication.enqueue(connection, subsetId);
                     }
                 }

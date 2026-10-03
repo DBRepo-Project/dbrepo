@@ -23,7 +23,8 @@ class SubsetSelectionTimeUnitTest {
         final var connection = mock(Connection.class);
         final var statement = mock(CallableStatement.class);
         final var mapper = mock(MariaDbMapper.class);
-        final var service = spy(new SubsetServiceMariaDbImpl(null, null, mapper, null, null, null));
+        final var replication = mock(SubsetReplicationService.class);
+        final var service = spy(new SubsetServiceMariaDbImpl(null, null, mapper, null, null, null, replication));
         doReturn(pool).when(service).getDataSource((at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database) any());
         when(pool.getConnection()).thenReturn(connection);
         when(mapper.queryStoreStoreQueryRawQuery()).thenReturn("{call _store_query(?, ?, ?, ?, ?)}");
@@ -37,6 +38,13 @@ class SubsetSelectionTimeUnitTest {
         verify(statement).setTimestamp(eq(4), eq(Timestamp.from(selection)),
                 argThat((Calendar calendar) -> calendar.getTimeZone().getID().equals("UTC")));
         verify(connection).commit();
+        verify(replication).prepare(connection, database, null);
         assertThrows(NullPointerException.class, () -> service.storeQuery(database, "query", "timestamped", null, "alice"));
+    }
+
+    @Test
+    void replicationCannotBeOmittedByConstructedCallers() {
+        assertThrows(NullPointerException.class,
+                () -> new SubsetServiceMariaDbImpl(null, null, null, null, null, null, null));
     }
 }

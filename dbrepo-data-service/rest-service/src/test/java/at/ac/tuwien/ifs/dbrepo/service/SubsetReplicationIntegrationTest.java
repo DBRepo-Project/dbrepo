@@ -319,8 +319,7 @@ class SubsetReplicationIntegrationTest {
 
     private SubsetServiceMariaDbImpl service(SubsetReplicationService replication) {
         final var service = new SubsetServiceMariaDbImpl(null, Mappers.getMapper(DataMapper.class), mapper, null,
-                mock(SubsetCacheRepository.class), null);
-        service.setSubsetReplication(replication);
+                mock(SubsetCacheRepository.class), null, replication);
         return service;
     }
 

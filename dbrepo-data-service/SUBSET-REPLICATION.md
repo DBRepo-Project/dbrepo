@@ -140,29 +140,14 @@ races, concurrent creation/duplicates, repeatable legacy upgrade, and real local
 fixity mismatch rejection. Separate tests exercise the production endpoint's method
 security and live loopback HTTP credential/redirect behavior.
 
-The isolated core+data reactor for this work is `/tmp/dbrepo-subset-reactor-20261003/pom.xml`:
-
-```xml
-<project xmlns="http://maven.apache.org/POM/4.0.0">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
-  <artifactId>subset-replication-test-reactor</artifactId>
-  <version>1</version>
-  <packaging>pom</packaging>
-  <modules>
-    <module>../dbrepo-replication-subsets-20261003/lib/java/dbrepo-core</module>
-    <module>../dbrepo-replication-subsets-20261003/dbrepo-data-service</module>
-  </modules>
-</project>
-```
-
-Run from the detached worktree, with the isolated test password in the environment:
+The checked-in `subset-replication-tests.pom.xml` builds core and data-service together
+without installing shared artifacts. From the repository root, with JDK 21 selected
+through `JAVA_HOME`, Maven on `PATH`, and the isolated password in
+`SUBSET_SQL_TEST_PASSWORD`, run:
 
 ```sh
-env JAVA_HOME=/Users/maximilianholler/Library/Java/JavaVirtualMachines/corretto-21.0.2/Contents/Home \
-  SUBSET_SQL_TEST_PORT=13366 \
-  /opt/homebrew/bin/mvn -f /tmp/dbrepo-subset-reactor-20261003/pom.xml \
-  '-Dtest=SubsetReplication*Test,SubsetSelectionTimeUnitTest,MariaDbMapperUnitTest,SubsetEndpointUnitTest' \
+SUBSET_SQL_TEST_PORT=13366 mvn -f subset-replication-tests.pom.xml \
+  '-Dtest=SubsetReplication*Test,SubsetSelectionTimeUnitTest,MariaDbMapperUnitTest,SubsetEndpointUnitTest,MariaDbReplicationBindingTest,TableServiceMariaDbImplUnitTest' \
   -Dsurefire.failIfNoSpecifiedTests=false \
   -Ddbrepo.replication.subset.enabled=false -Ddbrepo.replication.tupleOutbox.enabled=false \
   -Djacoco.skip=true -DargLine= test

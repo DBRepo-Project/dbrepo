@@ -25,7 +25,8 @@ class QueryFixityIntegrationTest {
     private final String url = "jdbc:mariadb://127.0.0.1:" + System.getenv("REPLICA_SQL_TEST_PORT");
     private final String password = System.getenv("REPLICA_SQL_TEST_PASSWORD");
     private final MariaDbMapper mapper = Mappers.getMapper(MariaDbMapper.class);
-    private final SubsetServiceMariaDbImpl service = new SubsetServiceMariaDbImpl(null, null, mapper, null, null, null);
+    private final SubsetServiceMariaDbImpl service = new SubsetServiceMariaDbImpl(null, null, mapper, null, null, null,
+            org.mockito.Mockito.mock(SubsetReplicationService.class));
     private final Database database = Database.builder().internalName("query_fixity_test")
             .container(Container.builder().host("127.0.0.1").port(Integer.valueOf(System.getenv("REPLICA_SQL_TEST_PORT")))
                     .username("root").password(password).image(Image.builder().jdbcMethod("mariadb").build()).build()).build();
