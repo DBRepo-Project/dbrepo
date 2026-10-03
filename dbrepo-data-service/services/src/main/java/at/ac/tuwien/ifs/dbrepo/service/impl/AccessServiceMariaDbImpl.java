@@ -78,7 +78,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .log();
             /* grant query store */
             start = System.currentTimeMillis();
-            if (!ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)) {
+            if (!isReplicatedDatabase(database)) {
                 connection.prepareStatement(mariaDbMapper.databaseGrantProcedureQuery(user.getUsername(), "store_query"))
                         .execute();
             }
@@ -117,7 +117,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             // GRANT is additive; a downgrade must revoke the previous database privileges first.
             connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))
                     .execute();
-            if (isReplicaReader(database, user)) {
+            if (isReplicatedDatabase(database) && !isServiceUser(database, user)) {
                 revokeQueryStore(connection, database, user);
             }
             final long start = System.currentTimeMillis();
@@ -143,7 +143,17 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
 
     private boolean isReplicaReader(Database database, User user) {
         return ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
-                && !user.getUsername().equals(replicationUsername);
+                && !isServiceUser(database, user);
+    }
+
+    private boolean isReplicatedDatabase(Database database) {
+        return ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
+                || database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty();
+    }
+
+    private boolean isServiceUser(Database database, User user) {
+        return user.getUsername().equals(replicationUsername)
+                || database.getContainer() != null && user.getUsername().equals(database.getContainer().getUsername());
     }
 
     private String grants(Database database, User user, AccessTypeDto access) throws DatabaseMalformedException {
@@ -151,6 +161,10 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             if (access != AccessTypeDto.READ) {
                 throw new DatabaseMalformedException("Replicated databases only allow local read access");
             }
+            return "SELECT";
+        }
+        // Direct SQL cannot atomically enqueue replication events or canonical subsets.
+        if (isReplicatedDatabase(database) && !isServiceUser(database, user)) {
             return "SELECT";
         }
         return access == AccessTypeDto.READ ? grantDefaultRead : grantDefaultWrite;

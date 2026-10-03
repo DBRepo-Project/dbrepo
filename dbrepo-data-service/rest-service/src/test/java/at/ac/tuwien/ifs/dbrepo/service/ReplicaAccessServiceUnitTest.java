@@ -81,4 +81,20 @@ class ReplicaAccessServiceUnitTest {
         verify(connection).prepareStatement("GRANT SELECT, EXECUTE ON `replica`.* TO `alice`@`%`;");
         verify(connection).prepareStatement("GRANT EXECUTE ON PROCEDURE `store_query` TO `alice`@`%`;");
     }
+
+    @Test
+    void replicatedPrimaryRetainsApiWriteAclButGrantsSelectOnly() throws Exception {
+        database.setCreationLocation("https://local.example");
+        database.setReplicaUrls(java.util.Collections.singletonMap("https://peer.example", null));
+        service.create(database, user, AccessTypeDto.WRITE_ALL);
+        verify(connection).prepareStatement("GRANT SELECT ON `replica`.* TO `alice`@`%`;");
+        verify(connection, never()).prepareStatement(startsWith("GRANT EXECUTE"));
+    }
+
+    @Test
+    void privilegedContainerAccountCanStillApplyJournalledWrites() throws Exception {
+        database.setContainer(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container.builder().username("alice").build());
+        service.create(database, user, AccessTypeDto.WRITE_ALL);
+        verify(connection).prepareStatement("GRANT SELECT, INSERT, UPDATE, DELETE ON `replica`.* TO `alice`@`%`;");
+    }
 }

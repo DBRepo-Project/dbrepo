@@ -236,6 +236,20 @@ public class ReplicationAccessServiceUnitTest {
         assertThrows(NotAllowedException.class, () -> service.reconcile(database.getId()));
     }
 
+    @Test
+    public void reconcile_replicatedPrimary_preservesApplicationWritePermissions() throws Exception {
+        final Database database = targetReplica();
+        database.setCreationLocation(null);
+        database.setReplicaUrls(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation.builder()
+                .url("https://peer.example").build()));
+        database.getAccesses().add(DatabaseAccess.builder().username("alice")
+                .type(at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType.WRITE_ALL).build());
+        when(databaseService.findById(database.getId())).thenReturn(database);
+        service.reconcile(database.getId());
+        verify(accessService).update(database, "alice", AccessTypeDto.WRITE_ALL);
+        verify(accessService, never()).update(database, "alice", AccessTypeDto.READ);
+    }
+
     private Database targetReplica() {
         return Database.builder()
                 .id(UUID.randomUUID())

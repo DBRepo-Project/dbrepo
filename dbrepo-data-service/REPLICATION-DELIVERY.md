@@ -34,6 +34,16 @@ payloads fail closed rather than returning an apparently complete empty page.
 
 ## Upgrade Gate
 
+Human SQL accounts on replicated databases have SELECT only, including at the
+primary. Authorized application writes continue through UI/API, where mutation
+and journal append share a transaction. Direct SQL writes and the legacy
+`store_query` definer procedure bypass that contract and are not supported for
+replicated databases. Non-replicated databases keep their existing SQL grants.
+The container service account and dedicated replication account remain technical
+writers and must not be handed to users. Reconcile existing grants on both primary
+and replica sites before reopening writes; reconciliation preserves primary API
+write permissions while removing direct SQL write/procedure grants.
+
 Do not activate the strict receiver independently of source journal migration and
 the snapshot/catch-up path. Identity-free requests are rejected. In particular,
 the old current-row export is not an ordered source event and must not be

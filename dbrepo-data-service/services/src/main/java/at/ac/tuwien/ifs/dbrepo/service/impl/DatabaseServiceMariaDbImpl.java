@@ -55,6 +55,8 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         return Database.builder()
                 .internalName(data.getInternalName())
                 .container(container)
+                .creationLocation(data.getCreationLocation())
+                .replicaUrls(data.getReplicaUrls())
                 .build();
     }
 

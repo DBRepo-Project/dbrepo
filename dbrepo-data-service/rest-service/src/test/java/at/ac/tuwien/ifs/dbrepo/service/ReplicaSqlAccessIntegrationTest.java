@@ -86,6 +86,20 @@ class ReplicaSqlAccessIntegrationTest {
     }
 
     @Test
+    void primarySqlCannotBypassTheJournalAndRepairPreservesApiWriteAccess() throws Exception {
+        database.setCreationLocation(null);
+        service.create(database, user, AccessTypeDto.WRITE_ALL);
+        database.setReplicaUrls(java.util.Collections.singletonMap("https://peer.example", null));
+        service.update(database, user, AccessTypeDto.WRITE_ALL);
+        assertReadOnly();
+        service.update(database, user, AccessTypeDto.WRITE_ALL);
+        assertReadOnly();
+        try (Connection root = DriverManager.getConnection(url + "/replica_access_test", "root", password)) {
+            assertEquals(1, root.createStatement().executeUpdate("UPDATE data SET value = 30 WHERE id = 1"));
+        }
+    }
+
+    @Test
     void physicalDeleteCannotDestroyHistoricalRows() throws Exception {
         try (Connection root = DriverManager.getConnection(url + "/replica_access_test", "root", password)) {
             root.createStatement().execute("ALTER TABLE data ADD SYSTEM VERSIONING");

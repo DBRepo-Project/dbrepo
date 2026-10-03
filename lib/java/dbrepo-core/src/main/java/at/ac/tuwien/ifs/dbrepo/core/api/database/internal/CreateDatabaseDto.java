@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.UUID;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -17,6 +18,12 @@ import java.util.UUID;
 @Jacksonized
 @ToString
 public class CreateDatabaseDto {
+
+    @JsonProperty("creation_location")
+    private String creationLocation;
+
+    @JsonProperty("replica_urls")
+    private Map<String, UUID> replicaUrls;
 
     @NotNull
     @JsonProperty("container_id")

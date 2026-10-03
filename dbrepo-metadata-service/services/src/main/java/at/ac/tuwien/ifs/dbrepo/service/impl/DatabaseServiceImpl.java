@@ -147,6 +147,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .readonlyUsername(container.getReadonlyUsername())
                 .readonlyPassword(container.getReadonlyPassword())
                 .internalName(entity.getInternalName())
+                .creationLocation(entity.getCreationLocation())
+                .replicaUrls(metadataMapper.replicaLocationListToMap(entity.getReplicaUrls()))
                 .build());
         entity.setExchangeName(rabbitConfig.getExchangeName());
         /* create in metadata database */

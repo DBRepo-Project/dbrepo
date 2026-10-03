@@ -120,17 +120,26 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         final Database database = databaseService.findById(databaseId);
-        if (!isTargetReplica(database)) {
-            throw new NotAllowedException("Access reconciliation requires a target replica");
+        final boolean targetReplica = isTargetReplica(database);
+        if (!targetReplica && (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty())) {
+            throw new NotAllowedException("Access reconciliation requires a replicated database");
         }
-        final List<String> usernames = database.getAccesses().stream()
-                .map(access -> access.getUsername())
-                .filter(username -> !isReplicationUser(username))
+        final var accesses = database.getAccesses().stream()
+                .filter(access -> !isReplicationUser(access.getUsername()))
                 .toList();
-        for (String username : usernames) {
-            restrictAccess(database, username);
+        for (var access : accesses) {
+            final String username = access.getUsername();
+            if (targetReplica) {
+                restrictAccess(database, username);
+            } else {
+                try {
+                    accessService.update(database, username, AccessTypeDto.valueOf(access.getType().name()));
+                } catch (AccessNotFoundException e) {
+                    throw new DataServiceException("Failed to reconcile primary access for " + username, e);
+                }
+            }
         }
-        log.info("Reconciled read-only access for {} users of replicated database {}", usernames.size(), database.getId());
+        log.info("Reconciled SQL access for {} users of replicated database {}", accesses.size(), database.getId());
     }
 
     private void restrictAccess(Database database, String username) throws DataServiceException,
