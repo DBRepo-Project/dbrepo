@@ -55,6 +55,11 @@ jobs:
           IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-ui
       - name: Check replication gateway routes
         run: python3 .scripts/test-replication-gateway-routes.py
+      - name: Check replication deployment contracts
+        run: |
+          cmp dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
+          test "$(yq '.services.dbrepo-replication-service.volumes[0]' .docker/docker-compose.yml)" = 'replication-service-outbox:/var/lib/dbrepo/replication'
+          test "$(yq '.services.dbrepo-replication-service.environment.REPLICATION_OUTBOX_PATH' .docker/docker-compose.yml)" = '${REPLICATION_OUTBOX_PATH:-/var/lib/dbrepo/replication/outbox.json}'
 
   java-services:
     runs-on: ubuntu-latest

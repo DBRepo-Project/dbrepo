@@ -1,4 +1,10 @@
 {{- if .Values.replicationservice.enabled }}
+{{- if ne (int .Values.replicationservice.replicaCount) 1 }}
+{{- fail "The file-backed replication outbox requires exactly one replica" }}
+{{- end }}
+{{- if not .Values.replicationservice.persistence.enabled }}
+{{- fail "Replication requires persistent outbox storage" }}
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -11,7 +17,7 @@ metadata:
 spec:
   replicas: {{ .Values.replicationservice.replicaCount }}
   strategy:
-    type: {{ .Values.strategyType }}
+    type: Recreate
   selector:
     matchLabels:
       app: replication-service

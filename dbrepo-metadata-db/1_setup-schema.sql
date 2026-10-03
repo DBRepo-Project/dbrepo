@@ -635,7 +635,7 @@ CREATE TABLE IF NOT EXISTS `mdb_replication_notification_outbox`
     last_error        TEXT,
     created           TIMESTAMP   NOT NULL DEFAULT NOW(),
     last_modified     TIMESTAMP,
-    next_attempt_at   TIMESTAMP   NOT NULL DEFAULT NOW(),
+    next_attempt_at   TIMESTAMP   NULL DEFAULT NOW(),
     PRIMARY KEY (`id`),
     INDEX idx_mdb_replication_notification_outbox_due (`status`, `next_attempt_at`),
     INDEX idx_mdb_replication_notification_outbox_aggregate (`aggregate_id`)
