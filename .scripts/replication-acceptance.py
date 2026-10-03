@@ -526,8 +526,13 @@ class Acceptance:
                 continue
             result = self.primary.get("/api/replication/outbox/" + uid(entry["id"]) + "/retry",
                                       method="POST", role="system")
-            require(result.get("retried") is True, "Scoped retry returned retried=false")
-            retried += 1
+            if result.get("retried") is True:
+                retried += 1
+            else:
+                # A dispatcher can finish between the queue read and the manual retry.
+                self.wait(lambda: any(current["id"] == entry["id"] and current["status"] == "SUCCEEDED"
+                                      for current in self.queue(tables)),
+                          "automatic completion after scoped retried=false")
         if not retried and required:
             raise Blocked("Automatic recovery won the race; manual retry was not exercised")
         self.wait(lambda: bool(self.queue(tables)) and all(e["status"] == "SUCCEEDED" for e in self.queue(tables)),

@@ -522,6 +522,14 @@ class Checks(unittest.TestCase):
         with patch.object(runner, "queue", return_value=[pending]), patch.object(runner.primary, "get", return_value={"retried": False}):
             with self.assertRaisesRegex(a.Failed, "retried=false"):
                 runner.retry([])
+        completed = dict(pending, status="SUCCEEDED")
+        with patch.object(runner, "queue", side_effect=[[pending], [completed], [completed], [completed]]), \
+                patch.object(runner.primary, "get", return_value={"retried": False}):
+            runner.retry([], required=False)
+        with patch.object(runner, "queue", side_effect=[[pending], [completed]]), \
+                patch.object(runner.primary, "get", return_value={"retried": False}):
+            with self.assertRaisesRegex(a.Blocked, "manual retry was not exercised"):
+                runner.retry([])
 
     def test_bounded_wait_and_unverified_fixity_fail(self):
         runner = self.runner()
