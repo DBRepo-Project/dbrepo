@@ -134,7 +134,7 @@ public class MariaDbMapperUnitTest extends BaseTest {
                 .build();
 
         /* test */
-        assertEquals("select `weather`.`sensor`.`linie`, `weather`.`weather_aus`.`id` from `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-07-01 09:44:47.000000' join `sensor` on `weather`.`weather_aus`.`id` = `weather`.`sensor`.`id` order by `weather`.`weather_aus`.`id` desc",
+        assertEquals("select `weather`.`sensor`.`linie`, `weather`.`weather_aus`.`id` from `weather_aus` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-07-01 09:44:47.000000' join `sensor` FOR SYSTEM_TIME AS OF TIMESTAMP '2025-07-01 09:44:47.000000' on `weather`.`weather_aus`.`id` = `weather`.`sensor`.`id` order by `weather`.`weather_aus`.`id` desc",
                 mariaDbMapper.subsetDtoToNormalizedTimestampedQuery(context, DATABASE_1_CACHE, request, timestamp));
     }
 

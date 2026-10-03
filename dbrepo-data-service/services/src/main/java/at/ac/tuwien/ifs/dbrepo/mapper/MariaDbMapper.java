@@ -1097,32 +1097,33 @@ public interface MariaDbMapper {
                 .filter(entry -> data.getDatasourceIds().contains(entry.getKey()))
                 .toList();
         log.debug("subset selects from table(s): {}", tables.stream().map(Map.Entry::getValue).toList());
-        final int[] idx = new int[]{1};
+        final String temporal = timestamp == null ? "" : " FOR SYSTEM_TIME AS OF TIMESTAMP '"
+                + mariaDbFormatter.format(timestamp) + "'";
         SelectJoinStep<Record> query = context.select(filteredColumns)
                 .from(tables.stream()
-                        .map(entry -> table("`" + entry.getValue() + "`" + (idx[0]++ == tables.size() ? "/*dbrepo:temporal_tables*/" : "")))
+                        .map(entry -> table("{0}" + temporal, name(entry.getValue())))
                         .toList());
         final Map<UUID, String> datasources = databaseToDatasourceKV(database);
         if (data.getJoins() != null) {
             log.debug("subset joins: {}", data.getJoins().stream().map(j -> datasources.get(j.getDatasourceId())).toList());
             for (JoinDto join : data.getJoins()) {
+                Condition condition = null;
                 for (ConditionalDto conditional : join.getConditionals()) {
-                    query = query.join(table("`" + datasources.get(join.getDatasourceId()) + "`"), joinTypeDtoToJoinType(join.getType()))
-                            .on(field(name(database.getInternalName(), columns.get(conditional.getColumnId()).getDatasourceName(), columns.get(conditional.getColumnId()).getInternalName())).eq(
-                                    field(name(database.getInternalName(), columns.get(conditional.getForeignColumnId()).getDatasourceName(), columns.get(conditional.getForeignColumnId()).getInternalName()))));
+                    final Condition equality = field(name(database.getInternalName(), columns.get(conditional.getColumnId()).getDatasourceName(), columns.get(conditional.getColumnId()).getInternalName())).eq(
+                            field(name(database.getInternalName(), columns.get(conditional.getForeignColumnId()).getDatasourceName(), columns.get(conditional.getForeignColumnId()).getInternalName())));
+                    condition = condition == null ? equality : condition.and(equality);
                 }
+                query = query.join(table("{0}" + temporal, name(datasources.get(join.getDatasourceId()))),
+                        joinTypeDtoToJoinType(join.getType())).on(condition == null ? trueCondition() : condition);
             }
         }
         final SelectConditionStep<Record> where = subsetDtoToSelectConditions(query, database, data);
-        final String value = timestamp != null ? " FOR SYSTEM_TIME AS OF TIMESTAMP '" + mariaDbFormatter.format(timestamp) + "'" : "";
         final String sql;
         if (data.getOrders() == null) {
-            sql = where.getSQL(ParamType.INLINED)
-                    .replace("/*dbrepo:temporal_tables*/", value);
+            sql = where.getSQL(ParamType.INLINED);
         } else {
             sql = subsetToSelectOrder(where, database, data)
-                    .getSQL(ParamType.INLINED)
-                    .replace("/*dbrepo:temporal_tables*/", value);
+                    .getSQL(ParamType.INLINED);
         }
         log.trace("mapped prepared query: {}", sql);
         return sql;
