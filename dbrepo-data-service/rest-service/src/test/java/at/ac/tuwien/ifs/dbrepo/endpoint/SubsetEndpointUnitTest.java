@@ -79,6 +79,54 @@ public class SubsetEndpointUnitTest extends BaseTest {
     private SubsetEndpoint subsetEndpoint;
 
     @Test
+    void replayRejectsChangedResultBeforeReturningAnyRows() throws Exception {
+        QUERY_5_CACHE.setResultHash("v2:reference");
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID)).thenReturn(QUERY_5_CACHE);
+        when(subsetService.getMetadata(DATABASE_3_CACHE, QUERY_5_STATEMENT_NORMALIZED))
+                .thenReturn(SubsetMetadata.builder().resultHash("v2:changed").resultCount(QUERY_5_RESULT_NUMBER).build());
+        for (String method : List.of("GET", "HEAD")) {
+            when(httpServletRequest.getMethod()).thenReturn(method);
+            assertThrows(QueryExecutionException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID,
+                    null, "application/json", httpServletRequest, null, null, null));
+        }
+        verifyNoInteractions(dataService, analyseService);
+    }
+
+    @Test
+    void replayVerifiesHashAndCountAndLabelsLegacyResults() throws Exception {
+        QUERY_5_CACHE.setResultHash("v2:reference");
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID)).thenReturn(QUERY_5_CACHE);
+        when(httpServletRequest.getMethod()).thenReturn("HEAD");
+        when(subsetService.getMetadata(DATABASE_3_CACHE, QUERY_5_STATEMENT_NORMALIZED))
+                .thenReturn(SubsetMetadata.builder().resultHash("v2:reference").resultCount(QUERY_5_RESULT_NUMBER).build());
+        assertEquals("verified", subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, "application/json",
+                httpServletRequest, null, null, null).getHeaders().getFirst("X-Integrity"));
+        QUERY_5_CACHE.setResultNumber(QUERY_5_RESULT_NUMBER + 1);
+        assertThrows(QueryExecutionException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null,
+                "application/json", httpServletRequest, null, null, null));
+        QUERY_5_CACHE.setResultHash("legacy");
+        assertEquals("legacy-unverified", subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, "application/json",
+                httpServletRequest, null, null, null).getHeaders().getFirst("X-Integrity"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "system")
+    void queryStoreUpgradeIsExplicitAndSystemOnly() throws Exception {
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        assertEquals(HttpStatus.NO_CONTENT, subsetEndpoint.upgradeQueryStore(DATABASE_3_ID).getStatusCode());
+        verify(subsetService).upgradeQueryStore(DATABASE_3_CACHE);
+    }
+
+    @Test
+    @WithMockUser(authorities = "replication")
+    void replicationCredentialCannotUpgradeQueryStores() {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> subsetEndpoint.upgradeQueryStore(DATABASE_3_ID));
+    }
+
+    @Test
     @WithAnonymousUser
     public void list_publicDataPrivateSchemaAnonymous_succeeds() throws QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, SQLException, MetadataServiceException,

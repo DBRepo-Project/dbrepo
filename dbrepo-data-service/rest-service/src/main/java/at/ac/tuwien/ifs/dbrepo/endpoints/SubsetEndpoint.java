@@ -77,6 +77,15 @@ public class SubsetEndpoint {
         this.metadataServiceGateway = metadataServiceGateway;
     }
 
+    @PostMapping("/maintenance/upgrade")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Upgrade query-store schema and routines", hidden = true)
+    public ResponseEntity<Void> upgradeQueryStore(@PathVariable UUID databaseId) throws SQLException,
+            DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
+        subsetService.upgradeQueryStore(metadataService.getDatabase(databaseId));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     @Observed(name = "dbrepo_subset_list")
     @Operation(summary = "Find subsets",
@@ -367,11 +376,19 @@ public class SubsetEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             headers.set("X-Id", "" + subsetId);
             final Subset subset = subsetService.findById(database, subsetId);
-            if (request.getMethod().equals("HEAD")) {
+            final boolean versionedHash = subset.getResultHash() != null && subset.getResultHash().startsWith("v2:");
+            headers.set("X-Integrity", versionedHash ? "verified" : "legacy-unverified");
+            if (versionedHash || request.getMethod().equals("HEAD")) {
                 final SubsetMetadata metadata = subsetService.getMetadata(database, subset.getQueryNormalized());
+                if (versionedHash && (!subset.getResultHash().equals(metadata.getResultHash())
+                        || !java.util.Objects.equals(subset.getResultNumber(), metadata.getResultCount()))) {
+                    throw new QueryExecutionException("Stored subset integrity check failed; the original result cannot be reproduced");
+                }
                 headers.set("X-Count", "" + metadata.getResultCount());
                 headers.set("X-Result-Hash", metadata.getResultHash());
-                headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id");
+            }
+            if (request.getMethod().equals("HEAD")) {
+                headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Integrity");
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();
@@ -381,7 +398,7 @@ public class SubsetEndpoint {
             final String paginatedStatement = mariaDbMapper.paginateSubset(subset.getQueryNormalized(),
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
-            headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers");
+            headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers X-Integrity");
             final Map<String, ColumnAnalysisResultDto> schema = analyseService.determineDataTypes(database, query);
             final List<String> responseColumns = List.copyOf(schema.keySet());
             headers.set("X-Headers", String.join(",", responseColumns));

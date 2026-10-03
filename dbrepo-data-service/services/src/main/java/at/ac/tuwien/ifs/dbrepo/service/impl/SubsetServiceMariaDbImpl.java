@@ -59,6 +59,25 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    public void upgradeQueryStore(Database database) throws SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            statement.execute("SET SESSION system_versioning_alter_history = KEEP");
+            statement.execute("ALTER TABLE qs_queries MODIFY created DATETIME(6) NOT NULL DEFAULT NOW(6), "
+                    + "MODIFY executed DATETIME(6) NOT NULL DEFAULT NOW(6), MODIFY created_by VARCHAR(255), "
+                    + "ADD INDEX IF NOT EXISTS query_fixity (query_hash, result_hash)");
+            for (String procedure : List.of(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery(),
+                    mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery(),
+                    mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery(),
+                    mariaDbMapper.queryStoreCreateInternalHashQueryProcedureRawQuery())) {
+                statement.execute(procedure.replaceFirst("CREATE PROCEDURE", "CREATE OR REPLACE PROCEDURE"));
+            }
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
     @Timed(value = "dbrepo_data_create_subset", description = "Time spent creating a subset", histogram = true)
     public UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,

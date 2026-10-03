@@ -170,33 +170,146 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateTableRawQuery() {
-        final String statement = "CREATE TABLE `qs_queries` ( `id` VARCHAR(36) NOT NULL PRIMARY KEY DEFAULT UUID(), `created` datetime NOT NULL DEFAULT NOW(), `executed` datetime NOT NULL default now(), `created_by` VARCHAR(36), `query` text NOT NULL, `query_normalized` text NOT NULL, `is_persisted` boolean NOT NULL, `query_hash` VARCHAR(255) NOT NULL, `result_hash` VARCHAR(255), `result_number` bigint) WITH SYSTEM VERSIONING;";
-        log.trace("mapped create query store table statement: {}", statement);
-        return statement;
+        return """
+                CREATE TABLE qs_queries (
+                    id VARCHAR(36) NOT NULL PRIMARY KEY DEFAULT UUID(),
+                    created DATETIME(6) NOT NULL DEFAULT NOW(6),
+                    executed DATETIME(6) NOT NULL DEFAULT NOW(6),
+                    created_by VARCHAR(255), query TEXT NOT NULL, query_normalized TEXT NOT NULL,
+                    is_persisted BOOLEAN NOT NULL, query_hash VARCHAR(255) NOT NULL,
+                    result_hash VARCHAR(255), result_number BIGINT,
+                    INDEX query_fixity (query_hash, result_hash)
+                ) WITH SYSTEM VERSIONING
+                """;
     }
 
     default String queryStoreCreateHashTableProcedureRawQuery() {
-        final String statement = "CREATE PROCEDURE hash_table(IN name VARCHAR(255), OUT hash VARCHAR(255), OUT count BIGINT) BEGIN DECLARE _sql TEXT; SELECT CONCAT('SELECT SHA2(GROUP_CONCAT(CONCAT_WS(\\'\\',', GROUP_CONCAT(CONCAT('`', column_name, '`') ORDER BY column_name), ') SEPARATOR \\',\\'), 256) AS hash, COUNT(*) AS count FROM `', name, '` INTO @hash, @count;') FROM `information_schema`.`columns` WHERE `table_schema` = DATABASE() AND `table_name` = name INTO _sql; PREPARE stmt FROM _sql; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET hash = @hash; SET count = @count; END;";
-        log.trace("mapped create query store hash_table procedure statement: {}", statement);
-        return statement;
+        return """
+                CREATE PROCEDURE hash_table(IN table_name VARCHAR(255), OUT result_hash VARCHAR(255), OUT result_count BIGINT)
+                SQL SECURITY INVOKER
+                BEGIN
+                    DECLARE field_expressions LONGTEXT;
+                    DECLARE schema_encoding LONGTEXT;
+                    DECLARE row_digest CHAR(64);
+                    DECLARE digest CHAR(64);
+                    DECLARE done BOOLEAN DEFAULT FALSE;
+                    DECLARE previous_concat_limit BIGINT DEFAULT @@session.group_concat_max_len;
+                    DECLARE hashes CURSOR FOR SELECT row_hash FROM _dbrepo_hash_rows ORDER BY row_hash;
+                    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                    BEGIN
+                        DROP TEMPORARY TABLE IF EXISTS _dbrepo_hash_rows;
+                        SET SESSION group_concat_max_len = previous_concat_limit;
+                        RESIGNAL;
+                    END;
+                    SET SESSION group_concat_max_len = 16777216;
+                    SELECT GROUP_CONCAT(CONCAT('IF(`', REPLACE(column_name, '`', '``'),
+                               '` IS NULL,CHAR(78),CONCAT(CHAR(86),HEX(CAST(`',
+                               REPLACE(column_name, '`', '``'), '` AS BINARY))))')
+                               ORDER BY ordinal_position SEPARATOR ','),
+                           GROUP_CONCAT(CONCAT(HEX(column_name), ':', HEX(column_type))
+                               ORDER BY ordinal_position SEPARATOR ';')
+                    INTO field_expressions, schema_encoding
+                    FROM information_schema.columns
+                    WHERE table_schema = DATABASE() AND information_schema.columns.table_name = table_name;
+                    SET SESSION group_concat_max_len = previous_concat_limit;
+                    IF field_expressions IS NULL THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot hash a missing table';
+                    END IF;
+                    DROP TEMPORARY TABLE IF EXISTS _dbrepo_hash_rows;
+                    CREATE TEMPORARY TABLE _dbrepo_hash_rows (row_hash CHAR(64) CHARACTER SET ascii NOT NULL);
+                    EXECUTE IMMEDIATE CONCAT('INSERT INTO _dbrepo_hash_rows SELECT SHA2(JSON_ARRAY(',
+                        field_expressions, '),256) FROM `', REPLACE(table_name, '`', '``'), '`');
+                    SET result_count = 0;
+                    SET digest = SHA2(CONCAT('dbrepo:rows:v2:', schema_encoding),256);
+                    OPEN hashes;
+                    read_hashes: LOOP
+                        FETCH hashes INTO row_digest;
+                        IF done THEN LEAVE read_hashes; END IF;
+                        SET digest = SHA2(CONCAT(digest, row_digest),256);
+                        SET result_count = result_count + 1;
+                    END LOOP;
+                    CLOSE hashes;
+                    DROP TEMPORARY TABLE _dbrepo_hash_rows;
+                    SET result_hash = CONCAT('v2:', digest);
+                END
+                """;
     }
 
     default String queryStoreCreateStoreQueryProcedureRawQuery() {
-        final String statement = "CREATE PROCEDURE store_query(IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(query, 256); DECLARE _username VARCHAR(255) DEFAULT REGEXP_REPLACE(current_user(), '@.*', ''); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
-        log.trace("mapped create query store store_query procedure statement: {}", statement);
-        return statement;
+        return """
+                CREATE PROCEDURE store_query(IN query TEXT, IN normalized_query TEXT,
+                    IN executed DATETIME(6), OUT queryId VARCHAR(36))
+                SQL SECURITY INVOKER
+                BEGIN
+                    CALL _store_query(SUBSTRING_INDEX(USER(), '@', 1), query, normalized_query, executed, queryId);
+                END
+                """;
     }
 
     default String queryStoreCreateInternalStoreQueryProcedureRawQuery() {
-        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN normalized_query TEXT, IN executed DATETIME, OUT queryId VARCHAR(36)) BEGIN DECLARE _queryhash VARCHAR(255) DEFAULT SHA2(normalized_query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, normalized_query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
-        log.trace("mapped create query store _store_query procedure statement: {}", statement);
-        return statement;
+        return """
+                CREATE PROCEDURE _store_query(IN username VARCHAR(255), IN original_query TEXT,
+                    IN normalized_query TEXT, IN selected_at DATETIME(6), OUT queryId VARCHAR(36))
+                SQL SECURITY INVOKER
+                BEGIN
+                    DECLARE work_table VARCHAR(64) DEFAULT CONCAT('_dbrepo_query_', REPLACE(UUID(),'-',''));
+                    DECLARE query_digest CHAR(64) DEFAULT SHA2(original_query,256);
+                    DECLARE result_digest VARCHAR(255);
+                    DECLARE result_count BIGINT;
+                    DECLARE identity_lock CHAR(64);
+                    DECLARE lock_acquired BOOLEAN DEFAULT FALSE;
+                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                    BEGIN
+                        ROLLBACK;
+                        EXECUTE IMMEDIATE CONCAT('DROP TABLE IF EXISTS `', work_table, '`');
+                        IF lock_acquired THEN DO RELEASE_LOCK(identity_lock); END IF;
+                        RESIGNAL;
+                    END;
+                    IF selected_at IS NULL OR normalized_query IS NULL OR normalized_query = '' THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Query and selection timestamp are required';
+                    END IF;
+                    EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (', normalized_query, ')');
+                    CALL hash_table(work_table, result_digest, result_count);
+                    EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
+                    SET identity_lock = SHA2(CONCAT(DATABASE(), ':', query_digest, ':', result_digest),256);
+                    SET lock_acquired = GET_LOCK(identity_lock, 10);
+                    IF lock_acquired IS NULL OR NOT lock_acquired THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Query identity is busy; retry';
+                    END IF;
+                    SET queryId = (SELECT id FROM qs_queries
+                        WHERE query_hash = query_digest AND result_hash = result_digest
+                        ORDER BY created, id LIMIT 1);
+                    IF queryId IS NULL THEN
+                        SET queryId = UUID();
+                        INSERT INTO qs_queries(id, created_by, query, query_normalized, is_persisted,
+                            query_hash, result_hash, result_number, executed)
+                        VALUES(queryId, username, original_query, normalized_query, FALSE,
+                            query_digest, result_digest, result_count, selected_at);
+                    END IF;
+                    COMMIT;
+                    DO RELEASE_LOCK(identity_lock);
+                END
+                """;
     }
 
     default String queryStoreCreateInternalHashQueryProcedureRawQuery() {
-        final String statement = "CREATE DEFINER = 'root' PROCEDURE hash_query(IN normalized_query TEXT, OUT queryHash VARCHAR(64)) BEGIN DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', normalized_query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; SET queryHash = (SELECT @hash); END;";
-        log.trace("mapped create query store _store_query procedure statement: {}", statement);
-        return statement;
+        return """
+                CREATE PROCEDURE hash_query(IN normalized_query TEXT, OUT result_digest VARCHAR(255))
+                SQL SECURITY INVOKER
+                BEGIN
+                    DECLARE work_table VARCHAR(64) DEFAULT CONCAT('_dbrepo_query_', REPLACE(UUID(),'-',''));
+                    DECLARE result_count BIGINT;
+                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                    BEGIN
+                        EXECUTE IMMEDIATE CONCAT('DROP TABLE IF EXISTS `', work_table, '`');
+                        RESIGNAL;
+                    END;
+                    EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (', normalized_query, ')');
+                    CALL hash_table(work_table, result_digest, result_count);
+                    EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
+                END
+                """;
     }
 
     default String queryStoreStoreQueryRawQuery() {

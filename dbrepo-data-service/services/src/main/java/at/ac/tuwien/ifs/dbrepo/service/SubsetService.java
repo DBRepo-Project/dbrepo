@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public interface SubsetService {
 
+    void upgradeQueryStore(Database database) throws SQLException;
+
     /**
      * Creates a subset from the given statement at given time in the given database.
      *
