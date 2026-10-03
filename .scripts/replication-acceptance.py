@@ -2,6 +2,8 @@
 """Opt-in, bounded three-site checks. Creates fresh fixtures; never purges queues."""
 import argparse
 import base64
+import copy
+import datetime
 import hashlib
 import json
 import os
@@ -50,6 +52,11 @@ def fingerprint(value):
     return hashlib.sha256(canonical(value).encode()).hexdigest()
 
 
+def period(value):
+    return datetime.datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(
+        datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
@@ -76,7 +83,7 @@ class Site:
         self.http = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
         self.db = None
 
-    def request(self, path, method="GET", body=None, role="user", expected=(200,)):
+    def request(self, path, method="GET", body=None, role="user", expected=(200,), parse_json=True):
         if not path.startswith("/api/") or path.startswith("//"):
             raise Blocked("Refusing request outside API origin")
         request = urllib.request.Request(self.url + path, method=method,
@@ -94,6 +101,8 @@ class Site:
             status, headers = response.status, dict((k.lower(), v) for k, v in response.headers.items())
         require(status in expected, "%s %s returned HTTP %d" % (self.config["name"], method, status))
         require(len(raw) <= 4 * 1024 * 1024, "Response exceeded bounded fixture size")
+        if not parse_json:
+            return None, headers
         try:
             return json.loads(raw) if raw else None, headers
         except ValueError:
@@ -131,7 +140,8 @@ class Acceptance:
                 raise Blocked("Site names must be short safe labels")
         self.primary = self.sites[0]
         self.name = "replication_acceptance_" + uuid.uuid4().hex[:16]
-        self.report = {"run": self.name, "status": "RUNNING", "resources": [], "checks": []}
+        self.report = {"run": self.name, "status": "RUNNING", "resources": [], "checks": [],
+                       "sites": {site.config["name"]: site.url for site in self.sites}}
         self.subsets = []
 
     def save(self):
@@ -167,6 +177,8 @@ class Acceptance:
             time.sleep(min(self.args.poll, max(0, deadline - time.monotonic())))
 
     def setup(self):
+        if self.config.get("strict_snapshot_activation") is not True or self.config.get("parent_coordinated") is not True:
+            raise Blocked("Parent coordination and strict_snapshot_activation=true are required before fixture writes")
         required_roles = {"create-table", "insert-table-data", "delete-table-data", "persist-query"}
         for site in self.sites:
             if not required_roles.issubset(site.config.get("attested_user_roles", [])):
@@ -263,7 +275,10 @@ class Acceptance:
         require(headers.get("x-integrity") == "verified" and headers.get("x-result-hash", "").startswith("v2:"),
                 "Subset fixity is not verified v2")
         require(rows(data) == [{"id": 1, "value": "original"}], "Initial subset rows differ")
-        return {"id": subset, "hash": headers["x-result-hash"], "rows": rows(data)}
+        meta = site.get(site.dbpath() + "/subset/" + subset)
+        if not re.fullmatch(r"[a-f0-9]{64}", meta.get("snapshot_hash") or ""):
+            raise Blocked("Immutable subset artifacts are not active; coordinate strict snapshot activation")
+        return {"id": subset, "hash": headers["x-result-hash"], "snapshot_hash": meta["snapshot_hash"], "rows": rows(data)}
 
     def replay(self, index, subset):
         site = self.sites[index]
@@ -272,9 +287,11 @@ class Acceptance:
         require(rows(data) == subset["rows"], "Historical subset rows changed")
         require(headers.get("x-integrity") == "verified" and headers.get("x-result-hash") == subset["hash"],
                 "Historical subset fixity changed or is unverified")
+        require(headers.get("x-result-mode") == "immutable-snapshot", "Citation was not served from an immutable artifact")
         meta = site.get(path)
         require(meta["id"] == subset["id"] and meta["result_hash"] == subset["hash"]
-                and meta["is_persisted"] is True, "Stored selection metadata changed")
+                and meta["is_persisted"] is True and meta.get("snapshot_hash") == subset["snapshot_hash"],
+                "Stored selection metadata or immutable artifact identity changed")
 
     def crud(self):
         self.core = self.table("roundtrip")
@@ -303,38 +320,161 @@ class Acceptance:
             require(site.get(path + "/history?size=100") == before, "Rejected writes changed history")
         self.converged(tables, [{"id": 1, "value": "original"}])
 
-    def exported(self, tables):
-        data = self.primary.get(self.path(0, tables) + "/data/replicate?page=0&size=100", role="system")
-        require(len(data["tuples"]) == 1, "Expected one exported fixture tuple")
-        return {"tuple": data["tuples"][0]}
+    def journal(self, tables):
+        after, through, seen, events = 0, None, set(), []
+        for _ in range(20):
+            path = self.primary.dbpath() + "/replication/journal?after=%d&limit=100" % after
+            if through is not None:
+                path += "&through=%d" % through
+            page = self.primary.get(path, role="system")
+            require(type(page["through"]) is int and page["through"] >= after, "Invalid journal boundary")
+            if through is None:
+                through = page["through"]
+            require(page["through"] == through and page["legacyThrough"] == 0,
+                    "New fixture journal has a changed boundary or ambiguous legacy events")
+            require(isinstance(page["events"], list) and len(page["events"]) <= 100, "Unbounded journal page")
+            for event in page["events"]:
+                payload = event["payload"]
+                sequence, event_id = payload["eventSequence"], uid(payload["eventId"])
+                require(type(sequence) is int and sequence == after + 1 and sequence <= through
+                        and event_id not in seen, "Journal has missing, repeated, or reordered identities")
+                require(event["method"] in ("POST", "PUT", "DELETE")
+                        and uid(payload["database"]["id"]) == uid(self.primary.db["id"]), "Journal origin/method mismatch")
+                seen.add(event_id)
+                after = sequence
+                if uid(payload["table"]["id"]) == uid(tables[0]["id"]):
+                    # This is local provenance, not a new field added to the wire DTO.
+                    events.append({"originalHttpMethod": event["method"], "payload": copy.deepcopy(payload)})
+            require(page["nextAfter"] == after, "Journal cursor skipped retained events")
+            if after == through:
+                return events
+            require(bool(page["events"]), "Incomplete journal prefix")
+        raise Blocked("Fixture journal exceeded 20 bounded pages")
+
+    def exported(self, tables, method="POST", value=None):
+        events = [e for e in self.journal(tables) if e["originalHttpMethod"] == method
+                  and (value is None or e["payload"]["tuple"]["data"]["value"] == value)]
+        require(len(events) == 1, "Expected exactly one retained fixture event for this method/value")
+        event = events[0]
+        self.report.setdefault("journal_events", []).append({"event_id": uid(event["payload"]["eventId"]),
+            "sequence": event["payload"]["eventSequence"], "originalHttpMethod": method,
+            "source_payload_sha256": fingerprint(event["payload"])})
+        self.save()
+        return event
+
+    def hydrated(self, tables, event):
+        payload = copy.deepcopy(event["payload"])
+        for kind, path in (("database", self.primary.dbpath()), ("table", self.path(0, tables))):
+            metadata = self.primary.get(path, role="system")
+            require(uid(metadata["id"]) == uid(payload[kind]["id"]), "Cannot hydrate another source identity")
+            mapping = metadata.get("replica_urls") or {}
+            for i in (1, 2):
+                expected = self.sites[i].db["id"] if kind == "database" else tables[i]["id"]
+                require(mapping.get(self.sites[i].url) == expected, "Target mapping differs from scoped fixture")
+            payload[kind]["replica_urls"] = copy.deepcopy(mapping)
+        return payload
+
+    def observe(self, index, tables, key):
+        site = self.sites[index]
+        if not site.config.get("sql_observer"):
+            raise Blocked("A scoped sql_observer is required for retained inbox and local visibility evidence")
+        scope = {"action": "observe", "run": self.name, "database": site.db["internal_name"],
+                 "database_id": uid(site.db["id"]),
+                 "table": tables[index]["internal_name"], "table_id": uid(tables[index]["id"]),
+                 "source_database_id": uid(self.primary.db["id"]), "source_table_id": uid(tables[0]["id"]),
+                 "replication_key": uid(key), "replica": index != 0}
+        observed = json.loads(command(site.config["sql_observer"], canonical(scope), self.args.http_timeout))
+        require(all(isinstance(observed.get(k), list) for k in ("history", "inbox", "heads", "timestamps")),
+                "Invalid scoped SQL observation")
+        return observed
+
+    @staticmethod
+    def retained(observed, event, target):
+        source = event["payload"]
+        matches = [r for r in observed["inbox"] if r["event_id"] == source["eventId"]]
+        require(len(matches) == 1, "Retained inbox event is missing or duplicated")
+        row = matches[0]
+        require(row["sequence"] == source["eventSequence"] and row["table_id"] == target
+                and row["source_database_id"] == source["database"]["id"]
+                and row["source_table_id"] == source["table"]["id"], "Inbox source identity changed")
+        require(row["payload"] == {"method": event["originalHttpMethod"], "sequence": source["eventSequence"],
+                "target": target, "database": source["database"]["id"], "table": source["table"]["id"],
+                "tuple": source["tuple"]}, "Inbox did not preserve the original method/source tuple")
+        require(type(row["receipt"].get("applied")) is bool, "Inbox receipt lacks explicit local visibility")
+        return row["receipt"]
+
+    def send_event(self, index, tables, event):
+        return self.sites[index].get(self.path(index, tables) + "/data/replicate",
+                method=event["originalHttpMethod"], body=self.hydrated(tables, event),
+                role="system", expected=(200, 201))
 
     def delivery(self, scenario):
+        if scenario != "duplicate":
+            return self.reordered(scenario)
         tables = self.table(scenario)
         self.write(tables, "POST", "original")
         self.converged(tables, [{"id": 1, "value": "original"}])
         old = self.exported(tables)
-        if scenario != "duplicate":
-            self.write(tables, "PUT", "changed")
-            self.converged(tables, [{"id": 1, "value": "changed"}])
-        if scenario == "resurrection":
-            self.write(tables, "DELETE")
-            self.converged(tables, [])
-        expected = [] if scenario == "resurrection" else [{"id": 1, "value": "original" if scenario == "duplicate" else "changed"}]
+        key = old["payload"]["tuple"]["replicationKey"]
         for i in (1, 2):
-            site, path = self.sites[i], self.path(i, tables)
-            before = site.get(path + "/history?size=100")
-            require(bool(before), "History observation unavailable")
-            time.sleep(0.05)
-            # Replay the exact committed payload, simulating a lost response / late event.
-            site.get(path + "/data/replicate", method="PUT" if scenario == "reorder" else "POST",
-                     body=old, role="system", expected=(200, 201, 204, 409))
-            require(rows(site.get(path + "/data?page=0&size=100")) == expected, "Replay reset or resurrected tuple")
-            require(site.get(path + "/history?size=100") == before, "Replay appended history")
+            before = self.observe(i, tables, key)
+            receipt = self.retained(before, old, tables[i]["id"])
+            require(self.send_event(i, tables, old) == receipt, "Duplicate did not return its original receipt")
+            after = self.observe(i, tables, key)
+            require(all(after[k] == before[k] for k in ("inbox", "history", "heads")),
+                    "Duplicate changed inbox, history, or ordering head")
+        self.converged(tables, [{"id": 1, "value": "original"}])
 
-    def fault(self, action, tables):
-        scope = {"run": self.name, "database_id": self.primary.db["id"], "table_id": tables[0]["id"],
-                 "remote_database_id": self.sites[2].db["id"], "remote_table_id": tables[2]["id"],
-                 "target_url": self.sites[2].url, "action": action, "ttl_seconds": self.args.deadline + 60}
+    def reordered(self, scenario):
+        self.require_faults()
+        tables = self.table(scenario)
+        policy = "latest-only" if scenario == "reorder" else "delete-only"
+        try:
+            self.fault("block", tables, policy)
+            self.write(tables, "POST", "original")
+            self.converged(tables, [{"id": 1, "value": "original"}], (0, 1))
+            old = self.exported(tables)
+            if scenario == "reorder":
+                self.write(tables, "PUT", "changed")
+                self.converged(tables, [{"id": 1, "value": "changed"}], (0, 1))
+                old = self.exported(tables, "PUT", "changed")
+            require(rows(self.sites[2].get(self.path(2, tables) + "/data?page=0&size=100")) == [],
+                    "Older versions leaked through the scoped fault")
+            self.write(tables, "PUT" if scenario == "reorder" else "DELETE", "latest")
+            latest = self.exported(tables, "PUT", "latest") if scenario == "reorder" else self.exported(tables, "DELETE")
+            expected = [{"id": 1, "value": "latest"}] if scenario == "reorder" else []
+            self.converged(tables, expected)
+            key = old["payload"]["tuple"]["replicationKey"]
+            before = self.observe(2, tables, key)
+            require(len(before["heads"]) == 1 and before["heads"][0]["sequence"] == latest["payload"]["eventSequence"],
+                    "Latest retained source sequence is not the target head")
+            require(rows(before["history"]) == expected, "An unseen older version was made locally visible")
+            receipt = self.send_event(2, tables, old)
+            require(receipt.get("applied") is False and not receipt.get("insertedAt") and not receipt.get("deletedAt"),
+                    "Stale unseen event fabricated a local version/period")
+            after = self.observe(2, tables, key)
+            require(self.retained(after, old, tables[2]["id"]) == receipt, "Stale event was not retained")
+            require(after["history"] == before["history"] and after["heads"] == before["heads"],
+                    "Stale event changed local visibility or ordering head")
+            require(self.send_event(2, tables, old) == receipt, "Stale event duplicate changed its receipt")
+            self.converged(tables, expected)
+            self.report.setdefault("stale_events", []).append({"event_id": old["payload"]["eventId"],
+                "retained": True, "locally_visible": False, "history_sha256": fingerprint(after["history"])})
+        finally:
+            self.fault("unblock", tables, policy)
+        self.retry(tables, required=False)
+
+    def require_faults(self):
+        if not self.args.allow_faults or not self.config.get("fault_hook") or self.config.get("scoped_faults_coordinated") is not True:
+            raise Blocked("Scoped faults require --allow-faults, scoped_faults_coordinated=true, and fault_hook")
+
+    def fault(self, action, tables, policy="all"):
+        scope = {"run": self.name, "database": self.sites[2].db["internal_name"],
+                 "database_id": uid(self.sites[2].db["id"]),
+                 "table": tables[2]["internal_name"], "table_id": uid(tables[2]["id"]),
+                 "source_database_id": uid(self.primary.db["id"]), "source_table_id": uid(tables[0]["id"]),
+                 "target_url": self.sites[2].url, "action": action, "policy": policy,
+                 "coordinated": True, "ttl_seconds": self.args.deadline + 60}
         result = json.loads(command(self.config["fault_hook"], canonical(scope), self.args.http_timeout))
         require(result == scope, "Fault hook did not acknowledge exact fixture scope/action")
 
@@ -344,8 +484,7 @@ class Acceptance:
                 and e.get("localTableId") == tables[0]["id"] and e.get("targetSiteUrl", "").rstrip("/") == self.sites[2].url]
 
     def outage(self):
-        if not self.args.allow_faults or not self.config.get("fault_hook") or self.config.get("isolated_fault_environment") is not True:
-            raise Blocked("Outage requires --allow-faults, isolated_fault_environment=true, and a scoped fault_hook")
+        self.require_faults()
         tables = self.table("outage")
         required_status = self.config.get("outage_wait_for", "PENDING")
         if required_status not in ("PENDING", "FAILED"):
@@ -354,13 +493,16 @@ class Acceptance:
             self.fault("block", tables)
             self.write(tables, "POST", "original")
             self.converged(tables, [{"id": 1, "value": "original"}], (0, 1))
-            self.outage_key = uid(self.exported(tables)["tuple"]["replicationKey"])
+            self.outage_key = uid(self.exported(tables)["payload"]["tuple"]["replicationKey"])
             require(rows(self.sites[2].get(self.path(2, tables) + "/data?page=0&size=100")) == [],
                     "Fault did not isolate the fixture")
             self.write(tables, "PUT", "changed")
             self.converged(tables, [{"id": 1, "value": "changed"}], (0, 1))
             self.write(tables, "DELETE")
             self.converged(tables, [], (0, 1))
+            self.outage_events = self.journal(tables)
+            require([e["originalHttpMethod"] for e in self.outage_events] == ["POST", "PUT", "DELETE"],
+                    "Outage source journal is incomplete")
             def durable_events():
                 entries = self.queue(tables)
                 operations = {e.get("operationType") for e in entries if e.get("status") == required_status}
@@ -375,7 +517,7 @@ class Acceptance:
         self.converged(tables, [])
         self.outage_tables = tables
 
-    def retry(self, tables):
+    def retry(self, tables, required=True):
         retried = 0
         for entry in sorted(self.queue(tables), key=lambda e: e["createdAt"]):
             if entry["status"] not in ("PENDING", "FAILED"):
@@ -384,7 +526,7 @@ class Acceptance:
                                       method="POST", role="system")
             require(result.get("retried") is True, "Scoped retry returned retried=false")
             retried += 1
-        if not retried:
+        if not retried and required:
             raise Blocked("Automatic recovery won the race; manual retry was not exercised")
         self.wait(lambda: bool(self.queue(tables)) and all(e["status"] == "SUCCEEDED" for e in self.queue(tables)),
                   "fixture-only delivery queue completion")
@@ -392,30 +534,37 @@ class Acceptance:
     def outage_history(self):
         if not hasattr(self, "outage_tables"):
             raise Blocked("Outage/retry did not complete")
-        histories, timestamps = [], []
+        evidence = []
         for i, site in enumerate(self.sites):
-            if not site.config.get("sql_observer"):
-                raise Blocked("All sites need read-only sql_observer argv for exact history/timestamp evidence")
-            db, table = site.db["internal_name"], self.outage_tables[i]["internal_name"]
-            require(db == self.name and re.fullmatch(r"[a-z0-9_]+", table), "Unsafe SQL fixture name")
-            sql = f"""SET time_zone='+00:00'; START TRANSACTION READ ONLY;
-SELECT JSON_OBJECT('id',id,'value',value) FROM `{db}`.`{table}` FOR SYSTEM_TIME ALL ORDER BY id,row_start;
-SELECT JSON_OBJECT('site',site_url,'key',replication_id,'database',database_id,'table',table_id,
- 'start',row_start,'end',row_end) FROM `{db}`.tuple_replication_timestamps
- WHERE replication_id='{self.outage_key}' ORDER BY site_url,row_start;
-COMMIT;
-"""
-            observed = [json.loads(line) for line in command(site.config["sql_observer"], sql, self.args.http_timeout).splitlines()]
-            histories.append([r for r in observed if "value" in r])
-            timestamps.append(sorted([r for r in observed if "site" in r], key=canonical))
-        expected = [{"id": 1, "value": "original"}, {"id": 1, "value": "changed"}]
-        require(all(h == expected for h in histories), "Catch-up lost, reordered, or duplicated historical versions")
-        require(timestamps[0] == timestamps[1] == timestamps[2], "Three-site timestamp maps diverged")
-        for site in self.sites:
-            versions = [r for r in timestamps[0] if r["site"].rstrip("/") == site.url]
-            require(len(versions) == 2 and all(r["end"] for r in versions), "Missing closed version mappings for a site")
-        self.report["outage_history_sha256"] = fingerprint(histories[0])
-        self.report["outage_timestamps_sha256"] = fingerprint(timestamps[0])
+            observed = self.observe(i, self.outage_tables, self.outage_key)
+            if i == 0:
+                require(rows(observed["history"]) == rows([{"id": 1, "value": "original"}, {"id": 1, "value": "changed"}]),
+                        "Source history lost a committed version")
+            else:
+                receipts = [self.retained(observed, e, self.outage_tables[i]["id"]) for e in self.outage_events]
+                visible = {r["insertedAt"] for r in receipts if r.get("applied") is not False and r.get("insertedAt")}
+                require({h["start"] for h in observed["history"]} == {period(v) for v in visible},
+                        "Local versions do not match applied receipts (unseen history must not be invented)")
+                for receipt in receipts:
+                    if receipt.get("applied") is False:
+                        require(not receipt.get("insertedAt") and not receipt.get("deletedAt"), "Unseen event has a fabricated period")
+                    else:
+                        require(bool(receipt.get("insertedAt")), "Applied receipt omitted its local version start")
+                        versions = [h for h in observed["history"] if h["start"] == period(receipt["insertedAt"])]
+                        require(len(versions) == 1 and rows(versions) == rows([receipt["data"]]),
+                                "Applied receipt values differ from native local history")
+                        if receipt.get("deletedAt"):
+                            require(versions[0]["end"] == period(receipt["deletedAt"]), "Delete receipt period differs from native history")
+                require(len(observed["heads"]) == 1 and observed["heads"][0]["sequence"] == self.outage_events[-1]["payload"]["eventSequence"],
+                        "Replica ordering head did not retain the delete")
+            local = [t for t in observed["timestamps"] if t["site"] == site.url
+                     and t["database"] == site.db["id"] and t["table"] == self.outage_tables[i]["id"]]
+            require(sorted((t["start"], t["end"]) for t in local) ==
+                    sorted((h["start"], h["end"]) for h in observed["history"]), "Local timestamp evidence differs from actual visibility")
+            evidence.append(observed)
+        require(evidence[0]["timestamps"] == evidence[1]["timestamps"] == evidence[2]["timestamps"],
+                "Three-site timestamp evidence has not converged")
+        self.report["outage_evidence_sha256"] = fingerprint(evidence)
 
     def archive(self):
         if len(self.subsets) != 3:
@@ -440,6 +589,65 @@ COMMIT;
                 return True
             self.wait(replay, "canonical origin subset replay after archive")
 
+    def offline_canonical_subset(self):
+        hook = self.config.get("offline_hook")
+        if not self.args.allow_faults or not hook or self.config.get("scoped_faults_coordinated") is not True:
+            raise Blocked("Origin-offline citation requires a parent-coordinated, fixture-scoped offline_hook")
+        if len(self.subsets) != 3:
+            raise Blocked("Immutable origin artifact was not created")
+        scope = {"run": self.name, "database_id": uid(self.primary.db["id"]), "subset_id": self.subsets[0]["id"],
+                 "origin_url": self.primary.url, "target_urls": [s.url for s in self.sites[1:]],
+                 "ttl_seconds": self.args.deadline + 60}
+        try:
+            block = dict(scope, action="block")
+            require(json.loads(command(hook, canonical(block), self.args.http_timeout)) == block, "Offline hook scope mismatch")
+            self.primary.request(self.primary.dbpath() + "/subset/" + self.subsets[0]["id"] + "/data?page=0&size=100",
+                                 expected=(503,), parse_json=False)
+            self.canonical_subset()
+        finally:
+            unblock = dict(scope, action="unblock")
+            require(json.loads(command(hook, canonical(unblock), self.args.http_timeout)) == unblock, "Offline cleanup scope mismatch")
+
+    def history_sync(self, database=False):
+        if not hasattr(self, "core"):
+            raise Blocked("History sync requires the newly created core fixture")
+        path = "/api/replication/data/synchronise/database/" + uid(self.primary.db["id"])
+        if not database:
+            path += "/table/" + uid(self.core[0]["id"])
+        queued = self.primary.get(path, method="POST", role="system", expected=(202,))
+        require(queued.get("status") == "queued" and isinstance(queued.get("jobs"), list)
+                and 0 < len(queued["jobs"]) <= 100, "History sync did not return bounded durable job IDs")
+        jobs = [uid(job) for job in queued["jobs"]]
+        require(len(set(jobs)) == len(jobs), "History sync returned duplicate job IDs")
+        if database:
+            require(type(queued.get("tables")) is int and queued["tables"] > 0, "Database sync omitted its queued table count")
+        record = {"scope": "database" if database else "table", "jobs": jobs, "status": "QUEUED"}
+        self.report.setdefault("history_sync", []).append(record)
+        self.save()
+        deadline = time.monotonic() + self.args.sync_wait
+        while True:
+            entries = self.primary.get("/api/replication/outbox", role="system")
+            selected = [entry for entry in entries if entry.get("id") in jobs]
+            require(len(selected) == len(jobs) and {e["id"] for e in selected} == set(jobs),
+                    "A returned durable history job is missing or duplicated in the outbox")
+            for entry in selected:
+                require(entry.get("operationType") == "HISTORY_SYNC" and entry.get("localDatabaseId") == self.primary.db["id"]
+                        and entry.get("targetSiteUrl") in {s.url for s in self.sites[1:]}
+                        and (database or entry.get("localTableId") == self.core[0]["id"]),
+                        "History job escaped the returned fixture scope")
+            record["states"] = {entry["id"]: entry["status"] for entry in selected}
+            self.save()
+            states = set(record["states"].values())
+            require(states <= {"PENDING", "SUCCEEDED", "FAILED", "CANCELLED"}, "Unknown history job state")
+            require(not states.intersection({"FAILED", "CANCELLED"}), "History job permanently failed or was cancelled")
+            if states == {"SUCCEEDED"}:
+                record["status"] = "SUCCEEDED"
+                self.save()
+                self.converged(self.core, [])
+                return
+            require(time.monotonic() < deadline, "Timed out awaiting every returned HISTORY_SYNC job")
+            time.sleep(min(self.args.poll, max(0, deadline - time.monotonic())))
+
     def run(self):
         if self.check("fixture_setup", self.setup):
             self.check("primary_insert_update_delete_and_local_fixity", self.crud)
@@ -448,9 +656,12 @@ COMMIT;
             self.check("older_update_cannot_reset_newer", lambda: self.delivery("reorder"))
             self.check("older_insert_cannot_resurrect_delete", lambda: self.delivery("resurrection"))
             self.check("outage_and_scoped_manual_retry", self.outage)
-            self.check("outage_history_and_three_site_timestamps", self.outage_history)
+            self.check("outage_retained_events_and_actual_local_visibility", self.outage_history)
+            self.check("table_history_sync_jobs_complete", self.history_sync)
+            self.check("database_history_sync_jobs_complete", lambda: self.history_sync(database=True))
             self.check("archive_preserves_local_subset_fixity", self.archive)
             self.check("canonical_origin_subset_replays_on_peers_after_archive", self.canonical_subset)
+            self.check("offline_canonical_immutable_artifact", self.offline_canonical_subset)
         else:
             self.report["checks"].append({"name": "remaining_scenarios", "status": "BLOCKED", "reason": "Fixture setup failed"})
         statuses = {c["status"] for c in self.report["checks"]}
@@ -467,6 +678,7 @@ def main():
     parser.add_argument("--allow-faults", action="store_true")
     parser.add_argument("--http-timeout", type=int, default=20)
     parser.add_argument("--wait", type=int, default=120)
+    parser.add_argument("--sync-wait", type=int, default=900, help="Bounded wait for each set of HISTORY_SYNC jobs")
     parser.add_argument("--poll", type=float, default=2)
     parser.add_argument("--deadline", type=int, default=1800)
     args = parser.parse_args()
@@ -476,8 +688,8 @@ def main():
         if not args.allow_writes:
             raise Blocked("Explicit --allow-writes required; no network requests made")
         if not (1 <= args.http_timeout <= 120 and 1 <= args.wait <= 600 and 0.1 <= args.poll <= 30
-                and 1 <= args.deadline <= 7200):
-            raise Blocked("Invalid bounds: HTTP 1..120s, wait 1..600s, poll 0.1..30s, deadline 1..7200s")
+                and 1 <= args.deadline <= 7200 and 1 <= args.sync_wait <= 3600):
+            raise Blocked("Invalid bounds: HTTP 1..120s, wait 1..600s, sync 1..3600s, poll 0.1..30s, deadline 1..7200s")
         config = json.loads(args.config.read_text())
         os.umask(0o077)
         # Exclusive creation prevents overwriting old evidence, including symlinks.
