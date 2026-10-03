@@ -20,6 +20,8 @@ public interface ReplicationOutboxService {
 
     Optional<ReplicationOutboxEntry> findById(UUID id);
 
+    ReplicationOutboxEntry cancel(UUID id, String reason, String actor);
+
     void markSucceeded(UUID id);
 
     void defer(UUID id, String reason, Duration retryDelay);

@@ -43,4 +43,10 @@ public class ReplicationOutboxEntry {
     private Instant updatedAt;
 
     private Instant nextAttemptAt;
+
+    private Instant cancelledAt;
+
+    private String cancelledBy;
+
+    private String cancellationReason;
 }

@@ -246,4 +246,51 @@ public class FileReplicationOutboxServiceUnitTest {
         return service.enqueue(ReplicationOutboxOperationType.DATABASE_CREATE, "https://peer.example",
                 HttpMethod.POST, Map.of("name", "test"), UUID.randomUUID(), null, null, null, "timeout");
     }
+
+    @Test
+    void operatorCancellationIsDurableIdempotentAndCannotBeOverwrittenByLateResults() throws Exception {
+        final var service = service();
+        final var entry = enqueue(service);
+        service.markFailed(entry.getId(), "offline", Duration.ofMinutes(15), 1, true);
+        final var cancelled = service.cancel(entry.getId(), "Replica was retired", "operator");
+        service.cancel(entry.getId(), "Different reason", "another-operator");
+        service.markSucceeded(entry.getId());
+        service.markFailed(entry.getId(), "late failure", Duration.ofMinutes(15), 20, true);
+        service.defer(entry.getId(), "late dependency wait", Duration.ofMinutes(15));
+        service.close();
+        final var restarted = service();
+        final var restored = restarted.findById(entry.getId()).orElseThrow();
+        assertEquals(ReplicationOutboxStatus.CANCELLED, restored.getStatus());
+        assertEquals(cancelled.getCancelledAt(), restored.getCancelledAt());
+        assertEquals("operator", restored.getCancelledBy());
+        assertEquals("Replica was retired", restored.getCancellationReason());
+        assertEquals("offline", restored.getLastError());
+        assertEquals(1, restored.getAttempts());
+        assertEquals(entry.getPayloadJson(), restored.getPayloadJson());
+        assertTrue(restarted.findDue(Instant.now().plus(Duration.ofDays(100)), 25).isEmpty());
+        assertEquals(1, restarted.findAll().size());
+    }
+
+    @Test
+    void cancellationRejectsUnknownSuccessfulAndUnauditableRequests() {
+        final var service = service();
+        final var entry = enqueue(service);
+        assertThrows(IllegalArgumentException.class, () -> service.cancel(entry.getId(), " ", "operator"));
+        assertThrows(IllegalArgumentException.class, () -> service.cancel(entry.getId(), "x".repeat(2001), "operator"));
+        assertThrows(IllegalArgumentException.class, () -> service.cancel(entry.getId(), "Retired", " "));
+        assertThrows(java.util.NoSuchElementException.class,
+                () -> service.cancel(UUID.randomUUID(), "Retired", "operator"));
+        service.markSucceeded(entry.getId());
+        assertThrows(IllegalStateException.class, () -> service.cancel(entry.getId(), "Retired", "operator"));
+    }
+
+    @Test
+    void failedCancellationWriteDoesNotSuppressPendingWork() throws Exception {
+        final var service = service();
+        final var entry = enqueue(service);
+        Files.createDirectory(tempDir.resolve("outbox.json.tmp"));
+        assertThrows(UncheckedIOException.class, () -> service.cancel(entry.getId(), "Retired", "operator"));
+        service.close();
+        assertEquals(ReplicationOutboxStatus.PENDING, service().findById(entry.getId()).orElseThrow().getStatus());
+    }
 }

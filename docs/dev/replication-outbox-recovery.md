@@ -95,9 +95,60 @@ ORDER BY next_attempt_at, created
 LIMIT ?
 ```
 
+The tuple failure transition should calculate values before its fenced update:
+
+```java
+final int attempts = entry.getAttempts() == Integer.MAX_VALUE
+        ? Integer.MAX_VALUE : entry.getAttempts() + 1;
+final boolean failed = attempts >= Math.max(1, maxAttempts)
+        || entry.getStatus() == TupleReplicationOutboxStatus.FAILED;
+final TupleReplicationOutboxStatus status = failed
+        ? TupleReplicationOutboxStatus.FAILED : TupleReplicationOutboxStatus.PENDING;
+final Instant nextAttemptAt = failed && !recoverable ? null : Instant.now().plus(retryDelay);
+```
+
+The dispatcher invokes the new overload as follows, retaining any claim-token
+argument required by the journal implementation:
+
+```java
+outboxService.markFailed(database, entry.getId(), e.getMessage(),
+        retryDelayFor(entry.getAttempts()), Math.max(1, maxAttempts), isRecoverable(e));
+```
+
 Tests should cover 25 transport failures followed by recovery, a process restart,
 a stale claim, concurrent claims, permanent HTTP errors, and dependency waits.
 No receiver acknowledgement may substitute for a durable journal write.
+
+## Cancelling obsolete orchestration jobs
+
+An authenticated operator with `system` authority can submit
+`POST /api/replication/outbox/{id}/cancel` with a JSON body such as
+`{"reason":"Replica site was permanently retired"}`. The reason must be nonblank
+and at most 2000 characters. The actor is taken from the authenticated principal,
+not the request body. Unknown IDs return 404; successful jobs cannot be cancelled
+and return 409. Repeating cancellation is idempotent and preserves the first audit.
+
+Cancellation keeps the operation, payload, last error, attempt count, actor,
+timestamp and reason in the file outbox. It clears the next-attempt time and
+changes the state to `CANCELLED`, never `SUCCEEDED`. Late status updates cannot
+overwrite cancellation. The retry endpoint rejects cancelled jobs with 409.
+No cascading cancellation is performed; cancel each obsolete job explicitly.
+
+The orchestration dispatcher's `retryOutboxEntry` must also return false when
+reading a cancelled entry, before making any network request. This guards other
+callers and stale scheduler candidate lists:
+
+```java
+if (entry == null || entry.getStatus() == ReplicationOutboxStatus.CANCELLED) {
+    return false;
+}
+```
+
+Cancellation stops future retries; it cannot undo a request already sent to a
+peer. Operators should quiesce dispatch while decommissioning a peer if an
+in-flight side effect is unacceptable. This endpoint manages orchestration jobs;
+metadata notification and tuple journal cancellation require their own retained
+audit fields and fenced state changes before exposing matching endpoints.
 
 ## Verification
 

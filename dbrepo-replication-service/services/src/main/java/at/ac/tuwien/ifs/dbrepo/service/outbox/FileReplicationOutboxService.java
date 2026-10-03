@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -135,6 +136,34 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
         return readEntries().stream()
                 .filter(entry -> id.equals(entry.getId()))
                 .findFirst();
+    }
+
+    @Override
+    public synchronized ReplicationOutboxEntry cancel(UUID id, String reason, String actor) {
+        if (reason == null || reason.isBlank() || reason.length() > 2000) {
+            throw new IllegalArgumentException("Cancellation requires a reason of 1 to 2000 characters");
+        }
+        if (actor == null || actor.isBlank()) {
+            throw new IllegalArgumentException("Cancellation requires an authenticated operator");
+        }
+        final List<ReplicationOutboxEntry> entries = readEntries();
+        final ReplicationOutboxEntry entry = entries.stream().filter(candidate -> id.equals(candidate.getId()))
+                .findFirst().orElseThrow(() -> new NoSuchElementException("Replication outbox entry not found"));
+        if (entry.getStatus() == ReplicationOutboxStatus.SUCCEEDED) {
+            throw new IllegalStateException("A successful replication operation cannot be cancelled");
+        }
+        if (entry.getStatus() == ReplicationOutboxStatus.CANCELLED) {
+            return entry;
+        }
+        final Instant now = Instant.now();
+        entry.setStatus(ReplicationOutboxStatus.CANCELLED);
+        entry.setCancelledAt(now);
+        entry.setCancelledBy(actor);
+        entry.setCancellationReason(reason.strip());
+        entry.setUpdatedAt(now);
+        entry.setNextAttemptAt(null);
+        writeEntries(entries);
+        return entry;
     }
 
     @Override
