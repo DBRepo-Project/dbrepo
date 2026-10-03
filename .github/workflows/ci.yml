@@ -53,6 +53,8 @@ jobs:
           IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-storage-service-init
           IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-dashboard-service-init
           IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-ui
+      - name: Check replication gateway routes
+        run: python3 .scripts/test-replication-gateway-routes.py
 
   java-services:
     runs-on: ubuntu-latest
