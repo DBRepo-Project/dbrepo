@@ -660,7 +660,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     public ResponseEntity<Void> reconcileReplicationAccess(@PathVariable UUID databaseId) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
-        replicationAccessService.reconcile(databaseService.findById(databaseId));
+        replicationAccessService.reconcile(databaseId);
         return ResponseEntity.noContent().build();
     }
 

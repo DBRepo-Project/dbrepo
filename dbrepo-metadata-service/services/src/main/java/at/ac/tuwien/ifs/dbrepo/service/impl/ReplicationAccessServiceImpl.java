@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -115,9 +116,10 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void reconcile(Database database) throws NotAllowedException, DataServiceException,
+    public void reconcile(UUID databaseId) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
+        final Database database = databaseService.findById(databaseId);
         if (!isTargetReplica(database)) {
             throw new NotAllowedException("Access reconciliation requires a target replica");
         }

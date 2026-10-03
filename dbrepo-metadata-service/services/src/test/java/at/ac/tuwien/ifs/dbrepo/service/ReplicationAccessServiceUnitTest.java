@@ -218,19 +218,22 @@ public class ReplicationAccessServiceUnitTest {
                 DatabaseAccess.builder().username("alice").build(),
                 DatabaseAccess.builder().username("bob").build(),
                 DatabaseAccess.builder().username("replication").build()));
+        when(databaseService.findById(database.getId())).thenReturn(database);
 
-        service.reconcile(database);
+        service.reconcile(database.getId());
 
+        verify(databaseService).findById(database.getId());
         verify(accessService).update(database, "alice", AccessTypeDto.READ);
         verify(accessService).update(database, "bob", AccessTypeDto.READ);
         verify(accessService, never()).update(database, "replication", AccessTypeDto.READ);
     }
 
     @Test
-    public void reconcile_primary_isRejected() {
+    public void reconcile_primary_isRejected() throws Exception {
         final Database database = targetReplica();
         database.setCreationLocation(null);
-        assertThrows(NotAllowedException.class, () -> service.reconcile(database));
+        when(databaseService.findById(database.getId())).thenReturn(database);
+        assertThrows(NotAllowedException.class, () -> service.reconcile(database.getId()));
     }
 
     private Database targetReplica() {

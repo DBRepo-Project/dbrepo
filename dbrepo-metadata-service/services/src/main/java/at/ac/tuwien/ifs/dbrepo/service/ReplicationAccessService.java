@@ -12,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.SearchServiceException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.UserNotFoundException;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ReplicationAccessService {
 
@@ -27,7 +28,7 @@ public interface ReplicationAccessService {
 
     List<ReplicationAccessDto> findPending();
 
-    void reconcile(Database database) throws NotAllowedException, DataServiceException,
+    void reconcile(UUID databaseId) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;
 
