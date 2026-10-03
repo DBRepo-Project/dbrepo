@@ -116,6 +116,20 @@ class ReplicationInboxIntegrationTest {
     }
 
     @Test
+    void snapshotBoundaryAlsoFencesLateEventsForPreviouslyUnknownKeys() throws Exception {
+        apply(event(1, "a", "1"), HttpMethod.POST);
+        try (var connection = connection()) {
+            connection.createStatement().execute("UPDATE tuple_replication_table_heads SET event_sequence=5");
+        }
+        assertFalse(apply(event(2, "absent-from-baseline", "2"), HttpMethod.POST).getApplied());
+        assertFalse(apply(event(5, "another-absent-key", "5"), HttpMethod.PUT).getApplied());
+        assertEquals(1, count("samples"));
+        assertEquals(3, count("tuple_replication_inbox"));
+        assertTrue(apply(event(6, "absent-from-baseline", "6"), HttpMethod.POST).getApplied());
+        assertEquals(2, count("samples"));
+    }
+
+    @Test
     void deleteReceiptRetainsOriginalMicrosecondIntervalAcrossRetries() throws Exception {
         apply(event(1, "a", "1"), HttpMethod.POST);
         apply(event(2, "a", "2"), HttpMethod.PUT);

@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
 
 /** The receipt, ordering fence and target mutation share one InnoDB transaction. */
 @Service
@@ -53,9 +54,11 @@ public class ReplicationInboxService extends DataConnector {
         final var pool = getDataSource(database);
         try (Connection connection = pool.getConnection()) {
             prepare(connection);
-            requireInnoDb(connection, table.getInternalName(), "tuple_replication_inbox", "tuple_replication_heads");
+            requireInnoDb(connection, table.getInternalName(), "tuple_replication_inbox", "tuple_replication_heads",
+                    "tuple_replication_table_heads");
             connection.setAutoCommit(false);
             try {
+                final long baseline = lockTableHead(connection, table, event.getDatabase().getId(), event.getTable().getId());
                 lockHead(connection, table, event);
                 final TupleWithTimestampsDto receipt = receipt(connection, event, payload);
                 if (receipt != null) {
@@ -63,11 +66,11 @@ public class ReplicationInboxService extends DataConnector {
                     return receipt;
                 }
                 final long head = head(connection, table, event);
-                if (head == event.getEventSequence()) {
+                if (head == event.getEventSequence() && baseline < event.getEventSequence()) {
                     throw new TableMalformedException("Different replication events share the same source sequence");
                 }
                 final TupleWithTimestampsDto result;
-                if (head > event.getEventSequence()) {
+                if (head > event.getEventSequence() || baseline >= event.getEventSequence()) {
                     result = absent(event);
                 } else {
                     result = mutate(connection, database, table, event, method);
@@ -167,6 +170,41 @@ public class ReplicationInboxService extends DataConnector {
                         PRIMARY KEY (table_id, replication_key)
                     ) ENGINE=InnoDB
                     """);
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS tuple_replication_table_heads (
+                        table_id CHAR(36) PRIMARY KEY,
+                        source_database_id CHAR(36) NOT NULL,
+                        source_table_id CHAR(36) NOT NULL,
+                        event_sequence BIGINT NOT NULL DEFAULT 0
+                    ) ENGINE=InnoDB
+                    """);
+        }
+    }
+
+    private long lockTableHead(Connection connection, Table table, UUID sourceDatabase, UUID sourceTable)
+            throws SQLException, TableMalformedException {
+        // A snapshot also fences keys absent from its current-row manifest.
+        try (PreparedStatement insert = connection.prepareStatement("""
+                INSERT INTO tuple_replication_table_heads (table_id, source_database_id, source_table_id)
+                VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE table_id = VALUES(table_id)
+                """)) {
+            insert.setString(1, table.getId().toString());
+            insert.setString(2, sourceDatabase.toString());
+            insert.setString(3, sourceTable.toString());
+            insert.executeUpdate();
+        }
+        try (PreparedStatement select = connection.prepareStatement("""
+                SELECT event_sequence, source_database_id, source_table_id FROM tuple_replication_table_heads
+                WHERE table_id = ? FOR UPDATE
+                """)) {
+            select.setString(1, table.getId().toString());
+            try (ResultSet row = select.executeQuery()) {
+                if (!row.next() || !sourceDatabase.toString().equals(row.getString(2))
+                        || !sourceTable.toString().equals(row.getString(3))) {
+                    throw new TableMalformedException("Snapshot and tuple delivery have different source identities");
+                }
+                return row.getLong(1);
+            }
         }
     }
 
