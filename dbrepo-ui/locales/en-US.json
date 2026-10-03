@@ -1674,8 +1674,8 @@
       "database": "Database",
       "table": "Table",
       "pageSize": "Page size",
-      "databaseResult": "Synchronised {tables} tables and {tuples} tuples in {pages} pages with {replicaWrites} replica writes.",
-      "tableResult": "Synchronised {tuples} tuples in {pages} pages with {replicaWrites} replica writes."
+      "databaseResult": "Queued {jobs} synchronisation jobs for {tables} tables.",
+      "tableResult": "Queued {jobs} synchronisation jobs."
     },
     "outboxes": {
       "title": "Outbox entries",

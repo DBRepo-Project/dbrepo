@@ -926,14 +926,10 @@ interface ReplicationRetryResultDto {
 interface DatabaseSynchronisationResultDto {
   status: string;
   tables: number;
-  pages: number;
-  tuples: number;
-  replicaWrites: number;
+  jobs: string[];
 }
 
 interface TableSynchronisationResultDto {
   status: string;
-  pages: number;
-  tuples: number;
-  replicaWrites: number;
+  jobs: string[];
 }

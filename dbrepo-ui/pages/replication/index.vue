@@ -582,7 +582,7 @@ export default {
       this.synchronisingDatabase = true
       try {
         const result = await useReplicationService().synchroniseDatabase(this.selectedDatabaseId, this.pageSize)
-        this.synchronisationResult = this.$t('replication.synchronisation.databaseResult', result)
+        this.synchronisationResult = this.$t('replication.synchronisation.databaseResult', { tables: result.tables, jobs: result.jobs.length })
         await this.refreshAll()
       } catch (error) {
         this.showError(error)
@@ -598,7 +598,7 @@ export default {
           this.selectedTableId,
           this.pageSize
         )
-        this.synchronisationResult = this.$t('replication.synchronisation.tableResult', result)
+        this.synchronisationResult = this.$t('replication.synchronisation.tableResult', { jobs: result.jobs.length })
         await this.refreshAll()
       } catch (error) {
         this.showError(error)
