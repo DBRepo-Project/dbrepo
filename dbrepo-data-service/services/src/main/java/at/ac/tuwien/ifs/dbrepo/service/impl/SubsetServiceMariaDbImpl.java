@@ -26,6 +26,9 @@ import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +63,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     public UUID create(Database database, SubsetDto subset, Instant timestamp, String username)
             throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
             ImageNotFoundException, ViewNotFoundException, ColumnNotFoundException {
+        timestamp = (timestamp == null ? Instant.now() : timestamp).truncatedTo(ChronoUnit.MICROS);
         final String query = mariaDbMapper.subsetDtoToNormalizedQuery(context, database, subset);
         final String normalizedQuery = mariaDbMapper.subsetDtoToNormalizedTimestampedQuery(context, database, subset, timestamp);
         return storeQuery(database, query, normalizedQuery, timestamp, username);
@@ -194,6 +198,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     @Timed(value = "dbrepo_data_store_subset_query", description = "Time spent storing a subset query in the query store", histogram = true)
     public UUID storeQuery(Database database, String query, String normalizedQuery, Instant timestamp, String username)
             throws SQLException, QueryStoreInsertException {
+        java.util.Objects.requireNonNull(timestamp, "A stored query must have an explicit selection timestamp");
         /* save */
         final UUID queryId;
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -209,7 +214,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             }
             callableStatement.setString(2, query);
             callableStatement.setString(3, normalizedQuery);
-            callableStatement.setTimestamp(4, Timestamp.from(Instant.now()));
+            callableStatement.setTimestamp(4, Timestamp.from(timestamp), Calendar.getInstance(TimeZone.getTimeZone("UTC")));
             callableStatement.registerOutParameter(5, Types.VARCHAR);
             callableStatement.executeUpdate();
             log.atDebug()
