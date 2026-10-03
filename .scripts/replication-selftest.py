@@ -468,13 +468,17 @@ class Checks(unittest.TestCase):
         s.validate(scope, runner.report, "2")
         expiry = int(a.time.time()) + 60
         sql = s.fault_sql(scope, expiry, [])
-        self.assertEqual(3, sql.count("CREATE TRIGGER"))
+        self.assertEqual(4, sql.count("CREATE TRIGGER"))
+        self.assertIn("NEW.table_id = '" + scope["table_id"] + "'", sql)
+        self.assertIn("ON `" + scope["database"] + "`.`tuple_replication_inbox`", sql)
         self.assertIn("UNIX_TIMESTAMP() < %d" % expiry, sql)
         self.assertNotIn("DROP", sql)
         owned = [{"event": op, "name": s.trigger_name(scope, op), "table": scope["table"], "timing": "BEFORE",
                   "body": s.trigger_body(scope, op, expiry)} for op in ("INSERT", "UPDATE", "DELETE")]
+        owned.append({"event": "INSERT", "name": s.trigger_name(scope, "RECEIPT"), "table": "tuple_replication_inbox",
+                      "timing": "BEFORE", "body": s.trigger_body(scope, "RECEIPT", expiry)})
         self.assertNotIn("CREATE", s.fault_sql(scope, expiry, owned))
-        self.assertEqual(3, s.fault_sql(dict(scope, action="unblock"), expiry, owned).count("DROP TRIGGER"))
+        self.assertEqual(4, s.fault_sql(dict(scope, action="unblock"), expiry, owned).count("DROP TRIGGER"))
         owned[0]["body"] += " /* changed externally */"
         with self.assertRaises(s.Blocked):
             s.fault_sql(dict(scope, action="unblock"), expiry, owned)

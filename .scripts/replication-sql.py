@@ -98,7 +98,9 @@ def trigger_name(scope, operation):
 
 def trigger_body(scope, operation, expires):
     condition = "TRUE"
-    if scope["policy"] == "latest-only" and operation != "DELETE":
+    if operation == "RECEIPT":
+        condition = "NEW.table_id = '" + scope["table_id"] + "'"
+    elif scope["policy"] == "latest-only" and operation != "DELETE":
         condition = "NOT (NEW.value <=> 'latest')"
     elif scope["policy"] != "all" and operation == "DELETE":
         condition = "FALSE"
@@ -108,25 +110,30 @@ def trigger_body(scope, operation, expires):
 
 def fault_sql(scope, expires, existing):
     db, table = scope["database"], scope["table"]
-    require(len(existing) <= 3, "Unexpected fault trigger inventory")
+    operations = ("INSERT", "UPDATE", "DELETE", "RECEIPT") if scope["policy"] == "all" else ("INSERT", "UPDATE", "DELETE")
+    require(len(existing) <= len(operations), "Unexpected fault trigger inventory")
+    names = {trigger_name(scope, op): op for op in operations}
     known = {}
     for trigger in existing:
-        operation = trigger["event"]
+        operation = names.get(trigger["name"])
         match = re.search(r"UNIX_TIMESTAMP\(\) < ([0-9]+)", trigger["body"])
-        require(operation in ("INSERT", "UPDATE", "DELETE") and match is not None, "Unknown trigger; refusing mutation")
-        require(trigger["name"] == trigger_name(scope, operation) and trigger["table"] == table
+        require(operation in operations and match is not None, "Unknown trigger; refusing mutation")
+        require(trigger["event"] == ("INSERT" if operation == "RECEIPT" else operation)
+                and trigger["table"] == ("tuple_replication_inbox" if operation == "RECEIPT" else table)
                 and trigger["timing"] == "BEFORE"
                 and trigger["body"] == trigger_body(scope, operation, int(match.group(1))),
                 "Existing trigger is not owned by this exact run/scope/policy")
         known[operation] = trigger
     sql = "DELIMITER //\n"
-    for operation in ("INSERT", "UPDATE", "DELETE"):
+    for operation in operations:
         name = trigger_name(scope, operation)
         if scope["action"] == "unblock":
             if operation in known:
                 sql += f"DROP TRIGGER `{db}`.`{name}`//\n"
         elif operation not in known:
-            sql += (f"CREATE TRIGGER `{db}`.`{name}` BEFORE {operation} ON `{db}`.`{table}` "
+            event = "INSERT" if operation == "RECEIPT" else operation
+            target = "tuple_replication_inbox" if operation == "RECEIPT" else table
+            sql += (f"CREATE TRIGGER `{db}`.`{name}` BEFORE {event} ON `{db}`.`{target}` "
                     f"FOR EACH ROW {trigger_body(scope, operation, expires)}//\n")
         else:
             require(int(re.search(r"UNIX_TIMESTAMP\(\) < ([0-9]+)", known[operation]["body"]).group(1)) > time.time(),
@@ -184,7 +191,7 @@ def main():
         if scope["action"] == "observe":
             print(json.dumps(observations(execute(args, observe_sql(scope)))))
             return 0
-        names = ",".join("'%s'" % trigger_name(scope, op) for op in ("INSERT", "UPDATE", "DELETE"))
+        names = ",".join("'%s'" % trigger_name(scope, op) for op in ("INSERT", "UPDATE", "DELETE", "RECEIPT"))
         inventory = execute(args, "SELECT UNIX_TIMESTAMP();\n"
                 "SELECT JSON_OBJECT('name',TRIGGER_NAME,'event',EVENT_MANIPULATION,'table',EVENT_OBJECT_TABLE,"
                 "'timing',ACTION_TIMING,'body',ACTION_STATEMENT) FROM information_schema.TRIGGERS "
