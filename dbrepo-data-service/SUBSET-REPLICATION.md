@@ -94,19 +94,8 @@ The dispatcher runs every 30 seconds. `SUBSET_REPLICATION_ENABLED=false` pauses
 dispatch, not durable enqueue. Spring properties can override
 `dbrepo.replication.subset.enabled` and `dbrepo.replication.subset.retryDelayMs`.
 
-Parent integration snippets, intentionally not applied to shared deployment files:
-
-```diff
---- docker-compose.yml (data-service.environment only)
-+++ docker-compose.yml
-       REPLICATION_USERNAME: "${REPLICATION_USERNAME:-replication}"
-+      REPLICATION_ALLOWED_SITES: "${REPLICATION_ALLOWED_SITES:-}"
-+      SUBSET_REPLICATION_ENABLED: "${SUBSET_REPLICATION_ENABLED:-true}"
---- helm/dbrepo/templates/data-secret.yaml
-+++ helm/dbrepo/templates/data-secret.yaml
-   REPLICATION_USERNAME: "{{ .Values.replicationservice.auth.username }}"
-+  REPLICATION_ALLOWED_SITES: {{ join "," .Values.replicationservice.allowedSites | quote }}
-```
+Compose supplies `REPLICATION_ALLOWED_SITES` and `SUBSET_REPLICATION_ENABLED` to
+the data service. Helm uses `replicationservice.allowedSites` for the same allowlist.
 
 Both current gateway configurations already route `/database/{id}/subset/...` to
 the data service, including PUT replication and POST maintenance. No gateway,

@@ -22,9 +22,11 @@ does not establish original commit order or complete pre-journal event coverage.
 | POST `/imports` | `Import(targetTableId,envelope)` -> `Receipt` |
 | PUT `/{snapshotId}/chunks/{index}` | `Chunk` -> `Receipt` |
 | POST `/{snapshotId}/verify` | `{ "tableId": "..." }` -> `Receipt` |
+| POST `/{snapshotId}/reconcile` | `{ "tableId": "..." }` -> atomically reconciled `Receipt` |
+| GET `/table/{tableId}/checkpoint-with-inbox` | Highest retained snapshot/inbox restore witness |
 
-The reconciliation endpoint and orchestration belong to the receiver integration,
-not this class. No endpoint follows a submitted URL or accepts source credentials.
+The reconciliation endpoint delegates to the atomic inbox receiver. No endpoint
+follows a submitted URL or accepts source credentials.
 Target metadata must map the manifest's origin and source database/table UUIDs.
 Physical column definitions, including ENUM/SET members, signedness and collation,
 must match. Unsupported JDBC types and non-timestamp native periods fail closed.
@@ -137,6 +139,25 @@ Without a surviving external witness, a coordinated rollback of every source and
 target record is not detectable. This protocol does not claim otherwise. Manual
 source-generation replacement needs an explicit migration/reseed procedure; it
 is not silently accepted.
+
+## Durable Orchestration
+
+The replication service's existing database/table synchronization endpoints return
+202 with stable job IDs. `HISTORY_SYNC` jobs appear in the replication outbox;
+queued is not completed. Each job first durably captures the receiver's snapshot
+and inbox witness using compare-and-set, then saves or resumes one source snapshot
+ID. Retries never refresh that pre-request witness or replace a READY artifact.
+The transfer uploads immutable chunks, requires a reconciled receipt, and catches
+up the retained journal to one newly captured committed boundary. Gaps, mismatched
+identities and changed boundaries fail the job rather than silently completing.
+
+The inbox callback preserves heads newer than the snapshot boundary, reconciles
+other current rows, removes source-absent current rows and publishes the table
+baseline in the same transaction as the verified artifact. It does not overwrite
+native historical periods. Ordinary delivery and snapshot changes both reject
+updates/deletes if the current native period is ahead of the SQL clock.
+Cancellation stops further transfer work and remains an audited cancelled job;
+it does not remove already verified history or claim to undo committed changes.
 
 ## Checks
 
