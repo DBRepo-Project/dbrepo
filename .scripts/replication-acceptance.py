@@ -131,8 +131,9 @@ class Acceptance:
     def __init__(self, config, args):
         self.config, self.args = config, args
         self.sites = [Site(site, args.http_timeout) for site in config["sites"]]
-        if len(self.sites) != 3 or len({s.url for s in self.sites}) != 3:
-            raise Blocked("Exactly three distinct sites are required; first is primary")
+        if (len(self.sites) != 3 or len({s.url for s in self.sites}) != 3
+                or len({s.config["name"] for s in self.sites}) != 3):
+            raise Blocked("Exactly three distinct site origins and labels are required; first is primary")
         if config.get("dedicated_test_users") is not True:
             raise Blocked("Config must attest dedicated_test_users=true")
         for site in self.sites:
@@ -608,9 +609,48 @@ class Acceptance:
             unblock = dict(scope, action="unblock")
             require(json.loads(command(hook, canonical(unblock), self.args.http_timeout)) == unblock, "Offline cleanup scope mismatch")
 
+    def snapshot_receipt(self, entry):
+        request = json.loads(entry["payloadJson"])
+        snapshot = uid(request["snapshotId"])
+        require(request.get("checkpointCaptured") is True, "History job omitted its durable pre-request checkpoint")
+        target = next(site for site in self.sites[1:] if site.url == entry["targetSiteUrl"])
+        source = next(r for r in self.report["resources"] if r["kind"] == "table"
+                      and r["site"] == self.primary.config["name"] and r["id"] == entry["localTableId"])
+        remote = [r for r in self.report["resources"] if r["kind"] == "table"
+                  and r["site"] == target.config["name"] and r["name"] == source["name"]]
+        require(len(remote) == 1 and entry.get("remoteDatabaseId") == target.db["id"]
+                and entry.get("remoteTableId") == remote[0]["id"], "History job target differs from fixture manifest")
+        suffix = "/replication/snapshots/" + snapshot
+        envelope = self.primary.get(self.primary.dbpath() + suffix, role="system")
+        manifest = envelope["manifest"]
+        require(manifest.get("format") == 1 and manifest.get("snapshotId") == snapshot
+                and manifest.get("origin") == self.primary.url
+                and manifest.get("sourceDatabaseId") == self.primary.db["id"]
+                and manifest.get("sourceTableId") == entry["localTableId"]
+                and manifest.get("base") == request.get("checkpoint")
+                and type(manifest.get("boundary")) is int and manifest["boundary"] >= 0
+                and manifest.get("legacyThrough") == 0
+                and re.fullmatch(r"[a-f0-9]{64}", envelope.get("sha256") or ""),
+                "History source manifest identity/checkpoint/digest mismatch")
+        if entry["localTableId"] == self.core[0]["id"]:
+            require(manifest.get("rows") == 2 and manifest.get("currentKeys") == 0,
+                    "Roundtrip snapshot did not retain both deleted historical versions")
+        receipt = target.get(target.dbpath() + suffix + "/status", role="system")
+        require(receipt.get("snapshotId") == snapshot and receipt.get("tableId") == remote[0]["id"]
+                and receipt.get("status") == "RECONCILED"
+                and receipt.get("historyVerified") is True and receipt.get("currentReconciled") is True
+                and receipt.get("boundary") == manifest["boundary"]
+                and receipt.get("legacyThrough") == manifest["legacyThrough"]
+                and receipt.get("manifestDigest") == envelope["sha256"],
+                "Succeeded history job lacks the matching verified/reconciled target receipt")
+        return {"job": entry["id"], "target": target.config["name"], "receipt": receipt}
+
     def history_sync(self, database=False):
         if not hasattr(self, "core"):
             raise Blocked("History sync requires the newly created core fixture")
+        source_tables = {r["id"] for r in self.report["resources"] if r["kind"] == "table"
+                         and r["site"] == self.primary.config["name"]} if database else {self.core[0]["id"]}
+        expected = {(table, site.url) for table in source_tables for site in self.sites[1:]}
         path = "/api/replication/data/synchronise/database/" + uid(self.primary.db["id"])
         if not database:
             path += "/table/" + uid(self.core[0]["id"])
@@ -619,28 +659,35 @@ class Acceptance:
                 and 0 < len(queued["jobs"]) <= 100, "History sync did not return bounded durable job IDs")
         jobs = [uid(job) for job in queued["jobs"]]
         require(len(set(jobs)) == len(jobs), "History sync returned duplicate job IDs")
+        require(len(jobs) == len(expected), "History sync did not queue every fixture table/peer pair")
         if database:
-            require(type(queued.get("tables")) is int and queued["tables"] > 0, "Database sync omitted its queued table count")
+            require(type(queued.get("tables")) is int and queued["tables"] == len(source_tables),
+                    "Database sync queued table count differs from the fixture manifest")
         record = {"scope": "database" if database else "table", "jobs": jobs, "status": "QUEUED"}
         self.report.setdefault("history_sync", []).append(record)
         self.save()
         deadline = time.monotonic() + self.args.sync_wait
         while True:
+            require(time.monotonic() < deadline, "Timed out awaiting every returned HISTORY_SYNC job")
             entries = self.primary.get("/api/replication/outbox", role="system")
+            require(time.monotonic() < deadline, "Timed out awaiting every returned HISTORY_SYNC job")
             selected = [entry for entry in entries if entry.get("id") in jobs]
             require(len(selected) == len(jobs) and {e["id"] for e in selected} == set(jobs),
                     "A returned durable history job is missing or duplicated in the outbox")
             for entry in selected:
                 require(entry.get("operationType") == "HISTORY_SYNC" and entry.get("localDatabaseId") == self.primary.db["id"]
-                        and entry.get("targetSiteUrl") in {s.url for s in self.sites[1:]}
-                        and (database or entry.get("localTableId") == self.core[0]["id"]),
+                        and (entry.get("localTableId"), entry.get("targetSiteUrl")) in expected,
                         "History job escaped the returned fixture scope")
+            require({(e["localTableId"], e["targetSiteUrl"]) for e in selected} == expected,
+                    "History jobs omit a fixture table/peer pair")
             record["states"] = {entry["id"]: entry["status"] for entry in selected}
             self.save()
             states = set(record["states"].values())
             require(states <= {"PENDING", "SUCCEEDED", "FAILED", "CANCELLED"}, "Unknown history job state")
             require(not states.intersection({"FAILED", "CANCELLED"}), "History job permanently failed or was cancelled")
             if states == {"SUCCEEDED"}:
+                record["snapshots"] = [self.snapshot_receipt(entry) for entry in selected]
+                require(time.monotonic() < deadline, "Timed out verifying completed HISTORY_SYNC snapshots")
                 record["status"] = "SUCCEEDED"
                 self.save()
                 self.converged(self.core, [])

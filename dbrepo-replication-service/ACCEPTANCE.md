@@ -116,7 +116,7 @@ the acceptance runner does not infer deployment parity from container health.
 | Reordering | Hold older writes on C, allow the latest full value or delete through, then replay an older retained event. C stays latest; the older event is retained with `applied=false`, no local period, and no fabricated historical version. A/B remain operational. |
 | Outage and retry | Peer C misses fixture writes while A/B continue; all three operations are durably visible, only exact scoped entries are retried, and queues/current rows converge. `retried=false` fails. |
 | Outage evidence | Every source event remains in each receiver inbox. Actual local versions match applied receipts and local timestamp mappings; superseded unseen events are not claimed as locally visible. The final head and current rows reflect the delete. Requires scoped SQL observers. |
-| Async history sync | Database and table POSTs return HTTP 202 with durable job UUIDs. Every returned `HISTORY_SYNC` job must reach `SUCCEEDED`; `FAILED`, `CANCELLED`, missing/unscoped jobs, or bounded timeout fail. Page/tuple counts never imply completion. |
+| Async history sync | Database and table POSTs return HTTP 202 with durable job UUIDs covering every fixture table/peer pair. Every returned `HISTORY_SYNC` job must reach `SUCCEEDED` and expose a matching `RECONCILED` target snapshot receipt; `FAILED`, `CANCELLED`, missing/unscoped jobs, or bounded timeout fail. Page/tuple counts never imply completion. |
 | Archive preservation | DELETE archives the table on all sites, removes it from active listings, and leaves each local subset reproducible with its original hash. |
 | Canonical subset | The primary's original subset UUID, persistence, rows, result hash and snapshot hash replay on peers after archive, with `X-Result-Mode: immutable-snapshot`. Local equivalent queries and timestamp re-execution do not satisfy this gate. |
 | Offline citation | A parent-provided scoped hook makes the origin's fixture citation return 503 while peers still serve its identical immutable artifact. Without the hook this is BLOCKED, not an offline success. |
@@ -138,6 +138,13 @@ and waits for **all** to succeed. A job stages and verifies an immutable history
 snapshot, reconciles native current state, then catches up from the retained
 journal. The harness does not equate enqueue or legacy tuple/page counts with
 that work being completed. It neither retries nor cancels these jobs implicitly.
+After success it reads the saved source manifest and target snapshot status using
+the job's durable snapshot UUID. Source IDs, origin, pre-request checkpoint,
+target fixture IDs, boundary and manifest digest must agree; both
+`historyVerified` and `currentReconciled` must be true. The roundtrip artifact must
+contain both deleted source versions and zero current keys. Reports retain these
+receipts. This checks published snapshot evidence, not an independent reimplementation
+of the chunk codec or proof that unseen source history was natively visible on peers.
 
 ## Scoped Fault Injection
 
@@ -219,6 +226,8 @@ report path must exactly match the harness `--report`. Observers consume a JSON
 scope, **not arbitrary SQL**, and return one object with `history`, `inbox`,
 `heads`, and `timestamps` arrays. Reads use UTC, read-only transactions, statement
 and metadata-lock deadlines, fixed SELECTs, row limits, and the fixture's UUID key.
+Native open periods are identified by joining exact current-row membership and
+reported as null ends, without assuming a MariaDB-version-specific infinity date.
 The existing container `MARIADB_ROOT_PASSWORD` stays in the remote process; it is
 never returned, written to argv, or printed. No account/grant changes are made.
 An alternative least-privilege observer may implement the same scoped JSON
@@ -230,6 +239,49 @@ the inbox retains the missing source events without asserting past local visibil
 Source canonical citations are instead reproduced from immutable result artifacts.
 
 ## Parent-Coordinated Run
+
+### Exact Live Setup
+
+For the first direction use `primary=https://s46.datalab.tuwien.ac.at`,
+`peer_b=https://s73.datalab.tuwien.ac.at`, and
+`peer_c=https://s93.datalab.tuwien.ac.at` in the configuration above. Bind A/B/C
+to those sites respectively; rotate all credentials, SSH destinations and the
+primary container UUID together for subsequent directions.
+
+| Child-process environment | In-memory value from the matching site |
+| --- | --- |
+| `ACCEPTANCE_A_USER`, `ACCEPTANCE_A_PASSWORD` | Primary dedicated ordinary user and password |
+| `ACCEPTANCE_B_USER`, `ACCEPTANCE_B_PASSWORD` | Peer B dedicated ordinary user and password |
+| `ACCEPTANCE_C_USER`, `ACCEPTANCE_C_PASSWORD` | Peer C dedicated ordinary user and password |
+| `ACCEPTANCE_A_SYSTEM_USER`, `ACCEPTANCE_A_SYSTEM_PASSWORD` | Primary metadata container `SYSTEM_USERNAME`, `SYSTEM_PASSWORD` |
+| `ACCEPTANCE_B_SYSTEM_USER`, `ACCEPTANCE_B_SYSTEM_PASSWORD` | Peer B metadata container `SYSTEM_USERNAME`, `SYSTEM_PASSWORD` |
+| `ACCEPTANCE_C_SYSTEM_USER`, `ACCEPTANCE_C_SYSTEM_PASSWORD` | Peer C metadata container `SYSTEM_USERNAME`, `SYSTEM_PASSWORD` |
+
+Supply these via the parent's subprocess `env` dictionary, never printed exports,
+argv, or config values. The reference `test_user()` grants only `create-database`;
+it is insufficient unchanged. Parent provisioning must grant every attested role,
+initialize each local DBRepo user, and keep all three user contexts open until
+the harness exits. Do not borrow a researcher account or delete test users before
+failure evidence has been reviewed. Read the selected primary container UUID from
+authenticated `GET /api/v1/container`; do not copy another site's UUID.
+
+Set each site's `sql_observer` to this argv, replacing the three uppercase
+non-secret placeholders with the same absolute report path, its exact site label,
+and the parent's verified SSH destination (including user where needed):
+
+```json
+["python3", ".scripts/replication-sql.py", "--report", "REPORT", "--site", "SITE", "--ssh", "SSH_DESTINATION", "--container", "dbrepo-data-db", "--metadata-container", "dbrepo-metadata-service", "--timeout", "20", "--execute"]
+```
+
+Use `SITE=primary`, `peer_b`, `peer_c` respectively. Set top-level `fault_hook` to
+the **peer_c** argv plus `"--allow-scoped-faults"`. Container names and SSH host
+keys must be verified from parent inventory first. No remote script upload is
+needed. Leave `parent_coordinated`, `strict_snapshot_activation`, and
+`scoped_faults_coordinated` false until the coordinated rollout-ready signal.
+Keep config/report private and outside Git. An `offline_hook` is additionally
+required for a complete offline-citation result, as specified below.
+
+### Execution
 
 1. Freeze and record the deployed revision/image/migration inventory for all three
    sites. Activate retained source journals, receiver inbox/head ordering, full
@@ -247,7 +299,8 @@ Source canonical citations are instead reproduced from immutable result artifact
    ```sh
    python3 .scripts/replication-acceptance.py \
      --config acceptance-sites.json --report acceptance-result.json \
-     --allow-writes --allow-faults --wait 300 --sync-wait 900 --deadline 3600
+     --allow-writes --allow-faults --http-timeout 60 \
+     --wait 300 --sync-wait 900 --deadline 3600
    ```
 
 5. Inspect event IDs, source-payload hashes, actual visibility evidence, and every
@@ -272,8 +325,11 @@ explicitly BLOCKED. Ordinary archive/canonical replay is not reported as offline
 
 ### Preparation Evidence
 
-The updated protocol harness and SQL/fault planner are covered by offline
-self-tests. No live three-VPS run, SQL fault activation, origin-offline routing
+The updated protocol harness and SQL/fault planner pass 27 offline self-tests,
+including post-job manifest/receipt agreement, missing peer coverage, terminal
+job failures, bounded timeout, and secret-safe controller planning. These doubles
+are not real-SQL controller or three-site execution evidence. No live three-VPS
+run, SQL fault activation, origin-offline routing
 change, or deployment was performed while preparing these tools. The async
 response contract is a coordinated requirement, not a claim that an older live
 endpoint already implements it. Run the commands above only after activation.

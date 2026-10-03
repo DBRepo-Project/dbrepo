@@ -56,10 +56,12 @@ def observe_sql(scope):
     where = ("table_id='%s' AND source_database_id='%s' AND source_table_id='%s'" %
              (scope["table_id"], scope["source_database_id"], scope["source_table_id"]))
     sql = f"""START TRANSACTION READ ONLY;
-SELECT JSON_OBJECT('kind','history','id',id,'value',value,
- 'start',DATE_FORMAT(row_start,'%Y-%m-%d %H:%i:%s.%f'),
- 'end',DATE_FORMAT(row_end,'%Y-%m-%d %H:%i:%s.%f'))
- FROM `{db}`.`{table}` FOR SYSTEM_TIME ALL WHERE replication_key='{key}' ORDER BY row_start LIMIT 101;
+SELECT JSON_OBJECT('kind','history','id',h.id,'value',h.value,
+ 'start',DATE_FORMAT(h.row_start,'%Y-%m-%d %H:%i:%s.%f'),
+ 'end',IF(c.row_start IS NOT NULL,NULL,DATE_FORMAT(h.row_end,'%Y-%m-%d %H:%i:%s.%f')))
+ FROM `{db}`.`{table}` FOR SYSTEM_TIME ALL AS h
+ LEFT JOIN `{db}`.`{table}` AS c ON c.replication_key=h.replication_key AND c.row_start=h.row_start AND c.row_end=h.row_end
+ WHERE h.replication_key='{key}' ORDER BY h.row_start LIMIT 101;
 SELECT JSON_OBJECT('kind','timestamps','site',site_url,'key',replication_id,'database',database_id,'table',table_id,
  'start',DATE_FORMAT(row_start,'%Y-%m-%d %H:%i:%s.%f'),
  'end',DATE_FORMAT(row_end,'%Y-%m-%d %H:%i:%s.%f'))

@@ -331,9 +331,11 @@ class Checks(unittest.TestCase):
             pending[1]["status"] = "PENDING"
             with patch.object(runner.primary, "get", side_effect=[{"status": "queued", "tables": 1, "jobs": jobs},
                     pending + [{"id": str(uuid.uuid4()), "status": "FAILED"}], entries]) as get, \
-                    patch.object(runner, "converged") as converged:
+                    patch.object(runner, "converged") as converged, \
+                    patch.object(runner, "snapshot_receipt", side_effect=lambda entry: {"job": entry["id"]}) as receipts:
                 runner.history_sync(database)
                 self.assertEqual(3, get.call_count)
+                self.assertEqual(jobs, [call.args[0]["id"] for call in receipts.call_args_list])
                 self.assertEqual((202,), get.call_args_list[0].kwargs["expected"])
                 self.assertEqual("POST", get.call_args_list[0].kwargs["method"])
                 converged.assert_called_once_with(runner.core, [])
@@ -347,21 +349,77 @@ class Checks(unittest.TestCase):
         entry = {"id": job, "status": "SUCCEEDED", "operationType": "HISTORY_SYNC",
                  "localDatabaseId": runner.primary.db["id"], "localTableId": runner.core[0]["id"],
                  "targetSiteUrl": runner.sites[1].url}
-        queued = {"status": "queued", "jobs": [job]}
+        other = dict(entry, id=str(uuid.uuid4()), targetSiteUrl=runner.sites[2].url)
+        queued = {"status": "queued", "jobs": [job, other["id"]]}
         for entries in ([], [dict(entry, status="FAILED")], [dict(entry, status="CANCELLED")],
                         [dict(entry, localDatabaseId=str(uuid.uuid4()))], [dict(entry, operationType="DATA_CREATE")],
-                        [entry, entry], [dict(entry, status="UNKNOWN")]):
-            with self.subTest(entries=entries), patch.object(runner.primary, "get", side_effect=[queued, entries]), \
+                        [entry, entry], [dict(entry, status="UNKNOWN")],
+                        [dict(entry, targetSiteUrl=other["targetSiteUrl"])]):
+            with self.subTest(entries=entries), patch.object(runner.primary, "get", side_effect=[queued, entries + [other]]), \
                     patch.object(a.time, "sleep", side_effect=AssertionError("Terminal failure must not poll")), \
                     self.assertRaises(a.Failed):
                 runner.history_sync()
         with patch.object(runner.primary, "get", side_effect=lambda path, **_: queued if "synchronise" in path
-                          else [dict(entry, status="PENDING")]), self.assertRaisesRegex(a.Failed, "Timed out"):
+                          else [dict(entry, status="PENDING"), other]), self.assertRaisesRegex(a.Failed, "Timed out"):
             runner.history_sync()
         for wrong in ({"tuples": 10, "pages": 1}, {"status": "queued", "jobs": []},
-                      {"status": "queued", "jobs": [job, job]}):
+                      {"status": "queued", "jobs": [job, job]}, {"status": "queued", "jobs": [job]}):
             with patch.object(runner.primary, "get", return_value=wrong), self.assertRaises(a.Failed):
                 runner.history_sync()
+        with patch.object(runner.primary, "get", return_value=dict(queued, tables=2)), self.assertRaises(a.Failed):
+            runner.history_sync(database=True)
+
+    def test_succeeded_history_job_requires_matching_verified_reconciled_snapshot(self):
+        runner = self.runner()
+        runner.setup()
+        runner.core = runner.table("roundtrip")
+        snapshot, job = str(uuid.uuid4()), str(uuid.uuid4())
+        request = {"snapshotId": snapshot, "checkpointCaptured": True, "checkpoint": None}
+        entry = {"id": job, "localTableId": runner.core[0]["id"], "targetSiteUrl": runner.sites[1].url,
+                 "remoteDatabaseId": runner.sites[1].db["id"], "remoteTableId": runner.core[1]["id"],
+                 "payloadJson": json.dumps(request)}
+        manifest = {"format": 1, "snapshotId": snapshot, "origin": runner.primary.url,
+                    "sourceDatabaseId": runner.primary.db["id"], "sourceTableId": runner.core[0]["id"],
+                    "base": None, "boundary": 3, "legacyThrough": 0, "rows": 2, "currentKeys": 0}
+        envelope = {"manifest": manifest, "sha256": "a" * 64}
+        receipt = {"snapshotId": snapshot, "tableId": runner.core[1]["id"], "status": "RECONCILED",
+                   "historyVerified": True, "currentReconciled": True, "boundary": 3, "legacyThrough": 0,
+                   "manifestDigest": envelope["sha256"]}
+        with patch.object(runner.primary, "get", return_value=envelope), \
+                patch.object(runner.sites[1], "get", return_value=receipt) as get:
+            self.assertEqual(receipt, runner.snapshot_receipt(entry)["receipt"])
+            self.assertTrue(get.call_args.args[0].endswith(snapshot + "/status"))
+        for wrong in (dict(receipt, historyVerified=False), dict(receipt, currentReconciled=False),
+                      dict(receipt, status="VERIFIED"),
+                      dict(receipt, manifestDigest="b" * 64), dict(receipt, boundary=2),
+                      dict(receipt, tableId=str(uuid.uuid4())), dict(receipt, snapshotId=str(uuid.uuid4()))):
+            with self.subTest(receipt=wrong), patch.object(runner.primary, "get", return_value=envelope), \
+                    patch.object(runner.sites[1], "get", return_value=wrong), self.assertRaises(a.Failed):
+                runner.snapshot_receipt(entry)
+        for wrong in (dict(manifest, rows=0), dict(manifest, currentKeys=1), dict(manifest, legacyThrough=1),
+                      dict(manifest, base={"boundary": 1}), dict(manifest, sourceTableId=str(uuid.uuid4()))):
+            with self.subTest(manifest=wrong), patch.object(runner.primary, "get", return_value=dict(envelope, manifest=wrong)), \
+                    self.assertRaises(a.Failed):
+                runner.snapshot_receipt(entry)
+        with self.assertRaises(a.Failed):
+            runner.snapshot_receipt(dict(entry, remoteDatabaseId=str(uuid.uuid4())))
+        with self.assertRaises(a.Failed):
+            runner.snapshot_receipt(dict(entry, payloadJson=json.dumps(dict(request, checkpointCaptured=False))))
+
+    def test_history_job_success_after_deadline_is_not_accepted(self):
+        runner = self.runner()
+        runner.setup()
+        runner.core = runner.table("roundtrip")
+        queued = {"status": "queued", "jobs": [str(uuid.uuid4()), str(uuid.uuid4())]}
+        with patch.object(runner.primary, "get", side_effect=[queued, []]), \
+                patch.object(a.time, "monotonic", side_effect=[0, 0, 1]), \
+                self.assertRaisesRegex(a.Failed, "Timed out"):
+            runner.history_sync()
+
+    def test_duplicate_site_labels_cannot_alias_sql_manifest_scopes(self):
+        self.config["sites"][2]["name"] = self.config["sites"][1]["name"]
+        with self.assertRaises(a.Blocked):
+            self.runner()
 
     def sql_scope(self, action="observe"):
         runner = self.runner()
@@ -383,6 +441,9 @@ class Checks(unittest.TestCase):
         self.assertIn("START TRANSACTION READ ONLY", sql)
         self.assertIn("FOR SYSTEM_TIME ALL", sql)
         self.assertIn("LIMIT 101", sql)
+        self.assertIn("LEFT JOIN", sql)
+        self.assertIn("IF(c.row_start IS NOT NULL,NULL", sql)
+        self.assertNotIn("2038", sql)  # Current membership, not a server-version-specific period sentinel.
         self.assertNotRegex(sql, r"(?i)\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)\b")
         for bad in (dict(scope, database="research"), dict(scope, table="outage`; DROP DATABASE research;--"),
                     dict(scope, table_id=str(uuid.uuid4())), dict(scope, source_table_id=str(uuid.uuid4())),
