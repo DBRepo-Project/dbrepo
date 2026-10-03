@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpMethod;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -350,7 +351,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
                     database.getInternalName(), table, data));
             for (String column : data.getKeys().keySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
                 idx[0]++;
             }
@@ -381,20 +382,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             return;
         }
         log.trace("create tuple: {}", data);
-        /* for each LOB-like data-column, retrieve the bytes and replace the value */
-        for (String key : data.getData().keySet()) {
-            final boolean found = table.getColumns()
-                    .stream()
-                    .filter(c -> List.of(ColumnTypeDto.BLOB, ColumnTypeDto.LONGBLOB, ColumnTypeDto.TINYBLOB, ColumnTypeDto.MEDIUMBLOB).contains(c.getColumnType()))
-                    .anyMatch(c -> c.getInternalName().equals(key));
-            if (!found || data.getData().get(key) == null) {
-                continue;
-            }
-            final byte[] blob = storageService.getBytes(String.valueOf(data.getData().get(key)));
-            log.debug("replaced S3 storage key {} with blob", key);
-            data.getData()
-                    .replace(key, blob);
-        }
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -404,7 +391,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
                     database.getInternalName(), table, data));
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -433,20 +420,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             StorageNotFoundException {
         log.trace("create tuple with timestamps: {}", data);
         ensureReplicationKey(table, data);
-        for (String key : data.getData().keySet()) {
-            final boolean found = table.getColumns()
-                    .stream()
-                    .filter(c -> List.of(ColumnTypeDto.BLOB, ColumnTypeDto.LONGBLOB, ColumnTypeDto.TINYBLOB,
-                            ColumnTypeDto.MEDIUMBLOB).contains(ColumnTypeDto.valueOf(c.getColumnType().name())))
-                    .anyMatch(c -> c.getInternalName().equals(key));
-            if (!found || data.getData().get(key) == null) {
-                continue;
-            }
-            final byte[] blob = storageService.getBytes(String.valueOf(data.getData().get(key)));
-            log.debug("replaced S3 storage key {} with blob", key);
-            data.getData()
-                    .replace(key, blob);
-        }
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -456,7 +429,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
                     database.getInternalName(), table, data));
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -535,13 +508,13 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     database.getInternalName(), table, data));
             /* set data */
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
             /* set key(s) */
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -582,12 +555,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
                     database.getInternalName(), table, data));
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -635,7 +608,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
                     database.getInternalName(), table, data));
             for (String column : data.getKeys().keySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
                 idx[0]++;
             }
@@ -881,6 +854,34 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 .getColumnType();
     }
 
+    private void bindTupleValue(PreparedStatement statement, ColumnType type, int index, String name, Object value)
+            throws SQLException, StorageUnavailableException, StorageNotFoundException {
+        switch (type) {
+            case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB -> {
+                // Source strings are S3 keys; replication endpoints must decode wire base64 to byte[].
+                if (value == null) {
+                    statement.setNull(index, java.sql.Types.BLOB);
+                } else if (value instanceof byte[] bytes) {
+                    statement.setBytes(index, bytes);
+                } else if (value instanceof String key) {
+                    statement.setBytes(index, storageService.getBytes(key));
+                } else {
+                    throw new IllegalArgumentException("BLOB value must be an object key or byte array: " + name);
+                }
+            }
+            case DECIMAL -> {
+                if (value == null) {
+                    statement.setNull(index, java.sql.Types.DECIMAL);
+                } else {
+                    statement.setBigDecimal(index, value instanceof BigDecimal decimal
+                            ? decimal : new BigDecimal(value.toString()));
+                }
+            }
+            default -> mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement, type, index,
+                    name, value);
+        }
+    }
+
     private void ensureReplicationKey(Table table, TupleDto data) {
         if (data.getData() == null) {
             data.setData(new LinkedHashMap<>());
@@ -994,7 +995,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             int index = 1;
             for (Map.Entry<String, Object> key : keys.entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), key.getKey()), index++, key.getKey(), key.getValue());
             }
             final List<String> result = new ArrayList<>();
@@ -1063,7 +1064,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 if (entry.getValue() == null) {
                     continue;
                 }
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), bind++, entry.getKey(), entry.getValue());
             }
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -1116,7 +1117,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             if (entry.getValue() == null) {
                 continue;
             }
-            mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+            bindTupleValue(statement,
                     getColumnType(table.getColumns(), entry.getKey()), bind++, entry.getKey(), entry.getValue());
         }
         final ResultSet resultSet = statement.executeQuery();

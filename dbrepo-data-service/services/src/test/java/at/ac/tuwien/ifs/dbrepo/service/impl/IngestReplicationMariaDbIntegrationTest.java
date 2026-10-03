@@ -1,6 +1,10 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
@@ -18,6 +22,8 @@ import org.apache.spark.sql.classic.Dataset;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mapstruct.factory.Mappers;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,6 +37,9 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -267,6 +276,180 @@ class IngestReplicationMariaDbIntegrationTest {
         assertEquals(2, count("samples WHERE sample_value IN (1,2) AND payload = 'first'"));
         assertEquals(2, count("samples WHERE sample_value IN (3,4) AND payload = 'second'"));
         assertNoStagingTables();
+    }
+
+    @Test
+    void headerlessCsvCanOmitReplicationKey() throws Exception {
+        final ImportDto input = csv("1,first,1.25\n2,second,2.5\n");
+        input.setHeader(false);
+        service.importDataset(database, table, input);
+        assertEquals(2, count("samples"));
+        assertEquals(2, outbox.findAll(database).size());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ColumnType.class, names = {"BLOB", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB"})
+    void tupleObjectKeyIsReadOnceAndBlobAndDecimalRemainExact(ColumnType type) throws Exception {
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("DROP TABLE samples");
+            statement.execute("CREATE TABLE samples (replication_key VARCHAR(36) PRIMARY KEY, "
+                    + "sample_value INT NOT NULL UNIQUE, payload " + type.name() + ", amount DECIMAL(38,18)) "
+                    + "ENGINE=InnoDB WITH SYSTEM VERSIONING");
+        }
+        table.getColumns().get(2).setColumnType(type);
+        final byte[] bytes = new byte[]{0, 1, 2, 127, (byte) 128, (byte) 255, 0};
+        final Path object = directory.resolve("source-blob");
+        storage.putObject(object.toString(), bytes);
+        final BigDecimal amount = new BigDecimal("12345678901234567890.123456789012345678");
+        final TupleDto input = tuple("blob", 1, object.toString(), amount.toPlainString());
+
+        final var result = service.createTupleWithTimestamps(database, table, input);
+
+        assertEquals(List.of(object.toString()), storage.reads);
+        assertEquals(object.toString(), input.getData().get("payload"));
+        assertArrayEquals(bytes, (byte[]) result.getData().get("payload"));
+        assertEquals(amount, result.getData().get("amount"));
+        final var event = json.readTree(outbox.findAll(database).getFirst().getPayloadJson()).get("tuple");
+        assertArrayEquals(bytes, event.get("data").get("payload").binaryValue());
+        assertEquals(amount, event.get("data").get("amount").decimalValue());
+        assertStoredBlob("blob", bytes);
+    }
+
+    @Test
+    void byteArraysSurviveSourceCreateUpdateDeleteAndBlobLookupKeys() throws Exception {
+        final byte[] before = new byte[]{0, (byte) 255, 1};
+        final byte[] after = new byte[]{(byte) 254, 0, 2};
+        service.createTuple(database, table, tuple("bytes", 1, before, null));
+        service.updateTuple(database, table, TupleUpdateDto.builder().keys(Map.of("payload", before))
+                .data(Map.of("payload", after, "amount", "99999999999999999999.123456789012345678")).build());
+        assertStoredBlob("bytes", after);
+        service.deleteTuple(database, table, TupleDeleteDto.builder().keys(Map.of("payload", after)).build());
+
+        assertEquals(List.of(), storage.reads);
+        assertEquals(0, count("samples"));
+        assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        final var events = outbox.findAll(database);
+        assertEquals(3, events.size());
+        for (var event : events) {
+            final var tuple = json.readTree(event.getPayloadJson()).get("tuple");
+            final boolean created = event.getHttpMethod().name().equals("POST");
+            assertArrayEquals(created ? before : after, tuple.get("data").get("payload").binaryValue());
+            if (!created) {
+                assertEquals(new BigDecimal("99999999999999999999.123456789012345678"),
+                        tuple.get("data").get("amount").decimalValue());
+            }
+        }
+    }
+
+    @Test
+    void plainTupleCreateHandlesObjectKeysBytesEmptyAndNullBlobs() throws Exception {
+        database.setReplicaUrls(Map.of());
+        final byte[] bytes = new byte[]{0, (byte) 255, 2};
+        final Path object = directory.resolve("plain-blob");
+        storage.putObject(object.toString(), bytes);
+        service.createTuple(database, table, tuple("object", 1, object.toString(), null));
+        service.createTuple(database, table, tuple("bytes", 2, bytes, null));
+        service.createTuple(database, table, tuple("empty", 3, new byte[0], null));
+        service.createTuple(database, table, tuple("null", 4, null, null));
+        assertEquals(List.of(object.toString()), storage.reads);
+        assertStoredBlob("object", bytes);
+        assertStoredBlob("bytes", bytes);
+        assertStoredBlob("empty", new byte[0]);
+        assertStoredBlob("null", null);
+    }
+
+    @Test
+    void decodedWireBlobsCanBeUpsertedWithoutLocalStorageOrRefanout() throws Exception {
+        final byte[] bytes = new byte[]{0, 127, (byte) 128, (byte) 255};
+        final BigDecimal amount = new BigDecimal("12345678901234567890.123456789012345678");
+        service.createTuple(database, table, tuple("wire", 1, bytes, amount));
+        final var event = outbox.findAll(database).getFirst();
+        final DataReplicationDto wire = json.readValue(event.getPayloadJson(), DataReplicationDto.class);
+        final Map<String, Object> values = wire.getTuple().getData();
+        assertInstanceOf(String.class, values.get("payload"));
+        // The receiver endpoint must perform this decoding before calling tuple APIs.
+        values.put("payload", Base64.getDecoder().decode((String) values.get("payload")));
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE received LIKE samples");
+        }
+        database.setCreationLocation("https://remote.example");
+        table.setInternalName("received");
+        service.upsertTupleWithTimestamps(database, table, TupleDto.builder().data(values).build());
+        assertStoredBlob("wire", bytes);
+        assertEquals(amount, service.getReplicationData(database, table, 0, 10, ORIGIN)
+                .getTuples().getFirst().getData().get("amount"));
+        values.put("payload", new byte[0]);
+        service.upsertTupleWithTimestamps(database, table, TupleDto.builder().data(values).build());
+        assertStoredBlob("wire", new byte[0]);
+        assertEquals(List.of(), storage.reads);
+        assertEquals(1, outbox.findAll(database).size());
+    }
+
+    @Test
+    void missingBlobObjectAndInvalidDecimalLeaveNoDataOrEvents() throws Exception {
+        final String missing = directory.resolve("missing-blob").toString();
+        assertThrows(StorageNotFoundException.class, () -> service.createTuple(database, table,
+                tuple("missing", 1, missing, null)));
+        assertThrows(NumberFormatException.class, () -> service.createTuple(database, table,
+                tuple("bad-decimal", 2, new byte[]{0}, "not-a-decimal")));
+        assertEquals(List.of(missing), storage.reads);
+        assertEquals(0, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(0, outbox.findAll(database).size());
+    }
+
+    @Test
+    void sourceBootstrapExtractsExactDecimalBlobAndLongTextTypes() throws Exception {
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("DROP TABLE samples");
+            statement.execute("CREATE TABLE samples (replication_key VARCHAR(36) PRIMARY KEY, "
+                    + "sample_value INT NOT NULL UNIQUE, payload LONGBLOB, amount DECIMAL(38,18), "
+                    + "large_text LONGTEXT) ENGINE=InnoDB WITH SYSTEM VERSIONING");
+        }
+        table.setColumns(new ArrayList<>(table.getColumns()));
+        table.getColumns().add(column("large_text", ColumnType.LONGTEXT));
+        final byte[] bytes = new byte[131072];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) i;
+        }
+        final BigDecimal amount = new BigDecimal("-12345678901234567890.123456789012345678");
+        final String text = "quoted \"text\", \\ \u0000 \u20ac\n".repeat(8192);
+        final TupleDto input = tuple("bootstrap", 1, bytes, amount);
+        input.getData().put("large_text", text);
+        service.createTuple(database, table, input);
+
+        final Map<String, Object> extracted = service.getReplicationData(database, table, 0, 10, ORIGIN)
+                .getTuples().getFirst().getData();
+        assertInstanceOf(byte[].class, extracted.get("payload"));
+        assertInstanceOf(BigDecimal.class, extracted.get("amount"));
+        assertInstanceOf(String.class, extracted.get("large_text"));
+        assertArrayEquals(bytes, (byte[]) extracted.get("payload"));
+        assertEquals(amount, extracted.get("amount"));
+        assertEquals(text, extracted.get("large_text"));
+        final var wire = json.readTree(outbox.findAll(database).getFirst().getPayloadJson()).get("tuple").get("data");
+        assertArrayEquals(bytes, wire.get("payload").binaryValue());
+        assertEquals(amount, wire.get("amount").decimalValue());
+        assertEquals(text, wire.get("large_text").asText());
+        assertEquals(List.of(), storage.reads);
+    }
+
+    private TupleDto tuple(String key, int sample, Object blob, Object amount) {
+        final Map<String, Object> values = new LinkedHashMap<>();
+        values.put("replication_key", key);
+        values.put("sample_value", sample);
+        values.put("payload", blob);
+        values.put("amount", amount);
+        return TupleDto.builder().data(values).build();
+    }
+
+    private void assertStoredBlob(String key, byte[] expected) throws Exception {
+        try (Connection connection = connection(); var statement = connection.prepareStatement(
+                "SELECT payload FROM " + table.getInternalName() + " WHERE replication_key = ?")) {
+            statement.setString(1, key);
+            try (var rows = statement.executeQuery()) {
+                assertTrue(rows.next());
+                assertArrayEquals(expected, rows.getBytes(1));
+            }
+        }
     }
 
     private Column column(String name, ColumnType type) {
