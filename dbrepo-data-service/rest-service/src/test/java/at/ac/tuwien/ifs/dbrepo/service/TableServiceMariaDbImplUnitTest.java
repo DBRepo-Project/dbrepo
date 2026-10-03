@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.mockito.AdditionalAnswers.delegatesTo;
 
 public class TableServiceMariaDbImplUnitTest {
 
@@ -160,8 +162,22 @@ public class TableServiceMariaDbImplUnitTest {
                 dataSource.setInitialPoolSize(1);
                 dataSource.setMinPoolSize(1);
                 dataSource.setMaxPoolSize(2);
-                return dataSource;
-            } catch (PropertyVetoException e) {
+                final ComboPooledDataSource adapted = mock(ComboPooledDataSource.class, delegatesTo(dataSource));
+                doAnswer(invocation -> {
+                    final Connection connection = dataSource.getConnection();
+                    final Connection adaptedConnection = mock(Connection.class, delegatesTo(connection));
+                    doAnswer(createStatement -> {
+                        final Statement statement = connection.createStatement();
+                        final Statement adaptedStatement = mock(Statement.class, delegatesTo(statement));
+                        // Execute the UTC requirement using H2's syntax; all other SQL stays unchanged.
+                        doAnswer(execute -> statement.execute("SET TIME ZONE '+00:00'"))
+                                .when(adaptedStatement).execute("SET time_zone = '+00:00'");
+                        return adaptedStatement;
+                    }).when(adaptedConnection).createStatement();
+                    return adaptedConnection;
+                }).when(adapted).getConnection();
+                return adapted;
+            } catch (PropertyVetoException | SQLException e) {
                 throw new IllegalStateException(e);
             }
         }
