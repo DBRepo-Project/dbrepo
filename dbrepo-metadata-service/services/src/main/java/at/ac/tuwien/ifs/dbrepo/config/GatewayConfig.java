@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -86,7 +87,7 @@ public class GatewayConfig {
         final RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(brokerEndpoint));
         restTemplate.getInterceptors()
-                .add(new BasicRequestInterceptor(this));
+                .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
         return restTemplate;
     }
 

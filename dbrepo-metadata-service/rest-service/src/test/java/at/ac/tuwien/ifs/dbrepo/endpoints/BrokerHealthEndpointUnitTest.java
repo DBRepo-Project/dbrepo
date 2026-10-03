@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -89,7 +90,8 @@ class BrokerHealthEndpointUnitTest {
     void health_preservesProbeOutcome(int httpStatus, String rabbitStatus, String expected) throws Exception {
         broker.expect(requestTo("http://broker.test/api/health/checks/alarms"))
                 .andExpect(method(HttpMethod.GET))
-                .andExpect(header("Authorization", "Basic c3lzdGVtOnRlc3QtcGFzc3dvcmQ="))
+                .andExpect(header("Authorization", "Basic " + HttpHeaders.encodeBasicAuth(
+                        "broker-admin", "broker-password", null)))
                 .andRespond(withStatus(HttpStatus.valueOf(httpStatus)).contentType(MediaType.APPLICATION_JSON)
                         .body("{\"status\":\"" + rabbitStatus + "\"}"));
 
@@ -159,6 +161,8 @@ class BrokerHealthEndpointUnitTest {
     private static GatewayConfig gatewayConfig() {
         final GatewayConfig config = new GatewayConfig(mock(CredentialService.class));
         ReflectionTestUtils.setField(config, "brokerEndpoint", "http://broker.test");
+        ReflectionTestUtils.setField(config, "brokerUsername", "broker-admin");
+        ReflectionTestUtils.setField(config, "brokerPassword", "broker-password");
         ReflectionTestUtils.setField(config, "systemUsername", "system");
         ReflectionTestUtils.setField(config, "systemPassword", "test-password");
         ReflectionTestUtils.setField(config, "replicationUsername", "replication");
