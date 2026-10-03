@@ -24,4 +24,6 @@ public interface ReplicationNotificationOutboxService {
     void markSucceeded(UUID id);
 
     void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts);
+
+    void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts, boolean recoverable);
 }

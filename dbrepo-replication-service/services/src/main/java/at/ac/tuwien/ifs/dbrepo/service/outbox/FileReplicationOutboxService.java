@@ -120,10 +120,12 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
     @Override
     public synchronized List<ReplicationOutboxEntry> findDue(Instant now, int limit) {
         return readEntries().stream()
-                .filter(entry -> ReplicationOutboxStatus.PENDING.equals(entry.getStatus()))
+                .filter(entry -> ReplicationOutboxStatus.PENDING.equals(entry.getStatus())
+                        || (ReplicationOutboxStatus.FAILED.equals(entry.getStatus())
+                        && entry.getNextAttemptAt() != null))
                 .filter(entry -> entry.getNextAttemptAt() == null || !entry.getNextAttemptAt().isAfter(now))
-                .sorted(Comparator.comparing(ReplicationOutboxEntry::getCreatedAt,
-                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .sorted(Comparator.comparing(ReplicationOutboxEntry::getNextAttemptAt,
+                        Comparator.nullsFirst(Comparator.naturalOrder())))
                 .limit(limit)
                 .toList();
     }
@@ -146,24 +148,26 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
 
     @Override
     public synchronized void defer(UUID id, String reason, Duration retryDelay) {
-        update(id, entry -> {
-            entry.setStatus(ReplicationOutboxStatus.PENDING);
-            entry.setLastError(reason);
-            entry.setUpdatedAt(Instant.now());
-            entry.setNextAttemptAt(Instant.now().plus(retryDelay));
-        });
+        defer(id, reason, retryDelay, 20);
     }
 
     @Override
     public synchronized void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts) {
+        markFailed(id, error, retryDelay, maxAttempts, false);
+    }
+
+    @Override
+    public synchronized void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts,
+                                        boolean recoverable) {
         update(id, entry -> {
-            final int attempts = entry.getAttempts() + 1;
+            final int attempts = entry.getAttempts() == Integer.MAX_VALUE
+                    ? Integer.MAX_VALUE : entry.getAttempts() + 1;
             entry.setAttempts(attempts);
             entry.setLastError(error);
             entry.setUpdatedAt(Instant.now());
-            if (attempts >= maxAttempts) {
+            if (attempts >= Math.max(1, maxAttempts) || entry.getStatus() == ReplicationOutboxStatus.FAILED) {
                 entry.setStatus(ReplicationOutboxStatus.FAILED);
-                entry.setNextAttemptAt(null);
+                entry.setNextAttemptAt(recoverable ? Instant.now().plus(retryDelay) : null);
                 return;
             }
             entry.setStatus(ReplicationOutboxStatus.PENDING);
@@ -175,6 +179,8 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
         final List<ReplicationOutboxEntry> entries = readEntries();
         entries.stream()
                 .filter(entry -> id.equals(entry.getId()))
+                .filter(entry -> entry.getStatus() == ReplicationOutboxStatus.PENDING
+                        || entry.getStatus() == ReplicationOutboxStatus.FAILED)
                 .findFirst()
                 .ifPresent(updater::update);
         writeEntries(entries);

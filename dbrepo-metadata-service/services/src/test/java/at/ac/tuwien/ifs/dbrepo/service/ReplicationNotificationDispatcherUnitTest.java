@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.metadata.entity.ReplicationNotificationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -78,7 +81,7 @@ public class ReplicationNotificationDispatcherUnitTest {
 
         dispatcher.dispatch(entry.getId());
 
-        verify(outboxService).markFailed(entry.getId(), "connection refused", Duration.ofSeconds(30), 20);
+        verify(outboxService).markFailed(entry.getId(), "connection refused", Duration.ofSeconds(30), 20, true);
     }
 
     @Test
@@ -107,5 +110,21 @@ public class ReplicationNotificationDispatcherUnitTest {
                 .created(Instant.now())
                 .nextAttemptAt(Instant.now())
                 .build();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {408, 429, 500, 502, 503, 504, 400, 401, 403, 404, 409, 422})
+    void exhaustedRetryClassifiesHttpFailuresAndCapsDelay(int status) {
+        final var entry = entry();
+        entry.setAttempts(Integer.MAX_VALUE);
+        entry.setStatus(ReplicationNotificationStatus.FAILED);
+        when(outboxService.findById(entry.getId())).thenReturn(Optional.of(entry));
+        when(restTemplate.exchange(eq(entry.getPath()), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(status).build());
+
+        assertFalse(dispatcher.dispatch(entry.getId()));
+
+        verify(outboxService).markFailed(eq(entry.getId()), any(String.class), eq(Duration.ofSeconds(900)),
+                eq(20), eq(status == 408 || status == 429 || status >= 500));
     }
 }

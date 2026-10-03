@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -74,8 +76,8 @@ public class ReplicationNotificationDispatcher {
         } catch (Exception e) {
             log.error("Failed to send replication notification {} for {}: {}", entry.getNotificationType(),
                     entry.getAggregateId(), e.getMessage(), e);
-            outboxService.markFailed(id, e.getMessage(), retryDelayFor(entry.getAttempts() + 1),
-                    Math.max(1, maxAttempts));
+            outboxService.markFailed(id, e.getMessage(), retryDelayFor(entry.getAttempts()),
+                    Math.max(1, maxAttempts), isRecoverable(e));
             return false;
         }
     }
@@ -86,15 +88,28 @@ public class ReplicationNotificationDispatcher {
         final ResponseEntity<Void> response = replicationRestTemplate.exchange(entry.getPath(),
                 HttpMethod.valueOf(entry.getHttpMethod()), new HttpEntity<>(entry.getPayload(), headers), Void.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("Replication notification returned " + response.getStatusCode());
+            throw new RestClientResponseException("Replication notification returned " + response.getStatusCode(),
+                    response.getStatusCode(), "", response.getHeaders(), null, null);
         }
     }
 
-    private Duration retryDelayFor(int attempt) {
+    private boolean isRecoverable(Exception error) {
+        if (error instanceof ResourceAccessException) {
+            return true;
+        }
+        if (error instanceof RestClientResponseException response) {
+            final int status = response.getStatusCode().value();
+            return status == 408 || status == 429 || status >= 500 && status <= 599;
+        }
+        return false;
+    }
+
+    private Duration retryDelayFor(int previousAttempts) {
         final long baseSeconds = Math.max(1, retryDelaySeconds);
         final long cappedMaxSeconds = Math.max(baseSeconds, maxRetryDelaySeconds);
-        final int exponent = Math.min(Math.max(0, attempt - 1), 10);
+        final int exponent = Math.min(Math.max(0, previousAttempts), 62);
         final long multiplier = 1L << exponent;
-        return Duration.ofSeconds(Math.min(cappedMaxSeconds, baseSeconds * multiplier));
+        return Duration.ofSeconds(baseSeconds > cappedMaxSeconds / multiplier
+                ? cappedMaxSeconds : baseSeconds * multiplier);
     }
 }

@@ -55,7 +55,8 @@ public class ReplicationNotificationOutboxServiceImpl implements ReplicationNoti
     @Override
     @Transactional(readOnly = true)
     public List<ReplicationNotificationOutbox> findDue(Instant now, int limit) {
-        return repository.findDue(ReplicationNotificationStatus.PENDING, now, PageRequest.of(0, limit));
+        return repository.findDue(ReplicationNotificationStatus.PENDING, ReplicationNotificationStatus.FAILED,
+                now, PageRequest.of(0, limit));
     }
 
     @Override
@@ -67,7 +68,7 @@ public class ReplicationNotificationOutboxServiceImpl implements ReplicationNoti
     @Override
     @Transactional
     public void markSucceeded(UUID id) {
-        repository.findById(id).ifPresent(entry -> {
+        repository.findForUpdate(id).ifPresent(entry -> {
             entry.setStatus(ReplicationNotificationStatus.SUCCEEDED);
             entry.setLastModified(Instant.now());
             entry.setNextAttemptAt(null);
@@ -78,14 +79,24 @@ public class ReplicationNotificationOutboxServiceImpl implements ReplicationNoti
     @Override
     @Transactional
     public void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts) {
-        repository.findById(id).ifPresent(entry -> {
-            final int attempts = entry.getAttempts() + 1;
+        markFailed(id, error, retryDelay, maxAttempts, false);
+    }
+
+    @Override
+    @Transactional
+    public void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts, boolean recoverable) {
+        repository.findForUpdate(id).ifPresent(entry -> {
+            if (entry.getStatus() == ReplicationNotificationStatus.SUCCEEDED) {
+                return;
+            }
+            final int attempts = entry.getAttempts() == Integer.MAX_VALUE
+                    ? Integer.MAX_VALUE : entry.getAttempts() + 1;
             entry.setAttempts(attempts);
             entry.setLastError(error);
             entry.setLastModified(Instant.now());
-            if (attempts >= maxAttempts) {
+            if (attempts >= Math.max(1, maxAttempts) || entry.getStatus() == ReplicationNotificationStatus.FAILED) {
                 entry.setStatus(ReplicationNotificationStatus.FAILED);
-                entry.setNextAttemptAt(null);
+                entry.setNextAttemptAt(recoverable ? Instant.now().plus(retryDelay) : null);
             } else {
                 entry.setStatus(ReplicationNotificationStatus.PENDING);
                 entry.setNextAttemptAt(Instant.now().plus(retryDelay));

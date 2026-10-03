@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,5 +42,26 @@ class ReplicationOutboxPersistenceTest {
             assertNull(saved.getNextAttemptAt());
             assertEquals("{\"id\":\"preserved\"}", saved.getPayload());
         }
+    }
+
+    @Test
+    void exhaustedRecoverableFailureStaysVisibleAndDueAcrossReload() {
+        final var entry = service.enqueue(ReplicationNotificationType.TABLE_CREATE, HttpMethod.POST,
+                "/api/replication/table", Map.of("id", "preserved"), UUID.randomUUID());
+        for (int i = 0; i < 25; i++) {
+            service.markFailed(entry.getId(), "connection refused", Duration.ofMinutes(15), 20, true);
+        }
+        repository.flush();
+        entityManager.clear();
+        final var saved = repository.findById(entry.getId()).orElseThrow();
+        assertEquals(ReplicationNotificationStatus.FAILED, saved.getStatus());
+        assertEquals(25, saved.getAttempts());
+        assertFalse(service.findDue(Instant.now(), 100).stream().anyMatch(e -> e.getId().equals(entry.getId())));
+        assertTrue(service.findDue(saved.getNextAttemptAt(), 100).stream().anyMatch(e -> e.getId().equals(entry.getId())));
+        service.markSucceeded(entry.getId());
+        service.markFailed(entry.getId(), "late failure", Duration.ofMinutes(15), 20, true);
+        repository.flush();
+        entityManager.clear();
+        assertEquals(ReplicationNotificationStatus.SUCCEEDED, repository.findById(entry.getId()).orElseThrow().getStatus());
     }
 }

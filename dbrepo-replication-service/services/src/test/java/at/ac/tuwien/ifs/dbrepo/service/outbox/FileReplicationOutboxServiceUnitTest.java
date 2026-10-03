@@ -63,14 +63,14 @@ public class FileReplicationOutboxServiceUnitTest {
     }
 
     @Test
-    public void dependencyWaitSurvivesRestartWithoutUsingRetryBudget() throws Exception {
+    public void dependencyWaitSurvivesRestartAndAdvancesBackoff() throws Exception {
         final FileReplicationOutboxService service = service();
         final ReplicationOutboxEntry entry = enqueue(service);
         service.defer(entry.getId(), "Waiting for replica table mapping", Duration.ofMinutes(1));
         service.close();
         final ReplicationOutboxEntry restored = service().findById(entry.getId()).orElseThrow();
         assertEquals(ReplicationOutboxStatus.PENDING, restored.getStatus());
-        assertEquals(0, restored.getAttempts());
+        assertEquals(1, restored.getAttempts());
         assertTrue(restored.getNextAttemptAt().isAfter(Instant.now()));
         assertEquals("Waiting for replica table mapping", restored.getLastError());
     }
@@ -101,6 +101,41 @@ public class FileReplicationOutboxServiceUnitTest {
                 tempDir.resolve("outbox.json").toString());
         opened.add(service);
         return service;
+    }
+
+    @Test
+    void exhaustedTransportFailureRemainsFailedButRecoversAfterRestart() throws Exception {
+        final var service = service();
+        final var entry = enqueue(service);
+        for (int i = 0; i < 25; i++) {
+            service.markFailed(entry.getId(), "offline", Duration.ofMinutes(15), 20, true);
+        }
+        service.close();
+        final var restarted = service();
+        final var failed = restarted.findById(entry.getId()).orElseThrow();
+        assertEquals(ReplicationOutboxStatus.FAILED, failed.getStatus());
+        assertEquals(25, failed.getAttempts());
+        assertTrue(restarted.findDue(Instant.now(), 25).isEmpty());
+        assertEquals(entry.getId(), restarted.findDue(failed.getNextAttemptAt(), 25).getFirst().getId());
+        restarted.markSucceeded(entry.getId());
+        restarted.markFailed(entry.getId(), "late error", Duration.ofMinutes(15), 20, true);
+        assertEquals(ReplicationOutboxStatus.SUCCEEDED, restarted.findById(entry.getId()).orElseThrow().getStatus());
+        assertEquals(entry.getPayloadJson(), restarted.findById(entry.getId()).orElseThrow().getPayloadJson());
+    }
+
+    @Test
+    void dependencyWaitingKeepsFailedAlertAndPermanentFailureStopsAutomaticRetries() {
+        final var service = service();
+        final var entry = enqueue(service);
+        service.markFailed(entry.getId(), "offline", Duration.ofMinutes(15), 1, true);
+        service.defer(entry.getId(), "waiting for table mapping", Duration.ofMinutes(15), 20);
+        final var waiting = service.findById(entry.getId()).orElseThrow();
+        assertEquals(ReplicationOutboxStatus.FAILED, waiting.getStatus());
+        assertEquals(2, waiting.getAttempts());
+        assertNotNull(waiting.getNextAttemptAt());
+        service.markFailed(entry.getId(), "404 not found", Duration.ofMinutes(15), 20, false);
+        assertTrue(service.findDue(Instant.now().plus(Duration.ofDays(100)), 25).isEmpty());
+        assertEquals(1, service.findAll().size());
     }
 
     @ParameterizedTest
