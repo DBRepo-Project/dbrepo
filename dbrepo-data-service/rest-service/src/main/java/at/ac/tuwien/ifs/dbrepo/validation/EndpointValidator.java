@@ -155,6 +155,9 @@ public class EndpointValidator {
 
     public void validatePrimaryWriteLocation(Database database, Table table, Principal principal)
             throws NotAllowedException {
+        if (table.getArchivedAt() != null) {
+            throw new NotAllowedException("Archived tables are read-only");
+        }
         if (ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
                 || ReplicationSites.isReplica(table.getCreationLocation(), baseUrl)) {
             throw new NotAllowedException("Write not allowed on secondary site");

@@ -202,14 +202,14 @@ export default {
       return this.table.description !== this.modify.description
     },
     canUpdateTable () {
-      if (this.secondaryReplica || !this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {
         return false
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access) && this.table.owner.username === this.cacheUser.preferred_username
     },
     canDropTable () {
-      if (this.secondaryReplica || !this.roles || !this.table || !this.cacheUser) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles || !this.table || !this.cacheUser) {
         return false
       }
       if (this.roles.includes('delete-foreign-table')) {

@@ -275,11 +275,11 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void delete_succeeds() throws SQLException, QueryMalformedException, TableNotFoundException {
+    public void delete_preservesHistoricalTable() throws SQLException, QueryMalformedException, TableNotFoundException {
 
         /* test */
-        tableService.delete(DATABASE_1_CACHE, TABLE_1_CACHE);
-        assertFalse(MariaDbUtil.tableExists(DATABASE_1_CACHE, TABLE_1_INTERNAL_NAME));
+        assertThrows(QueryMalformedException.class, () -> tableService.delete(DATABASE_1_CACHE, TABLE_1_CACHE));
+        assertTrue(MariaDbUtil.tableExists(DATABASE_1_CACHE, TABLE_1_INTERNAL_NAME));
     }
 
     @Test
@@ -290,7 +290,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         MariaDbUtil.createDatabase(CONTAINER_1_CACHE, DATABASE_2_INTERNAL_NAME);
 
         /* test */
-        assertThrows(TableNotFoundException.class, () -> {
+        assertThrows(QueryMalformedException.class, () -> {
             tableService.delete(DATABASE_2_CACHE, TABLE_5_CACHE);
         });
     }

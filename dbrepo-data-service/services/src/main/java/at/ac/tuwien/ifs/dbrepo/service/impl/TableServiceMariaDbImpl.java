@@ -180,32 +180,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Override
     public void delete(Database database, Table table) throws SQLException, QueryMalformedException,
             TableNotFoundException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* create table if not exists */
-            final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(database.getInternalName(),
-                            table.getInternalName()))
-                    .execute();
-            log.atDebug()
-                    .setMessage("delete table: " + table.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "delete_table")
-                    .log();
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            if (e.getMessage().toLowerCase().contains("unknown table")) {
-                log.error("Failed to delete table: not found: {}", e.getMessage());
-                throw new TableNotFoundException("Failed to delete table: not found", e);
-            }
-            log.error("Failed to delete table: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to delete table: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        log.info("Deleted table with name {}.{}", database.getInternalName(), table.getInternalName());
+        throw new QueryMalformedException("Physical deletion would destroy historical queries; archive the table through the metadata service");
     }
 
     @Override

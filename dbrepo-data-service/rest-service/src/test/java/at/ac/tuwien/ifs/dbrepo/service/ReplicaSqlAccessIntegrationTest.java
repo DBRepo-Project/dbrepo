@@ -85,6 +85,21 @@ class ReplicaSqlAccessIntegrationTest {
         }
     }
 
+    @Test
+    void physicalDeleteCannotDestroyHistoricalRows() throws Exception {
+        try (Connection root = DriverManager.getConnection(url + "/replica_access_test", "root", password)) {
+            root.createStatement().execute("ALTER TABLE data ADD SYSTEM VERSIONING");
+            root.createStatement().execute("UPDATE data SET value = 20 WHERE id = 1");
+            final var tables = new at.ac.tuwien.ifs.dbrepo.service.impl.TableServiceMariaDbImpl(null, null, null, null, null);
+            assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException.class,
+                    () -> tables.delete(database, at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder().internalName("data").build()));
+            try (var result = root.createStatement().executeQuery("SELECT COUNT(*) FROM data FOR SYSTEM_TIME ALL")) {
+                assertTrue(result.next());
+                assertEquals(2, result.getInt(1));
+            }
+        }
+    }
+
     private Connection reader() throws SQLException {
         return DriverManager.getConnection(url + "/replica_access_test", user.getUsername(), user.getPassword());
     }

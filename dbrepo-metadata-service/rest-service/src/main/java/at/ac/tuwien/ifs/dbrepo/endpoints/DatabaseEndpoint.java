@@ -556,11 +556,13 @@ public class DatabaseEndpoint extends RestEndpoint {
                     content = {@Content})
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                Principal principal) throws DatabaseNotFoundException,
+                                                Principal principal,
+                                                @RequestParam(name = "include_archived", defaultValue = "false") boolean includeArchived) throws DatabaseNotFoundException,
             NotAllowedException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = filterDatabase(databaseService.findById(databaseId), principal);
-        final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
+        final DatabaseDto dto = includeArchived ? metadataMapper.databaseToDatabaseDto(database)
+                : metadataMapper.databaseToActiveDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
         if (AuthUtil.isSystem(principal)) {
             log.trace("attach privileged credential information");

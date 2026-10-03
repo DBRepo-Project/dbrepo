@@ -118,7 +118,7 @@ export default {
       return userService.hasReadAccess(this.access)
     },
     canUpdateTable () {
-      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.table) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles || !this.cacheUser || !this.table) {
         return false
       }
       return this.roles.includes('update-table') && this.table.owner.username === this.cacheUser.preferred_username
@@ -131,7 +131,7 @@ export default {
       return databaseService.isOwner(this.database, this.cacheUser)
     },
     canCreateView () {
-      if (this.secondaryReplica || !this.roles || !this.isOwner) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles || !this.isOwner) {
         return false
       }
       return this.roles.includes('create-database-view')
@@ -161,13 +161,13 @@ export default {
       return this.hasReadAccess || this.table.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canImportCsv () {
-      if (this.secondaryReplica || !this.roles || !this.table || !this.cacheUser) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles || !this.table || !this.cacheUser) {
         return false
       }
       return this.roles.includes('insert-table-data')
     },
     canGetPid () {
-      if (this.secondaryReplica || !this.cacheUser || !this.table || !this.database) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.cacheUser || !this.table || !this.database) {
         return false
       }
       return this.hasReadAccess && this.database.owner.username === this.cacheUser.preferred_username || this.table.owner.username === this.cacheUser.preferred_username

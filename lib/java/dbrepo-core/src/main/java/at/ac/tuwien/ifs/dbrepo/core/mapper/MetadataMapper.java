@@ -339,6 +339,13 @@ public interface MetadataMapper {
     })
     DatabaseDto databaseToDatabaseDto(Database database);
 
+    @Named("activeDatabase")
+    default DatabaseDto databaseToActiveDatabaseDto(Database database) {
+        final DatabaseDto dto = databaseToDatabaseDto(database);
+        dto.setTables(dto.getTables().stream().filter(table -> table.getArchivedAt() == null).toList());
+        return dto;
+    }
+
     @Named("replicaLocationListToMap")
     default Map<String, UUID> replicaLocationListToMap(List<ReplicaLocation> replicaLocations) {
         if (replicaLocations == null) {
@@ -929,6 +936,7 @@ public interface MetadataMapper {
                 .owner(UserBriefDto.builder()
                         .username(data.getOwnedBy())
                         .build())
+                .archivedAt(data.getArchivedAt())
                 .build();
         if (data.getIdentifiers() != null) {
             table.setIdentifiers(new LinkedList<>(data.getIdentifiers()

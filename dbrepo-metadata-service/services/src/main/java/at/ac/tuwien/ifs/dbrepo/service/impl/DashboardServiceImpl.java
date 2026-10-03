@@ -31,7 +31,7 @@ public class DashboardServiceImpl implements DashboardService {
             log.trace("database does not manage their dashboard, skip");
             return;
         }
-        dashboardServiceGateway.update(metadataMapper.databaseToDatabaseDto(database));
+        dashboardServiceGateway.update(metadataMapper.databaseToActiveDatabaseDto(database));
     }
 
     @Override

@@ -68,7 +68,7 @@ export default {
       return this.cacheStore.getUser
     },
     canPersistIdentifier () {
-      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.table || !this.roles || !this.cacheUser || !this.access) {
+      if (this.table?.archived_at || isSecondaryReplica(this.database, this.$config.public.api.client) || !this.table || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {

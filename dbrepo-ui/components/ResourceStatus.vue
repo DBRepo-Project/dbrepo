@@ -39,6 +39,9 @@ export default {
       if (!this.resource) {
         return null
       }
+      if (this.resource.archived_at) {
+        return 'archived'
+      }
       if (!this.resource.is_public && !this.resource.is_schema_public) {
         return 'draft'
       } else if(!this.resource.is_public && this.resource.is_schema_public) {
@@ -61,6 +64,9 @@ export default {
       return this.resource.identifiers.filter(i => i.status === 'published').length > 0
     },
     color () {
+      if (this.mode === 'archived') {
+        return 'secondary'
+      }
       if (this.hasIdentifier) {
         return 'info'
       }

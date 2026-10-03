@@ -1,5 +1,28 @@
 # Replication upgrades
 
+## Historical table preservation
+
+Before deploying archival support, apply
+`dbrepo-metadata-db/migration/replication/archive-tables.sql` to each metadata
+database with a privileged database account. The migration is repeatable and
+preserves existing system-versioned rows. Deploy the matching services to all
+peers before resuming writes or replication delivery; older receivers still
+physically delete tables.
+
+Deleting a table now removes it from active listings, search and dashboards by
+setting `archived_at`. Its physical table, historical rows, constraints, replica
+mappings and identifiers are retained. Stored subsets can still refer to the
+original names. Names of archived tables therefore remain reserved. There is
+no automatic purge. The internal data-service DELETE route rejects physical
+deletion. Withdrawals requiring destruction need an explicit preservation and
+PID policy, not an ordinary table DELETE request.
+
+`GET /api/v1/database/{id}?include_archived=true` includes the archived metadata
+under the same access checks as other database metadata. Existing table URLs
+remain readable; normal mutation APIs reject archived tables. Deletion events
+carry the source archive timestamp, including on retry. A pre-upgrade deletion
+event without a timestamp receives the target's first archive timestamp.
+
 ## Read-only replica access
 
 Deploy matching metadata-service, data-service and core-library versions. Keep a

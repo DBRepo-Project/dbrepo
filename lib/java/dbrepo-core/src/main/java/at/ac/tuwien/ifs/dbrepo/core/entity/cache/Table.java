@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.TimeToLive;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.time.Instant;
 
 
 @Data
@@ -48,6 +49,8 @@ public class Table {
     private Map<String, UUID> replicaUrls;
 
     private String creationLocation;
+
+    private Instant archivedAt;
 
     @TimeToLive
     private Long exp;

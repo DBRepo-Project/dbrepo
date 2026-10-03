@@ -116,6 +116,7 @@ interface OperatorDto {
 
 interface TableBriefDto {
   id: string;
+  archived_at?: string | null;
   name: string;
   description: string;
   internal_name: string;
@@ -143,6 +144,7 @@ interface ColumnBriefDto {
 
 interface TableDto {
   id: string;
+  archived_at?: string | null;
   database_id: string;
   name: string;
   identifiers: IdentifierDto[];

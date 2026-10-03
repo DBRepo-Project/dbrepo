@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     max_data_length  BIGINT,
     avg_row_length   BIGINT,
     creation_location VARCHAR(255),
+    archived_at      TIMESTAMP(6) NULL DEFAULT NULL,
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     versioned        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_public        BOOLEAN      NOT NULL DEFAULT TRUE,

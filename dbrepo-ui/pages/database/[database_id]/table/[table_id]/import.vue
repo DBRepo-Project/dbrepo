@@ -105,7 +105,7 @@ export default {
       return this.$t('pages.table.import.title') + ' ' + this.table.name
     },
     canInsertTableData () {
-      if (isSecondaryReplica(this.database, this.$config.public.api.client) || !this.table || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data') || !this.hasReadAccess) {
+      if (this.table?.archived_at || isSecondaryReplica(this.database, this.$config.public.api.client) || !this.table || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data') || !this.hasReadAccess) {
         return false
       }
       const userService = useUserService()

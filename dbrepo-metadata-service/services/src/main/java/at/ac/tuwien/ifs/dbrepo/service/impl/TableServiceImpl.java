@@ -16,14 +16,12 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.metadata.ColumnDependencyRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.TableCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
-import at.ac.tuwien.ifs.dbrepo.metadata.ForeignKeyRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.TableRepository;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
@@ -32,8 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -48,11 +50,10 @@ public class TableServiceImpl implements TableService {
     private final MetadataMapper metadataMapper;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
-    private final ColumnDependencyRepository columnDependencyRepository;
-    private final ForeignKeyRepository foreignKeyRepository;
     private final TableRepository tableRepository;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
+    private final TableCacheRepository tableCacheRepository;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
@@ -60,19 +61,17 @@ public class TableServiceImpl implements TableService {
     @Autowired
     public TableServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
-                            ColumnDependencyRepository columnDependencyRepository,
-                            ForeignKeyRepository foreignKeyRepository, TableRepository tableRepository,
+                            TableRepository tableRepository,
                             SearchServiceGateway searchServiceGateway,
-                            DatabaseCacheRepository databaseCacheRepository) {
+                            DatabaseCacheRepository databaseCacheRepository, TableCacheRepository tableCacheRepository) {
         this.rabbitConfig = rabbitConfig;
         this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
-        this.columnDependencyRepository = columnDependencyRepository;
-        this.foreignKeyRepository = foreignKeyRepository;
         this.tableRepository = tableRepository;
         this.searchServiceGateway = searchServiceGateway;
         this.databaseCacheRepository = databaseCacheRepository;
+        this.tableCacheRepository = tableCacheRepository;
     }
 
     @Override
@@ -216,57 +215,31 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, SearchServiceException {
-        /* remove metadata constraints that would otherwise keep the table columns alive */
-        final int foreignKeyReferences = foreignKeyRepository.deleteReferencesByTableId(table.getId());
-        final int foreignKeys = foreignKeyRepository.deleteByTableId(table.getId());
-        log.debug("Deleted {} foreign key references and {} foreign keys for table {}", foreignKeyReferences,
-                foreignKeys, table.getId());
-        removeForeignKeysFromGraph(table);
-        final String tableId = table.getId().toString();
-        final int concepts = columnDependencyRepository.deleteConceptsByTableId(tableId);
-        final int units = columnDependencyRepository.deleteUnitsByTableId(tableId);
-        final int enums = columnDependencyRepository.deleteEnumsByTableId(tableId);
-        final int sets = columnDependencyRepository.deleteSetsByTableId(tableId);
-        log.debug("Deleted {} concept(s), {} unit(s), {} enum(s) and {} set(s) for table {}", concepts, units,
-                enums, sets, table.getId());
-        /* delete at data service */
-        try {
-            dataServiceGateway.deleteTable(table.getDatabase().getId(), table.getId());
-        } catch (TableNotFoundException e) {
-            /* ignore */
+        // Keep the physical table, history and dependency graph for persisted queries and citations.
+        if (table.getArchivedAt() == null) {
+            table.setArchivedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
         }
-        /* update in metadata database */
-        table.getDatabase()
-                .getTables()
-                .remove(table);
         final Database database = databaseRepository.save(table.getDatabase());
-        /* update cache */
-        databaseCacheRepository.deleteById(table.getDatabase().getId());
-        /* update in search service */
-        searchServiceGateway.update(database);
-        log.info("Deleted table with id {}", table.getId());
-    }
-
-    private void removeForeignKeysFromGraph(Table table) {
-        if (table.getDatabase() == null || table.getDatabase().getTables() == null) {
-            return;
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    invalidateTableCache(table);
+                }
+            });
+        } else {
+            invalidateTableCache(table);
         }
-        table.getDatabase()
-                .getTables()
-                .stream()
-                .filter(t -> t.getConstraints() != null)
-                .filter(t -> t.getConstraints().getForeignKeys() != null)
-                .forEach(t -> t.getConstraints()
-                        .getForeignKeys()
-                        .removeIf(foreignKey -> referencesTable(foreignKey, table)));
+        searchServiceGateway.update(database);
+        log.info("Archived table with id {} at {}", table.getId(), table.getArchivedAt());
     }
 
-    private boolean referencesTable(ForeignKey foreignKey, Table table) {
-        return foreignKey.getTable() != null && table.getId().equals(foreignKey.getTable().getId())
-                || foreignKey.getReferencedTable() != null && table.getId().equals(foreignKey.getReferencedTable().getId());
+    private void invalidateTableCache(Table table) {
+        databaseCacheRepository.deleteById(table.getDatabase().getId());
+        tableCacheRepository.deleteById(table.getId());
     }
 
     @Transactional

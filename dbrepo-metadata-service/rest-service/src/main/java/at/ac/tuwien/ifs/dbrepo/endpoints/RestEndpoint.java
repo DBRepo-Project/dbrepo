@@ -32,6 +32,9 @@ public abstract class RestEndpoint {
 
     public void validatePrimaryWriteLocation(Database database, Table table) throws NotAllowedException {
         validatePrimaryWriteLocation(database);
+        if (table.getArchivedAt() != null) {
+            throw new NotAllowedException("Archived tables are read-only");
+        }
         if (ReplicationSites.isReplica(table.getCreationLocation(), replicationSiteUrl)) {
             throw new NotAllowedException("Replicated tables are read-only on secondary sites");
         }

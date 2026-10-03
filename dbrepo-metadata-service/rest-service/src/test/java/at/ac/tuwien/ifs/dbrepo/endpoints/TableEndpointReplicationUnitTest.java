@@ -230,15 +230,17 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = "replication", authorities = {"replication"})
-    public void deleteReplica_existingTable_deletesLocallyWithoutFanOut() throws Exception {
+    public void deleteReplica_existingTable_preservesOriginArchiveTimestampWithoutFanOut() throws Exception {
         final Database database = Database.builder().id(DATABASE_3_ID).build();
         final Table table = Table.builder().id(TABLE_1_ID).build();
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
 
-        final ResponseEntity<Void> response = tableEndpoint.deleteReplica(DATABASE_3_ID, TABLE_1_ID);
+        final java.time.Instant archivedAt = java.time.Instant.parse("2026-10-03T10:00:00.123456Z");
+        final ResponseEntity<Void> response = tableEndpoint.deleteReplica(DATABASE_3_ID, TABLE_1_ID, archivedAt);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(archivedAt, table.getArchivedAt());
         verify(tableService).deleteTable(table);
         verify(replicationService, never()).replicateTableDelete(any(), any());
     }
@@ -251,7 +253,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
         when(tableService.findById(database, TABLE_1_ID))
                 .thenThrow(new TableNotFoundException("already deleted"));
 
-        final ResponseEntity<Void> response = tableEndpoint.deleteReplica(DATABASE_3_ID, TABLE_1_ID);
+        final ResponseEntity<Void> response = tableEndpoint.deleteReplica(DATABASE_3_ID, TABLE_1_ID, null);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(tableService, never()).deleteTable(any());

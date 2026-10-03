@@ -99,6 +99,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
                 .databaseId(database.getId())
                 .tableId(table.getId())
+                .archivedAt(table.getArchivedAt())
                 .databaseReplicaIds(database.getReplicaUrls()
                         .stream()
                         .filter(replica -> replica.getUrl() != null && replica.getReplicaDatabaseId() != null)

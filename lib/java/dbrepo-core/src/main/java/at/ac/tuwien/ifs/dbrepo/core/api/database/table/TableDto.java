@@ -118,6 +118,10 @@ public class TableDto {
     @Schema(description = "The site where the table was initially created", example = "http://localhost:8080", nullable = true)
     private String creationLocation;
 
+    @JsonProperty("archived_at")
+    @Schema(description = "When the table was removed from active use; historical data remains available")
+    private Instant archivedAt;
+
     @NotNull
     @Schema(description = "The created timestamp", example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")

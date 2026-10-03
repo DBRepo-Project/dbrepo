@@ -18,6 +18,14 @@ class ReplicaWritePolicyUnitTest {
     private final EndpointValidator validator = new EndpointValidator();
 
     @Test
+    void archivedPrimaryTableRejectsNewWrites() {
+        ReflectionTestUtils.setField(validator, "baseUrl", "https://local.example");
+        final Database database = Database.builder().creationLocation("https://local.example").build();
+        final Table table = Table.builder().archivedAt(java.time.Instant.now()).build();
+        assertThrows(NotAllowedException.class, () -> validator.validatePrimaryWriteLocation(database, table, null));
+    }
+
+    @Test
     void systemRoleCannotBypassPrimaryWriteLocation() {
         ReflectionTestUtils.setField(validator, "baseUrl", "https://local.example");
         final var principal = new UsernamePasswordAuthenticationToken("system", "",

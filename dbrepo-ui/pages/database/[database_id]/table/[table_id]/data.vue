@@ -246,28 +246,28 @@ export default {
       return userService.hasReadAccess(this.access)
     },
     canAddTuple () {
-      if (this.secondaryReplica || !this.roles) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canSelectTuples () {
-      if (this.secondaryReplica || !this.roles) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
-      if (this.secondaryReplica || !this.roles || this.selection === null || this.selection.length !== 1) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles || this.selection === null || this.selection.length !== 1) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
-      if (this.secondaryReplica || !this.roles || this.selection === null || this.selection.length < 1) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.roles || this.selection === null || this.selection.length < 1) {
         return false
       }
       const userService = useUserService()

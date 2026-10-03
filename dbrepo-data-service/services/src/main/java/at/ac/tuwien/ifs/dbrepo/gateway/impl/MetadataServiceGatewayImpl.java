@@ -116,7 +116,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public Database getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final ResponseEntity<DatabaseDto> response;
-        final String url = "/api/v1/database/" + id;
+        final String url = "/api/v1/database/" + id + "?include_archived=true";
         log.debug("get database info from metadata service: {}", url);
         try {
             response = metadataServiceRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseDto.class);

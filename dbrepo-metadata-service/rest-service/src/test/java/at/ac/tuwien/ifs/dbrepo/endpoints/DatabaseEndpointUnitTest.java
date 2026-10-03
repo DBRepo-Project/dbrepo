@@ -842,7 +842,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         }
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.findById(databaseId, principal);
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.findById(databaseId, principal, false);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         return response;
     }

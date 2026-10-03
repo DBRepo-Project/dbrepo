@@ -182,7 +182,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                 continue;
             }
             try {
-                deleteRemoteTable(targetSiteUrl, remoteDatabaseId, remoteTableId);
+                deleteRemoteTable(targetSiteUrl, remoteDatabaseId, remoteTableId, notification.getArchivedAt());
                 successful++;
             } catch (Exception e) {
                 log.error("Failed to replicate table deletion {} to {}: {}", notification.getTableId(),
@@ -457,8 +457,9 @@ public class ReplicationServiceImpl implements ReplicationService {
                 payload.getReplicaUrl(), payload.getReplicaTableId());
     }
 
-    private void retryTableDelete(ReplicationOutboxEntry entry) {
-        deleteRemoteTable(entry.getTargetSiteUrl(), entry.getRemoteDatabaseId(), entry.getRemoteTableId());
+    private void retryTableDelete(ReplicationOutboxEntry entry) throws JsonProcessingException {
+        final TableDeleteNotificationDto notification = readPayload(entry, TableDeleteNotificationDto.class);
+        deleteRemoteTable(entry.getTargetSiteUrl(), entry.getRemoteDatabaseId(), entry.getRemoteTableId(), notification.getArchivedAt());
     }
 
     private void retryViewCreate(ReplicationOutboxEntry entry) throws JsonProcessingException {
@@ -526,9 +527,9 @@ public class ReplicationServiceImpl implements ReplicationService {
         return requireBody(response, "tuple replication retry");
     }
 
-    private void deleteRemoteTable(String targetSiteUrl, UUID remoteDatabaseId, UUID remoteTableId) {
+    private void deleteRemoteTable(String targetSiteUrl, UUID remoteDatabaseId, UUID remoteTableId, Instant archivedAt) {
         final String path = site(targetSiteUrl) + "/api/v1/database/" + remoteDatabaseId + "/table/"
-                + remoteTableId + "/replicate";
+                + remoteTableId + "/replicate" + (archivedAt == null ? "" : "?archivedAt=" + archivedAt);
         try {
             externalReplicationRestTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
         } catch (HttpClientErrorException.NotFound e) {

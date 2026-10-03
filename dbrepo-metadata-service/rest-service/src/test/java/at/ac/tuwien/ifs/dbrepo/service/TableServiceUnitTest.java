@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.TableCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
@@ -65,6 +66,9 @@ public class TableServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private DatabaseCacheRepository databaseCacheRepository;
+
+    @MockitoBean
+    private TableCacheRepository tableCacheRepository;
 
     @MockitoBean
     private UserService userService;
@@ -749,13 +753,8 @@ public class TableServiceUnitTest extends BaseTest {
         /* test */
         tableService.deleteTable(TABLE_1);
 
-        final InOrder inOrder = inOrder(foreignKeyRepository, dataServiceGateway);
-        inOrder.verify(foreignKeyRepository)
-                .deleteReferencesByTableId(TABLE_1_ID);
-        inOrder.verify(foreignKeyRepository)
-                .deleteByTableId(TABLE_1_ID);
-        inOrder.verify(dataServiceGateway)
-                .deleteTable(DATABASE_1_ID, TABLE_1_ID);
+        assertNotNull(TABLE_1.getArchivedAt());
+        verifyNoInteractions(foreignKeyRepository, columnDependencyRepository, dataServiceGateway);
     }
 
     @Test
@@ -815,10 +814,8 @@ public class TableServiceUnitTest extends BaseTest {
 
         /* test */
         tableService.deleteTable(TABLE_4);
-        verify(foreignKeyRepository)
-                .deleteReferencesByTableId(TABLE_4_ID);
-        verify(foreignKeyRepository)
-                .deleteByTableId(TABLE_4_ID);
+        assertNotNull(TABLE_4.getArchivedAt());
+        verifyNoInteractions(foreignKeyRepository, columnDependencyRepository, dataServiceGateway);
     }
 
 }

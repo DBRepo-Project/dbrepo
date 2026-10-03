@@ -113,6 +113,9 @@ public class Table {
     @Column(name = "creation_location")
     private String creationLocation;
 
+    @Column(name = "archived_at", columnDefinition = "TIMESTAMP(6)")
+    private Instant archivedAt;
+
     @OrderBy("ordinalPosition")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "table", orphanRemoval = true)

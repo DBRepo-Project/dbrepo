@@ -665,7 +665,8 @@
         "public": "Visible",
         "data": "Data-only",
         "schema": "Schema-only",
-        "draft": "Hidden"
+        "draft": "Hidden",
+        "archived": "Archived"
       },
       "resource": {
         "data": {

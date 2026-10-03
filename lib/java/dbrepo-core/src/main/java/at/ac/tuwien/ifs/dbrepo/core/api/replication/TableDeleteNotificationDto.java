@@ -10,6 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.Map;
 import java.util.UUID;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -22,6 +23,7 @@ public class TableDeleteNotificationDto {
 
     private UUID databaseId;
     private UUID tableId;
+    private Instant archivedAt;
     private Map<String, UUID> databaseReplicaIds;
     private Map<String, UUID> tableReplicaIds;
 }

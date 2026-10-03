@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.service.DataSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxOperationType;
+import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxEntry;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ReplicationServiceImplUnitTest {
+
+    @Test
+    public void retryTableDelete_preservesSourceArchiveTimestamp() throws Exception {
+        final RestTemplate external = mock(RestTemplate.class);
+        final ReplicationOutboxService outbox = mock(ReplicationOutboxService.class);
+        final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+                mock(RestTemplate.class), external, mapper, outbox);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final Instant archived = Instant.parse("2026-10-03T10:00:00.123456Z");
+        final ReplicationOutboxEntry entry = ReplicationOutboxEntry.builder().id(UUID.randomUUID())
+                .operationType(ReplicationOutboxOperationType.TABLE_DELETE).targetSiteUrl("http://remote.test")
+                .remoteDatabaseId(UUID.randomUUID()).remoteTableId(UUID.randomUUID())
+                .payloadJson(mapper.writeValueAsString(TableDeleteNotificationDto.builder().archivedAt(archived).build()))
+                .build();
+        when(outbox.findById(entry.getId())).thenReturn(java.util.Optional.of(entry));
+
+        assertEquals(true, service.retryOutboxEntry(entry.getId()));
+
+        verify(external).exchange(eq("http://remote.test/api/v1/database/" + entry.getRemoteDatabaseId()
+                + "/table/" + entry.getRemoteTableId() + "/replicate?archivedAt=" + archived),
+                eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY), eq(Void.class));
+        verify(outbox).markSucceeded(entry.getId());
+    }
 
     @Test
     public void synchroniseData_succeeds() {
@@ -251,6 +276,7 @@ public class ReplicationServiceImplUnitTest {
         final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
                 .databaseId(databaseId)
                 .tableId(tableId)
+                .archivedAt(java.time.Instant.parse("2026-10-03T10:00:00.123456Z"))
                 .databaseReplicaIds(Map.of("http://remote.test/", remoteDatabaseId))
                 .tableReplicaIds(Map.of("http://remote.test", remoteTableId))
                 .build();
@@ -259,7 +285,7 @@ public class ReplicationServiceImplUnitTest {
 
         assertEquals(1, replicated);
         verify(externalRestTemplate).exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
-                        + "/table/" + remoteTableId + "/replicate"), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY),
+                        + "/table/" + remoteTableId + "/replicate?archivedAt=2026-10-03T10:00:00.123456Z"), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY),
                 eq(Void.class));
     }
 

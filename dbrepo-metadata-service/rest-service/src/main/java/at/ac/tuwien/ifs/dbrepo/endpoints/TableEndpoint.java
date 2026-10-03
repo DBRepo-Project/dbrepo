@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -100,6 +102,7 @@ public class TableEndpoint extends RestEndpoint {
         endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-tables");
         return ResponseEntity.ok(filterTables(database, principal)
                 .stream()
+                .filter(table -> table.getArchivedAt() == null)
                 .map(metadataMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
     }
@@ -450,11 +453,11 @@ public class TableEndpoint extends RestEndpoint {
     }
 
     @DeleteMapping("/{tableId}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('delete-table') or hasAuthority('delete-foreign-table')")
     @Observed(name = "dbrepo_table_delete")
     @Operation(summary = "Delete table",
-            description = "Deletes a table with id. Only the owner of a table can perform this action (requires role `delete-table`) or anyone can delete a table (requires role `delete-foreign-table`).",
+            description = "Archives a table and removes it from active listings while preserving historical data for stored queries. Requires ownership and role `delete-table`, or role `delete-foreign-table`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -494,7 +497,11 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to delete table: identifier already associated");
             throw new NotAllowedException("Failed to delete table: identifier already associated");
         }
+        if (table.getArchivedAt() != null) {
+            return ResponseEntity.accepted().build();
+        }
         validatePrimaryWriteLocation(database, table);
+        table.setArchivedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
         if (replicationService != null && hasResolvedReplicaLocations(database, table)) {
             replicationService.replicateTableDelete(database, table);
         }
@@ -506,13 +513,14 @@ public class TableEndpoint extends RestEndpoint {
     }
 
     @DeleteMapping("/{tableId}/replicate")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAnyAuthority('system', 'replication')")
     @Observed(name = "dbrepo_table_delete_replica")
     @Operation(summary = "Delete replicated table", hidden = true,
             security = {@SecurityRequirement(name = "basicAuth")})
     public ResponseEntity<Void> deleteReplica(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                              @NotNull @PathVariable("tableId") UUID tableId)
+                                              @NotNull @PathVariable("tableId") UUID tableId,
+                                              @RequestParam(required = false) Instant archivedAt)
             throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
@@ -522,6 +530,9 @@ public class TableEndpoint extends RestEndpoint {
             table = tableService.findById(database, tableId);
         } catch (TableNotFoundException e) {
             return ResponseEntity.noContent().build();
+        }
+        if (table.getArchivedAt() == null && archivedAt != null) {
+            table.setArchivedAt(archivedAt);
         }
         tableService.deleteTable(table);
         dashboardService.update(databaseService.findById(databaseId));

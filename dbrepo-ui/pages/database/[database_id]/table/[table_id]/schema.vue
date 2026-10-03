@@ -266,7 +266,7 @@ export default {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
     },
     canAssignSemanticInformation () {
-      if (this.secondaryReplica || !this.cacheUser || !this.roles) {
+      if (this.table?.archived_at || this.secondaryReplica || !this.cacheUser || !this.roles) {
         return false
       }
       if (this.roles.includes('modify-foreign-table-column-semantics')) {

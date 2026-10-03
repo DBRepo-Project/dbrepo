@@ -286,6 +286,7 @@ class ColumnBrief(BaseModel):
 
 class TableBrief(BaseModel):
     id: str
+    archived_at: Optional[str] = None
     database_id: str
     name: str
     description: Optional[str] = None
@@ -1347,6 +1348,7 @@ class ViewColumn(BaseModel):
 
 class Table(BaseModel):
     id: str
+    archived_at: Optional[str] = None
     database_id: str
     name: str
     owner: UserBrief

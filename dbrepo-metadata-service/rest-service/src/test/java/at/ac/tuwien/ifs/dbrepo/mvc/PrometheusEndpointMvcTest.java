@@ -189,7 +189,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            databaseEndpoint.findById(DATABASE_1_ID, USER_1_PRINCIPAL);
+            databaseEndpoint.findById(DATABASE_1_ID, USER_1_PRINCIPAL, false);
         } catch (Exception e) {
             /* ignore */
         }
