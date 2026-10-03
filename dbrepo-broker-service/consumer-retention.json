@@ -17,8 +17,7 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {
-        "x-queue-type": "quorum",
-        "x-delivery-limit": -1
+        "x-queue-type": "quorum"
       }
     }
   ],

@@ -33,8 +33,10 @@ the retry/read-timeout budget. Tune HTTP timeouts to actual insert latency to av
 - Policy `dbrepo-consumer-retention`, exact pattern `^dbrepo$`, priority 50: DLX `dbrepo.dead-letter`, routing key
   `rejected`, `dead-letter-strategy=at-least-once`, `overflow=reject-publish`, `delivery-limit=5`.
 - New durable direct exchange and durable quorum queue, both named `dbrepo.dead-letter`, with binding `rejected`.
-- Parking queue has no TTL, expiry, max length, dead-letter route or application consumer; its delivery limit is
-  disabled. It retains failures for explicit operator recovery. Do not apply a broad expiry/drop policy to it.
+- Parking queue has no TTL, expiry, max length, dead-letter route or application consumer. Leave its delivery limit
+  unset: this is unlimited on the shipped RabbitMQ 3.13.7. Do not set `x-delivery-limit=-1` on this version: it can
+  discard a message on the first requeue, including a management-API inspection. Revalidate delivery-limit semantics
+  before any broker major-version upgrade. Do not apply a broad expiry/drop policy to this queue.
 
 At-least-once quorum dead lettering retains the source copy until the target confirms receipt, including during
 target unavailability. Ordinary default dead lettering is at-most-once and is not an acceptable substitute.
@@ -65,6 +67,13 @@ Changing startup definitions alone is not sufficient evidence that an existing b
    Deploy the data-service version with source SQL/outbox atomicity before the consumer. Restore recorded consumer
    replicas only after the retention gate passes. Install the updated broker configuration/Helm template too so later
    restarts use the same definitions; no global installer modification is required.
+
+If an earlier rollout created `dbrepo.dead-letter` with `x-delivery-limit=-1`, importing the corrected file does not
+remove that immutable queue argument. Pause consumers and inspect queue metadata, not messages. Only when this queue
+is empty and unused may it be deleted with both `if-empty=true` and `if-unused=true` guards, then recreated by importing
+the corrected partial file. Never delete the source queue. A nonempty parking queue needs a separate guarded migration:
+do not inspect it with requeue semantics or delete it. Preserve each message in a confirmed, routed replacement before
+acknowledging its original. Already discarded messages cannot be restored from broker retention.
 
 ### Compose Commands
 
@@ -114,6 +123,9 @@ routing. Record original source/DLQ counts, routing keys, message IDs and test p
 
 1. Publish a valid tuple; verify exactly one test insert and its outbox handoff before the delivery disappears.
 2. Publish malformed JSON and a malformed route under `dbrepo.`; verify no insert and one retained dead letter each.
+   On an otherwise empty test DLQ, inspect only these marker messages with requeue semantics, wait at least 60 seconds,
+   and verify both the original bodies and `x-death.reason=rejected` are still present. This catches broker-version
+   delivery-limit behavior that static definitions and an initial arrival check cannot establish.
 3. Return a permanent HTTP 4xx from a test data endpoint; verify one attempt and retention, not an ACK or hot loop.
 4. Return HTTP 503 continuously; verify exactly three attempts separated by 1s/2s, then retention. Restore the endpoint
    before the third attempt in a separate test and verify eventual successful ACK instead.

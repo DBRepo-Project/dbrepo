@@ -27,7 +27,8 @@ class ConsumerRetentionTest(unittest.TestCase):
         queue, = self.retention["queues"]
         self.assertTrue(queue["durable"])
         self.assertFalse(queue["auto_delete"])
-        self.assertEqual({"x-queue-type": "quorum", "x-delivery-limit": -1}, queue["arguments"])
+        # RabbitMQ 3.13 treats -1 as a negative limit, dropping messages on requeue.
+        self.assertEqual({"x-queue-type": "quorum"}, queue["arguments"])
         exchange, = self.retention["exchanges"]
         self.assertTrue(exchange["durable"])
         self.assertEqual("direct", exchange["type"])
