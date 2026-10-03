@@ -69,9 +69,11 @@ Changing startup definitions alone is not sufficient evidence that an existing b
    restarts use the same definitions; no global installer modification is required.
 
 If an earlier rollout created `dbrepo.dead-letter` with `x-delivery-limit=-1`, importing the corrected file does not
-remove that immutable queue argument. Pause consumers and inspect queue metadata, not messages. Only when this queue
-is empty and unused may it be deleted with both `if-empty=true` and `if-unused=true` guards, then recreated by importing
-the corrected partial file. Never delete the source queue. A nonempty parking queue needs a separate guarded migration:
+remove that immutable queue argument. Pause consumers and all other writers to the parking queue/exchange; inspect queue
+metadata, not messages. RabbitMQ 3.13 quorum queues do not support `if-empty` or `if-unused` delete guards. For a known
+empty, unused parking queue, remove its DLX binding to prevent new transfers, recheck both ready/unacknowledged counts
+and consumer count are zero, then delete only that queue and immediately reimport the corrected partial file. If writers
+cannot be quiesced, do not delete it. Never delete the source queue. A nonempty parking queue needs a separate migration:
 do not inspect it with requeue semantics or delete it. Preserve each message in a confirmed, routed replacement before
 acknowledging its original. Already discarded messages cannot be restored from broker retention.
 
