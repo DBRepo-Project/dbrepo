@@ -64,60 +64,52 @@ than an untyped exception. Do not classify error text.
 
 ## Tuple journal integration
 
-The tuple storage implementation is maintained separately. Its matching change
-must be applied before considering end-to-end outage recovery complete:
-
-1. Add `boolean recoverable` to a `markFailed` overload on
-   `TupleReplicationOutboxService` and its implementation. Keep the old overload
-   delegating with `false` for compatibility. The dispatcher passes the typed
-   classification above and computes backoff from the previous attempt count.
-2. Saturate attempts at `Integer.MAX_VALUE`. When the threshold is reached or the
-   job was already failed, persist `FAILED`; persist `now + retryDelay` for a
-   recoverable error and null otherwise. Never update completed or cancelled
-   rows, and fence completion with the journal's current claim token.
-3. Include due `FAILED` rows only when `next_attempt_at IS NOT NULL`. Apply the
-   same predicate during the atomic claim, not only in the candidate query.
-   Sort by next attempt and creation time and preserve the configured batch limit.
-4. Keep the failed alert visible during claims. Use the journal's claim token
-   and lease independently of alert status; active leases must exclude concurrent
-   scheduled and manual attempts. A crashed claim must become eligible when its
-   lease expires. Do not set an exhausted job to `PENDING` on claim/retry.
-5. Retain successful and cancelled journal rows as audit evidence, rather than
-   deleting them. Manual retry must never claim cancelled or successful rows.
-
-The durable eligibility predicate, combined with lease eligibility, is:
-
-```sql
-WHERE (status = 'PENDING' AND next_attempt_at <= ?)
-   OR (status = 'FAILED' AND next_attempt_at IS NOT NULL AND next_attempt_at <= ?)
-   OR (status = 'PROCESSING' AND last_modified <= ?)
-ORDER BY next_attempt_at, created
-LIMIT ?
-```
-
-The tuple failure transition should calculate values before its fenced update:
+`TupleReplicationNotificationDispatcher` and `TupleReplicationOutboxServiceMariaDbImpl`
+implement the same recoverable-failure policy. Claims carry persisted `claimToken`
+and `claimUntil` fields. Both completion methods require the current token and an
+unexpired lease and return whether the transition was committed:
 
 ```java
-final int attempts = entry.getAttempts() == Integer.MAX_VALUE
-        ? Integer.MAX_VALUE : entry.getAttempts() + 1;
-final boolean failed = attempts >= Math.max(1, maxAttempts)
-        || entry.getStatus() == TupleReplicationOutboxStatus.FAILED;
-final TupleReplicationOutboxStatus status = failed
-        ? TupleReplicationOutboxStatus.FAILED : TupleReplicationOutboxStatus.PENDING;
-final Instant nextAttemptAt = failed && !recoverable ? null : Instant.now().plus(retryDelay);
-```
-
-The dispatcher invokes the new overload as follows, retaining any claim-token
-argument required by the journal implementation:
-
-```java
-outboxService.markFailed(database, entry.getId(), e.getMessage(),
+outboxService.markSucceeded(database, entry.getId(), entry.getClaimToken());
+outboxService.markFailed(database, entry.getId(), entry.getClaimToken(), e.getMessage(),
         retryDelayFor(entry.getAttempts()), Math.max(1, maxAttempts), isRecoverable(e));
 ```
 
-Tests should cover 25 transport failures followed by recovery, a process restart,
-a stale claim, concurrent claims, permanent HTTP errors, and dependency waits.
-No receiver acknowledgement may substitute for a durable journal write.
+There is no unfenced completion overload. The only production caller is the
+dispatcher, which passes the token obtained from the claim. A stale completion
+returns false and cannot change status, attempts, errors, or retry timing.
+Success clears the lease and retry time but retains the journal event; operational
+`findAll` excludes successful entries, while `readRange` still exposes them.
+
+Exhausted jobs remain visibly `FAILED` while a worker owns the lease. Active
+leases exclude both manual and scheduled claims. Due failed entries and expired
+claims are automatically eligible. An interrupted manual retry of a permanent
+failure is also recovered after its lease expires, even if its previous retry
+time was null. An idle permanent failure still requires an operator retry.
+Failure counts saturate at `Integer.MAX_VALUE` and failed alerts remain sticky
+until success, even if the configured threshold is subsequently increased.
+
+The scheduler is bounded by `batchSize` and claims one event immediately before
+sending it. It visits databases regardless of their current replica URL map so
+configuration changes do not hide already-persisted notifications. Candidate
+selection and atomic claims use the same eligibility predicate, ordered by retry
+time and event sequence. No network request occurs inside the claim transaction.
+
+Enqueue scheduling, retry scheduling, lease creation and lease checks use the
+database clock. Operational timestamps are read as server epochs so JDBC/session
+timezone differences do not change their meaning. Event IDs, sequences, payloads
+and other replay fields are never changed by delivery transitions.
+
+Schema preparation adds nullable token and lease columns, including to an
+already-initialized source journal. Legacy `PROCESSING` entries without tokens
+become claimable after `processingTimeoutSeconds` from their last modification.
+Quiesce old dispatchers before upgrading; their unfenced updates are not safe to
+run alongside the new code. Set the processing timeout above the HTTP timeout
+plus acknowledgement-write allowance (default lease: 300 seconds).
+
+A peer response alone is not a durable local success. If its acknowledgement
+cannot be persisted, the dispatcher leaves the lease for recovery. Delivery is
+at least once; retries retain the event identity for receiver deduplication.
 
 ## Cancelling obsolete orchestration jobs
 
@@ -161,3 +153,14 @@ latter against the isolated MariaDB test instance, set
 `jdbc:mariadb://127.0.0.1:13366/recovery_replication_test` and provide
 `DBREPO_RECOVERY_TEST_PASSWORD`. It creates only that test database and recreates
 only its metadata outbox table; other databases are not modified.
+
+`TupleReplicationNotificationDispatcherUnitTest` covers HTTP classification,
+backoff limits, claim-token propagation, bounded batches and acknowledgement
+failures. `TupleReplicationRecoveryIntegrationTest` exercises real MariaDB with
+25 failures, service recreation, expired/competing claims, terminal fencing,
+schema upgrade, timezone differences and unchanged journal history. Enable it
+with `RECOVERY_TUPLE_SQL_TEST_PORT=13366` and
+`RECOVERY_TUPLE_SQL_TEST_PASSWORD`; it recreates only outbox/counter tables in
+`recovery_tuple_test`. To run the existing journal regression suite in that same
+isolated database, also set `JOURNAL_SQL_TEST_PORT=13366`,
+`JOURNAL_SQL_TEST_PASSWORD` and `JOURNAL_SQL_TEST_SCHEMA=recovery_tuple_test`.

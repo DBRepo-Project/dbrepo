@@ -30,8 +30,9 @@ public interface TupleReplicationOutboxService {
     List<TupleReplicationOutboxEntry> claimDue(Database database, int limit, Duration processingTimeout)
             throws SQLException;
 
-    void markSucceeded(Database database, UUID id) throws SQLException;
+    boolean markSucceeded(Database database, UUID id, UUID claimToken) throws SQLException;
 
-    void markFailed(Database database, UUID id, String error, Duration retryDelay, int maxAttempts)
+    boolean markFailed(Database database, UUID id, UUID claimToken, String error, Duration retryDelay,
+                       int maxAttempts, boolean recoverable)
             throws SQLException;
 }

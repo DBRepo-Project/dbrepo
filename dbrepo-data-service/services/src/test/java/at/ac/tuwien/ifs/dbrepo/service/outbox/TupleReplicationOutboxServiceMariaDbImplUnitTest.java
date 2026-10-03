@@ -47,9 +47,9 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
 
         assertTrue(service.claim(database, entry.getId(), Duration.ofMinutes(5)).isEmpty());
 
-        service.markSucceeded(database, entry.getId());
+        assertTrue(service.markSucceeded(database, entry.getId(), claimed.getFirst().getClaimToken()));
 
-        assertTrue(service.claimDue(database, 10, Duration.ZERO).isEmpty());
+        assertTrue(service.claimDue(database, 10, Duration.ofMinutes(5)).isEmpty());
         assertTrue(service.findAll(database).isEmpty());
         assertEquals(1, service.countRows(database));
         assertEquals(TupleReplicationOutboxStatus.SUCCEEDED.name(), service.status(database, entry.getId()));
@@ -71,26 +71,29 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
 
         final TupleReplicationOutboxEntry entry = service.enqueue(database, table, HttpMethod.PUT,
                 DataReplicationDto.builder().build());
-        assertTrue(service.claim(database, entry.getId(), Duration.ofMinutes(5)).isPresent());
+        final var firstClaim = service.claim(database, entry.getId(), Duration.ofMinutes(5)).orElseThrow();
 
-        service.markFailed(database, entry.getId(), "replication unavailable", Duration.ofMinutes(5), 2);
+        assertTrue(service.markFailed(database, entry.getId(), firstClaim.getClaimToken(),
+                "replication unavailable", Duration.ofMinutes(5), 2, false));
 
         assertTrue(service.claimDue(database, 10, Duration.ofMinutes(5)).isEmpty());
         assertEquals(TupleReplicationOutboxStatus.PENDING.name(), service.status(database, entry.getId()));
 
         service.forceDue(database, entry.getId());
-        assertTrue(service.claim(database, entry.getId(), Duration.ofMinutes(5)).isPresent());
-        service.markFailed(database, entry.getId(), "replication unavailable", Duration.ofMinutes(5), 2);
+        final var secondClaim = service.claim(database, entry.getId(), Duration.ofMinutes(5)).orElseThrow();
+        assertTrue(service.markFailed(database, entry.getId(), secondClaim.getClaimToken(),
+                "replication unavailable", Duration.ofMinutes(5), 2, false));
 
         assertEquals(TupleReplicationOutboxStatus.FAILED.name(), service.status(database, entry.getId()));
         assertEquals(List.of(entry.getId()), service.findAll(database).stream()
                 .map(TupleReplicationOutboxEntry::getId).toList());
-        assertTrue(service.claimDue(database, 10, Duration.ZERO).isEmpty());
+        assertTrue(service.claimDue(database, 10, Duration.ofMinutes(5)).isEmpty());
         final var manual = service.claim(database, entry.getId(), Duration.ofMinutes(5));
         assertTrue(manual.isPresent());
         assertEquals(2, manual.get().getAttempts());
+        assertEquals(TupleReplicationOutboxStatus.FAILED, manual.get().getStatus());
         assertTrue(service.claim(database, entry.getId(), Duration.ofMinutes(5)).isEmpty());
-        service.markSucceeded(database, entry.getId());
+        assertTrue(service.markSucceeded(database, entry.getId(), manual.get().getClaimToken()));
         assertEquals(1, service.countRows(database));
     }
 
@@ -116,6 +119,23 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
             assertEquals(1, event.sequence());
             assertEquals(event.eventId().toString(), new ObjectMapper().readTree(event.payloadJson()).get("eventId").asText());
         }
+    }
+
+    @Test
+    void recoverableFailedAlertSurvivesAClaimAndAnIncreasedThreshold() throws Exception {
+        final var service = service("sticky_alert");
+        final var database = database();
+        final var entry = service.enqueue(database, table(), HttpMethod.POST, DataReplicationDto.builder().build());
+        final var first = service.claim(database, entry.getId(), Duration.ofMinutes(5)).orElseThrow();
+        assertTrue(service.markFailed(database, entry.getId(), first.getClaimToken(), "offline", Duration.ZERO, 1, true));
+        final var retry = service.claimDue(database, 1, Duration.ofMinutes(5)).getFirst();
+        assertEquals(TupleReplicationOutboxStatus.FAILED, retry.getStatus());
+        assertTrue(service.markFailed(database, entry.getId(), retry.getClaimToken(), "offline",
+                Duration.ofMinutes(15), 20, true));
+        final var saved = service.findAll(database).getFirst();
+        assertEquals(TupleReplicationOutboxStatus.FAILED, saved.getStatus());
+        assertEquals(2, saved.getAttempts());
+        assertTrue(saved.getNextAttemptAt().isAfter(saved.getLastModified()));
     }
 
     private TestTupleReplicationOutboxService service(String name) {

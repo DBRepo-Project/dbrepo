@@ -13,15 +13,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,9 +34,23 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
 
     private static final String TABLE_NAME = "tuple_replication_notification_outbox";
     private static final String COUNTER_TABLE = "tuple_replication_journal_counter";
+    // Server epochs avoid JDBC/JVM timezone conversion of operational lease and retry timestamps.
     private static final String SELECT_COLUMNS = """
             id, database_id, table_id, http_method, payload, status, attempts, last_error,
-            created, last_modified, next_attempt_at
+            UNIX_TIMESTAMP(created) AS created, UNIX_TIMESTAMP(last_modified) AS last_modified,
+            UNIX_TIMESTAMP(next_attempt_at) AS next_attempt_at, claim_token, UNIX_TIMESTAMP(claim_until) AS claim_until
+            """;
+    private static final String CLAIMABLE = """
+            status IN ('PENDING', 'PROCESSING', 'FAILED')
+            AND ((claim_token IS NULL AND (status <> 'PROCESSING' OR last_modified IS NULL
+                OR last_modified <= TIMESTAMPADD(MICROSECOND, ?, CURRENT_TIMESTAMP(6))))
+                OR claim_until <= CURRENT_TIMESTAMP(6))
+            AND (? OR status = 'PROCESSING' OR claim_token IS NOT NULL
+                OR next_attempt_at <= CURRENT_TIMESTAMP(6))
+            """;
+    private static final String OWNED_CLAIM = """
+            id = ? AND claim_token = ? AND claim_until > CURRENT_TIMESTAMP(6)
+            AND status IN ('PROCESSING', 'FAILED')
             """;
 
     private final ObjectMapper objectMapper;
@@ -77,13 +93,11 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 .payloadJson(writePayload(event))
                 .status(TupleReplicationOutboxStatus.PENDING)
                 .attempts(0)
-                .created(Instant.now())
-                .nextAttemptAt(Instant.now())
                 .build();
         final String statement = """
                 INSERT INTO tuple_replication_notification_outbox
                     (id, database_id, table_id, http_method, payload, status, attempts, created, next_attempt_at, event_sequence)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6), ?)
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, entry.getId().toString());
@@ -93,12 +107,10 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             preparedStatement.setString(5, entry.getPayloadJson());
             preparedStatement.setString(6, entry.getStatus().name());
             preparedStatement.setInt(7, entry.getAttempts());
-            preparedStatement.setTimestamp(8, Timestamp.from(entry.getCreated()));
-            preparedStatement.setTimestamp(9, Timestamp.from(entry.getNextAttemptAt()));
-            preparedStatement.setLong(10, sequence);
+            preparedStatement.setLong(8, sequence);
             preparedStatement.executeUpdate();
         }
-        return entry;
+        return findById(connection, entry.getId()).orElseThrow(() -> new SQLException("Enqueued event is missing"));
     }
 
     private long nextSequence(Connection connection) throws SQLException {
@@ -194,20 +206,19 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
     @Override
     public Optional<TupleReplicationOutboxEntry> claim(Database database, UUID id, Duration processingTimeout)
             throws SQLException {
+        final long leaseMicros = leaseMicros(processingTimeout);
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
             ensureTableExists(connection);
             connection.setAutoCommit(false);
-            final Instant staleBefore = Instant.now().minus(processingTimeout);
-            final Optional<TupleReplicationOutboxEntry> entry = findClaimable(connection, id, staleBefore);
-            if (entry.isEmpty() || !markProcessing(connection, entry.get().getId(), staleBefore, true)) {
+            try {
+                final var entry = claim(connection, id, leaseMicros, true);
                 connection.commit();
-                return Optional.empty();
+                return entry;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
             }
-            connection.commit();
-            entry.get().setStatus(TupleReplicationOutboxStatus.PROCESSING);
-            entry.get().setLastModified(Instant.now());
-            return entry;
         } finally {
             dataSource.close();
         }
@@ -216,36 +227,42 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
     @Override
     public List<TupleReplicationOutboxEntry> claimDue(Database database, int limit, Duration processingTimeout)
             throws SQLException {
+        final long leaseMicros = leaseMicros(processingTimeout);
+        if (limit < 1) {
+            throw new IllegalArgumentException("Claim limit must be positive");
+        }
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
             ensureTableExists(connection);
             connection.setAutoCommit(false);
-            final List<TupleReplicationOutboxEntry> entries = findDue(connection, limit,
-                    Instant.now(), Instant.now().minus(processingTimeout));
-            final List<TupleReplicationOutboxEntry> claimed = new ArrayList<>();
-            for (TupleReplicationOutboxEntry entry : entries) {
-                if (markProcessing(connection, entry.getId(), Instant.now().minus(processingTimeout), false)) {
-                    entry.setStatus(TupleReplicationOutboxStatus.PROCESSING);
-                    entry.setLastModified(Instant.now());
-                    claimed.add(entry);
+            try {
+                final List<TupleReplicationOutboxEntry> claimed = new ArrayList<>();
+                for (TupleReplicationOutboxEntry entry : findDue(connection, limit, leaseMicros)) {
+                    claim(connection, entry.getId(), leaseMicros, false).ifPresent(claimed::add);
                 }
+                connection.commit();
+                return claimed;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
             }
-            connection.commit();
-            return claimed;
         } finally {
             dataSource.close();
         }
     }
 
     @Override
-    public void markSucceeded(Database database, UUID id) throws SQLException {
+    public boolean markSucceeded(Database database, UUID id, UUID claimToken) throws SQLException {
+        Objects.requireNonNull(claimToken, "A claim token is required");
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
             ensureTableExists(connection);
             try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + TABLE_NAME
-                    + " SET status = 'SUCCEEDED', next_attempt_at = NULL, last_modified = CURRENT_TIMESTAMP(6) WHERE id = ?")) {
+                    + " SET status = 'SUCCEEDED', next_attempt_at = NULL, last_modified = CURRENT_TIMESTAMP(6),"
+                    + " claim_token = NULL, claim_until = NULL WHERE " + OWNED_CLAIM)) {
                 preparedStatement.setString(1, id.toString());
-                preparedStatement.executeUpdate();
+                preparedStatement.setString(2, claimToken.toString());
+                return preparedStatement.executeUpdate() == 1;
             }
         } finally {
             dataSource.close();
@@ -253,68 +270,39 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
     }
 
     @Override
-    public void markFailed(Database database, UUID id, String error, Duration retryDelay, int maxAttempts)
+    public boolean markFailed(Database database, UUID id, UUID claimToken, String error, Duration retryDelay,
+                              int maxAttempts, boolean recoverable)
             throws SQLException {
+        Objects.requireNonNull(claimToken, "A claim token is required");
+        if (retryDelay.isNegative()) {
+            throw new IllegalArgumentException("Retry delay must not be negative");
+        }
+        final long retryMicros = retryDelay.toNanos() / 1000;
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
             ensureTableExists(connection);
-            connection.setAutoCommit(false);
-            final Optional<TupleReplicationOutboxEntry> entry = findById(connection, id);
-            if (entry.isEmpty()) {
-                connection.commit();
-                return;
-            }
-            final int attempts = entry.get().getAttempts() + 1;
-            final TupleReplicationOutboxStatus status = attempts >= maxAttempts
-                    ? TupleReplicationOutboxStatus.FAILED
-                    : TupleReplicationOutboxStatus.PENDING;
-            final Instant nextAttemptAt = TupleReplicationOutboxStatus.FAILED.equals(status)
-                    ? null
-                    : Instant.now().plus(retryDelay);
             final String statement = """
                     UPDATE tuple_replication_notification_outbox
-                    SET status = ?, attempts = ?, last_error = ?, last_modified = ?, next_attempt_at = ?
-                    WHERE id = ?
-                    """;
+                    SET next_attempt_at = CASE WHEN (status = 'FAILED' OR attempts >= ?) AND NOT ? THEN NULL
+                            ELSE TIMESTAMPADD(MICROSECOND, ?, CURRENT_TIMESTAMP(6)) END,
+                        status = CASE WHEN status = 'FAILED' OR attempts >= ? THEN 'FAILED' ELSE 'PENDING' END,
+                        attempts = CASE WHEN attempts < 2147483647 THEN attempts + 1 ELSE attempts END,
+                        last_error = ?, last_modified = CURRENT_TIMESTAMP(6), claim_token = NULL, claim_until = NULL
+                    WHERE
+                    """ + OWNED_CLAIM;
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.setString(1, status.name());
-                preparedStatement.setInt(2, attempts);
-                preparedStatement.setString(3, error);
-                preparedStatement.setTimestamp(4, Timestamp.from(Instant.now()));
-                if (nextAttemptAt == null) {
-                    preparedStatement.setTimestamp(5, null);
-                } else {
-                    preparedStatement.setTimestamp(5, Timestamp.from(nextAttemptAt));
-                }
+                preparedStatement.setInt(1, Math.max(1, maxAttempts) - 1);
+                preparedStatement.setBoolean(2, recoverable);
+                preparedStatement.setLong(3, retryMicros);
+                preparedStatement.setInt(4, Math.max(1, maxAttempts) - 1);
+                preparedStatement.setString(5, error);
                 preparedStatement.setString(6, id.toString());
-                preparedStatement.executeUpdate();
+                preparedStatement.setString(7, claimToken.toString());
+                return preparedStatement.executeUpdate() == 1;
             }
-            connection.commit();
         } finally {
             dataSource.close();
         }
-    }
-
-    private Optional<TupleReplicationOutboxEntry> findClaimable(Connection connection, UUID id, Instant staleBefore)
-            throws SQLException {
-        final String statement = """
-                SELECT %s
-                FROM tuple_replication_notification_outbox
-                WHERE id = ?
-                  AND (status = ? OR (status = ? AND last_modified <= ?) OR status = 'FAILED')
-                """.formatted(SELECT_COLUMNS);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-            preparedStatement.setString(1, id.toString());
-            preparedStatement.setString(2, TupleReplicationOutboxStatus.PENDING.name());
-            preparedStatement.setString(3, TupleReplicationOutboxStatus.PROCESSING.name());
-            preparedStatement.setTimestamp(4, Timestamp.from(staleBefore));
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.of(map(resultSet));
-                }
-            }
-        }
-        return Optional.empty();
     }
 
     private Optional<TupleReplicationOutboxEntry> findById(Connection connection, UUID id) throws SQLException {
@@ -351,23 +339,20 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         return entries;
     }
 
-    private List<TupleReplicationOutboxEntry> findDue(Connection connection, int limit, Instant now,
-                                                      Instant staleBefore) throws SQLException {
+    private List<TupleReplicationOutboxEntry> findDue(Connection connection, int limit, long leaseMicros)
+            throws SQLException {
         final String statement = """
                 SELECT %s
                 FROM tuple_replication_notification_outbox
-                WHERE (status = ? AND next_attempt_at <= ?)
-                   OR (status = ? AND last_modified <= ?)
-                ORDER BY event_sequence ASC
+                WHERE %s
+                ORDER BY next_attempt_at ASC, event_sequence ASC
                 LIMIT ?
-                """.formatted(SELECT_COLUMNS);
+                """.formatted(SELECT_COLUMNS, CLAIMABLE);
         final List<TupleReplicationOutboxEntry> entries = new ArrayList<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-            preparedStatement.setString(1, TupleReplicationOutboxStatus.PENDING.name());
-            preparedStatement.setTimestamp(2, Timestamp.from(now));
-            preparedStatement.setString(3, TupleReplicationOutboxStatus.PROCESSING.name());
-            preparedStatement.setTimestamp(4, Timestamp.from(staleBefore));
-            preparedStatement.setInt(5, limit);
+            preparedStatement.setLong(1, -leaseMicros);
+            preparedStatement.setBoolean(2, false);
+            preparedStatement.setInt(3, limit);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     entries.add(map(resultSet));
@@ -377,23 +362,31 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         return entries;
     }
 
-    private boolean markProcessing(Connection connection, UUID id, Instant staleBefore, boolean manualRetry) throws SQLException {
+    private Optional<TupleReplicationOutboxEntry> claim(Connection connection, UUID id, long leaseMicros,
+                                                       boolean manualRetry) throws SQLException {
         final String statement = """
                 UPDATE tuple_replication_notification_outbox
-                SET status = ?, last_modified = ?
-                WHERE id = ?
-                  AND (status = ? OR (status = ? AND last_modified <= ?) OR (? AND status = 'FAILED'))
-                """;
+                SET status = CASE WHEN status = 'FAILED' THEN 'FAILED' ELSE 'PROCESSING' END,
+                    last_modified = CURRENT_TIMESTAMP(6), claim_token = ?,
+                    claim_until = TIMESTAMPADD(MICROSECOND, ?, CURRENT_TIMESTAMP(6))
+                WHERE id = ? AND
+                """ + CLAIMABLE;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-            preparedStatement.setString(1, TupleReplicationOutboxStatus.PROCESSING.name());
-            preparedStatement.setTimestamp(2, Timestamp.from(Instant.now()));
+            preparedStatement.setString(1, UUID.randomUUID().toString());
+            preparedStatement.setLong(2, leaseMicros);
             preparedStatement.setString(3, id.toString());
-            preparedStatement.setString(4, TupleReplicationOutboxStatus.PENDING.name());
-            preparedStatement.setString(5, TupleReplicationOutboxStatus.PROCESSING.name());
-            preparedStatement.setTimestamp(6, Timestamp.from(staleBefore));
-            preparedStatement.setBoolean(7, manualRetry);
-            return preparedStatement.executeUpdate() == 1;
+            preparedStatement.setLong(4, -leaseMicros);
+            preparedStatement.setBoolean(5, manualRetry);
+            return preparedStatement.executeUpdate() == 1 ? findById(connection, id) : Optional.empty();
         }
+    }
+
+    private long leaseMicros(Duration processingTimeout) {
+        final long micros = processingTimeout.toNanos() / 1000;
+        if (micros < 1) {
+            throw new IllegalArgumentException("Processing timeout must be at least one microsecond");
+        }
+        return micros;
     }
 
     private TupleReplicationOutboxEntry map(ResultSet resultSet) throws SQLException {
@@ -406,9 +399,12 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 .status(TupleReplicationOutboxStatus.valueOf(resultSet.getString("status")))
                 .attempts(resultSet.getInt("attempts"))
                 .lastError(resultSet.getString("last_error"))
-                .created(toInstant(resultSet.getTimestamp("created")))
-                .lastModified(toInstant(resultSet.getTimestamp("last_modified")))
-                .nextAttemptAt(toInstant(resultSet.getTimestamp("next_attempt_at")))
+                .created(toInstant(resultSet.getBigDecimal("created")))
+                .lastModified(toInstant(resultSet.getBigDecimal("last_modified")))
+                .nextAttemptAt(toInstant(resultSet.getBigDecimal("next_attempt_at")))
+                .claimToken(resultSet.getString("claim_token") == null ? null
+                        : UUID.fromString(resultSet.getString("claim_token")))
+                .claimUntil(toInstant(resultSet.getBigDecimal("claim_until")))
                 .build();
     }
 
@@ -422,6 +418,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 try (PreparedStatement ready = connection.prepareStatement("SELECT initialized FROM " + COUNTER_TABLE
                         + " WHERE id = 1"); ResultSet result = ready.executeQuery()) {
                     if (result.next() && result.getBoolean(1)) {
+                        ensureClaimColumns(connection);
                         return;
                     }
                 }
@@ -441,6 +438,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                     created         TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                     last_modified   TIMESTAMP(6),
                     next_attempt_at TIMESTAMP(6),
+                    claim_token     VARCHAR(36),
+                    claim_until     TIMESTAMP(6) NULL,
                     PRIMARY KEY (id),
                     INDEX idx_tuple_replication_outbox_due (status, next_attempt_at),
                     INDEX idx_tuple_replication_outbox_table (table_id)
@@ -449,6 +448,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         }
+        ensureClaimColumns(connection);
         try (ResultSet columns = connection.getMetaData().getColumns(connection.getCatalog(), null, TABLE_NAME, "event_sequence")) {
             if (!columns.next()) {
                 try (PreparedStatement upgrade = connection.prepareStatement("ALTER TABLE " + TABLE_NAME
@@ -495,6 +495,20 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             throw e;
         } finally {
             connection.setAutoCommit(true);
+        }
+    }
+
+    private void ensureClaimColumns(Connection connection) throws SQLException {
+        for (var column : Map.of("claim_token", "VARCHAR(36)", "claim_until", "TIMESTAMP(6) NULL").entrySet()) {
+            try (ResultSet columns = connection.getMetaData().getColumns(connection.getCatalog(), null,
+                    TABLE_NAME, column.getKey())) {
+                if (!columns.next()) {
+                    try (PreparedStatement alter = connection.prepareStatement("ALTER TABLE " + TABLE_NAME
+                            + " ADD COLUMN IF NOT EXISTS " + column.getKey() + " " + column.getValue())) {
+                        alter.executeUpdate();
+                    }
+                }
+            }
         }
     }
 
@@ -570,8 +584,9 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         }
     }
 
-    private Instant toInstant(Timestamp timestamp) {
-        return timestamp == null ? null : timestamp.toInstant();
+    private Instant toInstant(BigDecimal epochSeconds) {
+        return epochSeconds == null ? null : Instant.ofEpochSecond(epochSeconds.longValue(),
+                epochSeconds.remainder(BigDecimal.ONE).movePointRight(9).longValue());
     }
 
     private String writePayload(DataReplicationDto payload) {

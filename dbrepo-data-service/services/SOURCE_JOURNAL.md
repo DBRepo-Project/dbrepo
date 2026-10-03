@@ -9,6 +9,13 @@ journal and an explicit citation/recovery retention policy.
 `findAll(Database)` remains the operational UI/status view: it excludes
 `SUCCEEDED` rows in SQL. Read retained history only through paginated `readRange`.
 
+Delivery claims use a persisted token and lease. Success/failure updates require
+the current unexpired token; no unfenced completion API remains. Exhausted
+recoverable failures retain `FAILED` status while retrying, including during a
+claim. Expired claims are recovered without changing immutable journal fields.
+See [outbox recovery](../../docs/dev/replication-outbox-recovery.md) for the retry
+and upgrade contract.
+
 ## Writer contract
 
 Call `ensureTableExists(connection)` with JDBC auto-commit enabled, before any
@@ -101,7 +108,8 @@ tests are `TupleReplicationJournalIntegrationTest` in this services module. They
 run only with `JOURNAL_SQL_TEST_PORT=13366` and
 `JOURNAL_SQL_TEST_PASSWORD` set for the isolated server. They drop and recreate
 **only** `journal_replication_test` at `127.0.0.1:13366`; never run them against a
-production database. Build `dbrepo-core` and data-service modules in the same
+production database. `JOURNAL_SQL_TEST_SCHEMA=recovery_tuple_test` selects the
+separate recovery test database instead. Build `dbrepo-core` and data-service modules in the same
 Maven reactor so the new DTO fields are used.
 
 Run the reactor's services target with:

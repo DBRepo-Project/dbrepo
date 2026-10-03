@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -26,7 +27,7 @@ import static org.mockito.Mockito.*;
 @EnabledIfEnvironmentVariable(named = "JOURNAL_SQL_TEST_PORT", matches = "13366")
 class TupleReplicationJournalIntegrationTest {
     private static final String URL = "jdbc:mariadb://127.0.0.1:13366/";
-    private static final String SCHEMA = "journal_replication_test";
+    private static final String SCHEMA = System.getenv().getOrDefault("JOURNAL_SQL_TEST_SCHEMA", "journal_replication_test");
     private static final String OUTBOX = "tuple_replication_notification_outbox";
     private static final String FIRST = "00000000-0000-0000-0000-000000000001";
     private static final String SECOND = "00000000-0000-0000-0000-000000000002";
@@ -37,6 +38,7 @@ class TupleReplicationJournalIntegrationTest {
 
     @BeforeEach
     void schema() throws Exception {
+        assertTrue(List.of("journal_replication_test", "recovery_tuple_test").contains(SCHEMA));
         try (Connection c = DriverManager.getConnection(URL, "root", password())) {
             sql(c, "DROP DATABASE IF EXISTS " + SCHEMA);
             sql(c, "CREATE DATABASE " + SCHEMA);
@@ -221,7 +223,8 @@ class TupleReplicationJournalIntegrationTest {
             assertEquals(3, sequence(enqueue(c)));
             c.commit();
             assertEquals(2, service.readJournalState(c).legacyThrough());
-            service.markSucceeded(database, UUID.fromString(FIRST));
+            final var claim = service.claim(database, UUID.fromString(FIRST), Duration.ofMinutes(5)).orElseThrow();
+            assertTrue(service.markSucceeded(database, claim.getId(), claim.getClaimToken()));
             assertEquals(entries, service.readRange(c, 0, 2, 10));
         }
     }
@@ -275,8 +278,10 @@ class TupleReplicationJournalIntegrationTest {
             c.commit();
             c.setAutoCommit(true);
             final var before = service.readRange(c, 0, 2, 10);
-            service.markSucceeded(database, one.getId());
-            service.markFailed(database, two.getId(), "offline", java.time.Duration.ZERO, 1);
+            final var first = service.claim(database, one.getId(), Duration.ofMinutes(5)).orElseThrow();
+            final var second = service.claim(database, two.getId(), Duration.ofMinutes(5)).orElseThrow();
+            assertTrue(service.markSucceeded(database, one.getId(), first.getClaimToken()));
+            assertTrue(service.markFailed(database, two.getId(), second.getClaimToken(), "offline", Duration.ZERO, 1, false));
             assertEquals(List.of(two.getId()), service.findAll(database).stream()
                     .map(TupleReplicationOutboxEntry::getId).toList());
             assertEquals(before, service.readRange(c, 0, 2, 10));

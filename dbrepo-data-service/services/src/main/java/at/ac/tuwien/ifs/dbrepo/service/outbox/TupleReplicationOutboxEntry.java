@@ -36,4 +36,8 @@ public class TupleReplicationOutboxEntry {
     private Instant lastModified;
 
     private Instant nextAttemptAt;
+
+    private UUID claimToken;
+
+    private Instant claimUntil;
 }

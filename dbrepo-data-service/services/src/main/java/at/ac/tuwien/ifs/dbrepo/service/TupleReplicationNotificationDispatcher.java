@@ -8,12 +8,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.time.Duration;
 import java.util.List;
@@ -60,9 +61,6 @@ public class TupleReplicationNotificationDispatcher {
         try {
             final List<Database> databases = metadataService.getDatabases();
             for (Database database : databases) {
-                if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
-                    continue;
-                }
                 sent += dispatchDue(database);
             }
         } catch (Exception e) {
@@ -74,9 +72,13 @@ public class TupleReplicationNotificationDispatcher {
     public int dispatchDue(Database database) {
         int sent = 0;
         try {
-            for (TupleReplicationOutboxEntry entry : outboxService.claimDue(database, batchSize,
-                    processingTimeout())) {
-                if (sendAndMark(database, entry)) {
+            // Claim immediately before sending so earlier network calls cannot consume later entries' leases.
+            for (int attempted = 0; attempted < batchSize; attempted++) {
+                final var entries = outboxService.claimDue(database, 1, processingTimeout());
+                if (entries.isEmpty()) {
+                    break;
+                }
+                if (sendAndMark(database, entries.getFirst())) {
                     sent++;
                 }
             }
@@ -102,20 +104,30 @@ public class TupleReplicationNotificationDispatcher {
     private boolean sendAndMark(Database database, TupleReplicationOutboxEntry entry) {
         try {
             send(entry);
-            outboxService.markSucceeded(database, entry.getId());
-            log.info("Sent {} tuple replication notification for key in database {}", entry.getHttpMethod(),
-                    database.getInternalName());
-            return true;
         } catch (Exception e) {
             log.error("Failed to send {} tuple replication notification in database {}: {}", entry.getHttpMethod(),
                     database.getInternalName(), e.getMessage(), e);
             try {
-                outboxService.markFailed(database, entry.getId(), e.getMessage(),
-                        retryDelayFor(entry.getAttempts() + 1), Math.max(1, maxAttempts));
+                outboxService.markFailed(database, entry.getId(), entry.getClaimToken(), e.getMessage(),
+                        retryDelayFor(entry.getAttempts()), Math.max(1, maxAttempts), isRecoverable(e));
             } catch (Exception markFailedException) {
                 log.error("Failed to update tuple replication outbox entry {} in database {}: {}", entry.getId(),
                         database.getInternalName(), markFailedException.getMessage(), markFailedException);
             }
+            return false;
+        }
+        try {
+            if (!outboxService.markSucceeded(database, entry.getId(), entry.getClaimToken())) {
+                log.warn("Claim expired or was replaced for tuple replication notification {}", entry.getId());
+                return false;
+            }
+            log.info("Sent {} tuple replication notification for key in database {}", entry.getHttpMethod(),
+                    database.getInternalName());
+            return true;
+        } catch (Exception e) {
+            // Leave the lease for recovery when the acknowledgement's durable outcome is unknown.
+            log.error("Failed to persist tuple replication success {} in database {}: {}", entry.getId(),
+                    database.getInternalName(), e.getMessage(), e);
             return false;
         }
     }
@@ -126,16 +138,29 @@ public class TupleReplicationNotificationDispatcher {
         final ResponseEntity<Void> response = replicationRestTemplate.exchange("/api/replication/data",
                 entry.getHttpMethod(), new HttpEntity<>(entry.getPayloadJson(), headers), Void.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("Tuple replication notification returned " + response.getStatusCode());
+            throw new RestClientResponseException("Tuple replication notification returned " + response.getStatusCode(),
+                    response.getStatusCode(), "", response.getHeaders(), null, null);
         }
     }
 
-    private Duration retryDelayFor(int attempt) {
+    private boolean isRecoverable(Exception error) {
+        if (error instanceof ResourceAccessException) {
+            return true;
+        }
+        if (error instanceof RestClientResponseException response) {
+            final int status = response.getStatusCode().value();
+            return status == 408 || status == 429 || status >= 500 && status <= 599;
+        }
+        return false;
+    }
+
+    private Duration retryDelayFor(int previousAttempts) {
         final long baseSeconds = Math.max(1, retryDelaySeconds);
         final long cappedMaxSeconds = Math.max(baseSeconds, maxRetryDelaySeconds);
-        final int exponent = Math.min(Math.max(0, attempt - 1), 10);
+        final int exponent = Math.min(Math.max(0, previousAttempts), 62);
         final long multiplier = 1L << exponent;
-        return Duration.ofSeconds(Math.min(cappedMaxSeconds, baseSeconds * multiplier));
+        return Duration.ofSeconds(baseSeconds > cappedMaxSeconds / multiplier
+                ? cappedMaxSeconds : baseSeconds * multiplier);
     }
 
     private Duration processingTimeout() {
