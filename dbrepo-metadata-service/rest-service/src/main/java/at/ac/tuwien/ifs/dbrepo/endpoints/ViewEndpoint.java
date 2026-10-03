@@ -201,6 +201,7 @@ public class ViewEndpoint extends RestEndpoint {
             ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
@@ -305,6 +306,7 @@ public class ViewEndpoint extends RestEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to delete view: not the database owner {}", database.getOwnedBy());
             throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwnedBy());
@@ -351,6 +353,7 @@ public class ViewEndpoint extends RestEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         final View view = viewService.findById(database, viewId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !view.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update view: not the database- or view owner");

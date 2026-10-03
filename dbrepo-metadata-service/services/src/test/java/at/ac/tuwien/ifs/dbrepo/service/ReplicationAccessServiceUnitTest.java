@@ -64,13 +64,13 @@ public class ReplicationAccessServiceUnitTest {
         final Database result = service.initialize(database, owner);
 
         assertEquals(database, result);
-        verify(accessService, never()).create(database, "alice", AccessTypeDto.WRITE_ALL);
+        verify(accessService, never()).create(database, "alice", AccessTypeDto.READ);
         verify(databaseService, never()).modifyReplicationAccess(
                 database, owner, ReplicationAccessStatus.MAPPED, "alice");
     }
 
     @Test
-    public void initialize_resolvedIdentity_grantsWriteAccessAndTransfersLogicalOwnership() throws Exception {
+    public void initialize_resolvedIdentity_grantsReadAccessAndTransfersLogicalOwnership() throws Exception {
         final Database database = targetReplica();
         final ReplicationOwnerDto owner = owner();
         final UserDto localUser = UserDto.builder().id(UUID.randomUUID()).username("alice").build();
@@ -82,7 +82,7 @@ public class ReplicationAccessServiceUnitTest {
 
         service.initialize(database, owner);
 
-        verify(accessService).create(database, "alice", AccessTypeDto.WRITE_ALL);
+        verify(accessService).create(database, "alice", AccessTypeDto.READ);
         verify(databaseService).modifyReplicationAccess(database, owner, ReplicationAccessStatus.MAPPED, "alice");
     }
 
@@ -95,7 +95,7 @@ public class ReplicationAccessServiceUnitTest {
                 .thenReturn(database);
         when(identityService.resolve(owner)).thenReturn(Optional.of(localUser));
         org.mockito.Mockito.doThrow(new DataServiceException("unavailable"))
-                .when(accessService).create(database, "alice", AccessTypeDto.WRITE_ALL);
+                .when(accessService).create(database, "alice", AccessTypeDto.READ);
 
         final Database result = service.initialize(database, owner);
 
@@ -157,7 +157,7 @@ public class ReplicationAccessServiceUnitTest {
         final ReplicationAccessDto result = service.map(database, "bob");
 
         assertEquals("bob", result.getLocalUsername());
-        verify(accessService).create(database, "bob", AccessTypeDto.WRITE_ALL);
+        verify(accessService).create(database, "bob", AccessTypeDto.READ);
         verify(accessService).delete(database, "alice");
     }
 
@@ -194,6 +194,43 @@ public class ReplicationAccessServiceUnitTest {
         assertEquals(1, result.size());
         assertEquals(legacyTarget.getId(), result.getFirst().getDatabaseId());
         assertEquals(ReplicationAccessStatus.PENDING, result.getFirst().getStatus());
+    }
+
+    @Test
+    public void map_existingOwner_restrictsSqlAccessEvenWhenAlreadyMapped() throws Exception {
+        final Database database = targetReplica();
+        database.setReplicationLocalUsername("alice");
+        database.getAccesses().add(DatabaseAccess.builder().username("alice").build());
+        when(userService.findByUsername("alice")).thenReturn(UserDto.builder().username("alice").build());
+        when(databaseService.modifyReplicationAccess(database, null, ReplicationAccessStatus.MAPPED, "alice"))
+                .thenReturn(database);
+
+        service.map(database, "alice");
+
+        verify(accessService).update(database, "alice", AccessTypeDto.READ);
+        verify(accessService, never()).delete(database, "alice");
+    }
+
+    @Test
+    public void reconcile_replica_restrictsAllLocalUsersAndPreservesTechnicalUser() throws Exception {
+        final Database database = targetReplica();
+        database.getAccesses().addAll(List.of(
+                DatabaseAccess.builder().username("alice").build(),
+                DatabaseAccess.builder().username("bob").build(),
+                DatabaseAccess.builder().username("replication").build()));
+
+        service.reconcile(database);
+
+        verify(accessService).update(database, "alice", AccessTypeDto.READ);
+        verify(accessService).update(database, "bob", AccessTypeDto.READ);
+        verify(accessService, never()).update(database, "replication", AccessTypeDto.READ);
+    }
+
+    @Test
+    public void reconcile_primary_isRejected() {
+        final Database database = targetReplica();
+        database.setCreationLocation(null);
+        assertThrows(NotAllowedException.class, () -> service.reconcile(database));
     }
 
     private Database targetReplica() {

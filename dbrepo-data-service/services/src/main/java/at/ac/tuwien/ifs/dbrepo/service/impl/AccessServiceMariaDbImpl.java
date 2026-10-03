@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Slf4j
@@ -27,6 +29,12 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     @Value("${dbrepo.grant.default.write}")
     private String grantDefaultWrite;
 
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
+
+    @Value("${dbrepo.replication.username}")
+    private String replicationUsername;
+
     private final MariaDbMapper mariaDbMapper;
 
     @Autowired
@@ -37,6 +45,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     @Override
     public void create(Database database, User user, AccessTypeDto access)
             throws SQLException, DatabaseMalformedException {
+        final String grants = grants(database, user, access);
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -52,7 +61,6 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             }
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
-            log.trace("1={}, 2={}", user.getUsername(), user.getPassword());
             statement.execute();
             log.atDebug()
                     .setMessage("create user in database: " + database.getInternalName())
@@ -60,7 +68,6 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .addKeyValue(Constants.ACTION, "create_user")
                     .log();
             /* grant access */
-            final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(database.getInternalName(), user.getUsername(), grants))
                     .execute();
@@ -71,8 +78,10 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .log();
             /* grant query store */
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseGrantProcedureQuery(user.getUsername(), "store_query"))
-                    .execute();
+            if (!ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)) {
+                connection.prepareStatement(mariaDbMapper.databaseGrantProcedureQuery(user.getUsername(), "store_query"))
+                        .execute();
+            }
             log.atDebug()
                     .setMessage("grant procedure privileges in database: " + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -101,11 +110,16 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
     @Override
     public void update(Database database, User user, AccessTypeDto access) throws DatabaseMalformedException,
             SQLException {
+        final String grants = grants(database, user, access);
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
-            /* grant access */
-            final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
+            // GRANT is additive; a downgrade must revoke the previous database privileges first.
+            connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))
+                    .execute();
+            if (isReplicaReader(database, user)) {
+                revokeQueryStore(connection, database, user);
+            }
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(database.getInternalName(), user.getUsername(), grants))
                     .execute();
@@ -125,6 +139,39 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             dataSource.close();
         }
         log.info("Updated access to database with id {} for user with id {}", database.getId(), user.getId());
+    }
+
+    private boolean isReplicaReader(Database database, User user) {
+        return ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
+                && !user.getUsername().equals(replicationUsername);
+    }
+
+    private String grants(Database database, User user, AccessTypeDto access) throws DatabaseMalformedException {
+        if (isReplicaReader(database, user)) {
+            if (access != AccessTypeDto.READ) {
+                throw new DatabaseMalformedException("Replicated databases only allow local read access");
+            }
+            return "SELECT";
+        }
+        return access == AccessTypeDto.READ ? grantDefaultRead : grantDefaultWrite;
+    }
+
+    private void revokeQueryStore(Connection connection, Database database, User user) throws SQLException {
+        // Older installations also granted EXECUTE at procedure scope, independently of db.*.
+        try (PreparedStatement statement = connection.prepareStatement("SELECT 1 FROM mysql.procs_priv "
+                + "WHERE Db = ? AND User = ? AND Host = '%' AND Routine_name = 'store_query' "
+                + "AND Routine_type = 'PROCEDURE' AND FIND_IN_SET('Execute', Proc_priv) > 0")) {
+            statement.setString(1, database.getInternalName());
+            statement.setString(2, user.getUsername());
+            try (ResultSet result = statement.executeQuery()) {
+                if (result.next()) {
+                    try (PreparedStatement revoke = connection.prepareStatement(
+                            mariaDbMapper.databaseRevokeProcedureQuery(database.getInternalName(), user.getUsername(), "store_query"))) {
+                        revoke.execute();
+                    }
+                }
+            }
+        }
     }
 
     @Override

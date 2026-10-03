@@ -4,8 +4,11 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.security.Principal;
 import java.util.List;
@@ -13,6 +16,26 @@ import java.util.Optional;
 
 @Slf4j
 public abstract class RestEndpoint {
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String replicationSiteUrl;
+
+    protected boolean isReplica(Database database) {
+        return ReplicationSites.isReplica(database.getCreationLocation(), replicationSiteUrl);
+    }
+
+    public void validatePrimaryWriteLocation(Database database) throws NotAllowedException {
+        if (isReplica(database)) {
+            throw new NotAllowedException("Replicated databases are read-only on secondary sites");
+        }
+    }
+
+    public void validatePrimaryWriteLocation(Database database, Table table) throws NotAllowedException {
+        validatePrimaryWriteLocation(database);
+        if (ReplicationSites.isReplica(table.getCreationLocation(), replicationSiteUrl)) {
+            throw new NotAllowedException("Replicated tables are read-only on secondary sites");
+        }
+    }
 
     public Database filterDatabase(Database database, Principal principal) throws NotAllowedException {
         if (principal != null) {

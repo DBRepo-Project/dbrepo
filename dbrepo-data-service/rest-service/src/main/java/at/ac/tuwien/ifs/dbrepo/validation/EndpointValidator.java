@@ -12,6 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.PaginationException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -154,31 +155,10 @@ public class EndpointValidator {
 
     public void validatePrimaryWriteLocation(Database database, Table table, Principal principal)
             throws NotAllowedException {
-        if (principal != null && AuthUtil.isSystem(principal)) {
-            return;
-        }
-        final String creationLocation = StringUtils.hasText(database.getCreationLocation())
-                ? database.getCreationLocation()
-                : table.getCreationLocation();
-        if (!StringUtils.hasText(creationLocation)) {
-            return;
-        }
-        if (!normalizeSiteUrl(baseUrl).equals(normalizeSiteUrl(creationLocation))) {
-            log.error("Write not allowed on secondary site: local site={}, creation location={}", baseUrl,
-                    creationLocation);
+        if (ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
+                || ReplicationSites.isReplica(table.getCreationLocation(), baseUrl)) {
             throw new NotAllowedException("Write not allowed on secondary site");
         }
-    }
-
-    private String normalizeSiteUrl(String url) {
-        if (!StringUtils.hasText(url)) {
-            return "";
-        }
-        String normalized = url.trim();
-        while (normalized.endsWith("/")) {
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
-        return normalized;
     }
 
 

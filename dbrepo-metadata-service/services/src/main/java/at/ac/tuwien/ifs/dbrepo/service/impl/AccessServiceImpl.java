@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,16 +28,18 @@ public class AccessServiceImpl implements AccessService {
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
+    private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
     public AccessServiceImpl(MetadataMapper metadataMapper, DatabaseService databaseService,
                              DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
-                             SearchServiceGateway searchServiceGateway) {
+                             SearchServiceGateway searchServiceGateway, DatabaseCacheRepository databaseCacheRepository) {
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
         this.searchServiceGateway = searchServiceGateway;
+        this.databaseCacheRepository = databaseCacheRepository;
     }
 
     @Override
@@ -76,6 +79,7 @@ public class AccessServiceImpl implements AccessService {
         database.getAccesses()
                 .add(access);
         database = databaseRepository.save(database);
+        databaseCacheRepository.deleteById(database.getId());
         /* create in search service */
         searchServiceGateway.update(database);
         log.info("Created access to database with id {}", database.getId());
@@ -88,11 +92,7 @@ public class AccessServiceImpl implements AccessService {
             DataServiceConnectionException, AccessNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in data database */
-        try {
-            dataServiceGateway.updateAccess(database.getId(), username, access);
-        } catch (AccessNotFoundException e) {
-            /* ignore */
-        }
+        dataServiceGateway.updateAccess(database.getId(), username, access);
         /* update in metadata database */
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
@@ -105,6 +105,7 @@ public class AccessServiceImpl implements AccessService {
         optional.get()
                 .setType(metadataMapper.accessTypeDtoToAccessType(access));
         database = databaseRepository.save(database);
+        databaseCacheRepository.deleteById(database.getId());
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Updated access to database with id {}", database.getId());
@@ -125,6 +126,7 @@ public class AccessServiceImpl implements AccessService {
         database.getAccesses()
                 .remove(find(database, username));
         databaseRepository.save(database);
+        databaseCacheRepository.deleteById(database.getId());
         /* update in search service */
         searchServiceGateway.update(databaseService.findById(database.getId()));
         log.info("Deleted access to database with id {}", database.getId());

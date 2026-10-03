@@ -27,4 +27,8 @@ public interface ReplicationAccessService {
 
     List<ReplicationAccessDto> findPending();
 
+    void reconcile(Database database) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException;
+
 }

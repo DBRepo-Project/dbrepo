@@ -177,6 +177,9 @@ public class DatabaseEndpoint extends RestEndpoint {
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException, NotAllowedException {
         log.debug("endpoint create database, data.name={}", data.getName());
+        if (data.getCreationLocation() != null) {
+            throw new NotAllowedException("Only replication requests may specify a creation location");
+        }
         if (data.getReplicaUrls() != null) {
             try {
                 data.setReplicaUrls(data.getReplicaUrls().stream()
@@ -401,6 +404,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
@@ -448,6 +452,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
@@ -493,6 +498,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
@@ -647,6 +653,17 @@ public class DatabaseEndpoint extends RestEndpoint {
             security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<List<ReplicationAccessDto>> findPendingReplicationAccess() {
         return ResponseEntity.ok(replicationAccessService.findPending());
+    }
+
+    @PostMapping("/{databaseId}/replication-access/reconcile")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Reconcile replica read-only access",
+            description = "Revoke legacy local write privileges without changing owner mappings.")
+    public ResponseEntity<Void> reconcileReplicationAccess(@PathVariable UUID databaseId) throws NotAllowedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        replicationAccessService.reconcile(databaseService.findById(databaseId));
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{databaseId}/replication-access")

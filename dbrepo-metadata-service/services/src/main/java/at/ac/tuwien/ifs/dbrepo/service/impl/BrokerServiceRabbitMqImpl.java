@@ -5,12 +5,14 @@ import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantExchangePermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.amqp.GrantVirtualHostPermissionsDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.core.exception.BrokerServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.BrokerServiceException;
 import at.ac.tuwien.ifs.dbrepo.gateway.BrokerServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.BrokerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class BrokerServiceRabbitMqImpl implements BrokerService {
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     private final RabbitConfig rabbitConfig;
     private final BrokerServiceGateway brokerServiceGateway;
@@ -54,6 +59,10 @@ public class BrokerServiceRabbitMqImpl implements BrokerService {
 
     @Transactional(readOnly = true)
     public String userToExchangeWritePermissionString(String username, List<DatabaseAccess> accesses) {
+        accesses = accesses.stream()
+                .filter(a -> !ReplicationSites.isReplica(a.getDatabase().getCreationLocation(), baseUrl))
+                .filter(a -> a.getType() == AccessType.WRITE_OWN || a.getType() == AccessType.WRITE_ALL)
+                .toList();
         final String permissions;
         if (accesses.isEmpty() || accesses.stream().noneMatch(a -> a.getType().equals(AccessType.WRITE_OWN) || a.getType().equals(AccessType.WRITE_ALL))) {
             permissions = "";

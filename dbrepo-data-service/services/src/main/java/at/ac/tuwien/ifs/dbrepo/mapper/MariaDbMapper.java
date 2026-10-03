@@ -139,6 +139,11 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String databaseRevokeProcedureQuery(String database, String username, String procedure) {
+        return "REVOKE EXECUTE ON PROCEDURE `" + database.replace("`", "``") + "`.`"
+                + procedure.replace("`", "``") + "` FROM `" + username.replace("`", "``") + "`@`%`;";
+    }
+
     default String databaseGrantProcedureQuery(String username, String procedure) {
         final StringBuilder statement = new StringBuilder("GRANT EXECUTE ON PROCEDURE `")
                 .append(procedure)

@@ -34,7 +34,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -60,9 +59,6 @@ public class TableEndpoint extends RestEndpoint {
     private final DashboardService dashboardService;
     private final EndpointValidator endpointValidator;
     private final ReplicationService replicationService;
-
-    @Value("${dbrepo.baseUrl:http://localhost}")
-    private String baseUrl;
 
     @Autowired
     public TableEndpoint(TableService tableService, MetadataMapper metadataMapper, DatabaseService databaseService,
@@ -217,6 +213,7 @@ public class TableEndpoint extends RestEndpoint {
             endpointValidator.validateOnlyAccess(database, principal, true);
             endpointValidator.validateOnlyOwnerOrWriteAll(table, AuthUtil.getUsername(principal));
         }
+        validatePrimaryWriteLocation(database, table);
         tableService.update(tableService.findColumnById(table, columnId), updateDto);
         return ResponseEntity.accepted()
                 .build();
@@ -262,7 +259,11 @@ public class TableEndpoint extends RestEndpoint {
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException,
             DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
+        if (data.getCreationLocation() != null) {
+            throw new NotAllowedException("Only replication requests may specify a creation location");
+        }
         final Database database = databaseService.findById(databaseId);
+        validatePrimaryWriteLocation(database);
         endpointValidator.validateOnlyAccess(database, principal, true);
         ensureReplicationKeyColumn(database, data);
         endpointValidator.validateColumnCreateConstraints(data);
@@ -398,6 +399,7 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
+        validatePrimaryWriteLocation(database, table);
         return ResponseEntity.accepted()
                 .body(metadataMapper.tableToTableBriefDto(tableService.updateTable(table, data)));
     }
@@ -492,9 +494,7 @@ public class TableEndpoint extends RestEndpoint {
             log.error("Failed to delete table: identifier already associated");
             throw new NotAllowedException("Failed to delete table: identifier already associated");
         }
-        if (!isPrimaryTable(table)) {
-            throw new NotAllowedException("Replicated tables are read-only on secondary sites");
-        }
+        validatePrimaryWriteLocation(database, table);
         if (replicationService != null && hasResolvedReplicaLocations(database, table)) {
             replicationService.replicateTableDelete(database, table);
         }
@@ -638,19 +638,6 @@ public class TableEndpoint extends RestEndpoint {
         return hasReplicaLocations(database) && table.getReplicaUrls() != null && table.getReplicaUrls()
                 .stream()
                 .anyMatch(replica -> replica.getUrl() != null && replica.getReplicaTableId() != null);
-    }
-
-    private boolean isPrimaryTable(Table table) {
-        return table.getCreationLocation() == null || table.getCreationLocation().isBlank()
-                || normalizedSite(table.getCreationLocation()).equals(normalizedSite(baseUrl));
-    }
-
-    private String normalizedSite(String url) {
-        String normalized = url == null ? "" : url.trim();
-        while (normalized.endsWith("/")) {
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
-        return normalized;
     }
 
 }

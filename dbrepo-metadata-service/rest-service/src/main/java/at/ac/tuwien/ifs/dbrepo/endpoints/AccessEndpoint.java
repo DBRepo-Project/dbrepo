@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
@@ -92,6 +93,9 @@ public class AccessEndpoint extends RestEndpoint {
         log.debug("endpoint give access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
+        if (data.getType() != AccessTypeDto.READ) {
+            validatePrimaryWriteLocation(database);
+        }
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
@@ -145,11 +149,14 @@ public class AccessEndpoint extends RestEndpoint {
         log.debug("endpoint modify database access, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
+        if (data.getType() != AccessTypeDto.READ) {
+            validatePrimaryWriteLocation(database);
+        }
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
-        if (database.getOwnedBy().equals(username)) {
+        if (database.getOwnedBy().equals(username) && !isReplica(database)) {
             log.error("Failed to update access: the owner must have write-all access");
             throw new NotAllowedException("Failed to update access: the owner must have write-all access");
         }

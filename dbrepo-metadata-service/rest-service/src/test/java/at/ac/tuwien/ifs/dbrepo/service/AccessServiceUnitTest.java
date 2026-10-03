@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,9 @@ public class AccessServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private DatabaseRepository databaseRepository;
+
+    @MockitoBean
+    private DatabaseCacheRepository databaseCacheRepository;
 
     @MockitoBean
     @Qualifier("dataServiceRestTemplate")
@@ -261,7 +265,7 @@ public class AccessServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void update_dataService404_succeeds() throws SearchServiceException, DataServiceException,
+    public void update_dataService404_failsWithoutChangingMetadata() throws SearchServiceException, DataServiceException,
             AccessNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
             DataServiceConnectionException {
 
@@ -276,7 +280,9 @@ public class AccessServiceUnitTest extends BaseTest {
                         .build());
 
         /* test */
-        accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL);
+        assertThrows(AccessNotFoundException.class,
+                () -> accessService.update(DATABASE_1, USER_1_USERNAME, AccessTypeDto.WRITE_ALL));
+        verify(databaseRepository, never()).save(any(Database.class));
     }
 
     @Test

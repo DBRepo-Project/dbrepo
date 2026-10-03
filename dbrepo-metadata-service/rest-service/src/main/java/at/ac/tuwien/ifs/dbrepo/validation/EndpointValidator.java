@@ -45,6 +45,9 @@ public class EndpointValidator extends RestEndpoint {
 
     public void validateOnlyPrivateSchemaAccess(Database database, Principal principal, boolean writeAccessOnly)
             throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
+        if (writeAccessOnly) {
+            validatePrimaryWriteLocation(database);
+        }
         if (database.getIsSchemaPublic()) {
             log.trace("database schema with id {} is public: no access needed", database.getId());
             return;
@@ -59,6 +62,9 @@ public class EndpointValidator extends RestEndpoint {
 
     public void validateOnlyAccess(Database database, Principal principal, boolean writeAccessOnly)
             throws NotAllowedException, AccessNotFoundException {
+        if (writeAccessOnly) {
+            validatePrimaryWriteLocation(database);
+        }
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
@@ -182,6 +188,7 @@ public class EndpointValidator extends RestEndpoint {
     @Transactional(readOnly = true)
     public void validateOnlyOwnerOrWriteAll(Table table, String username) throws NotAllowedException,
             AccessNotFoundException {
+        validatePrimaryWriteLocation(table.getDatabase(), table);
         log.trace("table owner: {}", table.getOwnedBy());
         final DatabaseAccess access = accessService.find(table.getDatabase(), username);
         log.trace("found access {}", access);
@@ -282,6 +289,7 @@ public class EndpointValidator extends RestEndpoint {
     @Transactional(readOnly = true)
     public void validateOnlyWriteOwnOrWriteAllAccess(Table table, String username) throws NotAllowedException,
             AccessNotFoundException {
+        validatePrimaryWriteLocation(table.getDatabase(), table);
         final DatabaseAccess access = accessService.find(table.getDatabase(), username);
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.WRITE_ALL)) {

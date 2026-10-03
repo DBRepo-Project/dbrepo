@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.ReplicationOwnerDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicationAccessStatus;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.core.exception.AccessNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DataServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DataServiceException;
@@ -112,6 +113,34 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
                 .toList();
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void reconcile(Database database) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        if (!isTargetReplica(database)) {
+            throw new NotAllowedException("Access reconciliation requires a target replica");
+        }
+        final List<String> usernames = database.getAccesses().stream()
+                .map(access -> access.getUsername())
+                .filter(username -> !isReplicationUser(username))
+                .toList();
+        for (String username : usernames) {
+            restrictAccess(database, username);
+        }
+        log.info("Reconciled read-only access for {} users of replicated database {}", usernames.size(), database.getId());
+    }
+
+    private void restrictAccess(Database database, String username) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        try {
+            accessService.update(database, username, AccessTypeDto.READ);
+        } catch (AccessNotFoundException e) {
+            throw new DataServiceException("Failed to restrict replica access for " + username, e);
+        }
+    }
+
     private Database apply(Database database, ReplicationOwnerDto originOwner, UserDto localOwner)
             throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
@@ -119,7 +148,9 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
                 .stream()
                 .anyMatch(access -> access.getUsername().equals(localOwner.getUsername()));
         if (!hasAccess) {
-            accessService.create(database, localOwner.getUsername(), AccessTypeDto.WRITE_ALL);
+            accessService.create(database, localOwner.getUsername(), AccessTypeDto.READ);
+        } else {
+            restrictAccess(database, localOwner.getUsername());
         }
         final String previousUsername = database.getReplicationLocalUsername();
         if (previousUsername != null && !previousUsername.equals(localOwner.getUsername())) {
@@ -160,20 +191,11 @@ public class ReplicationAccessServiceImpl implements ReplicationAccessService {
     }
 
     private boolean isTargetReplica(Database database) {
-        return database.getCreationLocation() != null
-                && !normalize(database.getCreationLocation()).equals(normalize(baseUrl));
+        return ReplicationSites.isReplica(database.getCreationLocation(), baseUrl);
     }
 
     private boolean isReplicationUser(String username) {
         return username != null && username.equals(replicationUsername);
-    }
-
-    private String normalize(String value) {
-        String normalized = value.trim();
-        while (normalized.endsWith("/")) {
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
-        return normalized;
     }
 
 }

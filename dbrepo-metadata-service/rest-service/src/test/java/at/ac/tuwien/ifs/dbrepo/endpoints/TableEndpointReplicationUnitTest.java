@@ -197,7 +197,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
                         .replicaTableId(remoteTableId)
                         .build()))
                 .build();
-        ReflectionTestUtils.setField(tableEndpoint, "baseUrl", "http://local.test");
+        ReflectionTestUtils.setField(tableEndpoint, "replicationSiteUrl", "http://local.test");
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
 
@@ -219,7 +219,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
                 .creationLocation("http://primary.test")
                 .identifiers(List.of())
                 .build();
-        ReflectionTestUtils.setField(tableEndpoint, "baseUrl", "http://local.test");
+        ReflectionTestUtils.setField(tableEndpoint, "replicationSiteUrl", "http://local.test");
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
 
