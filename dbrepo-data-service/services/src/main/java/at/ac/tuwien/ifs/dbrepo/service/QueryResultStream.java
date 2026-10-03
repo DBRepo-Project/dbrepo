@@ -56,16 +56,15 @@ public class QueryResultStream implements AutoCloseable {
     }
 
     /**
-     * Writes the rows as CSV with the given header line and closes the result.
+     * Writes the rows as CSV, with the result column names as header line, and closes the result.
      *
-     * @param out    The output stream, e.g. the response body.
-     * @param header The header column names.
+     * @param out The output stream, e.g. the response body.
      */
-    public void writeCsv(OutputStream out, List<String> header) throws IOException {
+    public void writeCsv(OutputStream out) throws IOException {
         try {
             /* not closed, that would close the response stream */
             final Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-            writer.write(header.stream()
+            writer.write(columns.stream()
                     .map(QueryResultStream::escapeCsv)
                     .collect(Collectors.joining(",")));
             writer.write(System.lineSeparator());

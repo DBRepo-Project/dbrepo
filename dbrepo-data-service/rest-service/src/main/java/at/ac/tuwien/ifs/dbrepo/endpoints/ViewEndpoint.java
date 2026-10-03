@@ -290,7 +290,7 @@ public class ViewEndpoint {
                     return ResponseEntity.ok()
                             .contentType(MediaType.parseMediaType("text/csv"))
                             .headers(headers)
-                            .body(out -> result2.writeCsv(out, result2.getColumns()));
+                            .body(result2::writeCsv);
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

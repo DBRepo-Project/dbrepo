@@ -3,7 +3,6 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
-import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -294,16 +293,13 @@ public class TableEndpoint {
                             .headers(headers)
                             .body(result1::writeJson);
                 case MEDIA_TYPE_TEXT_CSV:
-                    final List<String> responseColumns = table.getColumns().stream()
-                            .map(Column::getInternalName)
-                            .toList();
                     final QueryResultStream result2 = dataService.query(database, query);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
-                    headers.set("X-Headers", String.join(",", responseColumns));
+                    headers.set("X-Headers", String.join(",", result2.getColumns()));
                     return ResponseEntity.status(HttpStatus.OK)
                             .contentType(MediaType.parseMediaType(MEDIA_TYPE_TEXT_CSV))
                             .headers(headers)
-                            .body(out -> result2.writeCsv(out, responseColumns));
+                            .body(result2::writeCsv);
                 default:
                     log.atError()
                             .setMessage("Invalid data format " + accept + " accepted")

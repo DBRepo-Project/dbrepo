@@ -96,7 +96,7 @@ public class DataServiceIntegrationTest extends BaseTest {
         /* test */
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         dataService.query(DATABASE_1_CACHE, QUERY)
-                .writeCsv(out, COLUMNS);
+                .writeCsv(out);
         final String nl = System.lineSeparator();
         assertEquals(String.join(",", COLUMNS) + nl +
                 "1,-5,true,300,70000,2147483647,9223372036854775807,18446744073709551615,4294967295," +
@@ -157,7 +157,7 @@ public class DataServiceIntegrationTest extends BaseTest {
                         throw new IOException("Broken pipe");
                     }
                 }
-            }, List.of("id", "pad"));
+            });
         });
         final long duration = System.currentTimeMillis() - start;
         log.info("aborted stream after {} ms", duration);
