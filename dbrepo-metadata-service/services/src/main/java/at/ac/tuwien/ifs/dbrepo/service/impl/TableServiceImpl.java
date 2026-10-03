@@ -55,6 +55,9 @@ public class TableServiceImpl implements TableService {
     private final DatabaseCacheRepository databaseCacheRepository;
     private final TableCacheRepository tableCacheRepository;
 
+    @Autowired
+    private ReplicationServiceImpl replicationService;
+
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
@@ -103,7 +106,7 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Table createTable(Database database, CreateTableDto data, Principal principal) throws DataServiceException,
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException {
@@ -111,7 +114,7 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Table createTable(Database database, CreateTableDto data, Principal principal, UUID creationId)
             throws DataServiceException, DataServiceConnectionException, TableNotFoundException,
             DatabaseNotFoundException, TableExistsException, SearchServiceException,
@@ -178,6 +181,15 @@ public class TableServiceImpl implements TableService {
                 log.debug("mapped table uniques: {}", table.getConstraints().getUniques().stream().map(u -> List.of(u.getColumns().stream().map(TableColumn::getInternalName).toList())).toList());
                 throw new MalformedException("Failed to create table: some unique constraint(s) reference non-existing table columns");
             }
+        }
+        if (creationId != null) {
+            final UUID localId = replicationService.reserveCreation("TABLE", database.getId(), data.getCreationLocation(),
+                    creationId, table.getInternalName(), data);
+            final Table existing = replicationService.findCreated(Table.class, localId);
+            if (existing != null) {
+                return existing;
+            }
+            table.setId(localId);
         }
         database.getTables()
                 .add(table);

@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicationCreation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicaLocation;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -18,13 +19,23 @@ import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationNotificationDispatcher;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationNotificationOutboxService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -38,6 +49,15 @@ public class ReplicationServiceImpl implements ReplicationService {
     private final ReplicationNotificationOutboxService outboxService;
     private final ReplicationNotificationDispatcher dispatcher;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
@@ -49,6 +69,45 @@ public class ReplicationServiceImpl implements ReplicationService {
         this.metadataMapper = metadataMapper;
         this.outboxService = outboxService;
         this.dispatcher = dispatcher;
+    }
+
+    public UUID reserveCreation(String kind, UUID parentId, String origin, UUID creationId,
+                                String physicalName, Object payload) {
+        final UUID id = ReplicationCreation.localId(kind, parentId, origin, creationId);
+        final String name = physicalName == null ? ReplicationCreation.databaseName(id) : physicalName;
+        final String hash;
+        try {
+            hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(objectMapper.writeValueAsBytes(payload)));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot fingerprint replication creation", e);
+        }
+        final TransactionTemplate intentTransaction = new TransactionTemplate(transactionManager);
+        intentTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        try {
+            intentTransaction.executeWithoutResult(status -> {
+                if (entityManager.find(ReplicationCreation.class, id) == null) {
+                    entityManager.persist(ReplicationCreation.builder().id(id).kind(kind).parentId(parentId)
+                            .physicalName(name).payloadHash(hash).build());
+                    entityManager.flush();
+                }
+            });
+        } catch (RuntimeException failure) {
+            // A competing identical request may have committed the reservation first.
+            if (intentTransaction.execute(status -> entityManager.find(ReplicationCreation.class, id)) == null) {
+                throw failure;
+            }
+        }
+        // Held through the caller's metadata transaction, including endpoint work after create returns.
+        final ReplicationCreation intent = entityManager.find(ReplicationCreation.class, id, LockModeType.PESSIMISTIC_WRITE);
+        if (!hash.equals(intent.getPayloadHash()) || !name.equals(intent.getPhysicalName())) {
+            throw new IllegalArgumentException("Replication creation id was reused with a different payload");
+        }
+        return id;
+    }
+
+    public <T> T findCreated(Class<T> type, UUID id) {
+        return entityManager.find(type, id, LockModeType.PESSIMISTIC_READ);
     }
 
     @Override

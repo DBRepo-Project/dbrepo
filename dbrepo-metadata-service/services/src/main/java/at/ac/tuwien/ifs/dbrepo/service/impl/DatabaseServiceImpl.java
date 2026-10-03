@@ -48,6 +48,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
 
+    @Autowired
+    private ReplicationServiceImpl replicationService;
+
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
@@ -105,7 +108,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Database create(Container container, CreateDatabaseDto data, UserDto owner)
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
@@ -114,17 +117,31 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Database create(Container container, CreateDatabaseDto data, UserDto owner, UUID creationId)
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
+        final UUID localId;
+        if (creationId == null) {
+            localId = null;
+        } else {
+            localId = replicationService.reserveCreation("DATABASE", container.getId(), data.getCreationLocation(),
+                    creationId, null, data);
+            final Database existing = replicationService.findCreated(Database.class, localId);
+            if (existing != null) {
+                return existing;
+            }
+        }
         final Database entity = Database.builder()
+                .id(localId)
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isDashboardEnabled(false)
                 .name(data.getName())
-                .internalName(metadataMapper.nameToInternalName(data.getName()) + metadataMapper.databaseSuffix())
+                .internalName(localId == null
+                        ? metadataMapper.nameToInternalName(data.getName()) + metadataMapper.databaseSuffix()
+                        : ReplicationCreation.databaseName(localId))
                 .cid(data.getCid())
                 .container(container)
                 .ownedBy(owner.getUsername())
