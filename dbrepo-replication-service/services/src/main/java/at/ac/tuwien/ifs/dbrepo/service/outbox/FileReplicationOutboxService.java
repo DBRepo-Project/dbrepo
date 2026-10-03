@@ -2,6 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.service.outbox;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -23,7 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class FileReplicationOutboxService implements ReplicationOutboxService {
+public class FileReplicationOutboxService implements ReplicationOutboxService, AutoCloseable {
 
     private static final TypeReference<List<ReplicationOutboxEntry>> ENTRY_LIST =
             new TypeReference<>() {
@@ -31,12 +34,53 @@ public class FileReplicationOutboxService implements ReplicationOutboxService {
 
     private final ObjectMapper objectMapper;
     private final Path outboxPath;
+    private FileChannel lockChannel;
+    private FileLock writerLock;
+    private boolean closed;
+    private boolean persisted;
 
     public FileReplicationOutboxService(ObjectMapper objectMapper,
                                         @Value("${dbrepo.replication.outbox.path:/var/lib/dbrepo/replication/outbox.json}")
                                         String outboxPath) {
         this.objectMapper = objectMapper.copy().findAndRegisterModules();
         this.outboxPath = Path.of(outboxPath);
+    }
+
+    @PostConstruct
+    public synchronized void initialize() {
+        readEntries();
+    }
+
+    private void ensureWriterLock() throws IOException {
+        if (closed) {
+            throw new IllegalStateException("Replication outbox is closed");
+        }
+        if (writerLock != null) {
+            return;
+        }
+        Files.createDirectories(outboxPath.toAbsolutePath().getParent());
+        final FileChannel candidate = FileChannel.open(outboxPath.resolveSibling(outboxPath.getFileName() + ".lock"),
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        try {
+            final FileLock acquired = candidate.tryLock();
+            if (acquired == null) {
+                throw new IllegalStateException("Another process owns the replication outbox: " + outboxPath);
+            }
+            writerLock = acquired;
+            lockChannel = candidate;
+        } catch (IOException | RuntimeException e) {
+            candidate.close();
+            throw e;
+        }
+    }
+
+    @Override
+    @PreDestroy
+    public synchronized void close() throws IOException {
+        closed = true;
+        if (lockChannel != null) {
+            lockChannel.close();
+        }
     }
 
     @Override
@@ -127,13 +171,22 @@ public class FileReplicationOutboxService implements ReplicationOutboxService {
     }
 
     private List<ReplicationOutboxEntry> readEntries() {
+        try {
+            ensureWriterLock();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to lock replication outbox " + outboxPath, e);
+        }
         try (var input = Files.newInputStream(outboxPath)) {
+            persisted = true;
             final List<ReplicationOutboxEntry> entries = objectMapper.readValue(input, ENTRY_LIST);
             if (entries == null || entries.contains(null)) {
                 throw new IOException("Replication outbox must contain an array of entries");
             }
             return entries;
         } catch (NoSuchFileException e) {
+            if (persisted) {
+                throw new UncheckedIOException("Replication outbox disappeared while the service was running", e);
+            }
             return new ArrayList<>();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read replication outbox " + outboxPath, e);
@@ -152,6 +205,10 @@ public class FileReplicationOutboxService implements ReplicationOutboxService {
                 channel.force(true);
             }
             Files.move(tmp, outboxPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            persisted = true;
+            try (var directory = FileChannel.open(outboxPath.toAbsolutePath().getParent(), StandardOpenOption.READ)) {
+                directory.force(true);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to write replication outbox " + outboxPath, e);
         }

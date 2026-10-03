@@ -64,3 +64,8 @@ test user.
 Apply `dbrepo-metadata-db/migration/replication/archive-views.sql` to each metadata database before starting the new services. Like table archival, removing a view hides it from active listings but retains its SQL definition, columns and identifier relationships. Its internal name stays reserved. Historical queries can continue to reference the definition.
 
 The existing view replication notification carries `archived_at`. Receiving an archive is idempotent, and receiving an older create never clears it. Upgrade every peer before allowing view removals; older peers ignore this field. Physical view deletion through the data API is rejected.
+# Outbox writer ownership
+
+The replication service holds an operating-system lock beside `outbox.json` for its entire lifetime. A second process using that directory cannot start. Stop the old writer before starting its replacement and use one replica with a persistent volume supporting file locks and atomic rename. Do not delete the lock file while a writer is active. The lock itself is released by the operating system after a crash; the next process can recover the existing queue.
+
+Startup rejects corrupt queues. If a previously opened queue disappears, the running service fails instead of silently creating an empty queue. Writes flush both the replacement file and its parent directory. This protects the local handoff, not the separate source-data transaction; source outbox atomicity must also be enforced.

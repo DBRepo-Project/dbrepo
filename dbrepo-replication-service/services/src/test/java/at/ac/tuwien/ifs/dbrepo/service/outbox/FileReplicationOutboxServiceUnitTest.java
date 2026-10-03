@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,6 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FileReplicationOutboxServiceUnitTest {
+
+    private final java.util.List<FileReplicationOutboxService> opened = new java.util.ArrayList<>();
+
+    @AfterEach
+    void closeStores() throws Exception {
+        for (var service : opened) service.close();
+    }
 
     @TempDir
     Path tempDir;
@@ -76,8 +84,10 @@ public class FileReplicationOutboxServiceUnitTest {
     }
 
     private FileReplicationOutboxService service() {
-        return new FileReplicationOutboxService(new ObjectMapper().findAndRegisterModules(),
+        final var service = new FileReplicationOutboxService(new ObjectMapper().findAndRegisterModules(),
                 tempDir.resolve("outbox.json").toString());
+        opened.add(service);
+        return service;
     }
 
     @ParameterizedTest
@@ -109,6 +119,7 @@ public class FileReplicationOutboxServiceUnitTest {
         assertThrows(UncheckedIOException.class, () -> enqueue(service));
 
         assertEquals(persisted, Files.readString(tempDir.resolve("outbox.json")));
+        service.close();
         assertEquals(original.getId(), service().findAll().getFirst().getId());
     }
 
@@ -119,11 +130,68 @@ public class FileReplicationOutboxServiceUnitTest {
         Files.createDirectory(tempDir.resolve("outbox.json.tmp"));
 
         assertThrows(UncheckedIOException.class, () -> service.markSucceeded(entry.getId()));
-
-        assertEquals(ReplicationOutboxStatus.PENDING, service().findById(entry.getId()).orElseThrow().getStatus());
+        service.close();
+        final var restarted = service();
+        assertEquals(ReplicationOutboxStatus.PENDING, restarted.findById(entry.getId()).orElseThrow().getStatus());
         Files.delete(tempDir.resolve("outbox.json.tmp"));
-        service.markSucceeded(entry.getId());
+        restarted.markSucceeded(entry.getId());
+        restarted.close();
         assertEquals(ReplicationOutboxStatus.SUCCEEDED, service().findById(entry.getId()).orElseThrow().getStatus());
+    }
+
+    @Test
+    void secondWriterCannotOpenStoreUntilFirstStops() throws Exception {
+        final var first = service();
+        final var entry = enqueue(first);
+        final var second = service();
+        assertThrows(java.nio.channels.OverlappingFileLockException.class, second::initialize);
+        first.close();
+        second.initialize();
+        assertEquals(entry.getId(), second.findAll().getFirst().getId());
+        assertThrows(IllegalStateException.class, first::findAll);
+    }
+
+    @Test
+    void deletedOutboxIsNotSilentlyRecreated() throws Exception {
+        final var service = service();
+        enqueue(service);
+        Files.delete(tempDir.resolve("outbox.json"));
+        assertThrows(UncheckedIOException.class, service::findAll);
+        assertThrows(UncheckedIOException.class, () -> enqueue(service));
+        assertFalse(Files.exists(tempDir.resolve("outbox.json")));
+    }
+
+    @Test
+    void operatingSystemLockExcludesAnotherJvmAndSurvivesRestart() throws Exception {
+        final var first = service();
+        enqueue(first);
+        assertEquals(12, probeWriter());
+        first.close();
+        assertEquals(0, probeWriter());
+    }
+
+    private int probeWriter() throws Exception {
+        final Process process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+                "-cp", System.getProperty("surefire.test.class.path", System.getProperty("java.class.path")),
+                WriterProbe.class.getName(), tempDir.resolve("outbox.json").toString())
+                .redirectErrorStream(true).start();
+        try {
+            assertTrue(process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS));
+            return process.exitValue();
+        } finally {
+            if (process.isAlive()) process.destroyForcibly();
+        }
+    }
+
+    public static class WriterProbe {
+        public static void main(String[] args) throws Exception {
+            try (var service = new FileReplicationOutboxService(new ObjectMapper(), args[0])) {
+                service.initialize();
+                if (service.findAll().size() != 1) System.exit(13);
+            } catch (IllegalStateException e) {
+                System.exit(12);
+            }
+        }
     }
 
     private ReplicationOutboxEntry enqueue(FileReplicationOutboxService service) {
