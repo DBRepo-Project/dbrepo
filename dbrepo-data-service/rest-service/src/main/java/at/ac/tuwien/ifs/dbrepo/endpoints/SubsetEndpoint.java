@@ -387,6 +387,44 @@ public class SubsetEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             headers.set("X-Id", "" + subsetId);
             final Subset subset = subsetService.findById(database, subsetId);
+            if (subset.getSnapshotHash() != null) {
+                if (!accept.equals(MediaType.APPLICATION_JSON_VALUE) && !accept.equals("text/csv")) {
+                    throw new FormatNotAvailableException("Immutable results support application/json or text/csv");
+                }
+                final long offset;
+                try { offset = Math.multiplyExact(page, size); }
+                catch (ArithmeticException e) { throw new PaginationException("Result page is too large"); }
+                final long limit = size;
+                final boolean csv = accept.equals("text/csv");
+                final var result = subsetService.openResult(database, subset);
+                headers.set("X-Integrity", "verified");
+                headers.set("X-Result-Mode", "immutable-snapshot");
+                headers.set("X-Count", String.valueOf(subset.getResultNumber()));
+                headers.set("X-Result-Hash", subset.getResultHash());
+                headers.set("X-Headers", String.join(",", result.names()));
+                headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers X-Integrity X-Result-Mode");
+                if (request.getMethod().equals("HEAD")) {
+                    result.close();
+                    return ResponseEntity.ok().headers(headers).build();
+                }
+                org.springframework.web.context.request.async.WebAsyncUtils.getAsyncManager(request)
+                        .registerCallableInterceptor("subset-result", new org.springframework.web.context.request.async.CallableProcessingInterceptor() {
+                            @Override
+                            public <T> void afterCompletion(org.springframework.web.context.request.NativeWebRequest ignored,
+                                                             java.util.concurrent.Callable<T> task) {
+                                result.close();
+                            }
+                        });
+                if (csv) headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
+                final org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody body = output -> {
+                    try (result) {
+                        if (csv) result.csv(output);
+                        else result.json(output, offset, limit);
+                    }
+                };
+                return ResponseEntity.status(request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK)
+                        .contentType(org.springframework.http.MediaType.parseMediaType(accept)).headers(headers).body(body);
+            }
             final boolean versionedHash = subset.getResultHash() != null && subset.getResultHash().startsWith("v2:");
             headers.set("X-Integrity", versionedHash ? "verified" : "legacy-unverified");
             if (versionedHash || request.getMethod().equals("HEAD")) {

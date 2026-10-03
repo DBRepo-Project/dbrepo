@@ -180,6 +180,7 @@ public interface MariaDbMapper {
                     is_persisted BOOLEAN NOT NULL, query_hash VARCHAR(255) NOT NULL,
                     result_hash VARCHAR(255), result_number BIGINT,
                     creation_location VARCHAR(512), replication_revision BIGINT NOT NULL DEFAULT 0,
+                    snapshot_hash CHAR(64),
                     INDEX query_fixity (query_hash, result_hash)
                 ) ENGINE=InnoDB WITH SYSTEM VERSIONING
                 """;
@@ -210,6 +211,115 @@ public interface MariaDbMapper {
                 ON DUPLICATE KEY UPDATE
                     next_attempt = IF(VALUES(revision) > revision, UTC_TIMESTAMP(6), next_attempt),
                     revision = GREATEST(revision, VALUES(revision))
+                """;
+    }
+
+    default String queryStoreCreateResultsRawQuery() {
+        return """
+                CREATE TABLE IF NOT EXISTS qs_subset_results (
+                    query_id VARCHAR(36) PRIMARY KEY,
+                    schema_json LONGTEXT NOT NULL,
+                    order_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+                    snapshot_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+                    ready BOOLEAN NOT NULL DEFAULT FALSE,
+                    next_row BIGINT NOT NULL DEFAULT 0,
+                    next_offset BIGINT NOT NULL DEFAULT 0
+                ) ENGINE=InnoDB
+                """;
+    }
+
+    default String queryStoreCreateResultRowsRawQuery() {
+        return """
+                CREATE TABLE IF NOT EXISTS qs_subset_result_rows (
+                    query_id VARCHAR(36) NOT NULL,
+                    row_no BIGINT NOT NULL,
+                    row_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+                    byte_length BIGINT NOT NULL,
+                    payload LONGTEXT CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+                    PRIMARY KEY (query_id, row_no),
+                    INDEX result_fixity (query_id, row_hash, row_no)
+                ) ENGINE=InnoDB
+                """;
+    }
+
+    default String queryStoreCreateCaptureResultProcedureRawQuery() {
+        return """
+                CREATE PROCEDURE _capture_subset_result(IN work_table VARCHAR(64), IN subset_id VARCHAR(36),
+                    IN expected_hash VARCHAR(255), IN expected_count BIGINT)
+                SQL SECURITY INVOKER
+                BEGIN
+                    DECLARE fields LONGTEXT;
+                    DECLARE schema_json LONGTEXT;
+                    DECLARE schema_encoding LONGTEXT;
+                    DECLARE row_digest CHAR(64);
+                    DECLARE result_digest CHAR(64);
+                    DECLARE ordered_digest CHAR(64) DEFAULT SHA2('dbrepo:subset-order:v1:',256);
+                    DECLARE result_count BIGINT DEFAULT 0;
+                    DECLARE done BOOLEAN DEFAULT FALSE;
+                    DECLARE previous_concat_limit BIGINT DEFAULT @@session.group_concat_max_len;
+                    DECLARE ordered_rows CURSOR FOR SELECT row_hash FROM qs_subset_result_rows
+                        WHERE query_id = subset_id ORDER BY row_no;
+                    DECLARE sorted_rows CURSOR FOR SELECT row_hash FROM qs_subset_result_rows
+                        WHERE query_id = subset_id ORDER BY row_hash, row_no;
+                    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                    BEGIN
+                        SET SESSION group_concat_max_len = previous_concat_limit;
+                        DROP TEMPORARY TABLE IF EXISTS _dbrepo_subset_capture;
+                        RESIGNAL;
+                    END;
+                    SET SESSION group_concat_max_len = 16777216;
+                    SELECT GROUP_CONCAT(CONCAT('IF(`', REPLACE(column_name, '`', '``'),
+                               '` IS NULL,CHAR(78),CONCAT(CHAR(86),HEX(CAST(`',
+                               REPLACE(column_name, '`', '``'), '` AS BINARY))))')
+                               ORDER BY ordinal_position SEPARATOR ','),
+                           GROUP_CONCAT(CONCAT(HEX(column_name), ':', HEX(column_type))
+                               ORDER BY ordinal_position SEPARATOR ';'),
+                           JSON_ARRAYAGG(JSON_OBJECT('name', column_name, 'column_type', column_type,
+                               'data_type', data_type, 'charset', character_set_name) ORDER BY ordinal_position)
+                    INTO fields, schema_encoding, schema_json
+                    FROM information_schema.columns
+                    WHERE table_schema = DATABASE() AND table_name = work_table;
+                    SET SESSION group_concat_max_len = previous_concat_limit;
+                    IF fields IS NULL OR OCTET_LENGTH(schema_json) > 1048576 THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Missing or oversized subset result schema';
+                    END IF;
+                    DROP TEMPORARY TABLE IF EXISTS _dbrepo_subset_capture;
+                    CREATE TEMPORARY TABLE _dbrepo_subset_capture (
+                        position BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        payload LONGTEXT CHARACTER SET ascii COLLATE ascii_bin NOT NULL
+                    ) ENGINE=InnoDB;
+                    EXECUTE IMMEDIATE CONCAT('INSERT INTO _dbrepo_subset_capture(payload) SELECT JSON_ARRAY(',
+                        fields, ') FROM `', REPLACE(work_table,'`','``'), '`');
+                    INSERT INTO qs_subset_result_rows(query_id,row_no,row_hash,byte_length,payload)
+                        SELECT subset_id,position-1,SHA2(payload,256),OCTET_LENGTH(payload),payload
+                        FROM _dbrepo_subset_capture ORDER BY position;
+                    DROP TEMPORARY TABLE _dbrepo_subset_capture;
+                    OPEN ordered_rows;
+                    order_loop: LOOP
+                        FETCH ordered_rows INTO row_digest;
+                        IF done THEN LEAVE order_loop; END IF;
+                        SET ordered_digest = SHA2(CONCAT(ordered_digest, row_digest),256);
+                        SET result_count = result_count + 1;
+                    END LOOP;
+                    CLOSE ordered_rows;
+                    SET done = FALSE;
+                    SET result_digest = SHA2(CONCAT('dbrepo:rows:v2:',schema_encoding),256);
+                    OPEN sorted_rows;
+                    hash_loop: LOOP
+                        FETCH sorted_rows INTO row_digest;
+                        IF done THEN LEAVE hash_loop; END IF;
+                        SET result_digest = SHA2(CONCAT(result_digest, row_digest),256);
+                    END LOOP;
+                    CLOSE sorted_rows;
+                    IF CONCAT('v2:',result_digest) <> expected_hash OR result_count <> expected_count THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Captured result differs from original subset fixity';
+                    END IF;
+                    INSERT INTO qs_subset_results(query_id,schema_json,order_hash,snapshot_hash,ready,next_row)
+                    VALUES(subset_id,schema_json,ordered_digest,
+                        SHA2(CONCAT('dbrepo:subset-artifact:v1:',schema_json,':',ordered_digest,':',expected_hash,':',expected_count),256),
+                        TRUE,result_count);
+                END
                 """;
     }
 
@@ -288,6 +398,7 @@ public interface MariaDbMapper {
                     DECLARE result_digest VARCHAR(255);
                     DECLARE result_count BIGINT;
                     DECLARE identity_lock CHAR(64);
+                    DECLARE snapshot_digest CHAR(64) DEFAULT NULL;
                     DECLARE lock_acquired BOOLEAN DEFAULT FALSE;
                     DECLARE EXIT HANDLER FOR SQLEXCEPTION
                     BEGIN
@@ -301,7 +412,6 @@ public interface MariaDbMapper {
                     END IF;
                     EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (', normalized_query, ')');
                     CALL hash_table(work_table, result_digest, result_count);
-                    EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
                     SET identity_lock = SHA2(CONCAT(DATABASE(), ':', COALESCE(@dbrepo_subset_origin, ''),
                         ':', query_digest, ':', result_digest),256);
                     SET lock_acquired = GET_LOCK(identity_lock, 10);
@@ -315,16 +425,22 @@ public interface MariaDbMapper {
                         ORDER BY created, id LIMIT 1);
                     IF queryId IS NULL THEN
                         SET queryId = UUID();
+                        IF @dbrepo_subset_origin IS NOT NULL THEN
+                            CALL _capture_subset_result(work_table, queryId, result_digest, result_count);
+                            SELECT snapshot_hash INTO snapshot_digest FROM qs_subset_results WHERE query_id = queryId;
+                        END IF;
                         INSERT INTO qs_queries(id, created_by, query, query_normalized, is_persisted,
-                            query_hash, result_hash, result_number, executed, creation_location, replication_revision)
+                            query_hash, result_hash, result_number, executed, creation_location, replication_revision, snapshot_hash)
                         VALUES(queryId, username, original_query, normalized_query, FALSE,
                             query_digest, result_digest, result_count, selected_at, @dbrepo_subset_origin,
-                            IF(@dbrepo_subset_origin IS NULL, 0, 1));
+                            IF(@dbrepo_subset_origin IS NULL, 0, 1),
+                            snapshot_digest);
                     END IF;
                     IF @dbrepo_subset_origin IS NOT NULL THEN
                 """ + queryStoreEnqueueSubsetRawQuery().replace("?", "queryId") + ";\n" + """
                     END IF;
                     COMMIT;
+                    EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
                     DO RELEASE_LOCK(identity_lock);
                 END
                 """;
@@ -368,7 +484,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreFindQueryRawQuery() {
-        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision` FROM `qs_queries` q WHERE q.`id` = ?";
+        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision`, `snapshot_hash` FROM `qs_queries` q WHERE q.`id` = ?";
         log.trace("mapped find query statement: {}", statement);
         return statement;
     }
@@ -440,7 +556,7 @@ public interface MariaDbMapper {
     }
 
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
-        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision` FROM `qs_queries`");
+        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision`, `snapshot_hash` FROM `qs_queries`");
         if (filterPersisted != null) {
             statement.append(" WHERE `is_persisted` = ?");
         }

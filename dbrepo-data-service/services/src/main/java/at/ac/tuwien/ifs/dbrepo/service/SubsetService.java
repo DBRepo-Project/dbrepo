@@ -15,6 +15,8 @@ import java.util.UUID;
 
 public interface SubsetService {
 
+    SubsetResultReader openResult(Database database, Subset subset) throws SQLException, QueryExecutionException;
+
     void upgradeQueryStore(Database database) throws SQLException;
 
     void replicate(Database database, SubsetReplicationDto subset) throws SQLException;

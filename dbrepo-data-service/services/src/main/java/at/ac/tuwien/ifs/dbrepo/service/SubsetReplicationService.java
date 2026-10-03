@@ -2,6 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
+import at.ac.tuwien.ifs.dbrepo.core.exception.QueryExecutionException;
 import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DataConnector;
@@ -28,19 +30,22 @@ public class SubsetReplicationService extends DataConnector {
     private final ReplicationPeers peers;
     private final Validator validator;
     private final String localSite;
+    private final SubsetResultService results;
 
     public SubsetReplicationService(MariaDbMapper mapper, ObjectMapper json,
                                     @Qualifier("subsetReplicationPeers") ReplicationPeers peers, Validator validator,
-                                    @Value("${dbrepo.baseUrl}") String localSite) {
+                                    @Value("${dbrepo.baseUrl}") String localSite, SubsetResultService results) {
         this.mapper = mapper;
         this.json = json;
         this.peers = peers;
         this.validator = validator;
         this.localSite = new ReplicationPeers(localSite).requireAllowedSite(localSite);
+        this.results = Objects.requireNonNull(results, "Subset results are required");
     }
 
     /** DDL must finish before any query-store mutation, because MariaDB DDL commits. */
     public void prepare(Connection connection, Database database, String sender) throws SQLException {
+        results.initialize(connection);
         final Set<String> targets = new TreeSet<>(routes(database).keySet());
         if (sender != null) targets.remove(sender);
         final String encoded;
@@ -107,7 +112,8 @@ public class SubsetReplicationService extends DataConnector {
         return new SubsetReplicationDto(UUID.fromString(row.getString("id")), row.getString("creation_location"),
                 localSite, database.getId(), row.getString("query"), row.getString("query_normalized"),
                 row.getTimestamp("executed", utc()).toInstant(), row.getBoolean("is_persisted"),
-                row.getString("result_hash"), row.getLong("result_number"), row.getLong("replication_revision"));
+                row.getString("result_hash"), row.getLong("result_number"), row.getLong("replication_revision"),
+                row.getString("snapshot_hash"));
     }
 
     public void receive(Database database, SubsetReplicationDto incoming) throws SQLException {
@@ -120,7 +126,10 @@ public class SubsetReplicationService extends DataConnector {
                 // Even a no-op UPDATE creates MariaDB system history; duplicates must be read-only.
                 final SubsetReplicationDto stored = find(connection, database, incoming.queryId(), true);
                 if (stored != null && (!sameIdentity(stored, incoming)
-                        || (stored.revision() == incoming.revision() && !stored.persisted().equals(incoming.persisted())))) {
+                        || (stored.revision() == incoming.revision() && (!stored.persisted().equals(incoming.persisted())
+                            || !Objects.equals(stored.snapshotHash(), incoming.snapshotHash())))
+                        || (incoming.revision() > stored.revision() && stored.snapshotHash() != null
+                            && !stored.snapshotHash().equals(incoming.snapshotHash())))) {
                     throw conflict("Canonical subset identity or revision conflicts with the stored query");
                 }
                 final boolean changed = stored == null || incoming.revision() > stored.revision();
@@ -130,8 +139,8 @@ public class SubsetReplicationService extends DataConnector {
                 if (stored == null) {
                     try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT INTO qs_queries (id, created_by, query, query_normalized, executed,
-                            is_persisted, query_hash, result_hash, result_number, creation_location, replication_revision)
-                        VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            is_persisted, query_hash, result_hash, result_number, creation_location, replication_revision, snapshot_hash)
+                        VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)) {
                         statement.setString(1, incoming.queryId().toString());
                         statement.setString(2, incoming.query());
@@ -143,15 +152,17 @@ public class SubsetReplicationService extends DataConnector {
                         statement.setLong(8, incoming.resultCount());
                         statement.setString(9, incoming.originSite());
                         statement.setLong(10, incoming.revision());
+                        statement.setString(11, incoming.snapshotHash());
                         statement.executeUpdate();
                     }
                 } else if (changed) {
                     try (PreparedStatement statement = connection.prepareStatement("""
-                            UPDATE qs_queries SET is_persisted = ?, replication_revision = ? WHERE id = ?
+                            UPDATE qs_queries SET is_persisted = ?, replication_revision = ?, snapshot_hash = ? WHERE id = ?
                             """)) {
                         statement.setBoolean(1, incoming.persisted());
                         statement.setLong(2, incoming.revision());
-                        statement.setString(3, incoming.queryId().toString());
+                        statement.setString(3, incoming.snapshotHash());
+                        statement.setString(4, incoming.queryId().toString());
                         statement.executeUpdate();
                     }
                 }
@@ -190,7 +201,64 @@ public class SubsetReplicationService extends DataConnector {
     private boolean sameIdentity(SubsetReplicationDto a, SubsetReplicationDto b) {
         return Objects.equals(a.originSite(), b.originSite()) && a.query().equals(b.query())
                 && a.queryNormalized().equals(b.queryNormalized()) && a.selectedAt().equals(b.selectedAt())
+                && (a.snapshotHash() == null || b.snapshotHash() == null || a.snapshotHash().equals(b.snapshotHash()))
                 && Objects.equals(a.resultHash(), b.resultHash()) && Objects.equals(a.resultCount(), b.resultCount());
+    }
+
+    public void requireSender(Database database, String site, UUID sourceId) {
+        final String allowed;
+        try { allowed = peers.requireAllowedSite(site); }
+        catch (IllegalArgumentException e) { throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Untrusted subset sender"); }
+        if (!allowed.equals(site) || sourceId == null || !sourceId.equals(routes(database).get(allowed))) {
+            throw conflict("Subset sender database mapping is missing or does not match");
+        }
+    }
+
+    public SubsetResultReader openResult(Database database, Subset subset) throws SQLException, QueryExecutionException {
+        return results.open(database, subset);
+    }
+
+    /** Upgrade a known local v2 query only when its materialized observation still matches its original reference. */
+    public void captureForPersistence(Connection connection, Database database, UUID id) throws SQLException {
+        final SubsetReplicationDto before = read(connection, database, id);
+        requireLocalOrigin(before.originSite());
+        if (before.snapshotHash() != null || before.originSite() == null || before.resultHash() == null
+                || !before.resultHash().startsWith("v2:")) return;
+        final String work = "_dbrepo_query_" + UUID.randomUUID().toString().replace("-", "");
+        try (Statement statement = connection.createStatement()) {
+            // CTAS commits in MariaDB; finish it before locking or changing canonical metadata.
+            statement.execute("CREATE TABLE `" + work + "` AS " + before.queryNormalized());
+            connection.setAutoCommit(false);
+            try {
+                final SubsetReplicationDto current = find(connection, database, id, true);
+                if (current == null || !sameIdentity(before, current)) throw conflict("Subset changed during capture");
+                if (current.snapshotHash() == null) {
+                    try (CallableStatement capture = connection.prepareCall("{CALL _capture_subset_result(?,?,?,?)}")) {
+                        capture.setString(1, work);
+                        capture.setString(2, id.toString());
+                        capture.setString(3, current.resultHash());
+                        capture.setLong(4, current.resultCount());
+                        capture.execute();
+                    }
+                    try (PreparedStatement update = connection.prepareStatement("""
+                            UPDATE qs_queries q JOIN qs_subset_results r ON r.query_id=q.id
+                            SET q.snapshot_hash=r.snapshot_hash,q.replication_revision=q.replication_revision+1 WHERE q.id=?
+                            """)) {
+                        update.setString(1, id.toString());
+                        update.executeUpdate();
+                    }
+                    enqueue(connection, id);
+                }
+                connection.commit();
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } finally {
+            try (Statement statement = connection.createStatement()) { statement.execute("DROP TABLE IF EXISTS `" + work + "`"); }
+        }
     }
 
     public void requireLocalOrigin(String origin) {

@@ -19,6 +19,7 @@ import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetReplicationService;
+import at.ac.tuwien.ifs.dbrepo.service.SubsetResultReader;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
@@ -71,9 +72,13 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     + "MODIFY executed DATETIME(6) NOT NULL DEFAULT NOW(6), MODIFY created_by VARCHAR(255), "
                     + "ADD COLUMN IF NOT EXISTS creation_location VARCHAR(512), "
                     + "ADD COLUMN IF NOT EXISTS replication_revision BIGINT NOT NULL DEFAULT 0, "
+                    + "ADD COLUMN IF NOT EXISTS snapshot_hash CHAR(64), "
                     + "ADD INDEX IF NOT EXISTS query_fixity (query_hash, result_hash)");
             statement.execute(mariaDbMapper.queryStoreCreateSubsetOutboxRawQuery());
+            statement.execute(mariaDbMapper.queryStoreCreateResultsRawQuery());
+            statement.execute(mariaDbMapper.queryStoreCreateResultRowsRawQuery());
             for (String procedure : List.of(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery(),
+                    mariaDbMapper.queryStoreCreateCaptureResultProcedureRawQuery(),
                     mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery(),
                     mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery(),
                     mariaDbMapper.queryStoreCreateInternalHashQueryProcedureRawQuery())) {
@@ -167,6 +172,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                 final QueryDto subset = dataMapper.resultSetToQueryDto(resultSet);
                 subset.setCreationLocation(resultSet.getString("creation_location"));
                 subset.setReplicationRevision(resultSet.getLong("replication_revision"));
+                subset.setSnapshotHash(resultSet.getString("snapshot_hash"));
                 subset.setIdentifiers(identifiers.stream()
                         .filter(i -> i.getType().equals(IdentifierTypeDto.SUBSET))
                         .filter(i -> i.getQueryId().equals(subset.getId()))
@@ -214,6 +220,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final Subset subset = dataMapper.resultSetToSubset(resultSet);
             subset.setCreationLocation(resultSet.getString("creation_location"));
             subset.setReplicationRevision(resultSet.getLong("replication_revision"));
+            subset.setSnapshotHash(resultSet.getString("snapshot_hash"));
             subset.setType(SubsetType.QUERY);
             subset.setDatabaseId(database.getId());
             return subset;
@@ -277,6 +284,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
             subsetReplication.prepare(connection, database, null);
+            if (Boolean.TRUE.equals(persist)) subsetReplication.captureForPersistence(connection, database, subsetId);
             connection.setAutoCommit(false);
             try {
                 try (PreparedStatement statement = connection.prepareStatement(
@@ -311,6 +319,12 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         }
         subsetRepository.deleteById(subsetId);
         log.info("Performed (un-)persist for query with id {} in database with name {}", subsetId, database.getInternalName());
+    }
+
+    @Override
+    public SubsetResultReader openResult(Database database, Subset subset)
+            throws SQLException, QueryExecutionException {
+        return subsetReplication.openResult(database, subset);
     }
 
 }

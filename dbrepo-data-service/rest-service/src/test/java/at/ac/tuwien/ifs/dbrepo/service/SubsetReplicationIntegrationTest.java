@@ -157,6 +157,8 @@ class SubsetReplicationIntegrationTest {
         failOutbox();
         assertThrows(QueryStoreInsertException.class, this::create);
         assertEquals(0, count("qs_queries"));
+        assertEquals(0, count("qs_subset_results"));
+        assertEquals(0, count("qs_subset_result_rows"));
         sql("DROP TRIGGER fail_subset_outbox");
         final UUID id = create();
         final SubsetReplicationDto sent = read(id);
@@ -175,7 +177,7 @@ class SubsetReplicationIntegrationTest {
         database.setReplicaUrls(new HashMap<>(Collections.singletonMap(B, null)));
         final UUID id = create();
         final RestTemplate client = mock(RestTemplate.class);
-        var dispatcher = new SubsetReplicationDispatcher(null, replication, client, mapper);
+        var dispatcher = new SubsetReplicationDispatcher(null, replication, client, mapper, new SubsetResultService(mapper, json));
         assertEquals(0, dispatcher.dispatch(database));
         verifyNoInteractions(client);
         assertEquals(1, count("qs_subset_outbox"));
@@ -187,16 +189,18 @@ class SubsetReplicationIntegrationTest {
         assertEquals(2, number("SELECT attempts FROM qs_subset_outbox"));
         sql("UPDATE qs_subset_outbox SET next_attempt = UTC_TIMESTAMP(6)");
         reset(client);
+        publishedArtifact(client);
         when(client.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenAnswer(call -> {
                     service.persist(database, id, true);
                     return ResponseEntity.noContent().build();
                 });
-        dispatcher = new SubsetReplicationDispatcher(null, replication(A), client, mapper);
+        dispatcher = new SubsetReplicationDispatcher(null, replication(A), client, mapper, new SubsetResultService(mapper, json));
         assertEquals(1, dispatcher.dispatch(database));
         assertEquals(1, count("qs_subset_outbox"));
         assertEquals(2, number("SELECT revision FROM qs_subset_outbox"));
         reset(client);
+        publishedArtifact(client);
         when(client.exchange(eq(B + "/api/v1/database/" + B_ID + "/subset/replicate"), eq(HttpMethod.PUT),
                 any(HttpEntity.class), eq(Void.class))).thenReturn(ResponseEntity.noContent().build());
         assertEquals(1, dispatcher.dispatch(database));
@@ -314,7 +318,15 @@ class SubsetReplicationIntegrationTest {
 
     private SubsetReplicationService replication(String site) {
         return new SubsetReplicationService(mapper, json, new ReplicationPeers(A + "," + B + "," + C),
-                Validation.buildDefaultValidatorFactory().getValidator(), site);
+                Validation.buildDefaultValidatorFactory().getValidator(), site, new SubsetResultService(mapper, json));
+    }
+
+    private void publishedArtifact(RestTemplate client) {
+        when(client.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
+                eq(at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetResultManifestDto.Progress.class)))
+                .thenReturn(ResponseEntity.ok(new at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetResultManifestDto.Progress(true, 1, 0)));
+        when(client.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.noContent().build());
     }
 
     private SubsetServiceMariaDbImpl service(SubsetReplicationService replication) {
@@ -335,6 +347,8 @@ class SubsetReplicationIntegrationTest {
     }
 
     private void clearCurrentSite() throws Exception {
+        sql("DELETE FROM qs_subset_result_rows");
+        sql("DELETE FROM qs_subset_results");
         sql("DELETE FROM qs_subset_outbox");
         sql("DELETE FROM qs_queries");
     }
