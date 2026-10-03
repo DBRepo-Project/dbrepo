@@ -22,6 +22,12 @@ There are no mocked SQL statements or outbox writes.
   contents, rather than being interpreted as uploaded S3 object references.
   JDBC BLOB results become byte arrays before outbox JSON serialization.
 - Successful imports delete the uploaded CSV; failed imports retain it.
+- Compatibility decision for parent integration: this implementation is
+  insert-only. The former staging merge used `ON DUPLICATE KEY UPDATE` and could
+  silently replace an existing replication identity. Duplicate keys now abort
+  the whole import. If re-import updates are required, add explicit
+  identity-preserving upsert handling and corresponding update events; do not
+  restore a blind merge that changes replication keys.
 
 ## Run
 
@@ -97,3 +103,32 @@ can already have rounded a decimal to `Double`; no binder can recover those
 digits. The test wire round-trip enables `USE_BIG_DECIMAL_FOR_FLOATS`. The new
 parent-owned receiver should use an equivalent typed/decimal-preserving parser.
 The real HTTP receiver and S3 service remain outside this test's coverage.
+
+## Nullable Predicate Integration
+
+Both UPDATE caller loops now skip null lookup keys because the existing mapper
+emits `IS NULL` without a placeholder. Null SET values are still bound. Tests
+cover null keys before/after a non-null key, exact DECIMAL assignments, and null
+SET values with replication both enabled and disabled.
+
+DELETE callers still bind every key, as required by their current parameter
+contract. The parent/mapper owner must replace the mapper's invalid `IS ?` with
+null-safe equality for every DELETE key:
+
+```java
+.append("` <=> ?")
+```
+
+Do not change DELETE to `IS NULL` without also adjusting its caller loops.
+The service's replication-key locking query already uses `<=> ?`. Null DELETE
+integration remains pending that mapper change; this branch does not edit it.
+
+## Verification on 2026-10-03
+
+The complete core+data/rest reactor selection passed on Java 21 with
+`-Djacoco.skip=true -DargLine=`: 24 real MariaDB/Spark ingest cases and 8 existing
+unit cases (`TableServiceMariaDbImplUnitTest`,
+`TupleReplicationOutboxServiceMariaDbImplUnitTest`,
+`BasicAuthenticationProviderUnitTest`). No cases in that selection were skipped.
+Only `ingest_replication_test` was used on the isolated SQL server. Full output
+is in `/tmp/dbrepo-ingest-final-20261003.log` on the task host.

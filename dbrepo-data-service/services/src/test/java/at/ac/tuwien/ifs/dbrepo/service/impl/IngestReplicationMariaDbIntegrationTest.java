@@ -24,6 +24,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -429,6 +430,32 @@ class IngestReplicationMariaDbIntegrationTest {
         assertArrayEquals(bytes, wire.get("payload").binaryValue());
         assertEquals(amount, wire.get("amount").decimalValue());
         assertEquals(text, wire.get("large_text").asText());
+        assertEquals(List.of(), storage.reads);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void nullUpdateLookupKeysDoNotConsumeParameters(boolean replicated) throws Exception {
+        if (!replicated) {
+            database.setReplicaUrls(Map.of());
+        }
+        service.createTuple(database, table, tuple("null", 1, null, null));
+        service.createTuple(database, table, tuple("other", 2, new byte[]{1}, null));
+        final Map<String, Object> nullFirst = new LinkedHashMap<>();
+        nullFirst.put("payload", null);
+        nullFirst.put("sample_value", 1);
+        service.updateTuple(database, table, TupleUpdateDto.builder().keys(nullFirst)
+                .data(Map.of("amount", "12345678901234567890.123456789012345678")).build());
+        assertEquals(1, count("samples WHERE sample_value = 1 AND amount = 12345678901234567890.123456789012345678"));
+        final Map<String, Object> nullLast = new LinkedHashMap<>();
+        nullLast.put("sample_value", 1);
+        nullLast.put("payload", null);
+        final Map<String, Object> nullAssignment = new LinkedHashMap<>();
+        nullAssignment.put("amount", null);
+        service.updateTuple(database, table, TupleUpdateDto.builder().keys(nullLast).data(nullAssignment).build());
+        assertEquals(2, count("samples WHERE amount IS NULL"));
+        assertEquals(4, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(replicated ? 4 : 0, outbox.findAll(database).size());
         assertEquals(List.of(), storage.reads);
     }
 

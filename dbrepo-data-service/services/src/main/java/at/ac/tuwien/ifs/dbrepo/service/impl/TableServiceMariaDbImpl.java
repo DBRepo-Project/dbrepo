@@ -514,6 +514,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             }
             /* set key(s) */
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
                 bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
@@ -560,6 +563,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 idx[0]++;
             }
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
                 bindTupleValue(statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
