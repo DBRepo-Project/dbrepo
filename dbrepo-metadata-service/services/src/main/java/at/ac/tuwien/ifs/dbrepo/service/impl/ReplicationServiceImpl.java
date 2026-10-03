@@ -71,6 +71,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         this.dispatcher = dispatcher;
     }
 
+    @Override
     public UUID reserveCreation(String kind, UUID parentId, String origin, UUID creationId,
                                 String physicalName, Object payload) {
         final UUID id = ReplicationCreation.localId(kind, parentId, origin, creationId);
@@ -106,6 +107,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         return id;
     }
 
+    @Override
     public <T> T findCreated(Class<T> type, UUID id) {
         return entityManager.find(type, id, LockModeType.PESSIMISTIC_READ);
     }

@@ -14,6 +14,11 @@ import java.util.UUID;
 
 public interface ReplicationService {
 
+    UUID reserveCreation(String kind, UUID parentId, String origin, UUID creationId,
+                         String physicalName, Object payload);
+
+    <T> T findCreated(Class<T> type, UUID id);
+
     void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId, UserDto owner);
 
     void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas,

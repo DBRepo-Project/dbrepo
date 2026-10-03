@@ -24,6 +24,7 @@ import at.ac.tuwien.ifs.dbrepo.cache.TableCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.TableRepository;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class TableServiceImpl implements TableService {
     private final TableCacheRepository tableCacheRepository;
 
     @Autowired
-    private ReplicationServiceImpl replicationService;
+    private ReplicationService replicationService;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;

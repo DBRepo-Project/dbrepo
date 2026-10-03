@@ -25,6 +25,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final DatabaseCacheRepository databaseCacheRepository;
 
     @Autowired
-    private ReplicationServiceImpl replicationService;
+    private ReplicationService replicationService;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
