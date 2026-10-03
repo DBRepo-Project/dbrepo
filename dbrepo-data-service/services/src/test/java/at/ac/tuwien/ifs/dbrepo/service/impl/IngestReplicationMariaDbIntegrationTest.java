@@ -16,6 +16,8 @@ import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.classic.Dataset;
@@ -37,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.time.Instant;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -555,6 +558,135 @@ class IngestReplicationMariaDbIntegrationTest {
         assertEquals(4, count("samples FOR SYSTEM_TIME ALL"));
         assertEquals(replicated ? 4 : 0, outbox.findAll(database).size());
         assertEquals(List.of(), storage.reads);
+    }
+
+    @Test
+    void temporalAndBinarySourceEventsRoundTripThroughJsonAndJdbcExactly() throws Exception {
+        createPrecisionTable();
+        service = serviceInSessionZone("+00:00");
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("SET time_zone = '+00:00'");
+            statement.execute("INSERT INTO samples VALUES ('precision', '2026-10-03 12:34:56.123456', "
+                    + "'2026-01-02 03:04:05.111111', '-123:45:56.987654', '2026-01-02', X'A5', X'00FF01', X'80FE00')");
+        }
+        service.updateTuple(database, table, TupleUpdateDto.builder().keys(Map.of("replication_key", "precision"))
+                .data(Map.of("local_at", "2026-01-02 03:04:05.654321")).build());
+        final String payload = outbox.findAll(database).getFirst().getPayloadJson();
+        final JsonNode data = json.readTree(payload).get("tuple").get("data");
+        assertPrecision(data);
+        assertArrayEquals(new byte[]{(byte) 0xA5}, data.get("flags").binaryValue());
+        assertArrayEquals(new byte[]{0, (byte) 0xFF, 1, 0}, data.get("fixed_bytes").binaryValue());
+        assertArrayEquals(new byte[]{(byte) 0x80, (byte) 0xFE, 0}, data.get("variable_bytes").binaryValue());
+
+        final var decoded = json.readValue(payload, DataReplicationDto.class).getTuple().getData();
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("SET time_zone = '+00:00'");
+            statement.execute("CREATE TABLE received LIKE samples");
+            try (var insert = connection.prepareStatement("INSERT INTO received VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                int index = 1;
+                for (Column column : table.getColumns()) {
+                    final Object value = decoded.get(column.getInternalName());
+                    if (List.of(ColumnType.BIT, ColumnType.BINARY, ColumnType.VARBINARY).contains(column.getColumnType())) {
+                        insert.setBytes(index++, Base64.getDecoder().decode((String) value));
+                    } else {
+                        insert.setString(index++, (String) value);
+                    }
+                }
+                insert.executeUpdate();
+            }
+            try (var rows = statement.executeQuery("SELECT * FROM received")) {
+                assertTrue(rows.next());
+                for (Column column : table.getColumns()) {
+                    final String name = column.getInternalName();
+                    if (List.of(ColumnType.BIT, ColumnType.BINARY, ColumnType.VARBINARY).contains(column.getColumnType())) {
+                        assertArrayEquals(data.get(name).binaryValue(), rows.getBytes(name));
+                    } else {
+                        assertEquals(data.get(name).asText(), rows.getString(name));
+                    }
+                }
+            }
+        }
+        assertEquals(List.of(), storage.reads);
+    }
+
+    @Test
+    void bootstrapForcesUtcAndPreservesTemporalFractionsAndBinaryTypes() throws Exception {
+        createPrecisionTable();
+        final String rowStart;
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("SET time_zone = '+00:00'");
+            statement.execute("INSERT INTO samples VALUES ('precision', '2026-10-03 12:34:56.123456', "
+                    + "'2026-01-02 03:04:05.654321', '-123:45:56.987654', '2026-01-02', X'A5', X'00FF01', X'80FE00')");
+            try (var rows = statement.executeQuery("SELECT ROW_START FROM samples")) {
+                assertTrue(rows.next());
+                rowStart = rows.getString(1);
+            }
+        }
+        service = serviceInSessionZone("+05:45");
+        try (var pool = service.getDataSource(database); var connection = pool.getConnection();
+             var statement = connection.createStatement(); var row = statement.executeQuery("SELECT @@session.time_zone")) {
+            assertTrue(row.next());
+            assertEquals("+05:45", row.getString(1));
+        }
+        final var tuple = service.getReplicationData(database, table, 0, 10, ORIGIN).getTuples().getFirst();
+        assertEquals(Instant.parse(rowStart.replace(' ', 'T') + "Z"), tuple.getInsertedAt());
+        for (String name : List.of("observed_at", "local_at", "duration", "calendar_day")) {
+            assertInstanceOf(String.class, tuple.getData().get(name));
+        }
+        for (String name : List.of("flags", "fixed_bytes", "variable_bytes")) {
+            assertInstanceOf(byte[].class, tuple.getData().get(name));
+        }
+        final JsonNode wire = json.readTree(json.writeValueAsString(tuple)).get("data");
+        assertPrecision(wire);
+        assertArrayEquals(new byte[]{(byte) 0xA5}, wire.get("flags").binaryValue());
+        assertArrayEquals(new byte[]{0, (byte) 0xFF, 1, 0}, wire.get("fixed_bytes").binaryValue());
+        assertArrayEquals(new byte[]{(byte) 0x80, (byte) 0xFE, 0}, wire.get("variable_bytes").binaryValue());
+    }
+
+    @Test
+    void csvReturningPreservesMicrosecondsAndBitBytes() throws Exception {
+        createPrecisionTable();
+        service = serviceInSessionZone("+00:00");
+        service.importDataset(database, table, csv("replication_key,observed_at,local_at,duration,calendar_day,flags,fixed_bytes,variable_bytes\n"
+                + "precision,2026-10-03 12:34:56.123456,2026-01-02 03:04:05.654321,-123:45:56.987654,2026-01-02,A,ab,cd\n"));
+        final JsonNode data = json.readTree(outbox.findAll(database).getFirst().getPayloadJson()).get("tuple").get("data");
+        assertPrecision(data);
+        assertArrayEquals(new byte[]{'A'}, data.get("flags").binaryValue());
+        assertArrayEquals(new byte[]{'a', 'b', 0, 0}, data.get("fixed_bytes").binaryValue());
+        assertArrayEquals(new byte[]{'c', 'd'}, data.get("variable_bytes").binaryValue());
+    }
+
+    private void createPrecisionTable() throws Exception {
+        table.setColumns(List.of(column("replication_key", ColumnType.VARCHAR), column("observed_at", ColumnType.TIMESTAMP),
+                column("local_at", ColumnType.DATETIME), column("duration", ColumnType.TIME), column("calendar_day", ColumnType.DATE),
+                column("flags", ColumnType.BIT), column("fixed_bytes", ColumnType.BINARY), column("variable_bytes", ColumnType.VARBINARY)));
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("DROP TABLE samples");
+            statement.execute("CREATE TABLE samples (replication_key VARCHAR(36) PRIMARY KEY, observed_at TIMESTAMP(6) NULL, "
+                    + "local_at DATETIME(6), duration TIME(6), calendar_day DATE, flags BIT(8), fixed_bytes BINARY(4), "
+                    + "variable_bytes VARBINARY(8)) ENGINE=InnoDB WITH SYSTEM VERSIONING");
+        }
+    }
+
+    private void assertPrecision(JsonNode data) {
+        assertEquals("2026-10-03 12:34:56.123456", data.get("observed_at").asText());
+        assertEquals("2026-01-02 03:04:05.654321", data.get("local_at").asText());
+        assertEquals("-123:45:56.987654", data.get("duration").asText());
+        assertEquals("2026-01-02", data.get("calendar_day").asText());
+    }
+
+    private TableServiceMariaDbImpl serviceInSessionZone(String zone) {
+        final var result = new TableServiceMariaDbImpl(null, Mappers.getMapper(MariaDbMapper.class), null, storage,
+                new LocalCsvService(), replication) {
+            @Override
+            public ComboPooledDataSource getDataSource(Database target) {
+                final var pool = super.getDataSource(target);
+                pool.setJdbcUrl(pool.getJdbcUrl() + "?sessionVariables=time_zone='" + zone + "'");
+                return pool;
+            }
+        };
+        ReflectionTestUtils.setField(result, "baseUrl", ORIGIN);
+        return result;
     }
 
     private TupleDto tuple(String key, int sample, Object blob, Object amount) {

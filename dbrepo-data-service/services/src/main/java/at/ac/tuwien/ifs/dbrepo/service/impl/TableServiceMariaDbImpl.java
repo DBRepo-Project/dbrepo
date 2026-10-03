@@ -672,6 +672,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            try (var session = connection.createStatement()) {
+                session.execute("SET time_zone = '+00:00'");
+            }
             final long start = System.currentTimeMillis();
             final List<String> columns = table.getColumns()
                     .stream()
@@ -1167,12 +1170,18 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
 
     private TupleWithTimestampsDto tupleWithTimestamps(ResultSet resultSet, List<String> columns) throws SQLException {
         final Map<String, Object> data = new LinkedHashMap<>();
+        final var metadata = resultSet.getMetaData();
         for (String column : columns) {
-            final Object value = resultSet.getObject(column);
-            data.put(column, value instanceof java.sql.Blob ? resultSet.getBytes(column) : value);
+            final String type = metadata.getColumnTypeName(resultSet.findColumn(column)).toUpperCase(Locale.ROOT);
+            data.put(column, switch (type) {
+                case "DATE", "TIME", "TIMESTAMP", "DATETIME" -> resultSet.getString(column);
+                case "BIT", "BINARY", "VARBINARY", "BLOB", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB" ->
+                        resultSet.getBytes(column);
+                default -> resultSet.getObject(column);
+            });
         }
-        final Instant insertedAt = timestampToInstant(resultSet.getObject("inserted_at"));
-        final Instant deletedAt = normaliseRowEnd(timestampToInstant(resultSet.getObject("deleted_at")));
+        final Instant insertedAt = timestampToInstant(resultSet.getString("inserted_at"));
+        final Instant deletedAt = normaliseRowEnd(timestampToInstant(resultSet.getString("deleted_at")));
         return TupleWithTimestampsDto.builder()
                 .data(data)
                 .insertedAt(insertedAt)

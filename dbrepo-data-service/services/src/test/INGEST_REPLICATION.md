@@ -106,6 +106,24 @@ digits. The test wire round-trip enables `USE_BIG_DECIMAL_FOR_FLOATS`. The new
 parent-owned receiver should use an equivalent typed/decimal-preserving parser.
 The real HTTP receiver and S3 service remain outside this test's coverage.
 
+## Temporal and Binary Fields
+
+The shared source extractor uses JDBC metadata type names to read DATE, TIME,
+TIMESTAMP and DATETIME as native strings, preserving all fractional digits and
+negative/multi-day TIME values. BIT, BINARY, VARBINARY and BLOB types are byte
+arrays. This applies to mutation events, CSV `RETURNING` rows and bootstrap
+exports, without DTO changes. System-version timestamps are parsed from native
+strings as UTC rather than through JVM-default-zone `java.sql.Timestamp` values.
+
+Bootstrap export sets `time_zone = '+00:00'` on its own connection before SELECT.
+Source mutations require the parent-owned UTC setting in
+`ReplicationService.prepare`; receiver writes require the corresponding parent
+receiver setting. Tests configure real source JDBC sessions in UTC to model that
+pending parent change, and separately start bootstrap connections in `+05:45` to
+verify that export actively restores UTC. Wire tests replay native temporal
+strings and decoded binary bytes into a second MariaDB table, verifying
+TIMESTAMP(6), DATETIME(6), negative TIME(6), DATE, BIT(8), padded BINARY and VARBINARY.
+
 ## Nullable Predicate Integration
 
 Both UPDATE caller loops now skip null lookup keys because the existing mapper
@@ -127,10 +145,18 @@ integration remains pending that mapper change; this branch does not edit it.
 
 ## Verification on 2026-10-03
 
-The complete core+data/rest reactor selection passed on Java 21 with
+The initial core+data/rest reactor selection passed on Java 21 with
 `-Djacoco.skip=true -DargLine=`: 24 real MariaDB/Spark ingest cases and 8 existing
 unit cases (`TableServiceMariaDbImplUnitTest`,
 `TupleReplicationOutboxServiceMariaDbImplUnitTest`,
 `BasicAuthenticationProviderUnitTest`). No cases in that selection were skipped.
 Only `ingest_replication_test` was used on the isolated SQL server. Full output
 is in `/tmp/dbrepo-ingest-final-20261003.log` on the task host.
+
+After the CSV compatibility and temporal/binary additions, all 32 real
+MariaDB/Spark cases and 7 existing unit cases passed. One existing H2-only case,
+`TableServiceMariaDbImplUnitTest.getReplicationData_pagedRows_succeeds`, cannot
+execute MariaDB's `SET time_zone` syntax. That pre-existing fixture is outside
+the ingest write scope and needs adaptation by its owner; the real MariaDB
+bootstrap case verifies the UTC requirement. The complete later run is in
+`/tmp/dbrepo-ingest-precision-final-20261003.log`. Tests used MariaDB 11.3.2.
