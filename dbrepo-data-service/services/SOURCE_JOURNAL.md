@@ -6,6 +6,8 @@ not delete the event. Dispatch/claim/failure paths never rewrite `id`,
 `event_sequence`, `payload`, database ID, table ID, or HTTP method. Retention is
 intentional. Do not add successful-event cleanup without a separate durable
 journal and an explicit citation/recovery retention policy.
+`findAll(Database)` remains the operational UI/status view: it excludes
+`SUCCEEDED` rows in SQL. Read retained history only through paginated `readRange`.
 
 ## Writer contract
 

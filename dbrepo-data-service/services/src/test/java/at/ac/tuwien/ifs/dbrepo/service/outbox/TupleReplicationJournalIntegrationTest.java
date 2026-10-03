@@ -277,6 +277,8 @@ class TupleReplicationJournalIntegrationTest {
             final var before = service.readRange(c, 0, 2, 10);
             service.markSucceeded(database, one.getId());
             service.markFailed(database, two.getId(), "offline", java.time.Duration.ZERO, 1);
+            assertEquals(List.of(two.getId()), service.findAll(database).stream()
+                    .map(TupleReplicationOutboxEntry::getId).toList());
             assertEquals(before, service.readRange(c, 0, 2, 10));
             assertEquals(before.getFirst(), service.readRange(c, 0, 2, 1).getFirst());
             assertEquals(before.getLast(), service.readRange(c, 1, 2, 1).getFirst());

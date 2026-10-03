@@ -50,12 +50,17 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
         service.markSucceeded(database, entry.getId());
 
         assertTrue(service.claimDue(database, 10, Duration.ZERO).isEmpty());
+        assertTrue(service.findAll(database).isEmpty());
         assertEquals(1, service.countRows(database));
-        final var retained = service.findAll(database).getFirst();
-        assertEquals(TupleReplicationOutboxStatus.SUCCEEDED, retained.getStatus());
-        final var payload = new ObjectMapper().readTree(retained.getPayloadJson());
-        assertEquals(entry.getId().toString(), payload.get("eventId").asText());
-        assertTrue(payload.get("eventSequence").asLong() > 0);
+        assertEquals(TupleReplicationOutboxStatus.SUCCEEDED.name(), service.status(database, entry.getId()));
+        try (var dataSource = service.getDataSource(database); var connection = dataSource.getConnection()) {
+            final var retained = service.readRange(connection, 0,
+                    service.readJournalState(connection).committedThrough(), 10).getFirst();
+            assertEquals(entry.getPayloadJson(), retained.payloadJson());
+            final var payload = new ObjectMapper().readTree(retained.payloadJson());
+            assertEquals(entry.getId().toString(), payload.get("eventId").asText());
+            assertTrue(payload.get("eventSequence").asLong() > 0);
+        }
     }
 
     @Test
@@ -78,6 +83,8 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
         service.markFailed(database, entry.getId(), "replication unavailable", Duration.ofMinutes(5), 2);
 
         assertEquals(TupleReplicationOutboxStatus.FAILED.name(), service.status(database, entry.getId()));
+        assertEquals(List.of(entry.getId()), service.findAll(database).stream()
+                .map(TupleReplicationOutboxEntry::getId).toList());
         assertTrue(service.claimDue(database, 10, Duration.ZERO).isEmpty());
         final var manual = service.claim(database, entry.getId(), Duration.ofMinutes(5));
         assertTrue(manual.isPresent());

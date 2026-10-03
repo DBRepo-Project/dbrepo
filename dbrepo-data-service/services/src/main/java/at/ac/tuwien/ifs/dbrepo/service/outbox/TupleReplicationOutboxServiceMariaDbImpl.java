@@ -338,6 +338,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         final String statement = """
                 SELECT %s
                 FROM tuple_replication_notification_outbox
+                WHERE status <> 'SUCCEEDED'
                 ORDER BY event_sequence ASC
                 """.formatted(SELECT_COLUMNS);
         final List<TupleReplicationOutboxEntry> entries = new ArrayList<>();
