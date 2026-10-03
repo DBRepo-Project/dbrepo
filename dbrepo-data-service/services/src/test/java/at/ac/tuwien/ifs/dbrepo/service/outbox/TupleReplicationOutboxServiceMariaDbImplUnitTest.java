@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,11 +21,13 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
 
     @Test
-    public void enqueueShouldPersistClaimAndDeleteOnSuccess() throws Exception {
+    public void enqueueShouldRetainStableEventIdentityAndHistoryAfterSuccess() throws Exception {
         final TestTupleReplicationOutboxService service = service("success");
         final Database database = database();
         final Table table = table();
@@ -47,7 +50,12 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
         service.markSucceeded(database, entry.getId());
 
         assertTrue(service.claimDue(database, 10, Duration.ZERO).isEmpty());
-        assertEquals(0, service.countRows(database));
+        assertEquals(1, service.countRows(database));
+        final var retained = service.findAll(database).getFirst();
+        assertEquals(TupleReplicationOutboxStatus.SUCCEEDED, retained.getStatus());
+        final var payload = new ObjectMapper().readTree(retained.getPayloadJson());
+        assertEquals(entry.getId().toString(), payload.get("eventId").asText());
+        assertTrue(payload.get("eventSequence").asLong() > 0);
     }
 
     @Test
@@ -76,7 +84,31 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
         assertEquals(2, manual.get().getAttempts());
         assertTrue(service.claim(database, entry.getId(), Duration.ofMinutes(5)).isEmpty());
         service.markSucceeded(database, entry.getId());
-        assertEquals(0, service.countRows(database));
+        assertEquals(1, service.countRows(database));
+    }
+
+    @Test
+    public void rollbackReusesSequenceWithoutMutatingCallerPayload() throws Exception {
+        final var service = service("rollback");
+        final var database = database();
+        final var table = table();
+        final var payload = DataReplicationDto.builder().build();
+        try (var dataSource = service.getDataSource(database); var connection = dataSource.getConnection()) {
+            service.ensureTableExists(connection);
+            assertThrows(SQLException.class, () -> service.enqueue(connection, database, table, HttpMethod.POST, payload));
+            connection.setAutoCommit(false);
+            service.enqueue(connection, database, table, HttpMethod.POST, payload);
+            assertNull(payload.getEventId());
+            assertNull(payload.getEventSequence());
+            connection.rollback();
+            assertEquals(0, service.readJournalState(connection).committedThrough());
+            service.enqueue(connection, database, table, HttpMethod.POST, payload);
+            connection.commit();
+            assertEquals(1, service.readJournalState(connection).committedThrough());
+            final var event = service.readRange(connection, 0, 1, 10).getFirst();
+            assertEquals(1, event.sequence());
+            assertEquals(event.eventId().toString(), new ObjectMapper().readTree(event.payloadJson()).get("eventId").asText());
+        }
     }
 
     private TestTupleReplicationOutboxService service(String name) {

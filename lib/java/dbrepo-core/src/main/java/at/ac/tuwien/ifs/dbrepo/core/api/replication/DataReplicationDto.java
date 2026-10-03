@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -22,4 +24,11 @@ public class DataReplicationDto {
     private DatabaseDto database;
 
     private TableDto table;
+
+    @Schema(description = "Stable source event identity, retained across retries")
+    private UUID eventId;
+
+    @Schema(description = "Source database journal sequence; new events follow committed transaction order. "
+            + "Migrated legacy sequences do not establish historical completeness")
+    private Long eventSequence;
 }

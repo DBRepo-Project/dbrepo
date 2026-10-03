@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DataConnector;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import java.util.UUID;
 public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector implements TupleReplicationOutboxService {
 
     private static final String TABLE_NAME = "tuple_replication_notification_outbox";
+    private static final String COUNTER_TABLE = "tuple_replication_journal_counter";
     private static final String SELECT_COLUMNS = """
             id, database_id, table_id, http_method, payload, status, attempts, last_error,
             created, last_modified, next_attempt_at
@@ -63,12 +65,16 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         if (connection.getAutoCommit()) {
             throw new SQLException("Tuple replication must be enqueued inside the data transaction");
         }
+        final UUID eventId = UUID.randomUUID();
+        final long sequence = nextSequence(connection);
+        final DataReplicationDto event = new DataReplicationDto(payload.getTuple(), payload.getDatabase(),
+                payload.getTable(), eventId, sequence);
         final TupleReplicationOutboxEntry entry = TupleReplicationOutboxEntry.builder()
-                .id(UUID.randomUUID())
+                .id(eventId)
                 .databaseId(database.getId())
                 .tableId(table.getId())
                 .httpMethod(method)
-                .payloadJson(writePayload(payload))
+                .payloadJson(writePayload(event))
                 .status(TupleReplicationOutboxStatus.PENDING)
                 .attempts(0)
                 .created(Instant.now())
@@ -76,8 +82,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 .build();
         final String statement = """
                 INSERT INTO tuple_replication_notification_outbox
-                    (id, database_id, table_id, http_method, payload, status, attempts, created, next_attempt_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (id, database_id, table_id, http_method, payload, status, attempts, created, next_attempt_at, event_sequence)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, entry.getId().toString());
@@ -89,9 +95,89 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             preparedStatement.setInt(7, entry.getAttempts());
             preparedStatement.setTimestamp(8, Timestamp.from(entry.getCreated()));
             preparedStatement.setTimestamp(9, Timestamp.from(entry.getNextAttemptAt()));
+            preparedStatement.setLong(10, sequence);
             preparedStatement.executeUpdate();
         }
         return entry;
+    }
+
+    private long nextSequence(Connection connection) throws SQLException {
+        // One database-wide lock serializes commits; replace with a commit-log coordinate if throughput requires it.
+        final long previous;
+        try (PreparedStatement statement = connection.prepareStatement("SELECT last_sequence, initialized FROM "
+                + COUNTER_TABLE + " WHERE id = 1 FOR UPDATE"); ResultSet result = statement.executeQuery()) {
+            if (!result.next() || !result.getBoolean("initialized")) {
+                throw new SQLException("Prepare the source journal before starting the data transaction");
+            }
+            previous = result.getLong("last_sequence");
+        }
+        if (previous == Long.MAX_VALUE) {
+            throw new SQLException("Source journal sequence exhausted");
+        }
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE " + COUNTER_TABLE
+                + " SET last_sequence = ? WHERE id = 1")) {
+            statement.setLong(1, previous + 1);
+            statement.executeUpdate();
+        }
+        return previous + 1;
+    }
+
+    public record JournalState(long committedThrough, long legacyThrough) { }
+
+    public record JournalEntry(long sequence, UUID eventId, UUID databaseId, UUID tableId,
+                               HttpMethod method, String payloadJson) { }
+
+    /** Read on a separate consistent-snapshot connection, never the active source writer. */
+    public JournalState readJournalState(Connection connection) throws SQLException {
+        if (connection.getTransactionIsolation() == Connection.TRANSACTION_READ_UNCOMMITTED) {
+            throw new SQLException("Source journal readers must not observe uncommitted transactions");
+        }
+        try (PreparedStatement statement = connection.prepareStatement("SELECT last_sequence, legacy_through, initialized FROM "
+                + COUNTER_TABLE + " WHERE id = 1"); ResultSet result = statement.executeQuery()) {
+            if (!result.next() || !result.getBoolean("initialized")) {
+                throw new SQLException("Source journal migration is incomplete");
+            }
+            return new JournalState(result.getLong("last_sequence"), result.getLong("legacy_through"));
+        }
+    }
+
+    /** Pages are transport chunks, not transaction boundaries. Publish only through the captured JournalState boundary. */
+    public List<JournalEntry> readRange(Connection connection, long afterSequence, long throughSequence, int limit)
+            throws SQLException {
+        if (afterSequence < 0 || throughSequence < afterSequence || limit < 1) {
+            throw new IllegalArgumentException("Invalid source journal range or page size");
+        }
+        final JournalState state = readJournalState(connection);
+        if (throughSequence > state.committedThrough()) {
+            throw new SQLException("Requested journal boundary is not visible in this read view");
+        }
+        final List<JournalEntry> entries = new ArrayList<>();
+        long verifiedThrough = Math.max(afterSequence, state.legacyThrough());
+        try (PreparedStatement statement = connection.prepareStatement("SELECT event_sequence, id, database_id, table_id, "
+                + "http_method, payload FROM " + TABLE_NAME
+                + " WHERE event_sequence > ? AND event_sequence <= ? ORDER BY event_sequence LIMIT ?")) {
+            statement.setLong(1, afterSequence);
+            statement.setLong(2, throughSequence);
+            statement.setInt(3, limit);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    final long sequence = result.getLong("event_sequence");
+                    if (sequence > state.legacyThrough()) {
+                        if (sequence - 1 != verifiedThrough) {
+                            throw new SQLException("Source journal has a gap after sequence " + verifiedThrough);
+                        }
+                        verifiedThrough = sequence;
+                    }
+                    entries.add(new JournalEntry(sequence, UUID.fromString(result.getString("id")),
+                            UUID.fromString(result.getString("database_id")), UUID.fromString(result.getString("table_id")),
+                            HttpMethod.valueOf(result.getString("http_method")), result.getString("payload")));
+                }
+            }
+        }
+        if (entries.size() < limit && verifiedThrough < throughSequence) {
+            throw new SQLException("Source journal is missing events through sequence " + throughSequence);
+        }
+        return List.copyOf(entries);
     }
 
     @Override
@@ -110,8 +196,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             throws SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
             ensureTableExists(connection);
+            connection.setAutoCommit(false);
             final Instant staleBefore = Instant.now().minus(processingTimeout);
             final Optional<TupleReplicationOutboxEntry> entry = findClaimable(connection, id, staleBefore);
             if (entry.isEmpty() || !markProcessing(connection, entry.get().getId(), staleBefore, true)) {
@@ -132,8 +218,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             throws SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
             ensureTableExists(connection);
+            connection.setAutoCommit(false);
             final List<TupleReplicationOutboxEntry> entries = findDue(connection, limit,
                     Instant.now(), Instant.now().minus(processingTimeout));
             final List<TupleReplicationOutboxEntry> claimed = new ArrayList<>();
@@ -156,8 +242,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
             ensureTableExists(connection);
-            try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM " + TABLE_NAME
-                    + " WHERE id = ?")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + TABLE_NAME
+                    + " SET status = 'SUCCEEDED', next_attempt_at = NULL, last_modified = CURRENT_TIMESTAMP(6) WHERE id = ?")) {
                 preparedStatement.setString(1, id.toString());
                 preparedStatement.executeUpdate();
             }
@@ -171,8 +257,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             throws SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
             ensureTableExists(connection);
+            connection.setAutoCommit(false);
             final Optional<TupleReplicationOutboxEntry> entry = findById(connection, id);
             if (entry.isEmpty()) {
                 connection.commit();
@@ -252,7 +338,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         final String statement = """
                 SELECT %s
                 FROM tuple_replication_notification_outbox
-                ORDER BY created ASC
+                ORDER BY event_sequence ASC
                 """.formatted(SELECT_COLUMNS);
         final List<TupleReplicationOutboxEntry> entries = new ArrayList<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement);
@@ -271,7 +357,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 FROM tuple_replication_notification_outbox
                 WHERE (status = ? AND next_attempt_at <= ?)
                    OR (status = ? AND last_modified <= ?)
-                ORDER BY created ASC
+                ORDER BY event_sequence ASC
                 LIMIT ?
                 """.formatted(SELECT_COLUMNS);
         final List<TupleReplicationOutboxEntry> entries = new ArrayList<>();
@@ -327,9 +413,23 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
 
     @Override
     public void ensureTableExists(Connection connection) throws SQLException {
+        if (!connection.getAutoCommit()) {
+            throw new SQLException("Prepare source journal schema before starting a transaction");
+        }
+        try (ResultSet tables = connection.getMetaData().getTables(connection.getCatalog(), null, COUNTER_TABLE, null)) {
+            if (tables.next()) {
+                try (PreparedStatement ready = connection.prepareStatement("SELECT initialized FROM " + COUNTER_TABLE
+                        + " WHERE id = 1"); ResultSet result = ready.executeQuery()) {
+                    if (result.next() && result.getBoolean(1)) {
+                        return;
+                    }
+                }
+            }
+        }
         final String statement = """
                 CREATE TABLE IF NOT EXISTS tuple_replication_notification_outbox (
                     id              VARCHAR(36)  NOT NULL,
+                    event_sequence  BIGINT UNIQUE,
                     database_id     VARCHAR(36)  NOT NULL,
                     table_id        VARCHAR(36)  NOT NULL,
                     http_method     VARCHAR(16)  NOT NULL,
@@ -343,10 +443,129 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                     PRIMARY KEY (id),
                     INDEX idx_tuple_replication_outbox_due (status, next_attempt_at),
                     INDEX idx_tuple_replication_outbox_table (table_id)
-                )
+                ) ENGINE=InnoDB
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
+        }
+        try (ResultSet columns = connection.getMetaData().getColumns(connection.getCatalog(), null, TABLE_NAME, "event_sequence")) {
+            if (!columns.next()) {
+                try (PreparedStatement upgrade = connection.prepareStatement("ALTER TABLE " + TABLE_NAME
+                        + " ADD COLUMN IF NOT EXISTS event_sequence BIGINT UNIQUE")) {
+                    upgrade.executeUpdate();
+                }
+            } else if ("YES".equals(columns.getString("IS_AUTOINCREMENT"))) {
+                try (PreparedStatement upgrade = connection.prepareStatement("ALTER TABLE " + TABLE_NAME
+                        + " MODIFY COLUMN event_sequence BIGINT")) {
+                    upgrade.executeUpdate();
+                }
+            }
+        }
+        try (PreparedStatement counter = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + COUNTER_TABLE
+                + " (id INT PRIMARY KEY, last_sequence BIGINT NOT NULL, legacy_through BIGINT NOT NULL,"
+                + " initialized BOOLEAN NOT NULL) ENGINE=InnoDB")) {
+            counter.executeUpdate();
+        }
+        if ("MariaDB".equals(connection.getMetaData().getDatabaseProductName())) {
+            try (PreparedStatement engines = connection.prepareStatement("SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES"
+                    + " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (?, ?)")) {
+                engines.setString(1, TABLE_NAME);
+                engines.setString(2, COUNTER_TABLE);
+                try (ResultSet result = engines.executeQuery()) {
+                    while (result.next()) {
+                        if (!"InnoDB".equalsIgnoreCase(result.getString("ENGINE"))) {
+                            throw new SQLException("Source journal requires InnoDB: " + result.getString("TABLE_NAME"));
+                        }
+                    }
+                }
+            }
+        }
+        try (PreparedStatement seed = connection.prepareStatement("INSERT INTO " + COUNTER_TABLE
+                + " (id, last_sequence, legacy_through, initialized) VALUES (1, 0, 0, FALSE)"
+                + " ON DUPLICATE KEY UPDATE id = id")) {
+            seed.executeUpdate();
+        }
+        connection.setAutoCommit(false);
+        try {
+            migrateLegacyEntries(connection);
+            connection.commit();
+        } catch (SQLException | RuntimeException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
+    }
+
+    private void migrateLegacyEntries(Connection connection) throws SQLException {
+        try (PreparedStatement lock = connection.prepareStatement("SELECT initialized FROM " + COUNTER_TABLE
+                + " WHERE id = 1 FOR UPDATE"); ResultSet result = lock.executeQuery()) {
+            if (!result.next()) {
+                throw new SQLException("Source journal counter is missing");
+            }
+            if (result.getBoolean(1)) {
+                return;
+            }
+        }
+        long sequence;
+        try (PreparedStatement maximum = connection.prepareStatement("SELECT COALESCE(MAX(event_sequence), 0) FROM "
+                + TABLE_NAME); ResultSet result = maximum.executeQuery()) {
+            result.next();
+            sequence = result.getLong(1);
+        }
+        try (PreparedStatement select = connection.prepareStatement("SELECT id, event_sequence, payload FROM " + TABLE_NAME
+                + " ORDER BY created, id FOR UPDATE"); ResultSet rows = select.executeQuery();
+             PreparedStatement update = connection.prepareStatement("UPDATE " + TABLE_NAME
+                     + " SET event_sequence = ?, payload = ? WHERE id = ?")) {
+            while (rows.next()) {
+                final String id = rows.getString("id");
+                final long existing = rows.getLong("event_sequence");
+                final long assigned;
+                if (rows.wasNull()) {
+                    if (sequence == Long.MAX_VALUE) {
+                        throw new SQLException("Source journal sequence exhausted during migration");
+                    }
+                    assigned = ++sequence;
+                } else {
+                    if (existing <= 0) {
+                        throw new SQLException("Invalid legacy event sequence for " + id);
+                    }
+                    assigned = existing;
+                }
+                final ObjectNode payload;
+                try {
+                    UUID.fromString(id);
+                    final String originalPayload = rows.getString("payload");
+                    final var json = objectMapper.readTree(originalPayload);
+                    if (!(json instanceof ObjectNode object)) {
+                        throw new SQLException("Legacy event payload must be an object: " + id);
+                    }
+                    payload = object;
+                    if (payload.hasNonNull("eventId") && !id.equals(payload.get("eventId").asText())) {
+                        throw new SQLException("Conflicting legacy event identity: " + id);
+                    }
+                    if (payload.hasNonNull("eventSequence") && (!payload.get("eventSequence").isIntegralNumber()
+                            || !payload.get("eventSequence").canConvertToLong()
+                            || payload.get("eventSequence").longValue() != assigned)) {
+                        throw new SQLException("Conflicting legacy event sequence: " + id);
+                    }
+                    final boolean alreadyIdentified = payload.hasNonNull("eventId") && payload.hasNonNull("eventSequence");
+                    payload.put("eventId", id);
+                    payload.put("eventSequence", assigned);
+                    update.setLong(1, assigned);
+                    update.setString(2, alreadyIdentified ? originalPayload : objectMapper.writeValueAsString(payload));
+                    update.setString(3, id);
+                    update.executeUpdate();
+                } catch (JsonProcessingException | IllegalArgumentException e) {
+                    throw new SQLException("Invalid legacy source event " + id, e);
+                }
+            }
+        }
+        try (PreparedStatement finish = connection.prepareStatement("UPDATE " + COUNTER_TABLE
+                + " SET last_sequence = ?, legacy_through = ?, initialized = TRUE WHERE id = 1")) {
+            finish.setLong(1, sequence);
+            finish.setLong(2, sequence);
+            finish.executeUpdate();
         }
     }
 
