@@ -24,6 +24,13 @@ class ReplicationGatewayRoutesTest(unittest.TestCase):
             for suffix in ("snapshots", "snapshots/imports", f"snapshots/{TABLE}/reconcile", f"snapshots/{TABLE}/chunks/0"):
                 cases[f"{BASE}/replication/{suffix}"] = "data-service"
             cases[f"{BASE}/table/{TABLE}"] = "metadata-service"
+            cases[f"{BASE}/subset/{TABLE}/data"] = "data-service"
+            cases[f"{BASE}/view/{TABLE}/data"] = "data-service"
+            cases = {path.replace("-4111-", f"-{database_version}111-")
+                         .replace("-4222-", f"-{table_version}222-"): service
+                     for path, service in cases.items()
+                     for database_version in (3, 4, 5, 7)
+                     for table_version in (3, 4, 5, 7)}
             for path, service in cases.items():
                 with self.subTest(config=filename, path=path):
                     block = next((body for pattern, body in locations if re.search(pattern, path)), None)
