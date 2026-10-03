@@ -155,10 +155,78 @@ class IngestReplicationMariaDbIntegrationTest {
     }
 
     @Test
-    void duplicateLateRowRollsBackEveryRowEventAndHistoryAndRetainsUpload() throws Exception {
+    void duplicateCsvRowsUpdateValuesButRetainTheFirstReplicationIdentity() throws Exception {
         final ImportDto input = csv("sample_value,payload,amount\n1,first,\n2,second,\n1,duplicate,\n");
+        service.importDataset(database, table, input);
+        assertEquals(2, count("samples"));
+        assertEquals(1, count("samples WHERE sample_value = 1 AND payload = 'duplicate'"));
+        final var events = outbox.findAll(database);
+        assertEquals(3, events.size());
+        final List<String> duplicateKeys = new ArrayList<>();
+        final List<String> payloads = new ArrayList<>();
+        for (var event : events) {
+            final var tuple = json.readTree(event.getPayloadJson()).get("tuple");
+            assertEquals("POST", event.getHttpMethod().name());
+            if (tuple.get("data").get("sample_value").asInt() == 1) {
+                duplicateKeys.add(tuple.get("replicationKey").asText());
+                payloads.add(new String(tuple.get("data").get("payload").binaryValue(), StandardCharsets.UTF_8));
+            }
+        }
+        assertEquals(2, duplicateKeys.size());
+        assertEquals(duplicateKeys.getFirst(), duplicateKeys.getLast());
+        assertTrue(payloads.containsAll(List.of("first", "duplicate")));
+        assertStoredBlob(duplicateKeys.getFirst(), "duplicate".getBytes(StandardCharsets.UTF_8));
+        assertFalse(Files.exists(Path.of(input.getLocation())));
+    }
+
+    @Test
+    void invalidLateRowRollsBackEarlierUpsertsEventsAndHistoryAndRetainsUpload() throws Exception {
+        final ImportDto input = csv("sample_value,payload,amount\n1,first,\n1,updated,\n2,second,\n,invalid,\n");
         assertThrows(MalformedException.class, () -> service.importDataset(database, table, input));
         assertRolledBack(input);
+    }
+
+    @Test
+    void reimportRetainsExistingKeyForPrimaryAndAlternateUniqueKeyMatches() throws Exception {
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("INSERT INTO samples VALUES ('original', 1, 'before', 1)");
+        }
+        service.importDataset(database, table, csv("replication_key,sample_value,payload,amount\n"
+                + "replacement,1,alternate,12345678901234567890.123456789012345678\n"
+                + "original,2,primary,99999999999999999999.123456789012345678\n"));
+        assertEquals(1, count("samples"));
+        assertEquals(1, count("samples WHERE replication_key = 'original' AND sample_value = 2 "
+                + "AND amount = 99999999999999999999.123456789012345678"));
+        assertStoredBlob("original", "primary".getBytes(StandardCharsets.UTF_8));
+        final var events = outbox.findAll(database);
+        assertEquals(2, events.size());
+        for (var event : events) {
+            final var tuple = json.readTree(event.getPayloadJson()).get("tuple");
+            assertEquals("original", tuple.get("replicationKey").asText());
+            assertEquals("original", tuple.get("data").get("replication_key").asText());
+            final BigDecimal expected = tuple.get("data").get("sample_value").asInt() == 1
+                    ? new BigDecimal("12345678901234567890.123456789012345678")
+                    : new BigDecimal("99999999999999999999.123456789012345678");
+            assertEquals(expected, tuple.get("data").get("amount").decimalValue());
+        }
+    }
+
+    @Test
+    void failedOutboxRollsBackAnExistingRowReplacementAndItsHistory() throws Exception {
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("INSERT INTO samples VALUES ('original', 1, 'before', 1)");
+            outbox.ensureTableExists(connection);
+            statement.execute("CREATE TRIGGER fail_ingest_outbox BEFORE INSERT ON tuple_replication_notification_outbox "
+                    + "FOR EACH ROW BEGIN IF JSON_VALUE(NEW.payload, '$.tuple.data.sample_value') = 2 THEN "
+                    + "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'injected ingest outbox failure'; END IF; END");
+        }
+        final ImportDto input = csv("sample_value,payload,amount\n1,updated,2\n2,inserted,3\n");
+        assertThrows(MalformedException.class, () -> service.importDataset(database, table, input));
+        assertEquals(1, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(1, count("samples WHERE replication_key = 'original' AND sample_value = 1 AND amount = 1"));
+        assertStoredBlob("original", "before".getBytes(StandardCharsets.UTF_8));
+        assertEquals(0, outbox.findAll(database).size());
+        assertTrue(Files.exists(Path.of(input.getLocation())));
     }
 
     @Test
@@ -205,14 +273,15 @@ class IngestReplicationMariaDbIntegrationTest {
     @Test
     void nonReplicatedTableWithoutKeyRetainsDatabaseCsvConversions() throws Exception {
         database.setReplicaUrls(Map.of());
+        database.setCreationLocation(null);
         table.setColumns(table.getColumns().stream().filter(c -> !"replication_key".equals(c.getInternalName())).toList());
         try (Connection connection = connection(); var statement = connection.createStatement()) {
             statement.execute("DROP TABLE samples");
             statement.execute("CREATE TABLE samples (sample_value INT NOT NULL UNIQUE, payload LONGBLOB, "
                     + "amount DECIMAL(38,18)) ENGINE=InnoDB WITH SYSTEM VERSIONING");
         }
-        service.importDataset(database, table, csv("sample_value,payload,amount\n1,literal,1.25\n"));
-        assertEquals(1, count("samples WHERE sample_value = 1 AND amount = 1.25"));
+        service.importDataset(database, table, csv("sample_value,payload,amount\n1,literal,1.25\n1,replaced,2.5\n"));
+        assertEquals(1, count("samples WHERE sample_value = 1 AND amount = 2.5 AND payload = 'replaced'"));
     }
 
     @Test
@@ -256,6 +325,40 @@ class IngestReplicationMariaDbIntegrationTest {
     void concurrentImportsRemainIndependent() throws Exception {
         final ImportDto first = csv("sample_value,payload,amount\n1,first,1\n2,first,2\n");
         final ImportDto second = csv("sample_value,payload,amount\n3,second,3\n4,second,4\n");
+        importConcurrently(first, second);
+        assertEquals(4, count("samples"));
+        assertEquals(4, outbox.findAll(database).size());
+        assertEquals(2, count("samples WHERE sample_value IN (1,2) AND payload = 'first'"));
+        assertEquals(2, count("samples WHERE sample_value IN (3,4) AND payload = 'second'"));
+        assertNoStagingTables();
+    }
+
+    @Test
+    void concurrentImportsOfTheSameUniqueKeyRetainOneIdentity() throws Exception {
+        importConcurrently(csv("sample_value,payload,amount\n1,first,1\n"),
+                csv("sample_value,payload,amount\n1,second,2\n"));
+        assertEquals(1, count("samples"));
+        final var events = outbox.findAll(database);
+        assertEquals(2, events.size());
+        final String key = json.readTree(events.getFirst().getPayloadJson()).get("tuple").get("replicationKey").asText();
+        assertEquals(key, json.readTree(events.getLast().getPayloadJson()).get("tuple").get("replicationKey").asText());
+        assertNoStagingTables();
+    }
+
+    @Test
+    void keyOnlyTableSupportsNoOpDuplicateImports() throws Exception {
+        table.setColumns(List.of(column("replication_key", ColumnType.VARCHAR)));
+        try (Connection connection = connection(); var statement = connection.createStatement()) {
+            statement.execute("DROP TABLE samples");
+            statement.execute("CREATE TABLE samples (replication_key VARCHAR(36) PRIMARY KEY) "
+                    + "ENGINE=InnoDB WITH SYSTEM VERSIONING");
+        }
+        service.importDataset(database, table, csv("replication_key\nidentity\nidentity\n"));
+        assertEquals(1, count("samples"));
+        assertEquals(2, outbox.findAll(database).size());
+    }
+
+    private void importConcurrently(ImportDto first, ImportDto second) throws Exception {
         final CountDownLatch start = new CountDownLatch(1);
         try (var workers = Executors.newFixedThreadPool(2)) {
             final var a = workers.submit(() -> {
@@ -272,11 +375,6 @@ class IngestReplicationMariaDbIntegrationTest {
             a.get(60, TimeUnit.SECONDS);
             b.get(60, TimeUnit.SECONDS);
         }
-        assertEquals(4, count("samples"));
-        assertEquals(4, outbox.findAll(database).size());
-        assertEquals(2, count("samples WHERE sample_value IN (1,2) AND payload = 'first'"));
-        assertEquals(2, count("samples WHERE sample_value IN (3,4) AND payload = 'second'"));
-        assertNoStagingTables();
     }
 
     @Test

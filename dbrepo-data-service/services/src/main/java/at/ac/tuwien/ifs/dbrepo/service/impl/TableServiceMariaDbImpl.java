@@ -281,7 +281,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             replicationService.prepare(connection, database, table);
             connection.setAutoCommit(false);
             try (PreparedStatement statement = connection.prepareStatement(
-                    mariaDbMapper.tupleToRawCreateQuery(database.getInternalName(), table, tuple))) {
+                    importUpsertQuery(database, table, columns, replicate))) {
                 // Stream Spark partitions; no shared staging table or per-row commits.
                 final Iterator<Row> rows = dataset.toLocalIterator();
                 while (rows.hasNext()) {
@@ -296,16 +296,20 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         // Retain INSERT SELECT's database-side conversion of CSV text, including BLOB literals.
                         statement.setObject(index++, value);
                     }
-                    statement.executeUpdate();
                     if (replicate) {
-                        replicationService.enqueue(connection, selectTupleWithTimestamps(connection, database, table,
-                                replicationKeyLookup(values.get("replication_key"))), database, table, HttpMethod.POST);
+                        try (ResultSet result = statement.executeQuery()) {
+                            if (!result.next()) {
+                                throw new SQLException("Imported tuple was not returned by the database");
+                            }
+                            // POST is an identity-keyed upsert at the receiver, including duplicate CSV rows.
+                            replicationService.enqueue(connection, tupleWithTimestamps(result, columns), database,
+                                    table, HttpMethod.POST);
+                        }
+                    } else {
+                        statement.executeUpdate();
                     }
                 }
                 connection.commit();
-            } catch (QueryMalformedException | StorageUnavailableException | StorageNotFoundException e) {
-                connection.rollback();
-                throw e;
             } catch (Exception e) {
                 connection.rollback();
                 throw new MalformedException("Failed to import dataset: " + e.getMessage(), e);
@@ -313,6 +317,19 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         }
         storageService.deleteObject(data.getLocation());
         log.info("Imported dataset into table {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
+    private String importUpsertQuery(Database database, Table table, List<String> columns, boolean replicate) {
+        final List<String> quoted = columns.stream().map(column -> "`" + column.replace("`", "``") + "`").toList();
+        final List<String> updates = quoted.stream().filter(column -> !"`replication_key`".equals(column))
+                .map(column -> column + " = VALUES(" + column + ")").toList();
+        // Preserve identity even when a different unique key selects the existing row.
+        final String onDuplicate = updates.isEmpty() ? "`replication_key` = `replication_key`" : String.join(", ", updates);
+        return "INSERT INTO `" + database.getInternalName().replace("`", "``") + "`.`"
+                + table.getInternalName().replace("`", "``") + "` (" + String.join(", ", quoted) + ") VALUES ("
+                + String.join(", ", Collections.nCopies(columns.size(), "?")) + ") ON DUPLICATE KEY UPDATE "
+                + onDuplicate + (replicate ? " RETURNING " + String.join(", ", quoted)
+                + ", ROW_START AS inserted_at, ROW_END AS deleted_at" : "");
     }
 
     private Dataset<Row> importCsv(List<String> columns, ImportDto data) throws StorageNotFoundException,

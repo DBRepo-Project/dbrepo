@@ -15,19 +15,21 @@ There are no mocked SQL statements or outbox writes.
 - There is no staging table to share, overwrite, leak or implicitly commit.
 - CSV columns remain positional. Supply all table columns, or omit the known
   `replication_key` column. Omitted/null keys are generated independently for
-  every row, even when there are no replica peers. Supplied keys are retained.
+  inserted row, even when there are no replica peers. Supplied keys are retained
+  for inserts; duplicate rows retain their existing replication identity.
 - Remote-origin databases and tables reject imports at the service boundary.
   Existing receiver tuple APIs and their signatures are unchanged.
 - CSV values retain database-side text conversion, including literal BLOB
   contents, rather than being interpreted as uploaded S3 object references.
   JDBC BLOB results become byte arrays before outbox JSON serialization.
 - Successful imports delete the uploaded CSV; failed imports retain it.
-- Compatibility decision for parent integration: this implementation is
-  insert-only. The former staging merge used `ON DUPLICATE KEY UPDATE` and could
-  silently replace an existing replication identity. Duplicate keys now abort
-  the whole import. If re-import updates are required, add explicit
-  identity-preserving upsert handling and corresponding update events; do not
-  restore a blind merge that changes replication keys.
+- The original `ON DUPLICATE KEY UPDATE` behavior is retained for both primary
+  and alternate unique-key conflicts, except that existing `replication_key`
+  values are never overwritten. MariaDB `RETURNING` supplies the stored row and
+  timestamps for a full-row POST upsert event per input row. Both existing and
+  parent receiver POST paths are identity-keyed upserts. Repeated rows and
+  no-op duplicates are supported; a later failure rolls back the entire import.
+  Legacy databases without an origin remain writable.
 
 ## Run
 
