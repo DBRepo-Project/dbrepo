@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -15,6 +16,8 @@ import java.util.UUID;
 public interface SubsetService {
 
     void upgradeQueryStore(Database database) throws SQLException;
+
+    void replicate(Database database, SubsetReplicationDto subset) throws SQLException;
 
     /**
      * Creates a subset from the given statement at given time in the given database.

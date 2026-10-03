@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -83,6 +84,16 @@ public class SubsetEndpoint {
     public ResponseEntity<Void> upgradeQueryStore(@PathVariable UUID databaseId) throws SQLException,
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
         subsetService.upgradeQueryStore(metadataService.getDatabase(databaseId));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/replicate")
+    @PreAuthorize("hasAuthority('replication')")
+    @Operation(summary = "Receive canonical subset state", hidden = true)
+    public ResponseEntity<Void> replicate(@PathVariable UUID databaseId,
+                                           @Valid @RequestBody SubsetReplicationDto subset) throws SQLException,
+            DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
+        subsetService.replicate(metadataService.getDatabase(databaseId), subset);
         return ResponseEntity.noContent().build();
     }
 

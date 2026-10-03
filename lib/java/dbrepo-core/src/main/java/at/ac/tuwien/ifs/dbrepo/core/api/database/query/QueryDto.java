@@ -38,7 +38,7 @@ public class QueryDto {
 
     @NotNull
     @Schema(description = "The timestamp when the query was executed", example = "2022-01-01 08:00:00.000000")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "UTC")
     private Instant execution;
 
     @NotNull
@@ -83,5 +83,8 @@ public class QueryDto {
     @JsonProperty("creation_location")
     @Schema(description = "The site where the query was initially created", example = "http://localhost:8080", nullable = true)
     private String creationLocation;
+
+    @JsonProperty("replication_revision")
+    private Long replicationRevision;
 
 }

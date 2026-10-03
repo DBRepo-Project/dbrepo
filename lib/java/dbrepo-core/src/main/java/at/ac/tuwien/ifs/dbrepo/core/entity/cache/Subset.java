@@ -51,6 +51,10 @@ public class Subset {
     @NotNull
     private Instant execution;
 
+    private String creationLocation;
+
+    private Long replicationRevision;
+
     @TimeToLive
     private Long exp;
 }

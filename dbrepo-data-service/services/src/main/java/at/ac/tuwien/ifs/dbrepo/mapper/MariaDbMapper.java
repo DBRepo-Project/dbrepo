@@ -178,8 +178,37 @@ public interface MariaDbMapper {
                     created_by VARCHAR(255), query TEXT NOT NULL, query_normalized TEXT NOT NULL,
                     is_persisted BOOLEAN NOT NULL, query_hash VARCHAR(255) NOT NULL,
                     result_hash VARCHAR(255), result_number BIGINT,
+                    creation_location VARCHAR(512), replication_revision BIGINT NOT NULL DEFAULT 0,
                     INDEX query_fixity (query_hash, result_hash)
-                ) WITH SYSTEM VERSIONING
+                ) ENGINE=InnoDB WITH SYSTEM VERSIONING
+                """;
+    }
+
+    default String queryStoreCreateSubsetOutboxRawQuery() {
+        return """
+                CREATE TABLE IF NOT EXISTS qs_subset_outbox (
+                    query_id VARCHAR(36) NOT NULL,
+                    target_site VARCHAR(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+                    revision BIGINT NOT NULL,
+                    attempts BIGINT NOT NULL DEFAULT 0,
+                    next_attempt DATETIME(6) NOT NULL DEFAULT UTC_TIMESTAMP(6),
+                    last_error TEXT,
+                    PRIMARY KEY (query_id, target_site),
+                    INDEX subset_due (next_attempt)
+                ) ENGINE=InnoDB
+                """;
+    }
+
+    default String queryStoreEnqueueSubsetRawQuery() {
+        return """
+                INSERT INTO qs_subset_outbox (query_id, target_site, revision)
+                SELECT q.id, targets.site, q.replication_revision FROM qs_queries q
+                JOIN JSON_TABLE(COALESCE(@dbrepo_subset_targets, '[]'), '$[*]'
+                    COLUMNS (site VARCHAR(512) PATH '$')) targets
+                WHERE q.id = ? AND q.creation_location IS NOT NULL AND q.replication_revision > 0
+                ON DUPLICATE KEY UPDATE
+                    next_attempt = IF(VALUES(revision) > revision, UTC_TIMESTAMP(6), next_attempt),
+                    revision = GREATEST(revision, VALUES(revision))
                 """;
     }
 
@@ -272,20 +301,27 @@ public interface MariaDbMapper {
                     EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (', normalized_query, ')');
                     CALL hash_table(work_table, result_digest, result_count);
                     EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
-                    SET identity_lock = SHA2(CONCAT(DATABASE(), ':', query_digest, ':', result_digest),256);
+                    SET identity_lock = SHA2(CONCAT(DATABASE(), ':', COALESCE(@dbrepo_subset_origin, ''),
+                        ':', query_digest, ':', result_digest),256);
                     SET lock_acquired = GET_LOCK(identity_lock, 10);
                     IF lock_acquired IS NULL OR NOT lock_acquired THEN
                         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Query identity is busy; retry';
                     END IF;
+                    START TRANSACTION;
                     SET queryId = (SELECT id FROM qs_queries
                         WHERE query_hash = query_digest AND result_hash = result_digest
+                            AND creation_location <=> @dbrepo_subset_origin
                         ORDER BY created, id LIMIT 1);
                     IF queryId IS NULL THEN
                         SET queryId = UUID();
                         INSERT INTO qs_queries(id, created_by, query, query_normalized, is_persisted,
-                            query_hash, result_hash, result_number, executed)
+                            query_hash, result_hash, result_number, executed, creation_location, replication_revision)
                         VALUES(queryId, username, original_query, normalized_query, FALSE,
-                            query_digest, result_digest, result_count, selected_at);
+                            query_digest, result_digest, result_count, selected_at, @dbrepo_subset_origin,
+                            IF(@dbrepo_subset_origin IS NULL, 0, 1));
+                    END IF;
+                    IF @dbrepo_subset_origin IS NOT NULL THEN
+                """ + queryStoreEnqueueSubsetRawQuery().replace("?", "queryId") + ";\n" + """
                     END IF;
                     COMMIT;
                     DO RELEASE_LOCK(identity_lock);
@@ -331,7 +367,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreFindQueryRawQuery() {
-        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries` q WHERE q.`id` = ?";
+        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision` FROM `qs_queries` q WHERE q.`id` = ?";
         log.trace("mapped find query statement: {}", statement);
         return statement;
     }
@@ -403,7 +439,7 @@ public interface MariaDbMapper {
     }
 
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
-        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries`");
+        final StringBuilder statement = new StringBuilder("SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision` FROM `qs_queries`");
         if (filterPersisted != null) {
             statement.append(" WHERE `is_persisted` = ?");
         }
