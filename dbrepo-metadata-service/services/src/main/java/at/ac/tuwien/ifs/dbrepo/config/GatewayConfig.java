@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -79,7 +80,10 @@ public class GatewayConfig {
 
     @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
+        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5_000);
+        factory.setReadTimeout(5_000);
+        final RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(brokerEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));

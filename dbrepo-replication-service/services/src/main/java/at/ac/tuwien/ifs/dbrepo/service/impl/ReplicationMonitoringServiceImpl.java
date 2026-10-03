@@ -16,6 +16,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -34,6 +36,8 @@ public class ReplicationMonitoringServiceImpl implements ReplicationMonitoringSe
     private static final String STATUS_UP = "UP";
     private static final String STATUS_DOWN = "DOWN";
     private static final String STATUS_DEGRADED = "DEGRADED";
+    private static final String STATUS_UNKNOWN = "UNKNOWN";
+    private static final String STATUS_UNAVAILABLE = "UNAVAILABLE";
 
     private final RestTemplate metadataServiceRestTemplate;
     private final RestTemplate dataServiceRestTemplate;
@@ -52,6 +56,7 @@ public class ReplicationMonitoringServiceImpl implements ReplicationMonitoringSe
     public ReplicationStatusDto getStatus() {
         final ReplicationServiceHealthDto metadataService = probe("metadata-service", metadataServiceRestTemplate);
         final ReplicationServiceHealthDto dataService = probe("data-service", dataServiceRestTemplate);
+        final ReplicationServiceHealthDto broker = probeBroker();
         final ReplicationServiceHealthDto replicationService = ReplicationServiceHealthDto.builder()
                 .name("replication-service")
                 .status(STATUS_UP)
@@ -61,10 +66,11 @@ public class ReplicationMonitoringServiceImpl implements ReplicationMonitoringSe
         final ReplicationOutboxStatusDto outboxes = new ReplicationOutboxStatusDto(outbox,
                 summarizeMetadataOutbox(), summarizeDataOutboxes());
         final ReplicationHealthDto health = ReplicationHealthDto.builder()
-                .status(overallStatus(metadataService, dataService, outboxes))
+                .status(overallStatus(metadataService, dataService, broker, outboxes))
                 .metadataService(metadataService)
                 .dataService(dataService)
                 .replicationService(replicationService)
+                .broker(broker)
                 .build();
         return new ReplicationStatusDto(health, outbox, outboxes);
     }
@@ -80,13 +86,26 @@ public class ReplicationMonitoringServiceImpl implements ReplicationMonitoringSe
                     .httpStatus(response.getStatusCode().value())
                     .durationMs(elapsedMillis(started))
                     .build();
-        } catch (Exception e) {
+        } catch (RestClientException e) {
+            String status = e instanceof ResourceAccessException ? STATUS_UNAVAILABLE : STATUS_UNKNOWN;
+            if (e instanceof HttpStatusCodeException httpError) {
+                status = STATUS_UNAVAILABLE;
+                try {
+                    final Map body = httpError.getResponseBodyAs(Map.class);
+                    if (body != null && (STATUS_DOWN.equals(body.get("status"))
+                            || "OUT_OF_SERVICE".equals(body.get("status")))) {
+                        status = STATUS_DOWN;
+                    }
+                } catch (RestClientException | IllegalStateException ignored) {
+                    // Failed HTTP access alone does not establish the service's own health state.
+                }
+            }
             return ReplicationServiceHealthDto.builder()
                     .name(name)
-                    .status(STATUS_DOWN)
+                    .status(status)
                     .httpStatus(httpStatus(e))
                     .durationMs(elapsedMillis(started))
-                    .error(e.getMessage())
+                    .error("Service health check could not be completed")
                     .build();
         }
     }
@@ -95,10 +114,45 @@ public class ReplicationMonitoringServiceImpl implements ReplicationMonitoringSe
         if (response.getBody() != null) {
             final Object status = response.getBody().get("status");
             if (status instanceof String value && !value.isBlank()) {
-                return value.toUpperCase(Locale.ROOT);
+                return switch (value.toUpperCase(Locale.ROOT)) {
+                    case STATUS_UP -> response.getStatusCode().is2xxSuccessful() ? STATUS_UP : STATUS_UNAVAILABLE;
+                    case STATUS_DOWN, "OUT_OF_SERVICE" -> STATUS_DOWN;
+                    default -> STATUS_UNKNOWN;
+                };
             }
         }
-        return response.getStatusCode().is2xxSuccessful() ? STATUS_UP : STATUS_DOWN;
+        return STATUS_UNKNOWN;
+    }
+
+    private ReplicationServiceHealthDto probeBroker() {
+        final long started = System.nanoTime();
+        final ReplicationServiceHealthDto result = ReplicationServiceHealthDto.builder()
+                .name("broker")
+                .status(STATUS_UNKNOWN)
+                .error("Metadata returned an unrecognized broker health response")
+                .build();
+        try {
+            final ResponseEntity<ReplicationServiceHealthDto> response = metadataServiceRestTemplate.exchange(
+                    "/api/metadata/broker/health", HttpMethod.GET, HttpEntity.EMPTY, ReplicationServiceHealthDto.class);
+            final ReplicationServiceHealthDto body = response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && body != null
+                    && body.getStatus() != null
+                    && List.of(STATUS_UP, STATUS_DOWN, STATUS_UNKNOWN, STATUS_UNAVAILABLE).contains(body.getStatus())) {
+                return body;
+            }
+            result.setHttpStatus(response.getStatusCode().value());
+        } catch (HttpStatusCodeException e) {
+            result.setStatus(e.getStatusCode().value() == 404 ? STATUS_UNKNOWN : STATUS_UNAVAILABLE);
+            result.setHttpStatus(e.getStatusCode().value());
+            result.setError("Metadata broker health endpoint unavailable (HTTP " + e.getStatusCode().value() + ")");
+        } catch (ResourceAccessException e) {
+            result.setStatus(STATUS_UNAVAILABLE);
+            result.setError("Metadata broker health endpoint is unreachable or timed out");
+        } catch (RestClientException e) {
+            result.setError("Metadata returned an unreadable broker health response");
+        }
+        result.setDurationMs(elapsedMillis(started));
+        return result;
     }
 
     private ReplicationOutboxSummaryDto summarizeLocalOutbox() {
@@ -207,12 +261,14 @@ public class ReplicationMonitoringServiceImpl implements ReplicationMonitoringSe
 
     private String overallStatus(ReplicationServiceHealthDto metadataService,
                                  ReplicationServiceHealthDto dataService,
+                                 ReplicationServiceHealthDto broker,
                                  ReplicationOutboxStatusDto outboxes) {
-        if (!STATUS_UP.equalsIgnoreCase(metadataService.getStatus())
-                || !STATUS_UP.equalsIgnoreCase(dataService.getStatus())) {
+        final List<String> statuses = List.of(metadataService.getStatus(), dataService.getStatus(), broker.getStatus());
+        if (statuses.stream().anyMatch(status -> STATUS_DOWN.equals(status) || STATUS_UNAVAILABLE.equals(status))) {
             return STATUS_DOWN;
         }
-        if (hasBacklog(outboxes.replicationService())
+        if (statuses.stream().anyMatch(status -> !STATUS_UP.equals(status))
+                || hasBacklog(outboxes.replicationService())
                 || hasBacklog(outboxes.metadataService())
                 || hasBacklog(outboxes.dataService())
                 || !outboxes.metadataService().available()
