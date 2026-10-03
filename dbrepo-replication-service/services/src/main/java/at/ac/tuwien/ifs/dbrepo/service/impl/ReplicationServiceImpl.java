@@ -7,7 +7,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewBriefDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisationDataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrlDto;
@@ -61,6 +60,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     private final RestTemplate externalReplicationRestTemplate;
     private final ObjectMapper objectMapper;
     private final ReplicationOutboxService outboxService;
+    private final HistorySnapshotTransfer snapshots;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
@@ -86,6 +86,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         this.externalReplicationRestTemplate = externalReplicationRestTemplate;
         this.objectMapper = objectMapper;
         this.outboxService = outboxService;
+        this.snapshots = new HistorySnapshotTransfer(dataServiceRestTemplate, externalReplicationRestTemplate);
     }
 
     @Override
@@ -260,6 +261,9 @@ public class ReplicationServiceImpl implements ReplicationService {
                 || request.getTuple() == null || request.getTuple().getReplicationKey() == null) {
             throw new IllegalArgumentException("Tuple replication requires database, table and tuple identity");
         }
+        if (request.getDatabase().getCreationLocation() == null) {
+            request.getDatabase().setCreationLocation(normalizedBaseUrl());
+        }
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
         final List<String> successfulReplicaUrls = new ArrayList<>();
         int successful = 0;
@@ -314,13 +318,11 @@ public class ReplicationServiceImpl implements ReplicationService {
         requirePrimaryDatabase(database);
         if (database.getReplicaUrls() == null || database.getReplicaUrls().isEmpty()) {
             log.info("Skip database data synchronization: missing replica URLs for database {}", databaseId);
-            return new DatabaseSynchronisationResult(0, 0, 0, 0);
+            return new DatabaseSynchronisationResult(0, List.of());
         }
         final List<TableDto> tables = database.getTables() == null ? List.of() : database.getTables();
         int tableCount = 0;
-        int pages = 0;
-        int tuples = 0;
-        int replicaWrites = 0;
+        final List<UUID> jobs = new ArrayList<>();
         for (TableDto table : tables) {
             if (table == null || table.getId() == null || table.getReplicaUrls() == null
                     || table.getReplicaUrls().isEmpty()) {
@@ -328,13 +330,10 @@ public class ReplicationServiceImpl implements ReplicationService {
             }
             tableCount++;
             final DataSynchronisationResult tableResult = synchroniseData(database, table, pageSize);
-            pages += tableResult.pages();
-            tuples += tableResult.tuples();
-            replicaWrites += tableResult.replicaWrites();
+            jobs.addAll(tableResult.jobs());
         }
-        log.info("Synchronized {} replicated table(s), {} tuple(s) from {} page(s) for database {} to {} replica(s)",
-                tableCount, tuples, pages, databaseId, replicaWrites);
-        return new DatabaseSynchronisationResult(tableCount, pages, tuples, replicaWrites);
+        log.info("Queued {} history synchronization jobs for {} tables of database {}", jobs.size(), tableCount, databaseId);
+        return new DatabaseSynchronisationResult(tableCount, jobs);
     }
 
     @Override
@@ -347,38 +346,26 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     private DataSynchronisationResult synchroniseData(DatabaseDto database, TableDto table, int pageSize) {
-        int page = 0;
-        int pages = 0;
-        int tuples = 0;
-        int replicaWrites = 0;
-        while (true) {
-            final ReplicationSynchronisationDataDto data = fetchReplicationData(database.getId(), table.getId(), page, pageSize);
-            final List<TupleWithTimestampsDto> pageTuples = data.getTuples() == null ? List.of() : data.getTuples();
-            if (pageTuples.isEmpty()) {
-                break;
+        final List<UUID> jobs = new ArrayList<>();
+        for (String target : targetSites(DataReplicationDto.builder().database(database).table(table).build())) {
+            if (!isLocalSite(target)) {
+                final ReplicationOutboxEntry job = outboxService.enqueue(ReplicationOutboxOperationType.HISTORY_SYNC,
+                        target, HttpMethod.POST, new HistorySyncRequest(UUID.randomUUID(), pageSize), database.getId(),
+                        table.getId(), replicaId(database.getReplicaUrls(), target), replicaId(table.getReplicaUrls(), target), null);
+                jobs.add(job.getId());
             }
-            pages++;
-            tuples += pageTuples.size();
-            for (TupleWithTimestampsDto tuple : pageTuples) {
-                replicaWrites += replicateData(DataReplicationDto.builder()
-                        .database(database)
-                        .table(table)
-                        .tuple(tuple)
-                        .build(), HttpMethod.POST);
-            }
-            if (pageTuples.size() < pageSize) {
-                break;
-            }
-            page++;
         }
-        log.info("Synchronized {} tuple(s) from {} page(s) for table {}.{} to {} replica(s)", tuples, pages,
-                database.getId(), table.getId(), replicaWrites);
-        return new DataSynchronisationResult(pages, tuples, replicaWrites);
+        return new DataSynchronisationResult(jobs);
+    }
+
+    public record HistorySyncRequest(UUID snapshotId, int pageSize, boolean checkpointCaptured,
+                                     at.ac.tuwien.ifs.dbrepo.core.api.replication.HistorySnapshotDto.Checkpoint checkpoint) {
+        public HistorySyncRequest(UUID snapshotId, int pageSize) { this(snapshotId, pageSize, false, null); }
     }
 
     private void requirePositivePageSize(int pageSize) {
-        if (pageSize <= 0) {
-            throw new IllegalArgumentException("Page size must be positive");
+        if (pageSize <= 0 || pageSize > 1000) {
+            throw new IllegalArgumentException("Page size must be between 1 and 1000");
         }
     }
 
@@ -438,8 +425,52 @@ public class ReplicationServiceImpl implements ReplicationService {
             case VIEW_CREATE -> retryViewCreate(entry);
             case DATA_CREATE, DATA_UPDATE, DATA_DELETE -> retryData(entry);
             case TIMESTAMP_SYNC -> retryTimestampSync(entry);
+            case HISTORY_SYNC -> retryHistorySnapshot(entry);
             default -> throw new IllegalArgumentException("Unsupported outbox operation " + entry.getOperationType());
         }
+    }
+
+    private void retryHistorySnapshot(ReplicationOutboxEntry entry) throws JsonProcessingException {
+        HistorySyncRequest request = readPayload(entry, HistorySyncRequest.class);
+        requirePositivePageSize(request.pageSize());
+        final DatabaseDto database = fetchDatabase(entry.getLocalDatabaseId());
+        requirePrimaryDatabase(database);
+        final TableDto table = fetchTable(entry.getLocalDatabaseId(), entry.getLocalTableId());
+        final UUID remoteDatabaseId = resolveDatabaseId(entry);
+        final UUID remoteTableId = resolveTableId(entry);
+        if (!request.checkpointCaptured()) {
+            final HistorySyncRequest captured = new HistorySyncRequest(request.snapshotId(), request.pageSize(), true,
+                    snapshots.checkpoint(site(entry.getTargetSiteUrl()), remoteDatabaseId, remoteTableId));
+            outboxService.bindSnapshotCheckpoint(entry.getId(), entry.getPayloadJson(), captured);
+            request = readPayload(outboxService.findById(entry.getId()).orElseThrow(), HistorySyncRequest.class);
+            if (!request.checkpointCaptured()) {
+                throw new ReplicaDependencyPendingException("Waiting for durable snapshot checkpoint capture");
+            }
+        }
+        snapshots.transfer(request.snapshotId(), database.getId(), table.getId(), site(entry.getTargetSiteUrl()),
+                remoteDatabaseId, remoteTableId, request.pageSize(), request.checkpoint(), () -> {
+                    if (outboxService.findById(entry.getId()).orElseThrow().getStatus() == ReplicationOutboxStatus.CANCELLED) {
+                        throw new IllegalStateException("History synchronization was cancelled");
+                    }
+                }, event -> {
+                    final DataReplicationDto payload = event.payload();
+                    payload.setDatabase(database);
+                    payload.setTable(table);
+                    final HttpMethod method = HttpMethod.valueOf(event.method());
+                    if (!HttpMethod.POST.equals(method) && !HttpMethod.PUT.equals(method) && !HttpMethod.DELETE.equals(method)) {
+                        throw new IllegalArgumentException("Unsupported source journal operation");
+                    }
+                    final TupleWithTimestampsDto applied = replicateRemoteData(entry.getTargetSiteUrl(), remoteDatabaseId,
+                            remoteTableId, payload, method);
+                    final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
+                    if (!Boolean.FALSE.equals(applied.getApplied())) {
+                        timestamps.add(timestamp(entry.getTargetSiteUrl(), applied.getReplicationKey(), remoteDatabaseId,
+                                remoteTableId, applied.getInsertedAt(), applied.getDeletedAt()));
+                    }
+                    timestamps.add(timestamp(normalizedBaseUrl(), payload.getTuple().getReplicationKey(), database.getId(),
+                            table.getId(), payload.getTuple().getInsertedAt(), payload.getTuple().getDeletedAt()));
+                    synchronizeTimestamps(payload, method, timestamps, new ArrayList<>(targetSites(payload)));
+                });
     }
 
     private void retryDatabaseCreate(ReplicationOutboxEntry entry) throws JsonProcessingException {
@@ -556,17 +587,11 @@ public class ReplicationServiceImpl implements ReplicationService {
         return requireBody(response, "table lookup");
     }
 
-    private ReplicationSynchronisationDataDto fetchReplicationData(UUID databaseId, UUID tableId, int page,
-                                                                   int pageSize) {
-        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId
-                + "/data/replicate?page=" + page + "&size=" + pageSize;
-        final ResponseEntity<ReplicationSynchronisationDataDto> response = dataServiceRestTemplate.exchange(path,
-                HttpMethod.GET, HttpEntity.EMPTY, ReplicationSynchronisationDataDto.class);
-        return requireBody(response, "replication data export");
-    }
-
     private TupleWithTimestampsDto replicateRemoteData(String replicaUrl, UUID remoteDatabaseId, UUID remoteTableId,
                                                        DataReplicationDto request, HttpMethod method) {
+        if (request.getDatabase().getCreationLocation() == null) {
+            request.getDatabase().setCreationLocation(normalizedBaseUrl());
+        }
         final String path = site(replicaUrl) + "/api/v1/database/" + remoteDatabaseId + "/table/"
                 + remoteTableId + "/data/replicate";
         final ResponseEntity<TupleWithTimestampsDto> response = externalReplicationRestTemplate.exchange(path, method,

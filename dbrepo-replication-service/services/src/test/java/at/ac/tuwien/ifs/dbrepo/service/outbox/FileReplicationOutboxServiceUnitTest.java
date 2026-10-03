@@ -63,6 +63,26 @@ public class FileReplicationOutboxServiceUnitTest {
     }
 
     @Test
+    void snapshotCheckpointIsBoundOnceAndSurvivesRestart() throws Exception {
+        final var service = service();
+        final var entry = service.enqueue(ReplicationOutboxOperationType.HISTORY_SYNC,
+                "http://site-a", HttpMethod.POST, Map.of("checkpointCaptured", false),
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "queued");
+        final var captured = Map.of("checkpointCaptured", true, "boundary", 17);
+        assertTrue(service.bindSnapshotCheckpoint(entry.getId(), entry.getPayloadJson(), captured));
+        assertFalse(service.bindSnapshotCheckpoint(entry.getId(), entry.getPayloadJson(), Map.of("boundary", 99)));
+        final String payload = service.findById(entry.getId()).orElseThrow().getPayloadJson();
+        service.close();
+        final var restarted = service();
+        assertEquals(payload, restarted.findById(entry.getId()).orElseThrow().getPayloadJson());
+        restarted.cancel(entry.getId(), "Test cancellation", "operator");
+        assertFalse(restarted.bindSnapshotCheckpoint(entry.getId(), payload, captured));
+        final var ordinary = enqueue(restarted);
+        assertFalse(restarted.bindSnapshotCheckpoint(ordinary.getId(), ordinary.getPayloadJson(), captured));
+        assertEquals(ordinary.getPayloadJson(), restarted.findById(ordinary.getId()).orElseThrow().getPayloadJson());
+    }
+
+    @Test
     public void dependencyWaitSurvivesRestartAndAdvancesBackoff() throws Exception {
         final FileReplicationOutboxService service = service();
         final ReplicationOutboxEntry entry = enqueue(service);

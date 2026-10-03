@@ -72,7 +72,7 @@ public class DataEndpoint {
     @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_replication_database_data_synchronise")
     @Operation(summary = "Synchronise replicated database data",
-            description = "Synchronises existing tuples for all replicated tables in a database to configured replica sites.",
+            description = "Queues durable history snapshot and catch-up jobs for configured replica sites.",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     public ResponseEntity<Map<String, Object>> synchroniseDatabase(@PathVariable("databaseId") UUID databaseId,
@@ -86,19 +86,17 @@ public class DataEndpoint {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
-        return ResponseEntity.ok(Map.of(
-                "status", "completed",
+        return ResponseEntity.accepted().body(Map.of(
+                "status", "queued",
                 "tables", result.tables(),
-                "pages", result.pages(),
-                "tuples", result.tuples(),
-                "replicaWrites", result.replicaWrites()));
+                "jobs", result.jobs()));
     }
 
     @PostMapping("/synchronise/database/{databaseId}/table/{tableId}")
     @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_replication_data_synchronise")
     @Operation(summary = "Synchronise replicated table data",
-            description = "Synchronises existing table tuples to configured replica sites.",
+            description = "Queues durable table history snapshot and catch-up jobs.",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     public ResponseEntity<Map<String, Object>> synchroniseData(@PathVariable("databaseId") UUID databaseId,
@@ -113,10 +111,6 @@ public class DataEndpoint {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
-        return ResponseEntity.ok(Map.of(
-                "status", "completed",
-                "pages", result.pages(),
-                "tuples", result.tuples(),
-                "replicaWrites", result.replicaWrites()));
+        return ResponseEntity.accepted().body(Map.of("status", "queued", "jobs", result.jobs()));
     }
 }

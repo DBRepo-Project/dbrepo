@@ -176,6 +176,23 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
     }
 
     @Override
+    public synchronized boolean bindSnapshotCheckpoint(UUID id, String expectedPayload, Object capturedRequest) {
+        final List<ReplicationOutboxEntry> entries = readEntries();
+        final var entry = entries.stream().filter(candidate -> id.equals(candidate.getId())
+                && candidate.getOperationType() == ReplicationOutboxOperationType.HISTORY_SYNC
+                && (candidate.getStatus() == ReplicationOutboxStatus.PENDING || candidate.getStatus() == ReplicationOutboxStatus.FAILED)
+                && expectedPayload.equals(candidate.getPayloadJson())).findFirst();
+        if (entry.isEmpty()) return false;
+        try {
+            entry.get().setPayloadJson(objectMapper.writeValueAsString(capturedRequest));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new IllegalArgumentException("Failed to encode snapshot checkpoint", e);
+        }
+        writeEntries(entries);
+        return true;
+    }
+
+    @Override
     public synchronized void defer(UUID id, String reason, Duration retryDelay) {
         defer(id, reason, retryDelay, 20);
     }

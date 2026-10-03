@@ -80,139 +80,48 @@ public class ReplicationServiceImplUnitTest {
         verify(outbox).markSucceeded(entry.getId());
     }
 
-    @Test
-    public void synchroniseData_succeeds() {
-        final RestTemplate metadataRestTemplate = mock(RestTemplate.class);
-        final RestTemplate dataRestTemplate = mock(RestTemplate.class);
-        final RestTemplate externalRestTemplate = mock(RestTemplate.class);
-        final ReplicationServiceImpl service = new ReplicationServiceImpl(metadataRestTemplate, dataRestTemplate,
-                externalRestTemplate, new ObjectMapper().findAndRegisterModules(), mock(ReplicationOutboxService.class));
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+    public void synchronisationQueuesDurableHistoryJobsWithoutBlockingOnPeers(boolean wholeDatabase) {
+        final RestTemplate metadata = mock(RestTemplate.class);
+        final RestTemplate data = mock(RestTemplate.class);
+        final RestTemplate remote = mock(RestTemplate.class);
+        final ReplicationOutboxService outbox = mock(ReplicationOutboxService.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(metadata, data, remote,
+                new ObjectMapper().findAndRegisterModules(), outbox);
         ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
         final UUID databaseId = UUID.randomUUID();
         final UUID tableId = UUID.randomUUID();
         final UUID remoteDatabaseId = UUID.randomUUID();
         final UUID remoteTableId = UUID.randomUUID();
-        final DatabaseDto database = DatabaseDto.builder()
-                .id(databaseId)
-                .creationLocation("http://local.test")
+        final UUID jobId = UUID.randomUUID();
+        final TableDto table = TableDto.builder().id(tableId)
+                .replicaUrls(Map.of("http://remote.test", remoteTableId)).build();
+        final DatabaseDto database = DatabaseDto.builder().id(databaseId).creationLocation("http://local.test")
                 .replicaUrls(Map.of("http://remote.test", remoteDatabaseId))
-                .build();
-        final TableDto table = TableDto.builder()
-                .id(tableId)
-                .replicaUrls(Map.of("http://remote.test", remoteTableId))
-                .build();
-        final TupleWithTimestampsDto sourceTuple = TupleWithTimestampsDto.builder()
-                .replicationKey("key-1")
-                .insertedAt(Instant.parse("2026-01-01T00:00:00Z"))
-                .data(Map.of("replication_key", "key-1", "value", 1))
-                .build();
-        final TupleWithTimestampsDto remoteTuple = TupleWithTimestampsDto.builder()
-                .replicationKey("key-1")
-                .insertedAt(Instant.parse("2026-01-01T00:00:05Z"))
-                .data(Map.of("replication_key", "key-1", "value", 1))
-                .build();
+                .tables(List.of(table, TableDto.builder().id(UUID.randomUUID()).build())).build();
+        when(metadata.exchange(eq("/api/v1/database/" + databaseId), eq(HttpMethod.GET),
+                eq(HttpEntity.EMPTY), eq(DatabaseDto.class))).thenReturn(ResponseEntity.ok(database));
+        when(metadata.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId), eq(HttpMethod.GET),
+                eq(HttpEntity.EMPTY), eq(TableDto.class))).thenReturn(ResponseEntity.ok(table));
+        when(outbox.enqueue(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(ReplicationOutboxEntry.builder().id(jobId).build());
 
-        when(metadataRestTemplate.exchange(eq("/api/v1/database/" + databaseId), eq(HttpMethod.GET),
-                eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
-                .thenReturn(ResponseEntity.ok(database));
-        when(metadataRestTemplate.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId),
-                eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
-                .thenReturn(ResponseEntity.ok(table));
-        when(dataRestTemplate.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId
-                        + "/data/replicate?page=0&size=100"), eq(HttpMethod.GET), eq(HttpEntity.EMPTY),
-                eq(ReplicationSynchronisationDataDto.class)))
-                .thenReturn(ResponseEntity.ok(ReplicationSynchronisationDataDto.builder()
-                        .tuples(List.of(sourceTuple))
-                        .build()));
-        when(externalRestTemplate.exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
-                        + "/table/" + remoteTableId + "/data/replicate"), eq(HttpMethod.POST),
-                any(HttpEntity.class), eq(TupleWithTimestampsDto.class)))
-                .thenReturn(ResponseEntity.ok(remoteTuple));
-        when(dataRestTemplate.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId + "/timestamps"),
-                eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(Map.of("processed", 2)));
-        when(externalRestTemplate.exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
-                        + "/table/" + remoteTableId + "/timestamps"), eq(HttpMethod.POST),
-                any(HttpEntity.class), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(Map.of("processed", 2)));
+        if (wholeDatabase) {
+            final DatabaseSynchronisationResult result = service.synchroniseDatabase(databaseId, 100);
+            assertEquals(1, result.tables());
+            assertEquals(List.of(jobId), result.jobs());
+        } else {
+            assertEquals(List.of(jobId), service.synchroniseData(databaseId, tableId, 100).jobs());
+        }
 
-        final DataSynchronisationResult result = service.synchroniseData(databaseId, tableId, 100);
-
-        assertEquals(1, result.pages());
-        assertEquals(1, result.tuples());
-        assertEquals(1, result.replicaWrites());
-        verify(externalRestTemplate).exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
-                        + "/table/" + remoteTableId + "/data/replicate"), eq(HttpMethod.POST),
-                any(HttpEntity.class), eq(TupleWithTimestampsDto.class));
-    }
-
-    @Test
-    public void synchroniseDatabase_succeeds() {
-        final RestTemplate metadataRestTemplate = mock(RestTemplate.class);
-        final RestTemplate dataRestTemplate = mock(RestTemplate.class);
-        final RestTemplate externalRestTemplate = mock(RestTemplate.class);
-        final ReplicationServiceImpl service = new ReplicationServiceImpl(metadataRestTemplate, dataRestTemplate,
-                externalRestTemplate, new ObjectMapper().findAndRegisterModules(), mock(ReplicationOutboxService.class));
-        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
-        final UUID databaseId = UUID.randomUUID();
-        final UUID tableId = UUID.randomUUID();
-        final UUID ignoredTableId = UUID.randomUUID();
-        final UUID remoteDatabaseId = UUID.randomUUID();
-        final UUID remoteTableId = UUID.randomUUID();
-        final TableDto replicatedTable = TableDto.builder()
-                .id(tableId)
-                .replicaUrls(Map.of("http://remote.test", remoteTableId))
-                .build();
-        final TableDto localOnlyTable = TableDto.builder()
-                .id(ignoredTableId)
-                .build();
-        final DatabaseDto database = DatabaseDto.builder()
-                .id(databaseId)
-                .creationLocation("http://local.test")
-                .tables(List.of(replicatedTable, localOnlyTable))
-                .replicaUrls(Map.of("http://remote.test", remoteDatabaseId))
-                .build();
-        final TupleWithTimestampsDto sourceTuple = TupleWithTimestampsDto.builder()
-                .replicationKey("key-1")
-                .insertedAt(Instant.parse("2026-01-01T00:00:00Z"))
-                .data(Map.of("replication_key", "key-1", "value", 1))
-                .build();
-        final TupleWithTimestampsDto remoteTuple = TupleWithTimestampsDto.builder()
-                .replicationKey("key-1")
-                .insertedAt(Instant.parse("2026-01-01T00:00:05Z"))
-                .data(Map.of("replication_key", "key-1", "value", 1))
-                .build();
-
-        when(metadataRestTemplate.exchange(eq("/api/v1/database/" + databaseId), eq(HttpMethod.GET),
-                eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
-                .thenReturn(ResponseEntity.ok(database));
-        when(dataRestTemplate.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId
-                        + "/data/replicate?page=0&size=100"), eq(HttpMethod.GET), eq(HttpEntity.EMPTY),
-                eq(ReplicationSynchronisationDataDto.class)))
-                .thenReturn(ResponseEntity.ok(ReplicationSynchronisationDataDto.builder()
-                        .tuples(List.of(sourceTuple))
-                        .build()));
-        when(externalRestTemplate.exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
-                        + "/table/" + remoteTableId + "/data/replicate"), eq(HttpMethod.POST),
-                any(HttpEntity.class), eq(TupleWithTimestampsDto.class)))
-                .thenReturn(ResponseEntity.ok(remoteTuple));
-        when(dataRestTemplate.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId + "/timestamps"),
-                eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(Map.of("processed", 2)));
-        when(externalRestTemplate.exchange(eq("http://remote.test/api/v1/database/" + remoteDatabaseId
-                        + "/table/" + remoteTableId + "/timestamps"), eq(HttpMethod.POST),
-                any(HttpEntity.class), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(Map.of("processed", 2)));
-
-        final DatabaseSynchronisationResult result = service.synchroniseDatabase(databaseId, 100);
-
-        assertEquals(1, result.tables());
-        assertEquals(1, result.pages());
-        assertEquals(1, result.tuples());
-        assertEquals(1, result.replicaWrites());
-        verify(dataRestTemplate, never()).exchange(eq("/api/v1/database/" + databaseId + "/table/" + ignoredTableId
-                        + "/data/replicate?page=0&size=100"), eq(HttpMethod.GET), eq(HttpEntity.EMPTY),
-                eq(ReplicationSynchronisationDataDto.class));
+        final var request = org.mockito.ArgumentCaptor.forClass(ReplicationServiceImpl.HistorySyncRequest.class);
+        verify(outbox).enqueue(eq(ReplicationOutboxOperationType.HISTORY_SYNC), eq("http://remote.test"),
+                eq(HttpMethod.POST), request.capture(), eq(databaseId), eq(tableId), eq(remoteDatabaseId),
+                eq(remoteTableId), org.mockito.ArgumentMatchers.isNull());
+        assertEquals(100, request.getValue().pageSize());
+        org.junit.jupiter.api.Assertions.assertNotNull(request.getValue().snapshotId());
+        org.mockito.Mockito.verifyNoInteractions(data, remote);
     }
 
     @Test

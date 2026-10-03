@@ -22,6 +22,8 @@ public interface ReplicationOutboxService {
 
     ReplicationOutboxEntry cancel(UUID id, String reason, String actor);
 
+    boolean bindSnapshotCheckpoint(UUID id, String expectedPayload, Object capturedRequest);
+
     void markSucceeded(UUID id);
 
     void defer(UUID id, String reason, Duration retryDelay);

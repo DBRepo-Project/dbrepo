@@ -10,5 +10,6 @@ public enum ReplicationOutboxOperationType {
     DATA_CREATE,
     DATA_UPDATE,
     DATA_DELETE,
-    TIMESTAMP_SYNC
+    TIMESTAMP_SYNC,
+    HISTORY_SYNC
 }
