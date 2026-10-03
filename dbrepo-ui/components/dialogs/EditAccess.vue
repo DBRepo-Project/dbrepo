@@ -66,6 +66,7 @@
 
 <script>
 import { useCacheStore } from '@/stores/cache.js'
+import { isSecondaryReplica } from '@/utils'
 
 export default {
   props: {
@@ -107,11 +108,11 @@ export default {
       return this.cacheStore.getDatabase
     },
     accessTypes () {
-      if (!this.isModification) {
-        /* give access cannot revoke access */
-        return this.types.filter(t => t.value !== 'revoke')
-      }
-      return this.types
+      return this.types.filter(t => (this.isModification || t.value !== 'revoke') &&
+        (!this.secondaryReplica || t.value === 'read' || t.value === 'revoke'))
+    },
+    secondaryReplica () {
+      return isSecondaryReplica(this.database, this.$config.public.api.client)
     },
     eligibleUsers () {
       return this.users.filter(u => !this.database.accesses.map(a => a.user.username).includes(u.username))
@@ -255,7 +256,7 @@ export default {
       if (!this.accessType) {
         this.modify.type = null
       } else {
-        this.modify.type = this.accessType
+        this.modify.type = this.secondaryReplica ? 'read' : this.accessType
       }
     }
   }

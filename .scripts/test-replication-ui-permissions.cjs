@@ -55,4 +55,16 @@ for (const [file, permissions] of [
       view: { ...context.table, archived_at: null } }), true, `${file}: active ${permission}`)
   }
 }
+const accessDialog = options('components/dialogs/EditAccess.vue')
+const types = ['read', 'write_own', 'write_all', 'revoke'].map(value => ({ value }))
+for (const secondaryReplica of [false, true]) {
+  for (const isModification of [false, true]) {
+    const permitted = accessDialog.computed.accessTypes.call({ types, secondaryReplica, isModification })
+      .map(type => type.value)
+    assert(permitted.includes('read'))
+    assert.equal(permitted.includes('revoke'), isModification)
+    assert.equal(permitted.includes('write_all'), !secondaryReplica)
+    assert.equal(permitted.includes('write_own'), !secondaryReplica)
+  }
+}
 console.log('Replica and archive UI permission checks passed')
