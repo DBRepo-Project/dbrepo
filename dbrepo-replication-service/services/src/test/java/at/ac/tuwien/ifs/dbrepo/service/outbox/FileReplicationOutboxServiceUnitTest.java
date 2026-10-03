@@ -3,8 +3,12 @@ package at.ac.tuwien.ifs.dbrepo.service.outbox;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpMethod;
 
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FileReplicationOutboxServiceUnitTest {
 
@@ -73,5 +78,56 @@ public class FileReplicationOutboxServiceUnitTest {
     private FileReplicationOutboxService service() {
         return new FileReplicationOutboxService(new ObjectMapper().findAndRegisterModules(),
                 tempDir.resolve("outbox.json").toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"broken-json", "null", "{}", "[null]", ""})
+    public void corruptOutboxMustNotBeReportedEmptyOrOverwritten(String content) throws Exception {
+        final Path path = tempDir.resolve("outbox.json");
+        Files.writeString(path, content);
+        final FileReplicationOutboxService service = service();
+
+        assertThrows(UncheckedIOException.class, service::findAll);
+        assertThrows(UncheckedIOException.class, () -> enqueue(service));
+
+        assertEquals(content, Files.readString(path));
+    }
+
+    @Test
+    public void unreadableOutboxMustNotBeReportedEmpty() throws Exception {
+        Files.createDirectory(tempDir.resolve("outbox.json"));
+        assertThrows(UncheckedIOException.class, () -> service().findAll());
+    }
+
+    @Test
+    public void failedEnqueueMustPreserveExistingBacklogAndPropagate() throws Exception {
+        final FileReplicationOutboxService service = service();
+        final ReplicationOutboxEntry original = enqueue(service);
+        final String persisted = Files.readString(tempDir.resolve("outbox.json"));
+        Files.createDirectory(tempDir.resolve("outbox.json.tmp"));
+
+        assertThrows(UncheckedIOException.class, () -> enqueue(service));
+
+        assertEquals(persisted, Files.readString(tempDir.resolve("outbox.json")));
+        assertEquals(original.getId(), service().findAll().getFirst().getId());
+    }
+
+    @Test
+    public void failedStatusWriteMustRemainPendingAfterRestart() throws Exception {
+        final FileReplicationOutboxService service = service();
+        final ReplicationOutboxEntry entry = enqueue(service);
+        Files.createDirectory(tempDir.resolve("outbox.json.tmp"));
+
+        assertThrows(UncheckedIOException.class, () -> service.markSucceeded(entry.getId()));
+
+        assertEquals(ReplicationOutboxStatus.PENDING, service().findById(entry.getId()).orElseThrow().getStatus());
+        Files.delete(tempDir.resolve("outbox.json.tmp"));
+        service.markSucceeded(entry.getId());
+        assertEquals(ReplicationOutboxStatus.SUCCEEDED, service().findById(entry.getId()).orElseThrow().getStatus());
+    }
+
+    private ReplicationOutboxEntry enqueue(FileReplicationOutboxService service) {
+        return service.enqueue(ReplicationOutboxOperationType.DATABASE_CREATE, "https://peer.example",
+                HttpMethod.POST, Map.of("name", "test"), UUID.randomUUID(), null, null, null, "timeout");
     }
 }

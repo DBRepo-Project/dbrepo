@@ -2,16 +2,18 @@ package at.ac.tuwien.ifs.dbrepo.service.outbox;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.AtomicMoveNotSupportedException;
+import java.io.UncheckedIOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -20,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 @Service
 public class FileReplicationOutboxService implements ReplicationOutboxService {
 
@@ -126,14 +127,16 @@ public class FileReplicationOutboxService implements ReplicationOutboxService {
     }
 
     private List<ReplicationOutboxEntry> readEntries() {
-        if (!Files.exists(outboxPath)) {
+        try (var input = Files.newInputStream(outboxPath)) {
+            final List<ReplicationOutboxEntry> entries = objectMapper.readValue(input, ENTRY_LIST);
+            if (entries == null || entries.contains(null)) {
+                throw new IOException("Replication outbox must contain an array of entries");
+            }
+            return entries;
+        } catch (NoSuchFileException e) {
             return new ArrayList<>();
-        }
-        try {
-            return objectMapper.readValue(outboxPath.toFile(), ENTRY_LIST);
         } catch (IOException e) {
-            log.error("Failed to read replication outbox {}: {}", outboxPath, e.getMessage(), e);
-            return new ArrayList<>();
+            throw new UncheckedIOException("Failed to read replication outbox " + outboxPath, e);
         }
     }
 
@@ -145,13 +148,12 @@ public class FileReplicationOutboxService implements ReplicationOutboxService {
             }
             final Path tmp = outboxPath.resolveSibling(outboxPath.getFileName() + ".tmp");
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(tmp.toFile(), entries);
-            try {
-                Files.move(tmp, outboxPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException e) {
-                Files.move(tmp, outboxPath, StandardCopyOption.REPLACE_EXISTING);
+            try (var channel = FileChannel.open(tmp, StandardOpenOption.WRITE)) {
+                channel.force(true);
             }
+            Files.move(tmp, outboxPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            log.error("Failed to write replication outbox {}: {}", outboxPath, e.getMessage(), e);
+            throw new UncheckedIOException("Failed to write replication outbox " + outboxPath, e);
         }
     }
 
