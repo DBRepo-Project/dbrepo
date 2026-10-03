@@ -147,7 +147,7 @@ class SubsetResultIntegrationTest {
         UUID id = create("SELECT 5 AS a UNION ALL SELECT 6");
         var metadata = mock(MetadataService.class);
         when(metadata.getDatabase(database.getId())).thenReturn(database);
-        var endpoint = new SubsetEndpoint(null, null, mapper, service, null, null, metadata, mock(EndpointValidator.class), null);
+        var endpoint = new SubsetEndpoint(null, null, mapper, service, null, null, metadata, mock(EndpointValidator.class), null, json);
         var request = mock(HttpServletRequest.class);
         when(request.getMethod()).thenReturn("HEAD");
         var head = endpoint.getData(database.getId(), id, null, "application/json", request, null, 0L, 1L);

@@ -283,7 +283,7 @@ class SubsetReplicationIntegrationTest {
         database.setIsPublic(true);
         when(metadata.getDatabase(B_ID)).thenReturn(database);
         final var endpoint = new SubsetEndpoint(null, data, mapper, reader, analyse, null, metadata,
-                mock(EndpointValidator.class), null);
+                mock(EndpointValidator.class), null, new com.fasterxml.jackson.databind.ObjectMapper());
         for (String method : List.of("GET", "HEAD")) {
             when(request.getMethod()).thenReturn(method);
             assertThrows(QueryExecutionException.class, () -> endpoint.getData(B_ID, id, null, "application/json",
