@@ -58,6 +58,9 @@ public class ReplicationServiceImpl implements ReplicationService {
                 throw new SQLException("Prepare tuple replication before the data transaction");
             }
             outboxService.ensureTableExists(connection);
+            try (var statement = connection.createStatement()) {
+                statement.execute("SET time_zone = '+00:00'");
+            }
         }
     }
 
@@ -104,7 +107,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                         .internalName(database.getContainer().getInternalName())
                         .build())
                 .replicaUrls(database.getReplicaUrls())
-                .creationLocation(database.getCreationLocation())
+                .creationLocation(database.getCreationLocation() == null || database.getCreationLocation().isBlank()
+                        ? baseUrl : database.getCreationLocation())
                 .tables(new LinkedList<>())
                 .views(new LinkedList<>())
                 .accesses(new LinkedList<>())
@@ -124,7 +128,8 @@ public class ReplicationServiceImpl implements ReplicationService {
                 .isSchemaPublic(table.getIsSchemaPublic())
                 .columns(toColumnDtos(database, table))
                 .replicaUrls(table.getReplicaUrls())
-                .creationLocation(table.getCreationLocation())
+                .creationLocation(table.getCreationLocation() == null || table.getCreationLocation().isBlank()
+                        ? baseUrl : table.getCreationLocation())
                 .build();
     }
 

@@ -30,4 +30,7 @@ public class TupleWithTimestampsDto {
 
     @Schema(description = "Replication key for the tuple")
     private String replicationKey;
+
+    @Schema(description = "Whether this event has a local version; false for superseded events and empty deletes")
+    private Boolean applied;
 }

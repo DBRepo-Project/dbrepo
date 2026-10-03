@@ -2,6 +2,9 @@ application:
   title: DBRepo
   version: '@project.version@'
 spring:
+  jackson:
+    deserialization:
+      use-big-decimal-for-floats: true
   application:
     name: replication-service
   security:

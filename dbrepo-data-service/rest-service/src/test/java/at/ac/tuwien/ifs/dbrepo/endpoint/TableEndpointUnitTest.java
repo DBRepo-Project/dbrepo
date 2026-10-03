@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.endpoints.TableEndpoint;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
+import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationInboxService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,9 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @MockitoBean
     private TableService tableService;
+
+    @MockitoBean
+    private ReplicationInboxService replicationInboxService;
 
     @MockitoBean
     private SubsetService subsetService;
@@ -635,7 +639,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void insertTupleForReplication_upserts() throws TableNotFoundException, RemoteUnavailableException,
+    public void insertTupleForReplication_usesDurableInbox() throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException,
             TableMalformedException, StorageUnavailableException, StorageNotFoundException,
             DatabaseUnavailableException {
@@ -657,7 +661,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(table);
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
-        when(tableService.upsertTupleWithTimestamps(eq(DATABASE_3_CACHE), eq(table), any(TupleDto.class)))
+        when(replicationInboxService.apply(DATABASE_3_CACHE, table, request, org.springframework.http.HttpMethod.POST))
                 .thenReturn(stored);
 
         /* test */
@@ -665,7 +669,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 TABLE_8_ID, request);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertSame(stored, response.getBody());
-        verify(tableService).upsertTupleWithTimestamps(eq(DATABASE_3_CACHE), eq(table), any(TupleDto.class));
+        verify(replicationInboxService).apply(DATABASE_3_CACHE, table, request, org.springframework.http.HttpMethod.POST);
         verify(tableService, never()).createTupleWithTimestamps(any(Database.class), any(Table.class),
                 any(TupleDto.class));
     }

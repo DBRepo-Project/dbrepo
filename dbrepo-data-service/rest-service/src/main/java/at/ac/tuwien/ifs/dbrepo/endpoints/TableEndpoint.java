@@ -17,6 +17,7 @@ import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
+import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationInboxService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
@@ -47,7 +48,6 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -66,6 +66,7 @@ public class TableEndpoint {
     private final MetadataService metadataService;
     private final ReplicationService replicationService;
     private final ReplicationTimestampService replicationTimestampService;
+    private final ReplicationInboxService replicationInboxService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
@@ -78,6 +79,7 @@ public class TableEndpoint {
     public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
                          ReplicationService replicationService, ReplicationTimestampService replicationTimestampService,
+                         ReplicationInboxService replicationInboxService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
         this.dataService = dataService;
@@ -87,6 +89,7 @@ public class TableEndpoint {
         this.metadataService = metadataService;
         this.replicationService = replicationService;
         this.replicationTimestampService = replicationTimestampService;
+        this.replicationInboxService = replicationInboxService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -364,77 +367,6 @@ public class TableEndpoint {
                 .toList();
     }
 
-    private TupleDto tupleFromReplicationPayload(Table table, DataReplicationDto data) throws TableMalformedException {
-        final Map<String, Object> values = tupleData(data);
-        requireReplicationKey(table, values);
-        final Map<String, Object> tuple = new LinkedHashMap<>();
-        table.getColumns()
-                .stream()
-                .map(Column::getInternalName)
-                .filter(values::containsKey)
-                .forEach(column -> tuple.put(column, values.get(column)));
-        return TupleDto.builder()
-                .data(tuple)
-                .build();
-    }
-
-    private TupleUpdateDto tupleUpdateFromReplicationPayload(Table table, DataReplicationDto data)
-            throws TableMalformedException {
-        final Map<String, Object> values = tupleData(data);
-        final Object replicationKey = requireReplicationKey(table, values);
-        final Map<String, Object> tuple = new LinkedHashMap<>();
-        table.getColumns()
-                .stream()
-                .map(Column::getInternalName)
-                .filter(column -> !"replication_key".equals(column))
-                .filter(values::containsKey)
-                .forEach(column -> tuple.put(column, values.get(column)));
-        if (tuple.isEmpty()) {
-            throw new TableMalformedException("Replication payload is missing tuple data");
-        }
-        return TupleUpdateDto.builder()
-                .keys(replicationKeyKeys(replicationKey))
-                .data(tuple)
-                .build();
-    }
-
-    private TupleDeleteDto tupleDeleteFromReplicationPayload(Table table, DataReplicationDto data)
-            throws TableMalformedException {
-        final Object replicationKey = requireReplicationKey(table, tupleData(data));
-        return TupleDeleteDto.builder()
-                .keys(replicationKeyKeys(replicationKey))
-                .build();
-    }
-
-    private Map<String, Object> tupleData(DataReplicationDto data) throws TableMalformedException {
-        if (data == null || data.getTuple() == null || data.getTuple().getData() == null) {
-            throw new TableMalformedException("Replication payload is missing tuple data");
-        }
-        return data.getTuple()
-                .getData();
-    }
-
-    private Object requireReplicationKey(Table table, Map<String, Object> values) throws TableMalformedException {
-        final boolean hasReplicationKeyColumn = table.getColumns() != null && table.getColumns()
-                .stream()
-                .map(Column::getInternalName)
-                .anyMatch("replication_key"::equals);
-        if (!hasReplicationKeyColumn) {
-            throw new TableMalformedException("Table is missing the replication_key column");
-        }
-        final Object replicationKey = values.get("replication_key");
-        if (replicationKey == null) {
-            throw new TableMalformedException("Replication payload is missing the replication_key value");
-        }
-        return replicationKey;
-    }
-
-    private Map<String, Object> replicationKeyKeys(Object replicationKey) {
-        final Map<String, Object> keys = new LinkedHashMap<>();
-        keys.put("replication_key", replicationKey);
-        return keys;
-    }
-
     private void validateTimestampBatch(List<TupleReplicationTimestampDto> timestamps, boolean requireRowEnd)
             throws TableMalformedException {
         if (timestamps == null || timestamps.isEmpty()) {
@@ -579,8 +511,8 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         try {
-            final TupleWithTimestampsDto created = tableService.upsertTupleWithTimestamps(database, table,
-                    tupleFromReplicationPayload(table, data));
+            final TupleWithTimestampsDto created = replicationInboxService.apply(database, table, data,
+                    org.springframework.http.HttpMethod.POST);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(created);
         } catch (SQLException e) {
@@ -667,8 +599,8 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         try {
-            final TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table,
-                    tupleUpdateFromReplicationPayload(table, data));
+            final TupleWithTimestampsDto updated = replicationInboxService.apply(database, table, data,
+                    org.springframework.http.HttpMethod.PUT);
             return ResponseEntity.ok(updated);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -754,8 +686,8 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         try {
-            final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table,
-                    tupleDeleteFromReplicationPayload(table, data));
+            final TupleWithTimestampsDto deleted = replicationInboxService.apply(database, table, data,
+                    org.springframework.http.HttpMethod.DELETE);
             return ResponseEntity.ok(deleted);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());

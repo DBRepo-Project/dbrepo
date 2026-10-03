@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,6 +21,7 @@ public class JacksonConfig {
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         objectMapper.setTimeZone(TimeZone.getTimeZone("UTC"));
         return objectMapper;
     }
