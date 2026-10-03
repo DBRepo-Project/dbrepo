@@ -454,6 +454,15 @@ class Checks(unittest.TestCase):
         with self.assertRaises(s.Blocked):
             s.observations('\n'.join([json.dumps({"kind": "history"})] * 101))
 
+    def test_sql_observer_uses_manifest_internal_database_name(self):
+        runner, scope = self.sql_scope()
+        database = next(r for r in runner.report["resources"] if r["site"] == "2" and r["kind"] == "database")
+        database["internal_name"] = runner.name + "_abcd"
+        scope["database"] = database["internal_name"]
+        s.validate(scope, runner.report, "2")
+        with self.assertRaises(s.Blocked):
+            s.validate(dict(scope, database=runner.name + "_other"), runner.report, "2")
+
     def test_scoped_fault_plans_expire_and_never_drop_foreign_triggers(self):
         runner, scope = self.sql_scope("block")
         s.validate(scope, runner.report, "2")

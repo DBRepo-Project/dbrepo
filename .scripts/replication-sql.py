@@ -26,16 +26,18 @@ def validate(scope, report, site):
     require(set(scope) == common | fields, "Unexpected scope fields")
     run = scope["run"]
     require(re.fullmatch(r"replication_acceptance_[a-f0-9]{16}", run) is not None
-            and report["run"] == run and scope["database"] == run, "Not this run's unique fixture database")
+            and report["run"] == run, "Not this run's unique fixture database")
+    require(re.fullmatch(r"[a-z][a-z0-9_]{0,63}", scope["database"]) is not None, "Unsafe database name")
     require(re.fullmatch(r"[a-z][a-z0-9_]{0,63}", scope["table"]) is not None, "Unsafe table name")
     for field in ("database_id", "table_id", "source_database_id", "source_table_id"):
         require(str(uuid.UUID(scope[field])) == scope[field], "Noncanonical fixture UUID")
     resources = report["resources"]
     require(any(r["site"] == site and r["kind"] == "database" and r["name"] == run
+                and (r.get("internal_name") or r["name"]) == scope["database"]
                 and r["id"] == scope["database_id"] for r in resources),
             "Site/database absent from the harness manifest")
     require(any(r["site"] == site and r["kind"] == "table" and r["id"] == scope["table_id"]
-                and r["name"] == scope["table"] for r in resources), "Table absent from the harness manifest")
+                and (r.get("internal_name") or r["name"]) == scope["table"] for r in resources), "Table absent from the harness manifest")
     for field, kind in (("source_database_id", "database"), ("source_table_id", "table")):
         require(any(r["kind"] == kind and r["id"] == scope[field] for r in resources), "Source absent from manifest")
     require(scope["action"] in ("observe", "block", "unblock"), "Unsupported action")

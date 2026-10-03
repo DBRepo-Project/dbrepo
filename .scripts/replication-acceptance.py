@@ -218,7 +218,8 @@ class Acceptance:
 
     def record(self, site, item, kind):
         self.report["resources"].append({"site": site.config["name"], "kind": kind,
-                                          "id": uid(item["id"]), "name": item.get("name")})
+                                          "id": uid(item["id"]), "name": item.get("name"),
+                                          "internal_name": item.get("internal_name")})
         self.save()
 
     @staticmethod
