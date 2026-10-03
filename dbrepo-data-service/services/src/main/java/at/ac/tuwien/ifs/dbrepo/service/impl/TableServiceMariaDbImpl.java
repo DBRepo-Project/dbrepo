@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpMethod;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -893,14 +892,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     statement.setBytes(index, storageService.getBytes(key));
                 } else {
                     throw new IllegalArgumentException("BLOB value must be an object key or byte array: " + name);
-                }
-            }
-            case DECIMAL -> {
-                if (value == null) {
-                    statement.setNull(index, java.sql.Types.DECIMAL);
-                } else {
-                    statement.setBigDecimal(index, value instanceof BigDecimal decimal
-                            ? decimal : new BigDecimal(value.toString()));
                 }
             }
             default -> mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement, type, index,

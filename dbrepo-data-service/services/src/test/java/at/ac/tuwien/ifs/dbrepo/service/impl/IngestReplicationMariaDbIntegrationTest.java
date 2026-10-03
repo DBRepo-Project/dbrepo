@@ -560,6 +560,32 @@ class IngestReplicationMariaDbIntegrationTest {
         assertEquals(List.of(), storage.reads);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void nullableDeleteKeysUseTheSharedExactDecimalBinder(boolean replicated) throws Exception {
+        if (!replicated) {
+            database.setReplicaUrls(Map.of());
+        }
+        final BigDecimal amount = new BigDecimal("12345678901234567890.123456789012345678");
+        service.createTuple(database, table, tuple("first", 1, null, amount));
+        service.createTuple(database, table, tuple("second", 2, new byte[]{1}, null));
+        service.createTuple(database, table, tuple("keep", 3, new byte[]{1}, amount));
+        final Map<String, Object> keys = new LinkedHashMap<>();
+        keys.put("payload", null);
+        keys.put("amount", amount.toPlainString());
+        service.deleteTuple(database, table, TupleDeleteDto.builder().keys(keys).build());
+        keys.clear();
+        keys.put("sample_value", 2);
+        keys.put("amount", null);
+        service.deleteTuple(database, table, TupleDeleteDto.builder().keys(keys).build());
+
+        assertEquals(1, count("samples"));
+        assertEquals(1, count("samples WHERE replication_key = 'keep'"));
+        assertEquals(3, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(replicated ? 5 : 0, outbox.findAll(database).size());
+        assertEquals(List.of(), storage.reads);
+    }
+
     @Test
     void temporalAndBinarySourceEventsRoundTripThroughJsonAndJdbcExactly() throws Exception {
         createPrecisionTable();
