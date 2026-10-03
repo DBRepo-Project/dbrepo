@@ -20,6 +20,7 @@ class ReplicationGatewayRoutesTest(unittest.TestCase):
             cases = {f"{BASE}/table/{TABLE}/{suffix}": "data-service"
                      for suffix in ("timestamps", "timestamps/tuple-key", "data", "data/replicate", "history", "statistic")}
             cases[f"{BASE}/replication/outbox"] = "data-service"
+            cases[f"{BASE}/replication/journal?after=0&limit=100"] = "data-service"
             cases[f"{BASE}/table/{TABLE}"] = "metadata-service"
             for path, service in cases.items():
                 with self.subTest(config=filename, path=path):
