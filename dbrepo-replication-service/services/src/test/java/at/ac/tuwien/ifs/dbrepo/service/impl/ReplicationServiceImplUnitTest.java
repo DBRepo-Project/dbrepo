@@ -5,6 +5,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.ReplicationSynchronisatio
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.service.DataSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseSynchronisationResult;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.ReplicationOutboxOperationType;
@@ -38,6 +40,51 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ReplicationServiceImplUnitTest {
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"online", "offline", "unmapped"})
+    void partialDeliveryStillDistributesOtherPeersTimestampEvidence(String targetState) {
+        final RestTemplate external = mock(RestTemplate.class);
+        final ReplicationOutboxService outbox = mock(ReplicationOutboxService.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+                mock(RestTemplate.class), external, new ObjectMapper(), outbox);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        final UUID databaseId = UUID.randomUUID(), tableId = UUID.randomUUID();
+        final UUID databaseB = UUID.randomUUID(), tableB = UUID.randomUUID(), tableC = UUID.randomUUID();
+        final UUID databaseC = targetState.equals("unmapped") ? null : UUID.randomUUID();
+        final Map<String, UUID> databases = new java.util.HashMap<>(Map.of("http://b.test", databaseB));
+        if (databaseC != null) databases.put("http://c.test", databaseC);
+        final String key = UUID.randomUUID().toString();
+        final var tuple = TupleWithTimestampsDto.builder().replicationKey(key)
+                .insertedAt(Instant.parse("2026-10-03T10:00:00Z")).build();
+        final var request = DataReplicationDto.builder()
+                .database(DatabaseDto.builder().id(databaseId).replicaUrls(databases).build())
+                .table(TableDto.builder().id(tableId).replicaUrls(Map.of("http://b.test", tableB, "http://c.test", tableC)).build())
+                .tuple(tuple).build();
+        when(external.exchange(eq("http://b.test/api/v1/database/" + databaseB + "/table/" + tableB + "/data/replicate"),
+                eq(HttpMethod.POST), any(HttpEntity.class), eq(TupleWithTimestampsDto.class))).thenReturn(ResponseEntity.ok(tuple));
+        when(external.exchange(eq("http://c.test/api/v1/database/" + databaseC + "/table/" + tableC + "/data/replicate"),
+                eq(HttpMethod.POST), any(HttpEntity.class), eq(TupleWithTimestampsDto.class)))
+                .thenThrow(new ResourceAccessException("tuple delivery unavailable"));
+        final String timestamps = "http://c.test/api/v1/database/" + databaseC + "/table/" + tableC + "/timestamps";
+        if (targetState.equals("offline")) {
+            when(external.exchange(eq(timestamps), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                    .thenThrow(new ResourceAccessException("site unavailable"));
+        }
+        assertEquals(1, service.replicateData(request, HttpMethod.POST));
+        final var body = org.mockito.ArgumentCaptor.forClass(List.class);
+        if (targetState.equals("online")) {
+            final var entity = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
+            verify(external).exchange(eq(timestamps), eq(HttpMethod.POST), entity.capture(), eq(Map.class));
+            assertEquals(2, ((List<?>) entity.getValue().getBody()).size());
+            org.junit.jupiter.api.Assertions.assertTrue(((List<?>) entity.getValue().getBody()).stream()
+                    .map(value -> (TupleReplicationTimestampDto) value).anyMatch(value -> value.getSiteUrl().equals("http://b.test")));
+        } else {
+            verify(outbox).enqueue(eq(ReplicationOutboxOperationType.TIMESTAMP_SYNC), eq("http://c.test"), eq(HttpMethod.POST),
+                    body.capture(), eq(databaseId), eq(tableId), eq(databaseC), eq(tableC), any());
+            assertEquals(2, body.getValue().size());
+        }
+    }
 
     @Test
     public void failedDurableHandoffIsNotAcknowledged() {

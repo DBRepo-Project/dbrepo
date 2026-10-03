@@ -265,7 +265,6 @@ public class ReplicationServiceImpl implements ReplicationService {
             request.getDatabase().setCreationLocation(normalizedBaseUrl());
         }
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
-        final List<String> successfulReplicaUrls = new ArrayList<>();
         int successful = 0;
         for (String replicaUrl : targetSites(request)) {
             final UUID remoteDatabaseId = replicaId(request.getDatabase().getReplicaUrls(), site(replicaUrl));
@@ -296,7 +295,6 @@ public class ReplicationServiceImpl implements ReplicationService {
                     timestamps.add(timestamp(replicaUrl, tuple.getReplicationKey(), remoteDatabaseId, remoteTableId,
                             tuple.getInsertedAt(), tuple.getDeletedAt()));
                 }
-                successfulReplicaUrls.add(replicaUrl);
                 successful++;
             } catch (Exception e) {
                 log.error("Failed to replicate {} tuple {} to {}: {}", method, request.getTuple().getReplicationKey(),
@@ -307,7 +305,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
         timestamps.add(timestamp(normalizedBaseUrl(), request.getTuple().getReplicationKey(), request.getDatabase().getId(),
                 request.getTable().getId(), request.getTuple().getInsertedAt(), request.getTuple().getDeletedAt()));
-        synchronizeTimestamps(request, method, timestamps, successfulReplicaUrls);
+        synchronizeTimestamps(request, method, timestamps);
         return successful;
     }
 
@@ -469,7 +467,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     }
                     timestamps.add(timestamp(normalizedBaseUrl(), payload.getTuple().getReplicationKey(), database.getId(),
                             table.getId(), payload.getTuple().getInsertedAt(), payload.getTuple().getDeletedAt()));
-                    synchronizeTimestamps(payload, method, timestamps, new ArrayList<>(targetSites(payload)));
+                    synchronizeTimestamps(payload, method, timestamps);
                 });
     }
 
@@ -555,12 +553,12 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
         timestamps.add(timestamp(normalizedBaseUrl(), request.getTuple().getReplicationKey(), request.getDatabase().getId(),
                 request.getTable().getId(), request.getTuple().getInsertedAt(), request.getTuple().getDeletedAt()));
-        synchronizeTimestamps(request, method, timestamps, new ArrayList<>(targetSites(request)));
+        synchronizeTimestamps(request, method, timestamps);
     }
 
     private void retryTimestampSync(ReplicationOutboxEntry entry) throws JsonProcessingException {
         final List<TupleReplicationTimestampDto> timestamps = readPayload(entry, TIMESTAMP_LIST_TYPE);
-        sendTimestamps(entry.getTargetSiteUrl(), entry.getRemoteDatabaseId(), entry.getRemoteTableId(),
+        sendTimestamps(entry.getTargetSiteUrl(), resolveDatabaseId(entry), resolveTableId(entry),
                 HttpMethod.valueOf(entry.getHttpMethod()), timestamps);
     }
 
@@ -808,16 +806,15 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     private void synchronizeTimestamps(DataReplicationDto request, HttpMethod method,
-                                       List<TupleReplicationTimestampDto> timestamps,
-                                       List<String> successfulReplicaUrls) {
+                                       List<TupleReplicationTimestampDto> timestamps) {
         if (timestamps.isEmpty()) {
             return;
         }
         persistLocalTimestamps(request, method, timestamps);
-        for (String replicaUrl : successfulReplicaUrls) {
+        for (String replicaUrl : targetSites(request)) {
             final UUID remoteDatabaseId = replicaId(request.getDatabase().getReplicaUrls(), site(replicaUrl));
             final UUID remoteTableId = replicaId(request.getTable().getReplicaUrls(), site(replicaUrl));
-            if (isLocalSite(replicaUrl) || remoteDatabaseId == null || remoteTableId == null) {
+            if (isLocalSite(replicaUrl)) {
                 continue;
             }
             try {
