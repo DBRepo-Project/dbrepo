@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -117,7 +118,7 @@ public class AccessEndpoint {
         log.debug("endpoint modify access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 access.getType());
         final Database database = metadataService.getDatabase(databaseId);
-        final User user = metadataService.getUser(username);
+        final User user = existingUser(username, access.getType() == AccessTypeDto.READ);
         if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to update access to user {}: no access", username);
             throw new AccessNotFoundException("Failed to update access to user " + username + ": no access");
@@ -162,7 +163,7 @@ public class AccessEndpoint {
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint revoke access to database, databaseId={}, username={}", databaseId, username);
         final Database database = metadataService.getDatabase(databaseId);
-        final User user = metadataService.getUser(username);
+        final User user = existingUser(username, true);
         if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to delete access to user {}: no access", username);
             throw new AccessNotFoundException("Failed to delete access to user " + username + ": no access");
@@ -174,6 +175,19 @@ public class AccessEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
+        }
+    }
+
+    private User existingUser(String username, boolean allowRestriction) throws RemoteUnavailableException,
+            UserNotFoundException, MetadataServiceException {
+        try {
+            return metadataService.getUser(username);
+        } catch (UserNotFoundException e) {
+            if (!allowRestriction) {
+                throw e;
+            }
+            // A removed identity must not prevent restricting an existing SQL account.
+            return User.builder().username(username).build();
         }
     }
 

@@ -222,8 +222,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void update_userNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException, MetadataServiceException {
+    public void update_removedIdentity_canStillBeRestricted() throws Exception {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -233,9 +232,12 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .getUser(USER_1_USERNAME);
 
         /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO);
-        });
+        assertEquals(HttpStatus.ACCEPTED,
+                accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME, UPDATE_DATABASE_ACCESS_READ_DTO).getStatusCode());
+        verify(accessService).update(eq(DATABASE_1_CACHE),
+                argThat(user -> USER_1_USERNAME.equals(user.getUsername())), eq(AccessTypeDto.READ));
+        assertThrows(UserNotFoundException.class, () -> accessEndpoint.update(DATABASE_1_ID, USER_1_USERNAME,
+                at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto.builder().type(AccessTypeDto.WRITE_ALL).build()));
     }
 
     @Test
@@ -304,8 +306,7 @@ public class AccessEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void revoke_userNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException, MetadataServiceException {
+    public void revoke_removedIdentity_canStillBeRevoked() throws Exception {
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -315,9 +316,9 @@ public class AccessEndpointUnitTest extends BaseTest {
                 .getUser(USER_1_USERNAME);
 
         /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME);
-        });
+        assertEquals(HttpStatus.ACCEPTED, accessEndpoint.revoke(DATABASE_1_ID, USER_1_USERNAME).getStatusCode());
+        verify(accessService).delete(eq(DATABASE_1_CACHE),
+                argThat(user -> USER_1_USERNAME.equals(user.getUsername())));
     }
 
     @Test
