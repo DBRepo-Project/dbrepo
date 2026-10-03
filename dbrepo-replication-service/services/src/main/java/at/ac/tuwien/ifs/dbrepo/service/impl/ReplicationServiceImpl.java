@@ -34,6 +34,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -286,8 +288,10 @@ public class ReplicationServiceImpl implements ReplicationService {
                             "Tuple replication returned " + response.getStatusCode());
                     continue;
                 }
-                timestamps.add(timestamp(replicaUrl, tuple.getReplicationKey(), remoteDatabaseId, remoteTableId,
-                        tuple.getInsertedAt(), tuple.getDeletedAt()));
+                if (!Boolean.FALSE.equals(tuple.getApplied())) {
+                    timestamps.add(timestamp(replicaUrl, tuple.getReplicationKey(), remoteDatabaseId, remoteTableId,
+                            tuple.getInsertedAt(), tuple.getDeletedAt()));
+                }
                 successfulReplicaUrls.add(replicaUrl);
                 successful++;
             } catch (Exception e) {
@@ -403,7 +407,7 @@ public class ReplicationServiceImpl implements ReplicationService {
     @Override
     public boolean retryOutboxEntry(UUID id) {
         final ReplicationOutboxEntry entry = outboxService.findById(id).orElse(null);
-        if (entry == null) {
+        if (entry == null || entry.getStatus() == ReplicationOutboxStatus.CANCELLED) {
             return false;
         }
         if (ReplicationOutboxStatus.SUCCEEDED.equals(entry.getStatus())) {
@@ -414,12 +418,12 @@ public class ReplicationServiceImpl implements ReplicationService {
             outboxService.markSucceeded(entry.getId());
             return true;
         } catch (ReplicaDependencyPendingException e) {
-            outboxService.defer(entry.getId(), e.getMessage(), retryDelayFor(entry.getAttempts() + 1));
+            outboxService.defer(entry.getId(), e.getMessage(), retryDelayFor(entry.getAttempts()), Math.max(1, maxAttempts));
             return false;
         } catch (Exception e) {
             log.error("Failed to retry replication outbox entry {}: {}", id, e.getMessage(), e);
-            outboxService.markFailed(entry.getId(), e.getMessage(), retryDelayFor(entry.getAttempts() + 1),
-                    maxAttempts);
+            outboxService.markFailed(entry.getId(), e.getMessage(), retryDelayFor(entry.getAttempts()),
+                    Math.max(1, maxAttempts), isRecoverable(e));
             return false;
         }
     }
@@ -514,8 +518,10 @@ public class ReplicationServiceImpl implements ReplicationService {
         final TupleWithTimestampsDto tuple = replicateRemoteData(entry.getTargetSiteUrl(), remoteDatabaseId,
                 remoteTableId, request, method);
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
-        timestamps.add(timestamp(entry.getTargetSiteUrl(), tuple.getReplicationKey(), remoteDatabaseId,
-                remoteTableId, tuple.getInsertedAt(), tuple.getDeletedAt()));
+        if (!Boolean.FALSE.equals(tuple.getApplied())) {
+            timestamps.add(timestamp(entry.getTargetSiteUrl(), tuple.getReplicationKey(), remoteDatabaseId,
+                    remoteTableId, tuple.getInsertedAt(), tuple.getDeletedAt()));
+        }
         timestamps.add(timestamp(normalizedBaseUrl(), request.getTuple().getReplicationKey(), request.getDatabase().getId(),
                 request.getTable().getId(), request.getTuple().getInsertedAt(), request.getTuple().getDeletedAt()));
         synchronizeTimestamps(request, method, timestamps, new ArrayList<>(targetSites(request)));
@@ -528,7 +534,11 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     private <T> T requireBody(ResponseEntity<T> response, String operation) {
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RestClientResponseException(operation + " returned " + response.getStatusCode(),
+                    response.getStatusCode().value(), response.getStatusCode().toString(), response.getHeaders(), null, null);
+        }
+        if (response.getBody() == null) {
             throw new IllegalStateException(operation + " returned " + response.getStatusCode());
         }
         return response.getBody();
@@ -674,12 +684,22 @@ public class ReplicationServiceImpl implements ReplicationService {
         return ReplicationOutboxOperationType.DATA_CREATE;
     }
 
-    private Duration retryDelayFor(int attempt) {
+    private boolean isRecoverable(Exception error) {
+        if (error instanceof ResourceAccessException) {
+            return true;
+        }
+        if (error instanceof RestClientResponseException response) {
+            final int status = response.getStatusCode().value();
+            return status == 408 || status == 429 || status >= 500 && status <= 599;
+        }
+        return false;
+    }
+
+    private Duration retryDelayFor(int previousAttempts) {
         final long baseSeconds = Math.max(1, retryDelaySeconds);
         final long cappedMaxSeconds = Math.max(baseSeconds, maxRetryDelaySeconds);
-        final int exponent = Math.min(Math.max(0, attempt - 1), 10);
-        final long multiplier = 1L << exponent;
-        final long seconds = Math.min(cappedMaxSeconds, baseSeconds * multiplier);
+        final long multiplier = 1L << Math.min(Math.max(0, previousAttempts), 62);
+        final long seconds = baseSeconds > cappedMaxSeconds / multiplier ? cappedMaxSeconds : baseSeconds * multiplier;
         return Duration.ofSeconds(seconds);
     }
 

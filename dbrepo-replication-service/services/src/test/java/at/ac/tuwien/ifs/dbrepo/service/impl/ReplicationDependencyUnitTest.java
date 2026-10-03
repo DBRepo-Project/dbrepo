@@ -68,7 +68,7 @@ class ReplicationDependencyUnitTest {
         metadata(DatabaseDto.builder().id(databaseId).replicaUrls(Map.of()).build(), null);
 
         assertFalse(service.retryOutboxEntry(entry.getId()));
-        verify(outbox).defer(eq(entry.getId()), contains("database mapping"), any());
+        verify(outbox).defer(eq(entry.getId()), contains("database mapping"), any(), anyInt());
         verify(outbox, never()).markFailed(any(), any(), any(), anyInt());
         verifyNoInteractions(external);
     }
@@ -102,6 +102,57 @@ class ReplicationDependencyUnitTest {
                 + "/table/" + thirdTableId + "/timestamps"), eq(HttpMethod.POST),
                 any(HttpEntity.class), eq(Map.class));
         verify(outbox).markSucceeded(entry.getId());
+    }
+
+    @Test
+    void cancellationStopsDispatchBeforeNetworkCalls() throws Exception {
+        final var entry = entry(ReplicationOutboxOperationType.DATA_CREATE, payload(Map.of(), Map.of()));
+        entry.setStatus(ReplicationOutboxStatus.CANCELLED);
+        when(outbox.findById(entry.getId())).thenReturn(Optional.of(entry));
+        assertFalse(service.retryOutboxEntry(entry.getId()));
+        verifyNoInteractions(metadata, data, external);
+        verify(outbox, never()).markSucceeded(any());
+    }
+
+    @Test
+    void typedTransportFailuresKeepRecoveryScheduledWithoutOverflow() throws Exception {
+        ReflectionTestUtils.setField(service, "retryDelaySeconds", 30L);
+        ReflectionTestUtils.setField(service, "maxRetryDelaySeconds", 900L);
+        final List<RuntimeException> failures = List.of(new org.springframework.web.client.ResourceAccessException("offline"),
+                new org.springframework.web.client.HttpClientErrorException(HttpStatus.BAD_REQUEST));
+        for (RuntimeException failure : failures) {
+            final var entry = entry(ReplicationOutboxOperationType.TIMESTAMP_SYNC, List.of());
+            entry.setHttpMethod("POST");
+            entry.setRemoteDatabaseId(remoteDatabaseId);
+            entry.setRemoteTableId(remoteTableId);
+            entry.setAttempts(Integer.MAX_VALUE);
+            when(outbox.findById(entry.getId())).thenReturn(Optional.of(entry));
+            doThrow(failure).when(external).exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class));
+            assertFalse(service.retryOutboxEntry(entry.getId()));
+            verify(outbox).markFailed(eq(entry.getId()), anyString(), eq(java.time.Duration.ofSeconds(900)), anyInt(),
+                    eq(failure instanceof org.springframework.web.client.ResourceAccessException));
+        }
+    }
+
+    @Test
+    void staleAcknowledgementDoesNotInventReceiverVisibility() {
+        final DataReplicationDto request = payload(Map.of("https://replica.example", remoteDatabaseId),
+                Map.of("https://replica.example", remoteTableId));
+        when(external.exchange(endsWith("/data/replicate"), eq(HttpMethod.POST), any(HttpEntity.class),
+                eq(TupleWithTimestampsDto.class))).thenReturn(ResponseEntity.ok(TupleWithTimestampsDto.builder()
+                .replicationKey("key").data(Map.of()).applied(false).build()));
+        when(data.exchange(endsWith("/timestamps"), any(HttpMethod.class), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(Map.of()));
+        when(external.exchange(endsWith("/timestamps"), any(HttpMethod.class), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(Map.of()));
+
+        assertEquals(1, service.replicateData(request, HttpMethod.POST));
+        final var sent = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
+        verify(data).exchange(endsWith("/timestamps"), eq(HttpMethod.POST), sent.capture(), eq(Map.class));
+        final var timestamps = (List<?>) sent.getValue().getBody();
+        assertEquals(1, timestamps.size());
+        assertEquals("https://origin.example", ((TupleReplicationTimestampDto) timestamps.getFirst()).getSiteUrl());
+        verify(outbox, never()).enqueue(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
