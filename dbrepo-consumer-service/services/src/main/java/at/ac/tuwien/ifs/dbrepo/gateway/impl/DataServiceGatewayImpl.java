@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
@@ -36,7 +37,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void insertRawTuple(UUID databaseId, UUID tableId, TupleDto tuple) throws RemoteUnavailableException,
             TableNotFoundException, DataServiceException {
         final ResponseEntity<Void> response;
-        final String url = "/api/v1/database/" + databaseId + "/tables/" + tableId + "/data";
+        final String url = "/api/v1/database/" + databaseId + "/table/" + tableId + "/data";
         log.debug("insert raw tuple into data service: {}", url);
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(tuple), Void.class);
@@ -46,6 +47,13 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find table with id {}: {}", tableId, e.getMessage());
             throw new TableNotFoundException("Failed to find table: " + e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.REQUEST_TIMEOUT || e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                throw new RemoteUnavailableException("Data service temporarily rejected tuple", e);
+            }
+            throw new DataServiceException("Data service rejected tuple: " + e.getStatusCode(), e);
+        } catch (RestClientException e) {
+            throw new DataServiceException("Failed to send tuple to data service", e);
         }
         if (response.getStatusCode() != HttpStatus.CREATED) {
             log.error("Failed to insert raw tuple into data service: service responded unsuccessful: {}", response.getStatusCode());
