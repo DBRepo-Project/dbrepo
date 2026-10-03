@@ -7,6 +7,14 @@
       "routing_key": "dbrepo.#",
       "source": "dbrepo",
       "vhost": "dbrepo"
+    },
+    {
+      "arguments": {},
+      "destination": "dbrepo.dead-letter",
+      "destination_type": "queue",
+      "routing_key": "rejected",
+      "source": "dbrepo.dead-letter",
+      "vhost": "dbrepo"
     }
   ],
   "exchanges": [
@@ -16,6 +24,14 @@
       "durable": true,
       "name": "dbrepo",
       "type": "topic",
+      "vhost": "dbrepo"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "dbrepo.dead-letter",
+      "type": "direct",
       "vhost": "dbrepo"
     }
   ],
@@ -30,7 +46,22 @@
       "write": ".*"
     }
   ],
-  "policies": [],
+  "policies": [
+    {
+      "name": "dbrepo-consumer-retention",
+      "vhost": "dbrepo",
+      "pattern": "^dbrepo$",
+      "apply-to": "queues",
+      "priority": 50,
+      "definition": {
+        "dead-letter-exchange": "dbrepo.dead-letter",
+        "dead-letter-routing-key": "rejected",
+        "dead-letter-strategy": "at-least-once",
+        "overflow": "reject-publish",
+        "delivery-limit": 5
+      }
+    }
+  ],
   "queues": [
     {
       "arguments": {
@@ -39,6 +70,17 @@
       "auto_delete": false,
       "durable": true,
       "name": "dbrepo",
+      "type": "quorum",
+      "vhost": "dbrepo"
+    },
+    {
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": -1
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "dbrepo.dead-letter",
       "type": "quorum",
       "vhost": "dbrepo"
     }

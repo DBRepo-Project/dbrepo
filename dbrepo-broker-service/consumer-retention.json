@@ -1,0 +1,51 @@
+{
+  "exchanges": [
+    {
+      "name": "dbrepo.dead-letter",
+      "vhost": "dbrepo",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "dbrepo.dead-letter",
+      "vhost": "dbrepo",
+      "type": "quorum",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": -1
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "dbrepo.dead-letter",
+      "vhost": "dbrepo",
+      "destination": "dbrepo.dead-letter",
+      "destination_type": "queue",
+      "routing_key": "rejected",
+      "arguments": {}
+    }
+  ],
+  "policies": [
+    {
+      "name": "dbrepo-consumer-retention",
+      "vhost": "dbrepo",
+      "pattern": "^dbrepo$",
+      "apply-to": "queues",
+      "priority": 50,
+      "definition": {
+        "dead-letter-exchange": "dbrepo.dead-letter",
+        "dead-letter-routing-key": "rejected",
+        "dead-letter-strategy": "at-least-once",
+        "overflow": "reject-publish",
+        "delivery-limit": 5
+      }
+    }
+  ]
+}
