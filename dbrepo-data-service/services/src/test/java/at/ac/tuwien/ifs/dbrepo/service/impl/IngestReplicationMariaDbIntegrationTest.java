@@ -728,7 +728,7 @@ class IngestReplicationMariaDbIntegrationTest {
 
     private void assertNoStagingTables() throws Exception {
         assertEquals(0, count("information_schema.tables WHERE table_schema = '" + DATABASE
-                + "' AND table_name NOT IN ('samples', 'tuple_replication_notification_outbox')"));
+                + "' AND table_name NOT IN ('samples', 'tuple_replication_notification_outbox', 'tuple_replication_journal_counter')"));
     }
 
     private Connection connection() throws Exception {
