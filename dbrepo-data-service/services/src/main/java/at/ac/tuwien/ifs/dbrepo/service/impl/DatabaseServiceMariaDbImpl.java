@@ -7,11 +7,14 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreCreateException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.ReplicationCreation;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -22,6 +25,9 @@ import java.sql.SQLException;
 public class DatabaseServiceMariaDbImpl extends DataConnector implements DatabaseService {
 
     private final MariaDbMapper mariaDbMapper;
+
+    @Value("${dbrepo.baseUrl:http://localhost}")
+    private String baseUrl;
 
     @Autowired
     public DatabaseServiceMariaDbImpl(MariaDbMapper mariaDbMapper) {
@@ -36,8 +42,21 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         try {
             /* create database if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
-                    .execute();
+            if (ReplicationSites.isReplica(data.getCreationLocation(), baseUrl)) {
+                final var creationId = data.getReplicaUrls() == null ? null
+                        : data.getReplicaUrls().get(data.getCreationLocation());
+                final var id = ReplicationCreation.localId("DATABASE", data.getContainerId(),
+                        data.getCreationLocation(), creationId);
+                if (!ReplicationCreation.databaseName(id).equals(data.getInternalName())) {
+                    throw new SQLException("Replicated database name does not match its creation identity");
+                }
+                ReplicaDdl.createDatabase(connection, data.getInternalName(), id.toString());
+            } else {
+                try (var statement = connection.prepareStatement(
+                        mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))) {
+                    statement.execute();
+                }
+            }
             connection.commit();
             log.atDebug()
                     .setMessage("created database: " + data.getInternalName())
@@ -67,41 +86,37 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         final Connection connection = dataSource.getConnection();
         try {
             /* create query store */
+            final boolean resumable = ReplicaDdl.isReplicaDatabase(connection, databaseName);
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
-                    .execute();
+            ReplicaDdl.initialize(connection, mariaDbMapper.queryStoreCreateTableRawQuery(), resumable);
             log.atDebug()
                     .setMessage("created query store in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_query_store")
                     .log();
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery())
-                    .execute();
+            ReplicaDdl.initialize(connection, mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery(), resumable);
             log.atDebug()
                     .setMessage("created query store hash table procedure in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_procedure_hash_table")
                     .log();
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery())
-                    .execute();
+            ReplicaDdl.initialize(connection, mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery(), resumable);
             log.atDebug()
                     .setMessage("created query store procedure in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_procedure_store_query")
                     .log();
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery())
-                    .execute();
+            ReplicaDdl.initialize(connection, mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery(), resumable);
             log.atDebug()
                     .setMessage("created internal query store procedure in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_procedure_internal_store_query")
                     .log();
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalHashQueryProcedureRawQuery())
-                    .execute();
+            ReplicaDdl.initialize(connection, mariaDbMapper.queryStoreCreateInternalHashQueryProcedureRawQuery(), resumable);
             log.atDebug()
                     .setMessage("created query hash procedure in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)

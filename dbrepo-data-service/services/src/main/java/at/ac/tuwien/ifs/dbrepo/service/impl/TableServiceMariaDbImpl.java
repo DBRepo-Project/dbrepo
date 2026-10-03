@@ -124,9 +124,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(database.getInternalName(),
-                            data))
-                    .execute();
+            final String sql = mariaDbMapper.tableCreateDtoToCreateTableRawQuery(database.getInternalName(), data);
+            if (ReplicationSites.isReplica(data.getCreationLocation(), baseUrl)) {
+                ReplicaDdl.createTable(connection, database.getInternalName(), tableName, sql);
+            } else {
+                try (var statement = connection.prepareStatement(sql)) {
+                    statement.execute();
+                }
+            }
             log.atDebug()
                     .setMessage("created table: " + database.getInternalName() + "." + tableName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
