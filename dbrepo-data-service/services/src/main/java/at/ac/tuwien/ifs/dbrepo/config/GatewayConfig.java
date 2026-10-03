@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -45,7 +46,7 @@ public class GatewayConfig {
 
     @Bean("metadataServiceRestTemplate")
     public RestTemplate metadataServiceRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
+        final RestTemplate restTemplate = timeoutRestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));
@@ -54,11 +55,18 @@ public class GatewayConfig {
 
     @Bean("replicationRestTemplate")
     public RestTemplate replicationRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
+        final RestTemplate restTemplate = timeoutRestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(replicationEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));
         return restTemplate;
+    }
+
+    private RestTemplate timeoutRestTemplate() {
+        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(10_000);
+        factory.setReadTimeout(30_000);
+        return new RestTemplate(factory);
     }
 
 }

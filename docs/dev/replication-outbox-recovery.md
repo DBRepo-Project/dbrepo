@@ -105,7 +105,9 @@ already-initialized source journal. Legacy `PROCESSING` entries without tokens
 become claimable after `processingTimeoutSeconds` from their last modification.
 Quiesce old dispatchers before upgrading; their unfenced updates are not safe to
 run alongside the new code. Set the processing timeout above the HTTP timeout
-plus acknowledgement-write allowance (default lease: 300 seconds).
+plus acknowledgement-write allowance (default lease: 300 seconds). Both the
+metadata-discovery and tuple-delivery clients have a 10-second connect timeout
+and a 30-second read timeout.
 
 A peer response alone is not a durable local success. If its acknowledgement
 cannot be persisted, the dispatcher leaves the lease for recovery. Delivery is
