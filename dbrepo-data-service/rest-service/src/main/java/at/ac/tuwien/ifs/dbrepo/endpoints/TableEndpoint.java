@@ -364,14 +364,6 @@ public class TableEndpoint {
                 .toList();
     }
 
-    private boolean hasReplicaLocations(Database database, Table table) {
-        return hasReplicaLocations(database.getReplicaUrls()) || hasReplicaLocations(table.getReplicaUrls());
-    }
-
-    private boolean hasReplicaLocations(Map<String, UUID> replicaUrls) {
-        return replicaUrls != null && !replicaUrls.isEmpty();
-    }
-
     private TupleDto tupleFromReplicationPayload(Table table, DataReplicationDto data) throws TableMalformedException {
         final Map<String, Object> values = tupleData(data);
         requireReplicationKey(table, values);
@@ -545,12 +537,7 @@ public class TableEndpoint {
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         try {
-            if (hasReplicaLocations(database, table)) {
-                final TupleWithTimestampsDto created = tableService.createTupleWithTimestamps(database, table, data);
-                replicationService.replicateTuple(created, database, table);
-            } else {
-                tableService.createTuple(database, table, data);
-            }
+            tableService.createTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {
@@ -638,12 +625,7 @@ public class TableEndpoint {
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         try {
-            if (hasReplicaLocations(database, table)) {
-                final TupleWithTimestampsDto updated = tableService.updateTupleWithTimestamps(database, table, data);
-                replicationService.replicateTupleUpdate(updated, database, table);
-            } else {
-                tableService.updateTuple(database, table, data);
-            }
+            tableService.updateTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -730,12 +712,7 @@ public class TableEndpoint {
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
         try {
-            if (hasReplicaLocations(database, table)) {
-                final TupleWithTimestampsDto deleted = tableService.deleteTupleWithTimestamps(database, table, data);
-                replicationService.replicateTupleDelete(deleted, database, table);
-            } else {
-                tableService.deleteTuple(database, table, data);
-            }
+            tableService.deleteTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {

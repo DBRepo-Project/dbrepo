@@ -15,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -27,6 +28,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpMethod;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,15 +48,18 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private final SubsetService subsetService;
     private final StorageService storageService;
     private final DataService computeService;
+    private final ReplicationService replicationService;
 
     @Autowired
     public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                                   StorageService storageService, DataService computeService) {
+                                   StorageService storageService, DataService computeService,
+                                   ReplicationService replicationService) {
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.storageService = storageService;
         this.computeService = computeService;
+        this.replicationService = replicationService;
     }
 
     @Override
@@ -341,6 +346,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Timed(value = "dbrepo_data_delete_tuple", description = "Time spent deleting a table tuple", histogram = true)
     public void deleteTuple(Database database, Table table, TupleDeleteDto data) throws SQLException,
             TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
+        if (replicationService.isEnabled(database, table)) {
+            deleteTupleWithTimestamps(database, table, data);
+            return;
+        }
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -376,6 +385,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Timed(value = "dbrepo_data_create_tuple", description = "Time spent creating a table tuple", histogram = true)
     public void createTuple(Database database, Table table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        if (replicationService.isEnabled(database, table)) {
+            createTupleWithTimestamps(database, table, data);
+            return;
+        }
         log.trace("create tuple: {}", data);
         /* for each LOB-like data-column, retrieve the bytes and replace the value */
         for (String key : data.getData().keySet()) {
@@ -446,6 +459,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            replicationService.prepare(connection, database, table);
+            connection.setAutoCommit(false);
             final int[] idx = new int[]{1};
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
                     database.getInternalName(), table, data));
@@ -464,6 +479,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .log();
             final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
                     lookupKeys(data.getData()));
+            replicationService.enqueue(connection, tuple, database, table, HttpMethod.POST);
             connection.commit();
             log.info("Created tuple with timestamps in table: {}.{}", database.getInternalName(),
                     table.getInternalName());
@@ -472,7 +488,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.rollback();
             log.error("Failed to create tuple with timestamps: {}", e.getMessage());
             throw new QueryMalformedException("Failed to create tuple with timestamps: " + e.getMessage(), e);
+        } catch (RuntimeException | QueryMalformedException | TableMalformedException
+                 | StorageUnavailableException | StorageNotFoundException e) {
+            connection.rollback();
+            throw e;
         } finally {
+            connection.close();
             dataSource.close();
         }
     }
@@ -509,6 +530,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Timed(value = "dbrepo_data_update_tuple", description = "Time spent updating a table tuple", histogram = true)
     public void updateTuple(Database database, Table table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        if (replicationService.isEnabled(database, table)) {
+            updateTupleWithTimestamps(database, table, data);
+            return;
+        }
         log.trace("update tuple: {}", data);
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
@@ -553,9 +578,15 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
             StorageNotFoundException {
         log.trace("update tuple with timestamps: {}", data);
+        if (data.getData().containsKey("replication_key")) {
+            throw new QueryMalformedException("The replication key cannot be changed");
+        }
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            replicationService.prepare(connection, database, table);
+            connection.setAutoCommit(false);
+            final List<String> affectedKeys = lockReplicationKeys(connection, database, table, data.getKeys());
             final int[] idx = new int[]{1};
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
                     database.getInternalName(), table, data));
@@ -577,15 +608,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_update_tuple_with_timestamps")
                     .log();
-            final Map<String, Object> lookup = new LinkedHashMap<>(data.getKeys());
-            data.getData()
-                    .forEach((key, value) -> {
-                        if (lookup.containsKey(key)) {
-                            lookup.put(key, value);
-                        }
-                    });
-            final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
-                    lookupKeys(lookup));
+            final TupleWithTimestampsDto tuple = enqueueChangedTuples(connection, database, table, affectedKeys,
+                    HttpMethod.PUT);
             connection.commit();
             log.info("Updated tuple with timestamps in table: {}.{}", database.getInternalName(),
                     table.getInternalName());
@@ -594,7 +618,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.rollback();
             log.error("Failed to update tuple with timestamps: {}", e.getMessage());
             throw new QueryMalformedException("Failed to update tuple with timestamps: " + e.getMessage(), e);
+        } catch (RuntimeException | QueryMalformedException | TableMalformedException
+                 | StorageUnavailableException | StorageNotFoundException e) {
+            connection.rollback();
+            throw e;
         } finally {
+            connection.close();
             dataSource.close();
         }
     }
@@ -608,6 +637,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            replicationService.prepare(connection, database, table);
+            connection.setAutoCommit(false);
+            final List<String> affectedKeys = lockReplicationKeys(connection, database, table, data.getKeys());
             final int[] idx = new int[]{1};
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
                     database.getInternalName(), table, data));
@@ -624,8 +656,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_delete_tuple_with_timestamps")
                     .log();
-            final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
-                    lookupKeys(data.getKeys()));
+            final TupleWithTimestampsDto tuple = enqueueChangedTuples(connection, database, table, affectedKeys,
+                    HttpMethod.DELETE);
             connection.commit();
             log.info("Deleted tuple with timestamps from table: {}.{}", database.getInternalName(),
                     table.getInternalName());
@@ -634,7 +666,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             connection.rollback();
             log.error("Failed to delete tuple with timestamps: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete tuple with timestamps: " + e.getMessage(), e);
+        } catch (RuntimeException | QueryMalformedException | TableMalformedException
+                 | StorageUnavailableException | StorageNotFoundException e) {
+            connection.rollback();
+            throw e;
         } finally {
+            connection.close();
             dataSource.close();
         }
     }
@@ -945,6 +982,53 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         if (!hasColumn(table, "replication_key")) {
             throw new TableMalformedException("Table is missing the replication_key column");
         }
+    }
+
+    private List<String> lockReplicationKeys(Connection connection, Database database, Table table,
+                                              Map<String, Object> keys)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException {
+        requireReplicationKeyColumn(table);
+        if (keys == null || keys.isEmpty()) {
+            throw new QueryMalformedException("Tuple mutation requires lookup keys");
+        }
+        final List<String> predicates = new ArrayList<>();
+        for (String key : keys.keySet()) {
+            getColumnType(table.getColumns(), key);
+            predicates.add("`" + key.replace("`", "``") + "` <=> ?");
+        }
+        final String sql = "SELECT replication_key FROM `" + database.getInternalName().replace("`", "``")
+                + "`.`" + table.getInternalName().replace("`", "``") + "` WHERE "
+                + String.join(" AND ", predicates) + " ORDER BY replication_key FOR UPDATE";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            int index = 1;
+            for (Map.Entry<String, Object> key : keys.entrySet()) {
+                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                        getColumnType(table.getColumns(), key.getKey()), index++, key.getKey(), key.getValue());
+            }
+            final List<String> result = new ArrayList<>();
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    result.add(rows.getString(1));
+                }
+            }
+            return result;
+        }
+    }
+
+    private TupleWithTimestampsDto enqueueChangedTuples(Connection connection, Database database, Table table,
+                                                         List<String> keys, HttpMethod method)
+            throws SQLException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
+        TupleWithTimestampsDto first = null;
+        for (String key : keys) {
+            final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
+                    replicationKeyLookup(key));
+            replicationService.enqueue(connection, tuple, database, table, method);
+            if (first == null) {
+                first = tuple;
+            }
+        }
+        return first;
     }
 
     private TupleWithTimestampsDto selectTupleWithTimestamps(Connection connection, Database database, Table table,

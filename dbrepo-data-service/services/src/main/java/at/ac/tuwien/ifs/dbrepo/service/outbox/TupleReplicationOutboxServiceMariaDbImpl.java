@@ -40,6 +40,29 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
     @Override
     public TupleReplicationOutboxEntry enqueue(Database database, Table table, HttpMethod method,
                                                DataReplicationDto payload) throws SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        try (Connection connection = dataSource.getConnection()) {
+            ensureTableExists(connection);
+            connection.setAutoCommit(false);
+            try {
+                final TupleReplicationOutboxEntry entry = enqueue(connection, database, table, method, payload);
+                connection.commit();
+                return entry;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            }
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
+    public TupleReplicationOutboxEntry enqueue(Connection connection, Database database, Table table, HttpMethod method,
+                                               DataReplicationDto payload) throws SQLException {
+        if (connection.getAutoCommit()) {
+            throw new SQLException("Tuple replication must be enqueued inside the data transaction");
+        }
         final TupleReplicationOutboxEntry entry = TupleReplicationOutboxEntry.builder()
                 .id(UUID.randomUUID())
                 .databaseId(database.getId())
@@ -51,36 +74,24 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 .created(Instant.now())
                 .nextAttemptAt(Instant.now())
                 .build();
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
-            ensureTableExists(connection);
-            final String statement = """
-                    INSERT INTO tuple_replication_notification_outbox
-                        (id, database_id, table_id, http_method, payload, status, attempts, created, next_attempt_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.setString(1, entry.getId().toString());
-                preparedStatement.setString(2, entry.getDatabaseId().toString());
-                preparedStatement.setString(3, entry.getTableId().toString());
-                preparedStatement.setString(4, entry.getHttpMethod().name());
-                preparedStatement.setString(5, entry.getPayloadJson());
-                preparedStatement.setString(6, entry.getStatus().name());
-                preparedStatement.setInt(7, entry.getAttempts());
-                preparedStatement.setTimestamp(8, Timestamp.from(entry.getCreated()));
-                preparedStatement.setTimestamp(9, Timestamp.from(entry.getNextAttemptAt()));
-                preparedStatement.executeUpdate();
-            }
-            connection.commit();
-            return entry;
-        } catch (SQLException e) {
-            log.error("Failed to enqueue tuple replication notification in database {}: {}",
-                    database.getInternalName(), e.getMessage(), e);
-            throw e;
-        } finally {
-            dataSource.close();
+        final String statement = """
+                INSERT INTO tuple_replication_notification_outbox
+                    (id, database_id, table_id, http_method, payload, status, attempts, created, next_attempt_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            preparedStatement.setString(1, entry.getId().toString());
+            preparedStatement.setString(2, entry.getDatabaseId().toString());
+            preparedStatement.setString(3, entry.getTableId().toString());
+            preparedStatement.setString(4, entry.getHttpMethod().name());
+            preparedStatement.setString(5, entry.getPayloadJson());
+            preparedStatement.setString(6, entry.getStatus().name());
+            preparedStatement.setInt(7, entry.getAttempts());
+            preparedStatement.setTimestamp(8, Timestamp.from(entry.getCreated()));
+            preparedStatement.setTimestamp(9, Timestamp.from(entry.getNextAttemptAt()));
+            preparedStatement.executeUpdate();
         }
+        return entry;
     }
 
     @Override
@@ -314,7 +325,8 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 .build();
     }
 
-    private void ensureTableExists(Connection connection) throws SQLException {
+    @Override
+    public void ensureTableExists(Connection connection) throws SQLException {
         final String statement = """
                 CREATE TABLE IF NOT EXISTS tuple_replication_notification_outbox (
                     id              VARCHAR(36)  NOT NULL,

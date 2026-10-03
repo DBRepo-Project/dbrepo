@@ -10,14 +10,17 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.TupleReplicationNotificationDispatcher;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxEntry;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +29,9 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class ReplicationServiceImpl implements ReplicationService {
+
+    @Value("${dbrepo.baseUrl}")
+    private String baseUrl;
 
     private final TupleReplicationOutboxService outboxService;
     private final TupleReplicationNotificationDispatcher dispatcher;
@@ -37,18 +43,38 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void replicateTuple(TupleWithTimestampsDto tuple, Database database, Table table) {
-        send(tuple, database, table, HttpMethod.POST);
+    public boolean isEnabled(Database database, Table table) {
+        return !ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
+                && !ReplicationSites.isReplica(table.getCreationLocation(), baseUrl)
+                && ((database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty())
+                || (table.getReplicaUrls() != null && !table.getReplicaUrls().isEmpty()));
     }
 
     @Override
-    public void replicateTupleUpdate(TupleWithTimestampsDto tuple, Database database, Table table) {
-        send(tuple, database, table, HttpMethod.PUT);
+    public void prepare(Connection connection, Database database, Table table) throws SQLException {
+        if (isEnabled(database, table)) {
+            // MariaDB DDL commits implicitly, so prepare before starting the data transaction.
+            if (!connection.getAutoCommit()) {
+                throw new SQLException("Prepare tuple replication before the data transaction");
+            }
+            outboxService.ensureTableExists(connection);
+        }
     }
 
     @Override
-    public void replicateTupleDelete(TupleWithTimestampsDto tuple, Database database, Table table) {
-        send(tuple, database, table, HttpMethod.DELETE);
+    public void enqueue(Connection connection, TupleWithTimestampsDto tuple, Database database, Table table,
+                        HttpMethod method) throws SQLException {
+        if (!isEnabled(database, table)) {
+            return;
+        }
+        if (tuple == null || tuple.getReplicationKey() == null) {
+            throw new SQLException("Cannot replicate tuple without a replication key");
+        }
+        outboxService.enqueue(connection, database, table, method, DataReplicationDto.builder()
+                .tuple(tuple)
+                .database(toDatabaseDto(database))
+                .table(toTableDto(database, table))
+                .build());
     }
 
     @Override
@@ -64,27 +90,6 @@ public class ReplicationServiceImpl implements ReplicationService {
     @Override
     public boolean retryOutboxEntry(Database database, UUID id) {
         return dispatcher.dispatch(database, id);
-    }
-
-    private void send(TupleWithTimestampsDto tuple, Database database, Table table, HttpMethod method) {
-        if (tuple == null || tuple.getReplicationKey() == null) {
-            log.warn("Skip tuple replication for {}.{}: missing replication key", database.getInternalName(),
-                    table.getInternalName());
-            return;
-        }
-        try {
-            final DataReplicationDto request = DataReplicationDto.builder()
-                    .tuple(tuple)
-                    .database(toDatabaseDto(database))
-                    .table(toTableDto(database, table))
-                    .build();
-            final TupleReplicationOutboxEntry entry = outboxService.enqueue(database, table, method, request);
-            dispatcher.dispatchAsync(database, entry.getId());
-        } catch (Exception e) {
-            log.error("Failed to enqueue {} tuple replication for {}.{} key {}: {}", method,
-                    database.getInternalName(), table.getInternalName(), tuple.getReplicationKey(), e.getMessage(),
-                    e);
-        }
     }
 
     private DatabaseDto toDatabaseDto(Database database) {

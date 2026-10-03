@@ -41,7 +41,7 @@ public class TableServiceMariaDbImplUnitTest {
         final StorageService storageService = mock(StorageService.class);
         final DataService dataService = mock(DataService.class);
         final TableServiceMariaDbImpl tableService = spy(new TableServiceMariaDbImpl(dataMapper, mariaDbMapper,
-                subsetService, storageService, dataService));
+                subsetService, storageService, dataService, mock(ReplicationService.class)));
         final Database database = Database.builder()
                 .internalName("db")
                 .tables(null)
@@ -145,7 +145,7 @@ public class TableServiceMariaDbImplUnitTest {
 
         TestTableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SubsetService subsetService,
                                     StorageService storageService, DataService computeService, String jdbcUrl) {
-            super(dataMapper, mariaDbMapper, subsetService, storageService, computeService);
+            super(dataMapper, mariaDbMapper, subsetService, storageService, computeService, mock(ReplicationService.class));
             this.jdbcUrl = jdbcUrl;
         }
 

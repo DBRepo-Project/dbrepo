@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import org.springframework.http.HttpMethod;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
@@ -12,6 +13,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TupleReplicationOutboxService {
+
+    void ensureTableExists(Connection connection) throws SQLException;
+
+    TupleReplicationOutboxEntry enqueue(Connection connection, Database database, Table table, HttpMethod method,
+                                        DataReplicationDto payload) throws SQLException;
 
     TupleReplicationOutboxEntry enqueue(Database database, Table table, HttpMethod method, DataReplicationDto payload)
             throws SQLException;
