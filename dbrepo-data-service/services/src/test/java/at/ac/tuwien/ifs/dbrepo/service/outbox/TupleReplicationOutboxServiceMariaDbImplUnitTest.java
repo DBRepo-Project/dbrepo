@@ -71,6 +71,12 @@ public class TupleReplicationOutboxServiceMariaDbImplUnitTest {
 
         assertEquals(TupleReplicationOutboxStatus.FAILED.name(), service.status(database, entry.getId()));
         assertTrue(service.claimDue(database, 10, Duration.ZERO).isEmpty());
+        final var manual = service.claim(database, entry.getId(), Duration.ofMinutes(5));
+        assertTrue(manual.isPresent());
+        assertEquals(2, manual.get().getAttempts());
+        assertTrue(service.claim(database, entry.getId(), Duration.ofMinutes(5)).isEmpty());
+        service.markSucceeded(database, entry.getId());
+        assertEquals(0, service.countRows(database));
     }
 
     private TestTupleReplicationOutboxService service(String name) {

@@ -103,7 +103,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             ensureTableExists(connection);
             final Instant staleBefore = Instant.now().minus(processingTimeout);
             final Optional<TupleReplicationOutboxEntry> entry = findClaimable(connection, id, staleBefore);
-            if (entry.isEmpty() || !markProcessing(connection, entry.get().getId(), staleBefore)) {
+            if (entry.isEmpty() || !markProcessing(connection, entry.get().getId(), staleBefore, true)) {
                 connection.commit();
                 return Optional.empty();
             }
@@ -127,7 +127,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                     Instant.now(), Instant.now().minus(processingTimeout));
             final List<TupleReplicationOutboxEntry> claimed = new ArrayList<>();
             for (TupleReplicationOutboxEntry entry : entries) {
-                if (markProcessing(connection, entry.getId(), Instant.now().minus(processingTimeout))) {
+                if (markProcessing(connection, entry.getId(), Instant.now().minus(processingTimeout), false)) {
                     entry.setStatus(TupleReplicationOutboxStatus.PROCESSING);
                     entry.setLastModified(Instant.now());
                     claimed.add(entry);
@@ -204,7 +204,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 SELECT %s
                 FROM tuple_replication_notification_outbox
                 WHERE id = ?
-                  AND (status = ? OR (status = ? AND last_modified <= ?))
+                  AND (status = ? OR (status = ? AND last_modified <= ?) OR status = 'FAILED')
                 """.formatted(SELECT_COLUMNS);
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, id.toString());
@@ -279,12 +279,12 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         return entries;
     }
 
-    private boolean markProcessing(Connection connection, UUID id, Instant staleBefore) throws SQLException {
+    private boolean markProcessing(Connection connection, UUID id, Instant staleBefore, boolean manualRetry) throws SQLException {
         final String statement = """
                 UPDATE tuple_replication_notification_outbox
                 SET status = ?, last_modified = ?
                 WHERE id = ?
-                  AND (status = ? OR (status = ? AND last_modified <= ?))
+                  AND (status = ? OR (status = ? AND last_modified <= ?) OR (? AND status = 'FAILED'))
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, TupleReplicationOutboxStatus.PROCESSING.name());
@@ -293,6 +293,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
             preparedStatement.setString(4, TupleReplicationOutboxStatus.PENDING.name());
             preparedStatement.setString(5, TupleReplicationOutboxStatus.PROCESSING.name());
             preparedStatement.setTimestamp(6, Timestamp.from(staleBefore));
+            preparedStatement.setBoolean(7, manualRetry);
             return preparedStatement.executeUpdate() == 1;
         }
     }
