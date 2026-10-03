@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -22,6 +24,26 @@ class ExternalReplicationClientUnitTest {
         ReflectionTestUtils.setField(config, "replicationUsername", "replication");
         ReflectionTestUtils.setField(config, "replicationPassword", "secret");
         return config.externalReplicationRestTemplate(sites);
+    }
+
+    @Test
+    void timestampPatchIsSentWithTheOriginalBodyAndPeerCredentials() throws Exception {
+        final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        final AtomicReference<String> received = new AtomicReference<>();
+        server.createContext("/timestamps", exchange -> {
+            received.set(exchange.getRequestMethod() + ":" + exchange.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)
+                    + ":" + new String(exchange.getRequestBody().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+            exchange.sendResponseHeaders(204, -1);
+            exchange.close();
+        });
+        server.start();
+        try {
+            final String origin = "http://127.0.0.1:" + server.getAddress().getPort();
+            client(origin).exchange(origin + "/timestamps", HttpMethod.PATCH, new HttpEntity<>("[]"), Void.class);
+            assertEquals("PATCH:Basic cmVwbGljYXRpb246c2VjcmV0:[]", received.get());
+        } finally {
+            server.stop(0);
+        }
     }
 
     @Test

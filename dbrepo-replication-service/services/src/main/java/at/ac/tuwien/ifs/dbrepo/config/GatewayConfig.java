@@ -8,14 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.net.http.HttpClient;
+import java.time.Duration;
 
 @Slf4j
 @Getter
@@ -69,16 +69,7 @@ public class GatewayConfig {
     public RestTemplate externalReplicationRestTemplate(
             @Value("${dbrepo.replication.allowedSites:}") String allowedSites) {
         final ReplicationPeers peers = new ReplicationPeers(allowedSites);
-        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory() {
-            @Override
-            protected void prepareConnection(HttpURLConnection connection, String method) throws IOException {
-                super.prepareConnection(connection, method);
-                connection.setInstanceFollowRedirects(false);
-            }
-        };
-        factory.setConnectTimeout(10_000);
-        factory.setReadTimeout(30_000);
-        final RestTemplate restTemplate = new RestTemplate(factory);
+        final RestTemplate restTemplate = timeoutRestTemplate();
         restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
             @Override
             protected boolean hasError(HttpStatusCode status) {
@@ -96,9 +87,10 @@ public class GatewayConfig {
     }
 
     private RestTemplate timeoutRestTemplate() {
-        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10_000);
-        factory.setReadTimeout(30_000);
+        final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
+                .followRedirects(HttpClient.Redirect.NEVER).build();
+        final JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(client);
+        factory.setReadTimeout(Duration.ofSeconds(30));
         return new RestTemplate(factory);
     }
 
