@@ -22,5 +22,7 @@ public interface ReplicationOutboxService {
 
     void markSucceeded(UUID id);
 
+    void defer(UUID id, String reason, Duration retryDelay);
+
     void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts);
 }

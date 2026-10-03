@@ -26,9 +26,9 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -88,20 +88,27 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     @Override
     public void replicateTableDelete(Database database, Table table) {
+        final Map<String, UUID> databases = new LinkedHashMap<>();
+        final Map<String, UUID> tables = new LinkedHashMap<>();
+        database.getReplicaUrls().forEach(replica -> {
+            if (replica.getUrl() != null) {
+                databases.put(replica.getUrl(), replica.getReplicaDatabaseId());
+                tables.put(replica.getUrl(), null);
+            }
+        });
+        if (table.getReplicaUrls() != null) {
+            table.getReplicaUrls().forEach(replica -> {
+                if (replica.getUrl() != null) {
+                    tables.put(replica.getUrl(), replica.getReplicaTableId());
+                }
+            });
+        }
         final TableDeleteNotificationDto notification = TableDeleteNotificationDto.builder()
                 .databaseId(database.getId())
                 .tableId(table.getId())
                 .archivedAt(table.getArchivedAt())
-                .databaseReplicaIds(database.getReplicaUrls()
-                        .stream()
-                        .filter(replica -> replica.getUrl() != null && replica.getReplicaDatabaseId() != null)
-                        .collect(Collectors.toMap(ReplicaLocation::getUrl, ReplicaLocation::getReplicaDatabaseId,
-                                (first, ignored) -> first)))
-                .tableReplicaIds(table.getReplicaUrls()
-                        .stream()
-                        .filter(replica -> replica.getUrl() != null && replica.getReplicaTableId() != null)
-                        .collect(Collectors.toMap(replica -> replica.getUrl(), replica -> replica.getReplicaTableId(),
-                                (first, ignored) -> first)))
+                .databaseReplicaIds(databases)
+                .tableReplicaIds(tables)
                 .build();
         final ReplicationNotificationOutbox entry = outboxService.enqueue(
                 ReplicationNotificationType.TABLE_DELETE, HttpMethod.DELETE, "/api/replication/table",

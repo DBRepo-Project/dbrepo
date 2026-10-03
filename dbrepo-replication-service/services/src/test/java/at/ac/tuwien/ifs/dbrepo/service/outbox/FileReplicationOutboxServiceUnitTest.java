@@ -63,6 +63,19 @@ public class FileReplicationOutboxServiceUnitTest {
     }
 
     @Test
+    public void dependencyWaitSurvivesRestartWithoutUsingRetryBudget() throws Exception {
+        final FileReplicationOutboxService service = service();
+        final ReplicationOutboxEntry entry = enqueue(service);
+        service.defer(entry.getId(), "Waiting for replica table mapping", Duration.ofMinutes(1));
+        service.close();
+        final ReplicationOutboxEntry restored = service().findById(entry.getId()).orElseThrow();
+        assertEquals(ReplicationOutboxStatus.PENDING, restored.getStatus());
+        assertEquals(0, restored.getAttempts());
+        assertTrue(restored.getNextAttemptAt().isAfter(Instant.now()));
+        assertEquals("Waiting for replica table mapping", restored.getLastError());
+    }
+
+    @Test
     public void markFailedShouldScheduleRetryUntilMaxAttempts() {
         final FileReplicationOutboxService service = service();
         final ReplicationOutboxEntry entry = service.enqueue(ReplicationOutboxOperationType.DATA_CREATE,

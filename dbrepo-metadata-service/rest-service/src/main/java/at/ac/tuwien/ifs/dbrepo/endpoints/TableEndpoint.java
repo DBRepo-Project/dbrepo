@@ -497,7 +497,7 @@ public class TableEndpoint extends RestEndpoint {
         }
         validatePrimaryWriteLocation(database, table);
         table.setArchivedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
-        if (replicationService != null && hasResolvedReplicaLocations(database, table)) {
+        if (replicationService != null && hasReplicaLocations(database)) {
             replicationService.replicateTableDelete(database, table);
         }
         /* delete table */
@@ -638,12 +638,6 @@ public class TableEndpoint extends RestEndpoint {
 
     private boolean hasReplicaLocations(Database database) {
         return database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty();
-    }
-
-    private boolean hasResolvedReplicaLocations(Database database, Table table) {
-        return hasReplicaLocations(database) && table.getReplicaUrls() != null && table.getReplicaUrls()
-                .stream()
-                .anyMatch(replica -> replica.getUrl() != null && replica.getReplicaTableId() != null);
     }
 
 }

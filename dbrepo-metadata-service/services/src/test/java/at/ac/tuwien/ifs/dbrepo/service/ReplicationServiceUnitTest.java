@@ -28,6 +28,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -107,6 +109,25 @@ public class ReplicationServiceUnitTest {
         assertEquals("alice", notification.getOwner().getUsername());
         assertEquals("https://origin.example", request.getCreationLocation());
         verify(dispatcher).dispatchAsync(entry.getId());
+    }
+
+    @Test
+    public void tableArchiveRetainsTargetsWhoseCreationIsStillPending() {
+        final Database database = Database.builder().id(UUID.randomUUID())
+                .replicaUrls(List.of(ReplicaLocation.builder().url("https://replica.example").build())).build();
+        final Table table = Table.builder().id(UUID.randomUUID()).replicaUrls(List.of()).build();
+        when(outboxService.enqueue(any(), any(), any(), any(), any()))
+                .thenReturn(ReplicationNotificationOutbox.builder().id(UUID.randomUUID()).build());
+
+        service.replicateTableDelete(database, table);
+
+        final ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+        verify(outboxService).enqueue(eq(ReplicationNotificationType.TABLE_DELETE), eq(HttpMethod.DELETE),
+                eq("/api/replication/table"), payload.capture(), eq(table.getId()));
+        final TableDeleteNotificationDto notification = (TableDeleteNotificationDto) payload.getValue();
+        assertTrue(notification.getTableReplicaIds().containsKey("https://replica.example"));
+        assertNull(notification.getTableReplicaIds().get("https://replica.example"));
+        assertTrue(notification.getDatabaseReplicaIds().containsKey("https://replica.example"));
     }
 
     @Test

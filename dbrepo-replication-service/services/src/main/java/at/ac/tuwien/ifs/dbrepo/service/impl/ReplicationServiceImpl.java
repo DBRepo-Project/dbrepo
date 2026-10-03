@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -134,12 +136,18 @@ public class ReplicationServiceImpl implements ReplicationService {
         siteDatabaseIds.put(normalizedBaseUrl(), notification.getDatabaseId());
         siteTableIds.put(normalizedBaseUrl(), notification.getCreationId());
         for (ReplicaLocation replica : notification.getReplicas()) {
-            if (replica == null || replica.getUrl() == null || replica.getReplicaDatabaseId() == null
+            if (replica == null || replica.getUrl() == null
                     || isLocalSite(replica.getUrl())) {
                 continue;
             }
             final String siteUrl = site(replica.getUrl());
             siteDatabaseIds.put(siteUrl, replica.getReplicaDatabaseId());
+            if (replica.getReplicaDatabaseId() == null) {
+                enqueueFailure(ReplicationOutboxOperationType.TABLE_CREATE, siteUrl, HttpMethod.POST, notification,
+                        notification.getDatabaseId(), notification.getCreationId(), null, null,
+                        "Waiting for replica database mapping");
+                continue;
+            }
             try {
                 final String path = siteUrl + "/api/v1/database/" + replica.getReplicaDatabaseId()
                         + "/table/replicate";
@@ -178,7 +186,13 @@ public class ReplicationServiceImpl implements ReplicationService {
             final String targetSiteUrl = site(tableReplica.getKey());
             final UUID remoteTableId = tableReplica.getValue();
             final UUID remoteDatabaseId = replicaId(notification.getDatabaseReplicaIds(), targetSiteUrl);
-            if (isLocalSite(targetSiteUrl) || remoteDatabaseId == null || remoteTableId == null) {
+            if (isLocalSite(targetSiteUrl)) {
+                continue;
+            }
+            if (remoteDatabaseId == null || remoteTableId == null) {
+                enqueueFailure(ReplicationOutboxOperationType.TABLE_DELETE, targetSiteUrl, HttpMethod.DELETE,
+                        notification, notification.getDatabaseId(), notification.getTableId(), remoteDatabaseId,
+                        remoteTableId, "Waiting for replica table mapping");
                 continue;
             }
             try {
@@ -204,8 +218,14 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
         int successful = 0;
         for (ReplicaLocation replica : notification.getReplicas()) {
-            if (replica == null || replica.getUrl() == null || replica.getReplicaDatabaseId() == null
+            if (replica == null || replica.getUrl() == null
                     || isLocalSite(replica.getUrl())) {
+                continue;
+            }
+            if (replica.getReplicaDatabaseId() == null) {
+                enqueueFailure(ReplicationOutboxOperationType.VIEW_CREATE, replica.getUrl(), HttpMethod.POST,
+                        notification, notification.getDatabaseId(), null, null, null,
+                        "Waiting for replica database mapping");
                 continue;
             }
             try {
@@ -235,19 +255,22 @@ public class ReplicationServiceImpl implements ReplicationService {
     @Override
     public int replicateData(DataReplicationDto request, HttpMethod method) {
         if (request == null || request.getDatabase() == null || request.getTable() == null
-                || request.getTuple() == null || request.getTuple().getReplicationKey() == null
-                || request.getDatabase().getReplicaUrls() == null || request.getTable().getReplicaUrls() == null) {
-            log.info("Skip tuple replication: missing database, table, tuple, replication key, or replica maps");
-            return 0;
+                || request.getTuple() == null || request.getTuple().getReplicationKey() == null) {
+            throw new IllegalArgumentException("Tuple replication requires database, table and tuple identity");
         }
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
         final List<String> successfulReplicaUrls = new ArrayList<>();
         int successful = 0;
-        for (Map.Entry<String, UUID> replica : request.getDatabase().getReplicaUrls().entrySet()) {
-            final String replicaUrl = replica.getKey();
-            final UUID remoteDatabaseId = replica.getValue();
-            final UUID remoteTableId = request.getTable().getReplicaUrls().get(replicaUrl);
-            if (isLocalSite(replicaUrl) || remoteDatabaseId == null || remoteTableId == null) {
+        for (String replicaUrl : targetSites(request)) {
+            final UUID remoteDatabaseId = replicaId(request.getDatabase().getReplicaUrls(), site(replicaUrl));
+            final UUID remoteTableId = replicaId(request.getTable().getReplicaUrls(), site(replicaUrl));
+            if (isLocalSite(replicaUrl)) {
+                continue;
+            }
+            if (remoteDatabaseId == null || remoteTableId == null) {
+                enqueueFailure(dataOperationType(method), replicaUrl, method, request, request.getDatabase().getId(),
+                        request.getTable().getId(), remoteDatabaseId, remoteTableId,
+                        "Waiting for replica database or table mapping");
                 continue;
             }
             try {
@@ -390,6 +413,9 @@ public class ReplicationServiceImpl implements ReplicationService {
             retry(entry);
             outboxService.markSucceeded(entry.getId());
             return true;
+        } catch (ReplicaDependencyPendingException e) {
+            outboxService.defer(entry.getId(), e.getMessage(), retryDelayFor(entry.getAttempts() + 1));
+            return false;
         } catch (Exception e) {
             log.error("Failed to retry replication outbox entry {}: {}", id, e.getMessage(), e);
             outboxService.markFailed(entry.getId(), e.getMessage(), retryDelayFor(entry.getAttempts() + 1),
@@ -434,7 +460,7 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     private void retryTableCreate(ReplicationOutboxEntry entry) throws JsonProcessingException {
         final TableNotificationDto notification = readPayload(entry, TableNotificationDto.class);
-        final UUID remoteDatabaseId = entry.getRemoteDatabaseId();
+        final UUID remoteDatabaseId = resolveDatabaseId(entry);
         final String path = site(entry.getTargetSiteUrl()) + "/api/v1/database/" + remoteDatabaseId
                 + "/table/replicate";
         final ResponseEntity<TableBriefDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST,
@@ -449,6 +475,10 @@ public class ReplicationServiceImpl implements ReplicationService {
         siteDatabaseIds.put(site(entry.getTargetSiteUrl()), remoteDatabaseId);
         siteTableIds.put(site(entry.getTargetSiteUrl()), body.getId());
         synchronizeTableReplicaIds(siteDatabaseIds, siteTableIds);
+        final TableDto current = fetchTable(notification.getDatabaseId(), notification.getCreationId());
+        if (current.getArchivedAt() != null) {
+            deleteRemoteTable(entry.getTargetSiteUrl(), remoteDatabaseId, body.getId(), current.getArchivedAt());
+        }
     }
 
     private void retryTableReplicaSync(ReplicationOutboxEntry entry) throws JsonProcessingException {
@@ -459,12 +489,13 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     private void retryTableDelete(ReplicationOutboxEntry entry) throws JsonProcessingException {
         final TableDeleteNotificationDto notification = readPayload(entry, TableDeleteNotificationDto.class);
-        deleteRemoteTable(entry.getTargetSiteUrl(), entry.getRemoteDatabaseId(), entry.getRemoteTableId(), notification.getArchivedAt());
+        deleteRemoteTable(entry.getTargetSiteUrl(), resolveDatabaseId(entry), resolveTableId(entry),
+                notification.getArchivedAt());
     }
 
     private void retryViewCreate(ReplicationOutboxEntry entry) throws JsonProcessingException {
         final ViewNotificationDto notification = readPayload(entry, ViewNotificationDto.class);
-        final String path = site(entry.getTargetSiteUrl()) + "/api/v1/database/" + entry.getRemoteDatabaseId()
+        final String path = site(entry.getTargetSiteUrl()) + "/api/v1/database/" + resolveDatabaseId(entry)
                 + "/view/replicate";
         final ResponseEntity<ViewBriefDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST,
                 new HttpEntity<>(notification), ViewBriefDto.class);
@@ -474,14 +505,20 @@ public class ReplicationServiceImpl implements ReplicationService {
     private void retryData(ReplicationOutboxEntry entry) throws JsonProcessingException {
         final DataReplicationDto request = readPayload(entry, DataReplicationDto.class);
         final HttpMethod method = HttpMethod.valueOf(entry.getHttpMethod());
-        final TupleWithTimestampsDto tuple = replicateRemoteData(entry.getTargetSiteUrl(), entry.getRemoteDatabaseId(),
-                entry.getRemoteTableId(), request, method);
+        final UUID remoteDatabaseId = resolveDatabaseId(entry);
+        final UUID remoteTableId = resolveTableId(entry);
+        request.getDatabase().setReplicaUrls(new HashMap<>(databaseReplicaIds(entry.getLocalDatabaseId())));
+        request.getTable().setReplicaUrls(new HashMap<>(tableReplicaIds(entry.getLocalDatabaseId(), entry.getLocalTableId())));
+        request.getDatabase().getReplicaUrls().put(site(entry.getTargetSiteUrl()), remoteDatabaseId);
+        request.getTable().getReplicaUrls().put(site(entry.getTargetSiteUrl()), remoteTableId);
+        final TupleWithTimestampsDto tuple = replicateRemoteData(entry.getTargetSiteUrl(), remoteDatabaseId,
+                remoteTableId, request, method);
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
-        timestamps.add(timestamp(entry.getTargetSiteUrl(), tuple.getReplicationKey(), entry.getRemoteDatabaseId(),
-                entry.getRemoteTableId(), tuple.getInsertedAt(), tuple.getDeletedAt()));
+        timestamps.add(timestamp(entry.getTargetSiteUrl(), tuple.getReplicationKey(), remoteDatabaseId,
+                remoteTableId, tuple.getInsertedAt(), tuple.getDeletedAt()));
         timestamps.add(timestamp(normalizedBaseUrl(), request.getTuple().getReplicationKey(), request.getDatabase().getId(),
                 request.getTable().getId(), request.getTuple().getInsertedAt(), request.getTuple().getDeletedAt()));
-        synchronizeTimestamps(request, method, timestamps, List.of(entry.getTargetSiteUrl()));
+        synchronizeTimestamps(request, method, timestamps, new ArrayList<>(targetSites(request)));
     }
 
     private void retryTimestampSync(ReplicationOutboxEntry entry) throws JsonProcessingException {
@@ -538,29 +575,62 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     private UUID replicaId(Map<String, UUID> replicaIds, String siteUrl) {
-        return replicaIds.entrySet()
-                .stream()
-                .filter(entry -> site(entry.getKey()).equals(siteUrl))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
+        if (replicaIds != null) {
+            for (Map.Entry<String, UUID> entry : replicaIds.entrySet()) {
+                if (site(entry.getKey()).equals(siteUrl)) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    private Set<String> targetSites(DataReplicationDto request) {
+        final Set<String> targets = new LinkedHashSet<>();
+        if (request.getDatabase().getReplicaUrls() != null) {
+            request.getDatabase().getReplicaUrls().keySet().forEach(url -> targets.add(site(url)));
+        }
+        if (request.getTable().getReplicaUrls() != null) {
+            request.getTable().getReplicaUrls().keySet().forEach(url -> targets.add(site(url)));
+        }
+        return targets;
+    }
+
+    private UUID resolveDatabaseId(ReplicationOutboxEntry entry) {
+        final UUID id = entry.getRemoteDatabaseId() != null ? entry.getRemoteDatabaseId()
+                : replicaId(fetchDatabase(entry.getLocalDatabaseId()).getReplicaUrls(), site(entry.getTargetSiteUrl()));
+        if (id == null) {
+            throw new ReplicaDependencyPendingException("Waiting for replica database mapping");
+        }
+        return id;
+    }
+
+    private UUID resolveTableId(ReplicationOutboxEntry entry) {
+        final UUID id = entry.getRemoteTableId() != null ? entry.getRemoteTableId()
+                : replicaId(fetchTable(entry.getLocalDatabaseId(), entry.getLocalTableId()).getReplicaUrls(),
+                        site(entry.getTargetSiteUrl()));
+        if (id == null) {
+            throw new ReplicaDependencyPendingException("Waiting for replica table mapping");
+        }
+        return id;
+    }
+
+    private static class ReplicaDependencyPendingException extends IllegalStateException {
+        ReplicaDependencyPendingException(String message) {
+            super(message);
+        }
     }
 
     private Map<String, UUID> databaseReplicaIds(UUID localDatabaseId) {
         final Map<String, UUID> siteDatabaseIds = new HashMap<>();
         siteDatabaseIds.put(normalizedBaseUrl(), localDatabaseId);
-        try {
-            final DatabaseDto database = metadataServiceRestTemplate.getForObject("/api/v1/database/"
-                    + localDatabaseId, DatabaseDto.class);
-            if (database != null && database.getReplicaUrls() != null) {
-                database.getReplicaUrls().forEach((siteUrl, databaseId) -> {
-                    if (siteUrl != null && databaseId != null) {
-                        siteDatabaseIds.put(site(siteUrl), databaseId);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            log.warn("Failed to fetch current database replica ids for {}: {}", localDatabaseId, e.getMessage());
+        final DatabaseDto database = fetchDatabase(localDatabaseId);
+        if (database.getReplicaUrls() != null) {
+            database.getReplicaUrls().forEach((siteUrl, databaseId) -> {
+                if (siteUrl != null && databaseId != null) {
+                    siteDatabaseIds.put(site(siteUrl), databaseId);
+                }
+            });
         }
         return siteDatabaseIds;
     }
@@ -568,18 +638,13 @@ public class ReplicationServiceImpl implements ReplicationService {
     private Map<String, UUID> tableReplicaIds(UUID localDatabaseId, UUID localTableId) {
         final Map<String, UUID> siteTableIds = new HashMap<>();
         siteTableIds.put(normalizedBaseUrl(), localTableId);
-        try {
-            final TableDto table = metadataServiceRestTemplate.getForObject("/api/v1/database/" + localDatabaseId
-                    + "/table/" + localTableId, TableDto.class);
-            if (table != null && table.getReplicaUrls() != null) {
-                table.getReplicaUrls().forEach((siteUrl, tableId) -> {
-                    if (siteUrl != null && tableId != null) {
-                        siteTableIds.put(site(siteUrl), tableId);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            log.warn("Failed to fetch current table replica ids for {}: {}", localTableId, e.getMessage());
+        final TableDto table = fetchTable(localDatabaseId, localTableId);
+        if (table.getReplicaUrls() != null) {
+            table.getReplicaUrls().forEach((siteUrl, tableId) -> {
+                if (siteUrl != null && tableId != null) {
+                    siteTableIds.put(site(siteUrl), tableId);
+                }
+            });
         }
         return siteTableIds;
     }
@@ -705,8 +770,8 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
         persistLocalTimestamps(request, method, timestamps);
         for (String replicaUrl : successfulReplicaUrls) {
-            final UUID remoteDatabaseId = request.getDatabase().getReplicaUrls().get(replicaUrl);
-            final UUID remoteTableId = request.getTable().getReplicaUrls().get(replicaUrl);
+            final UUID remoteDatabaseId = replicaId(request.getDatabase().getReplicaUrls(), site(replicaUrl));
+            final UUID remoteTableId = replicaId(request.getTable().getReplicaUrls(), site(replicaUrl));
             if (isLocalSite(replicaUrl) || remoteDatabaseId == null || remoteTableId == null) {
                 continue;
             }

@@ -145,6 +145,16 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
     }
 
     @Override
+    public synchronized void defer(UUID id, String reason, Duration retryDelay) {
+        update(id, entry -> {
+            entry.setStatus(ReplicationOutboxStatus.PENDING);
+            entry.setLastError(reason);
+            entry.setUpdatedAt(Instant.now());
+            entry.setNextAttemptAt(Instant.now().plus(retryDelay));
+        });
+    }
+
+    @Override
     public synchronized void markFailed(UUID id, String error, Duration retryDelay, int maxAttempts) {
         update(id, entry -> {
             final int attempts = entry.getAttempts() + 1;
