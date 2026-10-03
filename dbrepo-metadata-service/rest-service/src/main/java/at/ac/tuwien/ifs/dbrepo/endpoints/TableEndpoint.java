@@ -272,13 +272,8 @@ public class TableEndpoint extends RestEndpoint {
         endpointValidator.validateColumnCreateConstraints(data);
         final Table table = tableService.createTable(database, data, principal);
         if (replicationService != null && data.getCreationLocation() == null && hasReplicaLocations(database)) {
-            try {
-                replicationService.replicateTable(data, databaseId, new ArrayList<>(database.getReplicaUrls()),
-                        table.getId());
-            } catch (Exception e) {
-                log.error("Failed to trigger replication for table {} in database {}: {}", table.getId(), databaseId,
-                        e.getMessage(), e);
-            }
+            replicationService.replicateTable(data, databaseId, new ArrayList<>(database.getReplicaUrls()),
+                    table.getId());
         }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.tableToTableBriefDto(table));

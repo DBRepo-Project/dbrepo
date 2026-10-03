@@ -20,15 +20,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 public class ReplicationServiceUnitTest {
@@ -49,6 +53,33 @@ public class ReplicationServiceUnitTest {
         service = new ReplicationServiceImpl(metadataMapper, outboxService, dispatcher);
         ReflectionTestUtils.setField(service, "baseUrl", "https://origin.example");
         ReflectionTestUtils.setField(service, "issuer", "https://identity.example/realms/dbrepo");
+    }
+
+    @Test
+    public void databaseEnqueueFailureIsNotAcknowledged() {
+        when(outboxService.enqueue(any(), any(), any(), any(), any()))
+                .thenThrow(new IllegalStateException("storage unavailable"));
+        assertThrows(IllegalStateException.class, () -> service.replicateDatabase(
+                CreateDatabaseDto.builder().build(), UUID.randomUUID(),
+                UserDto.builder().id(UUID.randomUUID()).build()));
+        verifyNoInteractions(dispatcher);
+    }
+
+    @Test
+    public void notificationsAreDispatchedOnlyAfterCommit() {
+        final UUID id = UUID.randomUUID();
+        when(outboxService.enqueue(any(), any(), any(), any(), any()))
+                .thenReturn(ReplicationNotificationOutbox.builder().id(id).build());
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.replicateDatabase(CreateDatabaseDto.builder().build(), UUID.randomUUID(),
+                    UserDto.builder().id(UUID.randomUUID()).build());
+            verifyNoInteractions(dispatcher);
+            TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
+            verify(dispatcher).dispatchAsync(id);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 
     @Test

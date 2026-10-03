@@ -40,6 +40,23 @@ import static org.mockito.Mockito.when;
 public class ReplicationServiceImplUnitTest {
 
     @Test
+    public void failedDurableHandoffIsNotAcknowledged() {
+        final RestTemplate external = mock(RestTemplate.class);
+        final ReplicationOutboxService outbox = mock(ReplicationOutboxService.class);
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+                mock(RestTemplate.class), external, new ObjectMapper(), outbox);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
+        when(external.exchange(any(String.class), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
+                .thenThrow(new ResourceAccessException("peer offline"));
+        when(outbox.enqueue(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new IllegalStateException("outbox unavailable"));
+        assertThrows(IllegalStateException.class, () -> service.replicateTableDelete(
+                TableDeleteNotificationDto.builder().databaseId(UUID.randomUUID()).tableId(UUID.randomUUID())
+                        .databaseReplicaIds(Map.of("http://remote.test", UUID.randomUUID()))
+                        .tableReplicaIds(Map.of("http://remote.test", UUID.randomUUID())).build()));
+    }
+
+    @Test
     public void retryTableDelete_preservesSourceArchiveTimestamp() throws Exception {
         final RestTemplate external = mock(RestTemplate.class);
         final ReplicationOutboxService outbox = mock(ReplicationOutboxService.class);

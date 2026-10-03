@@ -200,11 +200,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
         if (replicationService != null && data.getCreationLocation() == null && hasReplicaUrls(data)) {
-            try {
-                replicationService.replicateDatabase(data, database.getId(), owner);
-            } catch (Exception e) {
-                log.error("Failed to trigger replication for database {}: {}", database.getId(), e.getMessage(), e);
-            }
+            replicationService.replicateDatabase(data, database.getId(), owner);
         }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.databaseToDatabaseBriefDto(database));

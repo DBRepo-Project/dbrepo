@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Map;
@@ -51,47 +53,37 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     @Override
     public void replicateDatabase(CreateDatabaseDto createDatabaseDto, UUID creationId, UserDto owner) {
-        try {
-            createDatabaseDto.setCreationLocation(baseUrl);
-            final DatabaseNotificationDto notification = DatabaseNotificationDto.builder()
-                    .createDatabaseDto(createDatabaseDto)
-                    .creationId(creationId)
-                    .owner(ReplicationOwnerDto.builder()
-                            .siteUrl(baseUrl)
-                            .issuer(issuer)
-                            .subject(owner.getId().toString())
-                            .username(owner.getUsername())
-                            .build())
-                    .build();
-            final ReplicationNotificationOutbox entry = outboxService.enqueue(
-                    ReplicationNotificationType.DATABASE_CREATE, HttpMethod.POST, "/api/replication/database",
-                    notification, creationId);
-            dispatcher.dispatchAsync(entry.getId());
-        } catch (Exception e) {
-            log.error("Failed to enqueue database replication notification for database {}: {}", creationId,
-                    e.getMessage(), e);
-        }
+        createDatabaseDto.setCreationLocation(baseUrl);
+        final DatabaseNotificationDto notification = DatabaseNotificationDto.builder()
+                .createDatabaseDto(createDatabaseDto)
+                .creationId(creationId)
+                .owner(ReplicationOwnerDto.builder()
+                        .siteUrl(baseUrl)
+                        .issuer(issuer)
+                        .subject(owner.getId().toString())
+                        .username(owner.getUsername())
+                        .build())
+                .build();
+        final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                ReplicationNotificationType.DATABASE_CREATE, HttpMethod.POST, "/api/replication/database",
+                notification, creationId);
+        dispatchAfterCommit(entry.getId());
     }
 
     @Override
     public void replicateTable(CreateTableDto createTableDto, UUID databaseId, List<ReplicaLocation> replicas,
                                UUID creationId) {
-        try {
-            createTableDto.setCreationLocation(baseUrl);
-            final TableNotificationDto notification = TableNotificationDto.builder()
-                    .databaseId(databaseId)
-                    .creationId(creationId)
-                    .createTableDto(createTableDto)
-                    .replicas(replicas)
-                    .build();
-            final ReplicationNotificationOutbox entry = outboxService.enqueue(
-                    ReplicationNotificationType.TABLE_CREATE, HttpMethod.POST, "/api/replication/table",
-                    notification, creationId);
-            dispatcher.dispatchAsync(entry.getId());
-        } catch (Exception e) {
-            log.error("Failed to enqueue table replication notification for table {} in database {}: {}", creationId,
-                    databaseId, e.getMessage(), e);
-        }
+        createTableDto.setCreationLocation(baseUrl);
+        final TableNotificationDto notification = TableNotificationDto.builder()
+                .databaseId(databaseId)
+                .creationId(creationId)
+                .createTableDto(createTableDto)
+                .replicas(replicas)
+                .build();
+        final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                ReplicationNotificationType.TABLE_CREATE, HttpMethod.POST, "/api/replication/table",
+                notification, creationId);
+        dispatchAfterCommit(entry.getId());
     }
 
     @Override
@@ -114,7 +106,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         final ReplicationNotificationOutbox entry = outboxService.enqueue(
                 ReplicationNotificationType.TABLE_DELETE, HttpMethod.DELETE, "/api/replication/table",
                 notification, table.getId());
-        dispatcher.dispatchAsync(entry.getId());
+        dispatchAfterCommit(entry.getId());
     }
 
     @Override
@@ -128,7 +120,20 @@ public class ReplicationServiceImpl implements ReplicationService {
         final ReplicationNotificationOutbox entry = outboxService.enqueue(
                 ReplicationNotificationType.VIEW_CREATE, HttpMethod.POST, "/api/replication/view",
                 notification, view.getId());
-        dispatcher.dispatchAsync(entry.getId());
+        dispatchAfterCommit(entry.getId());
+    }
+
+    private void dispatchAfterCommit(UUID id) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    dispatcher.dispatchAsync(id);
+                }
+            });
+        } else {
+            dispatcher.dispatchAsync(id);
+        }
     }
 
     @Override

@@ -595,13 +595,8 @@ public class ReplicationServiceImpl implements ReplicationService {
     private void enqueueFailure(ReplicationOutboxOperationType operationType, String targetSiteUrl,
                                 HttpMethod httpMethod, Object payload, UUID localDatabaseId, UUID localTableId,
                                 UUID remoteDatabaseId, UUID remoteTableId, String lastError) {
-        try {
-            outboxService.enqueue(operationType, site(targetSiteUrl), httpMethod, payload, localDatabaseId, localTableId,
-                    remoteDatabaseId, remoteTableId, lastError);
-        } catch (Exception e) {
-            log.error("Failed to persist replication outbox entry for {} to {}: {}", operationType, targetSiteUrl,
-                    e.getMessage(), e);
-        }
+        outboxService.enqueue(operationType, site(targetSiteUrl), httpMethod, payload, localDatabaseId, localTableId,
+                remoteDatabaseId, remoteTableId, lastError);
     }
 
     private ReplicationOutboxOperationType dataOperationType(HttpMethod method) {
