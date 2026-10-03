@@ -81,6 +81,17 @@ class ReplicationInboxIntegrationTest {
     }
 
     @Test
+    void nonTransactionalReceiptTableIsRejectedBeforeMutation() throws Exception {
+        apply(event(1, "a", "1"), HttpMethod.POST);
+        try (Connection root = connection()) {
+            root.createStatement().execute("ALTER TABLE tuple_replication_inbox ENGINE=MyISAM");
+        }
+        assertThrows(SQLException.class, () -> apply(event(2, "a", "2"), HttpMethod.PUT));
+        assertEquals(1, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(1, count("tuple_replication_inbox"));
+    }
+
+    @Test
     void reversedDeliveryKeepsNewestVersionAndRetainsOlderPayload() throws Exception {
         apply(event(3, "a", "3"), HttpMethod.PUT);
         final var stale = apply(event(1, "a", "1"), HttpMethod.POST);

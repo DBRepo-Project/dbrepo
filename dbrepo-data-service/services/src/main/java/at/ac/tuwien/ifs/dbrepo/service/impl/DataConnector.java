@@ -14,6 +14,20 @@ import java.sql.SQLException;
 @Service
 public abstract class DataConnector {
 
+    protected static void requireInnoDb(java.sql.Connection connection, String... tables) throws SQLException {
+        try (var statement = connection.prepareStatement(
+                "SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?")) {
+            for (String table : tables) {
+                statement.setString(1, table);
+                try (var result = statement.executeQuery()) {
+                    if (!result.next() || !"InnoDB".equalsIgnoreCase(result.getString(1))) {
+                        throw new SQLException("Atomic replication requires an InnoDB table: " + table);
+                    }
+                }
+            }
+        }
+    }
+
     public ComboPooledDataSource getDataSource(Container container, String databaseName) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(getJdbcUrl(container, databaseName));

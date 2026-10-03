@@ -53,6 +53,7 @@ public class ReplicationInboxService extends DataConnector {
         final var pool = getDataSource(database);
         try (Connection connection = pool.getConnection()) {
             prepare(connection);
+            requireInnoDb(connection, table.getInternalName(), "tuple_replication_inbox", "tuple_replication_heads");
             connection.setAutoCommit(false);
             try {
                 lockHead(connection, table, event);

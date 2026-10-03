@@ -58,6 +58,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                 throw new SQLException("Prepare tuple replication before the data transaction");
             }
             outboxService.ensureTableExists(connection);
+            DataConnector.requireInnoDb(connection, table.getInternalName());
             try (var statement = connection.createStatement()) {
                 statement.execute("SET time_zone = '+00:00'");
             }

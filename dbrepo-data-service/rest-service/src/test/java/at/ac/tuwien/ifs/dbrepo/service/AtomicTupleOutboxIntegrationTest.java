@@ -129,6 +129,17 @@ class AtomicTupleOutboxIntegrationTest {
         assertEquals(1, count("tuple_replication_notification_outbox"));
     }
 
+    @Test
+    void nonTransactionalSourceIsRejectedBeforeMutation() throws Exception {
+        try (Connection root = connection()) {
+            root.createStatement().execute("ALTER TABLE samples DROP SYSTEM VERSIONING");
+            root.createStatement().execute("ALTER TABLE samples ENGINE=MyISAM");
+        }
+        assertThrows(QueryMalformedException.class, () -> service.createTuple(database, table, tuple("a", 1)));
+        assertEquals(0, count("samples"));
+        assertEquals(0, count("tuple_replication_notification_outbox"));
+    }
+
     private TupleDto tuple(String key, int value) {
         return TupleDto.builder().data(new LinkedHashMap<>(Map.of("replication_key", key, "sample_value", value))).build();
     }
