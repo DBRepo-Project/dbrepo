@@ -7,7 +7,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
@@ -24,8 +23,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.security.Principal;
 import java.sql.SQLException;
@@ -49,7 +47,6 @@ import java.util.UUID;
 public class ViewEndpoint {
 
     private final DSLContext context;
-    private final DataMapper dataMapper;
     private final DataService dataService;
     private final ViewService viewService;
     private final TableService tableService;
@@ -59,11 +56,10 @@ public class ViewEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(DSLContext context, DataMapper dataMapper, DataService dataService, ViewService viewService,
+    public ViewEndpoint(DSLContext context, DataService dataService, ViewService viewService,
                         TableService tableService, MariaDbMapper mariaDbMapper, AnalyseService analyseService,
                         MetadataService metadataService, EndpointValidator endpointValidator) {
         this.context = context;
-        this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.viewService = viewService;
         this.tableService = tableService;
@@ -228,7 +224,7 @@ public class ViewEndpoint {
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content}),
     })
-    public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+    public ResponseEntity<StreamingResponseBody> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
                                      @NotNull @PathVariable("viewId") UUID viewId,
                                      @RequestParam(required = false) Long page,
                                      @RequestParam(required = false) Long size,
@@ -281,24 +277,20 @@ public class ViewEndpoint {
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query);
-                    headers.set("X-Headers", String.join(",", dataMapper.datasetToColumnNameHeader(dataset1)));
+                    final QueryResultStream result1 = dataService.query(database, query);
+                    headers.set("X-Headers", String.join(",", result1.getColumns()));
                     return ResponseEntity.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
                             .headers(headers)
-                            .body(dataMapper.datasetToJson(dataset1));
+                            .body(result1::writeJson);
                 case "text/csv":
-                    final String viewName = view.getQueryHash();
-                    final ViewDto authoritativeView = viewService.create(database, viewName, view.getQuery());
-                    final List<String> responseColumns = authoritativeView.getColumns().stream()
-                            .map(column -> column.getInternalName())
-                            .toList();
-                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
-                    headers.set("X-Headers", String.join(",", responseColumns));
+                    final QueryResultStream result2 = dataService.query(database, query);
+                    headers.set("X-Headers", String.join(",", result2.getColumns()));
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.ok()
                             .contentType(MediaType.parseMediaType("text/csv"))
                             .headers(headers)
-                            .body(dataMapper.datasetToCsv(dataset2, responseColumns));
+                            .body(result2::writeCsv);
             }
             throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
         } catch (SQLException e) {

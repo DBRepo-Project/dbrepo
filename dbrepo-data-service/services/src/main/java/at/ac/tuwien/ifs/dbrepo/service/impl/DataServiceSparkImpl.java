@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.SparkException;
@@ -14,18 +15,20 @@ import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.sql.Statement;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import static scala.collection.JavaConverters.asScalaIteratorConverter;
 
 @Slf4j
 @Service
 public class DataServiceSparkImpl extends DataConnector implements DataService {
+
+    private static final int FETCH_SIZE = 1000;
 
     private final S3Config s3Config;
     private final SparkSession sparkSession;
@@ -36,37 +39,35 @@ public class DataServiceSparkImpl extends DataConnector implements DataService {
         this.sparkSession = sparkSession;
     }
 
+    @Override
     @Timed(value = "dbrepo_data_get_subset_data", description = "Time spent getting data from subset", histogram = true)
-    public String getSubset(Database database, String query, String format) throws QueryMalformedException,
+    public QueryResultStream query(Database database, String query) throws QueryMalformedException,
             TableNotFoundException {
+        log.trace("get data via query: {}", query);
+        Connection connection = null;
         try {
             final long start = System.currentTimeMillis();
-            log.trace("get data via query: {}", query);
-            final org.apache.spark.sql.Dataset<Row> dataset = sparkSession.read()
-                    .format("jdbc")
-                    .option("user", database.getContainer().getUsername())
-                    .option("password", database.getContainer().getPassword())
-                    .option("url", getSparkJdbcUrl(database))
-                    .option("query", query)
-                    .load();
-            final String key = UUID.randomUUID()
-                    .toString();
-            final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key;
-            dataset.write()
-                    .format(format)
-                    .mode(SaveMode.ErrorIfExists)
-                    .save(path);
+            connection = DriverManager.getConnection(getSparkJdbcUrl(database), database.getContainer().getUsername(),
+                    database.getContainer().getPassword());
+            final Statement statement = connection.createStatement();
+            /* stream the rows instead of loading the whole result into memory */
+            statement.setFetchSize(FETCH_SIZE);
+            final QueryResultStream result = new QueryResultStream(connection, statement.executeQuery(query));
             log.atDebug()
-                    .setMessage("write " + format + " data to path: " + path)
-                    .addKeyValue(Constants.FORMAT, format)
-                    .addKeyValue(Constants.S3_KEY, key)
+                    .setMessage("executed query in database " + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "jdbc_get_data")
                     .log();
-            return key;
-        } catch (Exception e) {
-            if (e instanceof ExtendedAnalysisException && e.getMessage().contains("TABLE_OR_VIEW_NOT_FOUND")
-                    || e instanceof SQLSyntaxErrorException && e.getMessage().contains("doesn't exist")) {
+            return result;
+        } catch (SQLException e) {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    log.warn("Failed to close connection: {}", ex.getMessage());
+                }
+            }
+            if (e instanceof SQLSyntaxErrorException && e.getMessage().contains("doesn't exist")) {
                 log.atError()
                         .setMessage("Failed to find named reference")
                         .setCause(e)
@@ -181,74 +182,6 @@ public class DataServiceSparkImpl extends DataConnector implements DataService {
                     .log();
             throw new MalformedException("Failed to select columns from dataset: " + e.getMessage());
         }
-    }
-
-    @Override
-    public Dataset<Row> getSubset(Database database, String query) throws QueryMalformedException,
-            TableNotFoundException {
-        final String key = getSubset(database, query, "jdbc");
-        final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key + "/";
-        final Dataset<Row> dataset = (Dataset<Row>) sparkSession.read()
-                .json(path);
-        log.atDebug()
-                .setMessage("get subset as json from path: " + path)
-                .addKeyValue(Constants.FORMAT, "json")
-                .addKeyValue(Constants.S3_KEY, key)
-                .log();
-        return dataset;
-    }
-
-    @Override
-    public Dataset<Row> getSubsetAsJson(Database database, String query) throws QueryMalformedException,
-            TableNotFoundException {
-        final String key = getSubset(database, query, "json");
-        final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key;
-        final Dataset<Row> dataset = (Dataset<Row>) sparkSession.read()
-                .json(path);
-        log.atDebug()
-                .setMessage("get subset as json from path: " + path)
-                .addKeyValue(Constants.FORMAT, "json")
-                .addKeyValue(Constants.S3_KEY, key)
-                .log();
-        return dataset;
-    }
-
-    @Override
-    public Dataset<Row> getSubsetAsJson(Database database, String query, List<String> columns)
-            throws QueryMalformedException, TableNotFoundException {
-        Dataset<Row> dataset = getSubsetAsJson(database, query);
-        if (columns == null || columns.isEmpty()) {
-            return dataset;
-        }
-        final Set<String> datasetColumns = new HashSet<>(Arrays.asList(dataset.columns()));
-        for (String column : columns) {
-            if (!datasetColumns.contains(column)) {
-                dataset = dataset.withColumn(column, functions.lit(null));
-            }
-        }
-        final List<Column> columnOrder = columns.stream()
-                .map(Column::new)
-                .toList();
-        log.atDebug()
-                .setMessage("reorder subset json columns")
-                .addKeyValue("columns", columns)
-                .log();
-        return dataset.select(columnOrder.toArray(new Column[0]));
-    }
-
-    @Override
-    public Dataset<Row> getSubsetAsCsv(Database database, String query) throws QueryMalformedException,
-            TableNotFoundException {
-        final String key = getSubset(database, query, "csv");
-        final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key;
-        final Dataset<Row> dataset = (Dataset<Row>) sparkSession.read()
-                .csv(path);
-        log.atDebug()
-                .setMessage("get subset as csv from path: " + path)
-                .addKeyValue(Constants.FORMAT, "csv")
-                .addKeyValue(Constants.S3_KEY, key)
-                .log();
-        return dataset;
     }
 
 }

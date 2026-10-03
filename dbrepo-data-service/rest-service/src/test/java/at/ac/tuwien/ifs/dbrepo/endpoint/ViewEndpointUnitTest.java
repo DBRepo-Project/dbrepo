@@ -6,11 +6,9 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.ViewEndpoint;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.classic.Dataset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +57,6 @@ public class ViewEndpointUnitTest extends BaseTest {
     @MockitoBean
     private DataService computeService;
 
-    @MockitoBean
-    private DataMapper dataMapper;
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
@@ -282,6 +278,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
+        when(computeService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_CACHE);
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -307,8 +305,6 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
